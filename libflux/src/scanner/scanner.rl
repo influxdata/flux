@@ -1,5 +1,6 @@
 #include "scanner.h"
-#include <stdlib.h>
+
+#define NULL ((void*)0)
 
 %%{
     machine flux;

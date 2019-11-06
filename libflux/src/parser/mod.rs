@@ -190,7 +190,7 @@ impl Parser {
                     return t;
                 }
                 _ => {
-                    let pos = self.pos(t.pos);
+                    let pos = self.pos(t.start_offset);
                     self.errs.push(format!(
                         "expected {}, got {} ({}) at {}:{}",
                         format_token(exp),
@@ -285,20 +285,20 @@ impl Parser {
     }
 
     fn base_node_from_tokens(&mut self, start: &Token, end: &Token) -> BaseNode {
-        let start = self.pos(start.pos);
-        let end = self.pos(end.pos + end.lit.len() as u32);
+        let start = self.pos(start.start_offset);
+        let end = self.pos(end.start_offset + end.lit.len() as u32);
         self.base_node(self.source_location(&start, &end))
     }
 
     fn base_node_from_other_start(&mut self, start: &BaseNode, end: &Token) -> BaseNode {
         self.base_node(self.source_location(
             &start.location.start,
-            &self.pos(end.pos + end.lit.len() as u32),
+            &self.pos(end.start_offset + end.lit.len() as u32),
         ))
     }
 
     fn base_node_from_other_end(&mut self, start: &Token, end: &BaseNode) -> BaseNode {
-        self.base_node(self.source_location(&self.pos(start.pos), &end.location.end))
+        self.base_node(self.source_location(&self.pos(start.start_offset), &end.location.end))
     }
 
     fn base_node_from_others(&mut self, start: &BaseNode, end: &BaseNode) -> BaseNode {
@@ -348,7 +348,7 @@ impl Parser {
         }
         File {
             base: BaseNode {
-                location: self.source_location(&self.pos(t.pos), &end),
+                location: self.source_location(&self.pos(t.start_offset), &end),
                 errors: vec![],
             },
             name: self.fname.clone(),
@@ -565,8 +565,8 @@ impl Parser {
                     //  an operator and create a binary expression. For now, skip past it.
                     let invalid_t = self.scan();
                     let loc = self.source_location(
-                        &self.pos(invalid_t.pos),
-                        &self.pos(invalid_t.pos + invalid_t.lit.len() as u32),
+                        &self.pos(invalid_t.start_offset),
+                        &self.pos(invalid_t.start_offset + invalid_t.lit.len() as u32),
                     );
                     self.errs
                         .push(format!("invalid expression {}: {}", loc, invalid_t.lit));
@@ -1029,8 +1029,10 @@ impl Parser {
                 // Do not use `self.base_node_*` in order not to steal errors.
                 // The BadExpr is an error per se. We want to leave errors to parents.
                 base: BaseNode {
-                    location: self
-                        .source_location(&self.pos(t.pos), &self.pos(t.pos + t.lit.len() as u32)),
+                    location: self.source_location(
+                        &self.pos(t.start_offset),
+                        &self.pos(t.start_offset + t.lit.len() as u32),
+                    ),
                     errors: vec![],
                 },
                 text: format!(
@@ -1068,8 +1070,10 @@ impl Parser {
                     }
                 }
                 _ => {
-                    let loc = self
-                        .source_location(&self.pos(t.pos), &self.pos(t.pos + t.lit.len() as u32));
+                    let loc = self.source_location(
+                        &self.pos(t.start_offset),
+                        &self.pos(t.start_offset + t.lit.len() as u32),
+                    );
                     self.errs.push(format!(
                         "got unexpected token in string expression {}@{}:{}-{}:{}: {}",
                         self.fname,
@@ -1207,8 +1211,8 @@ impl Parser {
                             // The BadExpr is an error per se. We want to leave errors to parents.
                             base: BaseNode {
                                 location: self.source_location(
-                                    &self.pos(t.pos),
-                                    &self.pos(t.pos + t.lit.len() as u32),
+                                    &self.pos(t.start_offset),
+                                    &self.pos(t.start_offset + t.lit.len() as u32),
                                 ),
                                 errors: vec![],
                             },
@@ -1283,8 +1287,8 @@ impl Parser {
                         Expression::Bad(_) => {
                             let invalid_t = self.scan();
                             let loc = self.source_location(
-                                &self.pos(invalid_t.pos),
-                                &self.pos(invalid_t.pos + invalid_t.lit.len() as u32),
+                                &self.pos(invalid_t.start_offset),
+                                &self.pos(invalid_t.start_offset + invalid_t.lit.len() as u32),
                             );
                             self.errs
                                 .push(format!("invalid expression {}: {}", loc, invalid_t.lit));
@@ -1463,9 +1467,9 @@ impl Parser {
         self.errs.append(&mut errs);
         let end = self.peek();
         Property {
-            base: self.base_node_from_pos(&self.pos(t.pos), &self.pos(end.pos)),
+            base: self.base_node_from_pos(&self.pos(t.start_offset), &self.pos(end.start_offset)),
             key: PropertyKey::StringLit(StringLit {
-                base: self.base_node_from_pos(&self.pos(t.pos), &self.pos(t.pos)),
+                base: self.base_node_from_pos(&self.pos(t.start_offset), &self.pos(t.start_offset)),
                 value: "<invalid>".to_string(),
             }),
             value,

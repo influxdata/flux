@@ -11,7 +11,10 @@ fn test_scan() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("from"),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 4,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -19,7 +22,10 @@ fn test_scan() {
         Token {
             tok: TOK_LPAREN,
             lit: String::from("("),
-            pos: 4,
+            start_offset: 4,
+            end_offset: 5,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -27,7 +33,10 @@ fn test_scan() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("bucket"),
-            pos: 5,
+            start_offset: 5,
+            end_offset: 11,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -35,7 +44,10 @@ fn test_scan() {
         Token {
             tok: TOK_COLON,
             lit: String::from(":"),
-            pos: 11,
+            start_offset: 11,
+            end_offset: 12,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -43,7 +55,10 @@ fn test_scan() {
         Token {
             tok: TOK_STRING,
             lit: String::from("\"foo\""),
-            pos: 12,
+            start_offset: 12,
+            end_offset: 17,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -51,7 +66,10 @@ fn test_scan() {
         Token {
             tok: TOK_RPAREN,
             lit: String::from(")"),
-            pos: 17,
+            start_offset: 17,
+            end_offset: 18,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -59,7 +77,10 @@ fn test_scan() {
         Token {
             tok: TOK_PIPE_FORWARD,
             lit: String::from("|>"),
-            pos: 19,
+            start_offset: 19,
+            end_offset: 21,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -67,7 +88,10 @@ fn test_scan() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("range"),
-            pos: 22,
+            start_offset: 22,
+            end_offset: 27,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -75,7 +99,10 @@ fn test_scan() {
         Token {
             tok: TOK_LPAREN,
             lit: String::from("("),
-            pos: 27,
+            start_offset: 27,
+            end_offset: 28,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -83,7 +110,10 @@ fn test_scan() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("start"),
-            pos: 28,
+            start_offset: 28,
+            end_offset: 33,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -91,7 +121,10 @@ fn test_scan() {
         Token {
             tok: TOK_COLON,
             lit: String::from(":"),
-            pos: 33,
+            start_offset: 33,
+            end_offset: 34,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -99,7 +132,10 @@ fn test_scan() {
         Token {
             tok: TOK_SUB,
             lit: String::from("-"),
-            pos: 35,
+            start_offset: 35,
+            end_offset: 36,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -107,7 +143,10 @@ fn test_scan() {
         Token {
             tok: TOK_DURATION,
             lit: String::from("1m"),
-            pos: 36,
+            start_offset: 36,
+            end_offset: 38,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -115,7 +154,10 @@ fn test_scan() {
         Token {
             tok: TOK_RPAREN,
             lit: String::from(")"),
-            pos: 38,
+            start_offset: 38,
+            end_offset: 39,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -123,7 +165,10 @@ fn test_scan() {
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 39,
+            start_offset: 39,
+            end_offset: 39,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 }
@@ -138,7 +183,10 @@ fn test_scan_with_regex() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("a"),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 1,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -146,7 +194,10 @@ fn test_scan_with_regex() {
         Token {
             tok: TOK_ADD,
             lit: String::from("+"),
-            pos: 2,
+            start_offset: 2,
+            end_offset: 3,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -154,7 +205,10 @@ fn test_scan_with_regex() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("b"),
-            pos: 4,
+            start_offset: 4,
+            end_offset: 5,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -162,7 +216,10 @@ fn test_scan_with_regex() {
         Token {
             tok: TOK_REGEXEQ,
             lit: String::from("=~"),
-            pos: 6,
+            start_offset: 6,
+            end_offset: 8,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -170,7 +227,10 @@ fn test_scan_with_regex() {
         Token {
             tok: TOK_REGEX,
             lit: String::from("/.*[0-9]/"),
-            pos: 9,
+            start_offset: 9,
+            end_offset: 18,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -178,7 +238,10 @@ fn test_scan_with_regex() {
         Token {
             tok: TOK_DIV,
             lit: String::from("/"),
-            pos: 19,
+            start_offset: 19,
+            end_offset: 20,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -186,7 +249,10 @@ fn test_scan_with_regex() {
         Token {
             tok: TOK_INT,
             lit: String::from("2"),
-            pos: 21,
+            start_offset: 21,
+            end_offset: 22,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -194,7 +260,10 @@ fn test_scan_with_regex() {
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 22,
+            start_offset: 22,
+            end_offset: 22,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 }
@@ -209,7 +278,10 @@ fn test_scan_string_expr_simple() {
         Token {
             tok: TOK_QUOTE,
             lit: String::from("\""),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 1,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -217,7 +289,10 @@ fn test_scan_string_expr_simple() {
         Token {
             tok: TOK_STRINGEXPR,
             lit: String::from("${"),
-            pos: 1,
+            start_offset: 1,
+            end_offset: 3,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -225,7 +300,10 @@ fn test_scan_string_expr_simple() {
         Token {
             tok: TOK_TEXT,
             lit: String::from("a + b}"),
-            pos: 3,
+            start_offset: 3,
+            end_offset: 9,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -233,7 +311,10 @@ fn test_scan_string_expr_simple() {
         Token {
             tok: TOK_QUOTE,
             lit: String::from("\""),
-            pos: 9,
+            start_offset: 9,
+            end_offset: 10,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 }
@@ -248,7 +329,10 @@ fn test_scan_string_expr_start_with_text() {
         Token {
             tok: TOK_QUOTE,
             lit: String::from("\""),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 1,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -256,7 +340,10 @@ fn test_scan_string_expr_start_with_text() {
         Token {
             tok: TOK_TEXT,
             lit: String::from("a + b = "),
-            pos: 1,
+            start_offset: 1,
+            end_offset: 9,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -264,7 +351,10 @@ fn test_scan_string_expr_start_with_text() {
         Token {
             tok: TOK_STRINGEXPR,
             lit: String::from("${"),
-            pos: 9,
+            start_offset: 9,
+            end_offset: 11,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -272,7 +362,10 @@ fn test_scan_string_expr_start_with_text() {
         Token {
             tok: TOK_TEXT,
             lit: String::from("a + b}"),
-            pos: 11,
+            start_offset: 11,
+            end_offset: 17,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -280,7 +373,10 @@ fn test_scan_string_expr_start_with_text() {
         Token {
             tok: TOK_QUOTE,
             lit: String::from("\""),
-            pos: 17,
+            start_offset: 17,
+            end_offset: 18,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 }
@@ -295,7 +391,10 @@ fn test_scan_string_expr_multiple() {
         Token {
             tok: TOK_QUOTE,
             lit: String::from("\""),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 1,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -303,7 +402,10 @@ fn test_scan_string_expr_multiple() {
         Token {
             tok: TOK_TEXT,
             lit: String::from("a + b = "),
-            pos: 1,
+            start_offset: 1,
+            end_offset: 9,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -311,7 +413,10 @@ fn test_scan_string_expr_multiple() {
         Token {
             tok: TOK_STRINGEXPR,
             lit: String::from("${"),
-            pos: 9,
+            start_offset: 9,
+            end_offset: 11,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -319,7 +424,10 @@ fn test_scan_string_expr_multiple() {
         Token {
             tok: TOK_TEXT,
             lit: String::from("a + b} and a - b = "),
-            pos: 11,
+            start_offset: 11,
+            end_offset: 30,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -327,7 +435,10 @@ fn test_scan_string_expr_multiple() {
         Token {
             tok: TOK_STRINGEXPR,
             lit: String::from("${"),
-            pos: 30,
+            start_offset: 30,
+            end_offset: 32,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -335,7 +446,10 @@ fn test_scan_string_expr_multiple() {
         Token {
             tok: TOK_TEXT,
             lit: String::from("a - b}"),
-            pos: 32,
+            start_offset: 32,
+            end_offset: 38,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -343,7 +457,10 @@ fn test_scan_string_expr_multiple() {
         Token {
             tok: TOK_QUOTE,
             lit: String::from("\""),
-            pos: 38,
+            start_offset: 38,
+            end_offset: 39,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 }
@@ -358,7 +475,10 @@ fn test_scan_string_expr_end_with_text() {
         Token {
             tok: TOK_QUOTE,
             lit: String::from("\""),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 1,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -366,7 +486,10 @@ fn test_scan_string_expr_end_with_text() {
         Token {
             tok: TOK_TEXT,
             lit: String::from("a + b = "),
-            pos: 1,
+            start_offset: 1,
+            end_offset: 9,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -374,7 +497,10 @@ fn test_scan_string_expr_end_with_text() {
         Token {
             tok: TOK_STRINGEXPR,
             lit: String::from("${"),
-            pos: 9,
+            start_offset: 9,
+            end_offset: 11,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -382,7 +508,10 @@ fn test_scan_string_expr_end_with_text() {
         Token {
             tok: TOK_TEXT,
             lit: String::from("a + b} and a - b = ?"),
-            pos: 11,
+            start_offset: 11,
+            end_offset: 31,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -390,7 +519,10 @@ fn test_scan_string_expr_end_with_text() {
         Token {
             tok: TOK_QUOTE,
             lit: String::from("\""),
-            pos: 31,
+            start_offset: 31,
+            end_offset: 32,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 }
@@ -405,7 +537,10 @@ fn test_scan_string_expr_escaped_quotes() {
         Token {
             tok: TOK_QUOTE,
             lit: String::from("\""),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 1,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -413,7 +548,10 @@ fn test_scan_string_expr_escaped_quotes() {
         Token {
             tok: TOK_TEXT,
             lit: String::from(r#"these \"\" are escaped quotes"#),
-            pos: 1,
+            start_offset: 1,
+            end_offset: 30,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -421,7 +559,10 @@ fn test_scan_string_expr_escaped_quotes() {
         Token {
             tok: TOK_QUOTE,
             lit: String::from("\""),
-            pos: 30,
+            start_offset: 30,
+            end_offset: 31,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 }
@@ -436,7 +577,10 @@ fn test_scan_string_expr_not_escaped_quotes() {
         Token {
             tok: TOK_QUOTE,
             lit: String::from("\""),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 1,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -444,7 +588,10 @@ fn test_scan_string_expr_not_escaped_quotes() {
         Token {
             tok: TOK_TEXT,
             lit: String::from("this "),
-            pos: 1,
+            start_offset: 1,
+            end_offset: 6,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -452,7 +599,10 @@ fn test_scan_string_expr_not_escaped_quotes() {
         Token {
             tok: TOK_QUOTE,
             lit: String::from("\""),
-            pos: 6,
+            start_offset: 6,
+            end_offset: 7,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -460,7 +610,10 @@ fn test_scan_string_expr_not_escaped_quotes() {
         Token {
             tok: TOK_TEXT,
             lit: String::from(" is not an escaped quote"),
-            pos: 7,
+            start_offset: 7,
+            end_offset: 31,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -468,7 +621,10 @@ fn test_scan_string_expr_not_escaped_quotes() {
         Token {
             tok: TOK_QUOTE,
             lit: String::from("\""),
-            pos: 31,
+            start_offset: 31,
+            end_offset: 32,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 }
@@ -483,7 +639,10 @@ fn test_scan_unread() {
         Token {
             tok: TOK_INT,
             lit: String::from("1"),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 1,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     s.unread();
@@ -492,7 +651,10 @@ fn test_scan_unread() {
         Token {
             tok: TOK_INT,
             lit: String::from("1"),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 1,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 
@@ -501,7 +663,10 @@ fn test_scan_unread() {
         Token {
             tok: TOK_REGEX,
             lit: String::from("/ 2 /"),
-            pos: 2,
+            start_offset: 2,
+            end_offset: 7,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     s.unread();
@@ -510,7 +675,10 @@ fn test_scan_unread() {
         Token {
             tok: TOK_DIV,
             lit: String::from("/"),
-            pos: 2,
+            start_offset: 2,
+            end_offset: 3,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -518,7 +686,10 @@ fn test_scan_unread() {
         Token {
             tok: TOK_INT,
             lit: String::from("2"),
-            pos: 4,
+            start_offset: 4,
+            end_offset: 5,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -526,7 +697,10 @@ fn test_scan_unread() {
         Token {
             tok: TOK_DIV,
             lit: String::from("/"),
-            pos: 6,
+            start_offset: 6,
+            end_offset: 7,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -534,7 +708,10 @@ fn test_scan_unread() {
         Token {
             tok: TOK_INT,
             lit: String::from("3"),
-            pos: 8,
+            start_offset: 8,
+            end_offset: 9,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     // test unread idempotence
@@ -548,7 +725,10 @@ fn test_scan_unread() {
         Token {
             tok: TOK_INT,
             lit: String::from("3"),
-            pos: 8,
+            start_offset: 8,
+            end_offset: 9,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -556,7 +736,10 @@ fn test_scan_unread() {
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 9,
+            start_offset: 9,
+            end_offset: 9,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 }
@@ -577,7 +760,10 @@ a
         Token {
             tok: TOK_IDENT,
             lit: String::from("a"),
-            pos: 22,
+            start_offset: 22,
+            end_offset: 23,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -585,7 +771,10 @@ a
         Token {
             tok: TOK_INT,
             lit: String::from("1"),
-            pos: 95,
+            start_offset: 95,
+            end_offset: 96,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -593,7 +782,10 @@ a
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 114,
+            start_offset: 114,
+            end_offset: 114,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 
@@ -605,7 +797,10 @@ a
         Token {
             tok: TOK_IDENT,
             lit: String::from("a"),
-            pos: 22,
+            start_offset: 22,
+            end_offset: 23,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -613,7 +808,10 @@ a
         Token {
             tok: TOK_INT,
             lit: String::from("1"),
-            pos: 95,
+            start_offset: 95,
+            end_offset: 96,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -621,7 +819,10 @@ a
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 114,
+            start_offset: 114,
+            end_offset: 114,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 }
@@ -637,7 +838,10 @@ fn test_scan_eof() {
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 0,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -645,7 +849,10 @@ fn test_scan_eof() {
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 0,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -653,7 +860,10 @@ fn test_scan_eof() {
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 0,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -661,7 +871,10 @@ fn test_scan_eof() {
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 0,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -669,7 +882,10 @@ fn test_scan_eof() {
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 0,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -677,7 +893,10 @@ fn test_scan_eof() {
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 0,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 }
@@ -699,7 +918,10 @@ fn test_scan_eof_trailing_spaces() {
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 7,
+            start_offset: 7,
+            end_offset: 7,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 
@@ -710,7 +932,10 @@ fn test_scan_eof_trailing_spaces() {
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 7,
+            start_offset: 7,
+            end_offset: 7,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 }
@@ -725,7 +950,10 @@ fn test_illegal() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("legal"),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 5,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -733,7 +961,10 @@ fn test_illegal() {
         Token {
             tok: TOK_ILLEGAL,
             lit: String::from("@"),
-            pos: 6,
+            start_offset: 6,
+            end_offset: 7,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -741,7 +972,10 @@ fn test_illegal() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("illegal"),
-            pos: 8,
+            start_offset: 8,
+            end_offset: 15,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 
@@ -752,7 +986,10 @@ fn test_illegal() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("legal"),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 5,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -760,7 +997,10 @@ fn test_illegal() {
         Token {
             tok: TOK_ILLEGAL,
             lit: String::from("@"),
-            pos: 6,
+            start_offset: 6,
+            end_offset: 7,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     s.unread();
@@ -769,7 +1009,10 @@ fn test_illegal() {
         Token {
             tok: TOK_ILLEGAL,
             lit: String::from("@"),
-            pos: 6,
+            start_offset: 6,
+            end_offset: 7,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -777,7 +1020,10 @@ fn test_illegal() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("illegal"),
-            pos: 8,
+            start_offset: 8,
+            end_offset: 15,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 
@@ -788,7 +1034,10 @@ fn test_illegal() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("legal"),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 5,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -796,7 +1045,10 @@ fn test_illegal() {
         Token {
             tok: TOK_ILLEGAL,
             lit: String::from("@"),
-            pos: 6,
+            start_offset: 6,
+            end_offset: 7,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -804,7 +1056,10 @@ fn test_illegal() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("illegal"),
-            pos: 8,
+            start_offset: 8,
+            end_offset: 15,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 
@@ -815,7 +1070,10 @@ fn test_illegal() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("legal"),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 5,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -823,7 +1081,10 @@ fn test_illegal() {
         Token {
             tok: TOK_ILLEGAL,
             lit: String::from("@"),
-            pos: 6,
+            start_offset: 6,
+            end_offset: 7,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     s.unread();
@@ -832,7 +1093,10 @@ fn test_illegal() {
         Token {
             tok: TOK_ILLEGAL,
             lit: String::from("@"),
-            pos: 6,
+            start_offset: 6,
+            end_offset: 7,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -840,7 +1104,10 @@ fn test_illegal() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("illegal"),
-            pos: 8,
+            start_offset: 8,
+            end_offset: 15,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 }
@@ -855,7 +1122,10 @@ fn test_scan_duration() {
         Token {
             tok: TOK_IDENT,
             lit: String::from("dur"),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 3,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -863,7 +1133,10 @@ fn test_scan_duration() {
         Token {
             tok: TOK_ASSIGN,
             lit: String::from("="),
-            pos: 4,
+            start_offset: 4,
+            end_offset: 5,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -871,7 +1144,10 @@ fn test_scan_duration() {
         Token {
             tok: TOK_DURATION,
             lit: String::from("1y3mo2w1d4h1m30s1ms2µs70ns"),
-            pos: 6,
+            start_offset: 6,
+            end_offset: 33,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(
@@ -879,7 +1155,10 @@ fn test_scan_duration() {
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 33,
+            start_offset: 33,
+            end_offset: 33,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
 }
@@ -965,7 +1244,10 @@ c = 1 + 2
         Token {
             tok: TOK_IDENT,
             lit: String::from("ms"),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 2,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(s.pos(0), Position { line: 1, column: 1 });
@@ -974,7 +1256,10 @@ c = 1 + 2
         Token {
             tok: TOK_ASSIGN,
             lit: String::from("="),
-            pos: 3,
+            start_offset: 3,
+            end_offset: 4,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(s.pos(3), Position { line: 1, column: 4 });
@@ -983,7 +1268,10 @@ c = 1 + 2
         Token {
             tok: TOK_STRING,
             lit: String::from("\"multiline\nstring\n\""),
-            pos: 5,
+            start_offset: 5,
+            end_offset: 24,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(s.pos(5), Position { line: 1, column: 6 });
@@ -996,7 +1284,10 @@ c = 1 + 2
         Token {
             tok: TOK_IDENT,
             lit: String::from("c"),
-            pos: 38,
+            start_offset: 38,
+            end_offset: 39,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(s.pos(38), Position { line: 7, column: 1 });
@@ -1005,7 +1296,10 @@ c = 1 + 2
         Token {
             tok: TOK_ASSIGN,
             lit: String::from("="),
-            pos: 40,
+            start_offset: 40,
+            end_offset: 41,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(s.pos(40), Position { line: 7, column: 3 });
@@ -1014,7 +1308,10 @@ c = 1 + 2
         Token {
             tok: TOK_INT,
             lit: String::from("1"),
-            pos: 42,
+            start_offset: 42,
+            end_offset: 43,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(s.pos(42), Position { line: 7, column: 5 });
@@ -1023,7 +1320,10 @@ c = 1 + 2
         Token {
             tok: TOK_ADD,
             lit: String::from("+"),
-            pos: 44,
+            start_offset: 44,
+            end_offset: 45,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(s.pos(44), Position { line: 7, column: 7 });
@@ -1032,7 +1332,10 @@ c = 1 + 2
         Token {
             tok: TOK_INT,
             lit: String::from("2"),
-            pos: 46,
+            start_offset: 46,
+            end_offset: 47,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(s.pos(46), Position { line: 7, column: 9 });
@@ -1041,7 +1344,10 @@ c = 1 + 2
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 52,
+            start_offset: 52,
+            end_offset: 52,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(s.pos(48), Position { line: 8, column: 1 });
@@ -1128,7 +1434,10 @@ c = 1 + 2
         Token {
             tok: TOK_IDENT,
             lit: String::from("ms"),
-            pos: 0,
+            start_offset: 0,
+            end_offset: 2,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(0, s.offset(Position { line: 1, column: 1 }));
@@ -1137,7 +1446,10 @@ c = 1 + 2
         Token {
             tok: TOK_ASSIGN,
             lit: String::from("="),
-            pos: 3,
+            start_offset: 3,
+            end_offset: 4,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(3, s.offset(Position { line: 1, column: 4 }));
@@ -1146,7 +1458,10 @@ c = 1 + 2
         Token {
             tok: TOK_STRING,
             lit: String::from("\"multiline\nstring\n\""),
-            pos: 5,
+            start_offset: 5,
+            end_offset: 24,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(5, s.offset(Position { line: 1, column: 6 }));
@@ -1159,7 +1474,10 @@ c = 1 + 2
         Token {
             tok: TOK_IDENT,
             lit: String::from("c"),
-            pos: 38,
+            start_offset: 38,
+            end_offset: 39,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(38, s.offset(Position { line: 7, column: 1 }));
@@ -1168,7 +1486,10 @@ c = 1 + 2
         Token {
             tok: TOK_ASSIGN,
             lit: String::from("="),
-            pos: 40,
+            start_offset: 40,
+            end_offset: 41,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(40, s.offset(Position { line: 7, column: 3 }));
@@ -1177,7 +1498,10 @@ c = 1 + 2
         Token {
             tok: TOK_INT,
             lit: String::from("1"),
-            pos: 42,
+            start_offset: 42,
+            end_offset: 43,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(42, s.offset(Position { line: 7, column: 5 }));
@@ -1186,7 +1510,10 @@ c = 1 + 2
         Token {
             tok: TOK_ADD,
             lit: String::from("+"),
-            pos: 44,
+            start_offset: 44,
+            end_offset: 45,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(44, s.offset(Position { line: 7, column: 7 }));
@@ -1195,7 +1522,10 @@ c = 1 + 2
         Token {
             tok: TOK_INT,
             lit: String::from("2"),
-            pos: 46,
+            start_offset: 46,
+            end_offset: 47,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(46, s.offset(Position { line: 7, column: 9 }));
@@ -1204,7 +1534,10 @@ c = 1 + 2
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: 52,
+            start_offset: 52,
+            end_offset: 52,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 }
         }
     );
     assert_eq!(48, s.offset(Position { line: 8, column: 1 }));

@@ -28,7 +28,10 @@ pub struct Position {
 pub struct Token {
     pub tok: TOK,
     pub lit: String,
-    pub pos: u32,
+    pub start_offset: u32,
+    pub end_offset: u32,
+    pub start_pos: Position,
+    pub end_pos: Position,
 }
 
 impl Scanner {
@@ -38,7 +41,7 @@ impl Scanner {
         let bytes = data.as_bytes();
         let end = ((ptr as usize) + bytes.len()) as *const CChar;
         return Scanner {
-            data: data,
+            data,
             ps: ptr as *const CChar,
             p: ptr as *const CChar,
             pe: end,
@@ -94,7 +97,10 @@ impl Scanner {
         Token {
             tok: TOK_EOF,
             lit: String::from(""),
-            pos: self.te,
+            start_offset: self.te,
+            end_offset: self.te,
+            start_pos: Position { line: 0, column: 0 },
+            end_pos: Position { line: 0, column: 0 },
         }
     }
 
@@ -133,7 +139,10 @@ impl Scanner {
                         return Token {
                             tok: TOK_ILLEGAL,
                             lit: nc.to_string(),
-                            pos: self.ts,
+                            start_offset: self.ts,
+                            end_offset: self.ts + size as u32,
+                            start_pos: Position { line: 0, column: 0 },
+                            end_pos: Position { line: 0, column: 0 },
                         };
                     }
                     // This should be impossible as we would have produced an EOF token
@@ -158,7 +167,10 @@ impl Scanner {
                 lit: String::from(str::from_utf8_unchecked(
                     &self.data.as_bytes()[(self.ts as usize)..(self.te as usize)],
                 )),
-                pos: self.ts,
+                start_offset: self.ts,
+                end_offset: self.te,
+                start_pos: Position { line: 0, column: 0 },
+                end_pos: Position { line: 0, column: 0 },
             };
             // Skipping comments.
             // TODO(affo): return comments to attach them to nodes within the AST.
