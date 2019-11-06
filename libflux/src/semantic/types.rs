@@ -129,21 +129,25 @@ impl Error {
     // An error can occur when the unification of two types
     // contradicts what we have already inferred about the types
     // in our program.
-    fn cannot_unify(t: MonoType, with: MonoType) -> Error {
+    fn cannot_unify<T, S>(t: &T, with: &S) -> Error
+    where
+        T: fmt::Display,
+        S: fmt::Display,
+    {
         Error {
             msg: format!("cannot unify {} with {}", t, with),
         }
     }
     // An error can occur if we constrain a type with a kind to
     // which it does not belong.
-    fn cannot_constrain(t: MonoType, with: Kind) -> Error {
+    fn cannot_constrain<T: fmt::Display>(t: &T, with: Kind) -> Error {
         Error {
             msg: format!("{} is not of kind {}", t, with,),
         }
     }
     // An error can occur if we attempt to unify a type variable
     // with a monotype that contains that same type variable.
-    fn occurs_check(tv: Tvar, t: MonoType) -> Error {
+    fn occurs_check<T: fmt::Display>(tv: Tvar, t: T) -> Error {
         Error {
             msg: format!("type variable {} occurs in {}", tv, t),
         }
@@ -278,7 +282,7 @@ impl MonoType {
             (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(*s, cons),
             (MonoType::Row(t), MonoType::Row(s)) => t.unify(*s, cons),
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(*s, cons),
-            (t, with) => Err(Error::cannot_unify(t, with)),
+            (t, with) => Err(Error::cannot_unify(&t, &with)),
         }
     }
 
@@ -286,7 +290,7 @@ impl MonoType {
         match self {
             MonoType::Bool => match with {
                 Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
-                _ => Err(Error::cannot_constrain(self, with)),
+                _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Int => match with {
                 Kind::Addable
@@ -302,7 +306,7 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable => Ok(Substitution::empty()),
-                _ => Err(Error::cannot_constrain(self, with)),
+                _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Float => match with {
                 Kind::Addable
@@ -316,17 +320,17 @@ impl MonoType {
                 Kind::Addable | Kind::Comparable | Kind::Equatable | Kind::Nullable => {
                     Ok(Substitution::empty())
                 }
-                _ => Err(Error::cannot_constrain(self, with)),
+                _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Duration => match with {
                 Kind::Comparable | Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
-                _ => Err(Error::cannot_constrain(self, with)),
+                _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Time => match with {
                 Kind::Comparable | Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
-                _ => Err(Error::cannot_constrain(self, with)),
+                _ => Err(Error::cannot_constrain(&self, with)),
             },
-            MonoType::Regexp => Err(Error::cannot_constrain(self, with)),
+            MonoType::Regexp => Err(Error::cannot_constrain(&self, with)),
             MonoType::Var(tvr) => {
                 tvr.constrain(with, cons);
                 Ok(Substitution::empty())
@@ -462,7 +466,7 @@ impl Array {
     }
 
     fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
-        Err(Error::cannot_constrain(MonoType::Arr(Box::new(self)), with))
+        Err(Error::cannot_constrain(&self, with))
     }
 
     fn contains(&self, tv: Tvar) -> bool {
@@ -525,7 +529,7 @@ impl Row {
     }
 
     fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
-        Err(Error::cannot_constrain(MonoType::Row(Box::new(self)), with))
+        Err(Error::cannot_constrain(&self, with))
     }
 
     fn contains(&self, tv: Tvar) -> bool {
@@ -709,7 +713,7 @@ impl Function {
     }
 
     fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
-        Err(Error::cannot_constrain(MonoType::Fun(Box::new(self)), with))
+        Err(Error::cannot_constrain(&self, with))
     }
 
     fn contains(&self, tv: Tvar) -> bool {

@@ -16,6 +16,3 @@ pub mod walk;
 
 #[cfg(test)]
 mod parser;
-
-#[cfg(test)]
-mod tests;
