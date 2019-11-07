@@ -1666,9 +1666,9 @@ outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,long,dateTime:RFC3339
 #default,requests_count,,,,,
 ,result,table,_start,_stop,requests_count,_time
-,,0,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,286,2019-08-01T12:00:00Z
-,,0,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,290,2019-08-01T13:00:00Z
-,,0,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,278,2019-08-01T14:00:00Z
+,,0,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,143,2019-08-01T12:00:00Z
+,,0,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,145,2019-08-01T13:00:00Z
+,,0,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,139,2019-08-01T14:00:00Z
 "
 
 _f = (table=<-) => table
@@ -1676,7 +1676,7 @@ _f = (table=<-) => table
     |> filter(fn: (r) =>
         r.org_id == "03cbe13cce931000"
         and r._measurement == "http_request"
-        and (r.endpoint == "/api/v2/query" or r.endpoint == "/api/v2/write")
+        and ((r.endpoint == "/api/v2/write" and r._field == "req_bytes") or (r.endpoint == "/api/v2/query" and r._field == "resp_bytes"))
     )
     |> group()
     |> aggregateWindow(every: 1h, fn: count)
