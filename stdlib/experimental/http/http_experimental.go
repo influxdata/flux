@@ -109,6 +109,9 @@ var get = values.NewFunction(
 			limitedReader := &io.LimitedReader{R: response.Body, N: maxResponseBody}
 			body, err := ioutil.ReadAll(limitedReader)
 			_ = response.Body.Close()
+			if err != nil {
+				return 0, "", "", err
+			}
 			s.LogFields(
 				log.Int("statusCode", response.StatusCode),
 				log.Int("responseSize", len(body)),
