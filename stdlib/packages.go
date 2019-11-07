@@ -7,6 +7,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/date"
 	_ "github.com/influxdata/flux/stdlib/experimental"
 	_ "github.com/influxdata/flux/stdlib/experimental/bigtable"
+	_ "github.com/influxdata/flux/stdlib/experimental/http"
 	_ "github.com/influxdata/flux/stdlib/experimental/mqtt"
 	_ "github.com/influxdata/flux/stdlib/experimental/prometheus"
 	_ "github.com/influxdata/flux/stdlib/generate"
