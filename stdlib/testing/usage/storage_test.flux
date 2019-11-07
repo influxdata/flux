@@ -2197,6 +2197,7 @@ _f = (table=<-) => table
     |> filter(fn: (r) =>
         r.org_id == "038b7a85ca099000"
         and r._measurement == "storage_usage_org_bytes"
+        and r._field == "gauge"
     )
     |> aggregateWindow(every: 1h, fn: mean)
     |> fill(column: "_value", value: 0.0)
