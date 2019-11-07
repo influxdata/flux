@@ -9,8 +9,21 @@
 
     include WChar "unicode.rl";
 
+    action advance_line {
+        push(&nls, fpc - data + 1);
+        no_nls++;
+
+        (*cur_line)++;
+        *last_newline = fpc + 1;
+    }
+
+    action advance_line_between_tokens {
+        cur_tok_start_line = *last_newline;
+        no_nls_before_start = *cur_line;
+    }
+
     # For comments on newlines tracking, see below.
-    newline = '\n' @{ push(&nls, fpc - data + 1); no_nls++; };
+    newline = '\n' @advance_line;
     any_count_line = any | newline;
 
     identifier = ( ualpha | "_" ) ( ualnum | "_" )*;
@@ -43,7 +56,7 @@
     single_line_comment = "//" [^\n]* newline?;
 
     # Whitespace is standard ws, newlines and control codes->
-    whitespace = ( newline | space )+ ;
+    whitespace = (space - '\n')+;
 
     # The regex literal is not compatible with division so we need two machines->
     # One machine contains the full grammar and is the main one, the other is used to scan when we are
@@ -53,7 +66,9 @@
         regex_lit => { tok = REGEX; fbreak; };
 
         # We have to specify whitespace here so that leading whitespace doesn't cause a state transition.
-        whitespace+;
+        whitespace;
+
+        newline => advance_line_between_tokens;
 
         # Any other character we transfer to the main state machine that defines the entire language.
         any => { fhold; fgoto main; };
@@ -115,7 +130,9 @@
         "." => { tok = DOT; fbreak; };
         '"' => { tok = QUOTE; fbreak; };
 
-        whitespace+;
+        whitespace;
+
+        newline => advance_line_between_tokens;
     *|;
 
     # This is the scanner used when parsing a string expression.
@@ -159,8 +176,23 @@ unsigned int pop(node_t **head) {
     return retval;
 }
 
-int scan(int mode, const unsigned char **pp, const unsigned char *data, const unsigned char *pe, const unsigned char *eof,
-        unsigned int *token, unsigned int *token_start, unsigned int *token_end, const unsigned int **newlines, unsigned int *newlines_len) {
+int scan(
+        int mode,
+        const unsigned char **pp,
+        const unsigned char *data,
+        const unsigned char *pe,
+        const unsigned char *eof,
+        const unsigned char **last_newline,
+        unsigned int *cur_line,
+        unsigned int *token,
+        unsigned int *token_start,
+        unsigned int *token_start_line,
+        unsigned int *token_start_col,
+        unsigned int *token_end,
+        unsigned int *token_end_line,
+        unsigned int *token_end_col,
+        const unsigned int **newlines,
+        unsigned int *newlines_len) {
     int cs = flux_start;
     switch (mode) {
     case 0:
@@ -180,14 +212,23 @@ int scan(int mode, const unsigned char **pp, const unsigned char *data, const un
     unsigned int tok = ILLEGAL;
     node_t* nls = NULL;
     unsigned int no_nls = 0;
+    const unsigned char *cur_tok_start_line = *last_newline;
+    unsigned int no_nls_before_start = *cur_line;
 
     %% write init nocs;
     %% write exec;
 
     // Update output args.
     *token = tok;
+
     *token_start = ts - data;
+    *token_start_line = no_nls_before_start;
+    *token_start_col = ts - cur_tok_start_line + 1;
+
     *token_end = te - data;
+    *token_end_line = *cur_line;
+    *token_end_col = te - *last_newline + 1;
+
     *newlines_len = no_nls;
 
     // Now that the state machine has created a dynamic list of newline offsets (in reverse order),

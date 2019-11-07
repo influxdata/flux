@@ -11,6 +11,8 @@ pub struct Scanner {
     p: *const CChar,
     pe: *const CChar,
     eof: *const CChar,
+    last_newline: *const CChar,
+    cur_line: u32,
     checkpoint: *const CChar,
     token: TOK,
     ts: u32,
@@ -46,6 +48,8 @@ impl Scanner {
             p: ptr as *const CChar,
             pe: end,
             eof: end,
+            last_newline: ptr as *const CChar,
+            cur_line: 1,
             ts: 0,
             te: 0,
             lines: vec![0],
@@ -112,15 +116,25 @@ impl Scanner {
         unsafe {
             let mut newlines: *const u32 = std::ptr::null();
             let mut no_newlines = 0 as u32;
+            let mut token_start_line = 0 as u32;
+            let mut token_start_col = 0 as u32;
+            let mut token_end_line = 0 as u32;
+            let mut token_end_col = 0 as u32;
             let error = scan(
                 mode,
                 &mut self.p as *mut *const CChar,
                 self.ps as *const CChar,
                 self.pe as *const CChar,
                 self.eof as *const CChar,
+                &mut self.last_newline as *mut *const CChar,
+                &mut self.cur_line as *mut u32,
                 &mut self.token as *mut u32,
                 &mut self.ts as *mut u32,
+                &mut token_start_line as *mut u32,
+                &mut token_start_col as *mut u32,
                 &mut self.te as *mut u32,
+                &mut token_end_line as *mut u32,
+                &mut token_end_col as *mut u32,
                 &mut newlines as *mut *const u32,
                 &mut no_newlines as *mut u32,
             );
@@ -172,6 +186,28 @@ impl Scanner {
                 start_pos: Position { line: 0, column: 0 },
                 end_pos: Position { line: 0, column: 0 },
             };
+
+            assert_eq!(
+                (
+                    self.token,
+                    Position {
+                        line: token_start_line,
+                        column: token_start_col,
+                    }
+                ),
+                (self.token, self.pos(t.start_offset)),
+            );
+            assert_eq!(
+                (
+                    self.token,
+                    Position {
+                        line: token_end_line,
+                        column: token_end_col,
+                    }
+                ),
+                (self.token, self.pos(t.end_offset)),
+            );
+
             // Skipping comments.
             // TODO(affo): return comments to attach them to nodes within the AST.
             match t {
