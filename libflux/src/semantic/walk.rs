@@ -91,7 +91,7 @@ impl<'a> fmt::Display for Node<'a> {
             Node::Block(n) => match n {
                 Block::Variable(_, _) => write!(f, "Block::Variable"),
                 Block::Expr(_, _) => write!(f, "Block::Expr"),
-                Block::Return(expr) => write!(f, "Block::Return"),
+                Block::Return(_) => write!(f, "Block::Return"),
             },
             Node::Property(_) => write!(f, "Property"),
             Node::TextPart(_) => write!(f, "TextPart"),
@@ -987,7 +987,6 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                     Expression::Boolean(ref mut e) => e.loc = base_loc.clone(),
                     Expression::DateTime(ref mut e) => e.loc = base_loc.clone(),
                     Expression::Regexp(ref mut e) => e.loc = base_loc.clone(),
-                    _ => (),
                 };
             };
             walk(

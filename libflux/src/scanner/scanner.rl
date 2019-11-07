@@ -125,7 +125,7 @@
     *|;
 }%%
 
-%% write data;
+%% write data nofinal;
 
 // We need a strategy for tracking newlines while the state machine does its job.
 // At each newline, the state machine will push a new element containing the current offset to a list.
@@ -160,7 +160,7 @@ unsigned int pop(node_t **head) {
 
 int scan(int mode, const unsigned char **pp, const unsigned char *data, const unsigned char *pe, const unsigned char *eof,
         unsigned int *token, unsigned int *token_start, unsigned int *token_end, const unsigned int **newlines, unsigned int *newlines_len) {
-    int cs;
+    int cs = flux_start;
     switch (mode) {
     case 0:
         cs = flux_en_main;

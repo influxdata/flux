@@ -295,7 +295,6 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable => Ok(Substitution::empty()),
-                _ => Err(Error::cannot_constrain(self, with)),
             },
             MonoType::Uint => match with {
                 Kind::Addable
@@ -312,7 +311,6 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable => Ok(Substitution::empty()),
-                _ => Err(Error::cannot_constrain(self, with)),
             },
             MonoType::String => match with {
                 Kind::Addable | Kind::Comparable | Kind::Equatable | Kind::Nullable => {

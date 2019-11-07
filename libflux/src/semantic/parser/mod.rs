@@ -417,13 +417,13 @@ impl Parser<'_> {
         if token.token_type != TokenType::LEFTSQUAREBRAC {
             Err("Not a valid array monotype")
         } else {
-            let mut token = self.next();
+            let _ = self.next();
 
             // recursively parse the array's monotype
             let monotype = self.parse_monotype();
             match monotype {
                 Ok(monotype) => {
-                    token = self.next();
+                    let token = self.next();
                     if token.token_type == TokenType::RIGHTSQUAREBRAC {
                         Ok(MonoType::Arr(Box::new(Array(monotype))))
                     } else {
@@ -512,14 +512,10 @@ impl Parser<'_> {
         &mut self,
         token: &Token,
     ) -> Result<(String, MonoType), &'static str> {
-        let mut arg_var = String::new();
-
-        match &token.text {
+        let arg_var = match &token.text {
             None => return Err("Invalid format for required arguments"),
-            Some(var) => {
-                arg_var = var.to_string();
-            }
-        }
+            Some(var) => { var.to_string() },
+        };
 
         let token = self.next();
         if token.token_type != TokenType::COLON {

@@ -25,6 +25,7 @@ export GO_TEST_FLAGS=
 export GO_GENERATE=go generate $(GO_ARGS)
 export GO_VET=env GO111MODULE=on go vet $(GO_ARGS)
 export CARGO=cargo
+export CARGO_ARGS=--features strict
 
 define go_deps
 	$(shell env GO111MODULE=on go list -f "{{range .GoFiles}} {{$$.Dir}}/{{.}}{{end}}" $(1))
@@ -68,7 +69,7 @@ libflux: libflux/target/debug/libflux.a
 # The unix sed, which is on darwin machines, has a different
 # command line interface than the gnu equivalent.
 libflux/target/debug/libflux.a:
-	cd libflux && $(CARGO) build
+	cd libflux && $(CARGO) build $(CARGO_ARGS)
 
 # The dependency file produced by Rust appears to be wrong and uses
 # absolute paths while we use relative paths everywhere. So we need
@@ -133,7 +134,7 @@ test-go: libflux
 	$(GO_TEST) $(GO_TEST_FLAGS) ./...
 
 test-rust:
-	cd libflux && $(CARGO) test
+	cd libflux && $(CARGO) test $(CARGO_ARGS)
 
 test-race: libflux
 	$(GO_TEST) -race -count=1 ./...
