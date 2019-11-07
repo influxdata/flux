@@ -1,7 +1,7 @@
 use crate::ast;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes::*;
-use crate::semantic::types::{MonoType, PolyType};
+use crate::semantic::types::MonoType;
 use std::result;
 
 type SemanticError = String;

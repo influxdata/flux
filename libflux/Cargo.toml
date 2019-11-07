@@ -7,6 +7,9 @@ edition = "2018"
 [lib]
 crate-type = ["rlib", "staticlib", "cdylib"]
 
+[features]
+strict = []
+
 [dependencies]
 serde = "^1.0.59"
 serde_derive = "^1.0.59"

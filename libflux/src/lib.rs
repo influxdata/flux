@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "strict", deny(warnings))]
+
 extern crate chrono;
 #[macro_use]
 extern crate serde_derive;
@@ -14,6 +16,7 @@ use std::os::raw::{c_char, c_void};
 
 use parser::Parser;
 
+#[allow(non_camel_case_types)]
 pub mod ctypes {
     include!(concat!(env!("OUT_DIR"), "/ctypes.rs"));
 }

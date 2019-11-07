@@ -33,7 +33,6 @@ use crate::semantic::types::PolyType;
 use crate::ast;
 use crate::parser::parse_string;
 
-#[cfg(test)]
 use colored::*;
 
 fn parse_program(src: &str) -> ast::Package {
@@ -74,19 +73,18 @@ fn parse_program(src: &str) -> ast::Package {
 ///
 macro_rules! test_infer {
     (
-        $(env: $env:expr,)?
+        env: $env:expr,
         src: $src:expr,
-        exp: $exp:expr,
-    ) => {
-        let mut m = HashMap::new();
+        exp: $exp:expr $(,)?
+    ) => {{
         let mut f = Fresher::new();
-
-        $(
-            for (name, expr) in $env {
+        let m: HashMap<_, _> = $env
+            .iter()
+            .map(|(name, expr)| {
                 let poly = parse(expr).unwrap().normalize(&mut f);
-                m.insert(name.to_string(), poly);
-            }
-        )?
+                return (name.to_string(), poly);
+            })
+            .collect();
 
         let pkg = parse_program($src);
 
@@ -124,7 +122,11 @@ macro_rules! test_infer {
                 got.iter().fold(String::new(), |acc, (name, poly)| acc
                     + &format!("\t{}: {}\n", name, poly)),)
         }
-    };
+    }};
+    ( src: $src:expr, exp: $exp:expr $(,)? ) => {{
+        let env: Vec<(&str, &str)> = Vec::new();
+        test_infer!(env: env, src: $src, exp: $exp);
+    }};
 }
 
 /// The test_infer_err! macro generates test cases that don't type check.
@@ -147,18 +149,17 @@ macro_rules! test_infer {
 ///
 macro_rules! test_infer_err {
     (
-        $(env: $env:expr,)?
-        src: $src:expr,
-    ) => {
-        let mut m = HashMap::new();
+        env: $env:expr,
+        src: $src:expr $(,)?
+    ) => {{
         let mut f = Fresher::new();
-
-        $(
-            for (name, expr) in $env {
+        let m: HashMap<_, _> = $env
+            .iter()
+            .map(|(name, expr)| {
                 let poly = parse(expr).unwrap().normalize(&mut f);
-                m.insert(name.to_string(), poly);
-            }
-        )?
+                return (name.to_string(), poly);
+            })
+            .collect();
 
         let pkg = parse_program($src);
 
@@ -172,7 +173,11 @@ macro_rules! test_infer_err {
                 env.values.iter().fold(String::new(), |acc, (name, poly)| acc
                     + &format!("\t{}: {}\n", name, poly)))
         };
-    };
+    }};
+    ( src: $src:expr $(,)? ) => {{
+        let env: Vec<(&str, &str)> = Vec::new();
+        test_infer_err!(env: env, src: $src);
+    }};
 }
 
 #[test]
