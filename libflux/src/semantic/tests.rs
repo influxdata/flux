@@ -28,12 +28,12 @@ use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes;
 use crate::semantic::parser::parse;
-use crate::semantic::types::PolyType;
+use crate::semantic::sub::Substitutable;
+use crate::semantic::types::{MaxTvar, MonoType, PolyType};
 
 use crate::ast;
 use crate::parser::parse_string;
 
-#[cfg(test)]
 use colored::*;
 
 fn parse_program(src: &str) -> ast::Package {
@@ -45,6 +45,22 @@ fn parse_program(src: &str) -> ast::Package {
         package: "main".to_string(),
         files: vec![file],
     }
+}
+
+fn validate(t: PolyType) -> Result<PolyType, String> {
+    if let MonoType::Var(_) = t.expr {
+        return Err(format!(
+            "polymorphic values not allowed in type environment: {}",
+            t
+        ));
+    }
+    if !t.free_vars().is_empty() {
+        return Err(format!(
+            "free variables not allowed in type environment: {}",
+            t
+        ));
+    }
+    return Ok(t);
 }
 
 /// The test_infer! macro generates test cases for type inference.
@@ -78,40 +94,45 @@ macro_rules! test_infer {
         src: $src:expr,
         exp: $exp:expr $(,)?
     ) => {{
-        let mut f = Fresher::new();
-        let m: HashMap<_, _> = $env
+        // Parse polytype expressions in initial environment
+        let env: HashMap<String, PolyType> = $env
             .iter()
             .map(|(name, expr)| {
-                let poly = parse(expr).unwrap().normalize(&mut f);
+                let init = parse(expr).unwrap();
+                let poly = validate(init).unwrap();
                 return (name.to_string(), poly);
             })
             .collect();
 
-        let pkg = parse_program($src);
-
-        let types = match nodes::infer_pkg_types(
-            &mut analyze(pkg, &mut f).unwrap(),
-            Environment::new(m.into()),
-            &mut f,
-        ) {
-            Err(err) => panic!("unexpected type error: {}", err.to_string()),
-            Ok((e, _)) => e.values,
-        };
-
-        let got: HashMap<String, PolyType> = types
-            .into_iter()
-            .map(|(name, poly)| (name, poly.normalize(&mut Fresher::new())))
-            .collect();
-
+        // Parse polytype expressions in expected environment
         let want: HashMap<String, PolyType> = $exp
             .iter()
             .map(|(name, expr)| {
-                (
-                    name.to_string(),
-                    parse(expr).unwrap().normalize(&mut Fresher::new()),
-                )
+                let init = parse(expr).unwrap();
+                let poly = validate(init).unwrap();
+                return (name.to_string(), poly);
             })
             .collect();
+
+        // Compute the maximum type variable in the environment
+        // and initialize a fresher with this type variable.
+        let max = env.max_tvar();
+        let mut f = Fresher::from(max.0 + 1);
+
+        let pkg = parse_program($src);
+
+        let got = match nodes::infer_pkg_types(
+            &mut analyze(pkg, &mut f).unwrap(),
+            Environment::new(env.into()),
+            &mut f,
+        ) {
+            Err(err) => panic!(
+                "\n\n{}: {}\n\n",
+                "unexpected type error".red().bold(),
+                err.to_string(),
+            ),
+            Ok((env, _)) => env.values,
+        };
 
         if want != got {
             panic!(
@@ -155,20 +176,26 @@ macro_rules! test_infer_err {
         env: $env:expr,
         src: $src:expr $(,)?
     ) => {{
-        let mut f = Fresher::new();
-        let m: HashMap<_, _> = $env
+        // Parse polytype expressions in initial environment
+        let env: HashMap<String, PolyType> = $env
             .iter()
             .map(|(name, expr)| {
-                let poly = parse(expr).unwrap().normalize(&mut f);
+                let init = parse(expr).unwrap();
+                let poly = validate(init).unwrap();
                 return (name.to_string(), poly);
             })
             .collect();
+
+        // Compute the maximum type variable in the environment
+        // and initialize a fresher with this type variable.
+        let max = env.max_tvar();
+        let mut f = Fresher::from(max.0 + 1);
 
         let pkg = parse_program($src);
 
         if let Ok((env, _)) = nodes::infer_pkg_types(
             &mut analyze(pkg, &mut f).unwrap(),
-            Environment::new(m.into()),
+            Environment::new(env.into()),
             &mut f,
         ) {
             panic!(

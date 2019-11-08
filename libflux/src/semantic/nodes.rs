@@ -1007,7 +1007,7 @@ mod tests {
         let normalized: HashMap<String, PolyType> = env
             .values
             .into_iter()
-            .map(|(k, v)| (k, v.normalize(&mut Fresher::new())))
+            .map(|(k, v)| (k, v.fresh(&mut Fresher::new())))
             .collect();
 
         assert_eq!(

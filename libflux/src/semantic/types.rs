@@ -8,7 +8,7 @@ use std::{
     fmt,
 };
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct PolyType {
     pub vars: Vec<Tvar>,
     pub cons: HashMap<Tvar, Vec<Kind>>,
@@ -37,6 +37,22 @@ impl fmt::Display for PolyType {
     }
 }
 
+impl PartialEq for PolyType {
+    fn eq(&self, poly: &Self) -> bool {
+        let a: Tvar = self.max_tvar();
+        let b: Tvar = poly.max_tvar();
+
+        let max = if a > b { a.0 } else { b.0 };
+
+        let mut f = Fresher::from(max + 1);
+        let mut g = Fresher::from(max + 1);
+
+        self.clone()
+            .fresh(&mut f)
+            .equal(&poly.clone().fresh(&mut g))
+    }
+}
+
 impl Substitutable for PolyType {
     fn apply(self, sub: &Substitution) -> Self {
         PolyType {
@@ -50,10 +66,31 @@ impl Substitutable for PolyType {
     }
 }
 
+impl MaxTvar for Vec<Tvar> {
+    fn max_tvar(&self) -> Tvar {
+        self.iter()
+            .fold(Tvar(0), |max, tv| if *tv > max { *tv } else { max })
+    }
+}
+
+impl MaxTvar for PolyType {
+    fn max_tvar(&self) -> Tvar {
+        vec![self.vars.max_tvar(), self.expr.max_tvar()].max_tvar()
+    }
+}
+
 impl PolyType {
-    // Normalize a polytype's free variables by replacing them with
-    // new fresh variables starting from t0.
-    pub fn normalize(self, f: &mut Fresher) -> Self {
+    // Fresh takes a polytype and generates an equivalent polytype but with
+    // completely fresh type variables.
+    //
+    // Note in order to be sure that the retured polytype is equivalent to
+    // the one that was passed in, the fresher 'f' must generate type
+    // variables that do not exist in the given polytype. In order to ensure
+    // that this is the case, one should use a fresher that is instantiated
+    // with a type variable that is strictly greater than all other type
+    // variables in the given polytype.
+    //
+    pub fn fresh(self, f: &mut Fresher) -> Self {
         let mut sub = HashMap::new();
         for tv in &self.vars {
             sub.insert(*tv, f.fresh());
@@ -100,6 +137,9 @@ impl PolyType {
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
             .join(" + ")
+    }
+    fn equal(&self, poly: &PolyType) -> bool {
+        self.vars == poly.vars && self.cons == poly.cons && self.expr == poly.expr
     }
 }
 
@@ -266,6 +306,25 @@ impl Substitutable for MonoType {
     }
 }
 
+impl MaxTvar for MonoType {
+    fn max_tvar(&self) -> Tvar {
+        match self {
+            MonoType::Bool
+            | MonoType::Int
+            | MonoType::Uint
+            | MonoType::Float
+            | MonoType::String
+            | MonoType::Duration
+            | MonoType::Time
+            | MonoType::Regexp => Tvar(0),
+            MonoType::Var(tvr) => tvr.max_tvar(),
+            MonoType::Arr(arr) => arr.max_tvar(),
+            MonoType::Row(obj) => obj.max_tvar(),
+            MonoType::Fun(fun) => fun.max_tvar(),
+        }
+    }
+}
+
 impl From<Row> for MonoType {
     fn from(r: Row) -> MonoType {
         MonoType::Row(Box::new(r))
@@ -381,6 +440,12 @@ impl fmt::Display for Tvar {
     }
 }
 
+impl MaxTvar for Tvar {
+    fn max_tvar(&self) -> Tvar {
+        *self
+    }
+}
+
 impl Tvar {
     fn unify(self, with: MonoType, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         match with {
@@ -471,6 +536,12 @@ impl Substitutable for Array {
     }
 }
 
+impl MaxTvar for Array {
+    fn max_tvar(&self) -> Tvar {
+        self.0.max_tvar()
+    }
+}
+
 impl Array {
     fn unify(
         self,
@@ -527,6 +598,15 @@ impl Substitutable for Row {
         match self {
             Row::Empty => Vec::new(),
             Row::Extension { head, tail } => union(tail.free_vars(), head.v.free_vars()),
+        }
+    }
+}
+
+impl MaxTvar for Row {
+    fn max_tvar(&self) -> Tvar {
+        match self {
+            Row::Empty => Tvar(0),
+            Row::Extension { head, tail } => vec![head.max_tvar(), tail.max_tvar()].max_tvar(),
         }
     }
 }
@@ -729,6 +809,12 @@ impl Substitutable for Property {
     }
 }
 
+impl MaxTvar for Property {
+    fn max_tvar(&self) -> Tvar {
+        self.v.max_tvar()
+    }
+}
+
 // Function represents a function type.
 //
 // A function type is defined by as set of required arguments,
@@ -841,6 +927,35 @@ impl Substitutable for Function {
     }
 }
 
+impl<T: MaxTvar> MaxTvar for HashMap<String, T> {
+    fn max_tvar(&self) -> Tvar {
+        self.iter()
+            .map(|(_, t)| t.max_tvar())
+            .fold(Tvar(0), |max, tv| if tv > max { tv } else { max })
+    }
+}
+
+impl<T: MaxTvar> MaxTvar for Option<T> {
+    fn max_tvar(&self) -> Tvar {
+        match self {
+            None => Tvar(0),
+            Some(t) => t.max_tvar(),
+        }
+    }
+}
+
+impl MaxTvar for Function {
+    fn max_tvar(&self) -> Tvar {
+        vec![
+            self.req.max_tvar(),
+            self.opt.max_tvar(),
+            self.pipe.max_tvar(),
+            self.retn.max_tvar(),
+        ]
+        .max_tvar()
+    }
+}
+
 impl Function {
     fn unify(self, _: Self, _: &mut TvarKinds) -> Result<Substitution, Error> {
         unimplemented!();
@@ -862,6 +977,10 @@ impl Function {
                 || self.retn.contains(tv)
         }
     }
+}
+
+pub trait MaxTvar {
+    fn max_tvar(&self) -> Tvar;
 }
 
 #[cfg(test)]
