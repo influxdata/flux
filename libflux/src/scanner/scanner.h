@@ -75,18 +75,13 @@ WASM_EXPORT int scan(
     const unsigned char *data,
     const unsigned char *pe,
     const unsigned char *eof,
-
     const unsigned char **last_newline,
     unsigned int *cur_line,
-
     unsigned int *token,
     unsigned int *token_start,
     unsigned int *token_start_line,
     unsigned int *token_start_col,
     unsigned int *token_end,
     unsigned int *token_end_line,
-    unsigned int *token_end_col,
-
-    const unsigned int **newlines,
-    unsigned int *newlines_len
+    unsigned int *token_end_col
 );

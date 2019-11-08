@@ -236,8 +236,14 @@ fn test_scan() {
             lit: String::from(""),
             start_offset: 39,
             end_offset: 39,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
+            start_pos: Position {
+                line: 1,
+                column: 40
+            },
+            end_pos: Position {
+                line: 1,
+                column: 40
+            }
         }
     );
 }
@@ -349,8 +355,14 @@ fn test_scan_with_regex() {
             lit: String::from(""),
             start_offset: 22,
             end_offset: 22,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
+            start_pos: Position {
+                line: 1,
+                column: 23
+            },
+            end_pos: Position {
+                line: 1,
+                column: 23
+            }
         }
     );
 }
@@ -933,8 +945,14 @@ fn test_scan_unread() {
             lit: String::from(""),
             start_offset: 9,
             end_offset: 9,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
+            start_pos: Position {
+                line: 1,
+                column: 10
+            },
+            end_pos: Position {
+                line: 1,
+                column: 10
+            }
         }
     );
 }
@@ -1034,8 +1052,14 @@ a
             lit: String::from(""),
             start_offset: 114,
             end_offset: 114,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
+            start_pos: Position {
+                line: 7,
+                column: 18
+            },
+            end_pos: Position {
+                line: 7,
+                column: 18
+            }
         }
     );
 
@@ -1071,8 +1095,14 @@ a
             lit: String::from(""),
             start_offset: 114,
             end_offset: 114,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
+            start_pos: Position {
+                line: 7,
+                column: 18
+            },
+            end_pos: Position {
+                line: 7,
+                column: 18
+            }
         }
     );
 }
@@ -1090,8 +1120,8 @@ fn test_scan_eof() {
             lit: String::from(""),
             start_offset: 0,
             end_offset: 0,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
+            start_pos: Position { line: 1, column: 1 },
+            end_pos: Position { line: 1, column: 1 }
         }
     );
     assert_eq!(
@@ -1101,8 +1131,8 @@ fn test_scan_eof() {
             lit: String::from(""),
             start_offset: 0,
             end_offset: 0,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
+            start_pos: Position { line: 1, column: 1 },
+            end_pos: Position { line: 1, column: 1 }
         }
     );
     assert_eq!(
@@ -1112,8 +1142,8 @@ fn test_scan_eof() {
             lit: String::from(""),
             start_offset: 0,
             end_offset: 0,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
+            start_pos: Position { line: 1, column: 1 },
+            end_pos: Position { line: 1, column: 1 }
         }
     );
     assert_eq!(
@@ -1123,8 +1153,8 @@ fn test_scan_eof() {
             lit: String::from(""),
             start_offset: 0,
             end_offset: 0,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
+            start_pos: Position { line: 1, column: 1 },
+            end_pos: Position { line: 1, column: 1 }
         }
     );
     assert_eq!(
@@ -1134,8 +1164,8 @@ fn test_scan_eof() {
             lit: String::from(""),
             start_offset: 0,
             end_offset: 0,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
+            start_pos: Position { line: 1, column: 1 },
+            end_pos: Position { line: 1, column: 1 }
         }
     );
     assert_eq!(
@@ -1145,8 +1175,8 @@ fn test_scan_eof() {
             lit: String::from(""),
             start_offset: 0,
             end_offset: 0,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
+            start_pos: Position { line: 1, column: 1 },
+            end_pos: Position { line: 1, column: 1 }
         }
     );
 }
@@ -1170,8 +1200,8 @@ fn test_scan_eof_trailing_spaces() {
             lit: String::from(""),
             start_offset: 7,
             end_offset: 7,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
+            start_pos: Position { line: 2, column: 5 },
+            end_pos: Position { line: 2, column: 5 }
         }
     );
 
@@ -1184,8 +1214,8 @@ fn test_scan_eof_trailing_spaces() {
             lit: String::from(""),
             start_offset: 7,
             end_offset: 7,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
+            start_pos: Position { line: 2, column: 5 },
+            end_pos: Position { line: 2, column: 5 }
         }
     );
 }
@@ -1422,261 +1452,14 @@ fn test_scan_duration() {
             lit: String::from(""),
             start_offset: 33,
             end_offset: 33,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
-        }
-    );
-}
-
-#[test]
-fn test_scan_newlines() {
-    let text = r#"multiline_string = "I
-am
-a
-multiline
-string.
-"
-
-// I am a
-// comment.
-
-1
-2
-3
-
-4
-// comment.
-"#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
-    assert_eq!(s.lines, vec![0]);
-    s.scan(); // multiline_string
-    s.scan(); // =
-    s.scan(); // "..."
-    s.scan(); // // I am a\n// comment.
-    s.scan(); // "1"
-    s.scan(); // "2"
-    s.scan(); // "3"
-    s.scan(); // "4"
-    s.scan(); // // comment.\nEOF
-    s.scan(); // EOF
-
-    // we don't care of the intermediate steps for s.lines.
-    // Only the final result is important.
-    assert_eq!(
-        s.lines,
-        vec![0, 22, 25, 27, 37, 45, 47, 48, 58, 70, 71, 73, 75, 77, 78, 80, 92]
-    );
-
-    // with regex
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
-    assert_eq!(s.lines, vec![0]);
-    s.scan_with_regex(); // multiline_string
-    s.scan_with_regex(); // =
-    s.scan_with_regex(); // "..."
-    s.scan_with_regex(); // // I am a\n// comment.
-    s.scan_with_regex(); // "1"
-    s.scan_with_regex(); // "2"
-    s.scan_with_regex(); // "3"
-    s.scan_with_regex(); // "4"
-    s.scan_with_regex(); // // comment.\nEOF
-    s.scan_with_regex(); // EOF
-    assert_eq!(
-        s.lines,
-        vec![0, 22, 25, 27, 37, 45, 47, 48, 58, 70, 71, 73, 75, 77, 78, 80, 92]
-    );
-}
-
-#[test]
-fn test_scan_position() {
-    let text = r#"ms = "multiline
-string
-"
-
-// comment
-
-c = 1 + 2
-
-
-
-
-"#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
-    assert_eq!(
-        s.scan(),
-        Token {
-            tok: TOK_IDENT,
-            lit: String::from("ms"),
-            start_offset: 0,
-            end_offset: 2,
-            start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 3 }
-        }
-    );
-    assert_eq!(s.pos(0), Position { line: 1, column: 1 });
-    assert_eq!(
-        s.scan(),
-        Token {
-            tok: TOK_ASSIGN,
-            lit: String::from("="),
-            start_offset: 3,
-            end_offset: 4,
-            start_pos: Position { line: 1, column: 4 },
-            end_pos: Position { line: 1, column: 5 }
-        }
-    );
-    assert_eq!(s.pos(3), Position { line: 1, column: 4 });
-    assert_eq!(
-        s.scan(),
-        Token {
-            tok: TOK_STRING,
-            lit: String::from("\"multiline\nstring\n\""),
-            start_offset: 5,
-            end_offset: 24,
-            start_pos: Position { line: 1, column: 6 },
-            end_pos: Position { line: 3, column: 2 }
-        }
-    );
-    assert_eq!(s.pos(5), Position { line: 1, column: 6 });
-    assert_eq!(s.pos(16), Position { line: 2, column: 1 });
-    assert_eq!(s.pos(20), Position { line: 2, column: 5 });
-    assert_eq!(s.pos(23), Position { line: 3, column: 1 });
-    assert_eq!(s.pos(24), Position { line: 3, column: 2 });
-    assert_eq!(
-        s.scan(),
-        Token {
-            tok: TOK_IDENT,
-            lit: String::from("c"),
-            start_offset: 38,
-            end_offset: 39,
-            start_pos: Position { line: 7, column: 1 },
-            end_pos: Position { line: 7, column: 2 }
-        }
-    );
-    assert_eq!(s.pos(38), Position { line: 7, column: 1 });
-    assert_eq!(
-        s.scan(),
-        Token {
-            tok: TOK_ASSIGN,
-            lit: String::from("="),
-            start_offset: 40,
-            end_offset: 41,
-            start_pos: Position { line: 7, column: 3 },
-            end_pos: Position { line: 7, column: 4 }
-        }
-    );
-    assert_eq!(s.pos(40), Position { line: 7, column: 3 });
-    assert_eq!(
-        s.scan(),
-        Token {
-            tok: TOK_INT,
-            lit: String::from("1"),
-            start_offset: 42,
-            end_offset: 43,
-            start_pos: Position { line: 7, column: 5 },
-            end_pos: Position { line: 7, column: 6 }
-        }
-    );
-    assert_eq!(s.pos(42), Position { line: 7, column: 5 });
-    assert_eq!(
-        s.scan(),
-        Token {
-            tok: TOK_ADD,
-            lit: String::from("+"),
-            start_offset: 44,
-            end_offset: 45,
-            start_pos: Position { line: 7, column: 7 },
-            end_pos: Position { line: 7, column: 8 }
-        }
-    );
-    assert_eq!(s.pos(44), Position { line: 7, column: 7 });
-    assert_eq!(
-        s.scan(),
-        Token {
-            tok: TOK_INT,
-            lit: String::from("2"),
-            start_offset: 46,
-            end_offset: 47,
-            start_pos: Position { line: 7, column: 9 },
+            start_pos: Position {
+                line: 1,
+                column: 34
+            },
             end_pos: Position {
-                line: 7,
-                column: 10
+                line: 1,
+                column: 34
             }
-        }
-    );
-    assert_eq!(s.pos(46), Position { line: 7, column: 9 });
-    assert_eq!(
-        s.scan(),
-        Token {
-            tok: TOK_EOF,
-            lit: String::from(""),
-            start_offset: 52,
-            end_offset: 52,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
-        }
-    );
-    assert_eq!(s.pos(48), Position { line: 8, column: 1 });
-    assert_eq!(s.pos(49), Position { line: 9, column: 1 });
-    assert_eq!(
-        s.pos(50),
-        Position {
-            line: 10,
-            column: 1,
-        }
-    );
-    assert_eq!(
-        s.pos(51),
-        Position {
-            line: 11,
-            column: 1,
-        }
-    );
-    assert_eq!(
-        s.pos(52),
-        Position {
-            line: 12,
-            column: 1,
-        }
-    );
-
-    // Ok, now re-assert every position without scanning.
-    // The scanner should keep the position unchanged.
-    assert_eq!(s.pos(0), Position { line: 1, column: 1 });
-    assert_eq!(s.pos(3), Position { line: 1, column: 4 });
-    assert_eq!(s.pos(5), Position { line: 1, column: 6 });
-    assert_eq!(s.pos(16), Position { line: 2, column: 1 });
-    assert_eq!(s.pos(20), Position { line: 2, column: 5 });
-    assert_eq!(s.pos(23), Position { line: 3, column: 1 });
-    assert_eq!(s.pos(24), Position { line: 3, column: 2 });
-    assert_eq!(s.pos(38), Position { line: 7, column: 1 });
-    assert_eq!(s.pos(40), Position { line: 7, column: 3 });
-    assert_eq!(s.pos(42), Position { line: 7, column: 5 });
-    assert_eq!(s.pos(44), Position { line: 7, column: 7 });
-    assert_eq!(s.pos(46), Position { line: 7, column: 9 });
-    assert_eq!(s.pos(48), Position { line: 8, column: 1 });
-    assert_eq!(s.pos(49), Position { line: 9, column: 1 });
-    assert_eq!(
-        s.pos(50),
-        Position {
-            line: 10,
-            column: 1,
-        }
-    );
-    assert_eq!(
-        s.pos(51),
-        Position {
-            line: 11,
-            column: 1,
-        }
-    );
-    assert_eq!(
-        s.pos(52),
-        Position {
-            line: 12,
-            column: 1,
         }
     );
 }
@@ -1708,7 +1491,7 @@ c = 1 + 2
             end_pos: Position { line: 1, column: 3 }
         }
     );
-    assert_eq!(0, s.offset(Position { line: 1, column: 1 }));
+    assert_eq!(0, s.offset(&Position { line: 1, column: 1 }));
     assert_eq!(
         s.scan(),
         Token {
@@ -1720,7 +1503,7 @@ c = 1 + 2
             end_pos: Position { line: 1, column: 5 }
         }
     );
-    assert_eq!(3, s.offset(Position { line: 1, column: 4 }));
+    assert_eq!(3, s.offset(&Position { line: 1, column: 4 }));
     assert_eq!(
         s.scan(),
         Token {
@@ -1732,11 +1515,8 @@ c = 1 + 2
             end_pos: Position { line: 3, column: 2 }
         }
     );
-    assert_eq!(5, s.offset(Position { line: 1, column: 6 }));
-    assert_eq!(16, s.offset(Position { line: 2, column: 1 }));
-    assert_eq!(20, s.offset(Position { line: 2, column: 5 }));
-    assert_eq!(23, s.offset(Position { line: 3, column: 1 }));
-    assert_eq!(24, s.offset(Position { line: 3, column: 2 }));
+    assert_eq!(5, s.offset(&Position { line: 1, column: 6 }));
+    assert_eq!(24, s.offset(&Position { line: 3, column: 2 }));
     assert_eq!(
         s.scan(),
         Token {
@@ -1748,7 +1528,7 @@ c = 1 + 2
             end_pos: Position { line: 7, column: 2 }
         }
     );
-    assert_eq!(38, s.offset(Position { line: 7, column: 1 }));
+    assert_eq!(38, s.offset(&Position { line: 7, column: 1 }));
     assert_eq!(
         s.scan(),
         Token {
@@ -1760,7 +1540,7 @@ c = 1 + 2
             end_pos: Position { line: 7, column: 4 }
         }
     );
-    assert_eq!(40, s.offset(Position { line: 7, column: 3 }));
+    assert_eq!(40, s.offset(&Position { line: 7, column: 3 }));
     assert_eq!(
         s.scan(),
         Token {
@@ -1772,7 +1552,7 @@ c = 1 + 2
             end_pos: Position { line: 7, column: 6 }
         }
     );
-    assert_eq!(42, s.offset(Position { line: 7, column: 5 }));
+    assert_eq!(42, s.offset(&Position { line: 7, column: 5 }));
     assert_eq!(
         s.scan(),
         Token {
@@ -1784,7 +1564,7 @@ c = 1 + 2
             end_pos: Position { line: 7, column: 8 }
         }
     );
-    assert_eq!(44, s.offset(Position { line: 7, column: 7 }));
+    assert_eq!(44, s.offset(&Position { line: 7, column: 7 }));
     assert_eq!(
         s.scan(),
         Token {
@@ -1799,7 +1579,7 @@ c = 1 + 2
             }
         }
     );
-    assert_eq!(46, s.offset(Position { line: 7, column: 9 }));
+    assert_eq!(46, s.offset(&Position { line: 7, column: 9 }));
     assert_eq!(
         s.scan(),
         Token {
@@ -1807,67 +1587,45 @@ c = 1 + 2
             lit: String::from(""),
             start_offset: 52,
             end_offset: 52,
-            start_pos: Position { line: 0, column: 0 },
-            end_pos: Position { line: 0, column: 0 }
+            start_pos: Position {
+                line: 12,
+                column: 1
+            },
+            end_pos: Position {
+                line: 12,
+                column: 1
+            }
         }
     );
-    assert_eq!(48, s.offset(Position { line: 8, column: 1 }));
-    assert_eq!(49, s.offset(Position { line: 9, column: 1 }));
     assert_eq!(
-        50,
-        s.offset(Position {
-            line: 10,
-            column: 1,
-        })
-    );
-    assert_eq!(
-        51,
-        s.offset(Position {
-            line: 11,
-            column: 1,
+        47,
+        s.offset(&Position {
+            line: 7,
+            column: 10
         })
     );
     assert_eq!(
         52,
-        s.offset(Position {
+        s.offset(&Position {
             line: 12,
-            column: 1,
+            column: 1
         })
     );
 
     // Ok, now re-assert every offset without scanning.
     // The scanner should keep the position unchanged.
-    assert_eq!(0, s.offset(Position { line: 1, column: 1 }));
-    assert_eq!(3, s.offset(Position { line: 1, column: 4 }));
-    assert_eq!(5, s.offset(Position { line: 1, column: 6 }));
-    assert_eq!(16, s.offset(Position { line: 2, column: 1 }));
-    assert_eq!(20, s.offset(Position { line: 2, column: 5 }));
-    assert_eq!(23, s.offset(Position { line: 3, column: 1 }));
-    assert_eq!(24, s.offset(Position { line: 3, column: 2 }));
-    assert_eq!(38, s.offset(Position { line: 7, column: 1 }));
-    assert_eq!(40, s.offset(Position { line: 7, column: 3 }));
-    assert_eq!(42, s.offset(Position { line: 7, column: 5 }));
-    assert_eq!(44, s.offset(Position { line: 7, column: 7 }));
-    assert_eq!(46, s.offset(Position { line: 7, column: 9 }));
-    assert_eq!(48, s.offset(Position { line: 8, column: 1 }));
-    assert_eq!(49, s.offset(Position { line: 9, column: 1 }));
-    assert_eq!(
-        50,
-        s.offset(Position {
-            line: 10,
-            column: 1,
-        })
-    );
-    assert_eq!(
-        51,
-        s.offset(Position {
-            line: 11,
-            column: 1,
-        })
-    );
+    assert_eq!(0, s.offset(&Position { line: 1, column: 1 }));
+    assert_eq!(3, s.offset(&Position { line: 1, column: 4 }));
+    assert_eq!(5, s.offset(&Position { line: 1, column: 6 }));
+    assert_eq!(24, s.offset(&Position { line: 3, column: 2 }));
+    assert_eq!(38, s.offset(&Position { line: 7, column: 1 }));
+    assert_eq!(40, s.offset(&Position { line: 7, column: 3 }));
+    assert_eq!(42, s.offset(&Position { line: 7, column: 5 }));
+    assert_eq!(44, s.offset(&Position { line: 7, column: 7 }));
+    assert_eq!(46, s.offset(&Position { line: 7, column: 9 }));
     assert_eq!(
         52,
-        s.offset(Position {
+        s.offset(&Position {
             line: 12,
             column: 1,
         })
