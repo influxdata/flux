@@ -23,7 +23,7 @@ impl fmt::Display for PolyType {
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
             .join(", ");
-        if self.cons.len() == 0 {
+        if self.cons.is_empty() {
             write!(f, "forall [{}] {}", vars, self.expr)
         } else {
             write!(
