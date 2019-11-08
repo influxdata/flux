@@ -27,6 +27,10 @@ impl Constraints {
     pub fn empty() -> Constraints {
         Constraints(Vec::new())
     }
+
+    pub fn add(&mut self, cons: Constraint) {
+        self.0.push(cons);
+    }
 }
 
 // Constraints can be added using the '+' operator
