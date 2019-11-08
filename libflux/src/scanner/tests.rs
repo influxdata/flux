@@ -940,6 +940,61 @@ fn test_scan_unread() {
 }
 
 #[test]
+fn test_scan_unread_with_newlines() {
+    let text = r#"regex =
+
+
+/foo/"#;
+    let cdata = CString::new(text).expect("CString::new failed");
+    let mut s = Scanner::new(cdata);
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_IDENT,
+            lit: String::from("regex"),
+            start_offset: 0,
+            end_offset: 5,
+            start_pos: Position { line: 1, column: 1 },
+            end_pos: Position { line: 1, column: 6 },
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_ASSIGN,
+            lit: String::from("="),
+            start_offset: 6,
+            end_offset: 7,
+            start_pos: Position { line: 1, column: 7 },
+            end_pos: Position { line: 1, column: 8 },
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_DIV,
+            lit: String::from("/"),
+            start_offset: 10,
+            end_offset: 11,
+            start_pos: Position { line: 4, column: 1 },
+            end_pos: Position { line: 4, column: 2 },
+        }
+    );
+    s.unread();
+    assert_eq!(
+        s.scan_with_regex(),
+        Token {
+            tok: TOK_REGEX,
+            lit: String::from("/foo/"),
+            start_offset: 10,
+            end_offset: 15,
+            start_pos: Position { line: 4, column: 1 },
+            end_pos: Position { line: 4, column: 6 },
+        }
+    );
+}
+
+#[test]
 fn test_scan_comments() {
     let text = r#"// this is a comment.
 a

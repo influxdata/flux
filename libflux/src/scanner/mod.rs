@@ -14,6 +14,8 @@ pub struct Scanner {
     last_newline: *const CChar,
     cur_line: u32,
     checkpoint: *const CChar,
+    checkpoint_line: u32,
+    checkpoint_last_newline: *const CChar,
     token: TOK,
     ts: u32,
     te: u32,
@@ -55,6 +57,8 @@ impl Scanner {
             lines: vec![0],
             token: TOK_ILLEGAL,
             checkpoint: ptr as *const CChar,
+            checkpoint_line: 1,
+            checkpoint_last_newline: ptr as *const CChar,
         };
     }
 
@@ -113,6 +117,8 @@ impl Scanner {
             return self.eof();
         }
         self.checkpoint = self.p;
+        self.checkpoint_line = self.cur_line;
+        self.checkpoint_last_newline = self.last_newline;
         unsafe {
             let mut newlines: *const u32 = std::ptr::null();
             let mut no_newlines = 0 as u32;
@@ -199,27 +205,6 @@ impl Scanner {
                 },
             };
 
-            assert_eq!(
-                (
-                    self.token,
-                    Position {
-                        line: token_start_line,
-                        column: token_start_col,
-                    }
-                ),
-                (self.token, self.pos(t.start_offset)),
-            );
-            assert_eq!(
-                (
-                    self.token,
-                    Position {
-                        line: token_end_line,
-                        column: token_end_col,
-                    }
-                ),
-                (self.token, self.pos(t.end_offset)),
-            );
-
             // Skipping comments.
             // TODO(affo): return comments to attach them to nodes within the AST.
             match t {
@@ -237,6 +222,8 @@ impl Scanner {
     // This method is a no-op if called multiple times.
     pub fn unread(&mut self) {
         self.p = self.checkpoint;
+        self.cur_line = self.checkpoint_line;
+        self.last_newline = self.checkpoint_last_newline;
     }
 }
 
