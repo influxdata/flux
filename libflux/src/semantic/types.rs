@@ -416,7 +416,9 @@ impl Tvar {
             cons.remove(&self).unwrap_or(Vec::new()),
             cons.remove(&tv).unwrap_or(Vec::new()),
         );
-        cons.insert(tv, kinds);
+        if !kinds.is_empty() {
+            cons.insert(tv, kinds);
+        }
         Ok(Substitution::from(
             maplit::hashmap! {self => MonoType::Var(tv)},
         ))
