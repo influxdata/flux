@@ -27,12 +27,12 @@ var get = values.NewFunction(
 	"get",
 	semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 		Parameters: map[string]semantic.PolyType{
-			"url":          semantic.String,
-			"headers":      semantic.Tvar(1),
-			"responseType": semantic.String,
+			"url":             semantic.String,
+			"headers":         semantic.Tvar(1),
+			"responseHeaders": semantic.Bool,
 		},
 		Required: []string{"url"},
-		Return:   semantic.NewObjectPolyType(map[string]semantic.PolyType{"statusCode": semantic.Int, "body": semantic.String, "response": semantic.String}, semantic.LabelSet{"status"}, semantic.LabelSet{"status", "body", "res"}),
+		Return:   semantic.NewObjectPolyType(map[string]semantic.PolyType{"statusCode": semantic.Int, "body": semantic.Bytes, "headers": semantic.String}, semantic.LabelSet{"status", "body"}, semantic.LabelSet{"status", "body", "headers"}),
 	}),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		// Get and validate URL
@@ -53,15 +53,13 @@ var get = values.NewFunction(
 			return nil, err
 		}
 
-		// Get and validate responseType
-		var responseTypeValue string
-		responseType, ok := args.Get("responseType")
-		if !ok {
-			responseTypeValue = "PING"
-		} else if responseType.Str() == "BODY" {
-			responseTypeValue = "BODY"
-		} else if responseType.Str() == "ALL" {
-			responseTypeValue = "ALL"
+		// Get and validate responseHeaders
+		var includeResHeaders bool
+		responseHeaders, ok := args.Get("responseHeaders")
+		if !ok || responseHeaders.Type() != semantic.Bool {
+			includeResHeaders = false
+		} else if responseHeaders.Bool() {
+			includeResHeaders = true
 		}
 
 		// Construct HTTP request
@@ -92,7 +90,7 @@ var get = values.NewFunction(
 			return nil, errors.Wrap(err, codes.Aborted, "missing client in http.get")
 		}
 
-		statusCode, body, theRes, err := func(req *http.Request) (int, string, string, error) {
+		statusCode, body, headers, err := func(req *http.Request) (int, []byte, string, error) {
 			s, cctx := opentracing.StartSpanFromContext(ctx, "http.get")
 			s.SetTag("url", req.URL.String())
 			defer s.Finish()
@@ -100,7 +98,7 @@ var get = values.NewFunction(
 			req = req.WithContext(cctx)
 			response, err := dc.Do(req)
 			if err != nil {
-				return 0, "", "", err
+				return 0, nil, "", err
 			}
 
 			// Read the response body but limit how much we will read.
@@ -110,19 +108,17 @@ var get = values.NewFunction(
 			body, err := ioutil.ReadAll(limitedReader)
 			_ = response.Body.Close()
 			if err != nil {
-				return 0, "", "", err
+				return 0, nil, "", err
 			}
 			s.LogFields(
 				log.Int("statusCode", response.StatusCode),
 				log.Int("responseSize", len(body)),
 			)
 
-			if responseTypeValue == "ALL" {
-				return response.StatusCode, string(body), strings.Join(HeaderToArray(response.Header), " "), nil
-			} else if responseTypeValue == "BODY" {
-				return response.StatusCode, string(body), "BODY", nil
+			if includeResHeaders {
+				return response.StatusCode, body, strings.Join(HeaderToArray(response.Header), " "), nil
 			} else {
-				return response.StatusCode, "PING", "PING", nil
+				return response.StatusCode, body, "", nil
 			}
 
 		}(req)
@@ -131,12 +127,12 @@ var get = values.NewFunction(
 		}
 
 		// return the NewObjectPolyMap
-		if theRes == "PING" {
-			return values.NewObjectWithValues(map[string]values.Value{"statusCode": values.NewInt(int64(statusCode))}), nil
-		} else if theRes == "BODY" {
-			return values.NewObjectWithValues(map[string]values.Value{"statusCode": values.NewInt(int64(statusCode)), "body": values.NewString(body)}), nil
+		if headers == "" {
+			return values.NewObjectWithValues(map[string]values.Value{"statusCode": values.NewInt(int64(statusCode)), "body": values.NewBytes(body)}), nil
+		} else {
+			return values.NewObjectWithValues(map[string]values.Value{"statusCode": values.NewInt(int64(statusCode)), "body": values.NewBytes(body), "headers": values.NewString(headers)}), nil
 		}
-		return values.NewObjectWithValues(map[string]values.Value{"statusCode": values.NewInt(int64(statusCode)), "body": values.NewString(body), "response": values.NewString(theRes)}), nil
+
 	},
 	true, // get has side-effects
 )
