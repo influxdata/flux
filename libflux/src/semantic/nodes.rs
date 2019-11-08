@@ -17,9 +17,10 @@ use crate::semantic::{
     fresh::Fresher,
     infer::{Constraint, Constraints},
     sub::{Substitutable, Substitution},
-    types::{Kind, MonoType, PolyType, Tvar},
+    types::{Array, Kind, MonoType, PolyType, Tvar},
 };
 
+use crate::semantic::types::Kind::*;
 use chrono::prelude::DateTime;
 use chrono::Duration;
 use chrono::FixedOffset;
@@ -60,6 +61,16 @@ impl Error {
     }
     fn invalid_statement(msg: String) -> Error {
         Error { msg }
+    }
+    fn unsupported_binary_operator(op: &ast::Operator) -> Error {
+        Error {
+            msg: format!("unsupported binary operator {}", op.to_string()),
+        }
+    }
+    fn unsupported_unary_operator(op: &ast::Operator) -> Error {
+        Error {
+            msg: format!("unsupported unary operator {}", op.to_string()),
+        }
     }
 }
 
@@ -218,7 +229,7 @@ pub struct File {
 }
 
 impl File {
-    fn infer(&mut self, mut env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
         // TODO: add imported types to the type environment
         self.body.iter_mut().try_fold(
             (env, Constraints::empty()),
@@ -431,7 +442,21 @@ pub struct StringExpr {
 
 impl StringExpr {
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+        let mut env = env;
+        let mut constraints = Vec::new();
+        for p in &mut self.parts {
+            if let StringExprPart::Interpolated(ref mut ip) = p {
+                let (e, cons) = ip.expression.infer(env, f)?;
+                constraints.append(&mut Vec::from(cons));
+                constraints.push(Constraint::Equal(
+                    ip.expression.type_of().clone(),
+                    MonoType::String,
+                ));
+                env = e
+            }
+        }
+        constraints.push(Constraint::Equal(self.typ.clone(), MonoType::String));
+        return Ok((env, Constraints::from(constraints)));
     }
 }
 
@@ -466,8 +491,18 @@ pub struct ArrayExpr {
 }
 
 impl ArrayExpr {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+    fn infer(&mut self, mut env: Environment, f: &mut Fresher) -> Result {
+        let mut cons = Vec::new();
+        let elt = MonoType::Var(f.fresh());
+        for el in &mut self.elements {
+            let (e, c) = el.infer(env, f)?;
+            cons.append(&mut c.into());
+            cons.push(Constraint::Equal(el.type_of().clone(), elt.clone()));
+            env = e;
+        }
+        let at = MonoType::Arr(Box::new(Array(elt)));
+        cons.push(Constraint::Equal(at, self.typ.clone()));
+        return Ok((env, cons.into()));
     }
 }
 
@@ -573,8 +608,69 @@ pub struct BinaryExpr {
 }
 
 impl BinaryExpr {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+        // Compute the left and right constraints.
+        // Do this first so that we can return an error if one occurs.
+        let (env, lcons) = self.left.infer(env, f)?;
+        let (env, rcons) = self.right.infer(env, f)?;
+
+        let cons = match self.operator {
+            // The following operators require both sides to be equal.
+            ast::Operator::AdditionOperator
+            | ast::Operator::SubtractionOperator
+            | ast::Operator::MultiplicationOperator
+            | ast::Operator::DivisionOperator
+            | ast::Operator::PowerOperator
+            | ast::Operator::ModuloOperator => {
+                let mut constraints = vec![
+                    Constraint::Equal(self.left.type_of().clone(), self.typ.clone()),
+                    Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                ];
+                if let Some(kind) = match self.operator {
+                    ast::Operator::AdditionOperator => Some(Addable),
+                    ast::Operator::SubtractionOperator => Some(Subtractable),
+                    ast::Operator::MultiplicationOperator
+                    | ast::Operator::DivisionOperator
+                    | ast::Operator::PowerOperator
+                    | ast::Operator::ModuloOperator => Some(Divisible),
+                    _ => None,
+                } {
+                    constraints.push(Constraint::Kind(self.typ.clone(), kind));
+                }
+                Constraints::from(constraints)
+            },
+            // The following require the type to be a boolean.
+            ast::Operator::GreaterThanEqualOperator
+            | ast::Operator::LessThanEqualOperator
+            | ast::Operator::GreaterThanOperator
+            | ast::Operator::LessThanOperator
+            | ast::Operator::NotEqualOperator
+            | ast::Operator::EqualOperator => {
+                let kind = match self.operator {
+                    ast::Operator::EqualOperator
+                    | ast::Operator::NotEqualOperator => Equatable,
+                    _ => Comparable,
+                };
+                Constraints::from(vec![
+                    Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                    Constraint::Kind(self.left.type_of().clone(), kind),
+                    Constraint::Kind(self.right.type_of().clone(), kind),
+                    Constraint::Equal(self.typ.clone(), MonoType::Bool),
+                ])
+            }
+            // Regular expression operators.
+            ast::Operator::RegexpMatchOperator | ast::Operator::NotRegexpMatchOperator => {
+                Constraints::from(vec![
+                    Constraint::Equal(self.left.type_of().clone(), MonoType::String),
+                    Constraint::Equal(self.right.type_of().clone(), MonoType::Regexp),
+                    Constraint::Equal(self.typ.clone(), MonoType::Bool),
+                ])
+            }
+            _ => return Err(Error::unsupported_binary_operator(&self.operator)),
+        };
+
+        // Otherwise, add the constraints together and return them.
+        return Ok((env, lcons + rcons + cons));
     }
 }
 
@@ -609,8 +705,22 @@ pub struct ConditionalExpr {
 }
 
 impl ConditionalExpr {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+        let (env, tcons) = self.test.infer(env, f)?;
+        let (env, ccons) = self.consequent.infer(env, f)?;
+        let (env, acons) = self.alternate.infer(env, f)?;
+        let cons = tcons
+            + ccons
+            + acons
+            + Constraints::from(vec![
+                Constraint::Equal(self.test.type_of().clone(), MonoType::Bool),
+                Constraint::Equal(
+                    self.consequent.type_of().clone(),
+                    self.alternate.type_of().clone(),
+                ),
+                Constraint::Equal(self.consequent.type_of().clone(), self.typ.clone()),
+            ]);
+        return Ok((env, cons));
     }
 }
 
@@ -627,8 +737,17 @@ pub struct LogicalExpr {
 }
 
 impl LogicalExpr {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+        let (env, lcons) = self.left.infer(env, f)?;
+        let (env, rcons) = self.right.infer(env, f)?;
+        let cons = lcons
+            + rcons
+            + Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), MonoType::Bool),
+                Constraint::Equal(self.right.type_of().clone(), MonoType::Bool),
+                Constraint::Equal(self.typ.clone(), MonoType::Bool),
+            ]);
+        return Ok((env, cons));
     }
 }
 
@@ -677,8 +796,19 @@ pub struct IndexExpr {
 }
 
 impl IndexExpr {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+        let (env, acons) = self.array.infer(env, f)?;
+        let (env, icons) = self.index.infer(env, f)?;
+        let cons = acons
+            + icons
+            + Constraints::from(vec![
+                Constraint::Equal(self.index.type_of().clone(), MonoType::Int),
+                Constraint::Equal(
+                    self.array.type_of().clone(),
+                    MonoType::Arr(Box::new(Array(self.typ.clone()))),
+                ),
+            ]);
+        return Ok((env, cons));
     }
 }
 
@@ -739,8 +869,25 @@ pub struct UnaryExpr {
 }
 
 impl UnaryExpr {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+        let (env, acons) = self.argument.infer(env, f)?;
+        let cons = match self.operator {
+            ast::Operator::NotOperator => Constraints::from(vec![
+                Constraint::Equal(self.argument.type_of().clone(), MonoType::Bool),
+                Constraint::Equal(self.typ.clone(), MonoType::Bool),
+            ]),
+            ast::Operator::ExistsOperator => {
+                Constraints::from(Constraint::Equal(self.typ.clone(), MonoType::Bool))
+            }
+            ast::Operator::AdditionOperator => {
+                Constraints::from(Constraint::Kind(self.argument.type_of().clone(), Addable))
+            }
+            ast::Operator::SubtractionOperator => {
+                Constraints::from(Constraint::Kind(self.argument.type_of().clone(), Subtractable))
+            }
+            _ => return Err(Error::unsupported_unary_operator(&self.operator)),
+        };
+        return Ok((env, acons + cons));
     }
 }
 
@@ -796,7 +943,7 @@ pub struct BooleanLit {
 
 impl BooleanLit {
     fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+        return infer_literal(env, &self.typ, MonoType::Bool);
     }
 }
 
@@ -812,7 +959,7 @@ pub struct IntegerLit {
 
 impl IntegerLit {
     fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+        return infer_literal(env, &self.typ, MonoType::Int);
     }
 }
 
@@ -828,7 +975,7 @@ pub struct FloatLit {
 
 impl FloatLit {
     fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+        return infer_literal(env, &self.typ, MonoType::Float);
     }
 }
 
@@ -845,7 +992,7 @@ pub struct RegexpLit {
 
 impl RegexpLit {
     fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+        return infer_literal(env, &self.typ, MonoType::Regexp);
     }
 }
 
@@ -861,7 +1008,7 @@ pub struct StringLit {
 
 impl StringLit {
     fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+        return infer_literal(env, &self.typ, MonoType::String);
     }
 }
 
@@ -877,7 +1024,7 @@ pub struct UintLit {
 
 impl UintLit {
     fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+        return infer_literal(env, &self.typ, MonoType::Uint);
     }
 }
 
@@ -893,7 +1040,7 @@ pub struct DateTimeLit {
 
 impl DateTimeLit {
     fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+        return infer_literal(env, &self.typ, MonoType::Time);
     }
 }
 
@@ -909,8 +1056,13 @@ pub struct DurationLit {
 
 impl DurationLit {
     fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        unimplemented!();
+        return infer_literal(env, &self.typ, MonoType::Duration);
     }
+}
+
+fn infer_literal(env: Environment, typ: &MonoType, is: MonoType) -> Result {
+    let constraints = Constraints::from(vec![Constraint::Equal(typ.clone(), is)]);
+    return Ok((env, constraints));
 }
 
 const NANOS: i64 = 1;

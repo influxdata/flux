@@ -51,6 +51,12 @@ impl From<Constraints> for Vec<Constraint> {
     }
 }
 
+impl From<Constraint> for Constraints {
+    fn from(constraint: Constraint) -> Constraints {
+        Constraints::from(vec![constraint])
+    }
+}
+
 // Solve a set of type constraints
 pub fn solve(
     cons: &Constraints,
