@@ -155,8 +155,14 @@ impl Scanner {
                             lit: nc.to_string(),
                             start_offset: self.ts,
                             end_offset: self.ts + size as u32,
-                            start_pos: Position { line: 0, column: 0 },
-                            end_pos: Position { line: 0, column: 0 },
+                            start_pos: Position {
+                                line: token_start_line,
+                                column: token_start_col,
+                            },
+                            end_pos: Position {
+                                line: token_start_line,
+                                column: token_start_col + size as u32,
+                            },
                         };
                     }
                     // This should be impossible as we would have produced an EOF token
@@ -183,8 +189,14 @@ impl Scanner {
                 )),
                 start_offset: self.ts,
                 end_offset: self.te,
-                start_pos: Position { line: 0, column: 0 },
-                end_pos: Position { line: 0, column: 0 },
+                start_pos: Position {
+                    line: token_start_line,
+                    column: token_start_col,
+                },
+                end_pos: Position {
+                    line: token_end_line,
+                    column: token_end_col,
+                },
             };
 
             assert_eq!(
