@@ -63,6 +63,60 @@ fn validate(t: PolyType) -> Result<PolyType, String> {
     return Ok(t);
 }
 
+fn parse_env_map(env: HashMap<&str, &str>) -> HashMap<String, PolyType> {
+    env.into_iter()
+        .map(|(name, expr)| {
+            let init = parse(expr).unwrap();
+            let poly = validate(init).unwrap();
+            return (name.to_string(), poly);
+        })
+        .collect()
+}
+
+fn infer_types(
+    src: &str,
+    env: HashMap<&str, &str>,
+    want: Option<HashMap<&str, &str>>,
+) -> Result<Environment, nodes::Error> {
+    // Parse polytype expressions in initial environment.
+    let env = parse_env_map(env);
+
+    // Compute the maximum type variable in the environment
+    // and initialize a fresher with this type variable.
+    let max = env.max_tvar();
+    let mut f = Fresher::from(max.0 + 1);
+
+    let pkg = parse_program(src);
+
+    let got = match nodes::infer_pkg_types(
+        &mut analyze(pkg, &mut f).unwrap(),
+        Environment::new(env.into()),
+        &mut f,
+    ) {
+        Ok((env, _)) => env.values,
+        Err(e) => return Err(e),
+    };
+
+    // Parse polytype expressions in expected environment.
+    // Only perform this step if a map of wanted types exists.
+    if let Some(env) = want {
+        let want = parse_env_map(env);
+        if want != got {
+            panic!(
+                "\n\n{}\n\n{}\n{}\n{}\n{}\n",
+                "unexpected types:".red().bold(),
+                "want:".green().bold(),
+                want.iter().fold(String::new(), |acc, (name, poly)| acc
+                    + &format!("\t{}: {}\n", name, poly)),
+                "got:".red().bold(),
+                got.iter().fold(String::new(), |acc, (name, poly)| acc
+                    + &format!("\t{}: {}\n", name, poly)),
+            );
+        }
+    }
+    return Ok(got.into());
+}
+
 /// The test_infer! macro generates test cases for type inference.
 ///
 /// A test case consists of:
@@ -77,78 +131,25 @@ fn validate(t: PolyType) -> Result<PolyType, String> {
 /// #[test]
 /// fn instantiation() {
 ///    test_infer! {
-///         env: &[
-///             ("f", "forall [t0] where t0: Addable (a: t0, b: t0) -> t0"),
+///         env: map![
+///             "f" => "forall [t0] where t0: Addable (a: t0, b: t0) -> t0",
 ///         ],
 ///         src: "x = f",
-///         exp: &[
-///             ("x", "forall [t0] where t0: Addable (a: t0, b: t0) -> t0"),
+///         exp: map![
+///             "x" => "forall [t0] where t0: Addable (a: t0, b: t0) -> t0",
 ///         ],
 ///     }
 /// }
 /// ```
 ///
 macro_rules! test_infer {
-    (
-        env: $env:expr,
-        src: $src:expr,
-        exp: $exp:expr $(,)?
-    ) => {{
-        // Parse polytype expressions in initial environment
-        let env: HashMap<String, PolyType> = $env
-            .iter()
-            .map(|(name, expr)| {
-                let init = parse(expr).unwrap();
-                let poly = validate(init).unwrap();
-                return (name.to_string(), poly);
-            })
-            .collect();
-
-        // Parse polytype expressions in expected environment
-        let want: HashMap<String, PolyType> = $exp
-            .iter()
-            .map(|(name, expr)| {
-                let init = parse(expr).unwrap();
-                let poly = validate(init).unwrap();
-                return (name.to_string(), poly);
-            })
-            .collect();
-
-        // Compute the maximum type variable in the environment
-        // and initialize a fresher with this type variable.
-        let max = env.max_tvar();
-        let mut f = Fresher::from(max.0 + 1);
-
-        let pkg = parse_program($src);
-
-        let got = match nodes::infer_pkg_types(
-            &mut analyze(pkg, &mut f).unwrap(),
-            Environment::new(env.into()),
-            &mut f,
-        ) {
-            Err(err) => panic!(
-                "\n\n{}: {}\n\n",
-                "unexpected type error".red().bold(),
-                err.to_string(),
-            ),
-            Ok((env, _)) => env.values,
-        };
-
-        if want != got {
-            panic!(
-                "\n\n{}\n\n{}\n{}\n{}\n{}\n",
-                "unexpected types:".red().bold(),
-                "want:".green().bold(),
-                want.iter().fold(String::new(), |acc, (name, poly)| acc
-                    + &format!("\t{}: {}\n", name, poly)),
-                "got:".red().bold(),
-                got.iter().fold(String::new(), |acc, (name, poly)| acc
-                    + &format!("\t{}: {}\n", name, poly)),
-            )
+    ( env: $env:expr, src: $src:expr, exp: $exp:expr $(,)? ) => {{
+        if let Err(e) = infer_types($src, $env, Some($exp)) {
+            panic!(format!("{}", e));
         }
     }};
     ( src: $src:expr, exp: $exp:expr $(,)? ) => {{
-        let env: Vec<(&str, &str)> = Vec::new();
+        let env = HashMap::new();
         test_infer!(env: env, src: $src, exp: $exp);
     }};
 }
@@ -172,32 +173,8 @@ macro_rules! test_infer {
 /// ```
 ///
 macro_rules! test_infer_err {
-    (
-        env: $env:expr,
-        src: $src:expr $(,)?
-    ) => {{
-        // Parse polytype expressions in initial environment
-        let env: HashMap<String, PolyType> = $env
-            .iter()
-            .map(|(name, expr)| {
-                let init = parse(expr).unwrap();
-                let poly = validate(init).unwrap();
-                return (name.to_string(), poly);
-            })
-            .collect();
-
-        // Compute the maximum type variable in the environment
-        // and initialize a fresher with this type variable.
-        let max = env.max_tvar();
-        let mut f = Fresher::from(max.0 + 1);
-
-        let pkg = parse_program($src);
-
-        if let Ok((env, _)) = nodes::infer_pkg_types(
-            &mut analyze(pkg, &mut f).unwrap(),
-            Environment::new(env.into()),
-            &mut f,
-        ) {
+    ( env: $env:expr, src: $src:expr $(,)? ) => {{
+        if let Ok(env) = infer_types($src, $env, None) {
             panic!(
                 "\n\n{}\n\n{}\n",
                 "expected type error but instead inferred the following types:"
@@ -208,39 +185,47 @@ macro_rules! test_infer_err {
                     .fold(String::new(), |acc, (name, poly)| acc
                         + &format!("\t{}: {}\n", name, poly))
             )
-        };
+        }
     }};
     ( src: $src:expr $(,)? ) => {{
-        let env: Vec<(&str, &str)> = Vec::new();
+        let env = HashMap::new();
         test_infer_err!(env: env, src: $src);
     }};
+}
+
+macro_rules! map {
+    ($( $key: expr => $val: expr ),*$(,)?) => {{
+         let mut map = ::std::collections::HashMap::new();
+         $( map.insert($key, $val); )*
+         map
+    }}
 }
 
 #[test]
 fn instantiation_0() {
     test_infer! {
-        env: &[
-            ("f", "forall [t0] where t0: Addable (a: t0, b: t0) -> t0"),
+        env: map![
+            "f" => "forall [t0] where t0: Addable (a: t0, b: t0) -> t0",
         ],
         src: "x = f",
-        exp: &[
-            ("x", "forall [t0] where t0: Addable (a: t0, b: t0) -> t0"),
+        exp: map![
+            "x" => "forall [t0] where t0: Addable (a: t0, b: t0) -> t0",
         ],
     }
 }
 #[test]
 fn instantiation_1() {
     test_infer! {
-        env: &[
-            ("f", "forall [t0] where t0: Addable (a: t0, b: t0) -> t0"),
+        env: map![
+            "f" => "forall [t0] where t0: Addable (a: t0, b: t0) -> t0",
         ],
         src: r#"
             a = f
             x = a
         "#,
-        exp: &[
-            ("a", "forall [t0] where t0: Addable (a: t0, b: t0) -> t0"),
-            ("x", "forall [t0] where t0: Addable (a: t0, b: t0) -> t0"),
+        exp: map![
+            "a" => "forall [t0] where t0: Addable (a: t0, b: t0) -> t0",
+            "x" => "forall [t0] where t0: Addable (a: t0, b: t0) -> t0",
         ],
     }
 }
@@ -253,26 +238,26 @@ fn undeclared_variable() {
 #[test]
 fn member_expression() {
     test_infer! {
-        env: &[
-            ("r", "forall [] {a: int | b: float | c: string}"),
+        env: map![
+            "r" => "forall [] {a: int | b: float | c: string}",
         ],
         src: r#"
             a = r.a
             b = r.b
             c = r.c
         "#,
-        exp: &[
-            ("a", "forall [] int"),
-            ("b", "forall [] float"),
-            ("c", "forall [] string"),
+        exp: map![
+            "a" => "forall [] int",
+            "b" => "forall [] float",
+            "c" => "forall [] string",
         ],
     }
 }
 #[test]
 fn non_existent_property() {
     test_infer_err! {
-        env: &[
-            ("r", "forall [] {a: int | b: float | c: string}"),
+        env: map![
+            "r" => "forall [] {a: int | b: float | c: string}",
         ],
         src: "r.d",
     }
@@ -280,62 +265,62 @@ fn non_existent_property() {
 #[test]
 fn derived_record_literal() {
     test_infer! {
-        env: &[
-            ("r", "forall [] {a: int | b: float | c: string}"),
+        env: map![
+            "r" => "forall [] {a: int | b: float | c: string}",
         ],
         src: r#"
             o = {x: r.a, y: r.b, z: r.c}
         "#,
-        exp: &[
-            ("o", "forall [] {x: int | y: float | z: string}")
+        exp: map![
+            "o" => "forall [] {x: int | y: float | z: string}",
         ],
     }
 }
 #[test]
 fn extend_record_literal() {
     test_infer! {
-        env: &[
-            ("r", "forall [] {a: int | b: float | c: string}"),
+        env: map![
+            "r" => "forall [] {a: int | b: float | c: string}",
         ],
         src: r#"
             o = {r with x: r.a}
         "#,
-        exp: &[
-            ("o", "forall [] {x: int | a: int | b: float | c: string}")
+        exp: map![
+            "o" => "forall [] {x: int | a: int | b: float | c: string}",
         ],
     }
 }
 #[test]
 fn extend_generic_record() {
     test_infer! {
-        env: &[
-            ("r", "forall [t0] {a: int | b: float | t0}"),
+        env: map![
+            "r" => "forall [t0] {a: int | b: float | t0}",
         ],
         src: r#"
             o = {r with x: r.a}
         "#,
-        exp: &[
-            ("o", "forall [t0] {x: int | a: int | b: float | t0}")
+        exp: map![
+            "o" => "forall [t0] {x: int | a: int | b: float | t0}",
         ],
     }
 }
 #[test]
 fn record_with_scoped_labels() {
     test_infer! {
-        env: &[
-            ("r", "forall [t0] {a: int | b: float | t0}"),
-            ("x", "forall [] int"),
-            ("y", "forall [] float"),
+        env: map![
+            "r" => "forall [t0] {a: int | b: float | t0}",
+            "x" => "forall [] int",
+            "y" => "forall [] float",
         ],
         src: r#"
             u = {r with a: x}
             v = {r with a: y}
             w = {r with b: x}
         "#,
-        exp: &[
-            ("u", "forall [t0] {a: int   | a: int | b: float | t0}"),
-            ("v", "forall [t0] {a: float | a: int | b: float | t0}"),
-            ("w", "forall [t0] {b: int   | a: int | b: float | t0}"),
+        exp: map![
+            "u" => "forall [t0] {a: int   | a: int | b: float | t0}",
+            "v" => "forall [t0] {a: float | a: int | b: float | t0}",
+            "w" => "forall [t0] {b: int   | a: int | b: float | t0}",
         ],
     }
 }
