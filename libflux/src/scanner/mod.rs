@@ -18,8 +18,6 @@ pub struct Scanner {
     checkpoint_line: u32,
     checkpoint_last_newline: *const CChar,
     token: TOK,
-    ts: u32,
-    te: u32,
     positions: HashMap<Position, u32>,
 }
 
@@ -55,8 +53,6 @@ impl Scanner {
             eof: end,
             last_newline: ptr as *const CChar,
             cur_line: 1,
-            ts: 0,
-            te: 0,
             token: TOK_ILLEGAL,
             checkpoint: ptr as *const CChar,
             checkpoint_line: 1,
@@ -87,7 +83,7 @@ impl Scanner {
             .clone()
     }
 
-    fn get_eof_token(&mut self) -> Token {
+    fn get_eof_token(&self) -> Token {
         let data_len = self.data.as_bytes().len() as u32;
         let column = self.eof as u32 - self.last_newline as u32 + 1;
         Token {
@@ -116,8 +112,10 @@ impl Scanner {
         self.checkpoint_line = self.cur_line;
         self.checkpoint_last_newline = self.last_newline;
 
+        let mut token_start = 0 as u32;
         let mut token_start_line = 0 as u32;
         let mut token_start_col = 0 as u32;
+        let mut token_end = 0 as u32;
         let mut token_end_line = 0 as u32;
         let mut token_end_col = 0 as u32;
 
@@ -131,10 +129,10 @@ impl Scanner {
                 &mut self.last_newline as *mut *const CChar,
                 &mut self.cur_line as *mut u32,
                 &mut self.token as *mut u32,
-                &mut self.ts as *mut u32,
+                &mut token_start as *mut u32,
                 &mut token_start_line as *mut u32,
                 &mut token_start_col as *mut u32,
-                &mut self.te as *mut u32,
+                &mut token_end as *mut u32,
                 &mut token_end_line as *mut u32,
                 &mut token_end_col as *mut u32,
             )
@@ -144,7 +142,7 @@ impl Scanner {
             // doesn't produce a token. Use the unicode library to decode the next character
             // in the sequence so we don't break up any unicode tokens.
             let nc = unsafe {
-                std::str::from_utf8_unchecked(&self.data.as_bytes()[(self.ts as usize)..])
+                std::str::from_utf8_unchecked(&self.data.as_bytes()[(token_start as usize)..])
                     .chars()
                     .next()
             };
@@ -156,8 +154,8 @@ impl Scanner {
                     Token {
                         tok: TOK_ILLEGAL,
                         lit: nc.to_string(),
-                        start_offset: self.ts,
-                        end_offset: self.ts + size as u32,
+                        start_offset: token_start,
+                        end_offset: token_start + size as u32,
                         start_pos: Position {
                             line: token_start_line,
                             column: token_start_col,
@@ -180,14 +178,14 @@ impl Scanner {
             // No error or EOF, we can process the returned values normally.
             let lit = unsafe {
                 str::from_utf8_unchecked(
-                    &self.data.as_bytes()[(self.ts as usize)..(self.te as usize)],
+                    &self.data.as_bytes()[(token_start as usize)..(token_end as usize)],
                 )
             };
             Token {
                 tok: self.token,
                 lit: String::from(lit),
-                start_offset: self.ts,
-                end_offset: self.te,
+                start_offset: token_start,
+                end_offset: token_end,
                 start_pos: Position {
                     line: token_start_line,
                     column: token_start_col,
