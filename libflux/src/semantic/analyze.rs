@@ -4,17 +4,21 @@ use crate::semantic::nodes::*;
 use crate::semantic::types::MonoType;
 use std::result;
 
-type SemanticError = String;
-type Result<T> = result::Result<T, SemanticError>;
+pub type SemanticError = String;
+pub type Result<T> = result::Result<T, SemanticError>;
 
 // analyze analyzes an AST package node and returns its semantic analysis.
-// The function requires a Fresher to instantiate fresh type veriables for Expressions.
 // The function explicitly moves the ast::Package because it adds information to it.
 // We follow here the principle that every compilation step should be isolated and should add meaning
 // to the previous one. In other terms, once one analyzes an AST he should not use it anymore.
 // If one wants to do so, he should explicitly pkg.clone() and incur consciously in the memory
 // overhead involved.
-pub fn analyze(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> {
+pub fn analyze(pkg: ast::Package) -> Result<Package> {
+    analyze_with(pkg, &mut Fresher::new())
+}
+
+// analyze_with runs analyze using the provided Fresher.
+pub fn analyze_with(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> {
     analyze_package(pkg, fresher)
     // TODO(affo): run checks on the semantic graph.
 }
@@ -577,7 +581,7 @@ mod tests {
     }
 
     fn test_analyze(pkg: ast::Package) -> Result<Package> {
-        analyze(pkg, &mut Fresher::new())
+        analyze(pkg)
     }
 
     #[test]

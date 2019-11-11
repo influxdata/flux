@@ -495,26 +495,11 @@ where
 mod tests {
     use super::*;
     use crate::ast;
-    use crate::ast::check::check;
-    use crate::ast::walk;
-    use crate::parser::parse_string;
-    use crate::semantic::analyze::analyze;
-    use crate::semantic::fresh::Fresher;
+    use crate::semantic::analyze_source;
     use crate::semantic::nodes;
 
     fn compile(source: &str) -> nodes::Package {
-        let file = parse_string("test_walk", source);
-        let errs = check(walk::Node::File(&file));
-        if errs.len() > 0 {
-            panic!(format!("got errors on parsing: {:?}", errs));
-        }
-        let ast_pkg = ast::Package {
-            base: file.base.clone(),
-            path: "path/to/pkg".to_string(),
-            package: "main".to_string(),
-            files: vec![file],
-        };
-        analyze(ast_pkg, &mut Fresher::new()).unwrap()
+        analyze_source(source).unwrap()
     }
 
     mod node_ids {
