@@ -1435,19 +1435,19 @@ type PipeLiteral struct {
 // Type is the abstract type
 func (*PipeLiteral) Type() string { return "PipeLiteral" }
 
-func (i *PipeLiteral) Copy() Node {
-	if i == nil {
-		return i
+func (p *PipeLiteral) Copy() Node {
+	if p == nil {
+		return p
 	}
-	ni := new(PipeLiteral)
-	*ni = *i
-	ni.BaseNode = i.BaseNode.Copy()
-	return ni
+	np := new(PipeLiteral)
+	*np = *p
+	np.BaseNode = p.BaseNode.Copy()
+	return np
 }
 
-func (i PipeLiteral) FromBuf(buf *fbast.PipeLiteral) *PipeLiteral {
-	i.BaseNode.FromBuf(buf.BaseNode(nil))
-	return &i
+func (p PipeLiteral) FromBuf(buf *fbast.PipeLiteral) *PipeLiteral {
+	p.BaseNode.FromBuf(buf.BaseNode(nil))
+	return &p
 }
 
 // StringLiteral expressions begin and end with double quote marks.

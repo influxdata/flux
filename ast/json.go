@@ -52,14 +52,14 @@ func (f *File) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
-func (p *PackageClause) MarshalJSON() ([]byte, error) {
+func (c *PackageClause) MarshalJSON() ([]byte, error) {
 	type Alias PackageClause
 	raw := struct {
 		Type string `json:"type"`
 		*Alias
 	}{
-		Type:  p.Type(),
-		Alias: (*Alias)(p),
+		Type:  c.Type(),
+		Alias: (*Alias)(c),
 	}
 	return json.Marshal(raw)
 }
@@ -266,18 +266,18 @@ func (d *VariableAssignment) UnmarshalJSON(data []byte) error {
 	d.Init = e
 	return nil
 }
-func (s *MemberAssignment) MarshalJSON() ([]byte, error) {
+func (a *MemberAssignment) MarshalJSON() ([]byte, error) {
 	type Alias MemberAssignment
 	raw := struct {
 		Type string `json:"type"`
 		*Alias
 	}{
-		Type:  s.Type(),
-		Alias: (*Alias)(s),
+		Type:  a.Type(),
+		Alias: (*Alias)(a),
 	}
 	return json.Marshal(raw)
 }
-func (s *MemberAssignment) UnmarshalJSON(data []byte) error {
+func (a *MemberAssignment) UnmarshalJSON(data []byte) error {
 	type Alias MemberAssignment
 	raw := struct {
 		*Alias
@@ -287,14 +287,14 @@ func (s *MemberAssignment) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if raw.Alias != nil {
-		*s = *(*MemberAssignment)(raw.Alias)
+		*a = *(*MemberAssignment)(raw.Alias)
 	}
 
 	e, err := unmarshalExpression(raw.Init)
 	if err != nil {
 		return err
 	}
-	s.Init = e
+	a.Init = e
 	return nil
 }
 func (e *CallExpression) MarshalJSON() ([]byte, error) {
@@ -621,18 +621,18 @@ func (e *StringExpression) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
-func (e *TextPart) MarshalJSON() ([]byte, error) {
+func (p *TextPart) MarshalJSON() ([]byte, error) {
 	type Alias TextPart
 	raw := struct {
 		Type string `json:"type"`
 		*Alias
 	}{
-		Type:  e.Type(),
-		Alias: (*Alias)(e),
+		Type:  p.Type(),
+		Alias: (*Alias)(p),
 	}
 	return json.Marshal(raw)
 }
-func (e *TextPart) UnmarshalJSON(data []byte) error {
+func (p *TextPart) UnmarshalJSON(data []byte) error {
 	type Alias TextPart
 	raw := struct {
 		*Alias
@@ -642,23 +642,23 @@ func (e *TextPart) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if raw.Alias != nil {
-		*e = *(*TextPart)(raw.Alias)
+		*p = *(*TextPart)(raw.Alias)
 	}
-	e.Value = raw.Value
+	p.Value = raw.Value
 	return nil
 }
-func (e *InterpolatedPart) MarshalJSON() ([]byte, error) {
+func (p *InterpolatedPart) MarshalJSON() ([]byte, error) {
 	type Alias InterpolatedPart
 	raw := struct {
 		Type string `json:"type"`
 		*Alias
 	}{
-		Type:  e.Type(),
-		Alias: (*Alias)(e),
+		Type:  p.Type(),
+		Alias: (*Alias)(p),
 	}
 	return json.Marshal(raw)
 }
-func (e *InterpolatedPart) UnmarshalJSON(data []byte) error {
+func (p *InterpolatedPart) UnmarshalJSON(data []byte) error {
 	type Alias InterpolatedPart
 	raw := struct {
 		*Alias
@@ -668,14 +668,14 @@ func (e *InterpolatedPart) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if raw.Alias != nil {
-		*e = *(*InterpolatedPart)(raw.Alias)
+		*p = *(*InterpolatedPart)(raw.Alias)
 	}
 
 	expr, err := unmarshalExpression(raw.Expression)
 	if err != nil {
 		return err
 	}
-	e.Expression = expr
+	p.Expression = expr
 	return nil
 }
 func (e *ParenExpression) MarshalJSON() ([]byte, error) {
@@ -850,14 +850,14 @@ func (i *Identifier) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
-func (l *PipeLiteral) MarshalJSON() ([]byte, error) {
+func (p *PipeLiteral) MarshalJSON() ([]byte, error) {
 	type Alias PipeLiteral
 	raw := struct {
 		Type string `json:"type"`
 		*Alias
 	}{
-		Type:  l.Type(),
-		Alias: (*Alias)(l),
+		Type:  p.Type(),
+		Alias: (*Alias)(p),
 	}
 	return json.Marshal(raw)
 }
