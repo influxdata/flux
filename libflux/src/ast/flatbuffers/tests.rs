@@ -746,20 +746,6 @@ fn compare_opt_exprs(
     }
 }
 
-fn compare_ops(ast_op: ast::Operator, fb_op: fbast::Operator) -> Result<(), String> {
-    match ast_op == ast_operator(fb_op) {
-        true => Ok(()),
-        false => {
-            let ast_op = ast_op.to_string();
-            let fb_op = fbast::enum_name_operator(fb_op);
-            Err(String::from(format!(
-                "operator mismatch; ast = {}, fb = {}",
-                ast_op, fb_op
-            )))
-        }
-    }
-}
-
 fn compare_imports(
     ast_imports: &Vec<ast::ImportDeclaration>,
     fb_imports: &Option<

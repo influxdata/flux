@@ -1,7 +1,5 @@
 pub mod check;
 
-// Disable warnings because the flatbuffers module is generated code.
-#[allow(warnings)]
 pub mod flatbuffers;
 pub mod walk;
 
