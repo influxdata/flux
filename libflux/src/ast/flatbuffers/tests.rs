@@ -116,13 +116,25 @@ ff = (i=<-, j) => {
   return k
 }
 b = z and y
+b = z or y
 o = {red: "red", "blue": 30}
 m = o.red
 i = arr[0]
-n = 10 - 5
+n = 10 - 5 + 10
+n = 10 / 5 * 10
+m = 13 % 3
+p = 2^10
+b = 10 < 30
+b = 10 <= 30
+b = 10 > 30
+b = 10 >= 30
+eq = 10 == 10
+neq = 11 != 10
 b = not false
+e = exists o.red
 tables |> f()
-fncall = id(20)
+fncall = id(v: 20)
+fncall2 = foo(v: 20, w: "bar")
 v = if true then 70.0 else 140.0 
 ans = "the answer is ${v}"
 paren = (1)
@@ -134,6 +146,7 @@ d = 10s
 b = true
 dt = 2030-01-01T00:00:00Z
 re =~ /foo/
+re !~ /foo/
 bad_expr = 3 * / 1
 "#,
         ),
@@ -537,7 +550,11 @@ fn compare_exprs(
         (ast::Expression::Unary(ast_ue), fbast::Expression::UnaryExpression) => {
             let fb_ue = fbast::UnaryExpression::init_from_table(*fb_tbl);
             compare_base(&ast_ue.base, &fb_ue.base_node())?;
-            compare_exprs(&ast_ue.argument, fb_ue.argument_type(), &fb_ue.argument())
+            compare_exprs(&ast_ue.argument, fb_ue.argument_type(), &fb_ue.argument())?;
+            match ast_operator(fb_ue.operator()) == ast_ue.operator {
+                true => Ok(()),
+                false => Err(String::from("unary operator mismatch")),
+            }
         }
         (ast::Expression::PipeExpr(ast_pe), fbast::Expression::PipeExpression) => {
             let fb_pe = fbast::PipeExpression::init_from_table(*fb_tbl);
