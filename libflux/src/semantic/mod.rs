@@ -2,7 +2,7 @@ mod analyze;
 pub use analyze::analyze;
 
 mod env;
-mod fresh;
+pub mod fresh;
 mod infer;
 
 // TODO(jsternberg): Once more work is done on the infer methods,
