@@ -2,7 +2,7 @@
 
 set -e
 
-make clean
+make cleangenerate
 make generate
 
 status=$(git status --porcelain)
