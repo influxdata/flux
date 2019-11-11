@@ -40,7 +40,9 @@ GENERATED_TARGETS = \
 	internal/scanner/scanner.gen.go \
 	stdlib/packages.go \
 	ast/internal/fbast \
-	libflux/src/ast/fbast.rs
+	semantic/internal/fbsemantic \
+	libflux/src/ast/fbast.rs \
+	libflux/src/semantic/fbsemantic.rs
 
 generate: $(GENERATED_TARGETS)
 
@@ -48,6 +50,11 @@ ast/internal/fbast: ast/ast.fbs
 	$(GO_GENERATE) ./ast
 libflux/src/ast/fbast.rs: ast/ast.fbs
 	flatc --rust -o libflux/src/ast/flatbuffers ast/ast.fbs
+
+semantic/internal/fbsemantic: semantic/semantic.fbs
+	$(GO_GENERATE) ./semantic
+libflux/src/semantic/fbsemantic.rs: semantic/semantic.fbs
+	flatc --rust -o libflux/src/semantic/flatbuffers semantic/semantic.fbs
 
 # Force a second expansion to happen so the call to go_deps works correctly.
 .SECONDEXPANSION:
