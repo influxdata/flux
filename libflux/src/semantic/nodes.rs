@@ -638,7 +638,7 @@ impl BinaryExpr {
                     constraints.push(Constraint::Kind(self.typ.clone(), kind));
                 }
                 Constraints::from(constraints)
-            },
+            }
             // The following require the type to be a boolean.
             ast::Operator::GreaterThanEqualOperator
             | ast::Operator::LessThanEqualOperator
@@ -647,8 +647,7 @@ impl BinaryExpr {
             | ast::Operator::NotEqualOperator
             | ast::Operator::EqualOperator => {
                 let kind = match self.operator {
-                    ast::Operator::EqualOperator
-                    | ast::Operator::NotEqualOperator => Equatable,
+                    ast::Operator::EqualOperator | ast::Operator::NotEqualOperator => Equatable,
                     _ => Comparable,
                 };
                 Constraints::from(vec![
@@ -882,9 +881,10 @@ impl UnaryExpr {
             ast::Operator::AdditionOperator => {
                 Constraints::from(Constraint::Kind(self.argument.type_of().clone(), Addable))
             }
-            ast::Operator::SubtractionOperator => {
-                Constraints::from(Constraint::Kind(self.argument.type_of().clone(), Subtractable))
-            }
+            ast::Operator::SubtractionOperator => Constraints::from(Constraint::Kind(
+                self.argument.type_of().clone(),
+                Subtractable,
+            )),
             _ => return Err(Error::unsupported_unary_operator(&self.operator)),
         };
         return Ok((env, acons + cons));
@@ -1102,7 +1102,7 @@ pub fn convert_duration(duration: &Vec<ast::Duration>) -> std::result::Result<Du
 mod tests {
     use super::*;
     use crate::parser::parse_string;
-    use crate::semantic::analyze::analyze;
+    use crate::semantic::analyze::analyze_with;
     use crate::semantic::types::{MonoType, PolyType};
     use std::collections::HashMap;
 
@@ -1152,7 +1152,7 @@ mod tests {
         };
 
         let mut f: Fresher = 1.into();
-        let mut pkg = analyze(ast, &mut f).unwrap();
+        let mut pkg = analyze_with(ast, &mut f).unwrap();
 
         let (env, _) = infer_pkg_types(&mut pkg, env, &mut f).unwrap();
 
