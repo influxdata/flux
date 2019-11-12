@@ -79,6 +79,14 @@ func (tb *tableBuffer) Empty() bool {
 	return len(tb.buffers) == 0
 }
 
+func (tb *tableBuffer) Buffer(i int) flux.ColReader {
+	return tb.buffers[i]
+}
+
+func (tb *tableBuffer) BufferN() int {
+	return len(tb.buffers)
+}
+
 func (tb *tableBuffer) Copy() flux.BufferedTable {
 	for i := tb.i; i < len(tb.buffers); i++ {
 		tb.buffers[i].Retain()
