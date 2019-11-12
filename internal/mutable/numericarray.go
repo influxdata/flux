@@ -10,18 +10,18 @@ import (
 
 // Int64Array is an array of int64 values.
 type Int64Array struct {
-	refCount int64
-	mem      memory.Allocator
-	data     *memory.Buffer
-	rawData  []int64
-	length   int
+	arrayBase
+	data    *memory.Buffer
+	rawData []int64
 }
 
 // NewInt64Array constructs a new Int64Array.
 func NewInt64Array(mem memory.Allocator) *Int64Array {
 	return &Int64Array{
-		refCount: 1,
-		mem:      mem,
+		arrayBase: arrayBase{
+			refCount: 1,
+			mem:      mem,
+		},
 	}
 }
 
@@ -32,6 +32,10 @@ func (b *Int64Array) Append(v int64) {
 	b.Reserve(1)
 	b.rawData = append(b.rawData, v)
 	b.length = len(b.rawData)
+}
+
+func (b *Int64Array) AppendNull() {
+	panic("implement me")
 }
 
 // AppendValues will append the given values to the array.
@@ -46,9 +50,6 @@ func (b *Int64Array) AppendValues(v []int64) {
 
 // Cap returns the capacity of the array.
 func (b *Int64Array) Cap() int { return cap(b.rawData) }
-
-// Len returns the length of the array.
-func (b *Int64Array) Len() int { return len(b.rawData) }
 
 // NewArray returns a new array from the data using NewInt64Array.
 func (b *Int64Array) NewArray() array.Interface {
@@ -82,11 +83,6 @@ func (b *Int64Array) reset() {
 	b.data = nil
 	b.rawData = nil
 	b.length = 0
-}
-
-// Retain will retain a reference to the builder.
-func (b *Int64Array) Retain() {
-	atomic.AddInt64(&b.refCount, 1)
 }
 
 // Release will release any reference to data buffers.
@@ -138,20 +134,25 @@ func (b *Int64Array) Set(i int, v int64) {
 	b.rawData[i] = v
 }
 
+// Swap will swap the values at i and j.
+func (b *Int64Array) Swap(i, j int) {
+	b.rawData[i], b.rawData[j] = b.rawData[j], b.rawData[i]
+}
+
 // Uint64Array is an array of uint64 values.
 type Uint64Array struct {
-	refCount int64
-	mem      memory.Allocator
-	data     *memory.Buffer
-	rawData  []uint64
-	length   int
+	arrayBase
+	data    *memory.Buffer
+	rawData []uint64
 }
 
 // NewUint64Array constructs a new Uint64Array.
 func NewUint64Array(mem memory.Allocator) *Uint64Array {
 	return &Uint64Array{
-		refCount: 1,
-		mem:      mem,
+		arrayBase: arrayBase{
+			refCount: 1,
+			mem:      mem,
+		},
 	}
 }
 
@@ -162,6 +163,10 @@ func (b *Uint64Array) Append(v uint64) {
 	b.Reserve(1)
 	b.rawData = append(b.rawData, v)
 	b.length = len(b.rawData)
+}
+
+func (b *Uint64Array) AppendNull() {
+	panic("implement me")
 }
 
 // AppendValues will append the given values to the array.
@@ -176,9 +181,6 @@ func (b *Uint64Array) AppendValues(v []uint64) {
 
 // Cap returns the capacity of the array.
 func (b *Uint64Array) Cap() int { return cap(b.rawData) }
-
-// Len returns the length of the array.
-func (b *Uint64Array) Len() int { return len(b.rawData) }
 
 // NewArray returns a new array from the data using NewUint64Array.
 func (b *Uint64Array) NewArray() array.Interface {
@@ -212,11 +214,6 @@ func (b *Uint64Array) reset() {
 	b.data = nil
 	b.rawData = nil
 	b.length = 0
-}
-
-// Retain will retain a reference to the builder.
-func (b *Uint64Array) Retain() {
-	atomic.AddInt64(&b.refCount, 1)
 }
 
 // Release will release any reference to data buffers.
@@ -268,20 +265,25 @@ func (b *Uint64Array) Set(i int, v uint64) {
 	b.rawData[i] = v
 }
 
+// Swap will swap the values at i and j.
+func (b *Uint64Array) Swap(i, j int) {
+	b.rawData[i], b.rawData[j] = b.rawData[j], b.rawData[i]
+}
+
 // Float64Array is an array of float64 values.
 type Float64Array struct {
-	refCount int64
-	mem      memory.Allocator
-	data     *memory.Buffer
-	rawData  []float64
-	length   int
+	arrayBase
+	data    *memory.Buffer
+	rawData []float64
 }
 
 // NewFloat64Array constructs a new Float64Array.
 func NewFloat64Array(mem memory.Allocator) *Float64Array {
 	return &Float64Array{
-		refCount: 1,
-		mem:      mem,
+		arrayBase: arrayBase{
+			refCount: 1,
+			mem:      mem,
+		},
 	}
 }
 
@@ -292,6 +294,10 @@ func (b *Float64Array) Append(v float64) {
 	b.Reserve(1)
 	b.rawData = append(b.rawData, v)
 	b.length = len(b.rawData)
+}
+
+func (b *Float64Array) AppendNull() {
+	panic("implement me")
 }
 
 // AppendValues will append the given values to the array.
@@ -306,9 +312,6 @@ func (b *Float64Array) AppendValues(v []float64) {
 
 // Cap returns the capacity of the array.
 func (b *Float64Array) Cap() int { return cap(b.rawData) }
-
-// Len returns the length of the array.
-func (b *Float64Array) Len() int { return len(b.rawData) }
 
 // NewArray returns a new array from the data using NewFloat64Array.
 func (b *Float64Array) NewArray() array.Interface {
@@ -344,11 +347,6 @@ func (b *Float64Array) reset() {
 	}
 	b.rawData = nil
 	b.length = 0
-}
-
-// Retain will retain a reference to the builder.
-func (b *Float64Array) Retain() {
-	atomic.AddInt64(&b.refCount, 1)
 }
 
 // Release will release any reference to data buffers.
@@ -398,4 +396,9 @@ func (b *Float64Array) Value(i int) float64 {
 // Set will set the value at index i.
 func (b *Float64Array) Set(i int, v float64) {
 	b.rawData[i] = v
+}
+
+// Swap will swap the values at i and j.
+func (b *Float64Array) Swap(i, j int) {
+	b.rawData[i], b.rawData[j] = b.rawData[j], b.rawData[i]
 }
