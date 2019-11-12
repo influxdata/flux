@@ -69,6 +69,19 @@ enum TOK {
 #define WASM_EXPORT __attribute__ ((visibility("default")))
 
 // Scan reads the input and reports the next lexical token. Returns the execution state.
-WASM_EXPORT int scan(int mode, const unsigned char **p, const unsigned char *data, const unsigned char *pe,
-        const unsigned char *eof, unsigned int *token, unsigned int *token_start, unsigned int *token_end,
-        const unsigned int **newlines, unsigned int *newlines_len);
+WASM_EXPORT int scan(
+    int mode,
+    const unsigned char **p,
+    const unsigned char *data,
+    const unsigned char *pe,
+    const unsigned char *eof,
+    const unsigned char **last_newline,
+    unsigned int *cur_line,
+    unsigned int *token,
+    unsigned int *token_start,
+    unsigned int *token_start_line,
+    unsigned int *token_start_col,
+    unsigned int *token_end,
+    unsigned int *token_end_line,
+    unsigned int *token_end_col
+);
