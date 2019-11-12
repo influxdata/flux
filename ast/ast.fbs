@@ -215,7 +215,9 @@ table BooleanLiteral {
 
 table DateTimeLiteral {
   base_node:BaseNode;
-  value:string;
+  secs:int64;
+  nsecs:uint32;
+  offset:int32;
 }
 
 table DurationLiteral {

@@ -8,6 +8,7 @@ use crate::ast;
 use crate::ast::walk;
 use ast_generated::fbast;
 use flatbuffers::{UnionWIPOffset, WIPOffset};
+use chrono::Offset;
 
 /// Accept the given AST package and return a FlatBuffers serialization of it as a Vec<u8>.
 /// The FlatBuffers builder starts from the end of a buffer towards the beginning, so we must
@@ -163,11 +164,12 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                     .push((b.as_union_value(), fbast::Expression::BooleanLiteral))
             }
             walk::Node::DateTimeLit(dtl) => {
-                let value = dtl.value.to_rfc3339();
-                let value = v.create_string(&value);
+                let secs = dtl.value.timestamp();
+                let nsecs = dtl.value.timestamp_subsec_nanos();
+                let offset = dtl.value.offset().fix().local_minus_utc();
                 let dtl = fbast::DateTimeLiteral::create(
                     &mut v.builder,
-                    &fbast::DateTimeLiteralArgs { base_node, value },
+                    &fbast::DateTimeLiteralArgs { base_node, secs, nsecs, offset },
                 );
                 v.expr_stack
                     .push((dtl.as_union_value(), fbast::Expression::DateTimeLiteral));

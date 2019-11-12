@@ -3,6 +3,8 @@ extern crate walkdir;
 
 use super::ast_generated::fbast;
 use crate::ast;
+use chrono::{Offset, FixedOffset};
+use crate::ast::Expression::DateTime;
 
 #[test]
 fn test_flatbuffers_ast() {
@@ -450,9 +452,13 @@ fn compare_exprs(
         }
         (ast::Expression::DateTime(ast_dtl), fbast::Expression::DateTimeLiteral) => {
             let fb_dtl = fbast::DateTimeLiteral::init_from_table(*fb_tbl);
-            let ast_value = ast_dtl.value.to_rfc3339();
+            let dtl = chrono::DateTime::<FixedOffset>::from_utc(
+                chrono::NaiveDateTime::from_timestamp(fb_dtl.secs(), fb_dtl.nsecs()),
+                FixedOffset::east(fb_dtl.offset()));
             compare_base(&ast_dtl.base, &fb_dtl.base_node())?;
-            compare_strings("date time literal value", &ast_value, &fb_dtl.value())?;
+            if ast_dtl.value != dtl {
+                return Err(String::from("invalid DateTimeLiteral value"));
+            }
             Ok(())
         }
         (ast::Expression::Regexp(ast_rel), fbast::Expression::RegexpLiteral) => {
