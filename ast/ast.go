@@ -10,7 +10,6 @@ import (
 
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/influxdata/flux/ast/internal/fbast"
-	"github.com/influxdata/flux/internal/parser"
 )
 
 // Position represents a specific location in the source
@@ -1606,8 +1605,9 @@ func (l *RegexpLiteral) Copy() Node {
 func (l RegexpLiteral) FromBuf(buf *fbast.RegexpLiteral) *RegexpLiteral {
 	l.BaseNode.FromBuf(buf.BaseNode(nil))
 	var err error
-	if l.Value, err = parser.ParseRegexp(string(buf.Value())); err != nil {
-		l.BaseNode.Errors = append(l.BaseNode.Errors, Error{err.Error()})
+	if l.Value, err = regexp.Compile(string(buf.Value())); err != nil {
+		l.BaseNode.Errors = append(l.BaseNode.Errors,
+			Error{fmt.Sprintf("Encountered error in deserializing RegexpLiteral.Values: %s", err.Error())})
 	}
 	return &l
 }
@@ -1755,10 +1755,7 @@ func (l *DateTimeLiteral) Copy() Node {
 
 func (l DateTimeLiteral) FromBuf(buf *fbast.DateTimeLiteral) *DateTimeLiteral {
 	l.BaseNode.FromBuf(buf.BaseNode(nil))
-	var err error
-	if l.Value, err = parser.ParseTime(string(buf.Value())); err != nil {
-		l.BaseNode.Errors = append(l.BaseNode.Errors, Error{err.Error()})
-	}
+	l.Value = time.Unix(buf.Secs(), int64(buf.Nsecs())).In(time.FixedZone("DateTimeLiteral offset", int(buf.Offset())))
 	return &l
 }
 
