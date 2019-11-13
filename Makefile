@@ -103,7 +103,7 @@ build: libflux
 
 clean:
 	rm -rf bin
-	cd libflux; $(CARGO) clean
+	cd libflux && $(CARGO) clean && rm -rf pkg
 
 cleangenerate:
 	rm -rf $(GENERATED_TARGETS)
@@ -151,7 +151,8 @@ bench:
 release:
 	./release.sh
 
-
+libflux-wasm:
+	cd libflux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev
 
 .PHONY: generate \
 	clean \
@@ -159,6 +160,7 @@ release:
 	build \
 	default \
 	libflux \
+	libflux-wasm \
 	fmt \
 	checkfmt \
 	tidy \
