@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   5,
 				},
 				File:   "http.flux",
-				Source: "package http\n\n// Get submits an HTTP get request to the specified URL with headers and different returns based on responseType\n// At a minimum, HTTP status code is returned. BODY and ALL (which includes the response headers) are also options\nbuiltin get",
+				Source: "package http\n\n// Get submits an HTTP get request to the specified URL with headers\n// Returns HTTP status code and body as a byte array\nbuiltin get",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
