@@ -3,7 +3,6 @@ package sql
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -13,17 +12,15 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-type MySQLRowReader struct {
+type SqliteRowReader struct {
 	Cursor      *sql.Rows
 	columns     []interface{}
 	columnTypes []flux.ColType
 	columnNames []string
 	NextFunc    func() bool
-	CloseFunc   func() error
 }
 
-// Next prepares MySQLRowReader to return rows
-func (m *MySQLRowReader) Next() bool {
+func (m *SqliteRowReader) Next() bool {
 	if m.NextFunc != nil {
 		return m.NextFunc()
 	}
@@ -45,16 +42,14 @@ func (m *MySQLRowReader) Next() bool {
 	return next
 }
 
-func (m *MySQLRowReader) GetNextRow() ([]values.Value, error) {
+func (m *SqliteRowReader) GetNextRow() ([]values.Value, error) {
 	row := make([]values.Value, len(m.columns))
 	for i, col := range m.columns {
 		switch col := col.(type) {
 		case bool, int64, uint64, float64, string:
 			row[i] = values.New(col)
 		case []uint8:
-			// Hack for MySQL, might need to work with charset?
-			// Can't do boolean with MySQL - stores BOOLEANs as TINYINTs (0 or 1)
-			// No way to distinguish if intended int or bool
+			// this allows easier testing using existing methods
 			switch m.columnTypes[i] {
 			case flux.TInt:
 				newInt, err := UInt8ToInt64(col)
@@ -68,7 +63,6 @@ func (m *MySQLRowReader) GetNextRow() ([]values.Value, error) {
 					return nil, err
 				}
 				row[i] = values.NewFloat(newFloat)
-			// This works, but you can also just just add the DSN parameter parseTime=true (see line 136)
 			case flux.TTime:
 				t, err := time.Parse(layout, string(col))
 				if err != nil {
@@ -89,20 +83,24 @@ func (m *MySQLRowReader) GetNextRow() ([]values.Value, error) {
 	return row, nil
 }
 
-func (m *MySQLRowReader) InitColumnNames(names []string) {
-	m.columnNames = names
+func (m *SqliteRowReader) InitColumnNames(n []string) {
+	m.columnNames = n
 }
 
-func (m *MySQLRowReader) InitColumnTypes(types []*sql.ColumnType) {
+func (m *SqliteRowReader) InitColumnTypes(types []*sql.ColumnType) {
 	stringTypes := make([]flux.ColType, len(types))
 	for i := 0; i < len(types); i++ {
 		switch types[i].DatabaseTypeName() {
-		case "INT", "BIGINT", "SMALLINT", "TINYINT":
+		case "INT", "INTEGER", "BIGINT", "SMALLINT", "TINYINT":
 			stringTypes[i] = flux.TInt
 		case "FLOAT", "DOUBLE":
 			stringTypes[i] = flux.TFloat
-		case "DATETIME":
+		case "DATETIME", "TIMESTAMP", "DATE":
 			stringTypes[i] = flux.TTime
+		case "TEXT":
+			stringTypes[i] = flux.TString
+		case "BOOL", "BOOLEAN":
+			stringTypes[i] = flux.TInt
 		default:
 			stringTypes[i] = flux.TString
 		}
@@ -110,52 +108,31 @@ func (m *MySQLRowReader) InitColumnTypes(types []*sql.ColumnType) {
 	m.columnTypes = stringTypes
 }
 
-func (m *MySQLRowReader) ColumnNames() []string {
+func (m *SqliteRowReader) ColumnNames() []string {
 	return m.columnNames
 }
 
-func (m *MySQLRowReader) ColumnTypes() []flux.ColType {
+func (m *SqliteRowReader) ColumnTypes() []flux.ColType {
 	return m.columnTypes
 }
 
-func (m *MySQLRowReader) SetColumnTypes(types []flux.ColType) {
+func (m *SqliteRowReader) SetColumnTypes(types []flux.ColType) {
 	m.columnTypes = types
 }
 
-func (m *MySQLRowReader) SetColumns(i []interface{}) {
+func (m *SqliteRowReader) SetColumns(i []interface{}) {
 	m.columns = i
 }
 
-func (m *MySQLRowReader) Close() error {
-	if m.CloseFunc != nil {
-		return m.CloseFunc()
-	}
+func (m *SqliteRowReader) Close() error {
 	if err := m.Cursor.Err(); err != nil {
 		return err
 	}
 	return m.Cursor.Close()
 }
 
-func UInt8ToFloat(a []uint8) (float64, error) {
-	str := string(a)
-	s, err := strconv.ParseFloat(str, 64)
-	if err != nil {
-		return s, err
-	}
-	return s, nil
-}
-
-func UInt8ToInt64(a []uint8) (int64, error) {
-	str := string(a)
-	s, err := strconv.ParseInt(str, 0, 64)
-	if err != nil {
-		return s, err
-	}
-	return s, nil
-}
-
-func NewMySQLRowReader(r *sql.Rows) (execute.RowReader, error) {
-	reader := &MySQLRowReader{
+func NewSqliteRowReader(r *sql.Rows) (execute.RowReader, error) {
+	reader := &SqliteRowReader{
 		Cursor: r,
 	}
 	cols, err := r.Columns()
@@ -169,26 +146,22 @@ func NewMySQLRowReader(r *sql.Rows) (execute.RowReader, error) {
 		return nil, err
 	}
 	reader.InitColumnTypes(types)
-
 	return reader, nil
 }
 
-// MysqlTranslateColumn translates flux colTypes into their corresponding MySQL column type
-func MysqlColumnTranslateFunc() translationFunc {
+// SqliteTranslateColumn translates flux colTypes into their corresponding SQLite column type
+func SqliteColumnTranslateFunc() translationFunc {
 	c := map[string]string{
 		flux.TFloat.String():  "FLOAT",
-		flux.TInt.String():    "BIGINT",
-		flux.TUInt.String():   "BIGINT",
-		flux.TString.String(): "TEXT(16383)",
+		flux.TInt.String():    "INT",
+		flux.TUInt.String():   "INT",
+		flux.TString.String(): "TEXT",
 		flux.TTime.String():   "DATETIME",
-		flux.TBool.String():   "BOOL",
-		// BOOL is a synonym supplied by MySQL for "convenience", and MYSQL turns this into a TINYINT type under the hood
-		// which means that looking at the schema afterwards shows the columntype as TINYINT, and not bool!
 	}
 	return func(f flux.ColType, colName string) (string, error) {
 		s, found := c[f.String()]
 		if !found {
-			return "", errors.Newf(codes.Internal, "MySQL does not support column type %s", f.String())
+			return "", errors.Newf(codes.Internal, "SQLite does not support column type %s", f.String())
 		}
 		return colName + " " + s, nil
 	}

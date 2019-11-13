@@ -49,19 +49,16 @@ func createFromSQLOpSpec(args flux.Arguments, administration *flux.Administratio
 	} else {
 		spec.DriverName = driverName
 	}
-
 	if dataSourceName, err := args.GetRequiredString("dataSourceName"); err != nil {
 		return nil, err
 	} else {
 		spec.DataSourceName = dataSourceName
 	}
-
 	if query, err := args.GetRequiredString("query"); err != nil {
 		return nil, err
 	} else {
 		spec.Query = query
 	}
-
 	return spec, nil
 }
 
@@ -126,6 +123,8 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 	switch spec.DriverName {
 	case "mysql":
 		newRowReader = NewMySQLRowReader
+	case "sqlite3":
+		newRowReader = NewSqliteRowReader
 	case "postgres", "sqlmock":
 		newRowReader = NewPostgresRowReader
 	default:
@@ -198,7 +197,6 @@ func read(ctx context.Context, reader execute.RowReader, alloc *memory.Allocator
 			return nil, err
 		}
 	}
-
 	for reader.Next() {
 		row, err := reader.GetNextRow()
 		if err != nil {

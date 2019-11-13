@@ -15,14 +15,15 @@ import (
 )
 
 const (
-	ToSQLKind = "toSQL"
-	BatchSize = 10000
+	ToSQLKind        = "toSQL"
+	DefaultBatchSize = 10000 //TODO: decide if this should be kept low enough for the lowest (SQLite), or not.
 )
 
 type ToSQLOpSpec struct {
 	DriverName     string `json:"driverName,omitempty"`
 	DataSourceName string `json:"dataSourcename,omitempty"`
 	Table          string `json:"table,omitempty"`
+	BatchSize      int    `json:"batchSize,omitempty"`
 }
 
 func init() {
@@ -31,6 +32,7 @@ func init() {
 			"driverName":     semantic.String,
 			"dataSourceName": semantic.String,
 			"table":          semantic.String,
+			"batchSize":      semantic.Int,
 		},
 		[]string{"driverName", "dataSourceName", "table"},
 	)
@@ -67,6 +69,17 @@ func (o *ToSQLOpSpec) ReadArgs(args flux.Arguments) error {
 		return errors.New(codes.Invalid, "invalid table name")
 	}
 
+	b, _, err := args.GetInt("batchSize")
+	if err != nil {
+		return err
+	}
+	if b <= 0 {
+		// set default as argument we not supplied
+		o.BatchSize = DefaultBatchSize
+	} else {
+		o.BatchSize = int(b)
+	}
+
 	return err
 }
 
@@ -101,6 +114,7 @@ func (o *ToSQLProcedureSpec) Copy() plan.ProcedureSpec {
 			DriverName:     s.DriverName,
 			DataSourceName: s.DataSourceName,
 			Table:          s.Table,
+			BatchSize:      s.BatchSize,
 		},
 	}
 	return res
@@ -183,7 +197,7 @@ func (t *ToSQLTransformation) Process(id execute.DatasetID, tbl flux.Table) (err
 	}
 	for i := range valStrings {
 		if err := ExecuteQueries(t.tx, t.spec.Spec, colNames, &valStrings[i], &valArgs[i]); err != nil {
-			return nil
+			return err
 		}
 	}
 
@@ -216,38 +230,81 @@ func (t *ToSQLTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
 
+type translationFunc func(f flux.ColType, colname string) (string, error)
+
+func correctBatchSize(batchSize, numberCols int) int {
+	/*
+		BatchSize for the DB is the number of parameters that can be queued within each call to Exec.
+		As each row you send has a parameter count equal to the number of columns (i.e. the number of "?" used in the insert statement), and some DBs
+		have a default limit on the number of parameters which can be queued before calling Exec; SQLite, for example, has a default of 999 (can only be changed
+		at compile time).
+
+		So if the row width is 10 columns, the maximum Batchsize would be:
+
+		(999 - row_width) / row_width = 98 rows. (with 0.9 of a row unused)
+
+		and,
+
+		(1000 - row_width) / row_width = 99 rows. (no remainder)
+
+		NOTE: Given a statement like:
+
+		INSERT INTO data_table (now,values,difference) VALUES(?,?,?)
+
+		each iteration of EXEC() would add 3 new values (one for each of the '?' placeholders) - but the final "parameter count" includes the initial 3 column names.
+		this is why the calculation subracts an initial "column width" from the supplied Batchsize.
+
+		Sending more would result in the call to Exec returning a "too many SQL variables" error, and the transaction would be rolled-back / aborted
+	*/
+
+	if batchSize < numberCols {
+		// if this is because the width of a single row is very large, pass to DB driver, and if this exceeds the number of allowed parameters
+		// this will be fed back to the user to handle - possibly by reducing the row width
+		return numberCols
+	}
+	return (batchSize - numberCols) / numberCols
+}
+
+func getTranslationFunc(driverName string) (func() translationFunc, error) {
+	// simply return the translationFunc that corresponds to the driver type
+	switch driverName {
+	case "sqlite3":
+		return SqliteColumnTranslateFunc, nil
+	case "postgres", "sqlmock":
+		return PostgresColumnTranslateFunc, nil
+	case "mysql":
+		return MysqlColumnTranslateFunc, nil
+	default:
+		return nil, errors.Newf(codes.Internal, "invalid driverName: %s", driverName)
+	}
+
+}
+
 func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []string, valStringArray [][]string, valArgsArray [][]interface{}, err error) {
 	cols := tbl.Cols()
+	batchSize := correctBatchSize(t.spec.Spec.BatchSize, len(cols))
+
 	labels := make(map[string]idxType, len(cols))
 	var questionMarks, newSQLTableCols []string
 	for i, col := range cols {
 		labels[col.Label] = idxType{Idx: i, Type: col.Type}
 		questionMarks = append(questionMarks, "?")
 		colNames = append(colNames, col.Label)
+		driverName := t.spec.Spec.DriverName
+		// the following allows driver-specific type errors (of which there can be MANY) to be returned, rather than the default of invalid type
+		translateColumn, err := getTranslationFunc(driverName)
+		if err != nil {
+			return nil, nil, nil, err
+		}
 
 		switch col.Type {
-		case flux.TFloat:
-			newSQLTableCols = append(newSQLTableCols, fmt.Sprintf("%s FLOAT", col.Label))
-		case flux.TInt:
-			newSQLTableCols = append(newSQLTableCols, fmt.Sprintf("%s BIGINT", col.Label))
-		case flux.TUInt:
-			newSQLTableCols = append(newSQLTableCols, fmt.Sprintf("%s BIGINT", col.Label))
-		case flux.TString:
-			switch t.spec.Spec.DriverName {
-			case "mysql":
-				newSQLTableCols = append(newSQLTableCols, fmt.Sprintf("%s TEXT(16383)", col.Label))
-			case "postgres":
-				newSQLTableCols = append(newSQLTableCols, fmt.Sprintf("%s text", col.Label))
+		case flux.TFloat, flux.TInt, flux.TUInt, flux.TString, flux.TBool, flux.TTime:
+			// each type is handled within the function - precise mapping is handled within each driver's implementation
+			v, err := translateColumn()(col.Type, col.Label)
+			if err != nil {
+				return nil, nil, nil, err
 			}
-		case flux.TTime:
-			switch t.spec.Spec.DriverName {
-			case "mysql":
-				newSQLTableCols = append(newSQLTableCols, fmt.Sprintf("%s DATETIME", col.Label))
-			case "postgres":
-				newSQLTableCols = append(newSQLTableCols, fmt.Sprintf("%s TIMESTAMP", col.Label))
-			}
-		case flux.TBool:
-			newSQLTableCols = append(newSQLTableCols, fmt.Sprintf("%s BOOL", col.Label))
+			newSQLTableCols = append(newSQLTableCols, v)
 		default:
 			return nil, nil, nil, errors.Newf(codes.Internal, "invalid type for column %s", col.Label)
 		}
@@ -329,7 +386,8 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 				return err
 			}
 
-			if i != 0 && i%BatchSize == 0 {
+			if i != 0 && i%batchSize == 0 {
+				// create "mini batches" of values - each one represents a single db.Exec to SQL
 				valArgsArray = append(valArgsArray, valueArgs)
 				valStringArray = append(valStringArray, valueStrings)
 				valueArgs = make([]interface{}, 0)
@@ -362,6 +420,8 @@ func ExecuteQueries(tx *sql.Tx, s *ToSQLOpSpec, colNames []string, valueStrings 
 	if s.DriverName != "sqlmock" {
 		_, err := tx.Exec(query, *valueArgs...)
 		if err != nil {
+			// this err which is extremely helpful as it comes from the SQL driver should be
+			// bubbled up further up the stack so user can see the issue
 			if rbErr := tx.Rollback(); rbErr != nil {
 				return errors.Newf(codes.Aborted, "transaction failed (%s) while recovering from %s", err, rbErr)
 			}
