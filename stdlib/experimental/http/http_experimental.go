@@ -28,7 +28,7 @@ var get = values.NewFunction(
 			"headers": semantic.Tvar(1),
 		},
 		Required: []string{"url"},
-		Return:   semantic.NewObjectPolyType(map[string]semantic.PolyType{"statusCode": semantic.Int, "body": semantic.Bytes, "headers": semantic.String}, semantic.LabelSet{"status", "body"}, nil),
+		Return:   semantic.NewObjectPolyType(map[string]semantic.PolyType{"statusCode": semantic.Int, "body": semantic.Bytes}, semantic.LabelSet{"status", "body"}, nil),
 	}),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		// Get and validate URL
@@ -90,7 +90,6 @@ var get = values.NewFunction(
 
 			// Read the response body but limit how much we will read.
 			// Allows socket to be reused after it is closed. (Only reusable if response emptied)
-			// maxResponseBody const is defined in http.go
 			limitedReader := &io.LimitedReader{R: response.Body, N: maxResponseBody}
 			body, err := ioutil.ReadAll(limitedReader)
 			_ = response.Body.Close()
