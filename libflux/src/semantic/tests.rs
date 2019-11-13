@@ -380,6 +380,21 @@ fn imports() {
     test_infer! {
         imp: map![
             "path/to/foo" => package![
+                "f" => "forall [t0] (x: t0) -> t0",
+            ],
+        ],
+        src: r#"
+            import "path/to/foo"
+
+            f = foo.f
+        "#,
+        exp: map![
+            "f" => "forall [t0] (x: t0) -> t0",
+        ],
+    }
+    test_infer! {
+        imp: map![
+            "path/to/foo" => package![
                 "f" => "forall [t0] where t0: Addable + Divisible (x: t0) -> t0",
             ],
         ],
