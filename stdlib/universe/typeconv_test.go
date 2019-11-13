@@ -55,6 +55,11 @@ func TestTypeconv_String(t *testing.T) {
 		},
 		{
 			name: "string(v:8)",
+			v:    byte(120),
+			want: "x",
+		},
+		{
+			name: "string(v:9)",
 			v:    int64(-541),
 			want: "-541",
 		},
