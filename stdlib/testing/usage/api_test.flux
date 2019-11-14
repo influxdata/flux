@@ -1,6 +1,7 @@
 package usage_test
 
 import "testing"
+import "strings"
 
 // This dataset has been generated with this query:
 // from(bucket: "system_usage")
@@ -1659,6 +1660,15 @@ inData = "
 ,,115,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:55:50.868423971Z,0,resp_bytes,http_request,/api/v2/write,gateway-77ff9ccb7d-j664w,043e0780ee2b1000,204
 ,,115,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:57:45.370635649Z,0,resp_bytes,http_request,/api/v2/write,gateway-77ff9ccb7d-j664w,043e0780ee2b1000,204
 ,,115,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:59:38.077384742Z,0,resp_bytes,http_request,/api/v2/write,gateway-77ff9ccb7d-j664w,043e0780ee2b1000,204
+
+#group,false,false,true,true,false,false,true,true,true,true,true,true
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string
+#default,_result,,,,,,,,,,,
+,result,table,_start,_stop,_time,_value,_field,_measurement,endpoint,hostname,org_id,status
+,,116,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:54:58.578035263Z,0,req_bytes,http_request,/api/v2/write,gateway-internal-77ff9ccb7d-j664w,03cbe13cce931000,204
+,,116,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:55:50.868423971Z,0,req_bytes,http_request,/api/v2/write,gateway-internal-77ff9ccb7d-j664w,03cbe13cce931000,204
+,,116,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:57:45.370635649Z,0,req_bytes,http_request,/api/v2/write,gateway-internal-77ff9ccb7d-j664w,03cbe13cce931000,204
+,,116,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:59:38.077384742Z,0,req_bytes,http_request,/api/v2/write,gateway-internal-77ff9ccb7d-j664w,03cbe13cce931000,204
 "
 
 outData = "
@@ -1676,7 +1686,10 @@ _f = (table=<-) => table
     |> filter(fn: (r) =>
         r.org_id == "03cbe13cce931000"
         and r._measurement == "http_request"
-        and ((r.endpoint == "/api/v2/write" and r._field == "req_bytes") or (r.endpoint == "/api/v2/query" and r._field == "resp_bytes"))
+        and ((r.endpoint == "/api/v2/write" and
+            r._field == "req_bytes" and
+            strings.containsStr(v: r.hostname, substr: "gateway-internal") != true)  or
+        (r.endpoint == "/api/v2/query" and r._field == "resp_bytes"))
     )
     |> group()
     |> aggregateWindow(every: 1h, fn: count)
