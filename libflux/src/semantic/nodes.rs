@@ -616,55 +616,79 @@ impl BinaryExpr {
 
         let cons = match self.operator {
             // The following operators require both sides to be equal.
-            ast::Operator::AdditionOperator
-            | ast::Operator::SubtractionOperator
-            | ast::Operator::MultiplicationOperator
-            | ast::Operator::DivisionOperator
-            | ast::Operator::PowerOperator
-            | ast::Operator::ModuloOperator => {
-                let mut constraints = vec![
-                    Constraint::Equal(self.left.type_of().clone(), self.typ.clone()),
-                    Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
-                ];
-                if let Some(kind) = match self.operator {
-                    ast::Operator::AdditionOperator => Some(Addable),
-                    ast::Operator::SubtractionOperator => Some(Subtractable),
-                    ast::Operator::MultiplicationOperator
-                    | ast::Operator::DivisionOperator
-                    | ast::Operator::PowerOperator
-                    | ast::Operator::ModuloOperator => Some(Divisible),
-                    _ => None,
-                } {
-                    constraints.push(Constraint::Kind(self.typ.clone(), kind));
-                }
-                Constraints::from(constraints)
-            }
-            // The following require the type to be a boolean.
-            ast::Operator::GreaterThanEqualOperator
-            | ast::Operator::LessThanEqualOperator
-            | ast::Operator::GreaterThanOperator
-            | ast::Operator::LessThanOperator
-            | ast::Operator::NotEqualOperator
-            | ast::Operator::EqualOperator => {
-                let kind = match self.operator {
-                    ast::Operator::EqualOperator | ast::Operator::NotEqualOperator => Equatable,
-                    _ => Comparable,
-                };
-                Constraints::from(vec![
-                    Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
-                    Constraint::Kind(self.left.type_of().clone(), kind),
-                    Constraint::Kind(self.right.type_of().clone(), kind),
-                    Constraint::Equal(self.typ.clone(), MonoType::Bool),
-                ])
-            }
+            ast::Operator::AdditionOperator => Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                Constraint::Equal(self.left.type_of().clone(), self.typ.clone()),
+                Constraint::Kind(self.typ.clone(), Kind::Addable),
+            ]),
+            ast::Operator::SubtractionOperator => Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                Constraint::Equal(self.left.type_of().clone(), self.typ.clone()),
+                Constraint::Kind(self.typ.clone(), Kind::Subtractable),
+            ]),
+            ast::Operator::MultiplicationOperator => Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                Constraint::Equal(self.left.type_of().clone(), self.typ.clone()),
+                Constraint::Kind(self.typ.clone(), Kind::Divisible),
+            ]),
+            ast::Operator::DivisionOperator => Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                Constraint::Equal(self.left.type_of().clone(), self.typ.clone()),
+                Constraint::Kind(self.typ.clone(), Kind::Divisible),
+            ]),
+            ast::Operator::PowerOperator => Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                Constraint::Equal(self.left.type_of().clone(), self.typ.clone()),
+                Constraint::Kind(self.typ.clone(), Kind::Divisible),
+            ]),
+            ast::Operator::ModuloOperator => Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                Constraint::Equal(self.left.type_of().clone(), self.typ.clone()),
+                Constraint::Kind(self.typ.clone(), Kind::Divisible),
+            ]),
+            ast::Operator::GreaterThanOperator => Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                Constraint::Equal(self.typ.clone(), MonoType::Bool),
+                Constraint::Kind(self.left.type_of().clone(), Kind::Comparable),
+            ]),
+            ast::Operator::LessThanOperator => Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                Constraint::Equal(self.typ.clone(), MonoType::Bool),
+                Constraint::Kind(self.left.type_of().clone(), Kind::Comparable),
+            ]),
+            ast::Operator::EqualOperator => Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                Constraint::Equal(self.typ.clone(), MonoType::Bool),
+                Constraint::Kind(self.left.type_of().clone(), Kind::Equatable),
+            ]),
+            ast::Operator::NotEqualOperator => Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                Constraint::Equal(self.typ.clone(), MonoType::Bool),
+                Constraint::Kind(self.left.type_of().clone(), Kind::Equatable),
+            ]),
+            ast::Operator::GreaterThanEqualOperator => Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                Constraint::Equal(self.typ.clone(), MonoType::Bool),
+                Constraint::Kind(self.left.type_of().clone(), Kind::Equatable),
+                Constraint::Kind(self.left.type_of().clone(), Kind::Comparable),
+            ]),
+            ast::Operator::LessThanEqualOperator => Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                Constraint::Equal(self.typ.clone(), MonoType::Bool),
+                Constraint::Kind(self.left.type_of().clone(), Kind::Equatable),
+                Constraint::Kind(self.left.type_of().clone(), Kind::Comparable),
+            ]),
             // Regular expression operators.
-            ast::Operator::RegexpMatchOperator | ast::Operator::NotRegexpMatchOperator => {
-                Constraints::from(vec![
-                    Constraint::Equal(self.left.type_of().clone(), MonoType::String),
-                    Constraint::Equal(self.right.type_of().clone(), MonoType::Regexp),
-                    Constraint::Equal(self.typ.clone(), MonoType::Bool),
-                ])
-            }
+            ast::Operator::RegexpMatchOperator => Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), MonoType::String),
+                Constraint::Equal(self.right.type_of().clone(), MonoType::Regexp),
+                Constraint::Equal(self.typ.clone(), MonoType::Bool),
+            ]),
+            ast::Operator::NotRegexpMatchOperator => Constraints::from(vec![
+                Constraint::Equal(self.left.type_of().clone(), MonoType::String),
+                Constraint::Equal(self.right.type_of().clone(), MonoType::Regexp),
+                Constraint::Equal(self.typ.clone(), MonoType::Bool),
+            ]),
             _ => return Err(Error::unsupported_binary_operator(&self.operator)),
         };
 
