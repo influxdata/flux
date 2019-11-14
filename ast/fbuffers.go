@@ -156,13 +156,13 @@ func exprFromBufTable(t *flatbuffers.Table, etype fbast.Expression) Expression {
 		m.Init(t.Bytes, t.Pos)
 		return MemberExpression{}.FromBuf(m)
 	case fbast.ExpressionIndexExpression:
-		m := new(fbast.MemberExpression)
+		m := new(fbast.IndexExpression)
 		m.Init(t.Bytes, t.Pos)
-		return MemberExpression{}.FromBuf(m)
+		return IndexExpression{}.FromBuf(m)
 	case fbast.ExpressionObjectExpression:
-		m := new(fbast.MemberExpression)
+		m := new(fbast.ObjectExpression)
 		m.Init(t.Bytes, t.Pos)
-		return MemberExpression{}.FromBuf(m)
+		return ObjectExpression{}.FromBuf(m)
 	case fbast.ExpressionPipeExpression:
 		p := new(fbast.PipeExpression)
 		p.Init(t.Bytes, t.Pos)
@@ -176,9 +176,9 @@ func exprFromBufTable(t *flatbuffers.Table, etype fbast.Expression) Expression {
 		r.Init(t.Bytes, t.Pos)
 		return RegexpLiteral{}.FromBuf(r)
 	case fbast.ExpressionStringLiteral:
-		r := new(fbast.RegexpLiteral)
+		r := new(fbast.StringLiteral)
 		r.Init(t.Bytes, t.Pos)
-		return RegexpLiteral{}.FromBuf(r)
+		return StringLiteral{}.FromBuf(r)
 	case fbast.ExpressionUnaryExpression:
 		u := new(fbast.UnaryExpression)
 		u.Init(t.Bytes, t.Pos)
