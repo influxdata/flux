@@ -297,27 +297,27 @@ pub struct ExpressionUnionTableOffset {}
 #[repr(i8)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum Operator {
-  MultiplicationOperator = 0,
-  DivisionOperator = 1,
-  ModuloOperator = 2,
-  PowerOperator = 3,
-  AdditionOperator = 4,
-  SubtractionOperator = 5,
-  LessThanEqualOperator = 6,
-  LessThanOperator = 7,
-  GreaterThanEqualOperator = 8,
-  GreaterThanOperator = 9,
-  StartsWithOperator = 10,
-  InOperator = 11,
-  NotOperator = 12,
-  ExistsOperator = 13,
-  NotEmptyOperator = 14,
-  EmptyOperator = 15,
-  EqualOperator = 16,
-  NotEqualOperator = 17,
-  RegexpMatchOperator = 18,
-  NotRegexpMatchOperator = 19,
-  InvalidOperator = 20,
+  InvalidOperator = 0,
+  MultiplicationOperator = 1,
+  DivisionOperator = 2,
+  ModuloOperator = 3,
+  PowerOperator = 4,
+  AdditionOperator = 5,
+  SubtractionOperator = 6,
+  LessThanEqualOperator = 7,
+  LessThanOperator = 8,
+  GreaterThanEqualOperator = 9,
+  GreaterThanOperator = 10,
+  StartsWithOperator = 11,
+  InOperator = 12,
+  NotOperator = 13,
+  ExistsOperator = 14,
+  NotEmptyOperator = 15,
+  EmptyOperator = 16,
+  EqualOperator = 17,
+  NotEqualOperator = 18,
+  RegexpMatchOperator = 19,
+  NotRegexpMatchOperator = 20,
 
 }
 
@@ -357,6 +357,7 @@ impl flatbuffers::Push for Operator {
 
 #[allow(non_camel_case_types)]
 const ENUM_VALUES_OPERATOR:[Operator; 21] = [
+  Operator::InvalidOperator,
   Operator::MultiplicationOperator,
   Operator::DivisionOperator,
   Operator::ModuloOperator,
@@ -376,12 +377,12 @@ const ENUM_VALUES_OPERATOR:[Operator; 21] = [
   Operator::EqualOperator,
   Operator::NotEqualOperator,
   Operator::RegexpMatchOperator,
-  Operator::NotRegexpMatchOperator,
-  Operator::InvalidOperator
+  Operator::NotRegexpMatchOperator
 ];
 
 #[allow(non_camel_case_types)]
 const ENUM_NAMES_OPERATOR:[&'static str; 21] = [
+    "InvalidOperator",
     "MultiplicationOperator",
     "DivisionOperator",
     "ModuloOperator",
@@ -401,8 +402,7 @@ const ENUM_NAMES_OPERATOR:[&'static str; 21] = [
     "EqualOperator",
     "NotEqualOperator",
     "RegexpMatchOperator",
-    "NotRegexpMatchOperator",
-    "InvalidOperator"
+    "NotRegexpMatchOperator"
 ];
 
 pub fn enum_name_operator(e: Operator) -> &'static str {
@@ -414,13 +414,14 @@ pub fn enum_name_operator(e: Operator) -> &'static str {
 #[repr(i8)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum LogicalOperator {
-  AndOperator = 0,
-  OrOperator = 1,
+  InvalidOperator = 0,
+  AndOperator = 1,
+  OrOperator = 2,
 
 }
 
 const ENUM_MIN_LOGICAL_OPERATOR: i8 = 0;
-const ENUM_MAX_LOGICAL_OPERATOR: i8 = 1;
+const ENUM_MAX_LOGICAL_OPERATOR: i8 = 2;
 
 impl<'a> flatbuffers::Follow<'a> for LogicalOperator {
   type Inner = Self;
@@ -454,13 +455,15 @@ impl flatbuffers::Push for LogicalOperator {
 }
 
 #[allow(non_camel_case_types)]
-const ENUM_VALUES_LOGICAL_OPERATOR:[LogicalOperator; 2] = [
+const ENUM_VALUES_LOGICAL_OPERATOR:[LogicalOperator; 3] = [
+  LogicalOperator::InvalidOperator,
   LogicalOperator::AndOperator,
   LogicalOperator::OrOperator
 ];
 
 #[allow(non_camel_case_types)]
-const ENUM_NAMES_LOGICAL_OPERATOR:[&'static str; 2] = [
+const ENUM_NAMES_LOGICAL_OPERATOR:[&'static str; 3] = [
+    "InvalidOperator",
     "AndOperator",
     "OrOperator"
 ];
@@ -3714,7 +3717,7 @@ impl<'a> BinaryExpression<'a> {
   }
   #[inline]
   pub fn operator(&self) -> Operator {
-    self._tab.get::<Operator>(BinaryExpression::VT_OPERATOR, Some(Operator::MultiplicationOperator)).unwrap()
+    self._tab.get::<Operator>(BinaryExpression::VT_OPERATOR, Some(Operator::InvalidOperator)).unwrap()
   }
   #[inline]
   pub fn left_type(&self) -> Expression {
@@ -4227,7 +4230,7 @@ impl<'a> Default for BinaryExpressionArgs<'a> {
     fn default() -> Self {
         BinaryExpressionArgs {
             base_node: None,
-            operator: Operator::MultiplicationOperator,
+            operator: Operator::InvalidOperator,
             left_type: Expression::NONE,
             left: None,
             right_type: Expression::NONE,
@@ -4246,7 +4249,7 @@ impl<'a: 'b, 'b> BinaryExpressionBuilder<'a, 'b> {
   }
   #[inline]
   pub fn add_operator(&mut self, operator: Operator) {
-    self.fbb_.push_slot::<Operator>(BinaryExpression::VT_OPERATOR, operator, Operator::MultiplicationOperator);
+    self.fbb_.push_slot::<Operator>(BinaryExpression::VT_OPERATOR, operator, Operator::InvalidOperator);
   }
   #[inline]
   pub fn add_left_type(&mut self, left_type: Expression) {
@@ -4330,7 +4333,7 @@ impl<'a> LogicalExpression<'a> {
   }
   #[inline]
   pub fn operator(&self) -> LogicalOperator {
-    self._tab.get::<LogicalOperator>(LogicalExpression::VT_OPERATOR, Some(LogicalOperator::AndOperator)).unwrap()
+    self._tab.get::<LogicalOperator>(LogicalExpression::VT_OPERATOR, Some(LogicalOperator::InvalidOperator)).unwrap()
   }
   #[inline]
   pub fn left_type(&self) -> Expression {
@@ -4843,7 +4846,7 @@ impl<'a> Default for LogicalExpressionArgs<'a> {
     fn default() -> Self {
         LogicalExpressionArgs {
             base_node: None,
-            operator: LogicalOperator::AndOperator,
+            operator: LogicalOperator::InvalidOperator,
             left_type: Expression::NONE,
             left: None,
             right_type: Expression::NONE,
@@ -4862,7 +4865,7 @@ impl<'a: 'b, 'b> LogicalExpressionBuilder<'a, 'b> {
   }
   #[inline]
   pub fn add_operator(&mut self, operator: LogicalOperator) {
-    self.fbb_.push_slot::<LogicalOperator>(LogicalExpression::VT_OPERATOR, operator, LogicalOperator::AndOperator);
+    self.fbb_.push_slot::<LogicalOperator>(LogicalExpression::VT_OPERATOR, operator, LogicalOperator::InvalidOperator);
   }
   #[inline]
   pub fn add_left_type(&mut self, left_type: Expression) {
@@ -4942,7 +4945,7 @@ impl<'a> UnaryExpression<'a> {
   }
   #[inline]
   pub fn operator(&self) -> Operator {
-    self._tab.get::<Operator>(UnaryExpression::VT_OPERATOR, Some(Operator::MultiplicationOperator)).unwrap()
+    self._tab.get::<Operator>(UnaryExpression::VT_OPERATOR, Some(Operator::InvalidOperator)).unwrap()
   }
   #[inline]
   pub fn argument_type(&self) -> Expression {
@@ -5205,7 +5208,7 @@ impl<'a> Default for UnaryExpressionArgs<'a> {
     fn default() -> Self {
         UnaryExpressionArgs {
             base_node: None,
-            operator: Operator::MultiplicationOperator,
+            operator: Operator::InvalidOperator,
             argument_type: Expression::NONE,
             argument: None,
         }
@@ -5222,7 +5225,7 @@ impl<'a: 'b, 'b> UnaryExpressionBuilder<'a, 'b> {
   }
   #[inline]
   pub fn add_operator(&mut self, operator: Operator) {
-    self.fbb_.push_slot::<Operator>(UnaryExpression::VT_OPERATOR, operator, Operator::MultiplicationOperator);
+    self.fbb_.push_slot::<Operator>(UnaryExpression::VT_OPERATOR, operator, Operator::InvalidOperator);
   }
   #[inline]
   pub fn add_argument_type(&mut self, argument_type: Expression) {

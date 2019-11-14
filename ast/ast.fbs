@@ -147,6 +147,7 @@ table WrappedExpression {
 }
 
 enum Operator : byte {
+  InvalidOperator,
   MultiplicationOperator,
   DivisionOperator,
   ModuloOperator,
@@ -167,10 +168,10 @@ enum Operator : byte {
   NotEqualOperator,
   RegexpMatchOperator,
   NotRegexpMatchOperator,
-  InvalidOperator,
 }
 
 enum LogicalOperator : byte {
+  InvalidOperator,
   AndOperator,
   OrOperator,
 }
