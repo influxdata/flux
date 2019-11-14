@@ -944,7 +944,7 @@ impl Substitutable for Function {
     }
 }
 
-impl<T: MaxTvar> MaxTvar for HashMap<String, T> {
+impl<U, T: MaxTvar> MaxTvar for HashMap<U, T> {
     fn max_tvar(&self) -> Tvar {
         self.iter()
             .map(|(_, t)| t.max_tvar())

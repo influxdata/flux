@@ -72,6 +72,11 @@ impl Error {
             msg: format!("unsupported unary operator {}", op.to_string()),
         }
     }
+    fn unknown_import_path(path: &str) -> Error {
+        Error {
+            msg: format!("\"{}\" is not a known import path", path),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -190,13 +195,30 @@ impl Expression {
     }
 }
 
+pub struct Importer<'a> {
+    values: HashMap<&'a str, PolyType>,
+}
+
+impl<'a> From<HashMap<&'a str, PolyType>> for Importer<'a> {
+    fn from(m: HashMap<&'a str, PolyType>) -> Importer<'a> {
+        Importer { values: m }
+    }
+}
+
+impl<'a> Importer<'a> {
+    pub fn import(&'a self, name: &'a str) -> Option<&'a PolyType> {
+        self.values.get(name)
+    }
+}
+
 // Infer the types of a flux package
 pub fn infer_pkg_types(
     pkg: &mut Package,
     env: Environment,
     f: &mut Fresher,
+    i: &Importer,
 ) -> std::result::Result<(Environment, Substitution), Error> {
-    let (env, cons) = pkg.infer(env, f)?;
+    let (env, cons) = pkg.infer(env, f, i)?;
     Ok((env, infer::solve(&cons, &mut HashMap::new(), f)?))
 }
 
@@ -209,11 +231,11 @@ pub struct Package {
 }
 
 impl Package {
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&mut self, env: Environment, f: &mut Fresher, i: &Importer) -> Result {
         self.files
             .iter_mut()
             .try_fold((env, Constraints::empty()), |(env, rest), file| {
-                let (env, cons) = file.infer(env, f)?;
+                let (env, cons) = file.infer(env, f, i)?;
                 Ok((env, cons + rest))
             })
     }
@@ -229,37 +251,57 @@ pub struct File {
 }
 
 impl File {
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
-        // TODO: add imported types to the type environment
-        self.body.iter_mut().try_fold(
-            (env, Constraints::empty()),
-            |(env, rest), node| match node {
-                Statement::Builtin(stmt) => {
-                    let (env, cons) = stmt.infer(env, f)?;
-                    Ok((env, cons + rest))
-                }
-                Statement::Variable(stmt) => {
-                    let (env, cons) = stmt.infer(env, f)?;
-                    Ok((env, cons + rest))
-                }
-                Statement::Option(stmt) => {
-                    let (env, cons) = stmt.infer(env, f)?;
-                    Ok((env, cons + rest))
-                }
-                Statement::Expr(stmt) => {
-                    let (env, cons) = stmt.infer(env, f)?;
-                    Ok((env, cons + rest))
-                }
-                Statement::Test(stmt) => {
-                    let (env, cons) = stmt.infer(env, f)?;
-                    Ok((env, cons + rest))
-                }
-                Statement::Return(_) => Err(Error::invalid_statement(String::from(
-                    "cannot have return statement in file block",
-                ))),
-            },
-        )
-        // TODO: remove imported names from the type environment
+    fn infer(&mut self, mut env: Environment, f: &mut Fresher, i: &Importer) -> Result {
+        let mut imports = Vec::with_capacity(self.imports.len());
+
+        for dec in &self.imports {
+            let path = &dec.path.value;
+            let name = pkg_name_from_path(&path);
+
+            imports.push(name);
+
+            match i.import(path) {
+                Some(poly) => env.add(name.to_owned(), poly.clone()),
+                None => return Err(Error::unknown_import_path(path)),
+            };
+        }
+
+        let (mut env, constraints) =
+            self.body
+                .iter_mut()
+                .try_fold(
+                    (env, Constraints::empty()),
+                    |(env, rest), node| match node {
+                        Statement::Builtin(stmt) => {
+                            let (env, cons) = stmt.infer(env, f)?;
+                            Ok((env, cons + rest))
+                        }
+                        Statement::Variable(stmt) => {
+                            let (env, cons) = stmt.infer(env, f)?;
+                            Ok((env, cons + rest))
+                        }
+                        Statement::Option(stmt) => {
+                            let (env, cons) = stmt.infer(env, f)?;
+                            Ok((env, cons + rest))
+                        }
+                        Statement::Expr(stmt) => {
+                            let (env, cons) = stmt.infer(env, f)?;
+                            Ok((env, cons + rest))
+                        }
+                        Statement::Test(stmt) => {
+                            let (env, cons) = stmt.infer(env, f)?;
+                            Ok((env, cons + rest))
+                        }
+                        Statement::Return(_) => Err(Error::invalid_statement(String::from(
+                            "cannot have return statement in file block",
+                        ))),
+                    },
+                )?;
+
+        for name in imports {
+            env.remove(name);
+        }
+        Ok((env, constraints))
     }
 }
 
@@ -276,6 +318,10 @@ pub struct ImportDeclaration {
 
     pub alias: Option<Identifier>,
     pub path: StringLit,
+}
+
+fn pkg_name_from_path(path: &str) -> &str {
+    path.rsplitn(2, '/').next().unwrap()
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -1301,7 +1347,15 @@ mod tests {
         let mut f: Fresher = 1.into();
         let mut pkg = analyze_with(ast, &mut f).unwrap();
 
-        let (env, _) = infer_pkg_types(&mut pkg, env, &mut f).unwrap();
+        let (env, _) = infer_pkg_types(
+            &mut pkg,
+            env,
+            &mut f,
+            &Importer {
+                values: HashMap::new(),
+            },
+        )
+        .unwrap();
 
         let normalized: HashMap<String, PolyType> = env
             .values

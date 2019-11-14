@@ -26,10 +26,12 @@ use std::collections::HashMap;
 use crate::semantic::analyze::analyze_with;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
+use crate::semantic::infer;
+use crate::semantic::infer::Constraints;
 use crate::semantic::nodes;
 use crate::semantic::parser::parse;
 use crate::semantic::sub::Substitutable;
-use crate::semantic::types::{MaxTvar, MonoType, PolyType};
+use crate::semantic::types::{Error, MaxTvar, MonoType, PolyType, Property, Row};
 
 use crate::ast;
 use crate::parser::parse_string;
@@ -63,8 +65,8 @@ fn validate(t: PolyType) -> Result<PolyType, String> {
     return Ok(t);
 }
 
-fn parse_env_map(env: HashMap<&str, &str>) -> HashMap<String, PolyType> {
-    env.into_iter()
+fn parse_map(m: HashMap<&str, &str>) -> HashMap<String, PolyType> {
+    m.into_iter()
         .map(|(name, expr)| {
             let init = parse(expr).unwrap();
             let poly = validate(init).unwrap();
@@ -73,17 +75,75 @@ fn parse_env_map(env: HashMap<&str, &str>) -> HashMap<String, PolyType> {
         .collect()
 }
 
+fn to_generic_row<'a, I>(types: I, f: &mut Fresher) -> Result<PolyType, Error>
+where
+    I: Iterator<Item = (&'a String, &'a PolyType)>,
+{
+    let (r, cons) = to_row(types, f);
+    let mut kinds = HashMap::new();
+    let sub = infer::solve(&cons, &mut kinds, f)?;
+    let poly = infer::generalize(
+        &Environment::empty(),
+        &kinds,
+        MonoType::Row(Box::new(r)).apply(&sub),
+    );
+    Ok(poly)
+}
+
+fn to_row<'a, I>(pkg: I, f: &mut Fresher) -> (Row, Constraints)
+where
+    I: Iterator<Item = (&'a String, &'a PolyType)>,
+{
+    pkg.fold(
+        (Row::Empty, infer::Constraints::empty()),
+        |(r, cons), (name, poly)| {
+            let (t, c) = infer::instantiate(poly.clone(), f);
+            let head = Property {
+                k: name.to_owned(),
+                v: t,
+            };
+            let tail = MonoType::Row(Box::new(r));
+            (Row::Extension { head, tail }, cons + c)
+        },
+    )
+}
+
 fn infer_types(
     src: &str,
     env: HashMap<&str, &str>,
+    imp: HashMap<&str, HashMap<&str, &str>>,
     want: Option<HashMap<&str, &str>>,
 ) -> Result<Environment, nodes::Error> {
-    // Parse polytype expressions in initial environment.
-    let env = parse_env_map(env);
+    // Parse polytype expressions in external packages.
+    let imports: HashMap<&str, HashMap<String, PolyType>> = imp
+        .into_iter()
+        .map(|(path, pkg)| (path, parse_map(pkg)))
+        .collect();
 
-    // Compute the maximum type variable in the environment
-    // and initialize a fresher with this type variable.
-    let max = env.max_tvar();
+    // Compute the maximum type variable and init fresher
+    let max = imports.max_tvar();
+    let mut f = Fresher::from(max.0 + 1);
+
+    // Instantiate package importer using generic objects
+    let importer = nodes::Importer::from(
+        imports
+            .into_iter()
+            .map(|(path, types)| (path, to_generic_row(types.iter(), &mut f).unwrap()))
+            .collect::<HashMap<&str, PolyType>>(),
+    );
+
+    // Parse polytype expressions in initial environment.
+    let env = parse_map(env);
+
+    // Compute the maximum type variable and init fresher
+    let max = {
+        let tv = env.max_tvar();
+        if tv > max {
+            tv
+        } else {
+            max
+        }
+    };
     let mut f = Fresher::from(max.0 + 1);
 
     let pkg = parse_program(src);
@@ -92,6 +152,7 @@ fn infer_types(
         &mut analyze_with(pkg, &mut f).unwrap(),
         Environment::new(env.into()),
         &mut f,
+        &importer,
     ) {
         Ok((env, _)) => env.values,
         Err(e) => return Err(e),
@@ -100,7 +161,7 @@ fn infer_types(
     // Parse polytype expressions in expected environment.
     // Only perform this step if a map of wanted types exists.
     if let Some(env) = want {
-        let want = parse_env_map(env);
+        let want = parse_map(env);
         if want != got {
             panic!(
                 "\n\n{}\n\n{}\n{}\n{}\n{}\n",
@@ -122,8 +183,9 @@ fn infer_types(
 /// A test case consists of:
 ///
 /// 1. An optional type environment (representing a prelude)
-/// 2. The flux program to be type checked
-/// 3. The expected types of the top-level identifiers of said program
+/// 2. Optional package imports (for any import statements)
+/// 3. The flux program to be type checked
+/// 4. The expected types of the top-level identifiers of said program
 ///
 /// # Example
 ///
@@ -142,15 +204,42 @@ fn infer_types(
 /// }
 /// ```
 ///
+/// ```
+/// #[test]
+/// fn with_imports() {
+///     test_infer! {
+///         imp: map![
+///             "path/to/foo" => package![
+///                 "f" => "forall [t0] (x: t0) -> t0",
+///             ],
+///         ],
+///         src: r#"
+///             import foo "path/to/foo"
+///
+///             f = foo.f
+///         "#,
+///         exp: map![
+///             "f" => "forall [t0] (x: t0) -> t0",
+///         ],
+///     }
+/// }
+/// ```
+///
 macro_rules! test_infer {
-    ( env: $env:expr, src: $src:expr, exp: $exp:expr $(,)? ) => {{
-        if let Err(e) = infer_types($src, $env, Some($exp)) {
+    ($(env: $env:expr,)? $(imp: $imp:expr,)? src: $src:expr, exp: $exp:expr $(,)? ) => {{
+        #[allow(unused_mut, unused_assignments)]
+        let mut env = HashMap::new();
+        $(
+            env = $env;
+        )?
+        #[allow(unused_mut, unused_assignments)]
+        let mut imp = HashMap::new();
+        $(
+            imp = $imp;
+        )?
+        if let Err(e) = infer_types($src, env, imp, Some($exp)) {
             panic!(format!("{}", e));
         }
-    }};
-    ( src: $src:expr, exp: $exp:expr $(,)? ) => {{
-        let env = HashMap::new();
-        test_infer!(env: env, src: $src, exp: $exp);
     }};
 }
 
@@ -159,7 +248,8 @@ macro_rules! test_infer {
 /// These test cases consist of:
 ///
 /// 1. An optional type environment (representing a prelude)
-/// 2. A flux program that will not type check
+/// 2. Optional package imports (for any import statements)
+/// 3. A flux program that will not type check
 ///
 /// # Example
 ///
@@ -173,8 +263,18 @@ macro_rules! test_infer {
 /// ```
 ///
 macro_rules! test_infer_err {
-    ( env: $env:expr, src: $src:expr $(,)? ) => {{
-        if let Ok(env) = infer_types($src, $env, None) {
+    ( $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)? ) => {{
+        #[allow(unused_mut, unused_assignments)]
+        let mut imp = HashMap::new();
+        $(
+            imp = $imp;
+        )?
+        #[allow(unused_mut, unused_assignments)]
+        let mut env = HashMap::new();
+        $(
+            env = $env;
+        )?
+        if let Ok(env) = infer_types($src, env, imp, None) {
             panic!(
                 "\n\n{}\n\n{}\n",
                 "expected type error but instead inferred the following types:"
@@ -187,13 +287,17 @@ macro_rules! test_infer_err {
             )
         }
     }};
-    ( src: $src:expr $(,)? ) => {{
-        let env = HashMap::new();
-        test_infer_err!(env: env, src: $src);
-    }};
 }
 
 macro_rules! map {
+    ($( $key: expr => $val: expr ),*$(,)?) => {{
+         let mut map = ::std::collections::HashMap::new();
+         $( map.insert($key, $val); )*
+         map
+    }}
+}
+
+macro_rules! package {
     ($( $key: expr => $val: expr ),*$(,)?) => {{
          let mut map = ::std::collections::HashMap::new();
          $( map.insert($key, $val); )*
@@ -227,6 +331,94 @@ fn instantiation_1() {
             "a" => "forall [t0] where t0: Addable (a: t0, b: t0) -> t0",
             "x" => "forall [t0] where t0: Addable (a: t0, b: t0) -> t0",
         ],
+    }
+}
+#[test]
+fn imports() {
+    test_infer! {
+        imp: map![
+            "path/to/foo" => package![
+                "a" => "forall [] int",
+                "b" => "forall [] string",
+            ],
+            "path/to/bar" => package![
+                "a" => "forall [] int",
+                "b" => "forall [] {c: int | d: float}",
+            ],
+        ],
+        src: r#"
+            import foo "path/to/foo"
+            import bar "path/to/bar"
+
+            a = foo.a
+            b = foo.b
+            c = bar.a
+            d = bar.b
+        "#,
+        exp: map![
+            "a" => "forall [] int",
+            "b" => "forall [] string",
+            "c" => "forall [] int",
+            "d" => "forall [] {c: int | d: float}",
+        ],
+    }
+    test_infer! {
+        imp: map![
+            "path/to/foo" => package![
+                "f" => "forall [t0] (x: t0) -> t0",
+            ],
+        ],
+        src: r#"
+            import foo "path/to/foo"
+
+            f = foo.f
+        "#,
+        exp: map![
+            "f" => "forall [t0] (x: t0) -> t0",
+        ],
+    }
+    test_infer! {
+        imp: map![
+            "path/to/foo" => package![
+                "f" => "forall [t0] (x: t0) -> t0",
+            ],
+        ],
+        src: r#"
+            import "path/to/foo"
+
+            f = foo.f
+        "#,
+        exp: map![
+            "f" => "forall [t0] (x: t0) -> t0",
+        ],
+    }
+    test_infer! {
+        imp: map![
+            "path/to/foo" => package![
+                "f" => "forall [t0] where t0: Addable + Divisible (x: t0) -> t0",
+            ],
+        ],
+        src: r#"
+            import foo "path/to/foo"
+
+            f = foo.f
+        "#,
+        exp: map![
+            "f" => "forall [t0] where t0: Addable + Divisible (x: t0) -> t0",
+        ],
+    }
+    test_infer_err! {
+        imp: map![
+            "path/to/foo" => package![
+                "a" => "forall [] bool",
+                "b" => "forall [] time",
+            ],
+        ],
+        src: r#"
+            import foo "path/to/foo"
+
+            foo.a + foo.b
+        "#,
     }
 }
 #[test]
