@@ -33,7 +33,7 @@ func (p Position) IsValid() bool {
 	return p.Line > 0 && p.Column > 0
 }
 
-func (p Position) FromBuf(buf *fbast.Position) {
+func (p *Position) FromBuf(buf *fbast.Position) {
 	p.Line = int(buf.Line())
 	p.Column = int(buf.Column())
 }
@@ -72,11 +72,12 @@ func (l *SourceLocation) Copy() *SourceLocation {
 	return &nl
 }
 
-func (l SourceLocation) FromBuf(buf *fbast.SourceLocation) {
+func (l SourceLocation) FromBuf(buf *fbast.SourceLocation) *SourceLocation {
 	l.File = string(buf.File())
 	l.Start.FromBuf(buf.Start(nil))
 	l.End.FromBuf(buf.End(nil))
 	l.Source = string(buf.Source())
+	return &l
 }
 
 // Node represents a node in the InfluxDB abstract syntax tree.
@@ -165,11 +166,16 @@ func (b BaseNode) Copy() BaseNode {
 	return b
 }
 
-func (b BaseNode) FromBuf(buf *fbast.BaseNode) {
-	b.Location().FromBuf(buf.Loc(nil))
-	b.Errors = make([]Error, buf.ErrorsLength())
-	for i := 0; i < buf.ErrorsLength(); i++ {
-		b.Errors[i] = Error{string(buf.Errors(i))}
+func (b *BaseNode) FromBuf(buf *fbast.BaseNode) {
+	b.Loc = SourceLocation{}.FromBuf(buf.Loc(nil))
+	if !b.Loc.IsValid() {
+		b.Loc = nil
+	}
+	if buf.ErrorsLength() != 0 {
+		b.Errors = make([]Error, buf.ErrorsLength())
+		for i := 0; i < buf.ErrorsLength(); i++ {
+			b.Errors[i] = Error{string(buf.Errors(i))}
+		}
 	}
 }
 
@@ -211,20 +217,22 @@ func (p *Package) Copy() Node {
 	return np
 }
 
-func (p Package) FromBuf(buf *fbast.Package) {
-	p.BaseNode.FromBuf(buf.BaseNode(nil))
-	p.Path = string(buf.Path())
-	p.Package = string(buf.Package())
-	p.Files = make([]*File, buf.FilesLength())
-	for i := 0; i < buf.FilesLength(); i++ {
+func (p Package) FromBuf(buf []byte) *Package {
+	fbp := fbast.GetRootAsPackage(buf, 0)
+	p.BaseNode.FromBuf(fbp.BaseNode(nil))
+	p.Path = string(fbp.Path())
+	p.Package = string(fbp.Package())
+	p.Files = make([]*File, fbp.FilesLength())
+	for i := 0; i < fbp.FilesLength(); i++ {
 		fbf := new(fbast.File)
-		if !buf.Files(fbf, i) {
+		if !fbp.Files(fbf, i) {
 			p.BaseNode.Errors = append(p.BaseNode.Errors,
 				Error{fmt.Sprintf("Encountered error in deserializing Package.Files[%d]", i)})
 		} else {
 			p.Files[i] = File{}.FromBuf(fbf)
 		}
 	}
+	return &p
 }
 
 // File represents a source from a single file
@@ -269,20 +277,24 @@ func (f File) FromBuf(buf *fbast.File) *File {
 	f.BaseNode.FromBuf(buf.BaseNode(nil))
 	f.Name = string(buf.Name())
 	f.Package = PackageClause{}.FromBuf(buf.Package(nil))
-	f.Imports = make([]*ImportDeclaration, buf.ImportsLength())
-	for i := 0; i < buf.ImportsLength(); i++ {
-		fbd := new(fbast.ImportDeclaration)
-		if !buf.Imports(fbd, i) {
-			f.BaseNode.Errors = append(f.BaseNode.Errors,
-				Error{fmt.Sprintf("Encountered error in deserializing File.Imports[%d]", i)})
-		} else {
-			f.Imports[i] = ImportDeclaration{}.FromBuf(fbd)
+	if buf.ImportsLength() > 0 {
+		f.Imports = make([]*ImportDeclaration, buf.ImportsLength())
+		for i := 0; i < buf.ImportsLength(); i++ {
+			fbd := new(fbast.ImportDeclaration)
+			if !buf.Imports(fbd, i) {
+				f.BaseNode.Errors = append(f.BaseNode.Errors,
+					Error{fmt.Sprintf("Encountered error in deserializing File.Imports[%d]", i)})
+			} else {
+				f.Imports[i] = ImportDeclaration{}.FromBuf(fbd)
+			}
 		}
 	}
-	var err []Error
-	f.Body, err = statementArrayFromBuf(buf.BodyLength(), buf.Body, "File.Body")
-	if len(err) > 0 {
-		f.BaseNode.Errors = append(f.BaseNode.Errors, err...)
+	if buf.BodyLength() > 0 {
+		var err []Error
+		f.Body, err = statementArrayFromBuf(buf.BodyLength(), buf.Body, "File.Body")
+		if len(err) > 0 {
+			f.BaseNode.Errors = append(f.BaseNode.Errors, err...)
+		}
 	}
 	return &f
 }
@@ -309,6 +321,9 @@ func (c *PackageClause) Copy() Node {
 }
 
 func (c PackageClause) FromBuf(buf *fbast.PackageClause) *PackageClause {
+	if buf == nil {
+		return nil
+	}
 	c.BaseNode.FromBuf(buf.BaseNode(nil))
 	c.Name = Identifier{}.FromBuf(buf.Name(nil))
 	return &c
@@ -703,16 +718,18 @@ func (e *StringExpression) Copy() Node {
 
 func (e StringExpression) FromBuf(buf *fbast.StringExpression) *StringExpression {
 	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Parts = make([]StringExpressionPart, buf.PartsLength())
-	for i := 0; i < buf.PartsLength(); i++ {
-		fbp := new(fbast.StringExpressionPart)
-		if !buf.Parts(fbp, i) {
-			e.BaseNode.Errors = append(e.BaseNode.Errors,
-				Error{fmt.Sprintf("Encountered error in deserializing StringExpression.Parts[%d]", i)})
-		} else if fbp.TextValue() != nil {
-			e.Parts[i] = TextPart{}.FromBuf(fbp)
-		} else {
-			e.Parts[i] = InterpolatedPart{}.FromBuf(fbp)
+	if buf.PartsLength() > 0 {
+		e.Parts = make([]StringExpressionPart, buf.PartsLength())
+		for i := 0; i < buf.PartsLength(); i++ {
+			fbp := new(fbast.StringExpressionPart)
+			if !buf.Parts(fbp, i) {
+				e.BaseNode.Errors = append(e.BaseNode.Errors,
+					Error{fmt.Sprintf("Encountered error in deserializing StringExpression.Parts[%d]", i)})
+			} else if fbp.TextValue() != nil {
+				e.Parts[i] = TextPart{}.FromBuf(fbp)
+			} else {
+				e.Parts[i] = InterpolatedPart{}.FromBuf(fbp)
+			}
 		}
 	}
 	return &e
@@ -841,7 +858,6 @@ func (e *CallExpression) Copy() Node {
 func (e CallExpression) FromBuf(buf *fbast.CallExpression) *CallExpression {
 	e.BaseNode.FromBuf(buf.BaseNode(nil))
 	e.Callee = exprFromBuf("CallExpression.Callee", e.BaseNode, buf.Callee, buf.CalleeType())
-	e.Arguments = make([]Expression, 0)
 	arg := buf.Arguments(nil)
 	if arg != nil {
 		e.Arguments = []Expression{ObjectExpression{}.FromBuf(arg)}
@@ -982,21 +998,20 @@ func (e *FunctionExpression) Copy() Node {
 
 func (e FunctionExpression) FromBuf(buf *fbast.FunctionExpression) *FunctionExpression {
 	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Params = make([]*Property, buf.ParamsLength())
-	for i := 0; i < buf.ParamsLength(); i++ {
-		fbp := new(fbast.Property)
-		if !buf.Params(fbp, i) {
-			e.BaseNode.Errors = append(e.BaseNode.Errors,
-				Error{fmt.Sprintf("Encountered error in deserializing FunctionExpression.Params[%d]", i)})
-		} else {
-			e.Params[i] = Property{}.FromBuf(fbp)
+	if buf.ParamsLength() > 0 {
+		e.Params = make([]*Property, buf.ParamsLength())
+		for i := 0; i < buf.ParamsLength(); i++ {
+			fbp := new(fbast.Property)
+			if !buf.Params(fbp, i) {
+				e.BaseNode.Errors = append(e.BaseNode.Errors,
+					Error{fmt.Sprintf("Encountered error in deserializing FunctionExpression.Params[%d]", i)})
+			} else {
+				e.Params[i] = Property{}.FromBuf(fbp)
+			}
 		}
 	}
 	t := new(flatbuffers.Table)
-	if !buf.Body(t) {
-		e.BaseNode.Errors = append(e.BaseNode.Errors,
-			Error{"Encountered error in deserializing FunctionExpression.Body"})
-	} else {
+	if buf.Body(t) {
 		switch buf.BodyType() {
 		case fbast.ExpressionOrBlockBlock:
 			b := new(fbast.Block)
@@ -1100,10 +1115,9 @@ func (e *BinaryExpression) Copy() Node {
 
 	return ne
 }
-
 func (e BinaryExpression) FromBuf(buf *fbast.BinaryExpression) *BinaryExpression {
 	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Operator = OperatorLookup(fbast.EnumNamesOperator[buf.Operator()])
+	e.Operator = OperatorKind(buf.Operator())
 	e.Left = exprFromBuf("BinaryExpression.Left", e.BaseNode, buf.Left, buf.LeftType())
 	e.Right = exprFromBuf("BinaryExpression.Right", e.BaseNode, buf.Right, buf.RightType())
 	return &e
@@ -1136,7 +1150,7 @@ func (e *UnaryExpression) Copy() Node {
 
 func (e UnaryExpression) FromBuf(buf *fbast.UnaryExpression) *UnaryExpression {
 	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Operator = OperatorLookup(fbast.EnumNamesOperator[buf.Operator()])
+	e.Operator = OperatorKind(buf.Operator())
 	e.Argument = exprFromBuf("UnaryExpression.Argument", e.BaseNode, buf.Argument, buf.ArgumentType())
 	return &e
 }
@@ -1209,7 +1223,7 @@ func (e *LogicalExpression) Copy() Node {
 
 func (e LogicalExpression) FromBuf(buf *fbast.LogicalExpression) *LogicalExpression {
 	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Operator = LogicalOperatorLookup(fbast.EnumNamesLogicalOperator[buf.Operator()])
+	e.Operator = LogicalOperatorKind(buf.Operator())
 	e.Left = exprFromBuf("LogicalExpression.Left", e.BaseNode, buf.Left, buf.LeftType())
 	e.Right = exprFromBuf("LogicalExpression.Right", e.BaseNode, buf.Right, buf.RightType())
 	return &e
@@ -1403,6 +1417,9 @@ func (i *Identifier) Copy() Node {
 }
 
 func (i Identifier) FromBuf(buf *fbast.Identifier) *Identifier {
+	if buf == nil {
+		return nil
+	}
 	i.BaseNode.FromBuf(buf.BaseNode(nil))
 	i.Name = string(buf.Name())
 	return &i

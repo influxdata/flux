@@ -12,6 +12,8 @@ import (
 	"errors"
 	"runtime"
 	"unsafe"
+
+	"github.com/influxdata/flux/ast"
 )
 
 // freeable indicates a resource that has memory
@@ -53,6 +55,17 @@ func (f *ASTFile) Free() {
 	f.ptr = nil
 }
 
+type AstBuf struct {
+	ptr *C.struct_flux_buffer_t
+}
+
+func (f *AstBuf) Free() {
+	if f.ptr != nil {
+		C.flux_free(unsafe.Pointer(f.ptr))
+	}
+	f.ptr = nil
+}
+
 // Parse will take a string and return a parsed source file.
 func Parse(s string) *ASTFile {
 	cstr := C.CString(s)
@@ -62,4 +75,15 @@ func Parse(s string) *ASTFile {
 	f := &ASTFile{ptr: ptr}
 	runtime.SetFinalizer(f, free)
 	return f
+}
+
+func ParseIntoFbs(s string) *ast.Package {
+	cstr := C.CString(s)
+	defer C.free(unsafe.Pointer(cstr))
+
+	ptr := C.flux_parse_fb(cstr)
+	f := &AstBuf{ptr: ptr}
+	runtime.SetFinalizer(f, free)
+	data := C.GoBytes(ptr.data, C.int(ptr.len))
+	return ast.Package{}.FromBuf(data)
 }
