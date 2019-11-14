@@ -1,6 +1,7 @@
 package usage_test
 
 import "testing"
+import "strings"
 
 // This dataset has been generated with this query:
 // from(bucket: "system_usage")
@@ -3323,6 +3324,15 @@ inData = "
 ,,45,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:52:40.649498775Z,12735,req_bytes,http_request,/api/v2/write,gateway-77ff9ccb7d-6rltl,043502a6825c5000,204
 ,,45,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:55:00.568727137Z,12447,req_bytes,http_request,/api/v2/write,gateway-77ff9ccb7d-6rltl,043502a6825c5000,204
 ,,45,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:56:00.879036783Z,12763,req_bytes,http_request,/api/v2/write,gateway-77ff9ccb7d-6rltl,043502a6825c5000,204
+
+#group,false,false,true,true,false,false,true,true,true,true,true,true
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string
+#default,_result,,,,,,,,,,,
+,result,table,_start,_stop,_time,_value,_field,_measurement,endpoint,hostname,org_id,status
+,,46,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T11:04:00.464241913Z,10000,req_bytes,http_request,/api/v2/write,gateway-internal-77ff9ccb7d-p9w8t,03d01b74c8e09000,204
+,,46,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T11:05:50.453929422Z,10000,req_bytes,http_request,/api/v2/write,gateway-internal-77ff9ccb7d-p9w8t,03d01b74c8e09000,204
+,,46,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T11:08:40.56350665Z,10000,req_bytes,http_request,/api/v2/write,gateway-internal-77ff9ccb7d-p9w8t,03d01b74c8e09000,204
+,,46,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T11:09:00.464069692Z,10000,req_bytes,http_request,/api/v2/write,gateway-internal-77ff9ccb7d-p9w8t,03d01b74c8e09000,204
 "
 
 outData = "
@@ -3343,6 +3353,7 @@ _f = (table=<-) => table
         and r._field == "req_bytes"
         and r.endpoint == "/api/v2/write"
         and r.status == "204"
+        and (strings.containsStr(v: r.hostname, substr: "gateway-internal") != true)
     )
     |> group()
     |> aggregateWindow(every: 1h, fn: sum)
