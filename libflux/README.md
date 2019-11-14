@@ -60,7 +60,7 @@ Before running it for the first time, you'll have to follow these steps:
    $ cd ../pkg
    $ yarn link
    $ cd ../site
-   $ yarn link @influxdata/flux-parser
+   $ yarn link @influxdata/flux
    ```
 
 Now you should be able to run the web app:
