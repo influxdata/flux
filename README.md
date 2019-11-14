@@ -22,6 +22,23 @@ $ go build ./cmd/flux
 $ ./flux repl
 ```
 
+If you create or change any flux functions, you will need to rebuild the stdlib:
+```
+$ go generate ./stdlib
+```
+
+Your new Flux's code should be formatted to coexist nicely with the existing codebase with go fmt.  For example, if you add code to stdlib/universe:
+```
+$ go fmt ./stdlib/universe/
+```
+
+Don't forget to add your tests and make sure they work. Here is an example showing how to run the tests for the stdlib/universe package:
+```
+$ go test ./stdlib/universe/
+```
+
+
+
 >NOTE: The Flux REPL above does not contain the ability to connect to InfluxDB.
 To connect to InfluxDB, please read the [InfluxDB 2.0](https://v2.docs.influxdata.com/v2.0/query-data/get-started/) query documentation or the [InfluxDB 1.7](http://docs.influxdata.com/flux/) documentation.
 
