@@ -250,22 +250,8 @@ fn literals() {
         ],
     }
 }
-
-// TODO(jsternberg): Use a function expression to test
-// variables that are type variables.
-
 #[test]
 fn string_interpolation() {
-    // test_infer! {
-    //     env: map![
-    //         "name" => "forall [] t0",
-    //     ],
-    //     src: src,
-    //     exp: map![
-    //         "name" => "forall [] string",
-    //         "message" => "forall [] string",
-    //     ],
-    // }
     test_infer! {
         env: map![
             "name" => "forall [] string",
@@ -529,20 +515,6 @@ fn array_expr() {
 }
 #[test]
 fn binary_expr_addition() {
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] t1",
-    //     ],
-    //     src: r#"
-    //            c = a + b
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] t1",
-    //         "b" => "forall [] t1",
-    //         "c" => "forall [] t1",
-    //     ],
-    // }
     test_infer! {
         env: map![
             "a" => "forall [] int",
@@ -663,36 +635,9 @@ fn binary_expr_addition() {
             c = a + b
         "#,
     }
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] int",
-    //     ],
-    //     src: r#"
-    //            c = a + b
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] int",
-    //         "c" => "forall [] int",
-    //     ],
-    // }
 }
 #[test]
 fn binary_expr_subtraction() {
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] t1",
-    //     ],
-    //     src: r#"
-    //            c = a - b
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] t1",
-    //         "b" => "forall [] t1",
-    //         "c" => "forall [] t1",
-    //     ],
-    // }
     test_infer! {
         env: map![
             "a" => "forall [] int",
@@ -798,36 +743,9 @@ fn binary_expr_subtraction() {
             a - b
         "#,
     }
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] int",
-    //     ],
-    //     src: r#"
-    //            c = a - b
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] int",
-    //         "c" => "forall [] int",
-    //     ],
-    // }
 }
 #[test]
 fn binary_expr_multiplication() {
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] t1",
-    //     ],
-    //     src: r#"
-    //            c = a * b
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] t1",
-    //         "b" => "forall [] t1",
-    //         "c" => "forall [] t1",
-    //     ],
-    // }
     test_infer! {
         env: map![
             "a" => "forall [] int",
@@ -936,36 +854,9 @@ fn binary_expr_multiplication() {
             a * b
         "#,
     }
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] int",
-    //     ],
-    //     src: r#"
-    //            c = a * b
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] int",
-    //         "c" => "forall [] int",
-    //     ],
-    // }
 }
 #[test]
 fn binary_expr_division() {
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] t1",
-    //     ],
-    //     src: r#"
-    //            c = a / b
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] t1",
-    //         "b" => "forall [] t1",
-    //         "c" => "forall [] t1",
-    //     ],
-    // }
     test_infer! {
         env: map![
             "a" => "forall [] int",
@@ -1074,36 +965,9 @@ fn binary_expr_division() {
             a / b
         "#,
     }
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] int",
-    //     ],
-    //     src: r#"
-    //            c = a / b
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] int",
-    //         "c" => "forall [] int",
-    //     ],
-    // }
 }
 #[test]
 fn binary_expr_power() {
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] t1",
-    //     ],
-    //     src: r#"
-    //            c = a ^ b
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] t1",
-    //         "b" => "forall [] t1",
-    //         "c" => "forall [] t1",
-    //     ],
-    // }
     test_infer! {
         env: map![
             "a" => "forall [] int",
@@ -1212,36 +1076,9 @@ fn binary_expr_power() {
             a ^ b
         "#,
     }
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] int",
-    //     ],
-    //     src: r#"
-    //            c = a ^ b
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] int",
-    //         "c" => "forall [] int",
-    //     ],
-    // }
 }
 #[test]
 fn binary_expr_modulo() {
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] t1",
-    //     ],
-    //     src: r#"
-    //            c = a % b
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] t1",
-    //         "b" => "forall [] t1",
-    //         "c" => "forall [] t1",
-    //     ],
-    // }
     test_infer! {
         env: map![
             "a" => "forall [] int",
@@ -1350,20 +1187,6 @@ fn binary_expr_modulo() {
             a % b
         "#,
     }
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] int",
-    //     ],
-    //     src: r#"
-    //            c = a % b
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] int",
-    //         "b" => "forall [] int",
-    //         "c" => "forall [] int",
-    //     ],
-    // }
 }
 #[test]
 fn binary_expr_comparison() {
@@ -1471,16 +1294,7 @@ fn binary_expr_comparison() {
     }
     for op in vec![">=", "<=", ">", "<"] {
         let src = format!("c = a {} b", op);
-        // test_infer! {
-        //     env: map![
-        //         "a" => "forall [] t0",
-        //         "b" => "forall [] t1",
-        //     ],
-        //     src: &src,
-        //     exp: map![
-        //         "c" => "forall [] bool",
-        //     ],
-        // }
+
         test_infer! {
             env: map![
                 "a" => "forall [] int",
@@ -1576,34 +1390,13 @@ fn binary_expr_comparison() {
             ],
             src: &src,
         }
-        // test_infer! {
-        //     env: map![
-        //         "a" => "forall [] t0",
-        //         "b" => "forall [] int",
-        //     ],
-        //     src: &src,
-        //     exp: map![
-        //         "c" => "forall [] bool",
-        //     ],
-        // }
     }
 }
 #[test]
 fn binary_expr_regex_op() {
     for op in vec!["=~", "!~"] {
         let src = format!("c = a {} b", op);
-        // test_infer! {
-        //     env: map![
-        //         "a" => "forall [] t0",
-        //         "b" => "forall [] t1",
-        //     ],
-        //     src: &src,
-        //     exp: map![
-        //         "a" => "forall [] string",
-        //         "b" => "forall [] regexp",
-        //         "c" => "forall [] bool",
-        //     ],
-        // }
+
         test_infer! {
             env: map![
                 "a" => "forall [] string",
@@ -1642,28 +1435,6 @@ fn binary_expr_regex_op() {
             ],
             src: &src,
         }
-        // test_infer! {
-        //     env: map![
-        //         "a" => "forall [] t0",
-        //         "b" => "forall [] regexp",
-        //     ],
-        //     src: &src,
-        //     exp: map![
-        //         "a" => "forall [] string",
-        //         "c" => "forall [] bool",
-        //     ],
-        // }
-        // test_infer! {
-        //     env: map![
-        //         "a" => "forall [] string",
-        //         "b" => "forall [] t0",
-        //     ],
-        //     src: &src,
-        //     exp: map![
-        //         "b" => "forall [] regexp",
-        //         "c" => "forall [] bool",
-        //     ],
-        // }
     }
 }
 #[test]
@@ -1898,51 +1669,6 @@ fn conditional_expr() {
             d = if a then b else c
         "#,
     }
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] t1",
-    //         "c" => "forall [] t2",
-    //     ],
-    //     src: r#"
-    //            d = if a then b else c
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] bool",
-    //         "b" => "forall [] t3",
-    //         "c" => "forall [] t3",
-    //         "d" => "forall [] t3",
-    //     ],
-    // }
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] float",
-    //         "c" => "forall [] float",
-    //     ],
-    //     src: r#"
-    //            d = if a then b else c
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] bool",
-    //         "d" => "forall [] float",
-    //     ],
-    // }
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] t1",
-    //         "c" => "forall [] float",
-    //     ],
-    //     src: r#"
-    //            d = if a then b else c
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] bool",
-    //         "b" => "forall [] float",
-    //         "d" => "forall [] float",
-    //     ],
-    // }
 }
 #[test]
 fn logical_expr() {
@@ -2042,28 +1768,6 @@ fn logical_expr() {
             ],
             src: &src,
         }
-        // test_infer! {
-        //     env: map![
-        //         "a" => "forall [] bool",
-        //         "b" => "forall [] t1",
-        //     ],
-        //     src: &src,
-        //     exp: map![
-        //         "b" => "forall [] bool",
-        //         "c" => "forall [] bool",
-        //     ],
-        // }
-        // test_infer! {
-        //     env: map![
-        //         "a" => "forall [] t0",
-        //         "b" => "forall [] bool",
-        //     ],
-        //     src: &src,
-        //     exp: map![
-        //         "a" => "forall [] bool",
-        //         "c" => "forall [] bool",
-        //     ],
-        // }
     }
 }
 #[test]
@@ -2289,41 +1993,6 @@ fn index_expr() {
         ],
         src: src,
     }
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] t1",
-    //     ],
-    //     src: src,
-    //     exp: map![
-    //         "a" => "forall [] [t2]",
-    //         "b" => "forall [] int",
-    //         "c" => "forall [] t2",
-    //     ],
-    // }
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [t0] [t0]",
-    //         "b" => "forall [] t1",
-    //     ],
-    //     src: src,
-    //     exp: map![
-    //         "a" => "forall [t0] [t0]",
-    //         "b" => "forall [] int",
-    //         "c" => "forall [] t2",
-    //     ],
-    // }
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] [int]",
-    //         "b" => "forall [] t1",
-    //     ],
-    //     src: src,
-    //     exp: map![
-    //         "b" => "forall [] int",
-    //         "c" => "forall [] int",
-    //     ],
-    // }
 }
 #[test]
 fn unary_add() {
@@ -2721,5 +2390,393 @@ fn record_with_scoped_labels() {
             "v" => "forall [t0] {a: float | a: int | b: float | t0}",
             "w" => "forall [t0] {b: int   | a: int | b: float | t0}",
         ],
+    }
+}
+#[test]
+#[ignore]
+fn identify_function() {
+    test_infer! {
+        src: "f = (x) => x",
+        exp: map![
+            "f" => "forall [t0] (x: t0) -> t0",
+        ],
+    }
+}
+#[test]
+#[ignore]
+fn polymorphic_instantiation() {
+    test_infer! {
+        src: r#"
+            f = (x) => x
+
+            a = f(x: 100)
+            b = f(x: 0.1)
+            c = f(x: "0")
+            d = f(x: 10h)
+            e = f(x: 2019-10-31T00:00:00Z)
+            g = f(x: /*/)
+            h = f(x: [0])
+            i = f(x: [])
+            j = f(x: {a:0, b:0.1})
+        "#,
+        exp: map![
+            "f" => "forall [t0] (x: t0) -> t0",
+
+            "a" => "forall [] int",
+            "b" => "forall [] float",
+            "c" => "forall [] string",
+            "d" => "forall [] duration",
+            "e" => "forall [] time",
+            "g" => "forall [] regexp",
+            "h" => "forall [] [int]",
+            "i" => "forall [t0] [t0]",
+            "j" => "forall [] {a: int | b: float}",
+        ],
+    }
+}
+#[test]
+#[ignore]
+fn constrain_tvars() {
+    test_infer! {
+        src: r#"
+            f = (x) => x + 1
+            a = f(x: 100)
+        "#,
+        exp: map![
+            "f" => "forall [] (x: int) -> int",
+            "a" => "forall [] int",
+        ],
+    }
+    test_infer_err! {
+        src: r#"
+            f = (x) => x + 1
+            f(x: "string")
+        "#,
+    }
+    test_infer! {
+        src: r#"
+            f = (x) => "x = ${x}"
+            a = f(x: "10")
+        "#,
+        exp: map![
+            "f" => "forall [] (x: string) -> string",
+            "a" => "forall [] string",
+        ],
+    }
+    test_infer_err! {
+        src: r#"
+            f = (x) => "x = ${x}"
+            f(x: 10)
+        "#,
+    }
+}
+#[test]
+#[ignore]
+fn constrained_generics_addable() {
+    test_infer! {
+        src: r#"
+            f = (a, b) => a + b
+            a = f(a: 100, b: 200)
+            b = f(a: 0.1, b: 0.2)
+            c = f(a: "0", b: "1")
+        "#,
+        exp: map![
+            "f" => "forall [t0] where t0: Addable (a: t0, b: t0) -> t0",
+            "a" => "forall [] int",
+            "b" => "forall [] float",
+            "c" => "forall [] string",
+        ],
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a + b
+            f(a: 100, b: 0.1)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a + b
+            f(a: 10d, b: 10d)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a + b
+            f(a: 2019-10-31T00:00:00Z, b: 2019-10-31T00:00:00Z)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a + b
+            f(a: /*/, b: /*/)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a + b
+            f(a: [], b: [])
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a + b
+            f(a: [0], b: [1])
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a + b
+            f(a: {}, b: {})
+        "#,
+    }
+}
+#[test]
+#[ignore]
+fn constrained_generics_subtractable() {
+    test_infer! {
+        src: r#"
+            f = (a, b) => a - b
+            a = f(a: 100, b: 200)
+            b = f(a: 0.1, b: 0.2)
+        "#,
+        exp: map![
+            "f" => "forall [t0] where t0: Subtractable (a: t0, b: t0) -> t0",
+            "a" => "forall [] int",
+            "b" => "forall [] float",
+        ],
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a - b
+            f(a: "string", b: "ing")
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a - b
+            f(a: 10d, b: 10d)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a - b
+            f(a: 2019-10-31T00:00:00Z, b: 2019-10-31T00:00:00Z)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a - b
+            f(a: /*/, b: /*/)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a - b
+            f(a: [], b: [])
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a - b
+            f(a: {}, b: {})
+        "#,
+    }
+}
+#[test]
+#[ignore]
+fn constrained_generics_divisible() {
+    test_infer! {
+        src: r#"
+            f = (a, b) => a / b
+            a = f(a: 100, b: 200)
+            b = f(a: 0.1, b: 0.2)
+        "#,
+        exp: map![
+            "f" => "forall [t0] where t0: Divisible (a: t0, b: t0) -> t0",
+            "a" => "forall [] int",
+            "b" => "forall [] float",
+        ],
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a / b
+            f(a: "string", b: "ing")
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a / b
+            f(a: 10d, b: 10d)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a / b
+            f(a: 2019-10-31T00:00:00Z, b: 2019-10-31T00:00:00Z)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a / b
+            f(a: /*/, b: /*/)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a / b
+            f(a: [], b: [])
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a / b
+            f(a: {}, b: {})
+        "#,
+    }
+}
+#[test]
+#[ignore]
+fn constrained_generics_comparable() {
+    test_infer! {
+        src: r#"
+            f = (a, b) => a < b
+            a = f(a: 100, b: 200)
+            b = f(a: 0.1, b: 0.2)
+            c = f(a: "0", b: "1")
+            d = f(a: 10d, b: 20d)
+            e = f(a: 2019-10-30T00:00:00Z, b: 2019-10-31T00:00:00Z)
+        "#,
+        exp: map![
+            "f" => "forall [t0] where t0: Comparable (a: t0, b: t0) -> bool",
+            "a" => "forall [] bool",
+            "b" => "forall [] bool",
+            "c" => "forall [] bool",
+            "d" => "forall [] bool",
+            "e" => "forall [] bool",
+        ],
+    }
+    test_infer_err! {
+        env: map![
+            "true" => "forall [] bool",
+            "false" => "forall [] bool",
+        ],
+        src: r#"
+            f = (a, b) => a < b
+            f(a: true, b: false)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a < b
+            f(a: /*/, b: /*/)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a < b
+            f(a: [], b: [])
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a < b
+            f(a: {}, b: {})
+        "#,
+    }
+}
+#[test]
+#[ignore]
+fn constrained_generics_equatable() {
+    test_infer! {
+        env: map![
+            "true" => "forall [] bool",
+            "false" => "forall [] bool",
+        ],
+        src: r#"
+            f = (a, b) => a == b
+            a = f(a: 100, b: 200)
+            b = f(a: 0.1, b: 0.2)
+            c = f(a: "0", b: "1")
+            d = f(a: 10d, b: 20d)
+            e = f(a: 2019-10-30T00:00:00Z, b: 2019-10-31T00:00:00Z)
+            g = f(a: true, b: false)
+        "#,
+        exp: map![
+            "f" => "forall [t0] where t0: Equatable (a: t0, b: t0) -> bool",
+            "a" => "forall [] bool",
+            "b" => "forall [] bool",
+            "c" => "forall [] bool",
+            "d" => "forall [] bool",
+            "e" => "forall [] bool",
+            "g" => "forall [] bool",
+        ],
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a < b
+            f(a: /*/, b: /*/)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a < b
+            f(a: [], b: [])
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a < b
+            f(a: {}, b: {})
+        "#,
+    }
+}
+#[test]
+#[ignore]
+fn multiple_constraints() {
+    test_infer! {
+        src: r#"
+            f = (a, b) => a <= b
+            a = f(a: 100, b: 200)
+            b = f(a: 0.1, b: 0.2)
+            c = f(a: "0", b: "1")
+            d = f(a: 10d, b: 20d)
+            e = f(a: 2019-10-30T00:00:00Z, b: 2019-10-31T00:00:00Z)
+        "#,
+        exp: map![
+            "f" => "forall [t0] where t0: Comparable + Equatable (a: t0, b: t0) -> bool",
+            "a" => "forall [] bool",
+            "b" => "forall [] bool",
+            "c" => "forall [] bool",
+            "d" => "forall [] bool",
+            "e" => "forall [] bool",
+        ],
+    }
+    test_infer_err! {
+        env: map![
+            "true" => "forall [] bool",
+            "false" => "forall [] bool",
+        ],
+        src: r#"
+            f = (a, b) => a < b
+            f(a: true, b: false)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a < b
+            f(a: /*/, b: /*/)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a < b
+            f(a: [], b: [])
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b) => a < b
+            f(a: {}, b: {})
+        "#,
     }
 }
