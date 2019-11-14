@@ -1,0 +1,338 @@
+namespace fbsemantic; 
+
+union Statement {
+    OptionStatement,             
+    BuiltinStatement,            
+    TestStatement,               
+    ExpressionStatement,         
+    ReturnStatement,                
+}
+
+union Assignment {
+    MemberAssignment,            
+    NativeVariableAssignment, 
+}
+
+union Expression  {
+    StringExpression,       
+    ArrayExpression,        
+    FunctionExpression,     
+    BinaryExpression,       
+    CallExpression,         
+    ConditionalExpression,  
+    IdentifierExpression,   
+    LogicalExpression,      
+    MemberExpression,       
+    IndexExpression,        
+    ObjectExpression,       
+    UnaryExpression,        
+    BooleanLiteral,          
+    DateTimeLiteral,         
+    DurationLiteral,         
+    FloatLiteral,            
+    IntegerLiteral,          
+    StringLiteral,           
+    RegexpLiteral,           
+    UnsignedIntegerLiteral,  
+}
+
+union PropertyKey {
+    Identifier,
+    StringLiteral,
+}
+
+table Package {
+    loc:SourceLocation;  
+    package:string; 
+    files:[File];
+}
+
+table File {
+    loc:SourceLocation; 
+    package:PackageClause;
+    imports:[ImportDeclaration];
+    body:[WrappedStatement];
+}
+
+table PackageClause {
+    loc:SourceLocation;
+    name:Identifier;
+}
+
+table ImportDeclaration {
+    loc:SourceLocation; 
+    as:Identifier;
+    path:StringLiteral;
+}
+
+table Block {
+    loc:SourceLocation;
+    body:[WrappedStatement];
+}
+
+table SourceLocation {
+    file:string;
+    start:Position;
+    end:Position;
+    source:string;
+}
+
+struct Position {
+    line:int;
+    column:int;
+}
+
+// Statements
+
+// Unions cannot be vector elements,
+// so wrap the union in a table.
+table WrappedStatement {
+    statement:Statement;
+}
+
+table OptionStatement {
+    loc:SourceLocation;
+    assignment:Assignment;
+}
+
+table BuiltinStatement {
+    loc:SourceLocation; 
+    id:Identifier; 
+}
+
+table TestStatement {
+    loc:SourceLocation; 
+    assignment:NativeVariableAssignment;
+}
+
+table ExpressionStatement {
+    loc:SourceLocation; 
+    expression:Expression; 
+}
+
+table ReturnStatement {
+    loc:SourceLocation; 
+    argument:Expression; 
+}
+
+table NativeVariableAssignment {
+    loc:SourceLocation;
+    identifier:Identifier; 
+    init_:Expression; 
+}
+
+table MemberAssignment {
+    loc:SourceLocation; 
+    member:MemberExpression;
+    init_:Expression; 
+}
+
+// Expressions
+
+// Unions cannot be vector elements,
+// so wrap the union in a table.
+table WrappedExpression {
+    expression:Expression;
+}
+
+table StringExpression {
+    loc:SourceLocation;
+    parts:[StringExpressionPart];
+}
+
+table StringExpressionPart {
+    loc:SourceLocation;
+    // Following two fields are mutually exclusive:
+    text_value:string; // for TextPart
+    interpolated_expression:Expression; // for InterpolatedPart
+}
+
+table ArrayExpression {
+    loc:SourceLocation;
+    elements:[WrappedExpression];
+}
+
+table FunctionExpression {
+    loc:SourceLocation;
+    defaults:ObjectExpression;
+    Block:FunctionBlock;
+}
+
+table FunctionBlock {
+    loc:SourceLocation;
+    parameters:FunctionParameters;
+    body:Block;
+}
+
+table FunctionParameters {
+    loc:SourceLocation;
+    list:[FunctionParameter];
+    pipe:Identifier;
+}
+
+table FunctionParameter {
+    loc:SourceLocation;
+    key:Identifier;
+}
+
+enum Operator : byte {
+  MultiplicationOperator,
+  DivisionOperator,
+  ModuloOperator,
+  PowerOperator,
+  AdditionOperator,
+  SubtractionOperator,
+  LessThanEqualOperator,
+  LessThanOperator,
+  GreaterThanEqualOperator,
+  GreaterThanOperator,
+  StartsWithOperator,
+  InOperator,
+  NotOperator,
+  ExistsOperator,
+  NotEmptyOperator,
+  EmptyOperator,
+  EqualOperator,
+  NotEqualOperator,
+  RegexpMatchOperator,
+  NotRegexpMatchOperator,
+  InvalidOperator,
+}
+
+enum LogicalOperator : byte {
+  AndOperator,
+  OrOperator,
+}
+
+table BinaryExpression {
+    loc:SourceLocation;
+    operator:Operator; 
+    left: Expression;
+    right: Expression;
+}
+
+table CallExpression {
+    loc:SourceLocation;
+    callee:Expression;
+    arguments:ObjectExpression;
+    pipe:Expression;
+}
+
+table ConditionalExpression {
+    loc:SourceLocation;
+    test:Expression;
+    alternate:Expression;
+    consequent:Expression;
+}
+
+table LogicalExpression {
+    loc:SourceLocation;
+    operator:LogicalOperator;
+    left:Expression;
+    right:Expression;
+}
+
+table MemberExpression {
+    loc:SourceLocation;
+    object:Expression;
+    property:string;
+}
+
+table IndexExpression {
+    loc:SourceLocation;
+    array:Expression;
+    index:Expression;
+}
+
+table ObjectExpression {
+    loc:SourceLocation;
+    with:IdentifierExpression;
+    properties:[Property];
+}
+
+table UnaryExpression {
+    loc:SourceLocation;
+    operator:Operator;
+    argument:Expression;
+}
+
+table Property {
+    loc:SourceLocation;
+    key:PropertyKey; 
+    value:Expression;
+}
+
+table IdentifierExpression   {
+    loc:SourceLocation;
+    name:string;
+}
+
+table Identifier {
+    loc:SourceLocation;
+    name:string;
+}
+
+table BooleanLiteral {
+    loc:SourceLocation;
+    value:bool;
+}
+
+table DateTimeLiteral {
+    loc:SourceLocation;
+    value:Time;
+}
+
+table Time {
+    timestamp:long;
+    offset:int;
+}
+
+table DurationLiteral {
+    loc:SourceLocation;
+    value:[Duration];
+}
+
+enum TimeUnit : byte {
+  y,
+  mo,
+  w,
+  d,
+  h,
+  m,
+  s,
+  ms,
+  us,
+  ns,
+}
+
+table Duration {
+  magnitude:int64;
+  unit:TimeUnit;
+}
+
+table IntegerLiteral {
+    loc:SourceLocation;
+    value:long; 
+}
+
+table FloatLiteral {
+    loc:SourceLocation;
+    value:double;
+}
+
+table RegexpLiteral {
+    loc:SourceLocation;
+    value:string;
+}
+
+table StringLiteral {
+    loc:SourceLocation;
+    value:string;
+}
+
+table UnsignedIntegerLiteral {
+    loc:SourceLocation;
+    value:ulong;
+}
+
+root_type Package;
