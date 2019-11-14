@@ -2393,8 +2393,7 @@ fn record_with_scoped_labels() {
     }
 }
 #[test]
-#[ignore]
-fn identify_function() {
+fn identity_function() {
     test_infer! {
         src: "f = (x) => x",
         exp: map![
@@ -2403,7 +2402,6 @@ fn identify_function() {
     }
 }
 #[test]
-#[ignore]
 fn polymorphic_instantiation() {
     test_infer! {
         src: r#"
@@ -2435,7 +2433,6 @@ fn polymorphic_instantiation() {
     }
 }
 #[test]
-#[ignore]
 fn constrain_tvars() {
     test_infer! {
         src: r#"
@@ -2471,7 +2468,6 @@ fn constrain_tvars() {
     }
 }
 #[test]
-#[ignore]
 fn constrained_generics_addable() {
     test_infer! {
         src: r#"
@@ -2531,7 +2527,6 @@ fn constrained_generics_addable() {
     }
 }
 #[test]
-#[ignore]
 fn constrained_generics_subtractable() {
     test_infer! {
         src: r#"
@@ -2583,7 +2578,6 @@ fn constrained_generics_subtractable() {
     }
 }
 #[test]
-#[ignore]
 fn constrained_generics_divisible() {
     test_infer! {
         src: r#"
@@ -2635,7 +2629,6 @@ fn constrained_generics_divisible() {
     }
 }
 #[test]
-#[ignore]
 fn constrained_generics_comparable() {
     test_infer! {
         src: r#"
@@ -2685,7 +2678,6 @@ fn constrained_generics_comparable() {
     }
 }
 #[test]
-#[ignore]
 fn constrained_generics_equatable() {
     test_infer! {
         env: map![
@@ -2731,7 +2723,6 @@ fn constrained_generics_equatable() {
     }
 }
 #[test]
-#[ignore]
 fn multiple_constraints() {
     test_infer! {
         src: r#"
@@ -2778,5 +2769,133 @@ fn multiple_constraints() {
             f = (a, b) => a < b
             f(a: {}, b: {})
         "#,
+    }
+}
+#[test]
+fn function_instantiation_and_generalization() {
+    test_infer! {
+        src: r#"
+            r = ((o) => o)(o: 0)
+            x = r
+            s = ((o) => o)(o: {list: [0,1]})
+            y = s.list
+            t = ((o) => ({list: o}))(o: [0,1])
+            z = t.list
+            f = (x) => {
+                y = x
+                g = (a) => {
+                    z = y
+                    return z(b: a)
+                }
+                return g(a: [0])
+            }
+            a = f(x: (b) => b)
+            b = f(x: (b) => b[0])
+            c = f(x: (b) => ({b: b}))
+        "#,
+        exp: map![
+            "r" => "forall [] int",
+            "x" => "forall [] int",
+            "s" => "forall [] {list: [int]}",
+            "y" => "forall [] [int]",
+            "t" => "forall [] {list: [int]}",
+            "z" => "forall [] [int]",
+            "f" => "forall [t0] (x: (b: [int]) -> t0) -> t0",
+            "a" => "forall [] [int]",
+            "b" => "forall [] int",
+            "c" => "forall [] {b: [int]}",
+        ],
+    }
+    test_infer_err! {
+        src: r#"
+            r = ((o) => o)(o: 0)
+            x = r
+            s = ((o) => o)(o: {list: [0,1]})
+            y = s.list
+            t = ((o) => ({list: o}))(o: [0,1])
+            z = t.list
+            f = (x) => {
+                y = x
+                g = (a) => {
+                    z = y
+                    return z(b: a)
+                }
+                return g(a: [0])
+            }
+            a = f(x: (b) => b)
+            b = f(x: (b) => b[0])
+            c = f(x: (b) => ({b: b}))
+            d = f(x: (b) => 1 + b) // int != [int]
+        "#,
+    }
+}
+#[test]
+fn function_default_arguments_1() {
+    test_infer! {
+        src: r#"
+            f = (a, b=1) => a + b
+            x = f(a:2)
+            y = f(a: x, b: f(a:x))
+        "#,
+        exp: map![
+            "f" => "forall [] (a: int, ?b: int) -> int",
+            "x" => "forall [] int",
+            "y" => "forall [] int",
+        ],
+    }
+}
+#[test]
+fn function_default_arguments_2() {
+    test_infer! {
+        src: r#"
+            f = (a, b, c=2.2, d=1) => ({r: a + c, s: b + d})
+            w = f(a: 0.1, b: 4, c: 3.3, d: 3)
+            x = f(a: 1.1, b: 2, c: 3.3)
+            y = f(a: 2.2, b: 1, d: 3)
+            z = f(a: 3.3, b: 3)
+        "#,
+        exp: map![
+            "f" => "forall [] (a: float, b: int, ?c: float, ?d: int) -> {r: float | s: int}",
+            "w" => "forall [] {r: float | s: int}",
+            "x" => "forall [] {r: float | s: int}",
+            "y" => "forall [] {r: float | s: int}",
+            "z" => "forall [] {r: float | s: int}",
+        ],
+    }
+}
+#[test]
+fn function_pipe_identity() {
+    test_infer! {
+        src: r#"
+            f = (a=<-) => a
+            x = f(a:2.2)
+            y = 1 |> f()
+        "#,
+        exp: map![
+            "f" => "forall [t0] (<-a: t0) -> t0",
+            "x" => "forall [] float",
+            "y" => "forall [] int",
+        ],
+    }
+}
+#[test]
+#[ignore]
+fn function_default_arguments_and_pipes() {
+    test_infer! {
+        src: r#"
+            f = (f, g, t=<-) => t |> f(a: g)
+            x = (a, b=2, m=<-) => a + b + m
+            z = (a, b=3.3, c=4.3, m=<-) => ({r: a.m, s: b + c + m})
+            y = f(f: x, g: 100, t: 33)
+            v = 2.2 |> f(f: z, g: {m: "4.5"})
+        "#,
+        exp: map![
+            "f" => "forall [t0, t1, t2] (<-t: t1, f: (<-: t1, a: t0) -> t2, g: t0) -> t2",
+            "x" => "forall [] (a: int, ?b: int, <-m: int) -> int",
+            // TODO(joshua): fix tvars permutation issue in comparison.
+            "z" => "forall [t0, t1] (a: {m: t0 | t1}, ?b: float, ?c: float, <-m: float) -> {r: t0 | s: float}",
+            "y" => "forall [] int",
+            "v" => "forall [] {r: string | s: float}",
+        ],
     }
 }

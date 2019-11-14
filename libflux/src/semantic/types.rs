@@ -139,7 +139,22 @@ impl PolyType {
             .join(" + ")
     }
     fn equal(&self, poly: &PolyType) -> bool {
-        self.vars == poly.vars && self.cons == poly.cons && self.expr == poly.expr
+        self.vars == poly.vars && self.expr == poly.expr && self.cons.len() == poly.cons.len() && {
+            for (tvar, kinds) in self.cons.iter() {
+                if let Some(pkinds) = poly.cons.get(tvar) {
+                    let mut kinds = kinds.clone();
+                    let mut pkinds = pkinds.clone();
+                    kinds.sort();
+                    pkinds.sort();
+                    if kinds != pkinds {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+            true
+        }
     }
 }
 
@@ -154,7 +169,7 @@ pub fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
     from
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Error {
     msg: String,
 }
@@ -351,7 +366,7 @@ impl MonoType {
             (t, MonoType::Var(tv)) => tv.unify(t, cons),
             (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(*s, cons, f),
             (MonoType::Row(t), MonoType::Row(s)) => t.unify(*s, cons, f),
-            (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(*s, cons),
+            (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(*s, cons, f),
             (t, with) => Err(Error::cannot_unify(&t, &with)),
         }
     }
@@ -959,8 +974,123 @@ impl MaxTvar for Function {
 }
 
 impl Function {
-    fn unify(self, _: Self, _: &mut TvarKinds) -> Result<Substitution, Error> {
-        unimplemented!();
+    /// Given two function types f and g, the process for unifying their arguments is as follows:
+    /// 1. If a required arg of f is not present in the arguments of g,
+    ///    otherwise unify both argument types.
+    /// 2. If an optional arg of f is not present in the arguments of g, continue,
+    ///    otherwise unify both argument types (repeat for g).
+    /// 3. Lastly unify pipe args. Note that pipe arguments are optional.
+    ///    However if a pipe arg was used in a calling context, i.e it's an un-named pipe arg,
+    ///    then the other type must specify a pipe arg too, otherwise unification fails.
+    ///
+    /// For pipe arguments, it becomes quite tricky. Take these statements:
+    ///
+    /// 1. f = (a=<-, b) -> {...}
+    /// 2. 0 |> f(b: 1)
+    /// 3. f(a: 0, b: 1)
+    /// 4. f = (d=<-, b, c=0) -> {...}
+    ///
+    /// 2 and 3 are two equivalent ways of invoking 1, and they should both unify.
+    /// `a` is the named pipe argument in 1. In 2, the pipe argument is unnamed.
+    ///
+    /// Unify 1 and 2: one of the required arguments of 1 will not be in its call,
+    /// so, we should check for the pipe argument and succeed. If we do the other way around (unify
+    /// 2 with 1), the unnamed pipe argument unifies with the other pipe argument.
+    ///
+    /// Unify 1 and 3: no problem, required arguments are satisfied. Take care that, if you unify
+    /// 3 with 1, you will find `a` in 1's pipe argument.
+    ///
+    /// Unify 1 and 4: should fail because `d` != `a`.
+    ///
+    /// Unify 2 and 3: should fail because `a` is not in the arguments of 2.
+    ///
+    /// Unify 2 and 4: should succeed, the same as 1 and 2.
+    ///
+    /// Unify 3 and 4: should fail because `a` is not in the arguments of 4.
+    fn unify(
+        self,
+        with: Self,
+        cons: &mut TvarKinds,
+        fresh: &mut Fresher,
+    ) -> Result<Substitution, Error> {
+        // Some aliasing for coherence with the doc.
+        let mut f = self;
+        let mut g = with;
+        // Pre-compute error while f and g are not consumed.
+        let err = Error::cannot_unify(&f, &g);
+        // Fix pipe arguments:
+        // Make them required arguments with the correct name.
+        match (f.pipe, g.pipe) {
+            // Both functions have pipe arguments.
+            (Some(fp), Some(gp)) => {
+                if fp.k != "<-" && gp.k != "<-" && fp.k != gp.k {
+                    // Both are named and the name differs, fail unification.
+                    return Err(err.clone());
+                } else {
+                    // At least one is unnamed or they are both named with the same name.
+                    // This means they should match. Enforce this condition by inserting
+                    // the pipe argument into the required ones with the same key.
+                    f.req.insert(fp.k.clone(), fp.v);
+                    g.req.insert(fp.k.clone(), gp.v);
+                }
+            }
+            // F has a pipe argument and g does not.
+            (Some(fp), None) => {
+                if fp.k == "<-" {
+                    // The pipe argument is unnamed and g does not have one.
+                    // Fail unification.
+                    return Err(err.clone());
+                } else {
+                    // This is a named argument, simply put it into the required ones.
+                    f.req.insert(fp.k, fp.v);
+                }
+            }
+            // G has a pipe argument and f does not.
+            (None, Some(gp)) => {
+                if gp.k == "<-" {
+                    // The pipe argument is unnamed and f does not have one.
+                    // Fail unification.
+                    return Err(err.clone());
+                } else {
+                    // This is a named argument, simply put it into the required ones.
+                    g.req.insert(gp.k, gp.v);
+                }
+            }
+            // Nothing to do.
+            (None, None) => (),
+        }
+        // Now that f has not been consumed yet, check that every required argument in g is in f too.
+        for (arg_name, _) in g.req.iter() {
+            if !f.req.contains_key(arg_name) && !f.opt.contains_key(arg_name) {
+                return Err(err.clone());
+            }
+        }
+        let mut sub = Substitution::empty();
+        // Unify f's required arguments.
+        for (arg_name, f_arg_type) in f.req.into_iter() {
+            if let Some(g_arg_type) = g.req.remove(&arg_name) {
+                // The required argument is in g's required arguments.
+                sub = apply_then_unify(f_arg_type, g_arg_type, sub, cons, fresh)?;
+            } else if let Some(g_arg_type) = g.opt.remove(&arg_name) {
+                // The required argument is in g's optional arguments.
+                sub = apply_then_unify(f_arg_type, g_arg_type, sub, cons, fresh)?;
+            } else {
+                return Err(err.clone());
+            }
+        }
+        // Unify f's optional arguments.
+        for (arg_name, f_arg_type) in f.opt.into_iter() {
+            if let Some(g_arg_type) = g.req.remove(&arg_name) {
+                // The optional argument is in g's required arguments.
+                sub = apply_then_unify(f_arg_type, g_arg_type, sub, cons, fresh)?;
+            } else if let Some(g_arg_type) = g.opt.remove(&arg_name) {
+                // The optional argument is in g's optional arguments.
+                sub = apply_then_unify(f_arg_type, g_arg_type, sub, cons, fresh)?;
+            }
+        }
+        // Unify return types.
+        sub = apply_then_unify(f.retn, g.retn, sub, cons, fresh)?;
+        Ok(sub)
     }
 
     fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
@@ -988,6 +1118,12 @@ pub trait MaxTvar {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::semantic::parser::parse;
+
+    /// Polytype is an util method that returns a PolyType from a string.
+    pub fn polytype(typ: &str) -> PolyType {
+        parse(typ).unwrap()
+    }
 
     #[test]
     fn display_kind_addable() {
@@ -1401,5 +1537,164 @@ mod tests {
             cons,
             maplit::hashmap! {Tvar(1) => vec![Kind::Addable, Kind::Divisible]},
         );
+    }
+    #[test]
+    fn cannot_unify_functions() {
+        // g-required and g-optional arguments do not contain a f-required argument (and viceversa).
+        let f = polytype(
+            "forall [t0, t1] where t0: Addable, t1: Divisible (a: t0, b: t0, ?c: t1) -> t0",
+        );
+        let g = polytype("forall [t2] where t2: Addable (d: t2, ?e: t2) -> t2");
+        if let (
+            PolyType {
+                vars: _,
+                cons: f_cons,
+                expr: MonoType::Fun(f),
+            },
+            PolyType {
+                vars: _,
+                cons: g_cons,
+                expr: MonoType::Fun(g),
+            },
+        ) = (f, g)
+        {
+            // this extends the first map with the second by generating a new one.
+            let mut cons = f_cons.into_iter().chain(g_cons).collect();
+            let res = f.clone().unify(*g.clone(), &mut cons, &mut Fresher::new());
+            assert!(res.is_err());
+            let res = g.clone().unify(*f.clone(), &mut cons, &mut Fresher::new());
+            assert!(res.is_err());
+        } else {
+            panic!("the monotypes under examination are not functions");
+        }
+        // f has a pipe argument, but g does not (and viceversa).
+        let f =
+            polytype("forall [t0, t1] where t0: Addable, t1: Divisible (<-pip:t0, a: t1) -> t0");
+        let g = polytype("forall [t2] where t2: Addable (a: t2) -> t2");
+        if let (
+            PolyType {
+                vars: _,
+                cons: f_cons,
+                expr: MonoType::Fun(f),
+            },
+            PolyType {
+                vars: _,
+                cons: g_cons,
+                expr: MonoType::Fun(g),
+            },
+        ) = (f, g)
+        {
+            let mut cons = f_cons.into_iter().chain(g_cons).collect();
+            let res = f.clone().unify(*g.clone(), &mut cons, &mut Fresher::new());
+            assert!(res.is_err());
+            let res = g.clone().unify(*f.clone(), &mut cons, &mut Fresher::new());
+            assert!(res.is_err());
+        } else {
+            panic!("the monotypes under examination are not functions");
+        }
+    }
+    #[test]
+    fn unify_function_with_function_call() {
+        let fn_type = polytype(
+            "forall [t0, t1] where t0: Addable, t1: Divisible (a: t0, b: t0, ?c: t1) -> t0",
+        );
+        // (a: int, b: int) -> int
+        let call_type = Function {
+            // all arguments are required in a function call.
+            req: maplit::hashmap! {
+                "a".to_string() => MonoType::Int,
+                "b".to_string() => MonoType::Int,
+            },
+            opt: maplit::hashmap! {},
+            pipe: None,
+            retn: MonoType::Int,
+        };
+        if let PolyType {
+            vars: _,
+            mut cons,
+            expr: MonoType::Fun(f),
+        } = fn_type
+        {
+            let sub = f.unify(call_type, &mut cons, &mut Fresher::new()).unwrap();
+            assert_eq!(
+                sub,
+                Substitution::from(maplit::hashmap! {Tvar(0) => MonoType::Int})
+            );
+            // the constraint on t0 gets removed.
+            assert_eq!(cons, maplit::hashmap! {Tvar(1) => vec![Kind::Divisible]});
+        } else {
+            panic!("the monotype under examination is not a function");
+        }
+    }
+    #[test]
+    fn unify_functions() {
+        let f = polytype(
+            "forall [t0, t1] where t0: Addable, t1: Divisible (a: t0, b: t0, ?c: t1) -> t0",
+        );
+        let g = polytype("forall [t2] where t2: Addable (a: t2, ?b: t2, c: float) -> t2");
+        if let (
+            PolyType {
+                vars: _,
+                cons: f_cons,
+                expr: MonoType::Fun(f),
+            },
+            PolyType {
+                vars: _,
+                cons: g_cons,
+                expr: MonoType::Fun(g),
+            },
+        ) = (f, g)
+        {
+            // this extends the first map with the second by generating a new one.
+            let mut cons = f_cons.into_iter().chain(g_cons).collect();
+            let sub = f.unify(*g, &mut cons, &mut Fresher::new()).unwrap();
+            assert_eq!(
+                sub,
+                Substitution::from(maplit::hashmap! {
+                    Tvar(0) => MonoType::Var(Tvar(2)),
+                    Tvar(1) => MonoType::Float,
+                })
+            );
+            // t0 is equal to t2 and t2 is Addable, so we only need one constraint on t2;
+            // t1 ended up being a float, so we do not need any kind constraint on it.
+            assert_eq!(cons, maplit::hashmap! {Tvar(2) => vec![Kind::Addable]});
+        } else {
+            panic!("the monotypes under examination are not functions");
+        }
+    }
+    #[test]
+    fn unify_higher_order_functions() {
+        let f = polytype(
+            "forall [t0, t1] where t0: Addable, t1: Divisible (a: t0, b: t0, ?c: (a: t0) -> t1) -> (d:  string) -> t0",
+        );
+        let g = polytype("forall [] (a: int, b: int, c: (a: int) -> float) -> (d: string) -> int");
+        if let (
+            PolyType {
+                vars: _,
+                cons: f_cons,
+                expr: MonoType::Fun(f),
+            },
+            PolyType {
+                vars: _,
+                cons: g_cons,
+                expr: MonoType::Fun(g),
+            },
+        ) = (f, g)
+        {
+            // this extends the first map with the second by generating a new one.
+            let mut cons = f_cons.into_iter().chain(g_cons).collect();
+            let sub = f.unify(*g, &mut cons, &mut Fresher::new()).unwrap();
+            assert_eq!(
+                sub,
+                Substitution::from(maplit::hashmap! {
+                    Tvar(0) => MonoType::Int,
+                    Tvar(1) => MonoType::Float,
+                })
+            );
+            // we know everything about tvars, there is no constraint.
+            assert_eq!(cons, maplit::hashmap! {});
+        } else {
+            panic!("the monotypes under examination are not functions");
+        }
     }
 }

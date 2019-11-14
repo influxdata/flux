@@ -514,7 +514,7 @@ impl Parser<'_> {
     ) -> Result<(String, MonoType), &'static str> {
         let arg_var = match &token.text {
             None => return Err("Invalid format for required arguments"),
-            Some(var) => { var.to_string() },
+            Some(var) => var.to_string(),
         };
 
         let token = self.next();
