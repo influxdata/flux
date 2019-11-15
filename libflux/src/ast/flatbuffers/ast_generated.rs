@@ -414,14 +414,13 @@ pub fn enum_name_operator(e: Operator) -> &'static str {
 #[repr(i8)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum LogicalOperator {
-  InvalidOperator = 0,
-  AndOperator = 1,
-  OrOperator = 2,
+  AndOperator = 0,
+  OrOperator = 1,
 
 }
 
 const ENUM_MIN_LOGICAL_OPERATOR: i8 = 0;
-const ENUM_MAX_LOGICAL_OPERATOR: i8 = 2;
+const ENUM_MAX_LOGICAL_OPERATOR: i8 = 1;
 
 impl<'a> flatbuffers::Follow<'a> for LogicalOperator {
   type Inner = Self;
@@ -455,15 +454,13 @@ impl flatbuffers::Push for LogicalOperator {
 }
 
 #[allow(non_camel_case_types)]
-const ENUM_VALUES_LOGICAL_OPERATOR:[LogicalOperator; 3] = [
-  LogicalOperator::InvalidOperator,
+const ENUM_VALUES_LOGICAL_OPERATOR:[LogicalOperator; 2] = [
   LogicalOperator::AndOperator,
   LogicalOperator::OrOperator
 ];
 
 #[allow(non_camel_case_types)]
-const ENUM_NAMES_LOGICAL_OPERATOR:[&'static str; 3] = [
-    "InvalidOperator",
+const ENUM_NAMES_LOGICAL_OPERATOR:[&'static str; 2] = [
     "AndOperator",
     "OrOperator"
 ];
@@ -4333,7 +4330,7 @@ impl<'a> LogicalExpression<'a> {
   }
   #[inline]
   pub fn operator(&self) -> LogicalOperator {
-    self._tab.get::<LogicalOperator>(LogicalExpression::VT_OPERATOR, Some(LogicalOperator::InvalidOperator)).unwrap()
+    self._tab.get::<LogicalOperator>(LogicalExpression::VT_OPERATOR, Some(LogicalOperator::AndOperator)).unwrap()
   }
   #[inline]
   pub fn left_type(&self) -> Expression {
@@ -4846,7 +4843,7 @@ impl<'a> Default for LogicalExpressionArgs<'a> {
     fn default() -> Self {
         LogicalExpressionArgs {
             base_node: None,
-            operator: LogicalOperator::InvalidOperator,
+            operator: LogicalOperator::AndOperator,
             left_type: Expression::NONE,
             left: None,
             right_type: Expression::NONE,
@@ -4865,7 +4862,7 @@ impl<'a: 'b, 'b> LogicalExpressionBuilder<'a, 'b> {
   }
   #[inline]
   pub fn add_operator(&mut self, operator: LogicalOperator) {
-    self.fbb_.push_slot::<LogicalOperator>(LogicalExpression::VT_OPERATOR, operator, LogicalOperator::InvalidOperator);
+    self.fbb_.push_slot::<LogicalOperator>(LogicalExpression::VT_OPERATOR, operator, LogicalOperator::AndOperator);
   }
   #[inline]
   pub fn add_left_type(&mut self, left_type: Expression) {
