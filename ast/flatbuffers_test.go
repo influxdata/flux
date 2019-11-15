@@ -32,11 +32,13 @@ func TestRoundTrip(t *testing.T) {
 	srcs := [2]string{`
 package mypkg
 import "my_other_pkg"
-import "yet_another_pkg"
+import "yet_another_pkg"	
 option now = () => (2030-01-01T00:00:00Z)
 option foo.bar = "baz"
 builtin foo
+
 # // bad stmt
+
 test aggregate_window_empty = () => ({
     input: testing.loadStorage(csv: inData),
     want: testing.loadMem(csv: outData),
@@ -47,6 +49,7 @@ test aggregate_window_empty = () => ({
 })
 `, `
 a
+
 arr = [0, 1, 2]
 f = (i) => i
 ff = (i=<-, j) => {
@@ -76,6 +79,7 @@ fncall2 = foo(v: 20, w: "bar")
 v = if true then 70.0 else 140.0 
 ans = "the answer is ${v}"
 paren = (1)
+
 i = 1
 f = 1.0
 s = "foo"
@@ -85,7 +89,6 @@ dt = 2030-01-01T00:00:00Z
 re =~ /foo/
 re !~ /foo/
 bad_expr = 3 * / 1
-"
 `}
 	for _, src := range srcs {
 		astFbs := libflux.ParseIntoFbs(src)
