@@ -857,6 +857,23 @@ mod tests {
 
         assert_eq!(Ok(output), parse(text));
     }
+    #[test]
+    fn parse_array_row_test() {
+        let parse_text = "forall [t0] [{foo: int | t0}]";
+
+        let output = PolyType {
+            vars: vec![Tvar(0)],
+            cons: HashMap::new(),
+            expr: MonoType::Arr(Box::new(Array(MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: "foo".to_string(),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Var(Tvar(0)),
+            }))))),
+        };
+        assert_eq!(Ok(output), parse(parse_text));
+    }
 
     #[test]
     fn parse_function_test() {

@@ -68,8 +68,8 @@ fn validate(t: PolyType) -> Result<PolyType, String> {
 fn parse_map(m: HashMap<&str, &str>) -> HashMap<String, PolyType> {
     m.into_iter()
         .map(|(name, expr)| {
-            let init = parse(expr).unwrap();
-            let poly = validate(init).unwrap();
+            let init = parse(expr).expect(format!("failed to parse {}", name).as_str());
+            let poly = validate(init).expect(format!("failed to validate {}", name).as_str());
             return (name.to_string(), poly);
         })
         .collect()
@@ -149,7 +149,7 @@ fn infer_types(
     let pkg = parse_program(src);
 
     let got = match nodes::infer_pkg_types(
-        &mut analyze_with(pkg, &mut f).unwrap(),
+        &mut analyze_with(pkg, &mut f).expect("analysis failed"),
         Environment::new(env.into()),
         &mut f,
         &importer,
@@ -2584,6 +2584,29 @@ fn record_with_scoped_labels() {
         ],
     }
 }
+
+#[test]
+fn psuedo_complete_query() {
+    test_infer! {
+        env: map![
+            "from"   => "forall [t0, t1] (bucket: string) -> [{field: string | value: t1 | t0}]",
+            "range"  => "forall [t0] (<-tables: [t0], start: duration) -> [t0]",
+            "filter" => "forall [t0] (<-tables: [t0], fn: (r: t0) -> bool) -> [t0]",
+            "map"    => "forall [t0,t1] (<-tables : [t0], fn: (r: t0) -> t1) -> [t1]",
+            "int"    => "forall [t0] (v: t0) -> int",
+        ],
+        src: r#"
+            out = from(bucket:"foo")
+                |> range(start: 1d)
+                |> filter(fn: (r) => r.host == "serverA" and r.measurement == "mem")
+                |> map(fn: (r) => ({r with value: int(v: r.value)}))
+        "#,
+        exp: map![
+            "out" => "forall [t0,t1] [{value: int | host: string | measurement: string | field: string | value: t1 | t0}]",
+        ],
+    }
+}
+
 #[test]
 fn identity_function() {
     test_infer! {
