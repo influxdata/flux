@@ -2373,13 +2373,13 @@ Tables where all records exists outside the time bounds are filtered entirely.
 
 Range has the following properties:
 
-| Name        | Type   | Description                                                                                                             |
-| ----        | ----   | -----------                                                                                                             |
-| start       | time   | Start specifies the oldest time to be included in the results.                                                          |
-| stop        | time   | Stop specifies the exclusive newest time to be included in the results. Defaults to the value of the `now` option time. |
-| timeColumn  | string | Name of the time column to use. Defaults to `_time`.                                                                    |
-| startColumn | string | StartColumn is the name of the column containing the start time. Defaults to `_start`.                                  |
-| stopColumn  | string | StopColumn is the name of the column containing the stop time. Defaults to `_stop`.                                     |
+| Name        | Type   | Description                                                                                                                                       |
+| ----        | ----   | -----------                                                                                                                                       |
+| start       | time   | Start inclusively specifies the lower bound (oldest) time of the range by which to filter records.                                                |
+| stop        | time   | Stop exclusively specifies the upper bound (newest) time of the range by which to filter records. Defaults to the value of the `now` option time. |
+| timeColumn  | string | Name of the time column to use. Defaults to `_time`.                                                                                              |
+| startColumn | string | StartColumn is the name of the column containing the start time. Defaults to `_start`.                                                            |
+| stopColumn  | string | StopColumn is the name of the column containing the stop time. Defaults to `_stop`.                                                               |
 
 Example:
 ```
