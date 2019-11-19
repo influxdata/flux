@@ -6,13 +6,13 @@ cd $DIR
 set -e
 
 remote=$(git rev-parse "@{u}") # "@{u}" gets the current upstream branch
-local=$(git rev-parse @) # '@' gets the current local branch 
+local=$(git rev-parse @) # '@' gets the current local branch
 
-# check if local commit syncs with remote 
+# check if local commit syncs with remote
 if [ "$remote" != "$local" ]; then
     echo "Error: local commit does not match remote. Exiting release script."
     exit 1
-fi 
+fi
 
 # remove any excess brackets, space/tab characters and 'origin' branch and sort the tags
 git_remote_tags () { git ls-remote --tags origin | grep -v '{}' | sort | tr -d [[:blank:]] ; }
@@ -25,7 +25,7 @@ if ! diff -q <(git_remote_tags) <(git_local_tags) &>/dev/null; then
 fi
 
 # cut the next Flux release
-version=$(go run github.com/influxdata/changelog nextver)
+version=$(./gotool.sh github.com/influxdata/changelog nextver)
 git tag -s -m "Release $version" "$version"
 git push origin "$version"
 

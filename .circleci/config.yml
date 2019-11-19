@@ -107,14 +107,14 @@ jobs:
       - run:
           name: Generate changelog
           command: |
-            go run github.com/influxdata/changelog generate
+            ./gotool.sh github.com/influxdata/changelog generate
                 --version $CIRCLE_TAG
                 --commit-url https://github.com/influxdata/flux/commit
                 -o release-notes.txt
       - run:
           name: Perform release
           command: |
-            go run github.com/goreleaser/goreleaser release
+            ./gotool.sh github.com/goreleaser/goreleaser release
                 --rm-dist --release-notes release-notes.txt
 
 workflows:

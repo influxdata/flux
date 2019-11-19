@@ -133,7 +133,7 @@ checkgenerate:
 
 staticcheck:
 	GO111MODULE=on go mod vendor # staticcheck looks in vendor for dependencies.
-	GO111MODULE=on go run honnef.co/go/tools/cmd/staticcheck ./...
+	GO111MODULE=on ./gotool.sh honnef.co/go/tools/cmd/staticcheck ./...
 
 test: test-go test-rust
 
