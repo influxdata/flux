@@ -283,8 +283,9 @@ table DateTimeLiteral {
 }
 
 table Time {
-    timestamp:long;
-    offset:int;
+    secs:int64;
+    nsecs:uint32;
+    offset:int32;
 }
 
 table DurationLiteral {

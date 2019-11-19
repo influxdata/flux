@@ -26,7 +26,7 @@ func (rcv *Time) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *Time) Timestamp() int64 {
+func (rcv *Time) Secs() int64 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		return rcv._tab.GetInt64(o + rcv._tab.Pos)
@@ -34,12 +34,24 @@ func (rcv *Time) Timestamp() int64 {
 	return 0
 }
 
-func (rcv *Time) MutateTimestamp(n int64) bool {
+func (rcv *Time) MutateSecs(n int64) bool {
 	return rcv._tab.MutateInt64Slot(4, n)
 }
 
-func (rcv *Time) Offset() int32 {
+func (rcv *Time) Nsecs() uint32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.GetUint32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *Time) MutateNsecs(n uint32) bool {
+	return rcv._tab.MutateUint32Slot(6, n)
+}
+
+func (rcv *Time) Offset() int32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		return rcv._tab.GetInt32(o + rcv._tab.Pos)
 	}
@@ -47,17 +59,20 @@ func (rcv *Time) Offset() int32 {
 }
 
 func (rcv *Time) MutateOffset(n int32) bool {
-	return rcv._tab.MutateInt32Slot(6, n)
+	return rcv._tab.MutateInt32Slot(8, n)
 }
 
 func TimeStart(builder *flatbuffers.Builder) {
-	builder.StartObject(2)
+	builder.StartObject(3)
 }
-func TimeAddTimestamp(builder *flatbuffers.Builder, timestamp int64) {
-	builder.PrependInt64Slot(0, timestamp, 0)
+func TimeAddSecs(builder *flatbuffers.Builder, secs int64) {
+	builder.PrependInt64Slot(0, secs, 0)
+}
+func TimeAddNsecs(builder *flatbuffers.Builder, nsecs uint32) {
+	builder.PrependUint32Slot(1, nsecs, 0)
 }
 func TimeAddOffset(builder *flatbuffers.Builder, offset int32) {
-	builder.PrependInt32Slot(1, offset, 0)
+	builder.PrependInt32Slot(2, offset, 0)
 }
 func TimeEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
