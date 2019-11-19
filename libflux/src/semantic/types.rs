@@ -587,7 +587,7 @@ impl Array {
 // variable. A row variable is a type variable that
 // represents an unknown record type.
 //
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub enum Row {
     Empty,
     Extension { head: Property, tail: MonoType },
@@ -598,6 +598,54 @@ impl fmt::Display for Row {
         f.write_str("{")?;
         self.format(f)?;
         f.write_str("}")
+    }
+}
+
+impl cmp::PartialEq for Row {
+    fn eq(mut self: &Self, mut r: &Self) -> bool {
+        let mut a = HashMap::new();
+        let t = loop {
+            match self {
+                Row::Empty => break None,
+                Row::Extension {
+                    head,
+                    tail: MonoType::Row(o),
+                } => {
+                    a.entry(&head.k).or_insert(Vec::new()).push(&head.v);
+                    self = o;
+                }
+                Row::Extension {
+                    head,
+                    tail: MonoType::Var(t),
+                } => {
+                    a.entry(&head.k).or_insert(Vec::new()).push(&head.v);
+                    break Some(t);
+                }
+                _ => return false,
+            }
+        };
+        let mut b = HashMap::new();
+        let v = loop {
+            match r {
+                Row::Empty => break None,
+                Row::Extension {
+                    head,
+                    tail: MonoType::Row(o),
+                } => {
+                    b.entry(&head.k).or_insert(Vec::new()).push(&head.v);
+                    r = o;
+                }
+                Row::Extension {
+                    head,
+                    tail: MonoType::Var(t),
+                } => {
+                    b.entry(&head.k).or_insert(Vec::new()).push(&head.v);
+                    break Some(t);
+                }
+                _ => return false,
+            }
+        };
+        t == v && a == b
     }
 }
 
@@ -1489,6 +1537,214 @@ mod tests {
                 })),
             }
             .to_string(),
+        );
+    }
+
+    #[test]
+    fn compare_records() {
+        assert_eq!(
+            // {a:int | b:string | t0}
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("a"),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
+                        k: String::from("b"),
+                        v: MonoType::String,
+                    },
+                    tail: MonoType::Var(Tvar(0)),
+                })),
+            })),
+            // {b:string | a:int | t0}
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("b"),
+                    v: MonoType::String,
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
+                        k: String::from("a"),
+                        v: MonoType::Int,
+                    },
+                    tail: MonoType::Var(Tvar(0)),
+                })),
+            })),
+        );
+        assert_eq!(
+            // {a:int | b:string | b:int | c:float | t0}
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("a"),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
+                        k: String::from("b"),
+                        v: MonoType::String,
+                    },
+                    tail: MonoType::Row(Box::new(Row::Extension {
+                        head: Property {
+                            k: String::from("b"),
+                            v: MonoType::Int,
+                        },
+                        tail: MonoType::Row(Box::new(Row::Extension {
+                            head: Property {
+                                k: String::from("c"),
+                                v: MonoType::Float,
+                            },
+                            tail: MonoType::Var(Tvar(0)),
+                        })),
+                    })),
+                })),
+            })),
+            // {c:float | b:string | b:int | a:int | t0}
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("c"),
+                    v: MonoType::Float,
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
+                        k: String::from("b"),
+                        v: MonoType::String,
+                    },
+                    tail: MonoType::Row(Box::new(Row::Extension {
+                        head: Property {
+                            k: String::from("b"),
+                            v: MonoType::Int,
+                        },
+                        tail: MonoType::Row(Box::new(Row::Extension {
+                            head: Property {
+                                k: String::from("a"),
+                                v: MonoType::Int,
+                            },
+                            tail: MonoType::Var(Tvar(0)),
+                        })),
+                    })),
+                })),
+            })),
+        );
+        assert_ne!(
+            // {a:int | b:string | b:int | c:float | t0}
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("a"),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
+                        k: String::from("b"),
+                        v: MonoType::String,
+                    },
+                    tail: MonoType::Row(Box::new(Row::Extension {
+                        head: Property {
+                            k: String::from("b"),
+                            v: MonoType::Int,
+                        },
+                        tail: MonoType::Row(Box::new(Row::Extension {
+                            head: Property {
+                                k: String::from("c"),
+                                v: MonoType::Float,
+                            },
+                            tail: MonoType::Var(Tvar(0)),
+                        })),
+                    })),
+                })),
+            })),
+            // {a:int | b:int | b:string | c:float | t0}
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("a"),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
+                        k: String::from("b"),
+                        v: MonoType::Int,
+                    },
+                    tail: MonoType::Row(Box::new(Row::Extension {
+                        head: Property {
+                            k: String::from("b"),
+                            v: MonoType::String,
+                        },
+                        tail: MonoType::Row(Box::new(Row::Extension {
+                            head: Property {
+                                k: String::from("c"),
+                                v: MonoType::Float,
+                            },
+                            tail: MonoType::Var(Tvar(0)),
+                        })),
+                    })),
+                })),
+            })),
+        );
+        assert_ne!(
+            // {a:int | b:string | {}}
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("a"),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
+                        k: String::from("b"),
+                        v: MonoType::String,
+                    },
+                    tail: MonoType::Row(Box::new(Row::Empty)),
+                })),
+            })),
+            // {b:int | a:int | {}}
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("b"),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
+                        k: String::from("a"),
+                        v: MonoType::Int,
+                    },
+                    tail: MonoType::Row(Box::new(Row::Empty)),
+                })),
+            })),
+        );
+        assert_ne!(
+            // {a:int | {}}
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("a"),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Row(Box::new(Row::Empty)),
+            })),
+            // {a:int | t0}
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("a"),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Var(Tvar(0)),
+            })),
+        );
+        assert_ne!(
+            // {a:int | t0}
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("a"),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Var(Tvar(0)),
+            })),
+            // {a:int | t1}
+            MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: String::from("a"),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Var(Tvar(1)),
+            })),
         );
     }
 
