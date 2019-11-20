@@ -1,8 +1,8 @@
 // build.rs
 
 use std::env;
+use std::fs::copy;
 use std::path::PathBuf;
-use std::process::Command;
 
 // Bring in a dependency on an externally maintained `cc` package which manages
 // invoking the C compiler.
@@ -37,16 +37,8 @@ fn main() {
         .write_to_file(out_path.join("ctypes.rs"))
         .expect("Couldn't write c type bindings!");
 
-    // Run Ragel
-    Command::new("ragel")
-        .args(&[
-            "-C",
-            "-o",
-            out_path.join("scanner.c").to_str().unwrap(),
-            "src/scanner/scanner.rl",
-        ])
-        .status()
-        .expect("Unable to execute ragel command");
+    copy("scanner.c", out_path.join("scanner.c")).expect("Could not copy scanner.c");
+
     // Compile generated scanner
     cc::Build::new()
         .include("src/scanner")

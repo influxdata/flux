@@ -42,7 +42,8 @@ GENERATED_TARGETS = \
 	ast/internal/fbast \
 	semantic/internal/fbsemantic \
 	libflux/src/ast/flatbuffers/ast_generated.rs \
-	libflux/src/semantic/flatbuffers/semantic_generated.rs
+	libflux/src/semantic/flatbuffers/semantic_generated.rs \
+	libflux/scanner.c
 
 generate: $(GENERATED_TARGETS)
 
@@ -158,6 +159,9 @@ bench:
 release:
 	./release.sh
 
+libflux/scanner.c: libflux/src/scanner/scanner.rl
+	ragel -C -o libflux/scanner.c libflux/src/scanner/scanner.rl
+
 libflux-wasm:
 	cd libflux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev
 
@@ -183,4 +187,3 @@ libflux-wasm:
 	bench \
 	checkfmt \
 	release
-
