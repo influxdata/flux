@@ -8409,17 +8409,23 @@ impl<'a> Time<'a> {
         _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
         args: &'args TimeArgs) -> flatbuffers::WIPOffset<Time<'bldr>> {
       let mut builder = TimeBuilder::new(_fbb);
-      builder.add_timestamp(args.timestamp);
+      builder.add_secs(args.secs);
       builder.add_offset(args.offset);
+      builder.add_nsecs(args.nsecs);
       builder.finish()
     }
 
-    pub const VT_TIMESTAMP: flatbuffers::VOffsetT = 4;
-    pub const VT_OFFSET: flatbuffers::VOffsetT = 6;
+    pub const VT_SECS: flatbuffers::VOffsetT = 4;
+    pub const VT_NSECS: flatbuffers::VOffsetT = 6;
+    pub const VT_OFFSET: flatbuffers::VOffsetT = 8;
 
   #[inline]
-  pub fn timestamp(&self) -> i64 {
-    self._tab.get::<i64>(Time::VT_TIMESTAMP, Some(0)).unwrap()
+  pub fn secs(&self) -> i64 {
+    self._tab.get::<i64>(Time::VT_SECS, Some(0)).unwrap()
+  }
+  #[inline]
+  pub fn nsecs(&self) -> u32 {
+    self._tab.get::<u32>(Time::VT_NSECS, Some(0)).unwrap()
   }
   #[inline]
   pub fn offset(&self) -> i32 {
@@ -8428,14 +8434,16 @@ impl<'a> Time<'a> {
 }
 
 pub struct TimeArgs {
-    pub timestamp: i64,
+    pub secs: i64,
+    pub nsecs: u32,
     pub offset: i32,
 }
 impl<'a> Default for TimeArgs {
     #[inline]
     fn default() -> Self {
         TimeArgs {
-            timestamp: 0,
+            secs: 0,
+            nsecs: 0,
             offset: 0,
         }
     }
@@ -8446,8 +8454,12 @@ pub struct TimeBuilder<'a: 'b, 'b> {
 }
 impl<'a: 'b, 'b> TimeBuilder<'a, 'b> {
   #[inline]
-  pub fn add_timestamp(&mut self, timestamp: i64) {
-    self.fbb_.push_slot::<i64>(Time::VT_TIMESTAMP, timestamp, 0);
+  pub fn add_secs(&mut self, secs: i64) {
+    self.fbb_.push_slot::<i64>(Time::VT_SECS, secs, 0);
+  }
+  #[inline]
+  pub fn add_nsecs(&mut self, nsecs: u32) {
+    self.fbb_.push_slot::<u32>(Time::VT_NSECS, nsecs, 0);
   }
   #[inline]
   pub fn add_offset(&mut self, offset: i32) {
