@@ -697,6 +697,7 @@ pub struct UnaryExpr {
 // LogicalOperator are used with boolean (logical) values
 #[derive(Debug, PartialEq, Clone)]
 pub enum LogicalOperator {
+    InvalidOperator,
     AndOperator,
     OrOperator,
 }
@@ -704,6 +705,7 @@ pub enum LogicalOperator {
 impl ToString for LogicalOperator {
     fn to_string(&self) -> String {
         match self {
+            LogicalOperator::InvalidOperator => "invalid".to_string(),
             LogicalOperator::AndOperator => "and".to_string(),
             LogicalOperator::OrOperator => "or".to_string(),
         }

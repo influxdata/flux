@@ -171,6 +171,7 @@ enum Operator : byte {
 }
 
 enum LogicalOperator : byte {
+  InvalidOperator,
   AndOperator,
   OrOperator,
 }

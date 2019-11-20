@@ -974,6 +974,7 @@ fn ast_operator(fb_op: fbast::Operator) -> ast::Operator {
 
 fn ast_logical_operator(lo: &fbast::LogicalOperator) -> ast::LogicalOperator {
     match lo {
+        fbast::LogicalOperator::InvalidOperator => ast::LogicalOperator::InvalidOperator,
         fbast::LogicalOperator::AndOperator => ast::LogicalOperator::AndOperator,
         fbast::LogicalOperator::OrOperator => ast::LogicalOperator::OrOperator,
     }
