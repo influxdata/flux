@@ -301,7 +301,7 @@ fn build_type_assignment<'a>(
 }
 
 /// Encodes a polytype as a flatbuffer
-fn build_polytype<'a>(
+pub fn build_polytype<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     t: PolyType,
 ) -> flatbuffers::WIPOffset<fb::PolyType<'a>> {
@@ -343,7 +343,7 @@ fn build_constraint<'a>(
     )
 }
 
-fn build_type<'a>(
+pub fn build_type<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     t: MonoType,
 ) -> (

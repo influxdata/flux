@@ -135,11 +135,8 @@ func (rcv *CallExpression) FromBuf(fb *fbsemantic.CallExpression) error {
 	if rcv.Callee, err = fromExpressionTable(fb.Callee, fb.CalleeType()); err != nil {
 		return errors.Wrap(err, codes.Inherit, "CallExpression.Callee")
 	}
-	if fbArguments := fb.Arguments(nil); fbArguments != nil {
-		rcv.Arguments = new(ObjectExpression)
-		if err = rcv.Arguments.FromBuf(fbArguments); err != nil {
-			return errors.Wrap(err, codes.Inherit, "CallExpression.Arguments")
-		}
+	if rcv.Arguments, err = objectExprFromProperties(fb); err != nil {
+		return errors.Wrap(err, codes.Inherit, "CallExpression.Arguments")
 	}
 	if rcv.Pipe, err = fromExpressionTable(fb.Pipe, fb.PipeType()); err != nil {
 		return errors.Wrap(err, codes.Inherit, "CallExpression.Pipe")

@@ -587,3 +587,23 @@ func getPolyType(fb *fbsemantic.NativeVariableAssignment) (*types.PolyType, erro
 	t := fb.Typ(nil)
 	return types.NewPolyType(t)
 }
+
+func objectExprFromProperties(fb *fbsemantic.CallExpression) (*ObjectExpression, error) {
+	props := make([]*Property, fb.ArgumentsLength())
+	for i := 0; i < fb.ArgumentsLength(); i++ {
+		fbProp := new(fbsemantic.Property)
+		if !fb.Arguments(fbProp, i) {
+			return nil, errors.New(codes.Internal, "missing property")
+		}
+		prop := new(Property)
+		if err := prop.FromBuf(fbProp); err != nil {
+			return nil, err
+		}
+		props = append(props, prop)
+	}
+
+	obj := &ObjectExpression{
+		Properties: props,
+	}
+	return obj, nil
+}
