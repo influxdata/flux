@@ -11,10 +11,17 @@ use std::collections::HashMap;
 #[derive(Debug, PartialEq)]
 pub struct Substitution(HashMap<Tvar, MonoType>);
 
-// Derive a substitution from a hash map
+// Derive a substitution from a hash map.
 impl From<HashMap<Tvar, MonoType>> for Substitution {
     fn from(values: HashMap<Tvar, MonoType>) -> Substitution {
         Substitution(values)
+    }
+}
+
+// Derive a hash map from a substitution.
+impl From<Substitution> for HashMap<Tvar, MonoType> {
+    fn from(sub: Substitution) -> HashMap<Tvar, MonoType> {
+        sub.0
     }
 }
 

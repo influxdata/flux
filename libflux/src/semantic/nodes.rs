@@ -31,11 +31,11 @@ use std::vec::Vec;
 // Result returned from the various 'infer' methods defined in this
 // module. The result of inferring an expression or statment is an
 // updated type environment and a set of type constraints to be solved.
-type Result = std::result::Result<(Environment, Constraints), Error>;
+pub type Result = std::result::Result<(Environment, Constraints), Error>;
 
 #[derive(Debug)]
 pub struct Error {
-    msg: String,
+    pub msg: String,
 }
 
 impl fmt::Display for Error {
@@ -88,10 +88,32 @@ pub enum Statement {
     Builtin(BuiltinStmt),
 }
 
+impl Statement {
+    fn apply(self, sub: &Substitution) -> Self {
+        match self {
+            Statement::Expr(stmt) => Statement::Expr(stmt.apply(&sub)),
+            Statement::Variable(stmt) => Statement::Variable(stmt.apply(&sub)),
+            Statement::Option(stmt) => Statement::Option(stmt.apply(&sub)),
+            Statement::Return(stmt) => Statement::Return(stmt.apply(&sub)),
+            Statement::Test(stmt) => Statement::Test(stmt.apply(&sub)),
+            Statement::Builtin(stmt) => Statement::Builtin(stmt.apply(&sub)),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum Assignment {
     Variable(VariableAssgn),
     Member(MemberAssgn),
+}
+
+impl Assignment {
+    fn apply(self, sub: &Substitution) -> Self {
+        match self {
+            Assignment::Variable(ass) => Assignment::Variable(ass.apply(&sub)),
+            Assignment::Member(ass) => Assignment::Member(ass.apply(&sub)),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -192,10 +214,42 @@ impl Expression {
             Expression::Regexp(lit) => lit.infer(env),
         }
     }
+    fn apply(self, sub: &Substitution) -> Self {
+        match self {
+            Expression::Identifier(e) => Expression::Identifier(e.apply(&sub)),
+            Expression::Array(e) => Expression::Array(Box::new(e.apply(&sub))),
+            Expression::Function(e) => Expression::Function(Box::new(e.apply(&sub))),
+            Expression::Logical(e) => Expression::Logical(Box::new(e.apply(&sub))),
+            Expression::Object(e) => Expression::Object(Box::new(e.apply(&sub))),
+            Expression::Member(e) => Expression::Member(Box::new(e.apply(&sub))),
+            Expression::Index(e) => Expression::Index(Box::new(e.apply(&sub))),
+            Expression::Binary(e) => Expression::Binary(Box::new(e.apply(&sub))),
+            Expression::Unary(e) => Expression::Unary(Box::new(e.apply(&sub))),
+            Expression::Call(e) => Expression::Call(Box::new(e.apply(&sub))),
+            Expression::Conditional(e) => Expression::Conditional(Box::new(e.apply(&sub))),
+            Expression::StringExpr(e) => Expression::StringExpr(Box::new(e.apply(&sub))),
+            Expression::Integer(lit) => Expression::Integer(lit.apply(&sub)),
+            Expression::Float(lit) => Expression::Float(lit.apply(&sub)),
+            Expression::StringLit(lit) => Expression::StringLit(lit.apply(&sub)),
+            Expression::Duration(lit) => Expression::Duration(lit.apply(&sub)),
+            Expression::Uint(lit) => Expression::Uint(lit.apply(&sub)),
+            Expression::Boolean(lit) => Expression::Boolean(lit.apply(&sub)),
+            Expression::DateTime(lit) => Expression::DateTime(lit.apply(&sub)),
+            Expression::Regexp(lit) => Expression::Regexp(lit.apply(&sub)),
+        }
+    }
 }
 
 pub struct Importer<'a> {
     values: HashMap<&'a str, PolyType>,
+}
+
+impl<'a> Importer<'a> {
+    pub fn new() -> Importer<'a> {
+        Importer {
+            values: HashMap::new(),
+        }
+    }
 }
 
 impl<'a> From<HashMap<&'a str, PolyType>> for Importer<'a> {
@@ -221,6 +275,10 @@ pub fn infer_pkg_types(
     Ok((env, infer::solve(&cons, &mut HashMap::new(), f)?))
 }
 
+pub fn inject_pkg_types(pkg: Package, sub: &Substitution) -> Package {
+    pkg.apply(&sub)
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Package {
     pub loc: ast::SourceLocation,
@@ -237,6 +295,14 @@ impl Package {
                 let (env, cons) = file.infer(env, f, i)?;
                 Ok((env, cons + rest))
             })
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.files = self
+            .files
+            .into_iter()
+            .map(|file| file.apply(&sub))
+            .collect();
+        self
     }
 }
 
@@ -302,6 +368,10 @@ impl File {
         }
         Ok((env, constraints))
     }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.body = self.body.into_iter().map(|stmt| stmt.apply(&sub)).collect();
+        self
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -345,6 +415,10 @@ impl OptionStmt {
             Assignment::Variable(stmt) => stmt.infer(env, f),
         }
     }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.assignment = self.assignment.apply(&sub);
+        self
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -358,6 +432,9 @@ impl BuiltinStmt {
     fn infer(&self, _: Environment, _: &mut Fresher) -> Result {
         unimplemented!();
     }
+    fn apply(self, _sub: &Substitution) -> Self {
+        unimplemented!()
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -370,6 +447,10 @@ pub struct TestStmt {
 impl TestStmt {
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
         self.assignment.infer(env, f)
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.assignment = self.assignment.apply(&sub);
+        self
     }
 }
 
@@ -386,6 +467,10 @@ impl ExprStmt {
         let sub = infer::solve(&cons, &mut HashMap::new(), f)?;
         Ok((env.apply(&sub), cons))
     }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.expression = self.expression.apply(&sub);
+        self
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -400,9 +485,14 @@ impl ReturnStmt {
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
         self.argument.infer(env, f)
     }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.argument = self.argument.apply(&sub);
+        self
+    }
 }
 
-#[derive(Debug, Derivative, PartialEq, Clone)]
+#[derive(Debug, Derivative, Clone)]
+#[derivative(PartialEq)]
 pub struct VariableAssgn {
     #[derivative(PartialEq = "ignore")]
     vars: Vec<Tvar>,
@@ -466,6 +556,10 @@ impl VariableAssgn {
         &mut env.add(String::from(&self.id.name), p);
         Ok((env, constraints))
     }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.init = self.init.apply(&sub);
+        self
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -474,6 +568,14 @@ pub struct MemberAssgn {
 
     pub member: MemberExpr,
     pub init: Expression,
+}
+
+impl MemberAssgn {
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.member = self.member.apply(&sub);
+        self.init = self.init.apply(&sub);
+        self
+    }
 }
 
 #[derive(Derivative)]
@@ -504,12 +606,30 @@ impl StringExpr {
         constraints.push(Constraint::Equal(self.typ.clone(), MonoType::String));
         return Ok((env, Constraints::from(constraints)));
     }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self.parts = self
+            .parts
+            .into_iter()
+            .map(|part| part.apply(&sub))
+            .collect();
+        self
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum StringExprPart {
     Text(TextPart),
     Interpolated(InterpolatedPart),
+}
+
+impl StringExprPart {
+    fn apply(self, sub: &Substitution) -> Self {
+        match self {
+            StringExprPart::Interpolated(part) => StringExprPart::Interpolated(part.apply(&sub)),
+            StringExprPart::Text(_) => self,
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -524,6 +644,13 @@ pub struct InterpolatedPart {
     pub loc: ast::SourceLocation,
 
     pub expression: Expression,
+}
+
+impl InterpolatedPart {
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.expression = self.expression.apply(&sub);
+        self
+    }
 }
 
 #[derive(Derivative)]
@@ -549,6 +676,15 @@ impl ArrayExpr {
         let at = MonoType::Arr(Box::new(Array(elt)));
         cons.push(Constraint::Equal(at, self.typ.clone()));
         return Ok((env, cons.into()));
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self.elements = self
+            .elements
+            .into_iter()
+            .map(|element| element.apply(&sub))
+            .collect();
+        self
     }
 }
 
@@ -634,7 +770,6 @@ impl FunctionExpr {
         cons.add(Constraint::Equal(func, self.typ.clone()));
         return Ok((env, cons));
     }
-
     pub fn pipe(&self) -> Option<&FunctionParameter> {
         for p in &self.params {
             if p.is_pipe {
@@ -643,7 +778,6 @@ impl FunctionExpr {
         }
         None
     }
-
     pub fn defaults(&self) -> Vec<&FunctionParameter> {
         let mut ds = Vec::new();
         for p in &self.params {
@@ -653,6 +787,16 @@ impl FunctionExpr {
             }
         }
         ds
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self.params = self
+            .params
+            .into_iter()
+            .map(|param| param.apply(&sub))
+            .collect();
+        self.body = self.body.apply(&sub);
+        self
     }
 }
 
@@ -705,6 +849,15 @@ impl Block {
             }
         }
     }
+    fn apply(self, sub: &Substitution) -> Self {
+        match self {
+            Block::Variable(ass, next) => {
+                Block::Variable(ass.apply(&sub), Box::new(next.apply(&sub)))
+            }
+            Block::Expr(es, next) => Block::Expr(es.apply(&sub), Box::new(next.apply(&sub))),
+            Block::Return(e) => Block::Return(e.apply(&sub)),
+        }
+    }
 }
 
 // FunctionParameter represents a function parameter.
@@ -715,6 +868,18 @@ pub struct FunctionParameter {
     pub is_pipe: bool,
     pub key: Identifier,
     pub default: Option<Expression>,
+}
+
+impl FunctionParameter {
+    fn apply(mut self, sub: &Substitution) -> Self {
+        match self.default {
+            Some(e) => {
+                self.default = Some(e.apply(&sub));
+                self
+            }
+            None => self,
+        }
+    }
 }
 
 #[derive(Derivative)]
@@ -817,6 +982,12 @@ impl BinaryExpr {
         // Otherwise, add the constraints together and return them.
         return Ok((env, lcons + rcons + cons));
     }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self.left = self.left.apply(&sub);
+        self.right = self.right.apply(&sub);
+        self
+    }
 }
 
 #[derive(Derivative)]
@@ -881,6 +1052,22 @@ impl CallExpr {
         ));
         Ok((env, cons))
     }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self.callee = self.callee.apply(&sub);
+        self.arguments = self
+            .arguments
+            .into_iter()
+            .map(|arg| arg.apply(&sub))
+            .collect();
+        match self.pipe {
+            Some(e) => {
+                self.pipe = Some(e.apply(&sub));
+                self
+            }
+            None => self,
+        }
+    }
 }
 
 #[derive(Derivative)]
@@ -913,6 +1100,13 @@ impl ConditionalExpr {
             ]);
         return Ok((env, cons));
     }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self.test = self.test.apply(&sub);
+        self.consequent = self.consequent.apply(&sub);
+        self.alternate = self.alternate.apply(&sub);
+        self
+    }
 }
 
 #[derive(Derivative)]
@@ -939,6 +1133,12 @@ impl LogicalExpr {
                 Constraint::Equal(self.typ.clone(), MonoType::Bool),
             ]);
         return Ok((env, cons));
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self.left = self.left.apply(&sub);
+        self.right = self.right.apply(&sub);
+        self
     }
 }
 
@@ -973,6 +1173,11 @@ impl MemberExpr {
         let (env, cons) = self.object.infer(env, f)?;
         Ok((env, cons + vec![Constraint::Equal(t, r)].into()))
     }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self.object = self.object.apply(&sub);
+        self
+    }
 }
 
 #[derive(Derivative)]
@@ -1000,6 +1205,12 @@ impl IndexExpr {
                 ),
             ]);
         return Ok((env, cons));
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self.array = self.array.apply(&sub);
+        self.index = self.index.apply(&sub);
+        self
     }
 }
 
@@ -1046,6 +1257,18 @@ impl ObjectExpr {
             cons + vec![Constraint::Equal(self.typ.to_owned(), r)].into(),
         ))
     }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        if let Some(e) = self.with {
+            self.with = Some(e.apply(&sub));
+        }
+        self.properties = self
+            .properties
+            .into_iter()
+            .map(|prop| prop.apply(&sub))
+            .collect();
+        self
+    }
 }
 
 #[derive(Derivative)]
@@ -1082,6 +1305,11 @@ impl UnaryExpr {
         };
         return Ok((env, acons + cons));
     }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self.argument = self.argument.apply(&sub);
+        self
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -1090,6 +1318,13 @@ pub struct Property {
 
     pub key: Identifier,
     pub value: Expression,
+}
+
+impl Property {
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.value = self.value.apply(&sub);
+        self
+    }
 }
 
 #[derive(Derivative)]
@@ -1115,6 +1350,10 @@ impl IdentifierExpr {
             None => Err(Error::undeclared_variable(self.name.to_string())),
         }
     }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -1136,7 +1375,11 @@ pub struct BooleanLit {
 
 impl BooleanLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::Bool);
+        infer_literal(env, &self.typ, MonoType::Bool)
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self
     }
 }
 
@@ -1152,7 +1395,11 @@ pub struct IntegerLit {
 
 impl IntegerLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::Int);
+        infer_literal(env, &self.typ, MonoType::Int)
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self
     }
 }
 
@@ -1168,7 +1415,11 @@ pub struct FloatLit {
 
 impl FloatLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::Float);
+        infer_literal(env, &self.typ, MonoType::Float)
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self
     }
 }
 
@@ -1185,7 +1436,11 @@ pub struct RegexpLit {
 
 impl RegexpLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::Regexp);
+        infer_literal(env, &self.typ, MonoType::Regexp)
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self
     }
 }
 
@@ -1201,7 +1456,11 @@ pub struct StringLit {
 
 impl StringLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::String);
+        infer_literal(env, &self.typ, MonoType::String)
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self
     }
 }
 
@@ -1217,7 +1476,11 @@ pub struct UintLit {
 
 impl UintLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::Uint);
+        infer_literal(env, &self.typ, MonoType::Uint)
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self
     }
 }
 
@@ -1233,7 +1496,11 @@ pub struct DateTimeLit {
 
 impl DateTimeLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::Time);
+        infer_literal(env, &self.typ, MonoType::Time)
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self
     }
 }
 
@@ -1249,13 +1516,17 @@ pub struct DurationLit {
 
 impl DurationLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::Duration);
+        infer_literal(env, &self.typ, MonoType::Duration)
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self
     }
 }
 
 fn infer_literal(env: Environment, typ: &MonoType, is: MonoType) -> Result {
     let constraints = Constraints::from(vec![Constraint::Equal(typ.clone(), is)]);
-    return Ok((env, constraints));
+    Ok((env, constraints))
 }
 
 const NANOS: i64 = 1;
@@ -1294,10 +1565,14 @@ pub fn convert_duration(duration: &Vec<ast::Duration>) -> std::result::Result<Du
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ast;
     use crate::parser::parse_string;
     use crate::semantic::analyze::analyze_with;
-    use crate::semantic::types::{MonoType, PolyType};
+    use crate::semantic::types::{MonoType, PolyType, Tvar};
+    use crate::semantic::walk::{walk, Node};
+    use maplit::hashmap;
     use std::collections::HashMap;
+    use std::rc::Rc;
 
     #[test]
     fn test_infer_instantiation() {
@@ -1509,5 +1784,120 @@ mod tests {
         let exp = "unrecognized magnitude for duration: --idk--";
         let got = convert_duration(&t).err().expect("should be an error");
         assert_eq!(exp, got.to_string());
+    }
+
+    #[test]
+    fn test_inject_types() {
+        let b = ast::BaseNode::default();
+        let pkg = Package {
+            loc: b.location.clone(),
+            package: "main".to_string(),
+            files: vec![File {
+                loc: b.location.clone(),
+                package: None,
+                imports: Vec::new(),
+                body: vec![
+                    Statement::Variable(VariableAssgn::new(
+                        Identifier {
+                            loc: b.location.clone(),
+                            name: "f".to_string(),
+                        },
+                        Expression::Function(Box::new(FunctionExpr {
+                            loc: b.location.clone(),
+                            typ: MonoType::Var(Tvar(0)),
+                            params: vec![
+                                FunctionParameter {
+                                    loc: b.location.clone(),
+                                    is_pipe: true,
+                                    key: Identifier {
+                                        loc: b.location.clone(),
+                                        name: "piped".to_string(),
+                                    },
+                                    default: None,
+                                },
+                                FunctionParameter {
+                                    loc: b.location.clone(),
+                                    is_pipe: false,
+                                    key: Identifier {
+                                        loc: b.location.clone(),
+                                        name: "a".to_string(),
+                                    },
+                                    default: None,
+                                },
+                            ],
+                            body: Block::Return(Expression::Binary(Box::new(BinaryExpr {
+                                loc: b.location.clone(),
+                                typ: MonoType::Var(Tvar(1)),
+                                operator: ast::Operator::AdditionOperator,
+                                left: Expression::Identifier(IdentifierExpr {
+                                    loc: b.location.clone(),
+                                    typ: MonoType::Var(Tvar(2)),
+                                    name: "a".to_string(),
+                                }),
+                                right: Expression::Identifier(IdentifierExpr {
+                                    loc: b.location.clone(),
+                                    typ: MonoType::Var(Tvar(3)),
+                                    name: "piped".to_string(),
+                                }),
+                            }))),
+                        })),
+                        b.location.clone(),
+                    )),
+                    Statement::Expr(ExprStmt {
+                        loc: b.location.clone(),
+                        expression: Expression::Call(Box::new(CallExpr {
+                            loc: b.location.clone(),
+                            typ: MonoType::Var(Tvar(4)),
+                            pipe: Some(Expression::Integer(IntegerLit {
+                                loc: b.location.clone(),
+                                typ: MonoType::Var(Tvar(5)),
+                                value: 3,
+                            })),
+                            callee: Expression::Identifier(IdentifierExpr {
+                                loc: b.location.clone(),
+                                typ: MonoType::Var(Tvar(6)),
+                                name: "f".to_string(),
+                            }),
+                            arguments: vec![Property {
+                                loc: b.location.clone(),
+                                key: Identifier {
+                                    loc: b.location.clone(),
+                                    name: "a".to_string(),
+                                },
+                                value: Expression::Integer(IntegerLit {
+                                    loc: b.location.clone(),
+                                    typ: MonoType::Var(Tvar(7)),
+                                    value: 2,
+                                }),
+                            }],
+                        })),
+                    }),
+                ],
+            }],
+        };
+        let sub: Substitution = hashmap! {
+            Tvar(0) => MonoType::Int,
+            Tvar(1) => MonoType::Int,
+            Tvar(2) => MonoType::Int,
+            Tvar(3) => MonoType::Int,
+            Tvar(4) => MonoType::Int,
+            Tvar(5) => MonoType::Int,
+            Tvar(6) => MonoType::Int,
+            Tvar(7) => MonoType::Int,
+        }
+        .into();
+        let pkg = inject_pkg_types(pkg, &sub);
+        let mut no_types_checked = 0;
+        walk(
+            &mut |node: Rc<Node>| {
+                let typ = node.type_of();
+                if let Some(typ) = typ {
+                    assert_eq!(typ, &MonoType::Int);
+                    no_types_checked += 1;
+                }
+            },
+            Rc::new(Node::Package(&pkg)),
+        );
+        assert_eq!(no_types_checked, 8);
     }
 }
