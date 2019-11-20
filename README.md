@@ -144,3 +144,8 @@ Here are a few examples of the language to get an idea of the syntax.
 
 The above examples give only a taste of what is possible with Flux.
 See the complete [documentation](https://v2.docs.influxdata.com/v2.0/query-data/get-started/) for more complete examples and instructions for how to use Flux with InfluxDB 2.0.
+
+## Contributing
+Flux welcomes contributions to the language and the runtime.
+
+If you are interested in contributing, please read out [contributing readme](https://github.com/influxdata/flux/blob/master/CONTRIBUTING.md) for information about how to contribute.
