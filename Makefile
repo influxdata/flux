@@ -142,7 +142,7 @@ test-go: libflux
 	$(GO_TEST) $(GO_TEST_FLAGS) ./...
 
 test-rust:
-	cd libflux && $(CARGO) test $(CARGO_ARGS)
+	cd libflux && $(CARGO) test $(CARGO_ARGS) && $(CARGO) clippy $(CARGO_ARGS)
 
 test-race: libflux
 	$(GO_TEST) -race -count=1 ./...
