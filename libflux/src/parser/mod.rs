@@ -389,8 +389,8 @@ impl Parser {
         let path = self.parse_string_literal();
         return ImportDeclaration {
             base: self.base_node_from_other_end(&t, &path.base),
-            alias: alias,
-            path: path,
+            alias,
+            path,
         };
     }
 
@@ -477,7 +477,7 @@ impl Parser {
             base: self.base_node_from_other_end(&t, assignment.base()),
             assignment: VariableAssgn {
                 base: self.base_node_from_others(&id.base, assignment.base()),
-                id: id,
+                id,
                 init: assignment,
             },
         })
@@ -880,7 +880,7 @@ impl Parser {
                     res = Expression::PipeExpr(Box::new(PipeExpr {
                         base: self.base_node_from_others(res.base(), &call.base),
                         argument: res,
-                        call: call,
+                        call,
                     }));
                 }
             }
@@ -1063,7 +1063,7 @@ impl Parser {
                 TOK_QUOTE => {
                     return StringExpr {
                         base: self.base_node_from_tokens(&start, &t),
-                        parts: parts,
+                        parts,
                     }
                 }
                 _ => {
@@ -1126,7 +1126,7 @@ impl Parser {
         let value = strconv::parse_string(t.lit.as_str()).unwrap();
         StringLit {
             base: self.base_node_from_token(&t),
-            value: value,
+            value,
         }
     }
     fn parse_regexp_literal(&mut self) -> RegexpLit {
@@ -1151,7 +1151,7 @@ impl Parser {
         let value = strconv::parse_time(t.lit.as_str()).unwrap();
         DateTimeLit {
             base: self.base_node_from_token(&t),
-            value: value,
+            value,
         }
     }
     fn parse_duration_literal(&mut self) -> DurationLit {
@@ -1159,7 +1159,7 @@ impl Parser {
         let values = strconv::parse_duration(t.lit.as_str()).unwrap();
         DurationLit {
             base: self.base_node_from_token(&t),
-            values: values,
+            values,
         }
     }
     fn parse_pipe_literal(&mut self) -> PipeLit {
@@ -1428,8 +1428,8 @@ impl Parser {
         };
         Property {
             base: self.base_node_from_others(key.base(), value_base),
-            key: key,
-            value: value,
+            key,
+            value,
         }
     }
     fn parse_invalid_property(&mut self) -> Property {

@@ -32,7 +32,7 @@ fn analyze_package(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> 
     Ok(Package {
         loc: pkg.base.location,
         package: pkg.package,
-        files: files,
+        files,
     })
 }
 

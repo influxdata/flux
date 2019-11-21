@@ -113,8 +113,8 @@ impl PolyType {
             .into();
 
         PolyType {
-            vars: vars,
-            cons: cons,
+            vars,
+            cons,
             expr: self.expr.apply(&sub),
         }
     }
