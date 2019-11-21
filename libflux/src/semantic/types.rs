@@ -493,8 +493,8 @@ impl Tvar {
     fn unify_with_tvar(self, tv: Tvar, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         // Kind constraints for both type variables
         let kinds = union(
-            cons.remove(&self).unwrap_or(Vec::new()),
-            cons.remove(&tv).unwrap_or(Vec::new()),
+            cons.remove(&self).unwrap_or_default(),
+            cons.remove(&tv).unwrap_or_default(),
         );
         if !kinds.is_empty() {
             cons.insert(tv, kinds);
@@ -611,14 +611,14 @@ impl cmp::PartialEq for Row {
                     head,
                     tail: MonoType::Row(o),
                 } => {
-                    first.entry(&head.k).or_insert(Vec::new()).push(&head.v);
+                    first.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
                     self = o;
                 }
                 Row::Extension {
                     head,
                     tail: MonoType::Var(t),
                 } => {
-                    first.entry(&head.k).or_insert(Vec::new()).push(&head.v);
+                    first.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
                     break Some(t);
                 }
                 _ => return false,
@@ -632,14 +632,14 @@ impl cmp::PartialEq for Row {
                     head,
                     tail: MonoType::Row(o),
                 } => {
-                    second.entry(&head.k).or_insert(Vec::new()).push(&head.v);
+                    second.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
                     other = o;
                 }
                 Row::Extension {
                     head,
                     tail: MonoType::Var(t),
                 } => {
-                    second.entry(&head.k).or_insert(Vec::new()).push(&head.v);
+                    second.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
                     break Some(t);
                 }
                 _ => return false,
@@ -1146,13 +1146,13 @@ impl Function {
 
     fn contains(&self, tv: Tvar) -> bool {
         if let Some(pipe) = &self.pipe {
-            self.req.values().fold(false, |ok, t| ok || t.contains(tv))
-                || self.opt.values().fold(false, |ok, t| ok || t.contains(tv))
+            self.req.values().any(|t| t.contains(tv))
+                || self.opt.values().any(|t| t.contains(tv))
                 || pipe.v.contains(tv)
                 || self.retn.contains(tv)
         } else {
-            self.req.values().fold(false, |ok, t| ok || t.contains(tv))
-                || self.opt.values().fold(false, |ok, t| ok || t.contains(tv))
+            self.req.values().any(|t| t.contains(tv))
+                || self.opt.values().any(|t| t.contains(tv))
                 || self.retn.contains(tv)
         }
     }
