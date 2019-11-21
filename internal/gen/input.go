@@ -410,7 +410,7 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 						if vs.Len() == ts.Len() {
 							vs.Retain()
 						} else {
-							vs = array.NewSlice(vs, 0, int64(ts.Len()))
+							vs = arrow.Slice(vs, 0, int64(ts.Len()))
 						}
 						tb.Values[i] = vs
 					}
@@ -455,24 +455,63 @@ func (dg *dataGenerator) generateBufferValues(r *rand.Rand, typ flux.ColType, n 
 	switch typ {
 	case flux.TFloat:
 		b := arrow.NewFloatBuilder(dg.Allocator)
-		b.Reserve(n)
+		b.Resize(n)
 		for i := 0; i < n; i++ {
 			if dg.Nulls > 0.0 && dg.Nulls > r.Float64() {
 				b.AppendNull()
+				continue
 			}
-			v := rand.NormFloat64() * 50
+			v := r.NormFloat64() * 50
 			b.Append(v)
 		}
 		return b.NewArray()
-	case flux.TInt:
+	case flux.TInt, flux.TTime:
 		b := arrow.NewIntBuilder(dg.Allocator)
-		b.Reserve(n)
+		b.Resize(n)
 		for i := 0; i < n; i++ {
 			if dg.Nulls > 0.0 && dg.Nulls > r.Float64() {
 				b.AppendNull()
+				continue
 			}
-			v := rand.Intn(201) - 100
+			v := r.Intn(201) - 100
 			b.Append(int64(v))
+		}
+		return b.NewArray()
+	case flux.TUInt:
+		b := arrow.NewUintBuilder(dg.Allocator)
+		b.Resize(n)
+		for i := 0; i < n; i++ {
+			if dg.Nulls > 0.0 && dg.Nulls > r.Float64() {
+				b.AppendNull()
+				continue
+			}
+			v := r.Intn(101)
+			b.Append(uint64(v))
+		}
+		return b.NewArray()
+	case flux.TString:
+		b := arrow.NewStringBuilder(dg.Allocator)
+		b.Resize(n)
+		b.ReserveData(n * 7)
+		for i := 0; i < n; i++ {
+			if dg.Nulls > 0.0 && dg.Nulls > r.Float64() {
+				b.AppendNull()
+				continue
+			}
+			v := genTagValue(r, 3, 7)
+			b.AppendString(v)
+		}
+		return b.NewArray()
+	case flux.TBool:
+		b := arrow.NewBoolBuilder(dg.Allocator)
+		b.Resize(n)
+		for i := 0; i < n; i++ {
+			if dg.Nulls > 0.0 && dg.Nulls > r.Float64() {
+				b.AppendNull()
+				continue
+			}
+			v := r.Intn(2) != 0
+			b.Append(v)
 		}
 		return b.NewArray()
 	default:

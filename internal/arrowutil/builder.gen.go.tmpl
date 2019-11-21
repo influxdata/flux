@@ -1,0 +1,17 @@
+package arrowutil
+
+import (
+	"github.com/apache/arrow/go/arrow"
+	"github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/arrow/memory"
+)
+
+{{range .}}
+func New{{.Name}}Builder(mem memory.Allocator) *{{.Type}}Builder {
+	{{if eq .Name "String"}}
+	return array.NewBinaryBuilder(mem, arrow.BinaryTypes.String)
+	{{else}}
+	return array.New{{.Name}}Builder(mem)
+	{{end}}
+}
+{{end}}
