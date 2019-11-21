@@ -1482,15 +1482,15 @@ impl Parser {
     fn parse_parameter(&mut self) -> Property {
         let key = self.parse_identifier();
         let base: BaseNode;
-        let mut value = None;
-        if self.peek().tok == TOK_ASSIGN {
+        let value = if self.peek().tok == TOK_ASSIGN {
             self.consume();
             let v = self.parse_expression();
             base = self.base_node_from_others(&key.base, v.base());
-            value = Some(v);
+            Some(v)
         } else {
-            base = self.base_node(key.base.location.clone())
-        }
+            base = self.base_node(key.base.location.clone());
+            None
+        };
         Property {
             base,
             key: PropertyKey::Identifier(key),
