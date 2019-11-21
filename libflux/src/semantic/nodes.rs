@@ -463,7 +463,7 @@ impl VariableAssgn {
         self.cons = p.cons.clone();
 
         // Update the type environment
-        &mut env.add(String::from(&self.id.name), p);
+        env.add(String::from(&self.id.name), p);
         Ok((env, constraints))
     }
 }
