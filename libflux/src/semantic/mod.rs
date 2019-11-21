@@ -11,7 +11,7 @@ mod infer;
 pub mod nodes;
 
 mod sub;
-mod types;
+pub mod types;
 pub mod walk;
 
 #[cfg(test)]
