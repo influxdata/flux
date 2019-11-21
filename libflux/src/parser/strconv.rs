@@ -17,19 +17,14 @@ pub fn parse_string(lit: &str) -> Result<String, String> {
 pub fn parse_text(lit: &str) -> Result<String, String> {
     let mut s = Vec::with_capacity(lit.len());
     let mut chars = lit.char_indices();
-    loop {
-        match chars.next() {
-            Some((_, c)) => {
-                match c {
-                    '\\' => match push_unescaped(&mut s, &mut chars) {
-                        Err(e) => return Err(e.to_string()),
-                        _ => (),
-                    },
-                    // this char can have any byte length
-                    _ => s.extend_from_slice(c.to_string().as_bytes()),
-                }
-            }
-            None => break,
+    while let Some((_, c)) = chars.next() {
+        match c {
+            '\\' => match push_unescaped(&mut s, &mut chars) {
+                Err(e) => return Err(e.to_string()),
+                _ => (),
+            },
+            // this char can have any byte length
+            _ => s.extend_from_slice(c.to_string().as_bytes()),
         }
     }
     let converted = std::str::from_utf8(&s);
@@ -153,17 +148,12 @@ pub fn parse_duration(lit: &str) -> Result<Vec<ast::Duration>, String> {
 
 fn parse_magnitude(chars: &mut Peekable<Chars>) -> Result<i64, String> {
     let mut m = String::new();
-    loop {
-        match chars.peek() {
-            Some(c) => {
-                if !c.is_digit(10) {
-                    break;
-                } else {
-                    m.push(*c);
-                    chars.next();
-                }
-            }
-            None => break,
+    while let Some(c) = chars.peek() {
+        if !c.is_digit(10) {
+            break;
+        } else {
+            m.push(*c);
+            chars.next();
         }
     }
     if m.len() == 0 {
@@ -178,17 +168,12 @@ fn parse_magnitude(chars: &mut Peekable<Chars>) -> Result<i64, String> {
 
 fn parse_unit(chars: &mut Peekable<Chars>) -> Result<String, String> {
     let mut u = String::new();
-    loop {
-        match chars.peek() {
-            Some(c) => {
-                if !c.is_alphabetic() {
-                    break;
-                } else {
-                    u.push(*c);
-                    chars.next();
-                }
-            }
-            None => break,
+    while let Some(c) = chars.peek() {
+        if !c.is_alphabetic() {
+            break;
+        } else {
+            u.push(*c);
+            chars.next();
         }
     }
     if u.len() == 0 {
