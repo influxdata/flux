@@ -731,32 +731,30 @@ impl Row {
                     } else {
                         t.unify(u, cons, fresher)
                     }
+                } else if a == b {
+                    let lv = MonoType::Var(l);
+                    let rv = MonoType::Var(r);
+                    let sub = t.unify(u, cons, fresher)?;
+                    apply_then_unify(lv, rv, sub, cons, fresher)
                 } else {
-                    if a == b {
-                        let lv = MonoType::Var(l);
-                        let rv = MonoType::Var(r);
-                        let sub = t.unify(u, cons, fresher)?;
-                        apply_then_unify(lv, rv, sub, cons, fresher)
-                    } else {
-                        let var = fresher.fresh();
-                        let sub = l.unify(
-                            MonoType::from(Row::Extension {
-                                head: Property { k: b, v: u },
-                                tail: MonoType::Var(var),
-                            }),
-                            cons,
-                        )?;
-                        apply_then_unify(
-                            MonoType::Var(r),
-                            MonoType::from(Row::Extension {
-                                head: Property { k: a, v: t },
-                                tail: MonoType::Var(var),
-                            }),
-                            sub,
-                            cons,
-                            fresher,
-                        )
-                    }
+                    let var = fresher.fresh();
+                    let sub = l.unify(
+                        MonoType::from(Row::Extension {
+                            head: Property { k: b, v: u },
+                            tail: MonoType::Var(var),
+                        }),
+                        cons,
+                    )?;
+                    apply_then_unify(
+                        MonoType::Var(r),
+                        MonoType::from(Row::Extension {
+                            head: Property { k: a, v: t },
+                            tail: MonoType::Var(var),
+                        }),
+                        sub,
+                        cons,
+                        fresher,
+                    )
                 }
             }
             (
