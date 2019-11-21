@@ -19,9 +19,8 @@ pub fn parse_text(lit: &str) -> Result<String, String> {
     let mut chars = lit.char_indices();
     while let Some((_, c)) = chars.next() {
         match c {
-            '\\' => match push_unescaped(&mut s, &mut chars) {
-                Err(e) => return Err(e.to_string()),
-                _ => (),
+            '\\' => if let Err(e) = push_unescaped(&mut s, &mut chars) {
+                return Err(e.to_string())
             },
             // this char can have any byte length
             _ => s.extend_from_slice(c.to_string().as_bytes()),

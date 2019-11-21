@@ -232,8 +232,8 @@ fn analyze_function_params(
         let key = analyze_identifier(id, fresher)?;
         let mut default: Option<Expression> = None;
         let mut is_pipe = false;
-        match prop.value {
-            Some(expr) => match expr {
+        if let Some(expr) = prop.value {
+            match expr {
                 ast::Expression::PipeLit(_) => {
                     if piped {
                         return Err("only a single argument may be piped".to_string());
@@ -243,9 +243,8 @@ fn analyze_function_params(
                     };
                 }
                 e => default = Some(analyze_expression(e, fresher)?),
-            },
-            None => (),
-        };
+            }
+        }
         params.push(FunctionParameter {
             loc: prop.base.location,
             is_pipe,

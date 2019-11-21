@@ -647,9 +647,8 @@ impl FunctionExpr {
     pub fn defaults(&self) -> Vec<&FunctionParameter> {
         let mut ds = Vec::new();
         for p in &self.params {
-            match p.default {
-                Some(_) => ds.push(p),
-                None => (),
+            if p.default.is_some() {
+                ds.push(p);
             }
         }
         ds
