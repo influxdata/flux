@@ -948,7 +948,7 @@ impl Parser {
             callee: expr,
             arguments: vec![],
         };
-        if params.len() > 0 {
+        if !params.is_empty() {
             call.arguments.push(Expression::Object(Box::new(ObjectExpr {
                 base: self.base_node_from_others(
                     &params.first().expect("len > 0, impossible").base,

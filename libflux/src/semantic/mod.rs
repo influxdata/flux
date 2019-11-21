@@ -24,7 +24,7 @@ use crate::semantic::analyze::Result;
 pub fn analyze_source(source: &str) -> Result<nodes::Package> {
     let file = parse_string("", source);
     let errs = ast::check::check(ast::walk::Node::File(&file));
-    if errs.len() > 0 {
+    if !errs.is_empty() {
         return Err(format!("got errors on parsing: {:?}", errs));
     }
     let ast_pkg = ast::Package {
