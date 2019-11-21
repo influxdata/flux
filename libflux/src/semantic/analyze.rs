@@ -268,7 +268,7 @@ fn analyze_block(block: ast::Block, fresher: &mut Fresher) -> Result<Block> {
     let block = if let Some(ast::Statement::Return(stmt)) = body.next() {
         Block::Return(analyze_expression(stmt.argument, fresher)?)
     } else {
-        return Err("missing return statement in block".to_string())?;
+        return Err("missing return statement in block".to_string());
     };
 
     body.try_fold(block, |acc, s| match s {
