@@ -77,10 +77,9 @@ impl Scanner {
     }
 
     pub fn offset(&self, pos: &Position) -> u32 {
-        self.positions
+        *self.positions
             .get(pos)
             .expect("position should be in map")
-            .clone()
     }
 
     fn get_eof_token(&self) -> Token {
