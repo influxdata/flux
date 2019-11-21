@@ -89,20 +89,20 @@ fn analyze_import_declaration(
 
 fn analyze_statement(stmt: ast::Statement, fresher: &mut Fresher) -> Result<Statement> {
     match stmt {
-        ast::Statement::Option(s) => Ok(Statement::Option(analyze_option_statement(s, fresher)?)),
+        ast::Statement::Option(s) => Ok(Statement::Option(Box::new(analyze_option_statement(*s, fresher)?))),
         ast::Statement::Builtin(s) => {
             Ok(Statement::Builtin(analyze_builtin_statement(s, fresher)?))
         }
-        ast::Statement::Test(s) => Ok(Statement::Test(analyze_test_statement(s, fresher)?)),
+        ast::Statement::Test(s) => Ok(Statement::Test(Box::new(analyze_test_statement(*s, fresher)?))),
         ast::Statement::Expr(s) => Ok(Statement::Expr(analyze_expression_statement(s, fresher)?)),
         ast::Statement::Return(s) => Ok(Statement::Return(analyze_return_statement(s, fresher)?)),
         // TODO(affo): we should fix this to include MemberAssignement.
         //  The error lies in AST: the Statement enum does not include that.
         //  This is not a problem when parsing, because we parse it only in the option assignment case,
         //  and we return an OptionStmt, which is a Statement.
-        ast::Statement::Variable(s) => Ok(Statement::Variable(analyze_variable_assignment(
-            s, fresher,
-        )?)),
+        ast::Statement::Variable(s) => Ok(Statement::Variable(Box::new(analyze_variable_assignment(
+            *s, fresher,
+        )?))),
         ast::Statement::Bad(_) => {
             Err("BadStatement is not supported in semantic analysis".to_string())
         }
@@ -112,10 +112,10 @@ fn analyze_statement(stmt: ast::Statement, fresher: &mut Fresher) -> Result<Stat
 fn analyze_assignment(assign: ast::Assignment, fresher: &mut Fresher) -> Result<Assignment> {
     match assign {
         ast::Assignment::Variable(a) => Ok(Assignment::Variable(analyze_variable_assignment(
-            a, fresher,
+            *a, fresher,
         )?)),
         ast::Assignment::Member(a) => {
-            Ok(Assignment::Member(analyze_member_assignment(a, fresher)?))
+            Ok(Assignment::Member(analyze_member_assignment(*a, fresher)?))
         }
     }
 }
@@ -274,7 +274,7 @@ fn analyze_block(block: ast::Block, fresher: &mut Fresher) -> Result<Block> {
 
     body.try_fold(block, |acc, s| match s {
         ast::Statement::Variable(dec) => Ok(Block::Variable(
-            analyze_variable_assignment(dec, fresher)?,
+            Box::new(analyze_variable_assignment(*dec, fresher)?),
             Box::new(acc),
         )),
         ast::Statement::Expr(stmt) => Ok(Block::Expr(
@@ -739,7 +739,7 @@ mod tests {
                 package: None,
                 imports: Vec::new(),
                 body: vec![
-                    ast::Statement::Variable(ast::VariableAssgn {
+                    ast::Statement::Variable(Box::new(ast::VariableAssgn {
                         base: b.clone(),
                         id: ast::Identifier {
                             base: b.clone(),
@@ -749,7 +749,7 @@ mod tests {
                             base: b.clone(),
                             value: true,
                         }),
-                    }),
+                    })),
                     ast::Statement::Expr(ast::ExprStmt {
                         base: b.clone(),
                         expression: ast::Expression::Identifier(ast::Identifier {
@@ -768,7 +768,7 @@ mod tests {
                 package: None,
                 imports: Vec::new(),
                 body: vec![
-                    Statement::Variable(VariableAssgn::new(
+                    Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
                             name: "a".to_string(),
@@ -779,7 +779,7 @@ mod tests {
                             value: true,
                         }),
                         b.location.clone(),
-                    )),
+                    ))),
                     Statement::Expr(ExprStmt {
                         loc: b.location.clone(),
                         expression: Expression::Identifier(IdentifierExpr {
@@ -1115,9 +1115,9 @@ mod tests {
                 name: "foo.flux".to_string(),
                 package: None,
                 imports: Vec::new(),
-                body: vec![ast::Statement::Option(ast::OptionStmt {
+                body: vec![ast::Statement::Option(Box::new(ast::OptionStmt {
                     base: b.clone(),
-                    assignment: ast::Assignment::Variable(ast::VariableAssgn {
+                    assignment: ast::Assignment::Variable(Box::new(ast::VariableAssgn {
                         base: b.clone(),
                         id: ast::Identifier {
                             base: b.clone(),
@@ -1190,8 +1190,8 @@ mod tests {
                                 },
                             ],
                         })),
-                    }),
-                })],
+                    })),
+                }))],
             }],
         };
         let want = Package {
@@ -1201,7 +1201,7 @@ mod tests {
                 loc: b.location.clone(),
                 package: None,
                 imports: Vec::new(),
-                body: vec![Statement::Option(OptionStmt {
+                body: vec![Statement::Option(Box::new(OptionStmt {
                     loc: b.location.clone(),
                     assignment: Assignment::Variable(VariableAssgn::new(
                         Identifier {
@@ -1277,7 +1277,7 @@ mod tests {
                         })),
                         b.location.clone(),
                     )),
-                })],
+                }))],
             }],
         };
         let got = test_analyze(pkg).unwrap();
@@ -1296,9 +1296,9 @@ mod tests {
                 name: "foo.flux".to_string(),
                 package: None,
                 imports: Vec::new(),
-                body: vec![ast::Statement::Option(ast::OptionStmt {
+                body: vec![ast::Statement::Option(Box::new(ast::OptionStmt {
                     base: b.clone(),
-                    assignment: ast::Assignment::Member(ast::MemberAssgn {
+                    assignment: ast::Assignment::Member(Box::new(ast::MemberAssgn {
                         base: b.clone(),
                         member: ast::MemberExpr {
                             base: b.clone(),
@@ -1315,8 +1315,8 @@ mod tests {
                             base: b.clone(),
                             value: "Warning".to_string(),
                         }),
-                    }),
-                })],
+                    })),
+                }))],
             }],
         };
         let want = Package {
@@ -1326,7 +1326,7 @@ mod tests {
                 loc: b.location.clone(),
                 package: None,
                 imports: Vec::new(),
-                body: vec![Statement::Option(OptionStmt {
+                body: vec![Statement::Option(Box::new(OptionStmt {
                     loc: b.location.clone(),
                     assignment: Assignment::Member(MemberAssgn {
                         loc: b.location.clone(),
@@ -1346,7 +1346,7 @@ mod tests {
                             value: "Warning".to_string(),
                         }),
                     }),
-                })],
+                }))],
             }],
         };
         let got = test_analyze(pkg).unwrap();
@@ -1366,7 +1366,7 @@ mod tests {
                 package: None,
                 imports: Vec::new(),
                 body: vec![
-                    ast::Statement::Variable(ast::VariableAssgn {
+                    ast::Statement::Variable(Box::new(ast::VariableAssgn {
                         base: b.clone(),
                         id: ast::Identifier {
                             base: b.clone(),
@@ -1407,7 +1407,7 @@ mod tests {
                                 },
                             ))),
                         })),
-                    }),
+                    })),
                     ast::Statement::Expr(ast::ExprStmt {
                         base: b.clone(),
                         expression: ast::Expression::Call(Box::new(ast::CallExpr {
@@ -1457,7 +1457,7 @@ mod tests {
                 package: None,
                 imports: Vec::new(),
                 body: vec![
-                    Statement::Variable(VariableAssgn::new(
+                    Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
                             name: "f".to_string(),
@@ -1502,7 +1502,7 @@ mod tests {
                             }))),
                         })),
                         b.location.clone(),
-                    )),
+                    ))),
                     Statement::Expr(ExprStmt {
                         loc: b.location.clone(),
                         expression: Expression::Call(Box::new(CallExpr {
@@ -1562,7 +1562,7 @@ mod tests {
                 package: None,
                 imports: Vec::new(),
                 body: vec![
-                    ast::Statement::Variable(ast::VariableAssgn {
+                    ast::Statement::Variable(Box::new(ast::VariableAssgn {
                         base: b.clone(),
                         id: ast::Identifier {
                             base: b.clone(),
@@ -1625,7 +1625,7 @@ mod tests {
                                 },
                             ))),
                         })),
-                    }),
+                    })),
                     ast::Statement::Expr(ast::ExprStmt {
                         base: b.clone(),
                         expression: ast::Expression::Call(Box::new(ast::CallExpr {
@@ -1662,7 +1662,7 @@ mod tests {
                 package: None,
                 imports: Vec::new(),
                 body: vec![
-                    Statement::Variable(VariableAssgn::new(
+                    Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
                             name: "f".to_string(),
@@ -1734,7 +1734,7 @@ mod tests {
                             }))),
                         })),
                         b.location.clone(),
-                    )),
+                        ))),
                     Statement::Expr(ExprStmt {
                         loc: b.location.clone(),
                         expression: Expression::Call(Box::new(CallExpr {
@@ -1779,7 +1779,7 @@ mod tests {
                 name: "foo.flux".to_string(),
                 package: None,
                 imports: Vec::new(),
-                body: vec![ast::Statement::Variable(ast::VariableAssgn {
+                body: vec![ast::Statement::Variable(Box::new(ast::VariableAssgn {
                     base: b.clone(),
                     id: ast::Identifier {
                         base: b.clone(),
@@ -1824,7 +1824,7 @@ mod tests {
                             },
                         )),
                     })),
-                })],
+                }))],
             }],
         };
         let got = test_analyze(pkg).err().unwrap().to_string();
@@ -1907,7 +1907,7 @@ mod tests {
                 package: None,
                 imports: Vec::new(),
                 body: vec![
-                    ast::Statement::Variable(ast::VariableAssgn {
+                    ast::Statement::Variable(Box::new(ast::VariableAssgn {
                         base: b.clone(),
                         id: ast::Identifier {
                             base: b.clone(),
@@ -1950,7 +1950,7 @@ mod tests {
                                 },
                             ))),
                         })),
-                    }),
+                    })),
                     ast::Statement::Expr(ast::ExprStmt {
                         base: b.clone(),
                         expression: ast::Expression::PipeExpr(Box::new(ast::PipeExpr {
@@ -1998,7 +1998,7 @@ mod tests {
                 package: None,
                 imports: Vec::new(),
                 body: vec![
-                    Statement::Variable(VariableAssgn::new(
+                    Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
                             name: "f".to_string(),
@@ -2043,7 +2043,7 @@ mod tests {
                             }))),
                         })),
                         b.location.clone(),
-                    )),
+                    ))),
                     Statement::Expr(ExprStmt {
                         loc: b.location.clone(),
                         expression: Expression::Call(Box::new(CallExpr {

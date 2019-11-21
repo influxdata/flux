@@ -81,10 +81,10 @@ impl Error {
 #[derive(Debug, PartialEq, Clone)]
 pub enum Statement {
     Expr(ExprStmt),
-    Variable(VariableAssgn),
-    Option(OptionStmt),
+    Variable(Box<VariableAssgn>),
+    Option(Box<OptionStmt>),
     Return(ReturnStmt),
-    Test(TestStmt),
+    Test(Box<TestStmt>),
     Builtin(BuiltinStmt),
 }
 
@@ -665,7 +665,7 @@ impl FunctionExpr {
 //
 #[derive(Debug, PartialEq, Clone)]
 pub enum Block {
-    Variable(VariableAssgn, Box<Block>),
+    Variable(Box<VariableAssgn>, Box<Block>),
     Expr(ExprStmt, Box<Block>),
     Return(Expression),
 }

@@ -165,11 +165,11 @@ impl Expression {
 #[serde(untagged)]
 pub enum Statement {
     Expr(ExprStmt),
-    Variable(VariableAssgn),
-    Option(OptionStmt),
+    Variable(Box<VariableAssgn>),
+    Option(Box<OptionStmt>),
     Return(ReturnStmt),
     Bad(BadStmt),
-    Test(TestStmt),
+    Test(Box<TestStmt>),
     Builtin(BuiltinStmt),
 }
 
@@ -191,8 +191,8 @@ impl Statement {
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Assignment {
-    Variable(VariableAssgn),
-    Member(MemberAssgn),
+    Variable(Box<VariableAssgn>),
+    Member(Box<MemberAssgn>),
 }
 
 impl Assignment {
