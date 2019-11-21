@@ -1,3 +1,4 @@
+#![allow(clippy::redundant_field_names, unknown_lints)]
 #[allow(non_snake_case, unused)]
 mod ast_generated;
 
