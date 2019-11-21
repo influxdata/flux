@@ -8,7 +8,7 @@ use crate::ast;
 use regex::Regex;
 
 pub fn parse_string(lit: &str) -> Result<String, String> {
-    if lit.len() < 2 || lit.chars().next().unwrap() != '"' || lit.chars().last().unwrap() != '"' {
+    if lit.len() < 2 || !lit.starts_with('"') || !lit.ends_with('"') {
         return Err("invalid string literal".to_string());
     }
     parse_text(&lit[1..lit.len() - 1])
@@ -85,10 +85,10 @@ pub fn parse_regex(lit: &str) -> Result<String, String> {
     if lit.len() < 3 {
         return Err(String::from("regexp must be at least 3 characters"));
     }
-    if lit.chars().next().unwrap() != '/' {
+    if !lit.starts_with('/') {
         return Err(String::from("regexp literal must start with a slash"));
     }
-    if lit.chars().last().unwrap() != '/' {
+    if !lit.ends_with('/') {
         return Err(String::from("regexp literal must end with a slash"));
     }
 
@@ -108,7 +108,7 @@ pub fn parse_regex(lit: &str) -> Result<String, String> {
 }
 
 pub fn parse_time(lit: &str) -> Result<DateTime<FixedOffset>, String> {
-    let parsed = if !lit.contains("T") {
+    let parsed = if !lit.contains('T') {
         let naive = NaiveDate::parse_from_str(lit, "%Y-%m-%d");
         match naive {
             Ok(date) => {
