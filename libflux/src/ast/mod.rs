@@ -243,7 +243,7 @@ impl FunctionBody {
     }
 }
 
-fn serialize_errors<S>(errors: &Vec<String>, ser: S) -> Result<S::Ok, S::Error>
+fn serialize_errors<S>(errors: &[String], ser: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {

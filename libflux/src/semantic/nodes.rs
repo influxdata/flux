@@ -1272,7 +1272,7 @@ const YEARS: f64 = MONTHS * 12.0;
 // TODO(affo): this is not accurate, a duration value depends on the time in which it is calculated.
 // 1 month is different if now is the 1st of January, or the 1st of February.
 // Some days do not last 24 hours because of light savings.
-pub fn convert_duration(duration: &Vec<ast::Duration>) -> std::result::Result<Duration, String> {
+pub fn convert_duration(duration: &[ast::Duration]) -> std::result::Result<Duration, String> {
     let d = duration
         .iter()
         .try_fold(0 as i64, |acc, d| match d.unit.as_str() {

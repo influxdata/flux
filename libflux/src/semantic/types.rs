@@ -128,7 +128,7 @@ impl PolyType {
             .collect::<Vec<_>>()
             .join(", ")
     }
-    fn display_kinds(kinds: &Vec<Kind>) -> String {
+    fn display_kinds(kinds: &[Kind]) -> String {
         kinds
             .iter()
             // Sort kinds with BTree
