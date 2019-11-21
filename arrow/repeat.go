@@ -16,7 +16,7 @@ func Repeat(v values.Value, n int, mem memory.Allocator) array.Interface {
 	switch v.Type() {
 	case semantic.Int:
 		b := array.NewInt64Builder(mem)
-		b.Reserve(n)
+		b.Resize(n)
 		v := v.Int()
 		for i := 0; i < n; i++ {
 			b.Append(v)
@@ -24,7 +24,7 @@ func Repeat(v values.Value, n int, mem memory.Allocator) array.Interface {
 		return b.NewArray()
 	case semantic.UInt:
 		b := array.NewUint64Builder(mem)
-		b.Reserve(n)
+		b.Resize(n)
 		v := v.UInt()
 		for i := 0; i < n; i++ {
 			b.Append(v)
@@ -32,7 +32,7 @@ func Repeat(v values.Value, n int, mem memory.Allocator) array.Interface {
 		return b.NewArray()
 	case semantic.Float:
 		b := array.NewFloat64Builder(mem)
-		b.Reserve(n)
+		b.Resize(n)
 		v := v.Float()
 		for i := 0; i < n; i++ {
 			b.Append(v)
@@ -40,7 +40,7 @@ func Repeat(v values.Value, n int, mem memory.Allocator) array.Interface {
 		return b.NewArray()
 	case semantic.String:
 		b := array.NewBinaryBuilder(mem, arrow.BinaryTypes.String)
-		b.Reserve(n)
+		b.Resize(n)
 		b.ReserveData(n * len(v.Str()))
 		v := v.Str()
 		for i := 0; i < n; i++ {
@@ -49,7 +49,7 @@ func Repeat(v values.Value, n int, mem memory.Allocator) array.Interface {
 		return b.NewArray()
 	case semantic.Bool:
 		b := array.NewBooleanBuilder(mem)
-		b.Reserve(n)
+		b.Resize(n)
 		v := v.Bool()
 		for i := 0; i < n; i++ {
 			b.Append(v)
@@ -57,7 +57,7 @@ func Repeat(v values.Value, n int, mem memory.Allocator) array.Interface {
 		return b.NewArray()
 	case semantic.Time:
 		b := array.NewInt64Builder(mem)
-		b.Reserve(n)
+		b.Resize(n)
 		v := int64(v.Time())
 		for i := 0; i < n; i++ {
 			b.Append(v)

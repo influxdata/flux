@@ -7,7 +7,7 @@ import (
 
 func NewFloat(vs []float64, alloc *memory.Allocator) *array.Float64 {
 	b := NewFloatBuilder(alloc)
-	b.Reserve(len(vs))
+	b.Resize(len(vs))
 	for _, v := range vs {
 		b.UnsafeAppend(v)
 	}

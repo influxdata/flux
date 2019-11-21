@@ -7,7 +7,7 @@ import (
 
 func NewInt(vs []int64, alloc *memory.Allocator) *array.Int64 {
 	b := NewIntBuilder(alloc)
-	b.Reserve(len(vs))
+	b.Resize(len(vs))
 	for _, v := range vs {
 		b.UnsafeAppend(v)
 	}

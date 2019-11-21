@@ -8,7 +8,7 @@ import (
 
 func NewString(vs []string, alloc *memory.Allocator) *array.Binary {
 	b := NewStringBuilder(alloc)
-	b.Reserve(len(vs))
+	b.Resize(len(vs))
 	sz := 0
 	for _, v := range vs {
 		sz += len(v)
