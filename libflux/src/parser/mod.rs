@@ -16,7 +16,7 @@ pub fn parse(s: &str) -> JsValue {
     let mut p = Parser::new(s);
     let file = p.parse_file(String::from(""));
 
-    return JsValue::from_serde(&file).unwrap();
+    JsValue::from_serde(&file).unwrap()
 }
 
 // Parses a string of source code.
@@ -211,7 +211,7 @@ impl Parser {
         let t = self.expect(start);
         let n = self.blocks.entry(end).or_insert(0);
         *n += 1;
-        return t;
+        t
     }
 
     // more will check if we should continue reading tokens for the
@@ -271,7 +271,7 @@ impl Parser {
             format_token(end),
             format_token(tok.tok)
         ));
-        return tok;
+        tok
     }
 
     fn base_node(&mut self, location: SourceLocation) -> BaseNode {
@@ -365,7 +365,7 @@ impl Parser {
                 name: ident,
             });
         }
-        return None;
+        None
     }
 
     fn parse_import_list(&mut self) -> Vec<ImportDeclaration> {
@@ -387,11 +387,11 @@ impl Parser {
             None
         };
         let path = self.parse_string_literal();
-        return ImportDeclaration {
+        ImportDeclaration {
             base: self.base_node_from_other_end(&t, &path.base),
             alias,
             path,
-        };
+        }
     }
 
     fn parse_statement_list(&mut self) -> Vec<Statement> {
@@ -448,7 +448,7 @@ impl Parser {
                 self.consume();
                 let prop = self.parse_identifier();
                 let init = self.parse_assign_statement();
-                return Assignment::Member(MemberAssgn {
+                Assignment::Member(MemberAssgn {
                     base: self.base_node_from_others(&id.base, init.base()),
                     member: MemberExpr {
                         base: self.base_node_from_others(&id.base, &prop.base),
@@ -456,7 +456,7 @@ impl Parser {
                         property: PropertyKey::Identifier(prop),
                     },
                     init,
-                });
+                })
             }
             _ => panic!("invalid option assignment suffix"),
         }
@@ -488,11 +488,11 @@ impl Parser {
         match t.tok {
             TOK_ASSIGN => {
                 let init = self.parse_assign_statement();
-                return Statement::Variable(VariableAssgn {
+                Statement::Variable(VariableAssgn {
                     base: self.base_node_from_others(&id.base, init.base()),
                     id,
                     init,
-                });
+                })
             }
             _ => {
                 let expr = self.parse_expression_suffix(Expression::Identifier(id));
@@ -505,7 +505,7 @@ impl Parser {
     }
     fn parse_assign_statement(&mut self) -> Expression {
         self.expect(TOK_ASSIGN);
-        return self.parse_expression();
+        self.parse_expression()
     }
     fn parse_return_statement(&mut self) -> Statement {
         let t = self.expect(TOK_RETURN);
@@ -527,10 +527,10 @@ impl Parser {
         let start = self.open(TOK_LBRACE, TOK_RBRACE);
         let stmts = self.parse_statement_list();
         let end = self.close(TOK_RBRACE);
-        return Block {
+        Block {
             base: self.base_node_from_tokens(&start, &end),
             body: stmts,
-        };
+        }
     }
     fn parse_expression(&mut self) -> Expression {
         self.parse_conditional_expression()
@@ -585,7 +585,7 @@ impl Parser {
                 }
             }
         }
-        return expr;
+        expr
     }
     fn parse_expression_suffix(&mut self, expr: Expression) -> Expression {
         let expr = self.parse_postfix_operator_suffix(expr);
@@ -631,11 +631,11 @@ impl Parser {
                 alternate: alt,
             }));
         }
-        return self.parse_logical_or_expression();
+        self.parse_logical_or_expression()
     }
     fn parse_logical_or_expression(&mut self) -> Expression {
         let expr = self.parse_logical_and_expression();
-        return self.parse_logical_or_expression_suffix(expr);
+        self.parse_logical_or_expression_suffix(expr)
     }
     fn parse_logical_or_expression_suffix(&mut self, expr: Expression) -> Expression {
         let mut res = expr;
@@ -667,7 +667,7 @@ impl Parser {
     }
     fn parse_logical_and_expression(&mut self) -> Expression {
         let expr = self.parse_logical_unary_expression();
-        return self.parse_logical_and_expression_suffix(expr);
+        self.parse_logical_and_expression_suffix(expr)
     }
     fn parse_logical_and_expression_suffix(&mut self, expr: Expression) -> Expression {
         let mut res = expr;
@@ -728,7 +728,7 @@ impl Parser {
     }
     fn parse_comparison_expression(&mut self) -> Expression {
         let expr = self.parse_additive_expression();
-        return self.parse_comparison_expression_suffix(expr);
+        self.parse_comparison_expression_suffix(expr)
     }
     fn parse_comparison_expression_suffix(&mut self, expr: Expression) -> Expression {
         let mut res = expr;
@@ -771,7 +771,7 @@ impl Parser {
     }
     fn parse_additive_expression(&mut self) -> Expression {
         let expr = self.parse_multiplicative_expression();
-        return self.parse_additive_expression_suffix(expr);
+        self.parse_additive_expression_suffix(expr)
     }
     fn parse_additive_expression_suffix(&mut self, expr: Expression) -> Expression {
         let mut res = expr;
@@ -808,7 +808,7 @@ impl Parser {
     }
     fn parse_multiplicative_expression(&mut self) -> Expression {
         let expr = self.parse_pipe_expression();
-        return self.parse_multiplicative_expression_suffix(expr);
+        self.parse_multiplicative_expression_suffix(expr)
     }
     fn parse_multiplicative_expression_suffix(&mut self, expr: Expression) -> Expression {
         let mut res = expr;
@@ -847,7 +847,7 @@ impl Parser {
     }
     fn parse_pipe_expression(&mut self) -> Expression {
         let expr = self.parse_unary_expression();
-        return self.parse_pipe_expression_suffix(expr);
+        self.parse_pipe_expression_suffix(expr)
     }
     fn parse_pipe_expression_suffix(&mut self, expr: Expression) -> Expression {
         let mut res = expr;
@@ -1090,10 +1090,10 @@ impl Parser {
     }
     fn parse_identifier(&mut self) -> Identifier {
         let t = self.expect(TOK_IDENT);
-        return Identifier {
+        Identifier {
             base: self.base_node_from_token(&t),
             name: t.lit,
-        };
+        }
     }
     fn parse_int_literal(&mut self) -> IntegerLit {
         let t = self.expect(TOK_INT);
@@ -1116,10 +1116,10 @@ impl Parser {
     }
     fn parse_float_literal(&mut self) -> FloatLit {
         let t = self.expect(TOK_FLOAT);
-        return FloatLit {
+        FloatLit {
             base: self.base_node_from_token(&t),
             value: (&t.lit).parse::<f64>().unwrap(),
-        };
+        }
     }
     fn parse_string_literal(&mut self) -> StringLit {
         let t = self.expect(TOK_STRING);

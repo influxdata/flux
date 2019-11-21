@@ -40,7 +40,7 @@ pub extern "C" fn flux_parse(cstr: *mut c_char) -> *mut flux_ast_t {
     let s = String::from_utf8(buf.to_vec()).unwrap();
     let mut p = Parser::new(&s);
     let file = p.parse_file(String::from(""));
-    return Box::into_raw(Box::new(file)) as *mut flux_ast_t;
+    Box::into_raw(Box::new(file)) as *mut flux_ast_t
 }
 
 #[no_mangle]
@@ -96,14 +96,14 @@ pub extern "C" fn flux_ast_marshal_json(
     let buffer = unsafe { &mut *buf };
     buffer.len = data.len();
     buffer.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
-    return std::ptr::null_mut();
+    std::ptr::null_mut()
 }
 
 #[no_mangle]
 pub extern "C" fn flux_error_str(err: *mut flux_error_t) -> *mut c_char {
     let e = unsafe { &*(err as *mut ErrorHandle) };
     let s = CString::new(e.err.description()).unwrap();
-    return s.into_raw();
+    s.into_raw()
 }
 
 #[no_mangle]

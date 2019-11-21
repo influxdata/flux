@@ -1,4 +1,4 @@
-#![allow(clippy::redundant_field_names, clippy::redundant_static_lifetimes, unknown_lints)]
+#![allow(clippy::all, unknown_lints)]
 #[allow(non_snake_case, unused)]
 mod ast_generated;
 
@@ -758,7 +758,7 @@ impl<'a> SerializingVisitorState<'a> {
         match self.expr_stack.pop() {
             None => {
                 self.err = Some(String::from("pop empty expr stack"));
-                return (None, fbast::Expression::NONE);
+                (None, fbast::Expression::NONE)
             }
             Some((o, e)) => (Some(o), e),
         }
@@ -775,12 +775,12 @@ impl<'a> SerializingVisitorState<'a> {
                         fbast::enum_name_expression(kind),
                         fbast::enum_name_expression(e)
                     )));
-                    return None;
+                    None
                 }
             }
             None => {
                 self.err = Some(String::from("pop empty expr stack"));
-                return None;
+                None
             }
         }
     }

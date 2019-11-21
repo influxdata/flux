@@ -502,7 +502,7 @@ impl StringExpr {
             }
         }
         constraints.push(Constraint::Equal(self.typ.clone(), MonoType::String));
-        return Ok((env, Constraints::from(constraints)));
+        Ok((env, Constraints::from(constraints)))
     }
 }
 
@@ -548,7 +548,7 @@ impl ArrayExpr {
         }
         let at = MonoType::Arr(Box::new(Array(elt)));
         cons.push(Constraint::Equal(at, self.typ.clone()));
-        return Ok((env, cons.into()));
+        Ok((env, cons.into()))
     }
 }
 
@@ -632,7 +632,7 @@ impl FunctionExpr {
         }));
         cons = cons + bcons;
         cons.add(Constraint::Equal(func, self.typ.clone()));
-        return Ok((env, cons));
+        Ok((env, cons))
     }
 
     pub fn pipe(&self) -> Option<&FunctionParameter> {
@@ -815,7 +815,7 @@ impl BinaryExpr {
         };
 
         // Otherwise, add the constraints together and return them.
-        return Ok((env, lcons + rcons + cons));
+        Ok((env, lcons + rcons + cons))
     }
 }
 
@@ -911,7 +911,7 @@ impl ConditionalExpr {
                 ),
                 Constraint::Equal(self.consequent.type_of().clone(), self.typ.clone()),
             ]);
-        return Ok((env, cons));
+        Ok((env, cons))
     }
 }
 
@@ -938,7 +938,7 @@ impl LogicalExpr {
                 Constraint::Equal(self.right.type_of().clone(), MonoType::Bool),
                 Constraint::Equal(self.typ.clone(), MonoType::Bool),
             ]);
-        return Ok((env, cons));
+        Ok((env, cons))
     }
 }
 
@@ -999,7 +999,7 @@ impl IndexExpr {
                     MonoType::Arr(Box::new(Array(self.typ.clone()))),
                 ),
             ]);
-        return Ok((env, cons));
+        Ok((env, cons))
     }
 }
 
@@ -1080,7 +1080,7 @@ impl UnaryExpr {
             ]),
             _ => return Err(Error::unsupported_unary_operator(&self.operator)),
         };
-        return Ok((env, acons + cons));
+        Ok((env, acons + cons))
     }
 }
 
@@ -1136,7 +1136,7 @@ pub struct BooleanLit {
 
 impl BooleanLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::Bool);
+        infer_literal(env, &self.typ, MonoType::Bool)
     }
 }
 
@@ -1152,7 +1152,7 @@ pub struct IntegerLit {
 
 impl IntegerLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::Int);
+        infer_literal(env, &self.typ, MonoType::Int)
     }
 }
 
@@ -1168,7 +1168,7 @@ pub struct FloatLit {
 
 impl FloatLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::Float);
+        infer_literal(env, &self.typ, MonoType::Float)
     }
 }
 
@@ -1185,7 +1185,7 @@ pub struct RegexpLit {
 
 impl RegexpLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::Regexp);
+        infer_literal(env, &self.typ, MonoType::Regexp)
     }
 }
 
@@ -1201,7 +1201,7 @@ pub struct StringLit {
 
 impl StringLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::String);
+        infer_literal(env, &self.typ, MonoType::String)
     }
 }
 
@@ -1217,7 +1217,7 @@ pub struct UintLit {
 
 impl UintLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::Uint);
+        infer_literal(env, &self.typ, MonoType::Uint)
     }
 }
 
@@ -1233,7 +1233,7 @@ pub struct DateTimeLit {
 
 impl DateTimeLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::Time);
+        infer_literal(env, &self.typ, MonoType::Time)
     }
 }
 
@@ -1249,13 +1249,13 @@ pub struct DurationLit {
 
 impl DurationLit {
     fn infer(&self, env: Environment) -> Result {
-        return infer_literal(env, &self.typ, MonoType::Duration);
+        infer_literal(env, &self.typ, MonoType::Duration)
     }
 }
 
 fn infer_literal(env: Environment, typ: &MonoType, is: MonoType) -> Result {
     let constraints = Constraints::from(vec![Constraint::Equal(typ.clone(), is)]);
-    return Ok((env, constraints));
+    Ok((env, constraints))
 }
 
 const NANOS: i64 = 1;
