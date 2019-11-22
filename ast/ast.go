@@ -7,9 +7,6 @@ import (
 	"regexp"
 	"strconv"
 	"time"
-
-	flatbuffers "github.com/google/flatbuffers/go"
-	"github.com/influxdata/flux/ast/internal/fbast"
 )
 
 // Position represents a specific location in the source
@@ -31,11 +28,6 @@ func (p Position) Less(o Position) bool {
 
 func (p Position) IsValid() bool {
 	return p.Line > 0 && p.Column > 0
-}
-
-func (p *Position) FromBuf(buf *fbast.Position) {
-	p.Line = int(buf.Line())
-	p.Column = int(buf.Column())
 }
 
 // SourceLocation represents the location of a node in the AST
@@ -70,14 +62,6 @@ func (l *SourceLocation) Copy() *SourceLocation {
 	}
 	nl := *l
 	return &nl
-}
-
-func (l SourceLocation) FromBuf(buf *fbast.SourceLocation) *SourceLocation {
-	l.File = string(buf.File())
-	l.Start.FromBuf(buf.Start(nil))
-	l.End.FromBuf(buf.End(nil))
-	l.Source = string(buf.Source())
-	return &l
 }
 
 // Node represents a node in the InfluxDB abstract syntax tree.
@@ -166,19 +150,6 @@ func (b BaseNode) Copy() BaseNode {
 	return b
 }
 
-func (b *BaseNode) FromBuf(buf *fbast.BaseNode) {
-	b.Loc = SourceLocation{}.FromBuf(buf.Loc(nil))
-	if !b.Loc.IsValid() {
-		b.Loc = nil
-	}
-	if buf.ErrorsLength() != 0 {
-		b.Errors = make([]Error, buf.ErrorsLength())
-		for i := 0; i < buf.ErrorsLength(); i++ {
-			b.Errors[i] = Error{string(buf.Errors(i))}
-		}
-	}
-}
-
 // Error represents an error in the AST construction.
 // The node that this is attached to is not valid.
 type Error struct {
@@ -215,24 +186,6 @@ func (p *Package) Copy() Node {
 		}
 	}
 	return np
-}
-
-func (p Package) FromBuf(buf []byte) *Package {
-	fbp := fbast.GetRootAsPackage(buf, 0)
-	p.BaseNode.FromBuf(fbp.BaseNode(nil))
-	p.Path = string(fbp.Path())
-	p.Package = string(fbp.Package())
-	p.Files = make([]*File, fbp.FilesLength())
-	for i := 0; i < fbp.FilesLength(); i++ {
-		fbf := new(fbast.File)
-		if !fbp.Files(fbf, i) {
-			p.BaseNode.Errors = append(p.BaseNode.Errors,
-				Error{fmt.Sprintf("Encountered error in deserializing Package.Files[%d]", i)})
-		} else {
-			p.Files[i] = File{}.FromBuf(fbf)
-		}
-	}
-	return &p
 }
 
 // File represents a source from a single file
@@ -273,32 +226,6 @@ func (f *File) Copy() Node {
 	return nf
 }
 
-func (f File) FromBuf(buf *fbast.File) *File {
-	f.BaseNode.FromBuf(buf.BaseNode(nil))
-	f.Name = string(buf.Name())
-	f.Package = PackageClause{}.FromBuf(buf.Package(nil))
-	if buf.ImportsLength() > 0 {
-		f.Imports = make([]*ImportDeclaration, buf.ImportsLength())
-		for i := 0; i < buf.ImportsLength(); i++ {
-			fbd := new(fbast.ImportDeclaration)
-			if !buf.Imports(fbd, i) {
-				f.BaseNode.Errors = append(f.BaseNode.Errors,
-					Error{fmt.Sprintf("Encountered error in deserializing File.Imports[%d]", i)})
-			} else {
-				f.Imports[i] = ImportDeclaration{}.FromBuf(fbd)
-			}
-		}
-	}
-	if buf.BodyLength() > 0 {
-		var err []Error
-		f.Body, err = statementArrayFromBuf(buf.BodyLength(), buf.Body, "File.Body")
-		if len(err) > 0 {
-			f.BaseNode.Errors = append(f.BaseNode.Errors, err...)
-		}
-	}
-	return &f
-}
-
 // PackageClause defines the current package identifier.
 type PackageClause struct {
 	BaseNode
@@ -320,15 +247,6 @@ func (c *PackageClause) Copy() Node {
 	return nc
 }
 
-func (c PackageClause) FromBuf(buf *fbast.PackageClause) *PackageClause {
-	if buf == nil {
-		return nil
-	}
-	c.BaseNode.FromBuf(buf.BaseNode(nil))
-	c.Name = Identifier{}.FromBuf(buf.Name(nil))
-	return &c
-}
-
 // ImportDeclaration declares a single import
 type ImportDeclaration struct {
 	BaseNode
@@ -348,13 +266,6 @@ func (d *ImportDeclaration) Copy() Node {
 	nd.BaseNode = d.BaseNode.Copy()
 
 	return nd
-}
-
-func (d ImportDeclaration) FromBuf(buf *fbast.ImportDeclaration) *ImportDeclaration {
-	d.BaseNode.FromBuf(buf.BaseNode(nil))
-	d.As = Identifier{}.FromBuf(buf.As(nil))
-	d.Path = StringLiteral{}.FromBuf(buf.Path(nil))
-	return &d
 }
 
 // Block is a set of statements
@@ -381,16 +292,6 @@ func (s *Block) Copy() Node {
 		}
 	}
 	return ns
-}
-
-func (s Block) FromBuf(buf *fbast.Block) *Block {
-	s.BaseNode.FromBuf(buf.BaseNode(nil))
-	var err []Error
-	s.Body, err = statementArrayFromBuf(buf.BodyLength(), buf.Body, "Block.Body")
-	if len(err) > 0 {
-		s.BaseNode.Errors = append(s.BaseNode.Errors, err...)
-	}
-	return &s
 }
 
 // Statement Perhaps we don't even want statements nor expression statements
@@ -435,12 +336,6 @@ func (s *BadStatement) Copy() Node {
 	return &ns
 }
 
-func (s BadStatement) FromBuf(buf *fbast.BadStatement) *BadStatement {
-	s.BaseNode.FromBuf(buf.BaseNode(nil))
-	s.Text = string(buf.Text())
-	return &s
-}
-
 // ExpressionStatement may consist of an expression that does not return a value and is executed solely for its side-effects.
 type ExpressionStatement struct {
 	BaseNode
@@ -465,12 +360,6 @@ func (s *ExpressionStatement) Copy() Node {
 	return ns
 }
 
-func (s ExpressionStatement) FromBuf(buf *fbast.ExpressionStatement) *ExpressionStatement {
-	s.BaseNode.FromBuf(buf.BaseNode(nil))
-	s.Expression = exprFromBuf("ExpressionStatement.Expression", s.BaseNode, buf.Expression, buf.ExpressionType())
-	return &s
-}
-
 // ReturnStatement defines an Expression to return
 type ReturnStatement struct {
 	BaseNode
@@ -493,12 +382,6 @@ func (s *ReturnStatement) Copy() Node {
 	}
 
 	return ns
-}
-
-func (s ReturnStatement) FromBuf(buf *fbast.ReturnStatement) *ReturnStatement {
-	s.BaseNode.FromBuf(buf.BaseNode(nil))
-	s.Argument = exprFromBuf("ReturnStatement.Argument", s.BaseNode, buf.Argument, buf.ArgumentType())
-	return &s
 }
 
 // OptionStatement syntactically is a single variable declaration
@@ -526,12 +409,6 @@ func (s *OptionStatement) Copy() Node {
 	return ns
 }
 
-func (s OptionStatement) FromBuf(buf *fbast.OptionStatement) *OptionStatement {
-	s.BaseNode.FromBuf(buf.BaseNode(nil))
-	s.Assignment = assignmentFromBuf("OptionStatement.Assignment", s.BaseNode, buf.Assignment, buf.AssignmentType())
-	return &s
-}
-
 // BuiltinStatement declares a builtin identifier and its type
 type BuiltinStatement struct {
 	BaseNode
@@ -555,12 +432,6 @@ func (s *BuiltinStatement) Copy() Node {
 	ns.ID = s.ID.Copy().(*Identifier)
 
 	return ns
-}
-
-func (s BuiltinStatement) FromBuf(buf *fbast.BuiltinStatement) *BuiltinStatement {
-	s.BaseNode.FromBuf(buf.BaseNode(nil))
-	s.ID = Identifier{}.FromBuf(buf.Id(nil))
-	return &s
 }
 
 // TestStatement declares a Flux test case
@@ -588,13 +459,6 @@ func (s *TestStatement) Copy() Node {
 	return ns
 }
 
-func (s TestStatement) FromBuf(buf *fbast.TestStatement) *TestStatement {
-	s.BaseNode.FromBuf(buf.BaseNode(nil))
-	s.Assignment = assignmentFromBuf("TestStatement.Assignment",
-		s.BaseNode, buf.Assignment, buf.AssignmentType()).(*VariableAssignment)
-	return &s
-}
-
 // VariableAssignment represents the declaration of a variable
 type VariableAssignment struct {
 	BaseNode
@@ -618,13 +482,6 @@ func (d *VariableAssignment) Copy() Node {
 	}
 
 	return nd
-}
-
-func (d VariableAssignment) FromBuf(buf *fbast.VariableAssignment) *VariableAssignment {
-	d.BaseNode.FromBuf(buf.BaseNode(nil))
-	d.ID = Identifier{}.FromBuf(buf.Id(nil))
-	d.Init = exprFromBuf("VariableAssignment.Init", d.BaseNode, buf.Init_, buf.Init_type())
-	return &d
 }
 
 type MemberAssignment struct {
@@ -651,13 +508,6 @@ func (a *MemberAssignment) Copy() Node {
 	}
 
 	return na
-}
-
-func (a MemberAssignment) FromBuf(buf *fbast.MemberAssignment) *MemberAssignment {
-	a.BaseNode.FromBuf(buf.BaseNode(nil))
-	a.Member = MemberExpression{}.FromBuf(buf.Member(nil))
-	a.Init = exprFromBuf("MemberAssignment.Init", a.BaseNode, buf.Init_, buf.Init_type())
-	return &a
 }
 
 // Expression represents an action that can be performed by InfluxDB that can be evaluated to a value.
@@ -716,25 +566,6 @@ func (e *StringExpression) Copy() Node {
 	return ne
 }
 
-func (e StringExpression) FromBuf(buf *fbast.StringExpression) *StringExpression {
-	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	if buf.PartsLength() > 0 {
-		e.Parts = make([]StringExpressionPart, buf.PartsLength())
-		for i := 0; i < buf.PartsLength(); i++ {
-			fbp := new(fbast.StringExpressionPart)
-			if !buf.Parts(fbp, i) {
-				e.BaseNode.Errors = append(e.BaseNode.Errors,
-					Error{fmt.Sprintf("Encountered error in deserializing StringExpression.Parts[%d]", i)})
-			} else if fbp.TextValue() != nil {
-				e.Parts[i] = TextPart{}.FromBuf(fbp)
-			} else {
-				e.Parts[i] = InterpolatedPart{}.FromBuf(fbp)
-			}
-		}
-	}
-	return &e
-}
-
 type StringExpressionPart interface {
 	Node
 	stringPart()
@@ -760,12 +591,6 @@ func (p *TextPart) Copy() Node {
 	return np
 }
 
-func (p TextPart) FromBuf(buf *fbast.StringExpressionPart) *TextPart {
-	p.BaseNode.FromBuf(buf.BaseNode(nil))
-	p.Value = string(buf.TextValue())
-	return &p
-}
-
 type InterpolatedPart struct {
 	BaseNode
 	Expression Expression `json:"expression"`
@@ -785,13 +610,6 @@ func (p *InterpolatedPart) Copy() Node {
 		np.Expression = p.Expression.Copy().(Expression)
 	}
 	return np
-}
-
-func (p InterpolatedPart) FromBuf(buf *fbast.StringExpressionPart) *InterpolatedPart {
-	p.BaseNode.FromBuf(buf.BaseNode(nil))
-	p.Expression = exprFromBuf("InterpolatedPart.Expression", p.BaseNode,
-		buf.InterpolatedExpression, buf.InterpolatedExpressionType())
-	return &p
 }
 
 // ParenExpression represents an expressions that is wrapped in parentheses in the source code.
@@ -815,12 +633,6 @@ func (e *ParenExpression) Copy() Node {
 		ne.Expression = e.Expression.Copy().(Expression)
 	}
 	return ne
-}
-
-func (e ParenExpression) FromBuf(buf *fbast.ParenExpression) *ParenExpression {
-	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Expression = exprFromBuf("ParenExpression.Expression", e.BaseNode, buf.Expression, buf.ExpressionType())
-	return &e
 }
 
 // CallExpression represents a function call
@@ -855,16 +667,6 @@ func (e *CallExpression) Copy() Node {
 	return ne
 }
 
-func (e CallExpression) FromBuf(buf *fbast.CallExpression) *CallExpression {
-	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Callee = exprFromBuf("CallExpression.Callee", e.BaseNode, buf.Callee, buf.CalleeType())
-	arg := buf.Arguments(nil)
-	if arg != nil {
-		e.Arguments = []Expression{ObjectExpression{}.FromBuf(arg)}
-	}
-	return &e
-}
-
 type PipeExpression struct {
 	BaseNode
 	Argument Expression      `json:"argument"`
@@ -888,13 +690,6 @@ func (e *PipeExpression) Copy() Node {
 	ne.Call = e.Call.Copy().(*CallExpression)
 
 	return ne
-}
-
-func (e PipeExpression) FromBuf(buf *fbast.PipeExpression) *PipeExpression {
-	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Argument = exprFromBuf("PipeExpression.Argument", e.BaseNode, buf.Argument, buf.ArgumentType())
-	e.Call = CallExpression{}.FromBuf(buf.Call(nil))
-	return &e
 }
 
 // MemberExpression represents calling a property of a CallExpression
@@ -925,13 +720,6 @@ func (e *MemberExpression) Copy() Node {
 	return ne
 }
 
-func (e MemberExpression) FromBuf(buf *fbast.MemberExpression) *MemberExpression {
-	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Object = exprFromBuf("MemberExpression.Object", e.BaseNode, buf.Object, buf.ObjectType())
-	e.Property = propertyKeyFromBuf("MemberExpression.Property", e.BaseNode, buf.Property, buf.PropertyType())
-	return &e
-}
-
 // IndexExpression represents indexing into an array
 type IndexExpression struct {
 	BaseNode
@@ -956,13 +744,6 @@ func (e *IndexExpression) Copy() Node {
 		ne.Index = e.Index.Copy().(Expression)
 	}
 	return ne
-}
-
-func (e IndexExpression) FromBuf(buf *fbast.IndexExpression) *IndexExpression {
-	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Array = exprFromBuf("IndexExpression.Array", e.BaseNode, buf.Array, buf.ArrayType())
-	e.Index = exprFromBuf("IndexExpression.Index", e.BaseNode, buf.Index, buf.IndexType())
-	return &e
 }
 
 type FunctionExpression struct {
@@ -994,39 +775,6 @@ func (e *FunctionExpression) Copy() Node {
 	}
 
 	return ne
-}
-
-func (e FunctionExpression) FromBuf(buf *fbast.FunctionExpression) *FunctionExpression {
-	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	if buf.ParamsLength() > 0 {
-		e.Params = make([]*Property, buf.ParamsLength())
-		for i := 0; i < buf.ParamsLength(); i++ {
-			fbp := new(fbast.Property)
-			if !buf.Params(fbp, i) {
-				e.BaseNode.Errors = append(e.BaseNode.Errors,
-					Error{fmt.Sprintf("Encountered error in deserializing FunctionExpression.Params[%d]", i)})
-			} else {
-				e.Params[i] = Property{}.FromBuf(fbp)
-			}
-		}
-	}
-	t := new(flatbuffers.Table)
-	if buf.Body(t) {
-		switch buf.BodyType() {
-		case fbast.ExpressionOrBlockBlock:
-			b := new(fbast.Block)
-			b.Init(t.Bytes, t.Pos)
-			e.Body = Block{}.FromBuf(b)
-		case fbast.ExpressionOrBlockWrappedExpression:
-			we := new(fbast.WrappedExpression)
-			we.Init(t.Bytes, t.Pos)
-			e.Body = exprFromBuf("FunctionExpression.Body", e.BaseNode, we.Expr, we.ExprType())
-		default:
-			e.BaseNode.Errors = append(e.BaseNode.Errors,
-				Error{"Encountered error in deserializing FunctionExpression.Body"})
-		}
-	}
-	return &e
 }
 
 // OperatorKind are Equality and Arithmatic operators.
@@ -1115,13 +863,6 @@ func (e *BinaryExpression) Copy() Node {
 
 	return ne
 }
-func (e BinaryExpression) FromBuf(buf *fbast.BinaryExpression) *BinaryExpression {
-	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Operator = opMap[buf.Operator()]
-	e.Left = exprFromBuf("BinaryExpression.Left", e.BaseNode, buf.Left, buf.LeftType())
-	e.Right = exprFromBuf("BinaryExpression.Right", e.BaseNode, buf.Right, buf.RightType())
-	return &e
-}
 
 // UnaryExpression use operators act on a single operand in an expression.
 type UnaryExpression struct {
@@ -1146,13 +887,6 @@ func (e *UnaryExpression) Copy() Node {
 	}
 
 	return ne
-}
-
-func (e UnaryExpression) FromBuf(buf *fbast.UnaryExpression) *UnaryExpression {
-	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Operator = opMap[buf.Operator()]
-	e.Argument = exprFromBuf("UnaryExpression.Argument", e.BaseNode, buf.Argument, buf.ArgumentType())
-	return &e
 }
 
 // LogicalOperatorKind are used with boolean (logical) values
@@ -1181,6 +915,7 @@ func (o LogicalOperatorKind) MarshalText() ([]byte, error) {
 	}
 	return []byte(text), nil
 }
+
 func (o *LogicalOperatorKind) UnmarshalText(data []byte) error {
 	var ok bool
 	*o, ok = logOperators[string(data)]
@@ -1221,14 +956,6 @@ func (e *LogicalExpression) Copy() Node {
 	return ne
 }
 
-func (e LogicalExpression) FromBuf(buf *fbast.LogicalExpression) *LogicalExpression {
-	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Operator = logOpMap[buf.Operator()]
-	e.Left = exprFromBuf("LogicalExpression.Left", e.BaseNode, buf.Left, buf.LeftType())
-	e.Right = exprFromBuf("LogicalExpression.Right", e.BaseNode, buf.Right, buf.RightType())
-	return &e
-}
-
 // ArrayExpression is used to create and directly specify the elements of an array object
 type ArrayExpression struct {
 	BaseNode
@@ -1254,16 +981,6 @@ func (e *ArrayExpression) Copy() Node {
 	}
 
 	return ne
-}
-
-func (e ArrayExpression) FromBuf(buf *fbast.ArrayExpression) *ArrayExpression {
-	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	var err []Error
-	e.Elements, err = exprArrayFromBuf(buf.ElementsLength(), buf.Elements, "ArrayExpression.Elements")
-	if len(err) > 0 {
-		e.BaseNode.Errors = append(e.BaseNode.Errors, err...)
-	}
-	return &e
 }
 
 // ObjectExpression allows the declaration of an anonymous object within a declaration.
@@ -1292,22 +1009,6 @@ func (e *ObjectExpression) Copy() Node {
 	}
 
 	return ne
-}
-
-func (e ObjectExpression) FromBuf(buf *fbast.ObjectExpression) *ObjectExpression {
-	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.With = Identifier{}.FromBuf(buf.With(nil))
-	e.Properties = make([]*Property, buf.PropertiesLength())
-	for i := 0; i < buf.PropertiesLength(); i++ {
-		fbp := new(fbast.Property)
-		if !buf.Properties(fbp, i) {
-			e.BaseNode.Errors = append(e.BaseNode.Errors,
-				Error{fmt.Sprintf("Encountered error in deserializing ObjectExpression.Properties[%d]", i)})
-		} else {
-			e.Properties[i] = Property{}.FromBuf(fbp)
-		}
-	}
-	return &e
 }
 
 // ConditionalExpression selects one of two expressions, `Alternate` or `Consequent`
@@ -1342,14 +1043,6 @@ func (e *ConditionalExpression) Copy() Node {
 	return ne
 }
 
-func (e ConditionalExpression) FromBuf(buf *fbast.ConditionalExpression) *ConditionalExpression {
-	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Test = exprFromBuf("ConditionalExpression.Test", e.BaseNode, buf.Test, buf.TestType())
-	e.Consequent = exprFromBuf("ConditionalExpression.Consequent", e.BaseNode, buf.Consequent, buf.ConsequentType())
-	e.Alternate = exprFromBuf("ConditionalExpression.Alternate", e.BaseNode, buf.Alternate, buf.AlternateType())
-	return &e
-}
-
 // PropertyKey represents an object key
 type PropertyKey interface {
 	Node
@@ -1382,15 +1075,6 @@ func (p *Property) Copy() Node {
 // Type is the abstract type
 func (*Property) Type() string { return "Property" }
 
-func (p Property) FromBuf(buf *fbast.Property) *Property {
-	p.BaseNode.FromBuf(buf.BaseNode(nil))
-	// deserialize key
-	p.Key = propertyKeyFromBuf("Property.Key", p.BaseNode, buf.Key, buf.KeyType())
-	// deserialize value
-	p.Value = exprFromBuf("Property.Value", p.BaseNode, buf.Value, buf.ValueType())
-	return &p
-}
-
 // Identifier represents a name that identifies a unique Node
 type Identifier struct {
 	BaseNode
@@ -1414,15 +1098,6 @@ func (i *Identifier) Copy() Node {
 	ni.BaseNode = i.BaseNode.Copy()
 
 	return ni
-}
-
-func (i Identifier) FromBuf(buf *fbast.Identifier) *Identifier {
-	if buf == nil {
-		return nil
-	}
-	i.BaseNode.FromBuf(buf.BaseNode(nil))
-	i.Name = string(buf.Name())
-	return &i
 }
 
 // Literal is the lexical form for a literal expression which defines
@@ -1461,11 +1136,6 @@ func (p *PipeLiteral) Copy() Node {
 	return np
 }
 
-func (p PipeLiteral) FromBuf(buf *fbast.PipeLiteral) *PipeLiteral {
-	p.BaseNode.FromBuf(buf.BaseNode(nil))
-	return &p
-}
-
 // StringLiteral expressions begin and end with double quote marks.
 type StringLiteral struct {
 	BaseNode
@@ -1490,12 +1160,6 @@ func (l *StringLiteral) Copy() Node {
 	return nl
 }
 
-func (l StringLiteral) FromBuf(buf *fbast.StringLiteral) *StringLiteral {
-	l.BaseNode.FromBuf(buf.BaseNode(nil))
-	l.Value = string(buf.Value())
-	return &l
-}
-
 // BooleanLiteral represent boolean values
 type BooleanLiteral struct {
 	BaseNode
@@ -1513,12 +1177,6 @@ func (l *BooleanLiteral) Copy() Node {
 	*nl = *l
 	nl.BaseNode = l.BaseNode.Copy()
 	return nl
-}
-
-func (l BooleanLiteral) FromBuf(buf *fbast.BooleanLiteral) *BooleanLiteral {
-	l.BaseNode.FromBuf(buf.BaseNode(nil))
-	l.Value = buf.Value()
-	return &l
 }
 
 // FloatLiteral  represent floating point numbers according to the double representations defined by the IEEE-754-1985
@@ -1540,12 +1198,6 @@ func (l *FloatLiteral) Copy() Node {
 	return nl
 }
 
-func (l FloatLiteral) FromBuf(buf *fbast.FloatLiteral) *FloatLiteral {
-	l.BaseNode.FromBuf(buf.BaseNode(nil))
-	l.Value = buf.Value()
-	return &l
-}
-
 // IntegerLiteral represent integer numbers.
 type IntegerLiteral struct {
 	BaseNode
@@ -1565,12 +1217,6 @@ func (l *IntegerLiteral) Copy() Node {
 	return nl
 }
 
-func (l IntegerLiteral) FromBuf(buf *fbast.IntegerLiteral) *IntegerLiteral {
-	l.BaseNode.FromBuf(buf.BaseNode(nil))
-	l.Value = buf.Value()
-	return &l
-}
-
 // UnsignedIntegerLiteral represent integer numbers.
 type UnsignedIntegerLiteral struct {
 	BaseNode
@@ -1588,12 +1234,6 @@ func (l *UnsignedIntegerLiteral) Copy() Node {
 	*nl = *l
 	nl.BaseNode = l.BaseNode.Copy()
 	return nl
-}
-
-func (l UnsignedIntegerLiteral) FromBuf(buf *fbast.UnsignedIntegerLiteral) *UnsignedIntegerLiteral {
-	l.BaseNode.FromBuf(buf.BaseNode(nil))
-	l.Value = buf.Value()
-	return &l
 }
 
 // RegexpLiteral expressions begin and end with `/` and are regular expressions with syntax accepted by RE2
@@ -1617,16 +1257,6 @@ func (l *RegexpLiteral) Copy() Node {
 		nl.Value = l.Value
 	}
 	return nl
-}
-
-func (l RegexpLiteral) FromBuf(buf *fbast.RegexpLiteral) *RegexpLiteral {
-	l.BaseNode.FromBuf(buf.BaseNode(nil))
-	var err error
-	if l.Value, err = regexp.Compile(string(buf.Value())); err != nil {
-		l.BaseNode.Errors = append(l.BaseNode.Errors,
-			Error{fmt.Sprintf("Encountered error in deserializing RegexpLiteral.Values: %s", err.Error())})
-	}
-	return &l
 }
 
 // Duration is a pair consisting of length of time and the unit of time measured.
@@ -1671,12 +1301,6 @@ func toDuration(l Duration) (time.Duration, error) {
 	return dur, err
 }
 
-func (d Duration) FromBuf(buf *fbast.Duration) Duration {
-	d.Magnitude = buf.Magnitude()
-	d.Unit = fbast.EnumNamesTimeUnit[buf.Unit()]
-	return d
-}
-
 const (
 	NanosecondUnit  = "ns"
 	MicrosecondUnit = "us"
@@ -1716,21 +1340,6 @@ func (l *DurationLiteral) Copy() Node {
 	return nl
 }
 
-func (l DurationLiteral) FromBuf(buf *fbast.DurationLiteral) *DurationLiteral {
-	l.BaseNode.FromBuf(buf.BaseNode(nil))
-	l.Values = make([]Duration, buf.ValuesLength())
-	for i := 0; i < buf.ValuesLength(); i++ {
-		d := new(fbast.Duration)
-		if !buf.Values(d, i) {
-			l.BaseNode.Errors = append(l.BaseNode.Errors,
-				Error{fmt.Sprintf("Encountered error in deserializing DurationLiteral.Values[%d]", i)})
-		} else {
-			l.Values[i] = Duration{}.FromBuf(d)
-		}
-	}
-	return &l
-}
-
 // Duration gives you a DurationLiteral from a time.Duration.
 // Currently this is an approximation, but since we accept time, it can be made exact.
 // TODO: makes this exact and not an approximation.
@@ -1768,12 +1377,6 @@ func (l *DateTimeLiteral) Copy() Node {
 	*nl = *l
 	nl.BaseNode = l.BaseNode.Copy()
 	return nl
-}
-
-func (l DateTimeLiteral) FromBuf(buf *fbast.DateTimeLiteral) *DateTimeLiteral {
-	l.BaseNode.FromBuf(buf.BaseNode(nil))
-	l.Value = time.Unix(buf.Secs(), int64(buf.Nsecs())).In(time.FixedZone("DateTimeLiteral offset", int(buf.Offset())))
-	return &l
 }
 
 // OperatorTokens converts OperatorKind to string
