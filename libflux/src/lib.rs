@@ -1,4 +1,7 @@
 #![cfg_attr(feature = "strict", deny(warnings))]
+// When the unsafe interfaces are documented, these ignored clippy lints should
+// be re-enabled and adjusted.
+#![allow(clippy::missing_safety_doc, unknown_lints)]
 
 extern crate chrono;
 #[macro_use]
