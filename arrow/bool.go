@@ -7,7 +7,7 @@ import (
 
 func NewBool(vs []bool, alloc *memory.Allocator) *array.Boolean {
 	b := NewBoolBuilder(alloc)
-	b.Reserve(len(vs))
+	b.Resize(len(vs))
 	for _, v := range vs {
 		b.UnsafeAppend(v)
 	}
