@@ -991,7 +991,7 @@ impl Substitutable for Function {
     }
 }
 
-impl<U, T: MaxTvar> MaxTvar for HashMap<U, T> {
+impl<U, T: MaxTvar, S: ::std::hash::BuildHasher> MaxTvar for HashMap<U, T, S> {
     fn max_tvar(&self) -> Tvar {
         self.iter()
             .map(|(_, t)| t.max_tvar())
