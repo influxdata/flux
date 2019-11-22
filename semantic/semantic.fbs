@@ -36,11 +36,6 @@ union Expression  {
     UnsignedIntegerLiteral,  
 }
 
-union PropertyKey {
-    Identifier,
-    StringLiteral,
-}
-
 table Package {
     loc:SourceLocation;  
     package:string; 
@@ -56,12 +51,12 @@ table File {
 
 table PackageClause {
     loc:SourceLocation;
-    name:Identifier;
+    name:IdentifierExpression;
 }
 
 table ImportDeclaration {
     loc:SourceLocation; 
-    as:Identifier;
+    alias:IdentifierExpression;
     path:StringLiteral;
 }
 
@@ -97,7 +92,7 @@ table OptionStatement {
 
 table BuiltinStatement {
     loc:SourceLocation; 
-    id:Identifier; 
+    id:IdentifierExpression; 
 }
 
 table TestStatement {
@@ -117,7 +112,7 @@ table ReturnStatement {
 
 table NativeVariableAssignment {
     loc:SourceLocation;
-    identifier:Identifier; 
+    identifier:IdentifierExpression; 
     init_:Expression; 
 }
 
@@ -154,25 +149,15 @@ table ArrayExpression {
 
 table FunctionExpression {
     loc:SourceLocation;
-    defaults:ObjectExpression;
-    Block:FunctionBlock;
-}
-
-table FunctionBlock {
-    loc:SourceLocation;
-    parameters:FunctionParameters;
+    params:[FunctionParameter]; 
     body:Block;
-}
-
-table FunctionParameters {
-    loc:SourceLocation;
-    list:[FunctionParameter];
-    pipe:Identifier;
 }
 
 table FunctionParameter {
     loc:SourceLocation;
-    key:Identifier;
+    is_pipe: bool; 
+    key:IdentifierExpression;
+    default:Expression; 
 }
 
 enum Operator : byte {
@@ -258,16 +243,11 @@ table UnaryExpression {
 
 table Property {
     loc:SourceLocation;
-    key:PropertyKey; 
+    key:IdentifierExpression; 
     value:Expression;
 }
 
 table IdentifierExpression   {
-    loc:SourceLocation;
-    name:string;
-}
-
-table Identifier {
     loc:SourceLocation;
     name:string;
 }
@@ -313,12 +293,12 @@ table Duration {
 
 table IntegerLiteral {
     loc:SourceLocation;
-    value:long; 
+    value:int64; 
 }
 
 table FloatLiteral {
     loc:SourceLocation;
-    value:double;
+    value:float64;
 }
 
 table RegexpLiteral {
@@ -333,7 +313,7 @@ table StringLiteral {
 
 table UnsignedIntegerLiteral {
     loc:SourceLocation;
-    value:ulong;
+    value:uint64;
 }
 
 root_type Package;

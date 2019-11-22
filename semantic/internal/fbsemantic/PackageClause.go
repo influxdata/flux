@@ -39,12 +39,12 @@ func (rcv *PackageClause) Loc(obj *SourceLocation) *SourceLocation {
 	return nil
 }
 
-func (rcv *PackageClause) Name(obj *Identifier) *Identifier {
+func (rcv *PackageClause) Name(obj *IdentifierExpression) *IdentifierExpression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
 		if obj == nil {
-			obj = new(Identifier)
+			obj = new(IdentifierExpression)
 		}
 		obj.Init(rcv._tab.Bytes, x)
 		return obj

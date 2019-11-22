@@ -39,12 +39,12 @@ func (rcv *ImportDeclaration) Loc(obj *SourceLocation) *SourceLocation {
 	return nil
 }
 
-func (rcv *ImportDeclaration) As(obj *Identifier) *Identifier {
+func (rcv *ImportDeclaration) Alias(obj *IdentifierExpression) *IdentifierExpression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
 		if obj == nil {
-			obj = new(Identifier)
+			obj = new(IdentifierExpression)
 		}
 		obj.Init(rcv._tab.Bytes, x)
 		return obj
@@ -71,8 +71,8 @@ func ImportDeclarationStart(builder *flatbuffers.Builder) {
 func ImportDeclarationAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
 }
-func ImportDeclarationAddAs(builder *flatbuffers.Builder, as flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(as), 0)
+func ImportDeclarationAddAlias(builder *flatbuffers.Builder, alias flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(alias), 0)
 }
 func ImportDeclarationAddPath(builder *flatbuffers.Builder, path flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(path), 0)
