@@ -216,6 +216,25 @@ func (a *Allocator) allocator() memory.Allocator {
 	return a.Allocator
 }
 
+type TestingT interface {
+	Errorf(format string, args ...interface{})
+	Helper()
+}
+
+func (a *Allocator) AssertSize(t TestingT, sz int64) {
+	if got, want := a.Allocated(), sz; got != want {
+		t.Helper()
+		t.Errorf("invalid memory size -want/+got:\n\t- %d\n\t+ %d", want, got)
+	}
+}
+
+func (a *Allocator) AssertSizeAtLeast(t TestingT, sz int64) {
+	if got, want := a.Allocated(), sz; got < want {
+		t.Helper()
+		t.Errorf("invalid memory size -want/+got:\n\t- at least %d\n\t+ %d", want, got)
+	}
+}
+
 // Manager will manage the memory allowed for the Allocator.
 // The Allocator may use the Manager to request additional memory or to
 // give back memory that is currently in use by the Allocator

@@ -1,6 +1,8 @@
 package arrow
 
 import (
+	"reflect"
+
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -33,22 +35,22 @@ func (t *TableBuffer) Len() int {
 }
 
 func (t *TableBuffer) Bools(j int) *array.Boolean {
-	return t.Values[j].(*array.Boolean)
+	return AsBools(t.Values[j])
 }
 func (t *TableBuffer) Ints(j int) *array.Int64 {
-	return t.Values[j].(*array.Int64)
+	return AsInts(t.Values[j])
 }
 func (t *TableBuffer) UInts(j int) *array.Uint64 {
-	return t.Values[j].(*array.Uint64)
+	return AsUints(t.Values[j])
 }
 func (t *TableBuffer) Floats(j int) *array.Float64 {
-	return t.Values[j].(*array.Float64)
+	return AsFloats(t.Values[j])
 }
 func (t *TableBuffer) Strings(j int) *array.Binary {
-	return t.Values[j].(*array.Binary)
+	return AsStrings(t.Values[j])
 }
 func (t *TableBuffer) Times(j int) *array.Int64 {
-	return t.Values[j].(*array.Int64)
+	return AsInts(t.Values[j])
 }
 
 func (t *TableBuffer) Retain() {
@@ -90,4 +92,23 @@ func (t *TableBuffer) Validate() error {
 		}
 	}
 	return nil
+}
+
+// As will attempt to use arr as the target interface.
+// The target should be a pointer to a concrete arrow
+// array structure.
+func As(arr array.Interface, target interface{}) bool {
+	if a, ok := arr.(interface{ As(target interface{}) bool }); ok {
+		if a.As(target) {
+			return true
+		}
+	}
+
+	targetV := reflect.ValueOf(target)
+	v := reflect.ValueOf(arr)
+	if v.Type().AssignableTo(targetV.Elem().Type()) {
+		targetV.Elem().Set(v)
+		return true
+	}
+	return false
 }

@@ -25,3 +25,14 @@ func IntSlice(arr *array.Int64, i, j int) *array.Int64 {
 func NewIntBuilder(a *memory.Allocator) *array.Int64Builder {
 	return array.NewInt64Builder(a)
 }
+
+// AsInts will return the array as an integer array.
+// This will panic if the array.Interface does not have the
+// int64 datatype.
+func AsInts(arr array.Interface) *array.Int64 {
+	if a, ok := arr.(*array.Int64); ok || As(arr, &a) {
+		return a
+	}
+	// Initiate a panic if we could not typecast this.
+	return arr.(*array.Int64)
+}

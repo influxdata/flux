@@ -25,3 +25,14 @@ func BoolSlice(arr *array.Boolean, i, j int) *array.Boolean {
 func NewBoolBuilder(a *memory.Allocator) *array.BooleanBuilder {
 	return array.NewBooleanBuilder(a)
 }
+
+// AsBools will return the array as a boolean array.
+// This will panic if the array.Interface does not have the
+// bool datatype.
+func AsBools(arr array.Interface) *array.Boolean {
+	if a, ok := arr.(*array.Boolean); ok || As(arr, &a) {
+		return a
+	}
+	// Initiate a panic if we could not typecast this.
+	return arr.(*array.Boolean)
+}

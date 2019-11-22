@@ -31,3 +31,14 @@ func StringSlice(arr *array.Binary, i, j int) *array.Binary {
 func NewStringBuilder(a *memory.Allocator) *array.BinaryBuilder {
 	return array.NewBinaryBuilder(a, arrow.BinaryTypes.String)
 }
+
+// AsStrings will return the array as a string array.
+// This will panic if the array.Interface does not have the
+// string datatype.
+func AsStrings(arr array.Interface) *array.Binary {
+	if a, ok := arr.(*array.Binary); ok || As(arr, &a) {
+		return a
+	}
+	// Initiate a panic if we could not typecast this.
+	return arr.(*array.Binary)
+}
