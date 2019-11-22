@@ -36,10 +36,10 @@ default: build
 STDLIB_SOURCES = $(shell find . -name '*.flux')
 
 GENERATED_TARGETS = \
+	ast/internal/fbast \
 	ast/asttest/cmpopts.go \
 	internal/scanner/scanner.gen.go \
 	stdlib/packages.go \
-	ast/internal/fbast \
 	semantic/internal/fbsemantic \
 	libflux/src/ast/flatbuffers/ast_generated.rs \
 	libflux/src/semantic/flatbuffers/semantic_generated.rs \
