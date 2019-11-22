@@ -69,7 +69,7 @@ pub extern "C" fn flux_parse_fb(src_ptr: *const c_char) -> *mut flux_buffer_t {
     let r = ast::flatbuffers::serialize(&pkg);
     match r {
         Ok((vec, offset)) => {
-            let data = Box::new(&vec[offset..]);
+            let data = &vec[offset..];
             return Box::into_raw(Box::new(flux_buffer_t {
                 data: data.as_ptr(),
                 len: data.len(),
