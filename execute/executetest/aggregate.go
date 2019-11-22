@@ -20,11 +20,11 @@ func AggFuncTestHelper(t *testing.T, agg execute.Aggregate, data *array.Float64,
 	h := data.Len() / 2
 	vf := agg.NewFloatAgg()
 
-	d := arrow.FloatSlice(data, 0, h)
+	d := arrow.Slice(data, 0, h).(*array.Float64)
 	vf.DoFloat(d)
 	d.Release()
 	if h < data.Len() {
-		d := arrow.FloatSlice(data, h, data.Len())
+		d := arrow.Slice(data, h, data.Len()).(*array.Float64)
 		vf.DoFloat(d)
 		d.Release()
 	}

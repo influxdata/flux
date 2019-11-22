@@ -410,7 +410,7 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 						if vs.Len() == ts.Len() {
 							vs.Retain()
 						} else {
-							vs = array.NewSlice(vs, 0, int64(ts.Len()))
+							vs = arrow.Slice(vs, 0, ts.Len())
 						}
 						tb.Values[i] = vs
 					}

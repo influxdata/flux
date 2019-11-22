@@ -23,9 +23,7 @@ func NewString(vs []string, alloc *memory.Allocator) *array.Binary {
 }
 
 func StringSlice(arr *array.Binary, i, j int) *array.Binary {
-	data := array.NewSliceData(arr.Data(), int64(i), int64(j))
-	defer data.Release()
-	return array.NewBinaryData(data)
+	return Slice(arr, i, j).(*array.Binary)
 }
 
 func NewStringBuilder(a *memory.Allocator) *array.BinaryBuilder {

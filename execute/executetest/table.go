@@ -332,21 +332,8 @@ func (t *RowWiseTable) Do(f func(flux.ColReader) error) error {
 	l := cols[0].Len()
 	for i := 0; i < l; i++ {
 		row := make([]array.Interface, len(t.ColMeta))
-		for j, col := range t.ColMeta {
-			switch col.Type {
-			case flux.TBool:
-				row[j] = arrow.BoolSlice(cols[j].(*array.Boolean), i, i+1)
-			case flux.TFloat:
-				row[j] = arrow.FloatSlice(cols[j].(*array.Float64), i, i+1)
-			case flux.TInt:
-				row[j] = arrow.IntSlice(cols[j].(*array.Int64), i, i+1)
-			case flux.TString:
-				row[j] = arrow.StringSlice(cols[j].(*array.Binary), i, i+1)
-			case flux.TTime:
-				row[j] = arrow.IntSlice(cols[j].(*array.Int64), i, i+1)
-			case flux.TUInt:
-				row[j] = arrow.UintSlice(cols[j].(*array.Uint64), i, i+1)
-			}
+		for j := range t.ColMeta {
+			row[j] = arrow.Slice(cols[j], i, i+1)
 		}
 		if err := f(&ColReader{
 			key:  t.Key(),

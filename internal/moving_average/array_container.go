@@ -61,22 +61,9 @@ func (a *ArrayContainer) OrigValue(i int) interface{} {
 }
 
 func (a *ArrayContainer) Slice(i int, j int) *ArrayContainer {
-	slice := &ArrayContainer{}
-	switch a.array.(type) {
-	case *array.Boolean:
-		slice.array = arrow.BoolSlice(a.array.(*array.Boolean), i, j)
-	case *array.Int64:
-		slice.array = arrow.IntSlice(a.array.(*array.Int64), i, j)
-	case *array.Uint64:
-		slice.array = arrow.UintSlice(a.array.(*array.Uint64), i, j)
-	case *array.Float64:
-		slice.array = arrow.FloatSlice(a.array.(*array.Float64), i, j)
-	case *array.Binary:
-		slice.array = arrow.StringSlice(a.array.(*array.Binary), i, j)
-	default:
-		slice.array = nil
+	return &ArrayContainer{
+		array: arrow.Slice(a.array, i, j),
 	}
-	return slice
 }
 
 func (a *ArrayContainer) Array() array.Interface {
