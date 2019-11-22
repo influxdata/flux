@@ -17,7 +17,7 @@ When submitting a bug report, please include the following:
 - Full details of your operating system (or distribution) e.g. 64-bit Ubuntu 14.04.
 - The version of Flux you are running.
 - Whether you installed it using a pre-built package or built it from source.
-- A small test case, if applicable, that demonstrates the issues.
+- A small test case that demonstrates the issue or steps to reproduce the issue.
 
 Remember the golden rule of bug reports: **The easier you make it for us to reproduce the problem, the faster it will get fixed.
 **If you have never written a bug report before, or if you want to brush up on your bug reporting skills, we recommend reading [Simon Tatham's essay "How to Report Bugs Effectively."](http://www.chiark.greenend.org.uk/~sgtatham/bugs.html)
@@ -33,9 +33,13 @@ be closed if we don't understand what you would like to see added to Flux.
 
 ## Contributing to the source code
 
+### Signing the CLA
+In order to contribute back to Flux, you must sign the
+[InfluxData Contributor License Agreement](https://www.influxdata.com/legal/cla/) (CLA).
+
 ### Finding an issue
 The Flux team regularly adds the [community](https://github.com/influxdata/flux/issues?q=is%3Aopen+is%3Aissue+label%3Acommunity) label to issues that we think would be accessible for a community member to take.
-Before starting to work on an issue, please inform us on GitHub about your intention to work on the issue.
+Before starting to work on an issue, please inform us on GitHub about your intention to work on the issue by leaving a comment on the issue.
 This allows us to know that you want to work on the issue, that the issue is updated with the needed information, and to be ready for a pull request when the work is done.
 
 ### Contributing to the source code
@@ -70,6 +74,10 @@ $ go generate ./stdlib
 
 ## Pull request guidelines
 
+### Effective Go
+The Flux codebase follows the guidelines from [Effective Go](https://golang.org/doc/effective_go.html).
+Please familiarize yourself with these guidelines before submitting a pull request.
+
 ### Use of third-party packages
 A third-party package is defined as one that is not part of the standard Go distribution.
 Generally speaking, we prefer to minimize our use of third-party packages and avoid
@@ -98,10 +106,11 @@ A public function or method should only be used if using the Flux library would 
 ### Comments and documentation
 Every new public function or method requires a valid GoDoc.
 Comments within the code should be written with proper capitalization and punctuation at the end of the sentence.
+Please refer to [this blog post](https://blog.golang.org/godoc-documenting-go-code) about documenting Go code.
 
 ### Updating markdown files for documentation
 The Flux team uses markdown for our documentation.
-When writing markdown, please use the following guidelines.
+When writing markdown, please use the following guidelines:
 
 - Each sentence in a paragraph is on its own line.
 - Use the `#` symbol for header sections.
@@ -134,10 +143,6 @@ To assist in review for the PR, please add the following to your pull request co
 ```md
 - [ ] Sign [CLA](https://www.influxdata.com/legal/cla/) (if not already signed)
 ```
-
-### Signing the CLA
-In order to contribute back to Flux, you must sign the
-[InfluxData Contributor License Agreement](https://www.influxdata.com/legal/cla/) (CLA).
 
 ## Useful links
 - [Useful techniques in Go](https://arslan.io/2015/10/08/ten-useful-techniques-in-go/) 
