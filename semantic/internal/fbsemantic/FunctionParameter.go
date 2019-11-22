@@ -39,12 +39,24 @@ func (rcv *FunctionParameter) Loc(obj *SourceLocation) *SourceLocation {
 	return nil
 }
 
-func (rcv *FunctionParameter) Key(obj *Identifier) *Identifier {
+func (rcv *FunctionParameter) IsPipe() bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.GetBool(o + rcv._tab.Pos)
+	}
+	return false
+}
+
+func (rcv *FunctionParameter) MutateIsPipe(n bool) bool {
+	return rcv._tab.MutateBoolSlot(6, n)
+}
+
+func (rcv *FunctionParameter) Key(obj *IdentifierExpression) *IdentifierExpression {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
 		if obj == nil {
-			obj = new(Identifier)
+			obj = new(IdentifierExpression)
 		}
 		obj.Init(rcv._tab.Bytes, x)
 		return obj
@@ -52,14 +64,44 @@ func (rcv *FunctionParameter) Key(obj *Identifier) *Identifier {
 	return nil
 }
 
+func (rcv *FunctionParameter) DefaultType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *FunctionParameter) MutateDefaultType(n byte) bool {
+	return rcv._tab.MutateByteSlot(10, n)
+}
+
+func (rcv *FunctionParameter) Default(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
 func FunctionParameterStart(builder *flatbuffers.Builder) {
-	builder.StartObject(2)
+	builder.StartObject(5)
 }
 func FunctionParameterAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
 }
+func FunctionParameterAddIsPipe(builder *flatbuffers.Builder, isPipe bool) {
+	builder.PrependBoolSlot(1, isPipe, false)
+}
 func FunctionParameterAddKey(builder *flatbuffers.Builder, key flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(key), 0)
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(key), 0)
+}
+func FunctionParameterAddDefaultType(builder *flatbuffers.Builder, defaultType byte) {
+	builder.PrependByteSlot(3, defaultType, 0)
+}
+func FunctionParameterAddDefault(builder *flatbuffers.Builder, default_ flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(default_), 0)
 }
 func FunctionParameterEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

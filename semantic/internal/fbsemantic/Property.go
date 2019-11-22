@@ -39,29 +39,21 @@ func (rcv *Property) Loc(obj *SourceLocation) *SourceLocation {
 	return nil
 }
 
-func (rcv *Property) KeyType() byte {
+func (rcv *Property) Key(obj *IdentifierExpression) *IdentifierExpression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(IdentifierExpression)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
 	}
-	return 0
-}
-
-func (rcv *Property) MutateKeyType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
-}
-
-func (rcv *Property) Key(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		rcv._tab.Union(obj, o)
-		return true
-	}
-	return false
+	return nil
 }
 
 func (rcv *Property) ValueType() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		return rcv._tab.GetByte(o + rcv._tab.Pos)
 	}
@@ -69,11 +61,11 @@ func (rcv *Property) ValueType() byte {
 }
 
 func (rcv *Property) MutateValueType(n byte) bool {
-	return rcv._tab.MutateByteSlot(10, n)
+	return rcv._tab.MutateByteSlot(8, n)
 }
 
 func (rcv *Property) Value(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
 		rcv._tab.Union(obj, o)
 		return true
@@ -82,22 +74,19 @@ func (rcv *Property) Value(obj *flatbuffers.Table) bool {
 }
 
 func PropertyStart(builder *flatbuffers.Builder) {
-	builder.StartObject(5)
+	builder.StartObject(4)
 }
 func PropertyAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
 }
-func PropertyAddKeyType(builder *flatbuffers.Builder, keyType byte) {
-	builder.PrependByteSlot(1, keyType, 0)
-}
 func PropertyAddKey(builder *flatbuffers.Builder, key flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(key), 0)
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(key), 0)
 }
 func PropertyAddValueType(builder *flatbuffers.Builder, valueType byte) {
-	builder.PrependByteSlot(3, valueType, 0)
+	builder.PrependByteSlot(2, valueType, 0)
 }
 func PropertyAddValue(builder *flatbuffers.Builder, value flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(value), 0)
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(value), 0)
 }
 func PropertyEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
