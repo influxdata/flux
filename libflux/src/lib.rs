@@ -73,10 +73,10 @@ pub unsafe extern "C" fn flux_parse_fb(src_ptr: *const c_char) -> *mut flux_buff
     match r {
         Ok((vec, offset)) => {
             let data = &vec[offset..];
-            return Box::into_raw(Box::new(flux_buffer_t {
+            Box::into_raw(Box::new(flux_buffer_t {
                 data: data.as_ptr(),
                 len: data.len(),
-            }));
+            }))
         }
         Err(_) => 1 as *mut flux_buffer_t,
     }
