@@ -108,6 +108,8 @@ bad_expr = 3 * + 1
 			t.Errorf("AST roundtrip vs. Go unexpected packages -fbs/+go:\n%s",
 				cmp.Diff(astFbs, astGo, CompareOptions...))
 		}
+		// TODO: https://github.com/influxdata/flux/issues/2187
+		// TODO: https://github.com/influxdata/flux/issues/2186
 		//if !cmp.Equal(astFbs, astRust, CompareOptions...) {
 		//	t.Errorf("AST roundtrip vs. Rust unexpected packages -fbs/+rust:\n%s",
 		//		cmp.Diff(astFbs, astRust, CompareOptions...))
