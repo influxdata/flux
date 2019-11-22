@@ -235,3 +235,31 @@ func propertyKeyFromBuf(label string, baseNode BaseNode, f unionTableWriterFn, a
 		return nil
 	}
 }
+
+var opMap = map[fbast.Operator]OperatorKind {
+	fbast.OperatorMultiplicationOperator: MultiplicationOperator,
+	fbast.OperatorDivisionOperator: DivisionOperator,
+	fbast.OperatorModuloOperator: ModuloOperator,
+	fbast.OperatorPowerOperator: PowerOperator,
+	fbast.OperatorAdditionOperator: AdditionOperator,
+	fbast.OperatorSubtractionOperator: SubtractionOperator,
+	fbast.OperatorLessThanEqualOperator: LessThanEqualOperator,
+	fbast.OperatorLessThanOperator: LessThanOperator,
+	fbast.OperatorGreaterThanEqualOperator: GreaterThanEqualOperator,
+	fbast.OperatorGreaterThanOperator: GreaterThanOperator,
+	fbast.OperatorStartsWithOperator: StartsWithOperator,
+	fbast.OperatorInOperator: InOperator,
+	fbast.OperatorNotOperator: NotOperator,
+	fbast.OperatorExistsOperator: ExistsOperator,
+	fbast.OperatorNotEmptyOperator: NotEmptyOperator,
+	fbast.OperatorEmptyOperator: EmptyOperator,
+	fbast.OperatorEqualOperator: EqualOperator,
+	fbast.OperatorNotEqualOperator: NotEqualOperator,
+	fbast.OperatorRegexpMatchOperator: RegexpMatchOperator,
+	fbast.OperatorNotRegexpMatchOperator: NotRegexpMatchOperator,
+}
+
+var logOpMap = map[fbast.LogicalOperator]LogicalOperatorKind {
+	fbast.LogicalOperatorAndOperator: AndOperator,
+	fbast.LogicalOperatorOrOperator: OrOperator,
+}

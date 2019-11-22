@@ -5,13 +5,11 @@ package fbast
 type LogicalOperator = int8
 
 const (
-	LogicalOperatorInvalidOperator LogicalOperator = 0
-	LogicalOperatorAndOperator     LogicalOperator = 1
-	LogicalOperatorOrOperator      LogicalOperator = 2
+	LogicalOperatorAndOperator LogicalOperator = 0
+	LogicalOperatorOrOperator  LogicalOperator = 1
 )
 
 var EnumNamesLogicalOperator = map[LogicalOperator]string{
-	LogicalOperatorInvalidOperator: "InvalidOperator",
-	LogicalOperatorAndOperator:     "AndOperator",
-	LogicalOperatorOrOperator:      "OrOperator",
+	LogicalOperatorAndOperator: "AndOperator",
+	LogicalOperatorOrOperator:  "OrOperator",
 }

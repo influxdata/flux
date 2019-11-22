@@ -1117,7 +1117,7 @@ func (e *BinaryExpression) Copy() Node {
 }
 func (e BinaryExpression) FromBuf(buf *fbast.BinaryExpression) *BinaryExpression {
 	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Operator = OperatorKind(buf.Operator())
+	e.Operator = opMap[buf.Operator()]
 	e.Left = exprFromBuf("BinaryExpression.Left", e.BaseNode, buf.Left, buf.LeftType())
 	e.Right = exprFromBuf("BinaryExpression.Right", e.BaseNode, buf.Right, buf.RightType())
 	return &e
@@ -1150,7 +1150,7 @@ func (e *UnaryExpression) Copy() Node {
 
 func (e UnaryExpression) FromBuf(buf *fbast.UnaryExpression) *UnaryExpression {
 	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Operator = OperatorKind(buf.Operator())
+	e.Operator = opMap[buf.Operator()]
 	e.Argument = exprFromBuf("UnaryExpression.Argument", e.BaseNode, buf.Argument, buf.ArgumentType())
 	return &e
 }
@@ -1223,7 +1223,7 @@ func (e *LogicalExpression) Copy() Node {
 
 func (e LogicalExpression) FromBuf(buf *fbast.LogicalExpression) *LogicalExpression {
 	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	e.Operator = LogicalOperatorKind(buf.Operator())
+	e.Operator = logOpMap[buf.Operator()]
 	e.Left = exprFromBuf("LogicalExpression.Left", e.BaseNode, buf.Left, buf.LeftType())
 	e.Right = exprFromBuf("LogicalExpression.Right", e.BaseNode, buf.Right, buf.RightType())
 	return &e
