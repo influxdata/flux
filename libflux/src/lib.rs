@@ -31,7 +31,7 @@ struct ErrorHandle {
 #[repr(C)]
 pub struct flux_buffer_t {
     pub data: *const u8,
-    pub len: usize
+    pub len: usize,
 }
 
 #[no_mangle]
@@ -72,10 +72,10 @@ pub extern "C" fn flux_parse_fb(src_ptr: *const c_char) -> *mut flux_buffer_t {
             let data = Box::new(&vec[offset..]);
             return Box::into_raw(Box::new(flux_buffer_t {
                 data: data.as_ptr(),
-                len: data.len()
+                len: data.len(),
             }));
-        },
-        Err(_) => 1 as *mut flux_buffer_t
+        }
+        Err(_) => 1 as *mut flux_buffer_t,
     }
 }
 

@@ -96,7 +96,7 @@ bad_expr = 3 * + 1
 		file := gparser.ParseFile(f, srcb)
 		packageName := "main"
 		if file.Package != nil && file.Package.Name != nil {
-			packageName =  file.Package.Name.Name
+			packageName = file.Package.Name.Name
 		}
 		astGo := &ast.Package{
 			Package: packageName,
@@ -106,7 +106,7 @@ bad_expr = 3 * + 1
 
 		if !cmp.Equal(astFbs, astGo, CompareOptions...) {
 			t.Errorf("AST roundtrip vs. Go unexpected packages -fbs/+go:\n%s",
-				cmp.Diff(astFbs, astGo, CompareOptions..., ))
+				cmp.Diff(astFbs, astGo, CompareOptions...))
 		}
 		//if !cmp.Equal(astFbs, astRust, CompareOptions...) {
 		//	t.Errorf("AST roundtrip vs. Rust unexpected packages -fbs/+rust:\n%s",
