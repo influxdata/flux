@@ -3,7 +3,7 @@ extern crate walkdir;
 
 use super::ast_generated::fbast;
 use crate::ast;
-use chrono::{Offset, FixedOffset};
+use chrono::FixedOffset;
 use crate::ast::Expression::DateTime;
 
 #[test]
