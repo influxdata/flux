@@ -6,7 +6,7 @@ The development team for Flux is in the `#flux` channel and we will be able to a
 
 ## Filing issues
 Filing issues on GitHub is one of the easiest and most useful ways to contribute to Flux.
-We value every request and we intend to triage every community issue that is created within a week after it has been created.
+We value every request and we intend to triage every community issue within a week after it has been created.
 If it takes us longer than a week, then please try to contact us in the community Slack channel.
 
 Before you file an issue, please search existing issues in case it has already been filed or perhaps even resolved.
