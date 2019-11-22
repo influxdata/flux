@@ -297,27 +297,27 @@ pub struct ExpressionUnionTableOffset {}
 #[repr(i8)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum Operator {
-  MultiplicationOperator = 0,
-  DivisionOperator = 1,
-  ModuloOperator = 2,
-  PowerOperator = 3,
-  AdditionOperator = 4,
-  SubtractionOperator = 5,
-  LessThanEqualOperator = 6,
-  LessThanOperator = 7,
-  GreaterThanEqualOperator = 8,
-  GreaterThanOperator = 9,
-  StartsWithOperator = 10,
-  InOperator = 11,
-  NotOperator = 12,
-  ExistsOperator = 13,
-  NotEmptyOperator = 14,
-  EmptyOperator = 15,
-  EqualOperator = 16,
-  NotEqualOperator = 17,
-  RegexpMatchOperator = 18,
-  NotRegexpMatchOperator = 19,
-  InvalidOperator = 20,
+  InvalidOperator = 0,
+  MultiplicationOperator = 1,
+  DivisionOperator = 2,
+  ModuloOperator = 3,
+  PowerOperator = 4,
+  AdditionOperator = 5,
+  SubtractionOperator = 6,
+  LessThanEqualOperator = 7,
+  LessThanOperator = 8,
+  GreaterThanEqualOperator = 9,
+  GreaterThanOperator = 10,
+  StartsWithOperator = 11,
+  InOperator = 12,
+  NotOperator = 13,
+  ExistsOperator = 14,
+  NotEmptyOperator = 15,
+  EmptyOperator = 16,
+  EqualOperator = 17,
+  NotEqualOperator = 18,
+  RegexpMatchOperator = 19,
+  NotRegexpMatchOperator = 20,
 
 }
 
@@ -357,6 +357,7 @@ impl flatbuffers::Push for Operator {
 
 #[allow(non_camel_case_types)]
 const ENUM_VALUES_OPERATOR:[Operator; 21] = [
+  Operator::InvalidOperator,
   Operator::MultiplicationOperator,
   Operator::DivisionOperator,
   Operator::ModuloOperator,
@@ -376,12 +377,12 @@ const ENUM_VALUES_OPERATOR:[Operator; 21] = [
   Operator::EqualOperator,
   Operator::NotEqualOperator,
   Operator::RegexpMatchOperator,
-  Operator::NotRegexpMatchOperator,
-  Operator::InvalidOperator
+  Operator::NotRegexpMatchOperator
 ];
 
 #[allow(non_camel_case_types)]
 const ENUM_NAMES_OPERATOR:[&'static str; 21] = [
+    "InvalidOperator",
     "MultiplicationOperator",
     "DivisionOperator",
     "ModuloOperator",
@@ -401,8 +402,7 @@ const ENUM_NAMES_OPERATOR:[&'static str; 21] = [
     "EqualOperator",
     "NotEqualOperator",
     "RegexpMatchOperator",
-    "NotRegexpMatchOperator",
-    "InvalidOperator"
+    "NotRegexpMatchOperator"
 ];
 
 pub fn enum_name_operator(e: Operator) -> &'static str {
@@ -3714,7 +3714,7 @@ impl<'a> BinaryExpression<'a> {
   }
   #[inline]
   pub fn operator(&self) -> Operator {
-    self._tab.get::<Operator>(BinaryExpression::VT_OPERATOR, Some(Operator::MultiplicationOperator)).unwrap()
+    self._tab.get::<Operator>(BinaryExpression::VT_OPERATOR, Some(Operator::InvalidOperator)).unwrap()
   }
   #[inline]
   pub fn left_type(&self) -> Expression {
@@ -4227,7 +4227,7 @@ impl<'a> Default for BinaryExpressionArgs<'a> {
     fn default() -> Self {
         BinaryExpressionArgs {
             base_node: None,
-            operator: Operator::MultiplicationOperator,
+            operator: Operator::InvalidOperator,
             left_type: Expression::NONE,
             left: None,
             right_type: Expression::NONE,
@@ -4246,7 +4246,7 @@ impl<'a: 'b, 'b> BinaryExpressionBuilder<'a, 'b> {
   }
   #[inline]
   pub fn add_operator(&mut self, operator: Operator) {
-    self.fbb_.push_slot::<Operator>(BinaryExpression::VT_OPERATOR, operator, Operator::MultiplicationOperator);
+    self.fbb_.push_slot::<Operator>(BinaryExpression::VT_OPERATOR, operator, Operator::InvalidOperator);
   }
   #[inline]
   pub fn add_left_type(&mut self, left_type: Expression) {
@@ -4942,7 +4942,7 @@ impl<'a> UnaryExpression<'a> {
   }
   #[inline]
   pub fn operator(&self) -> Operator {
-    self._tab.get::<Operator>(UnaryExpression::VT_OPERATOR, Some(Operator::MultiplicationOperator)).unwrap()
+    self._tab.get::<Operator>(UnaryExpression::VT_OPERATOR, Some(Operator::InvalidOperator)).unwrap()
   }
   #[inline]
   pub fn argument_type(&self) -> Expression {
@@ -5205,7 +5205,7 @@ impl<'a> Default for UnaryExpressionArgs<'a> {
     fn default() -> Self {
         UnaryExpressionArgs {
             base_node: None,
-            operator: Operator::MultiplicationOperator,
+            operator: Operator::InvalidOperator,
             argument_type: Expression::NONE,
             argument: None,
         }
@@ -5222,7 +5222,7 @@ impl<'a: 'b, 'b> UnaryExpressionBuilder<'a, 'b> {
   }
   #[inline]
   pub fn add_operator(&mut self, operator: Operator) {
-    self.fbb_.push_slot::<Operator>(UnaryExpression::VT_OPERATOR, operator, Operator::MultiplicationOperator);
+    self.fbb_.push_slot::<Operator>(UnaryExpression::VT_OPERATOR, operator, Operator::InvalidOperator);
   }
   #[inline]
   pub fn add_argument_type(&mut self, argument_type: Expression) {
@@ -5364,34 +5364,50 @@ impl<'a> DateTimeLiteral<'a> {
         _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
         args: &'args DateTimeLiteralArgs<'args>) -> flatbuffers::WIPOffset<DateTimeLiteral<'bldr>> {
       let mut builder = DateTimeLiteralBuilder::new(_fbb);
-      if let Some(x) = args.value { builder.add_value(x); }
+      builder.add_secs(args.secs);
+      builder.add_offset(args.offset);
+      builder.add_nsecs(args.nsecs);
       if let Some(x) = args.base_node { builder.add_base_node(x); }
       builder.finish()
     }
 
     pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
-    pub const VT_VALUE: flatbuffers::VOffsetT = 6;
+    pub const VT_SECS: flatbuffers::VOffsetT = 6;
+    pub const VT_NSECS: flatbuffers::VOffsetT = 8;
+    pub const VT_OFFSET: flatbuffers::VOffsetT = 10;
 
   #[inline]
   pub fn base_node(&self) -> Option<BaseNode<'a>> {
     self._tab.get::<flatbuffers::ForwardsUOffset<BaseNode<'a>>>(DateTimeLiteral::VT_BASE_NODE, None)
   }
   #[inline]
-  pub fn value(&self) -> Option<&'a str> {
-    self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(DateTimeLiteral::VT_VALUE, None)
+  pub fn secs(&self) -> i64 {
+    self._tab.get::<i64>(DateTimeLiteral::VT_SECS, Some(0)).unwrap()
+  }
+  #[inline]
+  pub fn nsecs(&self) -> u32 {
+    self._tab.get::<u32>(DateTimeLiteral::VT_NSECS, Some(0)).unwrap()
+  }
+  #[inline]
+  pub fn offset(&self) -> i32 {
+    self._tab.get::<i32>(DateTimeLiteral::VT_OFFSET, Some(0)).unwrap()
   }
 }
 
 pub struct DateTimeLiteralArgs<'a> {
     pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a >>>,
-    pub value: Option<flatbuffers::WIPOffset<&'a  str>>,
+    pub secs: i64,
+    pub nsecs: u32,
+    pub offset: i32,
 }
 impl<'a> Default for DateTimeLiteralArgs<'a> {
     #[inline]
     fn default() -> Self {
         DateTimeLiteralArgs {
             base_node: None,
-            value: None,
+            secs: 0,
+            nsecs: 0,
+            offset: 0,
         }
     }
 }
@@ -5405,8 +5421,16 @@ impl<'a: 'b, 'b> DateTimeLiteralBuilder<'a, 'b> {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<BaseNode>>(DateTimeLiteral::VT_BASE_NODE, base_node);
   }
   #[inline]
-  pub fn add_value(&mut self, value: flatbuffers::WIPOffset<&'b  str>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(DateTimeLiteral::VT_VALUE, value);
+  pub fn add_secs(&mut self, secs: i64) {
+    self.fbb_.push_slot::<i64>(DateTimeLiteral::VT_SECS, secs, 0);
+  }
+  #[inline]
+  pub fn add_nsecs(&mut self, nsecs: u32) {
+    self.fbb_.push_slot::<u32>(DateTimeLiteral::VT_NSECS, nsecs, 0);
+  }
+  #[inline]
+  pub fn add_offset(&mut self, offset: i32) {
+    self.fbb_.push_slot::<i32>(DateTimeLiteral::VT_OFFSET, offset, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> DateTimeLiteralBuilder<'a, 'b> {

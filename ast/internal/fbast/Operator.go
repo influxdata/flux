@@ -5,30 +5,31 @@ package fbast
 type Operator = int8
 
 const (
-	OperatorMultiplicationOperator   Operator = 0
-	OperatorDivisionOperator         Operator = 1
-	OperatorModuloOperator           Operator = 2
-	OperatorPowerOperator            Operator = 3
-	OperatorAdditionOperator         Operator = 4
-	OperatorSubtractionOperator      Operator = 5
-	OperatorLessThanEqualOperator    Operator = 6
-	OperatorLessThanOperator         Operator = 7
-	OperatorGreaterThanEqualOperator Operator = 8
-	OperatorGreaterThanOperator      Operator = 9
-	OperatorStartsWithOperator       Operator = 10
-	OperatorInOperator               Operator = 11
-	OperatorNotOperator              Operator = 12
-	OperatorExistsOperator           Operator = 13
-	OperatorNotEmptyOperator         Operator = 14
-	OperatorEmptyOperator            Operator = 15
-	OperatorEqualOperator            Operator = 16
-	OperatorNotEqualOperator         Operator = 17
-	OperatorRegexpMatchOperator      Operator = 18
-	OperatorNotRegexpMatchOperator   Operator = 19
-	OperatorInvalidOperator          Operator = 20
+	OperatorInvalidOperator          Operator = 0
+	OperatorMultiplicationOperator   Operator = 1
+	OperatorDivisionOperator         Operator = 2
+	OperatorModuloOperator           Operator = 3
+	OperatorPowerOperator            Operator = 4
+	OperatorAdditionOperator         Operator = 5
+	OperatorSubtractionOperator      Operator = 6
+	OperatorLessThanEqualOperator    Operator = 7
+	OperatorLessThanOperator         Operator = 8
+	OperatorGreaterThanEqualOperator Operator = 9
+	OperatorGreaterThanOperator      Operator = 10
+	OperatorStartsWithOperator       Operator = 11
+	OperatorInOperator               Operator = 12
+	OperatorNotOperator              Operator = 13
+	OperatorExistsOperator           Operator = 14
+	OperatorNotEmptyOperator         Operator = 15
+	OperatorEmptyOperator            Operator = 16
+	OperatorEqualOperator            Operator = 17
+	OperatorNotEqualOperator         Operator = 18
+	OperatorRegexpMatchOperator      Operator = 19
+	OperatorNotRegexpMatchOperator   Operator = 20
 )
 
 var EnumNamesOperator = map[Operator]string{
+	OperatorInvalidOperator:          "InvalidOperator",
 	OperatorMultiplicationOperator:   "MultiplicationOperator",
 	OperatorDivisionOperator:         "DivisionOperator",
 	OperatorModuloOperator:           "ModuloOperator",
@@ -49,5 +50,4 @@ var EnumNamesOperator = map[Operator]string{
 	OperatorNotEqualOperator:         "NotEqualOperator",
 	OperatorRegexpMatchOperator:      "RegexpMatchOperator",
 	OperatorNotRegexpMatchOperator:   "NotRegexpMatchOperator",
-	OperatorInvalidOperator:          "InvalidOperator",
 }

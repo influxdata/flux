@@ -26,6 +26,8 @@ struct flux_error_t;
 // of the query.
 struct flux_ast_t *flux_parse(const char *);
 
+struct flux_buffer_t *flux_parse_fb(const char *);
+
 // flux_ast_marshal_json will marshal json and fill in the given buffer
 // with the data. If successful, memory will be allocated for the data
 // within the buffer and it is the caller's responsibility to free this

@@ -368,6 +368,7 @@ type ReturnStatement struct {
 
 // Type is the abstract type
 func (*ReturnStatement) Type() string { return "ReturnStatement" }
+
 func (s *ReturnStatement) Copy() Node {
 	if s == nil {
 		return s
@@ -914,6 +915,7 @@ func (o LogicalOperatorKind) MarshalText() ([]byte, error) {
 	}
 	return []byte(text), nil
 }
+
 func (o *LogicalOperatorKind) UnmarshalText(data []byte) error {
 	var ok bool
 	*o, ok = logOperators[string(data)]
@@ -1124,14 +1126,14 @@ type PipeLiteral struct {
 // Type is the abstract type
 func (*PipeLiteral) Type() string { return "PipeLiteral" }
 
-func (i *PipeLiteral) Copy() Node {
-	if i == nil {
-		return i
+func (p *PipeLiteral) Copy() Node {
+	if p == nil {
+		return p
 	}
-	ni := new(PipeLiteral)
-	*ni = *i
-	ni.BaseNode = i.BaseNode.Copy()
-	return ni
+	np := new(PipeLiteral)
+	*np = *p
+	np.BaseNode = p.BaseNode.Copy()
+	return np
 }
 
 // StringLiteral expressions begin and end with double quote marks.
