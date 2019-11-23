@@ -698,7 +698,7 @@ impl Row {
     // Note rule 2. states that if two records extend the same type variable
     // they must have the same property name otherwise they cannot unify.
     //
-    #![allow(clippy::many_single_char_names, unknown_lints)]
+    #![allow(clippy::many_single_char_names, clippy::unknown_clippy_lints)]
     fn unify(
         self,
         with: Self,

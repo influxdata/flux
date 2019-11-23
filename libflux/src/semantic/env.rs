@@ -2,7 +2,7 @@
 // first parameter in Environment::new, which clippy wrongly identifies as the
 // parameter name, used in a place that shouldn't take a `self` parameter.
 // See https://github.com/rust-lang/rust-clippy/issues/3414
-#![allow(clippy::wrong_self_convention, unknown_lints)]
+#![allow(clippy::wrong_self_convention, clippy::unknown_clippy_lints)]
 
 use crate::semantic::sub::{Substitutable, Substitution};
 use crate::semantic::types::{union, PolyType, Tvar};

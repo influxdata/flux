@@ -1,4 +1,4 @@
-#![allow(clippy::all, unknown_lints)]
+#![allow(clippy::all, clippy::unknown_clippy_lints)]
 #[allow(non_snake_case, unused)]
 mod ast_generated;
 
