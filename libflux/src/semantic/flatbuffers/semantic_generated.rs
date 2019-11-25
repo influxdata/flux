@@ -848,14 +848,14 @@ impl<'a> PackageClause<'a> {
     self._tab.get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(PackageClause::VT_LOC, None)
   }
   #[inline]
-  pub fn name(&self) -> Option<IdentifierExpression<'a>> {
-    self._tab.get::<flatbuffers::ForwardsUOffset<IdentifierExpression<'a>>>(PackageClause::VT_NAME, None)
+  pub fn name(&self) -> Option<Identifier<'a>> {
+    self._tab.get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(PackageClause::VT_NAME, None)
   }
 }
 
 pub struct PackageClauseArgs<'a> {
     pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a >>>,
-    pub name: Option<flatbuffers::WIPOffset<IdentifierExpression<'a >>>,
+    pub name: Option<flatbuffers::WIPOffset<Identifier<'a >>>,
 }
 impl<'a> Default for PackageClauseArgs<'a> {
     #[inline]
@@ -876,8 +876,8 @@ impl<'a: 'b, 'b> PackageClauseBuilder<'a, 'b> {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<SourceLocation>>(PackageClause::VT_LOC, loc);
   }
   #[inline]
-  pub fn add_name(&mut self, name: flatbuffers::WIPOffset<IdentifierExpression<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<IdentifierExpression>>(PackageClause::VT_NAME, name);
+  pub fn add_name(&mut self, name: flatbuffers::WIPOffset<Identifier<'b >>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<Identifier>>(PackageClause::VT_NAME, name);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> PackageClauseBuilder<'a, 'b> {
@@ -938,8 +938,8 @@ impl<'a> ImportDeclaration<'a> {
     self._tab.get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(ImportDeclaration::VT_LOC, None)
   }
   #[inline]
-  pub fn alias(&self) -> Option<IdentifierExpression<'a>> {
-    self._tab.get::<flatbuffers::ForwardsUOffset<IdentifierExpression<'a>>>(ImportDeclaration::VT_ALIAS, None)
+  pub fn alias(&self) -> Option<Identifier<'a>> {
+    self._tab.get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(ImportDeclaration::VT_ALIAS, None)
   }
   #[inline]
   pub fn path(&self) -> Option<StringLiteral<'a>> {
@@ -949,7 +949,7 @@ impl<'a> ImportDeclaration<'a> {
 
 pub struct ImportDeclarationArgs<'a> {
     pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a >>>,
-    pub alias: Option<flatbuffers::WIPOffset<IdentifierExpression<'a >>>,
+    pub alias: Option<flatbuffers::WIPOffset<Identifier<'a >>>,
     pub path: Option<flatbuffers::WIPOffset<StringLiteral<'a >>>,
 }
 impl<'a> Default for ImportDeclarationArgs<'a> {
@@ -972,8 +972,8 @@ impl<'a: 'b, 'b> ImportDeclarationBuilder<'a, 'b> {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<SourceLocation>>(ImportDeclaration::VT_LOC, loc);
   }
   #[inline]
-  pub fn add_alias(&mut self, alias: flatbuffers::WIPOffset<IdentifierExpression<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<IdentifierExpression>>(ImportDeclaration::VT_ALIAS, alias);
+  pub fn add_alias(&mut self, alias: flatbuffers::WIPOffset<Identifier<'b >>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<Identifier>>(ImportDeclaration::VT_ALIAS, alias);
   }
   #[inline]
   pub fn add_path(&mut self, path: flatbuffers::WIPOffset<StringLiteral<'b >>) {
@@ -1494,14 +1494,14 @@ impl<'a> BuiltinStatement<'a> {
     self._tab.get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(BuiltinStatement::VT_LOC, None)
   }
   #[inline]
-  pub fn id(&self) -> Option<IdentifierExpression<'a>> {
-    self._tab.get::<flatbuffers::ForwardsUOffset<IdentifierExpression<'a>>>(BuiltinStatement::VT_ID, None)
+  pub fn id(&self) -> Option<Identifier<'a>> {
+    self._tab.get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(BuiltinStatement::VT_ID, None)
   }
 }
 
 pub struct BuiltinStatementArgs<'a> {
     pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a >>>,
-    pub id: Option<flatbuffers::WIPOffset<IdentifierExpression<'a >>>,
+    pub id: Option<flatbuffers::WIPOffset<Identifier<'a >>>,
 }
 impl<'a> Default for BuiltinStatementArgs<'a> {
     #[inline]
@@ -1522,8 +1522,8 @@ impl<'a: 'b, 'b> BuiltinStatementBuilder<'a, 'b> {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<SourceLocation>>(BuiltinStatement::VT_LOC, loc);
   }
   #[inline]
-  pub fn add_id(&mut self, id: flatbuffers::WIPOffset<IdentifierExpression<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<IdentifierExpression>>(BuiltinStatement::VT_ID, id);
+  pub fn add_id(&mut self, id: flatbuffers::WIPOffset<Identifier<'b >>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<Identifier>>(BuiltinStatement::VT_ID, id);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> BuiltinStatementBuilder<'a, 'b> {
@@ -2274,8 +2274,8 @@ impl<'a> NativeVariableAssignment<'a> {
     self._tab.get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(NativeVariableAssignment::VT_LOC, None)
   }
   #[inline]
-  pub fn identifier(&self) -> Option<IdentifierExpression<'a>> {
-    self._tab.get::<flatbuffers::ForwardsUOffset<IdentifierExpression<'a>>>(NativeVariableAssignment::VT_IDENTIFIER, None)
+  pub fn identifier(&self) -> Option<Identifier<'a>> {
+    self._tab.get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(NativeVariableAssignment::VT_IDENTIFIER, None)
   }
   #[inline]
   pub fn init__type(&self) -> Expression {
@@ -2489,7 +2489,7 @@ impl<'a> NativeVariableAssignment<'a> {
 
 pub struct NativeVariableAssignmentArgs<'a> {
     pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a >>>,
-    pub identifier: Option<flatbuffers::WIPOffset<IdentifierExpression<'a >>>,
+    pub identifier: Option<flatbuffers::WIPOffset<Identifier<'a >>>,
     pub init__type: Expression,
     pub init_: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
 }
@@ -2514,8 +2514,8 @@ impl<'a: 'b, 'b> NativeVariableAssignmentBuilder<'a, 'b> {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<SourceLocation>>(NativeVariableAssignment::VT_LOC, loc);
   }
   #[inline]
-  pub fn add_identifier(&mut self, identifier: flatbuffers::WIPOffset<IdentifierExpression<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<IdentifierExpression>>(NativeVariableAssignment::VT_IDENTIFIER, identifier);
+  pub fn add_identifier(&mut self, identifier: flatbuffers::WIPOffset<Identifier<'b >>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<Identifier>>(NativeVariableAssignment::VT_IDENTIFIER, identifier);
   }
   #[inline]
   pub fn add_init__type(&mut self, init__type: Expression) {
@@ -3780,8 +3780,8 @@ impl<'a> FunctionParameter<'a> {
     self._tab.get::<bool>(FunctionParameter::VT_IS_PIPE, Some(false)).unwrap()
   }
   #[inline]
-  pub fn key(&self) -> Option<IdentifierExpression<'a>> {
-    self._tab.get::<flatbuffers::ForwardsUOffset<IdentifierExpression<'a>>>(FunctionParameter::VT_KEY, None)
+  pub fn key(&self) -> Option<Identifier<'a>> {
+    self._tab.get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(FunctionParameter::VT_KEY, None)
   }
   #[inline]
   pub fn default_type(&self) -> Expression {
@@ -3996,7 +3996,7 @@ impl<'a> FunctionParameter<'a> {
 pub struct FunctionParameterArgs<'a> {
     pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a >>>,
     pub is_pipe: bool,
-    pub key: Option<flatbuffers::WIPOffset<IdentifierExpression<'a >>>,
+    pub key: Option<flatbuffers::WIPOffset<Identifier<'a >>>,
     pub default_type: Expression,
     pub default: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
 }
@@ -4026,8 +4026,8 @@ impl<'a: 'b, 'b> FunctionParameterBuilder<'a, 'b> {
     self.fbb_.push_slot::<bool>(FunctionParameter::VT_IS_PIPE, is_pipe, false);
   }
   #[inline]
-  pub fn add_key(&mut self, key: flatbuffers::WIPOffset<IdentifierExpression<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<IdentifierExpression>>(FunctionParameter::VT_KEY, key);
+  pub fn add_key(&mut self, key: flatbuffers::WIPOffset<Identifier<'b >>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<Identifier>>(FunctionParameter::VT_KEY, key);
   }
   #[inline]
   pub fn add_default_type(&mut self, default_type: Expression) {
@@ -7702,8 +7702,8 @@ impl<'a> Property<'a> {
     self._tab.get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(Property::VT_LOC, None)
   }
   #[inline]
-  pub fn key(&self) -> Option<IdentifierExpression<'a>> {
-    self._tab.get::<flatbuffers::ForwardsUOffset<IdentifierExpression<'a>>>(Property::VT_KEY, None)
+  pub fn key(&self) -> Option<Identifier<'a>> {
+    self._tab.get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(Property::VT_KEY, None)
   }
   #[inline]
   pub fn value_type(&self) -> Expression {
@@ -7917,7 +7917,7 @@ impl<'a> Property<'a> {
 
 pub struct PropertyArgs<'a> {
     pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a >>>,
-    pub key: Option<flatbuffers::WIPOffset<IdentifierExpression<'a >>>,
+    pub key: Option<flatbuffers::WIPOffset<Identifier<'a >>>,
     pub value_type: Expression,
     pub value: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
 }
@@ -7942,8 +7942,8 @@ impl<'a: 'b, 'b> PropertyBuilder<'a, 'b> {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<SourceLocation>>(Property::VT_LOC, loc);
   }
   #[inline]
-  pub fn add_key(&mut self, key: flatbuffers::WIPOffset<IdentifierExpression<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<IdentifierExpression>>(Property::VT_KEY, key);
+  pub fn add_key(&mut self, key: flatbuffers::WIPOffset<Identifier<'b >>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<Identifier>>(Property::VT_KEY, key);
   }
   #[inline]
   pub fn add_value_type(&mut self, value_type: Expression) {
@@ -8051,6 +8051,94 @@ impl<'a: 'b, 'b> IdentifierExpressionBuilder<'a, 'b> {
   }
   #[inline]
   pub fn finish(self) -> flatbuffers::WIPOffset<IdentifierExpression<'a>> {
+    let o = self.fbb_.end_table(self.start_);
+    flatbuffers::WIPOffset::new(o.value())
+  }
+}
+
+pub enum IdentifierOffset {}
+#[derive(Copy, Clone, Debug, PartialEq)]
+
+pub struct Identifier<'a> {
+  pub _tab: flatbuffers::Table<'a>,
+}
+
+impl<'a> flatbuffers::Follow<'a> for Identifier<'a> {
+    type Inner = Identifier<'a>;
+    #[inline]
+    fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+        Self {
+            _tab: flatbuffers::Table { buf: buf, loc: loc },
+        }
+    }
+}
+
+impl<'a> Identifier<'a> {
+    #[inline]
+    pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+        Identifier {
+            _tab: table,
+        }
+    }
+    #[allow(unused_mut)]
+    pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+        _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+        args: &'args IdentifierArgs<'args>) -> flatbuffers::WIPOffset<Identifier<'bldr>> {
+      let mut builder = IdentifierBuilder::new(_fbb);
+      if let Some(x) = args.name { builder.add_name(x); }
+      if let Some(x) = args.loc { builder.add_loc(x); }
+      builder.finish()
+    }
+
+    pub const VT_LOC: flatbuffers::VOffsetT = 4;
+    pub const VT_NAME: flatbuffers::VOffsetT = 6;
+
+  #[inline]
+  pub fn loc(&self) -> Option<SourceLocation<'a>> {
+    self._tab.get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(Identifier::VT_LOC, None)
+  }
+  #[inline]
+  pub fn name(&self) -> Option<&'a str> {
+    self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(Identifier::VT_NAME, None)
+  }
+}
+
+pub struct IdentifierArgs<'a> {
+    pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a >>>,
+    pub name: Option<flatbuffers::WIPOffset<&'a  str>>,
+}
+impl<'a> Default for IdentifierArgs<'a> {
+    #[inline]
+    fn default() -> Self {
+        IdentifierArgs {
+            loc: None,
+            name: None,
+        }
+    }
+}
+pub struct IdentifierBuilder<'a: 'b, 'b> {
+  fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+  start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+}
+impl<'a: 'b, 'b> IdentifierBuilder<'a, 'b> {
+  #[inline]
+  pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b >>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<SourceLocation>>(Identifier::VT_LOC, loc);
+  }
+  #[inline]
+  pub fn add_name(&mut self, name: flatbuffers::WIPOffset<&'b  str>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(Identifier::VT_NAME, name);
+  }
+  #[inline]
+  pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> IdentifierBuilder<'a, 'b> {
+    let start = _fbb.start_table();
+    IdentifierBuilder {
+      fbb_: _fbb,
+      start_: start,
+    }
+  }
+  #[inline]
+  pub fn finish(self) -> flatbuffers::WIPOffset<Identifier<'a>> {
     let o = self.fbb_.end_table(self.start_);
     flatbuffers::WIPOffset::new(o.value())
   }

@@ -51,12 +51,12 @@ func (rcv *FunctionParameter) MutateIsPipe(n bool) bool {
 	return rcv._tab.MutateBoolSlot(6, n)
 }
 
-func (rcv *FunctionParameter) Key(obj *IdentifierExpression) *IdentifierExpression {
+func (rcv *FunctionParameter) Key(obj *Identifier) *Identifier {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
 		if obj == nil {
-			obj = new(IdentifierExpression)
+			obj = new(Identifier)
 		}
 		obj.Init(rcv._tab.Bytes, x)
 		return obj
