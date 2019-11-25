@@ -81,8 +81,29 @@ func (rcv *IndexExpression) Index(obj *flatbuffers.Table) bool {
 	return false
 }
 
+func (rcv *IndexExpression) TypType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *IndexExpression) MutateTypType(n byte) bool {
+	return rcv._tab.MutateByteSlot(14, n)
+}
+
+func (rcv *IndexExpression) Typ(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
 func IndexExpressionStart(builder *flatbuffers.Builder) {
-	builder.StartObject(5)
+	builder.StartObject(7)
 }
 func IndexExpressionAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
@@ -98,6 +119,12 @@ func IndexExpressionAddIndexType(builder *flatbuffers.Builder, indexType byte) {
 }
 func IndexExpressionAddIndex(builder *flatbuffers.Builder, index flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(index), 0)
+}
+func IndexExpressionAddTypType(builder *flatbuffers.Builder, typType byte) {
+	builder.PrependByteSlot(5, typType, 0)
+}
+func IndexExpressionAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(typ), 0)
 }
 func IndexExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

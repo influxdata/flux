@@ -94,8 +94,29 @@ func (rcv *CallExpression) Pipe(obj *flatbuffers.Table) bool {
 	return false
 }
 
+func (rcv *CallExpression) TypType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *CallExpression) MutateTypType(n byte) bool {
+	return rcv._tab.MutateByteSlot(16, n)
+}
+
+func (rcv *CallExpression) Typ(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
 func CallExpressionStart(builder *flatbuffers.Builder) {
-	builder.StartObject(6)
+	builder.StartObject(8)
 }
 func CallExpressionAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
@@ -114,6 +135,12 @@ func CallExpressionAddPipeType(builder *flatbuffers.Builder, pipeType byte) {
 }
 func CallExpressionAddPipe(builder *flatbuffers.Builder, pipe flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(pipe), 0)
+}
+func CallExpressionAddTypType(builder *flatbuffers.Builder, typType byte) {
+	builder.PrependByteSlot(6, typType, 0)
+}
+func CallExpressionAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(typ), 0)
 }
 func CallExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

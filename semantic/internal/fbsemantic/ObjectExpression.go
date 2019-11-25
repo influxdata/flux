@@ -72,8 +72,29 @@ func (rcv *ObjectExpression) PropertiesLength() int {
 	return 0
 }
 
+func (rcv *ObjectExpression) TypType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *ObjectExpression) MutateTypType(n byte) bool {
+	return rcv._tab.MutateByteSlot(10, n)
+}
+
+func (rcv *ObjectExpression) Typ(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
 func ObjectExpressionStart(builder *flatbuffers.Builder) {
-	builder.StartObject(3)
+	builder.StartObject(5)
 }
 func ObjectExpressionAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
@@ -86,6 +107,12 @@ func ObjectExpressionAddProperties(builder *flatbuffers.Builder, properties flat
 }
 func ObjectExpressionStartPropertiesVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
+}
+func ObjectExpressionAddTypType(builder *flatbuffers.Builder, typType byte) {
+	builder.PrependByteSlot(3, typType, 0)
+}
+func ObjectExpressionAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(typ), 0)
 }
 func ObjectExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

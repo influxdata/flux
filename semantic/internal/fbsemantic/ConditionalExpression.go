@@ -102,8 +102,29 @@ func (rcv *ConditionalExpression) Consequent(obj *flatbuffers.Table) bool {
 	return false
 }
 
+func (rcv *ConditionalExpression) TypType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *ConditionalExpression) MutateTypType(n byte) bool {
+	return rcv._tab.MutateByteSlot(18, n)
+}
+
+func (rcv *ConditionalExpression) Typ(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
 func ConditionalExpressionStart(builder *flatbuffers.Builder) {
-	builder.StartObject(7)
+	builder.StartObject(9)
 }
 func ConditionalExpressionAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
@@ -125,6 +146,12 @@ func ConditionalExpressionAddConsequentType(builder *flatbuffers.Builder, conseq
 }
 func ConditionalExpressionAddConsequent(builder *flatbuffers.Builder, consequent flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(consequent), 0)
+}
+func ConditionalExpressionAddTypType(builder *flatbuffers.Builder, typType byte) {
+	builder.PrependByteSlot(7, typType, 0)
+}
+func ConditionalExpressionAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(typ), 0)
 }
 func ConditionalExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

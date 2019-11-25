@@ -93,8 +93,29 @@ func (rcv *BinaryExpression) Right(obj *flatbuffers.Table) bool {
 	return false
 }
 
+func (rcv *BinaryExpression) TypType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *BinaryExpression) MutateTypType(n byte) bool {
+	return rcv._tab.MutateByteSlot(16, n)
+}
+
+func (rcv *BinaryExpression) Typ(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
 func BinaryExpressionStart(builder *flatbuffers.Builder) {
-	builder.StartObject(6)
+	builder.StartObject(8)
 }
 func BinaryExpressionAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
@@ -113,6 +134,12 @@ func BinaryExpressionAddRightType(builder *flatbuffers.Builder, rightType byte) 
 }
 func BinaryExpressionAddRight(builder *flatbuffers.Builder, right flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(right), 0)
+}
+func BinaryExpressionAddTypType(builder *flatbuffers.Builder, typType byte) {
+	builder.PrependByteSlot(6, typType, 0)
+}
+func BinaryExpressionAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(typ), 0)
 }
 func BinaryExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

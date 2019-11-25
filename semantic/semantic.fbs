@@ -1,80 +1,159 @@
-namespace fbsemantic; 
+namespace fbsemantic;
+
+union MonoType {
+  Basic,
+  Var,
+  Arr,
+  Row,
+  Fun,
+}
+
+enum Type : ubyte {
+  Bool,
+  Int,
+  Uint,
+  Float,
+  String,
+  Duration,
+  Time,
+  Regexp,
+}
+
+table Var {
+  i:ulong;
+}
+
+table Basic {
+  t:Type;
+}
+
+// TODO: required directives have been commented out due to the following issue:
+// https://github.com/google/flatbuffers/issues/5055
+//
+// Uncomment when the fix https://github.com/google/flatbuffers/pull/5056 has
+// been released.
+
+table Arr {
+  t:MonoType /*(required)*/;
+}
+
+table Row {
+  props:[Prop] /*(required)*/;
+  extends:Var;
+}
+
+table Fun {
+  args:[Argument] /*(required)*/;
+  retn:MonoType   /*(required)*/;
+}
+
+table Argument {
+  name:string /*(required)*/;
+  t:MonoType  /*(required)*/;
+  pipe:bool;
+  optional:bool;
+}
+
+table Prop {
+  k:string   /*(required)*/;
+  v:MonoType /*(required)*/;
+}
+
+table PolyType {
+  vars:[Var]        /*(required)*/;
+  cons:[Constraint] /*(required)*/;
+  expr:MonoType     /*(required)*/;
+}
+
+enum Kind : ubyte {
+  Addable,
+  Subtractable,
+  Divisible,
+  Comparable,
+  Equatable,
+  Nullable,
+}
+
+table Constraint {
+  tvar:Var /*(required)*/;
+  kind:Kind;
+}
 
 union Statement {
-    OptionStatement,             
-    BuiltinStatement,            
-    TestStatement,               
-    ExpressionStatement,         
-    ReturnStatement,                
+  OptionStatement,
+  BuiltinStatement,
+  TestStatement,
+  ExpressionStatement,
+  ReturnStatement,
 }
 
 union Assignment {
-    MemberAssignment,            
-    NativeVariableAssignment, 
+  MemberAssignment,
+  NativeVariableAssignment,
 }
 
 union Expression  {
-    StringExpression,       
-    ArrayExpression,        
-    FunctionExpression,     
-    BinaryExpression,       
-    CallExpression,         
-    ConditionalExpression,  
-    IdentifierExpression,   
-    LogicalExpression,      
-    MemberExpression,       
-    IndexExpression,        
-    ObjectExpression,       
-    UnaryExpression,        
-    BooleanLiteral,          
-    DateTimeLiteral,         
-    DurationLiteral,         
-    FloatLiteral,            
-    IntegerLiteral,          
-    StringLiteral,           
-    RegexpLiteral,           
-    UnsignedIntegerLiteral,  
+  StringExpression,
+  ArrayExpression,
+  FunctionExpression,
+  BinaryExpression,
+  CallExpression,
+  ConditionalExpression,
+  IdentifierExpression,
+  LogicalExpression,
+  MemberExpression,
+  IndexExpression,
+  ObjectExpression,
+  UnaryExpression,
+  BooleanLiteral,
+  DateTimeLiteral,
+  DurationLiteral,
+  FloatLiteral,
+  IntegerLiteral,
+  StringLiteral,
+  RegexpLiteral,
+  UnsignedIntegerLiteral,
 }
 
 table Package {
-    loc:SourceLocation;  
-    package:string; 
-    files:[File];
+  loc:SourceLocation;
+  package:string;
+  files:[File];
 }
 
 table File {
-    loc:SourceLocation; 
-    package:PackageClause;
-    imports:[ImportDeclaration];
-    body:[WrappedStatement];
+  loc:SourceLocation;
+  package:PackageClause;
+  imports:[ImportDeclaration];
+  body:[WrappedStatement];
 }
 
 table PackageClause {
-    loc:SourceLocation;
-    name:Identifier;
+  loc:SourceLocation;
+  name:Identifier;
 }
 
 table ImportDeclaration {
-    loc:SourceLocation; 
-    alias:Identifier;
-    path:StringLiteral;
+  loc:SourceLocation;
+  alias:Identifier;
+  path:StringLiteral;
 }
 
 table Block {
-    loc:SourceLocation;
-    body:[WrappedStatement];
+  loc:SourceLocation;
+  body:[WrappedStatement];
 }
 
 table SourceLocation {
-    file:string;
-    start:Position;
-    end:Position;
-    source:string;
+  file:string;
+  start:Position;
+  end:Position;
+  source:string;
 }
 
 struct Position {
-    line:int;
-    column:int;
+  line:int;
+  column:int;
 }
 
 // Statements
@@ -82,44 +161,45 @@ struct Position {
 // Unions cannot be vector elements,
 // so wrap the union in a table.
 table WrappedStatement {
-    statement:Statement;
+  statement:Statement;
 }
 
 table OptionStatement {
-    loc:SourceLocation;
-    assignment:Assignment;
+  loc:SourceLocation;
+  assignment:Assignment;
 }
 
 table BuiltinStatement {
-    loc:SourceLocation; 
-    id:Identifier;
+  loc:SourceLocation;
+  id:Identifier;
 }
 
 table TestStatement {
-    loc:SourceLocation; 
-    assignment:NativeVariableAssignment;
+  loc:SourceLocation;
+  assignment:NativeVariableAssignment;
 }
 
 table ExpressionStatement {
-    loc:SourceLocation; 
-    expression:Expression; 
+  loc:SourceLocation;
+  expression:Expression;
 }
 
 table ReturnStatement {
-    loc:SourceLocation; 
-    argument:Expression; 
+  loc:SourceLocation;
+  argument:Expression;
 }
 
 table NativeVariableAssignment {
-    loc:SourceLocation;
-    identifier:Identifier;
-    init_:Expression; 
+  loc:SourceLocation;
+  identifier:Identifier;
+  init_:Expression;
+  typ:MonoType;
 }
 
 table MemberAssignment {
-    loc:SourceLocation; 
-    member:MemberExpression;
-    init_:Expression; 
+  loc:SourceLocation;
+  member:MemberExpression;
+  init_:Expression;
 }
 
 // Expressions
@@ -127,37 +207,40 @@ table MemberAssignment {
 // Unions cannot be vector elements,
 // so wrap the union in a table.
 table WrappedExpression {
-    expression:Expression;
+  expression:Expression;
 }
 
 table StringExpression {
-    loc:SourceLocation;
-    parts:[StringExpressionPart];
+  loc:SourceLocation;
+  parts:[StringExpressionPart];
+  typ:MonoType;
 }
 
 table StringExpressionPart {
-    loc:SourceLocation;
-    // Following two fields are mutually exclusive:
-    text_value:string; // for TextPart
-    interpolated_expression:Expression; // for InterpolatedPart
+  loc:SourceLocation;
+  // Following two fields are mutually exclusive:
+  text_value:string;// for TextPart
+  interpolated_expression:Expression;// for InterpolatedPart
 }
 
 table ArrayExpression {
-    loc:SourceLocation;
-    elements:[WrappedExpression];
+  loc:SourceLocation;
+  elements:[WrappedExpression];
+  typ:MonoType;
 }
 
 table FunctionExpression {
-    loc:SourceLocation;
-    params:[FunctionParameter]; 
-    body:Block;
+  loc:SourceLocation;
+  params:[FunctionParameter];
+  body:Block;
+  typ:MonoType;
 }
 
 table FunctionParameter {
-    loc:SourceLocation;
-    is_pipe: bool; 
-    key:Identifier;
-    default:Expression; 
+  loc:SourceLocation;
+  is_pipe: bool;
+  key:Identifier;
+  default:Expression;
 }
 
 enum Operator : byte {
@@ -190,92 +273,104 @@ enum LogicalOperator : byte {
 }
 
 table BinaryExpression {
-    loc:SourceLocation;
-    operator:Operator; 
-    left: Expression;
-    right: Expression;
+  loc:SourceLocation;
+  operator:Operator;
+  left: Expression;
+  right: Expression;
+  typ:MonoType;
 }
 
 table CallExpression {
-    loc:SourceLocation;
-    callee:Expression;
-    arguments:ObjectExpression;
-    pipe:Expression;
+  loc:SourceLocation;
+  callee:Expression;
+  arguments:ObjectExpression;
+  pipe:Expression;
+  typ:MonoType;
 }
 
 table ConditionalExpression {
-    loc:SourceLocation;
-    test:Expression;
-    alternate:Expression;
-    consequent:Expression;
+  loc:SourceLocation;
+  test:Expression;
+  alternate:Expression;
+  consequent:Expression;
+  typ:MonoType;
 }
 
 table LogicalExpression {
-    loc:SourceLocation;
-    operator:LogicalOperator;
-    left:Expression;
-    right:Expression;
+  loc:SourceLocation;
+  operator:LogicalOperator;
+  left:Expression;
+  right:Expression;
+  typ:MonoType;
 }
 
 table MemberExpression {
-    loc:SourceLocation;
-    object:Expression;
-    property:string;
+  loc:SourceLocation;
+  object:Expression;
+  property:string;
+  typ:MonoType;
 }
 
 table IndexExpression {
-    loc:SourceLocation;
-    array:Expression;
-    index:Expression;
+  loc:SourceLocation;
+  array:Expression;
+  index:Expression;
+  typ:MonoType;
 }
 
 table ObjectExpression {
-    loc:SourceLocation;
-    with:IdentifierExpression;
-    properties:[Property];
+  loc:SourceLocation;
+  with:IdentifierExpression;
+  properties:[Property];
+  typ:MonoType;
 }
 
 table UnaryExpression {
-    loc:SourceLocation;
-    operator:Operator;
-    argument:Expression;
+  loc:SourceLocation;
+  operator:Operator;
+  argument:Expression;
+  typ:MonoType;
 }
 
 table Property {
-    loc:SourceLocation;
-    key:Identifier;
-    value:Expression;
+  loc:SourceLocation;
+  key:Identifier;
+  value:Expression;
 }
 
-table IdentifierExpression   {
-    loc:SourceLocation;
-    name:string;
+table IdentifierExpression {
+  loc:SourceLocation;
+  name:string;
+  typ:MonoType;
 }
 
 table Identifier {
-    loc:SourceLocation;
-    name:string;
+  loc:SourceLocation;
+  name:string;
 }
 
 table BooleanLiteral {
-    loc:SourceLocation;
-    value:bool;
+  loc:SourceLocation;
+  value:bool;
+  typ:MonoType;
 }
 
 table DateTimeLiteral {
-    loc:SourceLocation;
-    value:Time;
+  loc:SourceLocation;
+  value:Time;
+  typ:MonoType;
 }
 
 table Time {
-    secs:int64;
-    nsecs:uint32;
-    offset:int32;
+  secs:int64;
+  nsecs:uint32;
+  offset:int32;
 }
 
 table DurationLiteral {
-    loc:SourceLocation;
-    value:[Duration];
+  loc:SourceLocation;
+  value:[Duration];
+  typ:MonoType;
 }
 
 enum TimeUnit : byte {
@@ -297,28 +392,33 @@ table Duration {
 }
 
 table IntegerLiteral {
-    loc:SourceLocation;
-    value:int64; 
+  loc:SourceLocation;
+  value:int64;
+  typ:MonoType;
 }
 
 table FloatLiteral {
-    loc:SourceLocation;
-    value:float64;
+  loc:SourceLocation;
+  value:float64;
+  typ:MonoType;
 }
 
 table RegexpLiteral {
-    loc:SourceLocation;
-    value:string;
+  loc:SourceLocation;
+  value:string;
+  typ:MonoType;
 }
 
 table StringLiteral {
-    loc:SourceLocation;
-    value:string;
+  loc:SourceLocation;
+  value:string;
+  typ:MonoType;
 }
 
 table UnsignedIntegerLiteral {
-    loc:SourceLocation;
-    value:uint64;
+  loc:SourceLocation;
+  value:uint64;
+  typ:MonoType;
 }
 
 root_type Package;

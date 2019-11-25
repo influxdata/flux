@@ -17,6 +17,9 @@ mod parser;
 #[cfg(test)]
 mod tests;
 
+#[allow(unused, non_snake_case)]
+mod flatbuffers;
+
 use crate::ast;
 use crate::parser::parse_string;
 use crate::semantic::analyze::Result;
