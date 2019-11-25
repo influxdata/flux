@@ -51,12 +51,12 @@ table File {
 
 table PackageClause {
     loc:SourceLocation;
-    name:IdentifierExpression;
+    name:Identifier;
 }
 
 table ImportDeclaration {
     loc:SourceLocation; 
-    alias:IdentifierExpression;
+    alias:Identifier;
     path:StringLiteral;
 }
 
@@ -92,7 +92,7 @@ table OptionStatement {
 
 table BuiltinStatement {
     loc:SourceLocation; 
-    id:IdentifierExpression; 
+    id:Identifier;
 }
 
 table TestStatement {
@@ -112,7 +112,7 @@ table ReturnStatement {
 
 table NativeVariableAssignment {
     loc:SourceLocation;
-    identifier:IdentifierExpression; 
+    identifier:Identifier;
     init_:Expression; 
 }
 
@@ -156,7 +156,7 @@ table FunctionExpression {
 table FunctionParameter {
     loc:SourceLocation;
     is_pipe: bool; 
-    key:IdentifierExpression;
+    key:Identifier;
     default:Expression; 
 }
 
@@ -243,11 +243,16 @@ table UnaryExpression {
 
 table Property {
     loc:SourceLocation;
-    key:IdentifierExpression; 
+    key:Identifier;
     value:Expression;
 }
 
 table IdentifierExpression   {
+    loc:SourceLocation;
+    name:string;
+}
+
+table Identifier {
     loc:SourceLocation;
     name:string;
 }
