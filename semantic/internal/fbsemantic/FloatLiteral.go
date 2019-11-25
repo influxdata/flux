@@ -51,14 +51,41 @@ func (rcv *FloatLiteral) MutateValue(n float64) bool {
 	return rcv._tab.MutateFloat64Slot(6, n)
 }
 
+func (rcv *FloatLiteral) TypType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *FloatLiteral) MutateTypType(n byte) bool {
+	return rcv._tab.MutateByteSlot(8, n)
+}
+
+func (rcv *FloatLiteral) Typ(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
 func FloatLiteralStart(builder *flatbuffers.Builder) {
-	builder.StartObject(2)
+	builder.StartObject(4)
 }
 func FloatLiteralAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
 }
 func FloatLiteralAddValue(builder *flatbuffers.Builder, value float64) {
 	builder.PrependFloat64Slot(1, value, 0.0)
+}
+func FloatLiteralAddTypType(builder *flatbuffers.Builder, typType byte) {
+	builder.PrependByteSlot(2, typType, 0)
+}
+func FloatLiteralAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(typ), 0)
 }
 func FloatLiteralEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

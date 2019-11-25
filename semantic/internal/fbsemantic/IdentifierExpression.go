@@ -47,14 +47,41 @@ func (rcv *IdentifierExpression) Name() []byte {
 	return nil
 }
 
+func (rcv *IdentifierExpression) TypType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *IdentifierExpression) MutateTypType(n byte) bool {
+	return rcv._tab.MutateByteSlot(8, n)
+}
+
+func (rcv *IdentifierExpression) Typ(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
 func IdentifierExpressionStart(builder *flatbuffers.Builder) {
-	builder.StartObject(2)
+	builder.StartObject(4)
 }
 func IdentifierExpressionAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
 }
 func IdentifierExpressionAddName(builder *flatbuffers.Builder, name flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(name), 0)
+}
+func IdentifierExpressionAddTypType(builder *flatbuffers.Builder, typType byte) {
+	builder.PrependByteSlot(2, typType, 0)
+}
+func IdentifierExpressionAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(typ), 0)
 }
 func IdentifierExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

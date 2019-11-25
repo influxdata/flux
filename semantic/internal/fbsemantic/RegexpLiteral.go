@@ -47,14 +47,41 @@ func (rcv *RegexpLiteral) Value() []byte {
 	return nil
 }
 
+func (rcv *RegexpLiteral) TypType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *RegexpLiteral) MutateTypType(n byte) bool {
+	return rcv._tab.MutateByteSlot(8, n)
+}
+
+func (rcv *RegexpLiteral) Typ(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
 func RegexpLiteralStart(builder *flatbuffers.Builder) {
-	builder.StartObject(2)
+	builder.StartObject(4)
 }
 func RegexpLiteralAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
 }
 func RegexpLiteralAddValue(builder *flatbuffers.Builder, value flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(value), 0)
+}
+func RegexpLiteralAddTypType(builder *flatbuffers.Builder, typType byte) {
+	builder.PrependByteSlot(2, typType, 0)
+}
+func RegexpLiteralAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(typ), 0)
 }
 func RegexpLiteralEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
