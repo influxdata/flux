@@ -266,104 +266,6 @@ func (rcv *FloatLiteral) FromBuf(fb *fbsemantic.FloatLiteral) error {
 	return nil
 }
 
-func (rcv *FunctionBlock) FromBuf(fb *fbsemantic.FunctionBlock) error {
-	var err error
-	if fb == nil {
-		return nil
-	}
-	if fbLoc := fb.Loc(nil); fbLoc != nil {
-		if err = rcv.loc.FromBuf(fbLoc); err != nil {
-			return errors.Wrap(err, codes.Inherit, "FunctionBlock.loc")
-		}
-	}
-	if fbParameters := fb.Parameters(nil); fbParameters != nil {
-		rcv.Parameters = new(FunctionParameters)
-		if err = rcv.Parameters.FromBuf(fbParameters); err != nil {
-			return errors.Wrap(err, codes.Inherit, "FunctionBlock.Parameters")
-		}
-	}
-	if rcv.Body, err = fromFBBlock(fb); err != nil {
-		return errors.Wrap(err, codes.Inherit, "FunctionBlock.Body")
-	}
-	return nil
-}
-
-func (rcv *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
-	var err error
-	if fb == nil {
-		return nil
-	}
-	if fbLoc := fb.Loc(nil); fbLoc != nil {
-		if err = rcv.loc.FromBuf(fbLoc); err != nil {
-			return errors.Wrap(err, codes.Inherit, "FunctionExpression.loc")
-		}
-	}
-	if fbDefaults := fb.Defaults(nil); fbDefaults != nil {
-		rcv.Defaults = new(ObjectExpression)
-		if err = rcv.Defaults.FromBuf(fbDefaults); err != nil {
-			return errors.Wrap(err, codes.Inherit, "FunctionExpression.Defaults")
-		}
-	}
-	if fbBlock := fb.Block(nil); fbBlock != nil {
-		rcv.Block = new(FunctionBlock)
-		if err = rcv.Block.FromBuf(fbBlock); err != nil {
-			return errors.Wrap(err, codes.Inherit, "FunctionExpression.Block")
-		}
-	}
-	return nil
-}
-
-func (rcv *FunctionParameter) FromBuf(fb *fbsemantic.FunctionParameter) error {
-	var err error
-	if fb == nil {
-		return nil
-	}
-	if fbLoc := fb.Loc(nil); fbLoc != nil {
-		if err = rcv.loc.FromBuf(fbLoc); err != nil {
-			return errors.Wrap(err, codes.Inherit, "FunctionParameter.loc")
-		}
-	}
-	if fbKey := fb.Key(nil); fbKey != nil {
-		rcv.Key = new(Identifier)
-		if err = rcv.Key.FromBuf(fbKey); err != nil {
-			return errors.Wrap(err, codes.Inherit, "FunctionParameter.Key")
-		}
-	}
-	return nil
-}
-
-func (rcv *FunctionParameters) FromBuf(fb *fbsemantic.FunctionParameters) error {
-	var err error
-	if fb == nil {
-		return nil
-	}
-	if fbLoc := fb.Loc(nil); fbLoc != nil {
-		if err = rcv.loc.FromBuf(fbLoc); err != nil {
-			return errors.Wrap(err, codes.Inherit, "FunctionParameters.loc")
-		}
-	}
-	if fb.ListLength() > 0 {
-		rcv.List = make([]*FunctionParameter, fb.ListLength())
-		for i := 0; i < fb.ListLength(); i++ {
-			fbFunctionParameter := new(fbsemantic.FunctionParameter)
-			if !fb.List(fbFunctionParameter, i) {
-				return errors.New(codes.Internal, "could not deserialize FunctionParameters.List")
-			}
-			rcv.List[i] = new(FunctionParameter)
-			if err = rcv.List[i].FromBuf(fbFunctionParameter); err != nil {
-				return errors.Wrap(err, codes.Inherit, "FunctionParameters.List")
-			}
-		}
-	}
-	if fbPipe := fb.Pipe(nil); fbPipe != nil {
-		rcv.Pipe = new(Identifier)
-		if err = rcv.Pipe.FromBuf(fbPipe); err != nil {
-			return errors.Wrap(err, codes.Inherit, "FunctionParameters.Pipe")
-		}
-	}
-	return nil
-}
-
 func (rcv *Identifier) FromBuf(fb *fbsemantic.Identifier) error {
 	var err error
 	if fb == nil {
@@ -402,7 +304,7 @@ func (rcv *ImportDeclaration) FromBuf(fb *fbsemantic.ImportDeclaration) error {
 			return errors.Wrap(err, codes.Inherit, "ImportDeclaration.loc")
 		}
 	}
-	if fbAs := fb.As(nil); fbAs != nil {
+	if fbAs := fb.Alias(nil); fbAs != nil {
 		rcv.As = new(Identifier)
 		if err = rcv.As.FromBuf(fbAs); err != nil {
 			return errors.Wrap(err, codes.Inherit, "ImportDeclaration.As")
@@ -637,7 +539,7 @@ func (rcv *Property) FromBuf(fb *fbsemantic.Property) error {
 			return errors.Wrap(err, codes.Inherit, "Property.loc")
 		}
 	}
-	if rcv.Key, err = fromPropertyKeyTable(fb.Key, fb.KeyType()); err != nil {
+	if rcv.Key, err = propertyKeyFromFBIdentifier(fb.Key(nil)); err != nil {
 		return errors.Wrap(err, codes.Inherit, "Property.Key")
 	}
 	if rcv.Value, err = fromExpressionTable(fb.Value, fb.ValueType()); err != nil {

@@ -275,41 +275,6 @@ func fromExpressionTable(getTable getTableFn, exprType fbsemantic.Expression) (E
 	}
 }
 
-func fromPropertyKeyTable(getTable getTableFn, keyType fbsemantic.PropertyKey) (PropertyKey, error) {
-	tbl := new(flatbuffers.Table)
-	if !getTable(tbl) {
-		if name, ok := fbsemantic.EnumNamesPropertyKey[keyType]; ok {
-			return nil, errors.Newf(codes.Internal, "missing property key with type %v", name)
-		} else {
-			return nil, errors.Newf(codes.Internal, "missing property key with unknown type (%v)", keyType)
-		}
-	}
-	switch keyType {
-	case fbsemantic.PropertyKeyIdentifier:
-		fbKey := new(fbsemantic.Identifier)
-		fbKey.Init(tbl.Bytes, tbl.Pos)
-		k := &Identifier{}
-		if err := k.FromBuf(fbKey); err != nil {
-			return nil, err
-		}
-		return k, nil
-	case fbsemantic.PropertyKeyStringLiteral:
-		fbKey := new(fbsemantic.StringLiteral)
-		fbKey.Init(tbl.Bytes, tbl.Pos)
-		k := &StringLiteral{}
-		if err := k.FromBuf(fbKey); err != nil {
-			return nil, err
-		}
-		return k, nil
-	default:
-		if name, ok := fbsemantic.EnumNamesPropertyKey[keyType]; ok {
-			return nil, errors.Newf(codes.Internal, "unhandled property key type %v", name)
-		} else {
-			return nil, errors.Newf(codes.Internal, "unknown property key type (%v)", keyType)
-		}
-	}
-}
-
 func fromAssignmentTable(getTable getTableFn, assignType fbsemantic.Assignment) (Assignment, error) {
 	tbl := new(flatbuffers.Table)
 	if !getTable(tbl) {
@@ -410,6 +375,15 @@ func fromFBLogicalOperator(o fbsemantic.Operator) (ast.LogicalOperatorKind, erro
 		}
 	}
 }
+
+func propertyKeyFromFBIdentifier(fbId *fbsemantic.Identifier) (PropertyKey, error) {
+	id := &Identifier{}
+	if err := id.FromBuf(fbId); err != nil {
+		return nil, err
+	}
+	return id, nil
+}
+
 func fromFBTime(fbTime *fbsemantic.Time) time.Time {
 	z := time.FixedZone("fbsem", int(fbTime.Offset()))
 	t := time.Unix(fbTime.Secs(), int64(fbTime.Nsecs()))
@@ -499,33 +473,87 @@ func fromFBRegexpLiteral(fbRegexp []byte) (*regexp.Regexp, error) {
 	return re, nil
 }
 
-func fromFBBlock(fbBlock *fbsemantic.FunctionBlock) (Node, error) {
-	fbBody := fbBlock.Body(nil)
-	if fbBody == nil {
-		return nil, errors.New(codes.Internal, "missing function body")
+func (e *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
+	if fbLoc := fb.Loc(nil); fbLoc != nil {
+		if err := e.loc.FromBuf(fbLoc); err != nil {
+			return errors.Wrap(err, codes.Inherit, "FunctionExpression.loc")
+		}
 	}
 
-	if fbBody.BodyLength() <= 0 {
-		return nil, errors.New(codes.Internal, "empty function body")
+	bl := new(FunctionBlock)
+	var defaults []*Property
+	{
+		bl.loc = e.loc
+		ps := &FunctionParameters{
+			loc: e.loc,
+		}
+		{
+			nParams := fb.ParamsLength()
+			ps.List = make([]*FunctionParameter, nParams)
+			for i := 0; i < nParams; i++ {
+				fbp := new(fbsemantic.FunctionParameter)
+				if !fb.Params(fbp, i) {
+					return errors.Newf(codes.Internal, "missing parameter at position %v", i)
+				}
+				p := new(FunctionParameter)
+				if err := p.FromBuf(fbp); err != nil {
+					return err
+				}
+				ps.List[i] = p
+
+				if fbp.Default(&flatbuffers.Table{}) {
+					e, err := fromExpressionTable(fbp.Default, fbp.DefaultType())
+					if err != nil {
+						return errors.Wrapf(err, codes.Inherit, "default for parameter at position %v", i)
+					}
+					defaults = append(defaults, &Property{
+						loc:   p.loc,
+						Key:   p.Key,
+						Value: e,
+					})
+				}
+
+				if fbp.IsPipe() {
+					ps.Pipe = p.Key
+				}
+			}
+		}
+		bl.Parameters = ps
+
+		fbBlock := fb.Body(nil)
+		if fbBlock == nil {
+			return errors.New(codes.Internal, "missing function body")
+		}
+		stmts := new(Block)
+		if err := stmts.FromBuf(fbBlock); err != nil {
+			return err
+		}
+		bl.Body = stmts
+	}
+	e.Block = bl
+
+	e.Defaults = &ObjectExpression{
+		loc:        e.loc,
+		Properties: defaults,
 	}
 
-	block := &Block{
-		Body: make([]Statement, fbBody.BodyLength()),
-	}
-	if fbLoc := fbBody.Loc(nil); fbLoc != nil {
-		if err := block.loc.FromBuf(fbLoc); err != nil {
-			return nil, errors.Wrap(err, codes.Inherit, "FunctionBlock.Body")
+	return nil
+}
+
+func (p *FunctionParameter) FromBuf(fb *fbsemantic.FunctionParameter) error {
+	if fbLoc := fb.Loc(nil); fbLoc != nil {
+		if err := p.loc.FromBuf(fbLoc); err != nil {
+			return errors.Wrap(err, codes.Inherit, "FunctionParameter.loc")
 		}
 	}
-	for i := 0; i < fbBody.BodyLength(); i++ {
-		ws := new(fbsemantic.WrappedStatement)
-		if !fbBody.Body(ws, i) {
-			return nil, errors.New(codes.Internal, "missing statement in function body")
-		}
-		var err error
-		if block.Body[i], err = fromWrappedStatement(ws); err != nil {
-			return nil, errors.New(codes.Internal, "FunctionBlock.Body")
-		}
+
+	fbKey := fb.Key(nil)
+	if fbKey == nil {
+		return errors.New(codes.Internal, "missing parameter")
 	}
-	return block, nil
+	p.Key = new(Identifier)
+	if err := p.Key.FromBuf(fbKey); err != nil {
+		return err
+	}
+	return nil
 }

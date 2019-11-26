@@ -151,11 +151,6 @@ table ImportDeclaration {
   path:StringLiteral;
 }
 
-table Block {
-  loc:SourceLocation;
-  body:[WrappedStatement];
-}
-
 table SourceLocation {
   file:string;
   start:Position;
@@ -253,6 +248,11 @@ table FunctionParameter {
   is_pipe: bool;
   key:Identifier;
   default:Expression;
+}
+
+table Block {
+  loc:SourceLocation;
+  body:[WrappedStatement];
 }
 
 enum Operator : byte {

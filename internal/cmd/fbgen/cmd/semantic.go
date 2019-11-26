@@ -172,7 +172,7 @@ func doNamed(o types.Object, field *types.Var) ([]jen.Code, error) {
 				),
 			),
 		)
-	case "Expression", "PropertyKey", "Assignment":
+	case "Expression", "Assignment":
 		helperFn := "from" + fieldType + "Table"
 		fbField := toFBName(o.Name(), field.Name())
 		codes = append(codes,
@@ -180,6 +180,18 @@ func doNamed(o types.Object, field *types.Var) ([]jen.Code, error) {
 				jen.Id(helperFn).Params(
 					jen.Id("fb").Dot(fbField),
 					jen.Id("fb").Dot(fbConcat(fbField, "Type")).Params(),
+				),
+				fieldForError,
+				jen.Id("rcv").Dot(field.Name()),
+			),
+		)
+	case "PropertyKey":
+		// PropertyKey can only be an identifier in Rust and FB, but is an interface
+		// (string literal or identifier) in Go.
+		codes = append(codes,
+			ifErrorPropagate(
+				jen.Id("propertyKeyFromFBIdentifier").Params(
+					jen.Id("fb").Dot(field.Name()).Params(jen.Nil()),
 				),
 				fieldForError,
 				jen.Id("rcv").Dot(field.Name()),
@@ -234,6 +246,7 @@ var (
 		{"MemberAssignment", "Init"}:         "Init_",
 		{"BuiltinStatement", "ID"}:           "Id",
 		{"DurationLiteral", "Values"}:        "Value",
+		{"ImportDeclaration", "As"}:          "Alias",
 	}
 )
 
@@ -426,9 +439,6 @@ func doPointer(o types.Object, field *types.Var) ([]jen.Code, error) {
 				),
 			)
 		case "Regexp":
-			//if rcv.Value, err = fromFBRegexpLiteral(fb); err != nil {
-			//	return errors.Wrap(err, codes.Inherit, "RegexpLiteral.Value")
-			//}
 			cs = append(cs,
 				ifErrorPropagate(
 					jen.Id("fromFBRegexpLiteral").Params(jen.Id("fb").Dot(field.Name()).Params()),
@@ -482,6 +492,10 @@ var skipNodes = map[string]struct{}{
 	"ExternalVariableAssignment": {},
 	"InterpolatedPart":           {},
 	"TextPart":                   {},
+	"FunctionExpression":         {},
+	"FunctionBlock":              {},
+	"FunctionParameter":          {},
+	"FunctionParameters":         {},
 }
 
 func skipObject(o types.Object) bool {
