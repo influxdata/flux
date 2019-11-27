@@ -2,9 +2,9 @@
 
 package libflux
 
-// #cgo CFLAGS: -I${SRCDIR}/../../include
+// #cgo CFLAGS: -I.
 // #cgo LDFLAGS: -L. -lflux
-// #include <influxdata/flux.h>
+// #include "flux.h"
 // #include <stdlib.h>
 import "C"
 
@@ -15,6 +15,8 @@ import (
 
 	"github.com/influxdata/flux/ast"
 )
+
+//go:generate cp ../../include/influxdata/flux.h flux.h
 
 // freeable indicates a resource that has memory
 // allocated to it outside of Go and must be freed.

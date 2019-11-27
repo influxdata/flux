@@ -1,6 +1,4 @@
-# Top level Makefile for the entire project
-#
-# This Makefile encodes the "go generate" prerequeisites ensuring that the proper tooling is installed and
+# This Makefile encodes the "go generate" prerequisites ensuring that the proper tooling is installed and
 # that the generate steps are executed when their prerequeisites files change.
 #
 # This Makefile follows a few conventions:
@@ -43,7 +41,8 @@ GENERATED_TARGETS = \
 	semantic/internal/fbsemantic \
 	libflux/src/ast/flatbuffers/ast_generated.rs \
 	libflux/src/semantic/flatbuffers/semantic_generated.rs \
-	libflux/scanner.c
+	libflux/scanner.c \
+	libflux/go/libflux/flux.h
 
 generate: $(GENERATED_TARGETS)
 
@@ -78,6 +77,9 @@ libflux: libflux/target/debug/libflux.a
 # command line interface than the gnu equivalent.
 libflux/target/debug/libflux.a:
 	cd libflux && $(CARGO) build $(CARGO_ARGS)
+
+libflux/go/libflux/flux.h: libflux/include/influxdata/flux.h
+	$(GO_GENERATE) ./libflux/go/libflux
 
 # The dependency file produced by Rust appears to be wrong and uses
 # absolute paths while we use relative paths everywhere. So we need
