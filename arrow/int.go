@@ -17,9 +17,7 @@ func NewInt(vs []int64, alloc *memory.Allocator) *array.Int64 {
 }
 
 func IntSlice(arr *array.Int64, i, j int) *array.Int64 {
-	data := array.NewSliceData(arr.Data(), int64(i), int64(j))
-	defer data.Release()
-	return array.NewInt64Data(data)
+	return Slice(arr, int64(i), int64(j)).(*array.Int64)
 }
 
 func NewIntBuilder(a *memory.Allocator) *array.Int64Builder {

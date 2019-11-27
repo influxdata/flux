@@ -128,10 +128,29 @@ func (l *GroupLookup) Lookup(key flux.GroupKey) (interface{}, bool) {
 	return nil, false
 }
 
+// LookupOrCreate will retrieve the value associated with the given key or,
+// if it does not exist, will invoke the function to create one and set
+// it in the group lookup.
+func (l *GroupLookup) LookupOrCreate(key flux.GroupKey, fn func() interface{}) interface{} {
+	group, ok := l.Lookup(key)
+	if !ok {
+		group = fn()
+		l.Set(key, group)
+	}
+	return group
+}
+
 // Set will set the value for the given key. It will overwrite an existing value.
 func (l *GroupLookup) Set(key flux.GroupKey, value interface{}) {
 	group := l.lookupGroup(key)
 	l.createOrSetInGroup(group, key, value)
+}
+
+// Clear will clear the group lookup and reset it to contain nothing.
+func (l *GroupLookup) Clear() {
+	l.lastIndex = -1
+	l.nextID = 1
+	l.groups = nil
 }
 
 // lookupGroup finds the group index where this key would be located if it were to

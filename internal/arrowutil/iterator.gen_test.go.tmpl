@@ -1,0 +1,48 @@
+package arrowutil_test
+
+import (
+	"math/rand"
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/influxdata/flux/internal/arrowutil"
+)
+
+{{range .}}
+func TestIterate{{.Name}}s(t *testing.T) {
+	arrs := make([]array.Interface, 0, 3)
+	for i := 0; i < 3; i++ {
+		b := arrowutil.New{{.Name}}Builder(memory.DefaultAllocator)
+		for j := 0; j < 100; j++ {
+			if 0.05 > rand.Float64() {
+				b.AppendNull()
+				continue
+			}
+			v := generate{{.Name}}()
+			b.{{.Append}}(v)
+		}
+		arrs = append(arrs, b.NewArray())
+	}
+
+	itr := arrowutil.Iterate{{.Name}}s(arrs)
+	for i := 0; i < 300; i++ {
+		if !itr.Next() {
+			t.Fatalf("expected next value, but got false at index %d", i)
+		}
+
+		arr := arrs[i/100].(*{{.Type}})
+		if want, got := arr.IsValid(i%100), itr.IsValid(); !cmp.Equal(want, got) {
+			t.Fatalf("unexpected valid value at index %d -want/+got:\n%s", i, cmp.Diff(want, got))
+		} else if want && got {
+			if want, got := arr.{{.Value}}(i%100), itr.{{.Value}}(); !cmp.Equal(want, got) {
+				t.Fatalf("unexpected value at index %d -want/+got:\n%s", i, cmp.Diff(want, got))
+			}
+		}
+		if want, got := arr.IsNull(i%100), itr.IsNull(); !cmp.Equal(want, got) {
+			t.Fatalf("unexpected null value at index %d -want/+got:\n%s", i, cmp.Diff(want, got))
+		}
+	}
+}
+{{end}}

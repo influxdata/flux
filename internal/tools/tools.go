@@ -1,6 +1,7 @@
 package tools
 
 import (
+	_ "github.com/benbjohnson/tmpl"
 	_ "github.com/goreleaser/goreleaser"
 	_ "github.com/influxdata/changelog"
 	_ "honnef.co/go/tools/cmd/staticcheck"

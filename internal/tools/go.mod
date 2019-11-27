@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/benbjohnson/tmpl v1.0.0
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/goreleaser/goreleaser v0.94.0

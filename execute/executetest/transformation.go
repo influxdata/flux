@@ -132,7 +132,7 @@ func ProcessTestHelper2(
 	}()
 
 	alloc := &memory.Allocator{}
-	store := newDataStore()
+	store := NewDataStore()
 	tx, d := create(RandomDatasetID(), alloc)
 	d.SetTriggerSpec(plan.DefaultTriggerSpec)
 	d.AddTransformation(store)
@@ -179,24 +179,24 @@ func ProcessTestHelper2(
 	}
 }
 
-// dataStore will store the incoming tables from an upstream transformation or source.
-type dataStore struct {
+// DataStore will store the incoming tables from an upstream transformation or source.
+type DataStore struct {
 	tables *execute.GroupLookup
 	err    error
 }
 
-func newDataStore() *dataStore {
-	return &dataStore{
+func NewDataStore() *DataStore {
+	return &DataStore{
 		tables: execute.NewGroupLookup(),
 	}
 }
 
-func (d *dataStore) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
+func (d *DataStore) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	d.tables.Delete(key)
 	return nil
 }
 
-func (d *dataStore) Process(id execute.DatasetID, tbl flux.Table) error {
+func (d *DataStore) Process(id execute.DatasetID, tbl flux.Table) error {
 	tbl, err := execute.CopyTable(tbl)
 	if err != nil {
 		return err
@@ -205,21 +205,21 @@ func (d *dataStore) Process(id execute.DatasetID, tbl flux.Table) error {
 	return nil
 }
 
-func (d *dataStore) UpdateWatermark(id execute.DatasetID, t execute.Time) error {
+func (d *DataStore) UpdateWatermark(id execute.DatasetID, t execute.Time) error {
 	return nil
 }
 
-func (d *dataStore) UpdateProcessingTime(id execute.DatasetID, t execute.Time) error {
+func (d *DataStore) UpdateProcessingTime(id execute.DatasetID, t execute.Time) error {
 	return nil
 }
 
-func (d *dataStore) Finish(id execute.DatasetID, err error) {
+func (d *DataStore) Finish(id execute.DatasetID, err error) {
 	if err != nil {
 		d.err = err
 	}
 }
 
-func (d *dataStore) Table(key flux.GroupKey) (flux.Table, error) {
+func (d *DataStore) Table(key flux.GroupKey) (flux.Table, error) {
 	data, ok := d.tables.Lookup(key)
 	if !ok {
 		return nil, errors.Newf(codes.Internal, "table with key %v not found", key)
@@ -227,13 +227,15 @@ func (d *dataStore) Table(key flux.GroupKey) (flux.Table, error) {
 	return data.(flux.Table), nil
 }
 
-func (d *dataStore) ForEach(f func(key flux.GroupKey)) {
+func (d *DataStore) Err() error { return d.err }
+
+func (d *DataStore) ForEach(f func(key flux.GroupKey)) {
 	d.tables.Range(func(key flux.GroupKey, _ interface{}) {
 		f(key)
 	})
 }
 
-func (d *dataStore) ForEachWithContext(f func(flux.GroupKey, execute.Trigger, execute.TableContext)) {
+func (d *DataStore) ForEachWithContext(f func(flux.GroupKey, execute.Trigger, execute.TableContext)) {
 	d.tables.Range(func(key flux.GroupKey, _ interface{}) {
 		f(key, nil, execute.TableContext{
 			Key: key,
@@ -241,16 +243,69 @@ func (d *dataStore) ForEachWithContext(f func(flux.GroupKey, execute.Trigger, ex
 	})
 }
 
-func (d *dataStore) DiscardTable(key flux.GroupKey) {
+func (d *DataStore) DiscardTable(key flux.GroupKey) {
 	d.tables.Delete(key)
 }
 
-func (d *dataStore) ExpireTable(key flux.GroupKey) {
+func (d *DataStore) ExpireTable(key flux.GroupKey) {
 	d.tables.Delete(key)
 }
 
-func (d *dataStore) SetTriggerSpec(t plan.TriggerSpec) {
+func (d *DataStore) SetTriggerSpec(t plan.TriggerSpec) {
 }
+
+func ProcessBenchmarkHelper(
+	b *testing.B,
+	genInput func(alloc *memory.Allocator) (flux.TableIterator, error),
+	create func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset),
+) {
+	b.Helper()
+
+	defer func() {
+		if err := recover(); err != nil {
+			debug.PrintStack()
+			b.Fatalf("caught panic: %v", err)
+		}
+	}()
+
+	alloc := &memory.Allocator{}
+	parentID := RandomDatasetID()
+	tables, err := genInput(alloc)
+	if err != nil {
+		b.Fatalf("unexpected error: %s", err)
+	}
+
+	store := NewDevNullStore()
+	tx, d := create(RandomDatasetID(), alloc)
+	d.SetTriggerSpec(plan.DefaultTriggerSpec)
+	d.AddTransformation(store)
+
+	if err := tables.Do(func(table flux.Table) error {
+		return tx.Process(parentID, table)
+	}); err != nil {
+		b.Fatalf("unexpected error: %s", err)
+	}
+
+	// We always return a fatal error on failure so
+	// we only get here when the error is nil.
+	tx.Finish(parentID, nil)
+}
+
+type devNullStore struct{}
+
+func NewDevNullStore() execute.Transformation {
+	return devNullStore{}
+}
+
+func (d devNullStore) RetractTable(id execute.DatasetID, key flux.GroupKey) error { return nil }
+func (d devNullStore) Process(id execute.DatasetID, tbl flux.Table) error {
+	return tbl.Do(func(flux.ColReader) error {
+		return nil
+	})
+}
+func (d devNullStore) UpdateWatermark(id execute.DatasetID, t execute.Time) error      { return nil }
+func (d devNullStore) UpdateProcessingTime(id execute.DatasetID, t execute.Time) error { return nil }
+func (d devNullStore) Finish(id execute.DatasetID, err error)                          {}
 
 // Some transformations need to take a URL e.g. sql.to, kafka.to
 // the URL/DSN supplied by the user need to be validated by a URLValidator{}
