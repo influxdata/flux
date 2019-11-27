@@ -685,6 +685,7 @@ var pkgAST = &ast.Package{
 						Name: "trimSuffix",
 					},
 				}},
+				With: nil,
 			},
 		}},
 		Imports: nil,

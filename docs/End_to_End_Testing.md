@@ -10,11 +10,16 @@ End-to-end test must be included as a part of a PR for any contribution to Flux 
 
 Please help us make the contribution process easier by providing feedback about your experience and any technical hurdles you encountered here.
 
-### Pure Flux Code Functions Guidelines
+### Pure Flux Code Function Test Guidelines
 
-If you add a new [test](../stdlib/testing/testdata), our test framework automatically detects the file and tests it. To ensure your file passes the test, consider the correct form of simple_max.flux:
+--The file name must end with _test.flux
+-Tests are now adjacent to their go files. For examples [columns_test.flux](../stdlib/universe/columns_test.flux) is adjacent to [columns.go](./stdlib/universe/columns.gp)
+-The package must be named after the containing folder. For example, in [universe](../stdlib/universe/), the test must start with package universe_test. 
+-Also, remember to ```make generate``` before adding files to the commit.
 
-package testdata_test
+Example Test:
+
+package universe_test
  
 import "testing"
 
