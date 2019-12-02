@@ -20,7 +20,7 @@ kind        = IDENTIFIER
 monotype    = type_var | primitive | array | row | function
 
 type_var    = 't' ([0-9])*
-primitive   = INT | FLOAT | STRING | BOOL | DURATION | TIME | REGEXP 
+primitive   = INT | FLOAT | STRING | BOOL | DURATION | TIME | REGEXP | BYTES
 array       = '[' monotype ']'
 row         = '{' properties? '}'
 function    = '(' arguments? ')' '->' monotype
@@ -41,6 +41,7 @@ BOOL        = 'bool'
 DURATION    = 'duration'
 TIME        = 'time'
 REGEXP      = 'regexp'
+BYTES       = 'bytes'
 IDENTIFIER  = [a-zA-Z_] ([0-9a-zA-Z_])*
 WHITESPACE  = [ \t\r\n]+ -> skip
 ```

@@ -13,6 +13,7 @@ const (
 	TypeDuration Type = 5
 	TypeTime     Type = 6
 	TypeRegexp   Type = 7
+	TypeBytes    Type = 8
 )
 
 var EnumNamesType = map[Type]string{
@@ -24,4 +25,5 @@ var EnumNamesType = map[Type]string{
 	TypeDuration: "Duration",
 	TypeTime:     "Time",
 	TypeRegexp:   "Regexp",
+	TypeBytes:    "Bytes",
 }

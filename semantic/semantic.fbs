@@ -17,6 +17,7 @@ enum Type : ubyte {
   Duration,
   Time,
   Regexp,
+  Bytes,
 }
 
 table Var {

@@ -21,6 +21,7 @@ pub enum TokenType {
     DURATION,
     TIME,
     REGEXP,
+    BYTES,
 
     // Operators
     LEFTCURLYBRAC,
@@ -141,6 +142,7 @@ impl Lexer<'_> {
             "duration" => TokenType::DURATION,
             "time" => TokenType::TIME,
             "regexp" => TokenType::REGEXP,
+            "bytes" => TokenType::BYTES,
             _ => TokenType::IDENTIFIER,
         }
     }
@@ -416,6 +418,10 @@ impl Parser<'_> {
                 self.next();
                 Ok(MonoType::Regexp)
             }
+            TokenType::BYTES => {
+                self.next();
+                Ok(MonoType::Bytes)
+            }
             _ => Err("Not a valid basic type"),
         }
     }
@@ -455,7 +461,21 @@ impl Parser<'_> {
         let mut req_args = HashMap::new();
         let mut opt_args = HashMap::new();
         let mut pipe_arg = None;
+        let mut need_comma = false;
         loop {
+            if token.token_type == TokenType::RIGHTPAREN {
+                // end of arguments
+                break;
+            }
+
+            if need_comma {
+                if token.token_type == TokenType::COMMA {
+                    token = self.next();
+                } else {
+                    return Err("expected comma between arguments");
+                }
+            }
+
             if token.token_type == TokenType::IDENTIFIER {
                 if let Ok(arg) = self.parse_required_optional(&token) {
                     req_args.insert(arg.0, arg.1);
@@ -482,12 +502,9 @@ impl Parser<'_> {
             } else {
                 return Err("Invalid arguments for this function.");
             }
-            token = self.next(); // check if next is right paren or comma
-            if token.token_type != TokenType::COMMA {
-                // if the next token is not comma, must be right paren
-                break;
-            }
-            token = self.next(); // if its a comma, then there are more args to parse
+
+            token = self.next();
+            need_comma = true;
         }
 
         if token.token_type != TokenType::RIGHTPAREN {
@@ -771,6 +788,14 @@ mod tests {
         };
 
         assert_eq!(Ok(output), parse(text));
+
+        let text = "forall [] bytes";
+        let output = PolyType {
+            vars: vec![],
+            cons: HashMap::new(),
+            expr: MonoType::Bytes,
+        };
+        assert_eq!(Ok(output), parse(text));
     }
 
     #[test]
@@ -1049,6 +1074,19 @@ mod tests {
                 opt,
                 pipe,
                 retn: MonoType::Int,
+            })),
+        };
+        assert_eq!(Ok(output), parse(text));
+
+        let text = "forall [] () -> bytes";
+        let output = PolyType {
+            vars: vec![],
+            cons: HashMap::new(),
+            expr: MonoType::Fun(Box::new(Function {
+                req: HashMap::new(),
+                opt: HashMap::new(),
+                pipe: None,
+                retn: MonoType::Bytes,
             })),
         };
         assert_eq!(Ok(output), parse(text));
@@ -2407,6 +2445,29 @@ mod tests {
                 },
             ],
             ids
+        );
+
+        let toks = lex("byte bytes bytess");
+        assert_eq!(
+            vec![
+                Token {
+                    token_type: TokenType::IDENTIFIER,
+                    text: Some("byte".to_string()),
+                },
+                Token {
+                    token_type: TokenType::BYTES,
+                    text: Some("bytes".to_string()),
+                },
+                Token {
+                    token_type: TokenType::IDENTIFIER,
+                    text: Some("bytess".to_string()),
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    text: None
+                },
+            ],
+            toks,
         );
     }
 }
