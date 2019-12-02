@@ -112,6 +112,18 @@ type PivotProcedureSpec struct {
 	RowKey      []string
 	ColumnKey   []string
 	ValueColumn string
+
+	// IsSortedByFunc is a function that can be set by the planner
+	// that can be used to determine if the parent is sorted by
+	// the given columns.
+	// TODO(jsternberg): See https://github.com/influxdata/flux/issues/2131 for details.
+	IsSortedByFunc func(cols []string, desc bool) bool
+
+	// IsKeyColumnFunc is a function that can be set by the planner
+	// that can be used to determine if the given column would be
+	// part of the group key if it were present.
+	// TODO(jsternberg): See https://github.com/influxdata/flux/issues/2131 for details.
+	IsKeyColumnFunc func(label string) bool
 }
 
 func newPivotProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -142,10 +154,29 @@ func (s *PivotProcedureSpec) Copy() plan.ProcedureSpec {
 	return ns
 }
 
+func (s *PivotProcedureSpec) isSortedBy(cols []string, desc bool) bool {
+	if s.IsSortedByFunc != nil {
+		return s.IsSortedByFunc(cols, desc)
+	}
+	return false
+}
+
+func (s *PivotProcedureSpec) isKeyColumn(label string) bool {
+	if s.IsKeyColumnFunc != nil {
+		return s.IsKeyColumnFunc(label)
+	}
+	return false
+}
+
 func createPivotTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*PivotProcedureSpec)
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
+	}
+
+	// Attempt to use the new pivot transformation if it is implemented for our inputs.
+	if t, d, err := newPivotTransformation2(a.Context(), *s, id, a.Allocator()); err == nil || flux.ErrorCode(err) != codes.Unimplemented {
+		return t, d, err
 	}
 
 	cache := execute.NewTableBuilderCache(a.Allocator())
@@ -407,11 +438,15 @@ type pivotTransformation2 struct {
 }
 
 func newPivotTransformation2(ctx context.Context, spec PivotProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
-	if len(spec.RowKey) > 1 {
-		return nil, nil, errors.New(codes.Unimplemented, "multiple row keys are not implemented")
+	if len(spec.RowKey) != 1 {
+		return nil, nil, errors.New(codes.Unimplemented, "only pivots with 1 row key are implemented")
+	} else if !spec.isSortedBy(spec.RowKey, false) {
+		return nil, nil, errors.New(codes.Unimplemented, "input must be sorted by the row key")
 	}
-	if len(spec.ColumnKey) > 1 {
-		return nil, nil, errors.New(codes.Unimplemented, "multiple column keys are not implemented")
+	if len(spec.ColumnKey) != 1 {
+		return nil, nil, errors.New(codes.Unimplemented, "only pivots with 1 column key are implemented")
+	} else if !spec.isKeyColumn(spec.ColumnKey[0]) {
+		return nil, nil, errors.New(codes.Unimplemented, "column key must be part of the group key")
 	}
 	t := &pivotTransformation2{
 		d:      execute.NewPassthroughDataset(id),

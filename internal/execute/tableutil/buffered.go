@@ -11,6 +11,7 @@ import (
 // BufferedTable represents a table of buffered column readers.
 type BufferedTable struct {
 	used     int32
+	empty    bool
 	GroupKey flux.GroupKey
 	Columns  []flux.ColMeta
 	Buffers  []flux.ColReader
@@ -45,8 +46,12 @@ func (b *BufferedTable) Do(f func(flux.ColReader) error) error {
 		}
 	}()
 
+	b.empty = true
 	for ; i < len(b.Buffers); i++ {
 		cr := b.Buffers[i]
+		if cr.Len() > 0 {
+			b.empty = false
+		}
 		if err := f(cr); err != nil {
 			return err
 		}
@@ -57,6 +62,7 @@ func (b *BufferedTable) Do(f func(flux.ColReader) error) error {
 
 func (b *BufferedTable) Done() {
 	if atomic.CompareAndSwapInt32(&b.used, 0, 1) {
+		b.empty = b.isEmpty()
 		for _, buf := range b.Buffers {
 			buf.Release()
 		}
@@ -65,6 +71,13 @@ func (b *BufferedTable) Done() {
 }
 
 func (b *BufferedTable) Empty() bool {
+	if atomic.LoadInt32(&b.used) != 0 {
+		return b.empty
+	}
+	return b.isEmpty()
+}
+
+func (b *BufferedTable) isEmpty() bool {
 	for _, buf := range b.Buffers {
 		if buf.Len() > 0 {
 			return false

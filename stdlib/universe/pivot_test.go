@@ -1324,7 +1324,14 @@ func TestPivot2_Process(t *testing.T) {
 				tc.want,
 				nil,
 				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-					tr, d, err := universe.NewPivotTransformation2(context.Background(), *tc.spec, id, alloc)
+					spec := *tc.spec
+					spec.IsKeyColumnFunc = func(label string) bool {
+						return true
+					}
+					spec.IsSortedByFunc = func(cols []string, desc bool) bool {
+						return true
+					}
+					tr, d, err := universe.NewPivotTransformation2(context.Background(), spec, id, alloc)
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -1339,6 +1346,12 @@ func TestPivot2_Process_VariousSchemas(t *testing.T) {
 		RowKey:      []string{"_time"},
 		ColumnKey:   []string{"_field"},
 		ValueColumn: "_value",
+		IsKeyColumnFunc: func(label string) bool {
+			return true
+		},
+		IsSortedByFunc: func(cols []string, desc bool) bool {
+			return true
+		},
 	}
 	mem := &memory.Allocator{}
 	id := executetest.RandomDatasetID()
@@ -1397,6 +1410,12 @@ func benchmarkPivot(b *testing.B, n int) {
 		RowKey:      []string{execute.DefaultTimeColLabel},
 		ColumnKey:   []string{"_field"},
 		ValueColumn: execute.DefaultValueColLabel,
+		IsSortedByFunc: func(cols []string, desc bool) bool {
+			return true
+		},
+		IsKeyColumnFunc: func(label string) bool {
+			return true
+		},
 	}
 	for i := 0; i < b.N; i++ {
 		executetest.ProcessBenchmarkHelper(b,
