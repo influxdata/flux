@@ -5,7 +5,11 @@ Create new stream transformation functions in Go.
 ## Required guidelines
 
 - Stream transformation functions must conform to the examples in [universe](../stdlib/universe) and include the required function and methods shown in the table below.
-- You must submit a unit test in in the same folder as the new stream transformation function implementation.
+- You must submit a unit test in in the same folder as the new stream transformation function implementation. Please take a look at [colummns_test.go](stdlib/universe/columns_test.go) for an example. 
+    Each unit test should test that:
+    - It is possible to create a new query from flux source with the new function that errors in the correct cases (```Test<functionname>_NewQuery```)
+    - OpSpec marshaling (```Test<functionname>Operation_Marshaling```)
+    - That the function actually works (```Test<functionname>_Process```)
 - You must submit an end-to-end test in [testdata](../stdlib/testing/testdata). Please look at [End_to_End_Testing.md](./docs/End_to_End_Testing.md) for details.
 - You must add a description of the function to [SPEC.md](/SPEC.md).
 
@@ -20,12 +24,12 @@ Please look at [shift.go](../stdlib/universe/shift.go)
 3. `OpSpec`: An internal representation that defines the function signature and gets converted into Procedure Spec. Identifies and collects function arguments and then encodes them into a JSON-encodable struct.
 
 4. `ProcedureSpec`:
--Identifies and collects function arguments and then encodes them into a JSON-encodable struct.
--Identifies the incoming Op-Spec.
--Copies incoming values and converts them if needed.
--Creates the data transformation plan.
--Is optimized by the query planner, which passes the plan for transforming the data.
--Optimized by the quert planner, which passes the plan into the execution engine.
--This plan is then converted into the Transfromation type.
+- Identifies and collects function arguments and then encodes them into a JSON-encodable struct.
+- Identifies the incoming Op-Spec.
+- Copies incoming values and converts them if needed.
+- Creates the data transformation plan.
+- Is optimized by the query planner, which passes the plan for transforming the data.
+- Optimized by the query planner, which passes the plan into the execution engine.
+- This plan is then converted into the Transformation type.
 
 5. `Transformation`: Bulk of the script responsible for transforming data.

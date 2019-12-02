@@ -12,21 +12,23 @@ Please help us make the contribution process easier by providing feedback about 
 
 ### Pure Flux Code Function Test Guidelines
 
---The file name must end with _test.flux
--Tests are now adjacent to their go files. For examples [columns_test.flux](../stdlib/universe/columns_test.flux) is adjacent to [columns.go](./stdlib/universe/columns.gp)
--The package must be named after the containing folder. For example, in [universe](../stdlib/universe/), the test must start with package universe_test. 
--Also, remember to ```make generate``` before adding files to the commit.
+- The file name must end with _test.flux
+- Tests are now adjacent to their go files. For examples [columns_test.flux](../stdlib/universe/columns_test.flux) is adjacent to [columns.go](./stdlib/universe/columns.gp)
+- The package must be named after the containing folder. For example, in [universe](../stdlib/universe/), the test must start with package universe_test. 
+- Also, remember to ```make generate``` before adding files to the commit.
 
 Example Test:
-
+```
 package universe_test
  
 import "testing"
 
--Set this option to a distant future so that queries based on ```now()``` will be consistent
+```
+
+- Set this option to a distant future so that queries based on ```now()``` will be consistent
 ```option now = () => (2030-01-01T00:00:00Z)```
 
--In the correct format, copy the data from another test, or run a query via HTTP using `curl` 
+- In the correct format, copy the data from another test, or run a query via HTTP using `curl` 
 ```
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,double
@@ -38,7 +40,7 @@ inData = "
 "
 ```
 
--To generate output data do one of the following
+- To generate output data do one of the following
 * Run the utility [here](../cmd/refactortests) to help generate the outData.  
 * Build data manually.  
 ```
@@ -51,20 +53,22 @@ outData = "
 "
 ```
 
--The following code is the actual test.  The query inputs tables with inData and outputs equivalent tables with outDtata.
+- The following code is the actual test.  The query inputs tables with inData and outputs equivalent tables with outDtata.
+
 ```
-// This query is source-independent. The test framework will gather the inData and outData into tables and then execute this function on them.  
+// ]This query is source-independent. The test framework will gather the inData and outData into tables and then execute this function on them.  
 simple_max = (table=<-) =>
 	table
 		|> range(start: 2018-04-17T00:00:00Z)
 		|> max(column: "_value")`
 ```
 
--Register the test with our test platform.  
-```test _simple_max = () =>
+- Register the test with our test platform.  
+```
+test _simple_max = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: simple_max})
 ```
 
--After registering your test with our test platform, we load your data, run the test, and then check the output.
- A failed test will print a ```diff```
+- After registering your test with our test platform, we load your data, run the test, and then check the output.
+ A failed test will print a ```diff```. Again, remember to run ```make generate``` before adding files to the commit. 
 
