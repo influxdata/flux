@@ -3353,7 +3353,7 @@ _f = (table=<-) => table
         and r._field == "req_bytes"
         and r.endpoint == "/api/v2/write"
         and r.status == "204"
-        and (strings.containsStr(v: r.hostname, substr: "gateway-internal") != true)
+        and r.hostname !~ /^gateway-internal/
     )
     |> group()
     |> aggregateWindow(every: 1h, fn: sum)

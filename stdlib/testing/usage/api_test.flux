@@ -1686,10 +1686,10 @@ _f = (table=<-) => table
     |> filter(fn: (r) =>
         r.org_id == "03cbe13cce931000"
         and r._measurement == "http_request"
-        and ((r.endpoint == "/api/v2/write" and
-            r._field == "req_bytes" and
-            strings.containsStr(v: r.hostname, substr: "gateway-internal") != true)  or
-        (r.endpoint == "/api/v2/query" and r._field == "resp_bytes"))
+        and ((r.endpoint == "/api/v2/write"
+            and r._field == "req_bytes"
+            and r.hostname !~ /^gateway-internal/)
+        or (r.endpoint == "/api/v2/query" and r._field == "resp_bytes"))
     )
     |> group()
     |> aggregateWindow(every: 1h, fn: count)
