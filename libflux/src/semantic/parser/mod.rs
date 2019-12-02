@@ -88,7 +88,7 @@ impl Lexer<'_> {
         match self.source.next() {
             None => None,
             Some(letter) => {
-                if letter.is_alphanumeric() {
+                if is_id_char(letter) {
                     self.current_string.push(letter);
                 }
                 Some(letter)
@@ -122,7 +122,7 @@ impl Lexer<'_> {
 
     fn keyword_or_ident(&mut self) -> TokenType {
         while let Some(letter) = self.source.peek() {
-            if letter.is_alphanumeric() {
+            if is_id_char(*letter) {
                 self.next();
                 continue;
             }
@@ -146,10 +146,18 @@ impl Lexer<'_> {
     }
 }
 
+fn is_id_char(c: char) -> bool {
+    if c.is_alphanumeric() {
+        true
+    } else {
+        c.eq(&'_')
+    }
+}
+
 // lex_token lexes and returns a single token
 fn lex_token(lexer: &mut Lexer) -> Option<TokenType> {
     match lexer.next() {
-        Some(letter) if letter.is_alphanumeric() => Some(lexer.keyword_or_ident()),
+        Some(letter) if is_id_char(letter) => Some(lexer.keyword_or_ident()),
         Some(letter) if letter.is_whitespace() => Some(TokenType::WHITESPACE),
         Some(letter) if letter == '{' => Some(TokenType::LEFTCURLYBRAC),
         Some(letter) if letter == '}' => Some(TokenType::RIGHTCURLYBRAC),
@@ -1017,6 +1025,33 @@ mod tests {
         };
 
         assert_eq!(Ok(output), parse(text));
+
+        let text = "forall [] (_p1: int, ?p_2: int, <-_p3: string) -> int";
+        let req = {
+            let mut m = HashMap::new();
+            m.insert("_p1".to_string(), MonoType::Int);
+            m
+        };
+        let opt = {
+            let mut m = HashMap::new();
+            m.insert("p_2".to_string(), MonoType::Int);
+            m
+        };
+        let pipe = Some(Property {
+            k: "_p3".to_string(),
+            v: MonoType::String,
+        });
+        let output = PolyType {
+            vars: vec![],
+            cons: HashMap::new(),
+            expr: MonoType::Fun(Box::new(Function {
+                req,
+                opt,
+                pipe,
+                retn: MonoType::Int,
+            })),
+        };
+        assert_eq!(Ok(output), parse(text));
     }
 
     #[test]
@@ -1127,6 +1162,28 @@ mod tests {
                         },
                         tail: MonoType::Row(Box::new(Row::Empty)),
                     })),
+                })),
+            })),
+        };
+
+        assert_eq!(Ok(output), parse(text));
+
+        let text = "forall [] {_label: int | lab_el: string}";
+
+        let output = PolyType {
+            vars: vec![],
+            cons: HashMap::new(),
+            expr: MonoType::Row(Box::new(Row::Extension {
+                head: Property {
+                    k: "_label".to_string(),
+                    v: MonoType::Int,
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: Property {
+                        k: "lab_el".to_string(),
+                        v: MonoType::String,
+                    },
+                    tail: MonoType::Row(Box::new(Row::Empty)),
                 })),
             })),
         };
@@ -2327,6 +2384,29 @@ mod tests {
                 },
             ],
             keyword
+        );
+
+        let ids = lex("_foo foo_ fo_o");
+        assert_eq!(
+            vec![
+                Token {
+                    token_type: TokenType::IDENTIFIER,
+                    text: Some("_foo".to_string()),
+                },
+                Token {
+                    token_type: TokenType::IDENTIFIER,
+                    text: Some("foo_".to_string()),
+                },
+                Token {
+                    token_type: TokenType::IDENTIFIER,
+                    text: Some("fo_o".to_string()),
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    text: None
+                },
+            ],
+            ids
         );
     }
 }
