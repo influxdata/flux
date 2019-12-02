@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -13,11 +14,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 // maxResponseBody is the maximum response body we will read before just discarding
 // the rest. This allows sockets to be reused.
 const maxResponseBody = 512 * 1024 // 512 KB
+
+// http.NewDefaultClient() does default to 30
+const defaultTimeout = int64(30)
 
 // http get mirrors the http post originally completed for alerts & notifications
 var get = values.NewFunction(
@@ -26,9 +31,10 @@ var get = values.NewFunction(
 		Parameters: map[string]semantic.PolyType{
 			"url":     semantic.String,
 			"headers": semantic.Tvar(1),
+			"timeout": semantic.Int,
 		},
 		Required: []string{"url"},
-		Return:   semantic.NewObjectPolyType(map[string]semantic.PolyType{"statusCode": semantic.Int, "body": semantic.Bytes}, semantic.LabelSet{"status", "body"}, nil),
+		Return:   semantic.NewObjectPolyType(map[string]semantic.PolyType{"statusCode": semantic.Int, "headers": semantic.Object, "body": semantic.Bytes}, semantic.LabelSet{"status", "headers", "body"}, nil),
 	}),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		// Get and validate URL
@@ -47,6 +53,16 @@ var get = values.NewFunction(
 		}
 		if err := validator.Validate(u); err != nil {
 			return nil, err
+		}
+
+		theTimeout := defaultTimeout
+		tv, ok := args.Get("timeout")
+		if !ok {
+			// default timeout
+		} else if tv.Type().Nature() != semantic.Int {
+			return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v", tv, semantic.Int, tv.Type().Nature())
+		} else {
+			theTimeout = tv.Int()
 		}
 
 		// Construct HTTP request
@@ -73,19 +89,23 @@ var get = values.NewFunction(
 
 		// Perform request
 		dc, err := deps.HTTPClient()
+
 		if err != nil {
 			return nil, errors.Wrap(err, codes.Aborted, "missing client in http.get")
 		}
 
-		statusCode, body, err := func(req *http.Request) (int, []byte, error) {
+		statusCode, body, headers, err := func(req *http.Request) (int, []byte, values.Object, error) {
 			s, cctx := opentracing.StartSpanFromContext(ctx, "http.get")
 			s.SetTag("url", req.URL.String())
 			defer s.Finish()
 
-			req = req.WithContext(cctx)
+			ccctx, cncl := context.WithTimeout(cctx, time.Second*time.Duration(theTimeout))
+			defer cncl()
+
+			req = req.WithContext(ccctx)
 			response, err := dc.Do(req)
 			if err != nil {
-				return 0, nil, err
+				return 0, nil, nil, err
 			}
 
 			// Read the response body but limit how much we will read.
@@ -94,24 +114,37 @@ var get = values.NewFunction(
 			body, err := ioutil.ReadAll(limitedReader)
 			_ = response.Body.Close()
 			if err != nil {
-				return 0, nil, err
+				return 0, nil, nil, err
 			}
 			s.LogFields(
 				log.Int("statusCode", response.StatusCode),
 				log.Int("responseSize", len(body)),
 			)
-			return response.StatusCode, body, nil
-
+			return response.StatusCode, body, HeaderToArray(response.Header), nil
 		}(req)
 		if err != nil {
 			return nil, err
 		}
 
-		return values.NewObjectWithValues(map[string]values.Value{"statusCode": values.NewInt(int64(statusCode)), "body": values.NewBytes(body)}), nil
+		return values.NewObjectWithValues(map[string]values.Value{
+			"statusCode": values.NewInt(int64(statusCode)),
+			"headers":    headers,
+			"body":       values.NewBytes(body)}), nil
 
 	},
 	true, // get has side-effects
 )
+
+func HeaderToArray(header http.Header) (headerObj values.Object) {
+	m := make(map[string]values.Value)
+	for name, thevalues := range header {
+		for _, onevalue := range thevalues {
+			m[name] = values.New(onevalue)
+		}
+	}
+
+	return values.NewObjectWithValues(m)
+}
 
 func init() {
 	flux.RegisterPackageValue("experimental/http", "get", get)
