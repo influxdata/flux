@@ -41,6 +41,6 @@ BOOL        = 'bool'
 DURATION    = 'duration'
 TIME        = 'time'
 REGEXP      = 'regexp'
-IDENTIFIER  = [a-zA-Z] ([0-9a-zA-Z])*
+IDENTIFIER  = [a-zA-Z_] ([0-9a-zA-Z_])*
 WHITESPACE  = [ \t\r\n]+ -> skip
 ```
