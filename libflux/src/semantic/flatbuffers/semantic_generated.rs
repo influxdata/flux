@@ -102,11 +102,12 @@ pub enum Type {
   Duration = 5,
   Time = 6,
   Regexp = 7,
+  Bytes = 8,
 
 }
 
 const ENUM_MIN_TYPE: u8 = 0;
-const ENUM_MAX_TYPE: u8 = 7;
+const ENUM_MAX_TYPE: u8 = 8;
 
 impl<'a> flatbuffers::Follow<'a> for Type {
   type Inner = Self;
@@ -140,7 +141,7 @@ impl flatbuffers::Push for Type {
 }
 
 #[allow(non_camel_case_types)]
-const ENUM_VALUES_TYPE:[Type; 8] = [
+const ENUM_VALUES_TYPE:[Type; 9] = [
   Type::Bool,
   Type::Int,
   Type::Uint,
@@ -148,11 +149,12 @@ const ENUM_VALUES_TYPE:[Type; 8] = [
   Type::String,
   Type::Duration,
   Type::Time,
-  Type::Regexp
+  Type::Regexp,
+  Type::Bytes
 ];
 
 #[allow(non_camel_case_types)]
-const ENUM_NAMES_TYPE:[&'static str; 8] = [
+const ENUM_NAMES_TYPE:[&'static str; 9] = [
     "Bool",
     "Int",
     "Uint",
@@ -160,7 +162,8 @@ const ENUM_NAMES_TYPE:[&'static str; 8] = [
     "String",
     "Duration",
     "Time",
-    "Regexp"
+    "Regexp",
+    "Bytes"
 ];
 
 pub fn enum_name_type(e: Type) -> &'static str {

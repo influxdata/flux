@@ -513,6 +513,14 @@ fn string_interpolation() {
     }
     test_infer_err! {
         env: map![
+            "name" => "forall [] bytes",
+        ],
+        src: r#"
+            "Hello, ${name}!"
+        "#,
+    }
+    test_infer_err! {
+        env: map![
             "name" => "forall [] [int]",
         ],
         src: r#"
@@ -580,6 +588,24 @@ fn array_lit() {
         src: "a = [/a/, /b/, /c/]",
         exp: map![
             "a" => "forall [] [regexp]",
+        ],
+    }
+    test_infer! {
+        env: map![
+            "bs" => "forall [] bytes",
+        ],
+        src: "a = [bs, bs, bs]",
+        exp: map![
+            "a" => "forall [] [bytes]",
+        ],
+    }
+    test_infer! {
+        env: map![
+            "f" => "forall [] () -> bytes",
+        ],
+        src: "a = [f(), f(), f()]",
+        exp: map![
+            "a" => "forall [] [bytes]",
         ],
     }
     test_infer! {
@@ -684,6 +710,15 @@ fn array_expr() {
         src: src,
         exp: map![
             "b" => "forall [] [regexp]",
+        ],
+    }
+    test_infer! {
+        env: map![
+            "a" => "forall [] bytes",
+        ],
+        src: src,
+        exp: map![
+            "b" => "forall [] [bytes]",
         ],
     }
     test_infer! {

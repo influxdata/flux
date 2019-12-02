@@ -261,6 +261,7 @@ pub enum MonoType {
     Duration,
     Time,
     Regexp,
+    Bytes,
     Var(Tvar),
     Arr(Box<Array>),
     Row(Box<Row>),
@@ -278,6 +279,7 @@ impl fmt::Display for MonoType {
             MonoType::Duration => f.write_str("duration"),
             MonoType::Time => f.write_str("time"),
             MonoType::Regexp => f.write_str("regexp"),
+            MonoType::Bytes => f.write_str("bytes"),
             MonoType::Var(var) => var.fmt(f),
             MonoType::Arr(arr) => arr.fmt(f),
             MonoType::Row(obj) => obj.fmt(f),
@@ -296,7 +298,8 @@ impl Substitutable for MonoType {
             | MonoType::String
             | MonoType::Duration
             | MonoType::Time
-            | MonoType::Regexp => self,
+            | MonoType::Regexp
+            | MonoType::Bytes => self,
             MonoType::Var(tvr) => sub.apply(tvr),
             MonoType::Arr(arr) => MonoType::Arr(Box::new(arr.apply(sub))),
             MonoType::Row(obj) => MonoType::Row(Box::new(obj.apply(sub))),
@@ -312,7 +315,8 @@ impl Substitutable for MonoType {
             | MonoType::String
             | MonoType::Duration
             | MonoType::Time
-            | MonoType::Regexp => Vec::new(),
+            | MonoType::Regexp
+            | MonoType::Bytes => Vec::new(),
             MonoType::Var(tvr) => vec![*tvr],
             MonoType::Arr(arr) => arr.free_vars(),
             MonoType::Row(obj) => obj.free_vars(),
@@ -331,7 +335,8 @@ impl MaxTvar for MonoType {
             | MonoType::String
             | MonoType::Duration
             | MonoType::Time
-            | MonoType::Regexp => Tvar(0),
+            | MonoType::Regexp
+            | MonoType::Bytes => Tvar(0),
             MonoType::Var(tvr) => tvr.max_tvar(),
             MonoType::Arr(arr) => arr.max_tvar(),
             MonoType::Row(obj) => obj.max_tvar(),
@@ -361,7 +366,8 @@ impl MonoType {
             | (MonoType::String, MonoType::String)
             | (MonoType::Duration, MonoType::Duration)
             | (MonoType::Time, MonoType::Time)
-            | (MonoType::Regexp, MonoType::Regexp) => Ok(Substitution::empty()),
+            | (MonoType::Regexp, MonoType::Regexp)
+            | (MonoType::Bytes, MonoType::Bytes) => Ok(Substitution::empty()),
             (MonoType::Var(tv), t) => tv.unify(t, cons),
             (t, MonoType::Var(tv)) => tv.unify(t, cons),
             (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(*s, cons, f),
@@ -416,6 +422,10 @@ impl MonoType {
                 _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Regexp => Err(Error::cannot_constrain(&self, with)),
+            MonoType::Bytes => match with {
+                Kind::Equatable => Ok(Substitution::empty()),
+                _ => Err(Error::cannot_constrain(&self, with)),
+            },
             MonoType::Var(tvr) => {
                 tvr.constrain(with, cons);
                 Ok(Substitution::empty())
@@ -435,7 +445,8 @@ impl MonoType {
             | MonoType::String
             | MonoType::Duration
             | MonoType::Time
-            | MonoType::Regexp => false,
+            | MonoType::Regexp
+            | MonoType::Bytes => false,
             MonoType::Var(tvr) => tv == *tvr,
             MonoType::Arr(arr) => arr.contains(tv),
             MonoType::Row(row) => row.contains(tv),
@@ -1229,6 +1240,10 @@ mod tests {
     #[test]
     fn display_type_regexp() {
         assert_eq!("regexp", MonoType::Regexp.to_string());
+    }
+    #[test]
+    fn display_type_bytes() {
+        assert_eq!("bytes", MonoType::Bytes.to_string());
     }
     #[test]
     fn display_type_tvar() {

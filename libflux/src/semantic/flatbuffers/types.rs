@@ -107,6 +107,7 @@ impl From<fb::Basic<'_>> for MonoType {
             fb::Type::Duration => MonoType::Duration,
             fb::Type::Time => MonoType::Time,
             fb::Type::Regexp => MonoType::Regexp,
+            fb::Type::Bytes => MonoType::Bytes,
         }
     }
 }
@@ -297,6 +298,11 @@ fn build_type<'a>(
             let a = fb::BasicArgs {
                 t: fb::Type::Regexp,
             };
+            let v = fb::Basic::create(builder, &a);
+            (v.as_union_value(), fb::MonoType::Basic)
+        }
+        MonoType::Bytes => {
+            let a = fb::BasicArgs { t: fb::Type::Bytes };
             let v = fb::Basic::create(builder, &a);
             (v.as_union_value(), fb::MonoType::Basic)
         }
@@ -495,6 +501,7 @@ mod tests {
         test_serde("forall [] duration");
         test_serde("forall [] time");
         test_serde("forall [] regexp");
+        test_serde("forall [] bytes");
     }
     #[test]
     fn serde_array_type() {
