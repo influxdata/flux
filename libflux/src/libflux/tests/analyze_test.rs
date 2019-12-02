@@ -1,5 +1,3 @@
-extern crate flux;
-
 use flux::ast;
 use flux::semantic::analyze_source;
 use flux::semantic::nodes::*;
