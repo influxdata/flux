@@ -42,6 +42,6 @@ DURATION    = 'duration'
 TIME        = 'time'
 REGEXP      = 'regexp'
 BYTES       = 'bytes'
-IDENTIFIER  = [a-zA-Z_] ([0-9a-zA-Z_])*
+IDENTIFIER  = [a-zA-Z_] ([0-9a-zA-Z_])* | '"' [a-zA-Z_] ([0-9a-zA-Z_])* '"'
 WHITESPACE  = [ \t\r\n]+ -> skip
 ```

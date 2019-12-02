@@ -121,7 +121,16 @@ impl Lexer<'_> {
         self.current_string = String::new();
     }
 
-    fn keyword_or_ident(&mut self) -> TokenType {
+    fn keyword_or_ident(&mut self) -> Result<TokenType, &'static str> {
+        let is_quoted = match self.source.peek() {
+            Some(c) if c.eq(&'"') => {
+                // Advance past quote, so it's not included in identifier.
+                self.source.next();
+                true
+            }
+            _ => false,
+        };
+
         while let Some(letter) = self.source.peek() {
             if is_id_char(*letter) {
                 self.next();
@@ -130,20 +139,30 @@ impl Lexer<'_> {
             break;
         }
 
+        if is_quoted {
+            if let Some(c) = self.source.peek() {
+                if c.eq(&'"') {
+                    self.source.next();
+                    return Ok(TokenType::IDENTIFIER);
+                }
+            }
+            return Err("missing end quote in quoted identifier");
+        }
+
         let current: &str = &self.current_string;
         match current {
-            "forall" => TokenType::FORALL,
-            "where" => TokenType::WHERE,
-            "int" => TokenType::INT,
-            "float" => TokenType::FLOAT,
-            "string" => TokenType::STRING,
-            "bool" => TokenType::BOOL,
-            "uint" => TokenType::UINT,
-            "duration" => TokenType::DURATION,
-            "time" => TokenType::TIME,
-            "regexp" => TokenType::REGEXP,
-            "bytes" => TokenType::BYTES,
-            _ => TokenType::IDENTIFIER,
+            "forall" => Ok(TokenType::FORALL),
+            "where" => Ok(TokenType::WHERE),
+            "int" => Ok(TokenType::INT),
+            "float" => Ok(TokenType::FLOAT),
+            "string" => Ok(TokenType::STRING),
+            "bool" => Ok(TokenType::BOOL),
+            "uint" => Ok(TokenType::UINT),
+            "duration" => Ok(TokenType::DURATION),
+            "time" => Ok(TokenType::TIME),
+            "regexp" => Ok(TokenType::REGEXP),
+            "bytes" => Ok(TokenType::BYTES),
+            _ => Ok(TokenType::IDENTIFIER),
         }
     }
 }
@@ -156,10 +175,27 @@ fn is_id_char(c: char) -> bool {
     }
 }
 
+fn is_id_start_char(c: char) -> bool {
+    if is_id_char(c) {
+        true
+    } else {
+        c.eq(&'"')
+    }
+}
+
 // lex_token lexes and returns a single token
 fn lex_token(lexer: &mut Lexer) -> Option<TokenType> {
+    match lexer.source.peek() {
+        Some(letter) if is_id_start_char(*letter) => {
+            return match lexer.keyword_or_ident() {
+                Ok(tt) => Some(tt),
+                _ => None,
+            }
+        }
+        _ => (),
+    }
+
     match lexer.next() {
-        Some(letter) if is_id_char(letter) => Some(lexer.keyword_or_ident()),
         Some(letter) if letter.is_whitespace() => Some(TokenType::WHITESPACE),
         Some(letter) if letter == '{' => Some(TokenType::LEFTCURLYBRAC),
         Some(letter) if letter == '}' => Some(TokenType::RIGHTCURLYBRAC),
@@ -2461,6 +2497,45 @@ mod tests {
                 Token {
                     token_type: TokenType::IDENTIFIER,
                     text: Some("bytess".to_string()),
+                },
+                Token {
+                    token_type: TokenType::EOF,
+                    text: None
+                },
+            ],
+            toks,
+        );
+
+        let toks = lex(r#"foo "foo" forall "forall" int "int" bar"#);
+        assert_eq!(
+            vec![
+                Token {
+                    token_type: TokenType::IDENTIFIER,
+                    text: Some("foo".to_string()),
+                },
+                Token {
+                    token_type: TokenType::IDENTIFIER,
+                    text: Some("foo".to_string()),
+                },
+                Token {
+                    token_type: TokenType::FORALL,
+                    text: Some("forall".to_string()),
+                },
+                Token {
+                    token_type: TokenType::IDENTIFIER,
+                    text: Some("forall".to_string()),
+                },
+                Token {
+                    token_type: TokenType::INT,
+                    text: Some("int".to_string()),
+                },
+                Token {
+                    token_type: TokenType::IDENTIFIER,
+                    text: Some("int".to_string()),
+                },
+                Token {
+                    token_type: TokenType::IDENTIFIER,
+                    text: Some("bar".to_string()),
                 },
                 Token {
                     token_type: TokenType::EOF,
