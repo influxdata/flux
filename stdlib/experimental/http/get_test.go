@@ -102,7 +102,8 @@ func TestGet_Timeout(t *testing.T) {
 			w.WriteHeader(500)
 			w.Write([]byte(err.Error()))
 		}
-		time.Sleep(time.Second * 8)
+		// Sleep for 1s
+		time.Sleep(time.Second)
 		w.WriteHeader(204)
 	}))
 	defer ts.Close()
@@ -110,7 +111,7 @@ func TestGet_Timeout(t *testing.T) {
 	script := fmt.Sprintf(`
 import "experimental/http"
 
-resp = http.get(url:"%s/path/a/b/c", timeout: 4s)
+resp = http.get(url:"%s/path/a/b/c", timeout: 10ms)
 `, ts.URL)
 
 	ctx := flux.NewDefaultDependencies().Inject(context.Background())
