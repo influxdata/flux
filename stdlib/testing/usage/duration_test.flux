@@ -6776,8 +6776,8 @@ outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,long,dateTime:RFC3339
 #default,duration_us,,,,,
 ,result,table,_start,_stop,duration_us,_time
-,,0,2019-12-03T10:00:00Z,2019-12-03T12:00:00Z,18486046,2019-12-03T11:00:00Z
-,,0,2019-12-03T10:00:00Z,2019-12-03T12:00:00Z,18456426,2019-12-03T12:00:00Z
+,,0,2019-12-03T10:00:00Z,2019-12-03T12:00:00Z,12507024,2019-12-03T11:00:00Z
+,,0,2019-12-03T10:00:00Z,2019-12-03T12:00:00Z,16069640,2019-12-03T12:00:00Z
 "
 
 _f = (table=<-) => table
@@ -6785,7 +6785,7 @@ _f = (table=<-) => table
     |> filter(fn: (r) =>
         r.org_id == "03d01b74c8e09000"
         and r._measurement == "queryd_billing"
-        and r._field == "total_duration_us"
+        and (r._field == "compile_duration_us" or r._field == "plan_duration_us" or r._field == "execute_duration_us")
     )
     |> group()
     |> aggregateWindow(every: 1h, fn: sum)
