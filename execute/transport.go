@@ -2,12 +2,12 @@ package execute
 
 import (
 	"context"
-	"github.com/opentracing/opentracing-go"
 	"reflect"
 	"sync"
 	"sync/atomic"
 
 	"github.com/influxdata/flux"
+	"github.com/opentracing/opentracing-go"
 )
 
 type Transport interface {
@@ -200,8 +200,8 @@ func processMessage(ctx context.Context, t Transformation, m Message) (finished 
 	case ProcessMsg:
 		b := m.Table()
 		span, _ := opentracing.StartSpanFromContext(ctx, reflect.TypeOf(t).String())
-		defer span.Finish()
 		err = t.Process(m.SrcDatasetID(), b)
+		span.Finish()
 	case UpdateWatermarkMsg:
 		err = t.UpdateWatermark(m.SrcDatasetID(), m.WatermarkTime())
 	case UpdateProcessingTimeMsg:
