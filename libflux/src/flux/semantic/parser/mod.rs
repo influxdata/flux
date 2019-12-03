@@ -368,18 +368,24 @@ impl Parser<'_> {
     // parse_monotype parses a monotype
     fn parse_monotype(&mut self) -> Result<MonoType, &'static str> {
         let next_token = self.peek();
-        if let Ok(primitive) = self.parse_primitives(&next_token) {
-            Ok(primitive)
-        } else if let Ok(type_var) = self.parse_type_var(&next_token) {
-            Ok(MonoType::Var(type_var))
-        } else if let Ok(array) = self.parse_array(&next_token) {
-            Ok(array)
-        } else if let Ok(func) = self.parse_function(&next_token) {
-            Ok(func)
-        } else if let Ok(row) = self.parse_row(&next_token) {
-            Ok(row)
-        } else {
-            Err("Monotype was not in valid format")
+        match next_token.token_type {
+            TokenType::INT
+            | TokenType::UINT
+            | TokenType::FLOAT
+            | TokenType::STRING
+            | TokenType::BOOL
+            | TokenType::DURATION
+            | TokenType::TIME
+            | TokenType::REGEXP
+            | TokenType::BYTES => self.parse_primitives(&next_token),
+            TokenType::IDENTIFIER => match self.parse_type_var(&next_token) {
+                Ok(tv) => Ok(MonoType::Var(tv)),
+                Err(e) => Err(e),
+            },
+            TokenType::LEFTSQUAREBRAC => self.parse_array(&next_token),
+            TokenType::LEFTPAREN => self.parse_function(&next_token),
+            TokenType::LEFTCURLYBRAC => self.parse_row(&next_token),
+            _ => Err("Monotype was not in valid format"),
         }
     }
 
