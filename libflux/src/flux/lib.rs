@@ -1,4 +1,19 @@
 #![cfg_attr(feature = "strict", deny(warnings))]
+// XXX: phummer (2 Dec 2019) - These lints should be removed one at a time
+// until these lines are entirely removed. If lint still must be ignored, it
+// should be at a more specific module or file level.
+#![allow(clippy::useless_format, clippy::cmp_owned, clippy::while_let_loop)]
+#![allow(clippy::single_char_pattern, clippy::chars_last_cmp)]
+#![allow(clippy::chars_next_cmp, clippy::unnecessary_operation)]
+#![allow(clippy::new_without_default, clippy::wrong_self_convention)]
+#![allow(clippy::try_err, clippy::ptr_offset_with_cast, clippy::clone_on_copy)]
+#![allow(clippy::useless_let_if_seq, clippy::implicit_hasher, clippy::ptr_arg)]
+#![allow(clippy::large_enum_variant, clippy::single_match)]
+#![allow(clippy::unnecessary_fold, clippy::not_unsafe_ptr_arg_deref)]
+#![allow(clippy::len_zero, clippy::or_fun_call, clippy::needless_return)]
+#![allow(clippy::collapsible_if, clippy::module_inception)]
+#![allow(clippy::many_single_char_names, clippy::redundant_field_names)]
+#![allow(clippy::unknown_clippy_lints)]
 
 extern crate chrono;
 #[macro_use]
