@@ -26,4 +26,14 @@ if [ "$HAS_FMT_ERR" -eq "1" ]; then
     echo 'run "make fmt"' && \
     echo ''
 fi
+
+cd libflux
+FMT_OUT="$(cargo fmt --all -- --check)"
+if [[ -n "$FMT_OUT" ]]; then
+    echo 'Commit includes files that are not rustfmt-ed' && \
+    echo 'run "make fmt"' && \
+    echo ''
+    HAS_FMT_ERR=1
+fi
+
 exit "$HAS_FMT_ERR"
