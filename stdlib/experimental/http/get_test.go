@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
@@ -89,6 +90,36 @@ http.get(url:"http://127.1.1.1/path/a/b/c", headers: {x:"a",y:"b",z:"c"})
 		t.Fatal("expected failure")
 	}
 	if !strings.Contains(err.Error(), "url is not valid") {
+		t.Errorf("unexpected cause of failure, got err: %v", err)
+	}
+}
+
+func TestGet_Timeout(t *testing.T) {
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+		var err error
+		if err != nil {
+			w.WriteHeader(500)
+			w.Write([]byte(err.Error()))
+		}
+		// Sleep for 1s
+		time.Sleep(time.Second)
+		w.WriteHeader(204)
+	}))
+	defer ts.Close()
+
+	script := fmt.Sprintf(`
+import "experimental/http"
+
+resp = http.get(url:"%s/path/a/b/c", timeout: 10ms)
+`, ts.URL)
+
+	ctx := flux.NewDefaultDependencies().Inject(context.Background())
+	_, _, err := flux.Eval(ctx, script, addFail)
+	if err == nil {
+		t.Fatal("expected timeout failure")
+	}
+	if !strings.Contains(err.Error(), "context deadline exceeded") {
 		t.Errorf("unexpected cause of failure, got err: %v", err)
 	}
 }
