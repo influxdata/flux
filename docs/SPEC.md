@@ -2106,12 +2106,16 @@ Filter applies a predicate function to each input record.
 Only the records for which the predicate evaluates to _true_ will be included in the output tables.
 One output table is produced for each input table.
 The output tables will have the same schema as their corresponding input tables.
+If `onEmpty` is set to `drop`, then empty tables will be dropped.
+If `onEmpty` is set to `keep`, then empty tables will be output to the next transformation.
+The default is to drop empty tables.
 
 Filter has the following properties:
 
-| Name | Type                | Description                                                                                        |
-| ---- | ----                | -----------                                                                                        |
-| fn   | (r: record) -> bool | Fn is a predicate function. Records which evaluate to true, will be included in the output tables. |
+| Name    | Type                | Description                                                                                        |
+| ----    | ----                | -----------                                                                                        |
+| fn      | (r: record) -> bool | Fn is a predicate function. Records which evaluate to true, will be included in the output tables. |
+| onEmpty | string              | The behavior for empty tables. This can be `keep` or `drop`. The default is `drop`.
 
 _NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
@@ -2123,6 +2127,14 @@ from(bucket:"telegraf/autogen")
     |> filter(fn: (r) => r._measurement == "cpu" AND
                 r._field == "usage_system" AND
                 r.service == "app-server")
+```
+
+Example:
+
+```
+from(bucket:"telegraf/autogen")
+    |> range(start:-12h)
+    |> filter(fn: (r) => r._measurement == "cpu", onEmpty: "keep")
 ```
 
 Note according to the definition, records for which the predicate evaluates to _null_ will not be included in the output.
