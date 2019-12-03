@@ -1,5 +1,6 @@
 bin
 vendor
+target
 /dist
 .DS_Store
 .netrc
@@ -8,7 +9,6 @@ vendor
 .tern-project
 .idea
 /coverage.txt
-/libflux/target
 /libflux/pkg
 /libflux/site/node_modules
 /libflux/.cache

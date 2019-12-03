@@ -17,7 +17,7 @@ fn main() {
     let bindings = bindgen::Builder::default()
         // The input header we would like to generate
         // bindings for.
-        .header("src/scanner/scanner.h")
+        .header("scanner/scanner.h")
         // Finish the builder and generate the bindings.
         .generate()
         // Unwrap the Result and panic on failure.
@@ -29,7 +29,7 @@ fn main() {
         .expect("Couldn't write bindings!");
 
     let ctypes = bindgen::Builder::default()
-        .header("include/influxdata/flux.h")
+        .header("../../include/influxdata/flux.h")
         .generate()
         .expect("Unable to generate c type bindings");
 
@@ -37,11 +37,11 @@ fn main() {
         .write_to_file(out_path.join("ctypes.rs"))
         .expect("Couldn't write c type bindings!");
 
-    copy("scanner.c", out_path.join("scanner.c")).expect("Could not copy scanner.c");
+    copy("../../scanner.c", out_path.join("scanner.c")).expect("Could not copy scanner.c");
 
     // Compile generated scanner
     cc::Build::new()
-        .include("src/scanner")
+        .include("scanner")
         .file(out_path.join("scanner.c"))
         .compile("scanner");
 }
