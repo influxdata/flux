@@ -49,12 +49,12 @@ generate: $(GENERATED_TARGETS)
 ast/internal/fbast: ast/ast.fbs
 	$(GO_GENERATE) ./ast
 libflux/src/libflux/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
-	flatc --rust -o libflux/src/libflux/ast/flatbuffers ast/ast.fbs
+	flatc --rust -o libflux/src/libflux/ast/flatbuffers ast/ast.fbs && rustfmt $@
 
 semantic/internal/fbsemantic: semantic/semantic.fbs
 	$(GO_GENERATE) ./semantic
 libflux/src/libflux/semantic/flatbuffers/semantic_generated.rs: semantic/semantic.fbs
-	flatc --rust -o libflux/src/libflux/semantic/flatbuffers semantic/semantic.fbs
+	flatc --rust -o libflux/src/libflux/semantic/flatbuffers semantic/semantic.fbs && rustfmt $@
 
 # Force a second expansion to happen so the call to go_deps works correctly.
 .SECONDEXPANSION:
