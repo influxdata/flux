@@ -110,7 +110,7 @@ func TestGet_Timeout(t *testing.T) {
 	script := fmt.Sprintf(`
 import "experimental/http"
 
-resp = http.get(url:"%s/path/a/b/c", timeout: 4)
+resp = http.get(url:"%s/path/a/b/c", timeout: 4s)
 `, ts.URL)
 
 	ctx := flux.NewDefaultDependencies().Inject(context.Background())

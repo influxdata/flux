@@ -21,9 +21,6 @@ import (
 // the rest. This allows sockets to be reused.
 const maxResponseBody = 512 * 1024 // 512 KB
 
-// http.NewDefaultClient() does default to 30
-const defaultTimeout = int64(30)
-
 // http get mirrors the http post originally completed for alerts & notifications
 var get = values.NewFunction(
 	"get",
@@ -31,7 +28,7 @@ var get = values.NewFunction(
 		Parameters: map[string]semantic.PolyType{
 			"url":     semantic.String,
 			"headers": semantic.Tvar(1),
-			"timeout": semantic.Int,
+			"timeout": semantic.Duration,
 		},
 		Required: []string{"url"},
 		Return:   semantic.NewObjectPolyType(map[string]semantic.PolyType{"statusCode": semantic.Int, "headers": semantic.Object, "body": semantic.Bytes}, semantic.LabelSet{"status", "headers", "body"}, nil),
@@ -55,14 +52,15 @@ var get = values.NewFunction(
 			return nil, err
 		}
 
-		theTimeout := defaultTimeout
+		// http.NewDefaultClient() does default to 30
+		var theTimeout = values.ConvertDuration(30 * time.Second)
 		tv, ok := args.Get("timeout")
 		if !ok {
 			// default timeout
-		} else if tv.Type().Nature() != semantic.Int {
+		} else if tv.Type().Nature() != semantic.Duration {
 			return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v", tv, semantic.Int, tv.Type().Nature())
 		} else {
-			theTimeout = tv.Int()
+			theTimeout = tv.Duration()
 		}
 
 		// Construct HTTP request
@@ -99,7 +97,7 @@ var get = values.NewFunction(
 			s.SetTag("url", req.URL.String())
 			defer s.Finish()
 
-			ccctx, cncl := context.WithTimeout(cctx, time.Second*time.Duration(theTimeout))
+			ccctx, cncl := context.WithTimeout(cctx, theTimeout.Duration())
 			defer cncl()
 
 			req = req.WithContext(ccctx)
@@ -120,7 +118,7 @@ var get = values.NewFunction(
 				log.Int("statusCode", response.StatusCode),
 				log.Int("responseSize", len(body)),
 			)
-			return response.StatusCode, body, HeaderToArray(response.Header), nil
+			return response.StatusCode, body, headerToObject(response.Header), nil
 		}(req)
 		if err != nil {
 			return nil, err
@@ -135,7 +133,7 @@ var get = values.NewFunction(
 	true, // get has side-effects
 )
 
-func HeaderToArray(header http.Header) (headerObj values.Object) {
+func headerToObject(header http.Header) (headerObj values.Object) {
 	m := make(map[string]values.Value)
 	for name, thevalues := range header {
 		for _, onevalue := range thevalues {
