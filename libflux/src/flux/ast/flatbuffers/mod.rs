@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 #[allow(non_snake_case, unused)]
 mod ast_generated;
 
