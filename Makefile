@@ -39,8 +39,8 @@ GENERATED_TARGETS = \
 	internal/scanner/scanner.gen.go \
 	stdlib/packages.go \
 	semantic/internal/fbsemantic \
-	libflux/src/libflux/ast/flatbuffers/ast_generated.rs \
-	libflux/src/libflux/semantic/flatbuffers/semantic_generated.rs \
+	libflux/src/flux/ast/flatbuffers/ast_generated.rs \
+	libflux/src/flux/semantic/flatbuffers/semantic_generated.rs \
 	libflux/scanner.c \
 	libflux/go/libflux/flux.h
 
@@ -48,13 +48,13 @@ generate: $(GENERATED_TARGETS)
 
 ast/internal/fbast: ast/ast.fbs
 	$(GO_GENERATE) ./ast
-libflux/src/libflux/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
-	flatc --rust -o libflux/src/libflux/ast/flatbuffers ast/ast.fbs && rustfmt $@
+libflux/src/flux/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
+	flatc --rust -o libflux/src/flux/ast/flatbuffers ast/ast.fbs && rustfmt $@
 
 semantic/internal/fbsemantic: semantic/semantic.fbs
 	$(GO_GENERATE) ./semantic
-libflux/src/libflux/semantic/flatbuffers/semantic_generated.rs: semantic/semantic.fbs
-	flatc --rust -o libflux/src/libflux/semantic/flatbuffers semantic/semantic.fbs && rustfmt $@
+libflux/src/flux/semantic/flatbuffers/semantic_generated.rs: semantic/semantic.fbs
+	flatc --rust -o libflux/src/flux/semantic/flatbuffers semantic/semantic.fbs && rustfmt $@
 
 # Force a second expansion to happen so the call to go_deps works correctly.
 .SECONDEXPANSION:
@@ -76,7 +76,7 @@ libflux: libflux/target/debug/libflux.a
 # The unix sed, which is on darwin machines, has a different
 # command line interface than the gnu equivalent.
 libflux/target/debug/libflux.a:
-	cd libflux/src/libflux && $(CARGO) build $(CARGO_ARGS)
+	cd libflux && $(CARGO) build -p flux $(CARGO_ARGS)
 
 libflux/go/libflux/flux.h: libflux/include/influxdata/flux.h
 	$(GO_GENERATE) ./libflux/go/libflux
@@ -161,11 +161,11 @@ bench:
 release:
 	./release.sh
 
-libflux/scanner.c: libflux/src/libflux/scanner/scanner.rl
-	ragel -C -o libflux/scanner.c libflux/src/libflux/scanner/scanner.rl
+libflux/scanner.c: libflux/src/flux/scanner/scanner.rl
+	ragel -C -o libflux/scanner.c libflux/src/flux/scanner/scanner.rl
 
 libflux-wasm:
-	cd libflux/src/libflux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev
+	cd libflux/src/flux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev
 
 .PHONY: generate \
 	clean \
