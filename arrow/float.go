@@ -7,7 +7,7 @@ import (
 
 func NewFloat(vs []float64, alloc *memory.Allocator) *array.Float64 {
 	b := NewFloatBuilder(alloc)
-	b.Reserve(len(vs))
+	b.Resize(len(vs))
 	for _, v := range vs {
 		b.UnsafeAppend(v)
 	}
@@ -17,9 +17,7 @@ func NewFloat(vs []float64, alloc *memory.Allocator) *array.Float64 {
 }
 
 func FloatSlice(arr *array.Float64, i, j int) *array.Float64 {
-	data := array.NewSliceData(arr.Data(), int64(i), int64(j))
-	defer data.Release()
-	return array.NewFloat64Data(data)
+	return Slice(arr, int64(i), int64(j)).(*array.Float64)
 }
 
 func NewFloatBuilder(a *memory.Allocator) *array.Float64Builder {

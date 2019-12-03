@@ -643,6 +643,41 @@ func RunTableTests(t *testing.T, tt TableTest) {
 		})
 		tt.finish(false)
 	})
+	tt.run(t, "EmptyAfterDo", func(tt *tableTest) {
+		// It should be ok to call empty after do and get the same result.
+		tt.do(func(tbl flux.Table) error {
+			want := tbl.Empty()
+			if err := tbl.Do(func(cr flux.ColReader) error {
+				if cr.Len() > 0 {
+					want = false
+				}
+				return nil
+			}); err != nil {
+				return err
+			}
+			got := tbl.Empty()
+
+			if got != want {
+				tt.t.Errorf("unexpected value for empty -got/+want\n\t- %v\n\t+ %v", got, want)
+			}
+			return nil
+		})
+		tt.finish(true)
+	})
+	tt.run(t, "EmptyAfterDone", func(tt *tableTest) {
+		// It should be ok to call empty after done and get the same result.
+		tt.do(func(tbl flux.Table) error {
+			want := tbl.Empty()
+			tbl.Done()
+			got := tbl.Empty()
+
+			if got != want {
+				tt.t.Errorf("unexpected value for empty -got/+want\n\t- %v\n\t+ %v", got, want)
+			}
+			return nil
+		})
+		tt.finish(false)
+	})
 	tt.run(t, "Retain", func(tt *tableTest) {
 		// Retain should allow the column reader to be used outside of Do.
 		tt.do(func(tbl flux.Table) error {

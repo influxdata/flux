@@ -8,7 +8,7 @@ import (
 
 func NewString(vs []string, alloc *memory.Allocator) *array.Binary {
 	b := NewStringBuilder(alloc)
-	b.Reserve(len(vs))
+	b.Resize(len(vs))
 	sz := 0
 	for _, v := range vs {
 		sz += len(v)
@@ -23,9 +23,7 @@ func NewString(vs []string, alloc *memory.Allocator) *array.Binary {
 }
 
 func StringSlice(arr *array.Binary, i, j int) *array.Binary {
-	data := array.NewSliceData(arr.Data(), int64(i), int64(j))
-	defer data.Release()
-	return array.NewBinaryData(data)
+	return Slice(arr, int64(i), int64(j)).(*array.Binary)
 }
 
 func NewStringBuilder(a *memory.Allocator) *array.BinaryBuilder {

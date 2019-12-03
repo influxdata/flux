@@ -551,7 +551,11 @@ func (itrp *Interpreter) doLiteral(lit semantic.Literal) (values.Value, error) {
 	case *semantic.DateTimeLiteral:
 		return values.NewTime(values.Time(l.Value.UnixNano())), nil
 	case *semantic.DurationLiteral:
-		return values.NewDuration(values.ConvertDuration(l.Value)), nil
+		dur, err := values.FromDurationValues(l.Values)
+		if err != nil {
+			return nil, err
+		}
+		return values.NewDuration(dur), nil
 	case *semantic.FloatLiteral:
 		return values.NewFloat(l.Value), nil
 	case *semantic.IntegerLiteral:
@@ -915,7 +919,7 @@ func ResolveFunction(f values.Function) (ResolvedFunction, error) {
 // ResolvedFunction represents a function that can be passed down to the compiler.
 // Both the function expression and scope are captured.
 // The scope cannot be serialized, which is no longer a problem in the current design
-// with excpetion of the REPL which will not be able to correct pass through the scope.
+// with the exception of the REPL which will not be able to correctly pass through the scope.
 type ResolvedFunction struct {
 	Fn    *semantic.FunctionExpression `json:"fn"`
 	Scope values.Scope                 `json:"-"`
@@ -1145,9 +1149,17 @@ func resolveValue(v values.Value) (semantic.Node, bool, error) {
 			Value: v.Regexp(),
 		}, true, nil
 	case semantic.Duration:
-		return &semantic.DurationLiteral{
-			Value: v.Duration().Duration(),
-		}, true, nil
+		d := v.Duration()
+		var node semantic.Expression = &semantic.DurationLiteral{
+			Values: d.AsValues(),
+		}
+		if d.IsNegative() {
+			node = &semantic.UnaryExpression{
+				Operator: ast.SubtractionOperator,
+				Argument: node,
+			}
+		}
+		return node, true, nil
 	case semantic.Function:
 		resolver, ok := v.Function().(Resolver)
 		if ok {

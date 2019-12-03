@@ -2,7 +2,6 @@ package semantic
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
@@ -37,6 +36,7 @@ func analyzePackage(pkg *ast.Package) (*Package, error) {
 	}
 	return p, nil
 }
+
 func analyzeFile(file *ast.File) (*File, error) {
 	f := &File{
 		loc:  loc(file.Location()),
@@ -60,7 +60,7 @@ func analyzeFile(file *ast.File) (*File, error) {
 	}
 
 	for i, s := range file.Body {
-		n, err := analyzeStatment(s)
+		n, err := analyzeStatement(s)
 		if err != nil {
 			return nil, err
 		}
@@ -106,7 +106,7 @@ func analyzeImportDeclaration(imp *ast.ImportDeclaration) (*ImportDeclaration, e
 func analyzeNode(n ast.Node) (Node, error) {
 	switch n := n.(type) {
 	case ast.Statement:
-		return analyzeStatment(n)
+		return analyzeStatement(n)
 	case ast.Expression:
 		return analyzeExpression(n)
 	case *ast.Block:
@@ -116,7 +116,7 @@ func analyzeNode(n ast.Node) (Node, error) {
 	}
 }
 
-func analyzeStatment(s ast.Statement) (Statement, error) {
+func analyzeStatement(s ast.Statement) (Statement, error) {
 	switch s := s.(type) {
 	case *ast.OptionStatement:
 		return analyzeOptionStatement(s)
@@ -154,7 +154,7 @@ func analyzeBlock(block *ast.Block) (*Block, error) {
 		Body: make([]Statement, len(block.Body)),
 	}
 	for i, s := range block.Body {
-		n, err := analyzeStatment(s)
+		n, err := analyzeStatement(s)
 		if err != nil {
 			return nil, err
 		}
@@ -677,13 +677,9 @@ func analyzeDateTimeLiteral(lit *ast.DateTimeLiteral) (*DateTimeLiteral, error) 
 	}, nil
 }
 func analyzeDurationLiteral(lit *ast.DurationLiteral) (*DurationLiteral, error) {
-	duration, err := ast.DurationFrom(lit, time.Time{})
-	if err != nil {
-		return nil, err
-	}
 	return &DurationLiteral{
-		loc:   loc(lit.Location()),
-		Value: duration,
+		loc:    loc(lit.Location()),
+		Values: lit.Values,
 	}, nil
 }
 func analyzeFloatLiteral(lit *ast.FloatLiteral) (*FloatLiteral, error) {

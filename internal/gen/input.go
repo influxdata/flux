@@ -2,16 +2,19 @@ package gen
 
 import (
 	"container/heap"
+	"context"
 	"math"
 	"math/rand"
 	"strings"
 	"time"
 
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/execute/tableutil"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -368,30 +371,64 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 		sg.Type = vt.Type
 
 		for _, s := range sg.Series {
-			builder := execute.NewColListTableBuilder(s, dg.Allocator)
-			startIdx, _ := builder.AddCol(flux.ColMeta{
-				Label: execute.DefaultStartColLabel,
-				Type:  flux.TTime,
-			})
-			stopIdx, _ := builder.AddCol(flux.ColMeta{
-				Label: execute.DefaultStopColLabel,
-				Type:  flux.TTime,
-			})
-			_ = execute.AddTableKeyCols(s, builder)
-			start, stop := dg.Generate(builder, dg.Rand, sg.Type)
-			for i := 0; i < dg.NumPoints; i++ {
-				_ = builder.AppendTime(startIdx, start)
-				_ = builder.AppendTime(stopIdx, stop)
-				_ = execute.AppendKeyValues(s, builder)
-			}
+			tbl, err := tableutil.Stream(func(ctx context.Context, fn tableutil.SendFunc) error {
+				// Construct the table columns.
+				cols := make([]flux.ColMeta, len(s.Cols())+2)
+				copy(cols, s.Cols())
+				cols[len(cols)-2] = flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime}
+				cols[len(cols)-1] = flux.ColMeta{Label: execute.DefaultValueColLabel, Type: sg.Type}
 
-			table, err := builder.Table()
+				// Only construct the key values once for the first table
+				// and then reuse them for each one with a slice.
+				// The first table should always be the biggest because of
+				// the size constraint.
+				// These are constructed lazily below.
+				keyValues := make([]array.Interface, len(s.Cols()))
+				defer func() {
+					for _, vs := range keyValues {
+						if vs != nil {
+							vs.Release()
+						}
+					}
+				}()
+
+				start, n := dg.Start, dg.NumPoints
+				for n > 0 {
+					tb := &arrow.TableBuffer{
+						GroupKey: s,
+						Columns:  cols,
+						Values:   make([]array.Interface, len(cols)),
+					}
+
+					var ts *array.Int64
+					ts, start, n = dg.generateBufferTimes(start, n)
+					for i, v := range s.Values() {
+						if keyValues[i] == nil {
+							keyValues[i] = arrow.Repeat(v, ts.Len(), dg.Allocator)
+						}
+						vs := keyValues[i]
+						if vs.Len() == ts.Len() {
+							vs.Retain()
+						} else {
+							vs = arrow.Slice(vs, 0, int64(ts.Len()))
+						}
+						tb.Values[i] = vs
+					}
+					tb.Values[len(cols)-2] = ts
+					tb.Values[len(cols)-1] = dg.generateBufferValues(dg.Rand, sg.Type, ts.Len())
+
+					if err := tb.Validate(); err != nil {
+						return err
+					}
+					fn(tb)
+				}
+				return nil
+			})
 			if err != nil {
-				builder.Release()
 				return err
 			}
-			builder.Release()
-			if err := f(table); err != nil {
+
+			if err := f(tbl); err != nil {
 				return err
 			}
 		}
@@ -400,72 +437,86 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 	return nil
 }
 
-func (dg *dataGenerator) Generate(tb execute.TableBuilder, r *rand.Rand, typ flux.ColType) (start, stop values.Time) {
-	var next func() values.Value
+func (dg *dataGenerator) generateBufferTimes(start values.Time, n int) (ts *array.Int64, stop values.Time, left int) {
+	size := n
+	if size > 1024 {
+		size = 1024
+	}
+
+	b := arrow.NewIntBuilder(dg.Allocator)
+	b.Reserve(size)
+	for stop = start; b.Len() < size; stop = stop.Add(dg.Period) {
+		b.Append(int64(stop))
+	}
+	return b.NewInt64Array(), stop, n - size
+}
+
+func (dg *dataGenerator) generateBufferValues(r *rand.Rand, typ flux.ColType, n int) array.Interface {
 	switch typ {
 	case flux.TFloat:
-		next = func() values.Value {
+		b := arrow.NewFloatBuilder(dg.Allocator)
+		b.Resize(n)
+		for i := 0; i < n; i++ {
 			if dg.Nulls > 0.0 && dg.Nulls > r.Float64() {
-				return values.NewNull(semantic.Float)
+				b.AppendNull()
+				continue
 			}
-			v := rand.NormFloat64() * 50
-			return values.NewFloat(v)
+			v := r.NormFloat64() * 50
+			b.Append(v)
 		}
-	case flux.TInt:
-		next = func() values.Value {
+		return b.NewArray()
+	case flux.TInt, flux.TTime:
+		b := arrow.NewIntBuilder(dg.Allocator)
+		b.Resize(n)
+		for i := 0; i < n; i++ {
 			if dg.Nulls > 0.0 && dg.Nulls > r.Float64() {
-				return values.NewNull(semantic.Int)
+				b.AppendNull()
+				continue
 			}
-			v := rand.Intn(201) - 100
-			return values.NewInt(int64(v))
+			v := r.Intn(201) - 100
+			b.Append(int64(v))
 		}
+		return b.NewArray()
 	case flux.TUInt:
-		next = func() values.Value {
+		b := arrow.NewUintBuilder(dg.Allocator)
+		b.Resize(n)
+		for i := 0; i < n; i++ {
 			if dg.Nulls > 0.0 && dg.Nulls > r.Float64() {
-				return values.NewNull(semantic.UInt)
+				b.AppendNull()
+				continue
 			}
-			v := rand.Intn(101)
-			return values.NewUInt(uint64(v))
+			v := r.Intn(101)
+			b.Append(uint64(v))
 		}
+		return b.NewArray()
 	case flux.TString:
-		next = func() values.Value {
+		b := arrow.NewStringBuilder(dg.Allocator)
+		b.Resize(n)
+		b.ReserveData(n * 7)
+		for i := 0; i < n; i++ {
 			if dg.Nulls > 0.0 && dg.Nulls > r.Float64() {
-				return values.NewNull(semantic.String)
+				b.AppendNull()
+				continue
 			}
-			v := genTagValue(r, 3, 8)
-			return values.NewString(v)
+			v := genTagValue(r, 3, 7)
+			b.AppendString(v)
 		}
+		return b.NewArray()
 	case flux.TBool:
-		next = func() values.Value {
+		b := arrow.NewBoolBuilder(dg.Allocator)
+		b.Resize(n)
+		for i := 0; i < n; i++ {
 			if dg.Nulls > 0.0 && dg.Nulls > r.Float64() {
-				return values.NewNull(semantic.Bool)
+				b.AppendNull()
+				continue
 			}
-			v := r.Intn(2) == 1
-			return values.NewBool(v)
+			v := r.Intn(2) != 0
+			b.Append(v)
 		}
+		return b.NewArray()
 	default:
 		panic("implement me")
 	}
-
-	timeIdx, _ := tb.AddCol(flux.ColMeta{
-		Label: execute.DefaultTimeColLabel,
-		Type:  flux.TTime,
-	})
-	valueIdx, _ := tb.AddCol(flux.ColMeta{
-		Label: execute.DefaultValueColLabel,
-		Type:  typ,
-	})
-
-	start, stop = dg.Start, dg.Start
-	for i, ts := 0, dg.Start; i < dg.NumPoints; i, ts = i+1, ts.Add(dg.Period) {
-		_ = tb.AppendTime(timeIdx, ts)
-		_ = tb.AppendValue(valueIdx, next())
-		_ = tb.AppendValue(valueIdx, next())
-		if ts > stop {
-			stop = ts
-		}
-	}
-	return start, stop
 }
 
 type result struct {

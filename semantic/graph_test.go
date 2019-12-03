@@ -2,7 +2,6 @@ package semantic_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
@@ -332,12 +331,20 @@ func TestNew(t *testing.T) {
 										Value: &semantic.StringLiteral{Value: "foo"},
 									},
 									{
-										Key:   &semantic.Identifier{Name: "every"},
-										Value: &semantic.DurationLiteral{Value: 1 * time.Hour},
+										Key: &semantic.Identifier{Name: "every"},
+										Value: &semantic.DurationLiteral{
+											Values: []ast.Duration{
+												{Magnitude: 1, Unit: ast.HourUnit},
+											},
+										},
 									},
 									{
-										Key:   &semantic.Identifier{Name: "delay"},
-										Value: &semantic.DurationLiteral{Value: 10 * time.Minute},
+										Key: &semantic.Identifier{Name: "delay"},
+										Value: &semantic.DurationLiteral{
+											Values: []ast.Duration{
+												{Magnitude: 10, Unit: ast.MinuteUnit},
+											},
+										},
 									},
 									{
 										Key:   &semantic.Identifier{Name: "cron"},

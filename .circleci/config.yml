@@ -2,7 +2,7 @@ version: 2
 jobs:
   test:
     docker:
-      - image: nathanielc/flux-build:latest
+      - image: quay.io/influxdb/flux-build:latest
     environment:
       GOCACHE: /tmp/go-cache
       GOFLAGS: -p=8
@@ -36,6 +36,7 @@ jobs:
       - run: make vet
       - run: make staticcheck
       - run: make checkgenerate
+      - run: make libflux-wasm
       - run: make test GO_TEST_FLAGS='-coverprofile=coverage.txt -covermode=atomic'
       - run:
           name: Uploading coverage report
@@ -60,7 +61,7 @@ jobs:
           when: always
   test-race:
     docker:
-      - image: nathanielc/flux-build:latest
+      - image: quay.io/influxdb/flux-build:latest
     environment:
       GOPATH: /tmp/go
       GOFLAGS: -p=8
@@ -78,7 +79,7 @@ jobs:
       # No need to save the pkg/mod cache since the other job does it
   test-bench:
     docker:
-      - image: nathanielc/flux-build:latest
+      - image: quay.io/influxdb/flux-build:latest
     environment:
       GOPATH: /tmp/go
       GOFLAGS: -p=8
@@ -93,6 +94,29 @@ jobs:
       - run: make test-bench
       # No need to save the pkg/mod cache since the other job does it
 
+  release:
+    docker:
+      - image: circleci/golang:1.12
+    environment:
+      GOCACHE: /tmp/go-cache
+      GOFLAGS: -p=8
+      GOPATH: /tmp/go
+      GO111MODULE: 'on' # must be quoted to force string type instead of boolean type
+    steps:
+      - checkout
+      - run:
+          name: Generate changelog
+          command: |
+            ./gotool.sh github.com/influxdata/changelog generate \
+                --version $CIRCLE_TAG \
+                --commit-url https://github.com/influxdata/flux/commit \
+                -o release-notes.txt
+      - run:
+          name: Perform release
+          command: |
+            ./gotool.sh github.com/goreleaser/goreleaser release \
+                --rm-dist --release-notes release-notes.txt
+
 workflows:
   version: 2
   build-and-test:
@@ -100,3 +124,12 @@ workflows:
       - test
       - test-race
       - test-bench
+
+  release:
+    jobs:
+      - release:
+          filters:
+            tags:
+              only: /^v\d\.\d+\.\d+$/
+            branches:
+              ignore: /.*/

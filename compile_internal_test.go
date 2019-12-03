@@ -95,3 +95,26 @@ func TestValidatePackageBuiltins(t *testing.T) {
 		})
 	}
 }
+
+func Test_options(t *testing.T) {
+	pkg := &ast.Package{
+		Files: []*ast.File{
+			{
+				Body: []ast.Statement{
+					&ast.VariableAssignment{},
+					&ast.OptionStatement{},
+				},
+			},
+			{
+				Body: []ast.Statement{
+					&ast.VariableAssignment{},
+				},
+			},
+		},
+	}
+
+	actual := options(pkg)
+	if len(actual.Files) != 1 || len(actual.Files[0].Body) != 1 {
+		t.Fail()
+	}
+}

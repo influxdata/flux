@@ -120,3 +120,18 @@ func AppendTime(b array.Builder, v values.Time) error {
 	vb.Append(int64(v))
 	return nil
 }
+
+// Slice will construct a new slice of the array using the given
+// start and stop index. The returned array must be released.
+//
+// This is functionally equivalent to using array.NewSlice,
+// but array.NewSlice will construct an array.String when
+// the data type is a string rather than an array.Binary.
+func Slice(arr array.Interface, i, j int64) array.Interface {
+	data := array.NewSliceData(arr.Data(), i, j)
+	defer data.Release()
+	if _, ok := arr.(*array.Binary); ok {
+		return array.NewBinaryData(data)
+	}
+	return array.MakeFromData(data)
+}

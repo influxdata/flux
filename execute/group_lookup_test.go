@@ -221,7 +221,9 @@ type entry struct {
 	Value int
 }
 
-func testGroupLookup_LookupOrCreate(tb testing.TB, run func(name string, keys []flux.GroupKey)) {
+func testGroupLookupHelper(tb testing.TB, run func(name string, keys []flux.GroupKey)) {
+	tb.Helper()
+
 	// Generate a small schema to use for the group lookup.
 	schema := gen.Schema{
 		Start: time.Now(),
@@ -321,8 +323,8 @@ func testGroupLookup_LookupOrCreate(tb testing.TB, run func(name string, keys []
 	}())
 }
 
-func TestGroupLookup_LookupOrCreate(t *testing.T) {
-	testGroupLookup_LookupOrCreate(t, func(name string, keys []flux.GroupKey) {
+func TestGroupLookup_LookupOrSet(t *testing.T) {
+	testGroupLookupHelper(t, func(name string, keys []flux.GroupKey) {
 		t.Run(name, func(t *testing.T) {
 			l := execute.NewGroupLookup()
 			for _, key := range keys {
@@ -343,8 +345,8 @@ func TestGroupLookup_LookupOrCreate(t *testing.T) {
 	})
 }
 
-func BenchmarkGroupLookup_LookupOrCreate(b *testing.B) {
-	testGroupLookup_LookupOrCreate(b, func(name string, keys []flux.GroupKey) {
+func BenchmarkGroupLookup_LookupOrSet(b *testing.B) {
+	testGroupLookupHelper(b, func(name string, keys []flux.GroupKey) {
 		b.Run(name, func(b *testing.B) {
 			b.ResetTimer()
 			b.ReportAllocs()
@@ -355,6 +357,82 @@ func BenchmarkGroupLookup_LookupOrCreate(b *testing.B) {
 					if _, ok := l.Lookup(key); !ok {
 						l.Set(key, true)
 					}
+				}
+			}
+		})
+	})
+}
+
+func TestGroupLookup_LookupOrCreate(t *testing.T) {
+	testGroupLookupHelper(t, func(name string, keys []flux.GroupKey) {
+		t.Run(name, func(t *testing.T) {
+			l := execute.NewGroupLookup()
+			for _, key := range keys {
+				want := &struct{}{}
+				if got := l.LookupOrCreate(key, func() interface{} {
+					return want
+				}); want != got {
+					t.Errorf("unexpected value for key: %s", key)
+				}
+
+				// Do the same thing, but allocate a random pointer
+				// that will compare differently if it is used instead.
+				if got := l.LookupOrCreate(key, func() interface{} {
+					return &struct{}{}
+				}); want != got {
+					t.Errorf("unexpected value for key: %s", key)
+				}
+			}
+
+			// Run through the keys again and lookup the value.
+			// Then use lookup or create to ensure that it doesn't
+			// replace that value. This is the same as the above check,
+			// but verifies that this works properly even after setting
+			// other entries.
+			for _, key := range keys {
+				want, ok := l.Lookup(key)
+				if !ok {
+					t.Errorf("unexpected key lookup: %s", key)
+				} else if got := l.LookupOrCreate(key, func() interface{} {
+					return &struct{}{}
+				}); want != got {
+					t.Errorf("unexpected value for key: %s", key)
+				}
+			}
+		})
+	})
+}
+
+func TestGroupLookup_Clear(t *testing.T) {
+	testGroupLookupHelper(t, func(name string, keys []flux.GroupKey) {
+		t.Run(name, func(t *testing.T) {
+			l := execute.NewGroupLookup()
+			for _, key := range keys {
+				l.Set(key, true)
+			}
+
+			count := 0
+			l.Range(func(key flux.GroupKey, value interface{}) {
+				count++
+			})
+
+			if count == 0 {
+				t.Errorf("expected at least one element, got %d", count)
+			}
+
+			l.Clear()
+			count = 0
+			l.Range(func(key flux.GroupKey, value interface{}) {
+				count++
+			})
+
+			if count > 0 {
+				t.Errorf("expected zero elements, got %d", count)
+			}
+
+			for _, key := range keys {
+				if _, ok := l.Lookup(key); ok {
+					t.Errorf("unexpected key lookup for %s", key)
 				}
 			}
 		})

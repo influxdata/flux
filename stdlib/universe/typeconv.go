@@ -4,7 +4,9 @@ import (
 	"context"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -115,6 +117,19 @@ func (c *stringConv) Call(ctx context.Context, args values.Object) (values.Value
 		str = v.Time().String()
 	case semantic.Duration:
 		str = v.Duration().String()
+	case semantic.Bytes:
+		var sb strings.Builder
+		var vB = v.Bytes()
+		for len(vB) > 0 {
+			r, size := utf8.DecodeRune(vB)
+			if r == utf8.RuneError && size == 1 {
+				return nil, errors.Newf(codes.Invalid, "invalid utf8 response")
+			}
+			vB = vB[size:]
+
+			sb.WriteRune(r)
+		}
+		str = sb.String()
 	default:
 		return nil, errors.Newf(codes.Invalid, "cannot convert %v to string", v.Type())
 	}

@@ -1,0 +1,155 @@
+package universe
+
+import (
+	"github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/arrowutil"
+	"github.com/influxdata/flux/internal/errors"
+)
+
+//lint:file-ignore U1000 Ignore all unused code, it's generated
+
+{{ $types := . }}
+
+func (gr *pivotTableGroup) mergeKeys(mem memory.Allocator) array.Interface {
+	switch gr.rowCol.Type {
+	{{range .}}
+	{{if .IsComparable}}
+	case {{.ColumnType}}:
+		return gr.merge{{.Name}}Keys(mem)
+	{{end}}
+	{{end}}
+	default:
+		panic(errors.Newf(codes.Unimplemented, "row column merge not implemented for %s", gr.rowCol.Type))
+	}
+}
+
+func (gr *pivotTableGroup) buildColumn(keys array.Interface, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	switch gr.rowCol.Type {
+	{{range .}}
+	{{if .IsComparable}}
+	case {{.ColumnType}}:
+		return gr.buildColumnFrom{{.PluralName}}(keys.(*{{.ArrowType}}), buf, mem)
+	{{end}}
+	{{end}}
+	default:
+		panic(errors.Newf(codes.Unimplemented, "row column merge not implemented for %s", gr.rowCol.Type))
+	}
+}
+
+{{range .}}
+{{if .IsComparable}}
+func (gr *pivotTableGroup) merge{{.Name}}Keys(mem memory.Allocator) array.Interface {
+	buffers := make([][]array.Interface, 0, len(gr.buffers))
+	for _, buf := range gr.buffers {
+		buffers = append(buffers, buf.keys)
+	}
+
+	count := 0
+	gr.forEach{{.Name}}(buffers, func(v {{.Type}}) {
+		count++
+	})
+
+	b := arrowutil.New{{.ArrowName}}Builder(mem)
+	b.Resize(count)
+	gr.forEach{{.Name}}(buffers, b.{{.Append}})
+	return b.NewArray()
+}
+
+func (gr *pivotTableGroup) forEach{{.Name}}(buffers [][]array.Interface, fn func(v {{.Type}})) {
+	iterators := make([]*arrowutil.{{.ArrowName}}Iterator, 0, len(buffers))
+	for _, vs := range buffers {
+		itr := arrowutil.Iterate{{.ArrowName}}s(vs)
+		if !itr.Next() {
+			continue
+		}
+		iterators = append(iterators, &itr)
+	}
+
+	// Count the number of common keys.
+	for len(iterators) > 0 {
+		next := iterators[0].{{.Value}}()
+		for _, itr := range iterators[1:] {
+			if v := itr.{{.Value}}(); v < next {
+				next = v
+			}
+		}
+
+		// This counts as a row.
+		fn(next)
+
+		// Advance any iterators to the next non-null value
+		// that match the next value.
+		for i := 0; i < len(iterators); {
+			itr := iterators[i]
+			if itr.{{.Value}}() != next {
+				i++
+				continue
+			}
+
+			// Advance to the next non-null value.
+			for {
+				if !itr.Next() {
+					// Remove this iterator from the list.
+					copy(iterators[i:], iterators[i+1:])
+					iterators = iterators[:len(iterators)-1]
+					break
+				}
+
+				if itr.IsValid() && itr.{{.Value}}() != next {
+					// The next value is valid so advance
+					// to the next iterator.
+					i++
+					break
+				}
+			}
+		}
+	}
+}
+
+func (gr *pivotTableGroup) buildColumnFrom{{.PluralName}}(keys *{{.ArrowType}}, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	{{with $key := .}}
+	switch buf.valueType {
+	{{range $types}}
+	case {{.ColumnType}}:
+		return gr.build{{.Name}}ColumnFrom{{$key.PluralName}}(keys, buf, mem)
+	{{end}}
+	default:
+		panic("unimplemented")
+	}
+	{{end}}
+}
+{{end}}
+
+{{with $key := .}}
+{{range $types}}
+func (gr *pivotTableGroup) build{{.Name}}ColumnFrom{{$key.PluralName}}(keys *{{$key.ArrowType}}, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.New{{.ArrowName}}Builder(mem)
+	b.Resize(keys.Len())
+
+	kitr := arrowutil.Iterate{{$key.ArrowName}}s(buf.keys)
+	vitr := arrowutil.Iterate{{.ArrowName}}s(buf.values)
+	for i := 0; kitr.Next() && vitr.Next(); {
+		for ; i < keys.Len(); i++ {
+			if kitr.{{$key.Value}}() == keys.{{$key.Value}}(i) {
+				if vitr.IsValid() {
+					b.{{.Append}}(vitr.{{.Value}}())
+				} else {
+					b.AppendNull()
+				}
+				i++
+				break
+			}
+			b.AppendNull()
+		}
+	}
+	for i := b.Len(); i < keys.Len(); i++ {
+		b.AppendNull()
+	}
+	return b.NewArray()
+}
+{{end}}
+{{end}}
+{{end}}

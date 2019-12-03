@@ -5,48 +5,82 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/values"
 )
 
 func TestNewWindow(t *testing.T) {
-	want := execute.Window{
-		Every:  values.ConvertDuration(time.Minute),
-		Period: values.ConvertDuration(time.Minute),
-		Offset: values.ConvertDuration(time.Second),
-	}
-	got := execute.NewWindow(values.ConvertDuration(time.Minute), values.ConvertDuration(time.Minute), values.ConvertDuration(time.Second))
-	if !cmp.Equal(want, got) {
-		t.Errorf("window different; -want/+got:\n%v\n", cmp.Diff(want, got))
-	}
+	t.Run("normal offset", func(t *testing.T) {
+		want := execute.Window{
+			Every:  values.ConvertDuration(time.Minute),
+			Period: values.ConvertDuration(time.Minute),
+			Offset: values.ConvertDuration(time.Second),
+		}
+		got := MustWindow(values.ConvertDuration(time.Minute), values.ConvertDuration(time.Minute), values.ConvertDuration(time.Second))
+		if !cmp.Equal(want, got) {
+			t.Errorf("window different; -want/+got:\n%v\n", cmp.Diff(want, got))
+		}
+	})
 
 	// offset larger than "every" duration will be normalized
-	want = execute.Window{
-		Every:  values.ConvertDuration(time.Minute),
-		Period: values.ConvertDuration(time.Minute),
-		Offset: values.ConvertDuration(30 * time.Second),
-	}
-	got = execute.NewWindow(
-		values.ConvertDuration(time.Minute),
-		values.ConvertDuration(time.Minute),
-		values.ConvertDuration(2*time.Minute+30*time.Second))
-	if !cmp.Equal(want, got) {
-		t.Errorf("window different; -want/+got:\n%v\n", cmp.Diff(want, got))
-	}
+	t.Run("larger offset", func(t *testing.T) {
+		want := execute.Window{
+			Every:  values.ConvertDuration(time.Minute),
+			Period: values.ConvertDuration(time.Minute),
+			Offset: values.ConvertDuration(30 * time.Second),
+		}
+		got := MustWindow(
+			values.ConvertDuration(time.Minute),
+			values.ConvertDuration(time.Minute),
+			values.ConvertDuration(2*time.Minute+30*time.Second))
+		if !cmp.Equal(want, got) {
+			t.Errorf("window different; -want/+got:\n%v\n", cmp.Diff(want, got))
+		}
+	})
 
 	// Negative offset will be normalized
-	want = execute.Window{
-		Every:  values.ConvertDuration(time.Minute),
-		Period: values.ConvertDuration(time.Minute),
-		Offset: values.ConvertDuration(30 * time.Second),
-	}
-	got = execute.NewWindow(
-		values.ConvertDuration(time.Minute),
-		values.ConvertDuration(time.Minute),
-		values.ConvertDuration(-2*time.Minute+30*time.Second))
-	if !cmp.Equal(want, got) {
-		t.Errorf("window different; -want/+got:\n%v\n", cmp.Diff(want, got))
-	}
+	t.Run("negative offset", func(t *testing.T) {
+		want := execute.Window{
+			Every:  values.ConvertDuration(time.Minute),
+			Period: values.ConvertDuration(time.Minute),
+			Offset: values.ConvertDuration(30 * time.Second),
+		}
+		got := MustWindow(
+			values.ConvertDuration(time.Minute),
+			values.ConvertDuration(time.Minute),
+			values.ConvertDuration(-2*time.Minute+30*time.Second))
+		if !cmp.Equal(want, got) {
+			t.Errorf("window different; -want/+got:\n%v\n", cmp.Diff(want, got))
+		}
+	})
+
+	// Mixed base duration units.
+	t.Run("mixed units", func(t *testing.T) {
+		wantErr := errors.New(codes.Invalid, "duration used as an interval cannot mix month and nanosecond units")
+		_, gotErr := execute.NewWindow(
+			mustParseDuration("1mo2w"),
+			mustParseDuration("1mo2w"),
+			values.Duration{},
+		)
+		if want, got := errAsString(wantErr), errAsString(gotErr); want != got {
+			t.Errorf("window error different; -want/+got:\n%v\n", cmp.Diff(want, got))
+		}
+	})
+
+	// Zero values.
+	t.Run("zero values", func(t *testing.T) {
+		wantErr := errors.New(codes.Invalid, "duration used as an interval cannot be zero")
+		_, gotErr := execute.NewWindow(
+			values.Duration{},
+			values.Duration{},
+			values.Duration{},
+		)
+		if want, got := errAsString(wantErr), errAsString(gotErr); want != got {
+			t.Errorf("window error different; -want/+got:\n%v\n", cmp.Diff(want, got))
+		}
+	})
 }
 
 func TestWindow_GetEarliestBounds(t *testing.T) {
@@ -58,7 +92,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 	}{
 		{
 			name: "simple",
-			w: execute.NewWindow(
+			w: MustWindow(
 				values.ConvertDuration(5*time.Minute),
 				values.ConvertDuration(5*time.Minute),
 				values.ConvertDuration(0)),
@@ -70,7 +104,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 		},
 		{
 			name: "simple with offset",
-			w: execute.NewWindow(
+			w: MustWindow(
 				values.ConvertDuration(5*time.Minute),
 				values.ConvertDuration(5*time.Minute),
 				values.ConvertDuration(30*time.Second)),
@@ -82,7 +116,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 		},
 		{
 			name: "underlapping",
-			w: execute.NewWindow(
+			w: MustWindow(
 				values.ConvertDuration(2*time.Minute),
 				values.ConvertDuration(1*time.Minute),
 				values.ConvertDuration(30*time.Second)),
@@ -94,7 +128,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 		},
 		{
 			name: "underlapping not contained",
-			w: execute.NewWindow(
+			w: MustWindow(
 				values.ConvertDuration(2*time.Minute),
 				values.ConvertDuration(1*time.Minute),
 				values.ConvertDuration(30*time.Second)),
@@ -106,7 +140,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 		},
 		{
 			name: "overlapping",
-			w: execute.NewWindow(
+			w: MustWindow(
 				values.ConvertDuration(1*time.Minute),
 				values.ConvertDuration(2*time.Minute),
 				values.ConvertDuration(30*time.Second)),
@@ -118,7 +152,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 		},
 		{
 			name: "partially overlapping",
-			w: execute.NewWindow(
+			w: MustWindow(
 				values.ConvertDuration(1*time.Minute),
 				values.ConvertDuration(3*time.Minute+30*time.Second),
 				values.ConvertDuration(30*time.Second)),
@@ -130,7 +164,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 		},
 		{
 			name: "partially overlapping (t on boundary)",
-			w: execute.NewWindow(
+			w: MustWindow(
 				values.ConvertDuration(1*time.Minute),
 				values.ConvertDuration(3*time.Minute+30*time.Second),
 				values.ConvertDuration(30*time.Second)),
@@ -154,6 +188,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 }
 
 func TestWindow_GetOverlappingBounds(t *testing.T) {
+	ts, ds := mustParseTime, mustParseDuration
 	testcases := []struct {
 		name string
 		w    execute.Window
@@ -265,6 +300,78 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "by day",
+			b: execute.Bounds{
+				Start: ts("2019-10-01T00:00:00Z"),
+				Stop:  ts("2019-10-08T00:00:00Z"),
+			},
+			w: execute.Window{
+				Every:  ds("1d"),
+				Period: ds("1d"),
+			},
+			want: []execute.Bounds{
+				{Start: ts("2019-10-01T00:00:00Z"), Stop: ts("2019-10-02T00:00:00Z")},
+				{Start: ts("2019-10-02T00:00:00Z"), Stop: ts("2019-10-03T00:00:00Z")},
+				{Start: ts("2019-10-03T00:00:00Z"), Stop: ts("2019-10-04T00:00:00Z")},
+				{Start: ts("2019-10-04T00:00:00Z"), Stop: ts("2019-10-05T00:00:00Z")},
+				{Start: ts("2019-10-05T00:00:00Z"), Stop: ts("2019-10-06T00:00:00Z")},
+				{Start: ts("2019-10-06T00:00:00Z"), Stop: ts("2019-10-07T00:00:00Z")},
+				{Start: ts("2019-10-07T00:00:00Z"), Stop: ts("2019-10-08T00:00:00Z")},
+			},
+		},
+		{
+			name: "by month",
+			b: execute.Bounds{
+				Start: ts("2019-01-01T00:00:00Z"),
+				Stop:  ts("2020-01-01T00:00:00Z"),
+			},
+			w: execute.Window{
+				Every:  ds("1mo"),
+				Period: ds("1mo"),
+			},
+			want: []execute.Bounds{
+				{Start: ts("2019-01-01T00:00:00Z"), Stop: ts("2019-02-01T00:00:00Z")},
+				{Start: ts("2019-02-01T00:00:00Z"), Stop: ts("2019-03-01T00:00:00Z")},
+				{Start: ts("2019-03-01T00:00:00Z"), Stop: ts("2019-04-01T00:00:00Z")},
+				{Start: ts("2019-04-01T00:00:00Z"), Stop: ts("2019-05-01T00:00:00Z")},
+				{Start: ts("2019-05-01T00:00:00Z"), Stop: ts("2019-06-01T00:00:00Z")},
+				{Start: ts("2019-06-01T00:00:00Z"), Stop: ts("2019-07-01T00:00:00Z")},
+				{Start: ts("2019-07-01T00:00:00Z"), Stop: ts("2019-08-01T00:00:00Z")},
+				{Start: ts("2019-08-01T00:00:00Z"), Stop: ts("2019-09-01T00:00:00Z")},
+				{Start: ts("2019-09-01T00:00:00Z"), Stop: ts("2019-10-01T00:00:00Z")},
+				{Start: ts("2019-10-01T00:00:00Z"), Stop: ts("2019-11-01T00:00:00Z")},
+				{Start: ts("2019-11-01T00:00:00Z"), Stop: ts("2019-12-01T00:00:00Z")},
+				{Start: ts("2019-12-01T00:00:00Z"), Stop: ts("2020-01-01T00:00:00Z")},
+			},
+		},
+		{
+			name: "overlapping by month",
+			b: execute.Bounds{
+				Start: ts("2019-01-01T00:00:00Z"),
+				Stop:  ts("2020-01-01T00:00:00Z"),
+			},
+			w: execute.Window{
+				Every:  ds("1mo"),
+				Period: ds("3mo"),
+			},
+			want: []execute.Bounds{
+				{Start: ts("2018-11-01T00:00:00Z"), Stop: ts("2019-02-01T00:00:00Z")},
+				{Start: ts("2018-12-01T00:00:00Z"), Stop: ts("2019-03-01T00:00:00Z")},
+				{Start: ts("2019-01-01T00:00:00Z"), Stop: ts("2019-04-01T00:00:00Z")},
+				{Start: ts("2019-02-01T00:00:00Z"), Stop: ts("2019-05-01T00:00:00Z")},
+				{Start: ts("2019-03-01T00:00:00Z"), Stop: ts("2019-06-01T00:00:00Z")},
+				{Start: ts("2019-04-01T00:00:00Z"), Stop: ts("2019-07-01T00:00:00Z")},
+				{Start: ts("2019-05-01T00:00:00Z"), Stop: ts("2019-08-01T00:00:00Z")},
+				{Start: ts("2019-06-01T00:00:00Z"), Stop: ts("2019-09-01T00:00:00Z")},
+				{Start: ts("2019-07-01T00:00:00Z"), Stop: ts("2019-10-01T00:00:00Z")},
+				{Start: ts("2019-08-01T00:00:00Z"), Stop: ts("2019-11-01T00:00:00Z")},
+				{Start: ts("2019-09-01T00:00:00Z"), Stop: ts("2019-12-01T00:00:00Z")},
+				{Start: ts("2019-10-01T00:00:00Z"), Stop: ts("2020-01-01T00:00:00Z")},
+				{Start: ts("2019-11-01T00:00:00Z"), Stop: ts("2020-02-01T00:00:00Z")},
+				{Start: ts("2019-12-01T00:00:00Z"), Stop: ts("2020-03-01T00:00:00Z")},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -276,4 +383,35 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 			}
 		})
 	}
+}
+
+func MustWindow(every, period, offset execute.Duration) execute.Window {
+	w, err := execute.NewWindow(every, period, offset)
+	if err != nil {
+		panic(err)
+	}
+	return w
+}
+
+func mustParseTime(s string) execute.Time {
+	t, err := time.Parse(time.RFC3339Nano, s)
+	if err != nil {
+		panic(err)
+	}
+	return values.ConvertTime(t)
+}
+
+func mustParseDuration(s string) execute.Duration {
+	d, err := values.ParseDuration(s)
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
+
+func errAsString(err error) (s string) {
+	if err != nil {
+		s = err.Error()
+	}
+	return s
 }

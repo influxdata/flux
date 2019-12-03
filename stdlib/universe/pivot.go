@@ -1,17 +1,28 @@
 package universe
 
 import (
+	"context"
+	"fmt"
+	"sort"
 	"strconv"
 
+	"github.com/apache/arrow/go/arrow/array"
+	arrowmemory "github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/tableutil"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
+
+//go:generate -command tmpl ../../gotool.sh github.com/benbjohnson/tmpl
+//go:generate tmpl -data=@../../internal/types.tmpldata -o pivot.gen.go pivot.gen.go.tmpl
 
 const (
 	PivotKind      = "pivot"
@@ -101,6 +112,18 @@ type PivotProcedureSpec struct {
 	RowKey      []string
 	ColumnKey   []string
 	ValueColumn string
+
+	// IsSortedByFunc is a function that can be set by the planner
+	// that can be used to determine if the parent is sorted by
+	// the given columns.
+	// TODO(jsternberg): See https://github.com/influxdata/flux/issues/2131 for details.
+	IsSortedByFunc func(cols []string, desc bool) bool
+
+	// IsKeyColumnFunc is a function that can be set by the planner
+	// that can be used to determine if the given column would be
+	// part of the group key if it were present.
+	// TODO(jsternberg): See https://github.com/influxdata/flux/issues/2131 for details.
+	IsKeyColumnFunc func(label string) bool
 }
 
 func newPivotProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -131,10 +154,29 @@ func (s *PivotProcedureSpec) Copy() plan.ProcedureSpec {
 	return ns
 }
 
+func (s *PivotProcedureSpec) isSortedBy(cols []string, desc bool) bool {
+	if s.IsSortedByFunc != nil {
+		return s.IsSortedByFunc(cols, desc)
+	}
+	return false
+}
+
+func (s *PivotProcedureSpec) isKeyColumn(label string) bool {
+	if s.IsKeyColumnFunc != nil {
+		return s.IsKeyColumnFunc(label)
+	}
+	return false
+}
+
 func createPivotTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*PivotProcedureSpec)
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
+	}
+
+	// Attempt to use the new pivot transformation if it is implemented for our inputs.
+	if t, d, err := newPivotTransformation2(a.Context(), *s, id, a.Allocator()); err == nil || flux.ErrorCode(err) != codes.Unimplemented {
+		return t, d, err
 	}
 
 	cache := execute.NewTableBuilderCache(a.Allocator())
@@ -381,4 +423,287 @@ func (t *pivotTransformation) UpdateProcessingTime(id execute.DatasetID, pt exec
 func (t *pivotTransformation) Finish(id execute.DatasetID, err error) {
 
 	t.d.Finish(err)
+}
+
+// pivotTransformation2 is an optimized version of pivot.
+// It can only be used when there is a single row and column key
+// and it can only be used if the row key is sorted without
+// null values.
+type pivotTransformation2 struct {
+	d      *execute.PassthroughDataset
+	ctx    context.Context
+	alloc  *memory.Allocator
+	spec   PivotProcedureSpec
+	groups *execute.GroupLookup
+}
+
+func newPivotTransformation2(ctx context.Context, spec PivotProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	if len(spec.RowKey) != 1 {
+		return nil, nil, errors.New(codes.Unimplemented, "only pivots with 1 row key are implemented")
+	} else if !spec.isSortedBy(spec.RowKey, false) {
+		return nil, nil, errors.New(codes.Unimplemented, "input must be sorted by the row key")
+	}
+	if len(spec.ColumnKey) != 1 {
+		return nil, nil, errors.New(codes.Unimplemented, "only pivots with 1 column key are implemented")
+	} else if !spec.isKeyColumn(spec.ColumnKey[0]) {
+		return nil, nil, errors.New(codes.Unimplemented, "column key must be part of the group key")
+	}
+	t := &pivotTransformation2{
+		d:      execute.NewPassthroughDataset(id),
+		ctx:    ctx,
+		alloc:  alloc,
+		spec:   spec,
+		groups: execute.NewGroupLookup(),
+	}
+	return t, t.d, nil
+}
+
+func (t *pivotTransformation2) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
+	return t.d.RetractTable(key)
+}
+
+func (t *pivotTransformation2) Process(id execute.DatasetID, tbl flux.Table) error {
+	// Validate that the table has all of the requisite columns.
+	if err := t.validateTable(tbl); err != nil {
+		return err
+	}
+
+	// Compute the group key that this table belongs part of.
+	// This is calculated by taking the current group key and removing
+	// the column keys and the value column.
+	// This can be calculated in advance because pivot will never
+	// add columns to the group key so it is safe to compute without
+	// the other tables.
+	key := t.computeGroupKey(tbl.Key())
+
+	// Determine the indices of everything.
+	rowIndex := execute.ColIdx(t.spec.RowKey[0], tbl.Cols())
+	rowType := tbl.Cols()[rowIndex].Type
+	valueIndex := execute.ColIdx(t.spec.ValueColumn, tbl.Cols())
+	valueType := tbl.Cols()[valueIndex].Type
+
+	// Find or create a group of pivot table buffers.
+	// These are organized by the column name.
+	gr := t.groups.LookupOrCreate(key, func() interface{} {
+		return &pivotTableGroup{
+			rowCol: flux.ColMeta{
+				Label: t.spec.RowKey[0],
+				Type:  rowType,
+			},
+			buffers: make(map[string]*pivotTableBuffer),
+		}
+	}).(*pivotTableGroup)
+
+	// Read the table and insert each of the column readers
+	// into the table group.
+	return tbl.Do(func(cr flux.ColReader) error {
+		colKey := t.spec.ColumnKey[0]
+		key := cr.Key().LabelValue(colKey)
+		if key == nil {
+			// The column key is not part of the group key
+			// so it does not have a consistent value.
+			// This is possible for us to do, but it requires
+			// regrouping the input and that is not implemented yet.
+			return errors.New(codes.Unimplemented, "column keys that are not part of the group key are not supported yet")
+		}
+
+		// The key must be a string.
+		if key.Type() != semantic.String {
+			return errors.New(codes.FailedPrecondition, "column key must be of type string")
+		}
+		label := key.Str()
+
+		// Retrieve the buffer associated with this value.
+		buf, ok := gr.buffers[label]
+		if !ok {
+			buf = &pivotTableBuffer{valueType: valueType}
+			gr.buffers[label] = buf
+		}
+
+		if buf.valueType != valueType {
+			return errors.New(codes.FailedPrecondition, "value columns with the same column key have different types")
+		}
+
+		// Insert the array associated with the row
+		// key and the value column into the buffer.
+		k, v := t.getColumn(cr, rowIndex), t.getColumn(cr, valueIndex)
+		buf.Insert(k, v)
+		return nil
+	})
+}
+
+func (t *pivotTransformation2) validateTable(tbl flux.Table) error {
+	if missingColumn, ok := func() (string, bool) {
+		for _, v := range t.spec.RowKey {
+			if idx := execute.ColIdx(v, tbl.Cols()); idx < 0 {
+				return v, false
+			}
+		}
+
+		for _, v := range t.spec.ColumnKey {
+			if idx := execute.ColIdx(v, tbl.Cols()); idx < 0 {
+				return v, false
+			}
+		}
+
+		if idx := execute.ColIdx(t.spec.ValueColumn, tbl.Cols()); idx < 0 {
+			return t.spec.ValueColumn, false
+		}
+		return "", true
+	}(); !ok {
+		return errors.Newf(codes.FailedPrecondition, "specified column does not exist in table: %v", missingColumn)
+	}
+	return nil
+}
+
+// computeGroupKey will compute the group key for a table with a given key.
+// This is constructed by removing any columns within the column key
+// or the value column.
+func (t *pivotTransformation2) computeGroupKey(key flux.GroupKey) flux.GroupKey {
+	// TODO(jsternberg): This can be optimized further when we
+	// refactor the group key implementation so it is more composable.
+	// https://github.com/influxdata/flux/issues/1032
+	// There's no requirement for us to copy the group key here
+	// as this is a simple filter and we also don't even know if
+	// we're going to even filter anything when we compute this.
+	// But as this simplifies the current implementation, we'll revisit
+	// this later.
+	cols := make([]flux.ColMeta, 0, len(key.Cols()))
+	vs := make([]values.Value, 0, len(key.Cols()))
+	for i, col := range key.Cols() {
+		if col.Label == t.spec.ValueColumn || t.contains(col.Label, t.spec.ColumnKey) {
+			continue
+		}
+		cols = append(cols, col)
+		vs = append(vs, key.Value(i))
+	}
+	return execute.NewGroupKey(cols, vs)
+}
+
+func (t *pivotTransformation2) contains(v string, ss []string) bool {
+	for _, s := range ss {
+		if s == v {
+			return true
+		}
+	}
+	return false
+}
+
+func (t *pivotTransformation2) getColumn(cr flux.ColReader, j int) array.Interface {
+	switch col := cr.Cols()[j]; col.Type {
+	case flux.TInt:
+		return cr.Ints(j)
+	case flux.TUInt:
+		return cr.UInts(j)
+	case flux.TFloat:
+		return cr.Floats(j)
+	case flux.TString:
+		return cr.Strings(j)
+	case flux.TBool:
+		return cr.Bools(j)
+	case flux.TTime:
+		return cr.Times(j)
+	default:
+		panic(fmt.Sprintf("unexpected column type: %s", col.Type))
+	}
+}
+
+func (t *pivotTransformation2) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
+	return t.d.UpdateWatermark(mark)
+}
+
+func (t *pivotTransformation2) UpdateProcessingTime(id execute.DatasetID, mark execute.Time) error {
+	return t.d.UpdateProcessingTime(mark)
+}
+
+func (t *pivotTransformation2) Finish(id execute.DatasetID, err error) {
+	t.groups.Range(func(key flux.GroupKey, value interface{}) {
+		if err != nil {
+			return
+		}
+
+		var tbl flux.Table
+		gr := value.(*pivotTableGroup)
+		tbl, err = gr.doPivot(key, t.alloc)
+		if err != nil {
+			return
+		}
+		err = t.d.Process(tbl)
+	})
+	t.groups.Clear()
+
+	// Inform the downstream dataset that we are finished.
+	t.d.Finish(err)
+}
+
+type pivotTableBuffer struct {
+	keys      []array.Interface
+	valueType flux.ColType
+	values    []array.Interface
+}
+
+func (b *pivotTableBuffer) Insert(k, v array.Interface) {
+	k.Retain()
+	b.keys = append(b.keys, k)
+	v.Retain()
+	b.values = append(b.values, v)
+}
+
+func (b *pivotTableBuffer) Release() {
+	for _, k := range b.keys {
+		k.Release()
+	}
+	for _, v := range b.values {
+		v.Release()
+	}
+}
+
+type pivotTableGroup struct {
+	rowCol  flux.ColMeta
+	buffers map[string]*pivotTableBuffer
+}
+
+func (gr *pivotTableGroup) doPivot(key flux.GroupKey, mem arrowmemory.Allocator) (flux.Table, error) {
+	// Merge all of the keys from each buffer.
+	keys := gr.mergeKeys(mem)
+
+	// Create the table buffer that will be used for the final table.
+	ncols := len(key.Cols()) + len(gr.buffers)
+	tb := &arrow.TableBuffer{
+		GroupKey: key,
+		Columns:  make([]flux.ColMeta, 0, ncols),
+		Values:   make([]array.Interface, 0, ncols),
+	}
+	tb.Columns = append(tb.Columns, gr.rowCol)
+	tb.Values = append(tb.Values, keys)
+
+	// Add the group key columns to the table.
+	for j, col := range key.Cols() {
+		tb.Columns = append(tb.Columns, col)
+		tb.Values = append(tb.Values, arrow.Repeat(key.Value(j), keys.Len(), mem))
+	}
+
+	// Build each column by appending a value when it matches
+	// with one of the keys and null when it does not.
+	labels := make([]string, 0, len(gr.buffers))
+	for label := range gr.buffers {
+		labels = append(labels, label)
+	}
+	sort.Strings(labels)
+
+	for _, label := range labels {
+		buf := gr.buffers[label]
+		vs := gr.buildColumn(keys, buf, mem)
+		tb.Columns = append(tb.Columns, flux.ColMeta{
+			Label: label,
+			Type:  buf.valueType,
+		})
+		tb.Values = append(tb.Values, vs)
+		buf.Release()
+	}
+
+	if err := tb.Validate(); err != nil {
+		return nil, err
+	}
+	return tableutil.FromBuffer(tb), nil
 }

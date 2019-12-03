@@ -78,10 +78,10 @@ func TestFixedWindow_PassThrough(t *testing.T) {
 			d,
 			c,
 			execute.Bounds{},
-			execute.NewWindow(
-				values.ConvertDuration(time.Minute),
-				values.ConvertDuration(time.Minute),
-				values.ConvertDuration(0)),
+			execute.Window{
+				Every:  values.ConvertDuration(time.Minute),
+				Period: values.ConvertDuration(time.Minute),
+			},
 			execute.DefaultTimeColLabel,
 			execute.DefaultStartColLabel,
 			execute.DefaultStopColLabel,
@@ -835,11 +835,15 @@ func TestFixedWindow_Process(t *testing.T) {
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
 			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 
+			w, err := execute.NewWindow(tc.every, tc.period, tc.offset)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
 			fw := universe.NewFixedWindowTransformation(
 				d,
 				c,
 				tc.bounds,
-				execute.NewWindow(tc.every, tc.period, tc.offset),
+				w,
 				execute.DefaultTimeColLabel,
 				execute.DefaultStartColLabel,
 				execute.DefaultStopColLabel,

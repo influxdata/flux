@@ -72,6 +72,39 @@ func EvalAST(ctx context.Context, astPkg *ast.Package, opts ...ScopeMutator) ([]
 	return sideEffects, scope, nil
 }
 
+// EvalOptions is like EvalAST, but only evaluates options.
+func EvalOptions(ctx context.Context, astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+	return EvalAST(ctx, options(astPkg), opts...)
+}
+
+// options returns a shallow copy of the AST, trimmed to include only option statements.
+func options(astPkg *ast.Package) *ast.Package {
+	trimmed := &ast.Package{
+		BaseNode: astPkg.BaseNode,
+		Path:     astPkg.Path,
+		Package:  astPkg.Package,
+	}
+	for _, f := range astPkg.Files {
+		var body []ast.Statement
+		for _, s := range f.Body {
+			if opt, ok := s.(*ast.OptionStatement); ok {
+				body = append(body, opt)
+			}
+		}
+		if len(body) > 0 {
+			trimmed.Files = append(trimmed.Files, &ast.File{
+				Body:     body,
+				BaseNode: f.BaseNode,
+				Name:     f.Name,
+				Package:  f.Package,
+				Imports:  f.Imports,
+			})
+		}
+	}
+
+	return trimmed
+}
+
 // ScopeMutator is any function that mutates the scope of an identifier.
 type ScopeMutator = func(values.Scope)
 

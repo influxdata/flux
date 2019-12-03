@@ -37,7 +37,7 @@ type Table interface {
 	Do(f func(ColReader) error) error
 
 	// Done indicates that this table is no longer needed and that the
-	// underlying processer that produces the table may discard any
+	// underlying processor that produces the table may discard any
 	// buffers that need to be processed. If the table has already been
 	// read with Do, this happens automatically.
 	// This is also not required if the table is empty.
@@ -53,6 +53,14 @@ type Table interface {
 // data buffered.
 type BufferedTable interface {
 	Table
+
+	// Buffer returns the i'th buffer in the buffered table.
+	// This allows accessing the buffered table contents without
+	// using the Table.
+	Buffer(i int) ColReader
+
+	// BufferN returns the number of buffers in this table.
+	BufferN() int
 
 	// Copy will return a copy of the BufferedTable without
 	// consuming the Table itself. If this Table has already

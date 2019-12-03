@@ -970,7 +970,7 @@ func (l *DateTimeLiteral) Copy() Node {
 type DurationLiteral struct {
 	loc `json:"-"`
 
-	Value time.Duration `json:"value"`
+	Values []ast.Duration `json:"values"`
 }
 
 func (*DurationLiteral) NodeType() string { return "DurationLiteral" }

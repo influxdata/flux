@@ -63,7 +63,7 @@ RUN rustup component add rust-std --target wasm32-unknown-unknown
 
 VOLUME /src
 VOLUME $HOME/.cache
-WORKDIR /src/parser
+WORKDIR /src
 
 # This is a workaround to chown the $HOME/.cache dir on startup as the builder user.
 # This way the build cache can be reused between runs.
