@@ -1,3 +1,3 @@
 #![allow(clippy::all)]
-mod semantic_generated;
-mod types;
+pub mod semantic_generated;
+pub mod types;

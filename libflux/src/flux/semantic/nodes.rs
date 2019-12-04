@@ -15,6 +15,7 @@ use crate::semantic::types;
 use crate::semantic::{
     env::Environment,
     fresh::Fresher,
+    import::Importer,
     infer::{Constraint, Constraints},
     sub::{Substitutable, Substitution},
     types::{Array, Function, Kind, MonoType, PolyType, Tvar},
@@ -240,37 +241,16 @@ impl Expression {
     }
 }
 
-pub struct Importer<'a> {
-    values: HashMap<&'a str, PolyType>,
-}
-
-impl<'a> Importer<'a> {
-    pub fn new() -> Importer<'a> {
-        Importer {
-            values: HashMap::new(),
-        }
-    }
-}
-
-impl<'a> From<HashMap<&'a str, PolyType>> for Importer<'a> {
-    fn from(m: HashMap<&'a str, PolyType>) -> Importer<'a> {
-        Importer { values: m }
-    }
-}
-
-impl<'a> Importer<'a> {
-    pub fn import(&'a self, name: &'a str) -> Option<&'a PolyType> {
-        self.values.get(name)
-    }
-}
-
 // Infer the types of a flux package
-pub fn infer_pkg_types(
+pub fn infer_pkg_types<I>(
     pkg: &mut Package,
     env: Environment,
     f: &mut Fresher,
-    i: &Importer,
-) -> std::result::Result<(Environment, Substitution), Error> {
+    i: &I,
+) -> std::result::Result<(Environment, Substitution), Error>
+where
+    I: Importer,
+{
     let (env, cons) = pkg.infer(env, f, i)?;
     Ok((env, infer::solve(&cons, &mut HashMap::new(), f)?))
 }
@@ -288,7 +268,10 @@ pub struct Package {
 }
 
 impl Package {
-    fn infer(&mut self, env: Environment, f: &mut Fresher, i: &Importer) -> Result {
+    fn infer<I: Importer>(&mut self, env: Environment, f: &mut Fresher, i: &I) -> Result
+    where
+        I: Importer,
+    {
         self.files
             .iter_mut()
             .try_fold((env, Constraints::empty()), |(env, rest), file| {
@@ -316,7 +299,10 @@ pub struct File {
 }
 
 impl File {
-    fn infer(&mut self, mut env: Environment, f: &mut Fresher, i: &Importer) -> Result {
+    fn infer<I>(&mut self, mut env: Environment, f: &mut Fresher, i: &I) -> Result
+    where
+        I: Importer,
+    {
         let mut imports = Vec::with_capacity(self.imports.len());
 
         for dec in &self.imports {
@@ -1568,11 +1554,22 @@ mod tests {
     use crate::ast;
     use crate::parser::parse_string;
     use crate::semantic::analyze::analyze_with;
+    use crate::semantic::import::Importer;
     use crate::semantic::types::{MonoType, PolyType, Tvar};
     use crate::semantic::walk::{walk, Node};
     use maplit::hashmap;
     use std::collections::HashMap;
     use std::rc::Rc;
+
+    struct TestImporter {
+        imports: HashMap<String, PolyType>,
+    }
+
+    impl Importer for TestImporter {
+        fn import(&self, name: &str) -> Option<&PolyType> {
+            self.imports.get(name)
+        }
+    }
 
     #[test]
     fn test_infer_instantiation() {
@@ -1626,8 +1623,8 @@ mod tests {
             &mut pkg,
             env,
             &mut f,
-            &Importer {
-                values: HashMap::new(),
+            &TestImporter {
+                imports: HashMap::new(),
             },
         )
         .unwrap();
