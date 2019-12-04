@@ -58,12 +58,10 @@ impl Environment {
     pub fn lookup(&self, v: &str) -> Option<&PolyType> {
         if let Some(t) = self.values.get(v) {
             Some(t)
+        } else if let Some(env) = &self.parent {
+            env.lookup(v)
         } else {
-            if let Some(env) = &self.parent {
-                env.lookup(v)
-            } else {
-                None
-            }
+            None
         }
     }
     // Add a new variable binding to the current stack frame
