@@ -73,13 +73,13 @@ pub fn builtins() -> Builtins<'static> {
                  }),
                  "addDuration" => Node::Builtin("forall [] (d: duration, to: time) -> time"),
                  "subDuration" => Node::Builtin("forall [] (d: duration, from: time) -> time"),
-                 "group" => Node::Builtin("forall [t0, t1] (<-tables: [t0], mode: string, columns: [string]) -> t1"),
+                 "group" => Node::Builtin("forall [t0] (<-tables: [t0], mode: string, columns: [string]) -> [t0]"),
                  "objectKeys" => Node::Builtin("forall [t0] (o: t0) -> [string]"),
                  "set" => Node::Builtin("forall [t0, t1, t2] (<-tables: t0, o: t1) -> t2"),
                  // must specify exactly one of bucket, bucketID
                  // must specify exactly one of org, orgID
                  // if host is specified, token must be too.
-                 "to" => Node::Builtin("forall [t0] (?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) -> t0"),
+                 "to" => Node::Builtin("forall [t0] (<-tables: [t0], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) -> [t0]"),
             }),
             "generate" => Node::Package(maplit::hashmap! {
                 "from" => Node::Builtin("forall [] (start: time, stop: time, count: int, fn: (n: int) -> int) -> [{ _start: time | _stop: time | _time: time | _value:int }]"),
