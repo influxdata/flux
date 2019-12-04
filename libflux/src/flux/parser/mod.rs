@@ -1213,7 +1213,7 @@ impl Parser {
                                 ),
                                 errors: vec![],
                             },
-                            text: format!("{}", t.lit),
+                            text: t.lit.to_string(),
                             expression: None,
                         })));
                     }
