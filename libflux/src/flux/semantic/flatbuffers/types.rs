@@ -1,6 +1,7 @@
 //! This module defines methods for serializing and deserializing MonoTypes
 //! and PolyTypes using the flatbuffer encoding.
 //!
+use crate::semantic::env::Environment;
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 
 use flatbuffers;
@@ -17,6 +18,26 @@ use crate::semantic::types::{
     Row,
     Tvar,
 };
+
+impl From<fb::TypeEnvironment<'_>> for Option<Environment> {
+    fn from(env: fb::TypeEnvironment) -> Option<Environment> {
+        let env = env.assignments()?;
+        let mut types = HashMap::new();
+        for i in 0..env.len() {
+            let assignment: Option<(String, PolyType)> = env.get(i).into();
+            let (id, ty) = assignment?;
+            types.insert(id, ty);
+        }
+        Some(Environment::from(types))
+    }
+}
+
+impl From<fb::TypeAssignment<'_>> for Option<(String, PolyType)> {
+    fn from(a: fb::TypeAssignment) -> Option<(String, PolyType)> {
+        let ty: Option<PolyType> = a.ty()?.into();
+        Some((a.id()?.into(), ty?))
+    }
+}
 
 /// Decodes a PolyType from a flatbuffer
 impl From<fb::PolyType<'_>> for Option<PolyType> {
@@ -202,6 +223,39 @@ where
         mapped.push(f(b, t));
     }
     mapped
+}
+
+fn build_env<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    env: Environment,
+) -> flatbuffers::WIPOffset<fb::TypeEnvironment<'a>> {
+    let assignments = build_vec(
+        env.values.into_iter().collect(),
+        builder,
+        build_type_assignment,
+    );
+    let assignments = builder.create_vector(assignments.as_slice());
+    fb::TypeEnvironment::create(
+        builder,
+        &fb::TypeEnvironmentArgs {
+            assignments: Some(assignments),
+        },
+    )
+}
+
+fn build_type_assignment<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    assignment: (String, PolyType),
+) -> flatbuffers::WIPOffset<fb::TypeAssignment<'a>> {
+    let id = builder.create_string(&assignment.0);
+    let ty = build_polytype(builder, assignment.1);
+    fb::TypeAssignment::create(
+        builder,
+        &fb::TypeAssignmentArgs {
+            id: Some(id),
+            ty: Some(ty),
+        },
+    )
 }
 
 /// Encodes a polytype as a flatbuffer
@@ -478,19 +532,53 @@ mod tests {
         WrappedStatementArgs,
     };
 
-    fn fb_serde(t: PolyType) -> Option<PolyType> {
-        let mut fb = flatbuffers::FlatBufferBuilder::new();
-        let off = build_polytype(&mut fb, t);
+    fn fb_serde<'a, T: 'a, S: 'a, F>(
+        fb: &'a mut flatbuffers::FlatBufferBuilder<'a>,
+        ty: T,
+        f: F,
+    ) -> S::Inner
+    where
+        F: Fn(&mut flatbuffers::FlatBufferBuilder<'a>, T) -> flatbuffers::WIPOffset<S>,
+        S: flatbuffers::Follow<'a>,
+        Option<T>: std::convert::From<S>,
+    {
+        let off = f(fb, ty);
         fb.finish(off, None);
         let buf = fb.finished_data();
-        flatbuffers::get_root::<fb::PolyType>(buf).into()
+        flatbuffers::get_root::<S>(buf)
     }
 
     fn test_serde(expr: &'static str) {
         let want = parser::parse(expr).unwrap();
-        assert_eq!(want.clone(), fb_serde(want).unwrap())
+        let got: Option<PolyType> = fb_serde(
+            &mut flatbuffers::FlatBufferBuilder::new(),
+            want.clone(),
+            build_polytype,
+        )
+        .into();
+        assert_eq!(want, got.unwrap())
     }
 
+    #[test]
+    fn serde_type_environment() {
+        let a = parser::parse("forall [] bool").unwrap();
+        let b = parser::parse("forall [] time").unwrap();
+
+        let want: Environment = maplit::hashmap! {
+            String::from("a") => a,
+            String::from("b") => b,
+        }
+        .into();
+
+        let got: Option<Environment> = fb_serde(
+            &mut flatbuffers::FlatBufferBuilder::new(),
+            want.clone(),
+            build_env,
+        )
+        .into();
+
+        assert_eq!(want, got.unwrap());
+    }
     #[test]
     fn serde_basic_types() {
         test_serde("forall [] bool");

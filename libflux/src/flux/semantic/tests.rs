@@ -26,6 +26,7 @@ use std::collections::HashMap;
 use crate::semantic::analyze::analyze_with;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
+use crate::semantic::import::Importer;
 use crate::semantic::infer;
 use crate::semantic::infer::Constraints;
 use crate::semantic::nodes;
@@ -108,6 +109,12 @@ where
     )
 }
 
+impl Importer for HashMap<&str, PolyType> {
+    fn import(&self, name: &str) -> Option<&PolyType> {
+        self.get(name)
+    }
+}
+
 fn infer_types(
     src: &str,
     env: HashMap<&str, &str>,
@@ -125,12 +132,10 @@ fn infer_types(
     let mut f = Fresher::from(max.0 + 1);
 
     // Instantiate package importer using generic objects
-    let importer = nodes::Importer::from(
-        imports
-            .into_iter()
-            .map(|(path, types)| (path, to_generic_row(types.iter(), &mut f).unwrap()))
-            .collect::<HashMap<&str, PolyType>>(),
-    );
+    let importer: HashMap<&str, PolyType> = imports
+        .into_iter()
+        .map(|(path, types)| (path, to_generic_row(types.iter(), &mut f).unwrap()))
+        .collect();
 
     // Parse polytype expressions in initial environment.
     let env = parse_map(env);

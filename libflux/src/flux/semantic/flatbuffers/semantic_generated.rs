@@ -774,6 +774,194 @@ pub mod fbsemantic {
         }
     }
 
+    pub enum TypeEnvironmentOffset {}
+    #[derive(Copy, Clone, Debug, PartialEq)]
+
+    pub struct TypeEnvironment<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for TypeEnvironment<'a> {
+        type Inner = TypeEnvironment<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf: buf, loc: loc },
+            }
+        }
+    }
+
+    impl<'a> TypeEnvironment<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            TypeEnvironment { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args TypeEnvironmentArgs<'args>,
+        ) -> flatbuffers::WIPOffset<TypeEnvironment<'bldr>> {
+            let mut builder = TypeEnvironmentBuilder::new(_fbb);
+            if let Some(x) = args.assignments {
+                builder.add_assignments(x);
+            }
+            builder.finish()
+        }
+
+        pub const VT_ASSIGNMENTS: flatbuffers::VOffsetT = 4;
+
+        #[inline]
+        pub fn assignments(
+            &self,
+        ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<TypeAssignment<'a>>>>
+        {
+            self._tab.get::<flatbuffers::ForwardsUOffset<
+                flatbuffers::Vector<flatbuffers::ForwardsUOffset<TypeAssignment<'a>>>,
+            >>(TypeEnvironment::VT_ASSIGNMENTS, None)
+        }
+    }
+
+    pub struct TypeEnvironmentArgs<'a> {
+        pub assignments: Option<
+            flatbuffers::WIPOffset<
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<TypeAssignment<'a>>>,
+            >,
+        >,
+    }
+    impl<'a> Default for TypeEnvironmentArgs<'a> {
+        #[inline]
+        fn default() -> Self {
+            TypeEnvironmentArgs { assignments: None }
+        }
+    }
+    pub struct TypeEnvironmentBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> TypeEnvironmentBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_assignments(
+            &mut self,
+            assignments: flatbuffers::WIPOffset<
+                flatbuffers::Vector<'b, flatbuffers::ForwardsUOffset<TypeAssignment<'b>>>,
+            >,
+        ) {
+            self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(
+                TypeEnvironment::VT_ASSIGNMENTS,
+                assignments,
+            );
+        }
+        #[inline]
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        ) -> TypeEnvironmentBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            TypeEnvironmentBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<TypeEnvironment<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
+    pub enum TypeAssignmentOffset {}
+    #[derive(Copy, Clone, Debug, PartialEq)]
+
+    pub struct TypeAssignment<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for TypeAssignment<'a> {
+        type Inner = TypeAssignment<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf: buf, loc: loc },
+            }
+        }
+    }
+
+    impl<'a> TypeAssignment<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            TypeAssignment { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args TypeAssignmentArgs<'args>,
+        ) -> flatbuffers::WIPOffset<TypeAssignment<'bldr>> {
+            let mut builder = TypeAssignmentBuilder::new(_fbb);
+            if let Some(x) = args.ty {
+                builder.add_ty(x);
+            }
+            if let Some(x) = args.id {
+                builder.add_id(x);
+            }
+            builder.finish()
+        }
+
+        pub const VT_ID: flatbuffers::VOffsetT = 4;
+        pub const VT_TY: flatbuffers::VOffsetT = 6;
+
+        #[inline]
+        pub fn id(&self) -> Option<&'a str> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<&str>>(TypeAssignment::VT_ID, None)
+        }
+        #[inline]
+        pub fn ty(&self) -> Option<PolyType<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<PolyType<'a>>>(TypeAssignment::VT_TY, None)
+        }
+    }
+
+    pub struct TypeAssignmentArgs<'a> {
+        pub id: Option<flatbuffers::WIPOffset<&'a str>>,
+        pub ty: Option<flatbuffers::WIPOffset<PolyType<'a>>>,
+    }
+    impl<'a> Default for TypeAssignmentArgs<'a> {
+        #[inline]
+        fn default() -> Self {
+            TypeAssignmentArgs { id: None, ty: None }
+        }
+    }
+    pub struct TypeAssignmentBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> TypeAssignmentBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_id(&mut self, id: flatbuffers::WIPOffset<&'b str>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(TypeAssignment::VT_ID, id);
+        }
+        #[inline]
+        pub fn add_ty(&mut self, ty: flatbuffers::WIPOffset<PolyType<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<PolyType>>(TypeAssignment::VT_TY, ty);
+        }
+        #[inline]
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        ) -> TypeAssignmentBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            TypeAssignmentBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<TypeAssignment<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
     pub enum VarOffset {}
     #[derive(Copy, Clone, Debug, PartialEq)]
 

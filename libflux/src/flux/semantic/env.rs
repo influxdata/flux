@@ -1,3 +1,4 @@
+use crate::semantic::import::Importer;
 use crate::semantic::sub::{Substitutable, Substitution};
 use crate::semantic::types::{union, PolyType, Tvar};
 use std::collections::HashMap;
@@ -29,6 +30,12 @@ impl Substitutable for Environment {
             Some(env) => union(env.free_vars(), self.values.free_vars()),
             None => self.values.free_vars(),
         }
+    }
+}
+
+impl Importer for Environment {
+    fn import(&self, name: &str) -> Option<&PolyType> {
+        self.lookup(name)
     }
 }
 

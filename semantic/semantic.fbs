@@ -1,5 +1,14 @@
 namespace fbsemantic;
 
+table TypeEnvironment {
+  assignments:[TypeAssignment];
+}
+
+table TypeAssignment {
+  id:string;
+  ty:PolyType;
+}
+
 union MonoType {
   Basic,
   Var,
