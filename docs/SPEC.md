@@ -1292,12 +1292,20 @@ Examples using known start and stop dates:
 #### Location support
 
 Intervals have location support for changing offsets by default.
-When a location has been specified either with the `location` option or the `location` parameter, a change in offset is used to either expand or shrink an interval.
+When a location has been specified either with the `location` option or the `location` parameter, a change in offset is used to either expand or shrink an interval if the interval is greater than the change in offset.
 The most common example is daylight savings time switches.
 When daylight savings time starts, the zone offset shifts west, becoming a more negative number.
 When this happens, the hour that was lost does not exist and the current window is shortened to accomodate this change.
+This happens at the time that the offset occurs.
+If the remaining time in the window is less than the offset change, then the window ends at the time of the offset switch and the rest of the offset change is subtracted from the next interval.
 When daylight savings time ends, the zone offset shifts east, becoming a more positive number.
 When this happens, one of the hours happens twice and so the interval becomes longer.
+If the offset change happens at the end of a window, then the offset will not be added to that window since the offset change did not occur in the window.
+Conversely, if the offset change happens at the start of a window, the offset change will be applied to that window.
+These adjustments only happen when the offset change is less than the interval duration.
+These changes happen independently for the `every` and `period`.
+These changes only occur if the location has been set to a named location.
+There are no offset changes if the location is UTC or set to a fixed offset.
 
 Examples:
 
@@ -1315,9 +1323,23 @@ Examples:
     // [2019-03-10T03:00:00-06:00, 2019-03-10T04:00:00-06:00)
     // [2019-03-10T04:00:00-06:00, 2019-03-10T06:00:00-06:00)
     // ... skipped ...
-    // [2019-11-03T00:00:00-06:00, 2019-11-03T02:00:00-07:00)
+    // [2019-11-03T00:00:00-06:00, 2019-11-03T01:00:00-07:00)
+    // [2019-11-03T01:00:00-07:00, 2019-11-03T04:00:00-07:00)
+    // [2019-11-04T04:00:00-07:00, 2019-11-03T06:00:00-07:00)
+
+    intervals(every:1h, period:2h, location: "America/Denver")
+    // [2019-03-10T00:00:00-07:00, 2019-03-10T03:00:00-06:00)
+    // [2019-03-10T01:00:00-07:00, 2019-03-10T03:00:00-06:00)
+    // [2019-03-10T03:00:00-06:00, 2019-03-10T04:00:00-06:00)
+    // [2019-03-10T03:00:00-06:00, 2019-03-10T05:00:00-06:00)
+    // [2019-03-10T04:00:00-06:00, 2019-03-10T06:00:00-06:00)
+    // ... skipped ...
+    // [2019-11-03T00:00:00-06:00, 2019-11-03T01:00:00-07:00)
+    // [2019-11-03T01:00:00-06:00, 2019-11-03T03:00:00-07:00)
+    // [2019-11-03T01:00:00-07:00, 2019-11-03T04:00:00-07:00)
     // [2019-11-03T02:00:00-07:00, 2019-11-03T04:00:00-07:00)
-    // [2019-11-04T03:00:00-07:00, 2019-11-03T06:00:00-07:00)
+    // [2019-11-04T03:00:00-07:00, 2019-11-03T05:00:00-07:00)
+    // [2019-11-04T04:00:00-07:00, 2019-11-03T06:00:00-07:00)
 
     intervals(every:1h, location: "America/Denver")
     // [2019-03-10T00:00:00-07:00, 2019-03-10T01:00:00-07:00)
@@ -1326,7 +1348,8 @@ Examples:
     // [2019-03-10T04:00:00-06:00, 2019-03-10T05:00:00-06:00)
     // ... skipped ...
     // [2019-11-03T00:00:00-06:00, 2019-11-03T01:00:00-06:00)
-    // [2019-11-03T01:00:00-06:00, 2019-11-03T02:00:00-07:00)
+    // [2019-11-03T01:00:00-06:00, 2019-11-03T01:00:00-07:00)
+    // [2019-11-03T01:00:00-07:00, 2019-11-03T02:00:00-07:00)
     // [2019-11-03T02:00:00-07:00, 2019-11-03T03:00:00-07:00)
     // [2019-11-03T03:00:00-07:00, 2019-11-03T04:00:00-07:00)
 
@@ -1340,19 +1363,30 @@ Examples:
     // ... skipped ...
     // [2019-11-03T00:00:00-06:00, 2019-11-03T00:30:00-06:00)
     // [2019-11-03T00:30:00-06:00, 2019-11-03T01:00:00-06:00)
-    // [2019-11-03T01:00:00-06:00, 2019-11-03T01:30:00-06:00), [2019-11-03T01:00:00-07:00, 2019-11-03T01:30:00-07:00)
-    // [2019-11-03T01:30:00-06:00, 2019-11-03T02:00:00-06:00), [2019-11-03T01:30:00-07:00, 2019-11-03T02:00:00-07:00)
+    // [2019-11-03T01:00:00-06:00, 2019-11-03T01:30:00-06:00)
+    // [2019-11-03T01:30:00-06:00, 2019-11-03T01:00:00-07:00)
+    // [2019-11-03T01:00:00-07:00, 2019-11-03T01:30:00-07:00)
+    // [2019-11-03T01:30:00-07:00, 2019-11-03T02:00:00-07:00)
     // [2019-11-03T02:00:00-07:00, 2019-11-03T02:30:00-07:00)
     // [2019-11-03T02:30:00-07:00, 2019-11-03T03:00:00-07:00)
-    
+
+    intervals(every:2h, offset:30m, location: "America/Denver")
+    // [2019-03-10T00:30:00-07:00, 2019-03-10T03:00:00-06:00)
+    // [2019-03-10T03:00:00-06:00, 2019-03-10T04:30:00-06:00)
+    // [2019-03-10T04:30:00-06:00, 2019-03-10T06:30:00-06:00)
+    // ... skipped ...
+    // [2019-11-03T00:30:00-06:00, 2019-11-03T02:30:00-07:00)
+    // [2019-11-03T02:30:00-07:00, 2019-11-03T04:30:00-07:00)
+    // [2019-11-03T04:30:00-07:00, 2019-11-03T06:30:00-07:00)
+
     intervals(every:1h, offset:30m, location: "America/Denver")
     // [2019-03-10T00:30:00-07:00, 2019-03-10T01:30:00-07:00)
-    // [2019-03-10T01:30:00-07:00, 2019-03-10T03:00:00-06:00)
-    // [2019-03-10T03:00:00-06:00, 2019-03-10T03:30:00-06:00)
+    // [2019-03-10T01:30:00-07:00, 2019-03-10T03:30:00-06:00)
     // [2019-03-10T03:30:00-06:00, 2019-03-10T04:30:00-06:00)
     // ... skipped ...
-    // [2019-11-03T00:30:00-06:00, 2019-11-03T01:30:00-06:00), [2019-11-03T01:00:00-07:00, 2019-11-03T01:30:00-07:00)
-    // [2019-11-03T01:30:00-06:00, 2019-11T01:00:00-07:00), [2019-11-03T02:00:00-07:00, 2019-11-03T02:30:00-07:00)
+    // [2019-11-03T00:30:00-06:00, 2019-11-03T01:30:00-06:00)
+    // [2019-11-03T01:30:00-06:00, 2019-11-03T01:30:00-07:00)
+    // [2019-11-03T01:30:00-07:00, 2019-11-03T02:30:00-07:00)
     // [2019-11-03T02:30:00-07:00, 2019-11-03T03:30:00-07:00)
     // [2019-11-03T03:30:00-07:00, 2019-11-03T04:30:00-07:00)
 
