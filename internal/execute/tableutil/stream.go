@@ -4,7 +4,9 @@ import (
 	"context"
 	"sync/atomic"
 
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 )
@@ -13,9 +15,68 @@ import (
 // it can be read by the table consumer.
 type SendFunc func(flux.ColReader)
 
+// StreamWriter is the input end of a stream.
+type StreamWriter struct {
+	ctx  context.Context
+	key  flux.GroupKey
+	cols []flux.ColMeta
+	ch   chan<- streamBuffer
+}
+
+func (s *StreamWriter) Key() flux.GroupKey   { return s.key }
+func (s *StreamWriter) Cols() []flux.ColMeta { return s.cols }
+
+// Write will write a new buffer to the stream using the given values.
+// The group key and columns will be used for the emitted column reader.
+func (s *StreamWriter) Write(vs []array.Interface) error {
+	return s.write(vs, true)
+}
+
+// UnsafeWrite will write the new buffer to the stream without validating
+// that the resulting table is valid. This can be used to avoid the small
+// performance hit that comes from validating the resulting table.
+func (s *StreamWriter) UnsafeWrite(vs []array.Interface) error {
+	return s.write(vs, false)
+}
+
+func (s *StreamWriter) write(vs []array.Interface, validate bool) error {
+	cr := &arrow.TableBuffer{
+		GroupKey: s.key,
+		Columns:  s.cols,
+		Values:   vs,
+	}
+	if validate {
+		if err := cr.Validate(); err != nil {
+			cr.Release()
+			return err
+		}
+	}
+	return s.UnsafeWriteBuffer(cr)
+}
+
+// UnsafeWriteBuffer will emit the given column reader to the stream.
+// This does not validate that the column reader matches with the
+// stream schema.
+func (s *StreamWriter) UnsafeWriteBuffer(cr flux.ColReader) error {
+	// Discard column readers with length zero.
+	if cr.Len() == 0 {
+		cr.Release()
+		return nil
+	}
+
+	select {
+	case s.ch <- streamBuffer{cr: cr}:
+		return nil
+	case <-s.ctx.Done():
+		// We could not send the column reader because this was cancelled.
+		cr.Release()
+		return s.ctx.Err()
+	}
+}
+
 // Stream will call StreamWithContext with a background context.
-func Stream(f func(ctx context.Context, fn SendFunc) error) (flux.Table, error) {
-	return StreamWithContext(context.Background(), f)
+func Stream(key flux.GroupKey, cols []flux.ColMeta, f func(ctx context.Context, w *StreamWriter) error) (flux.Table, error) {
+	return StreamWithContext(context.Background(), key, cols, f)
 }
 
 // StreamWithContext will create a table that streams column readers
@@ -29,25 +90,23 @@ func Stream(f func(ctx context.Context, fn SendFunc) error) (flux.Table, error) 
 // then an error will be returned. If the first table that is returned
 // is empty, then this will return an empty table and further buffers
 // will not be used.
-func StreamWithContext(ctx context.Context, f func(ctx context.Context, fn SendFunc) error) (flux.Table, error) {
+func StreamWithContext(ctx context.Context, key flux.GroupKey, cols []flux.ColMeta, f func(ctx context.Context, w *StreamWriter) error) (flux.Table, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	ch := make(chan streamBuffer)
 
-	// Create the send method.
-	send := func(cr flux.ColReader) {
-		select {
-		case ch <- streamBuffer{cr: cr}:
-		case <-ctx.Done():
-			// We could not send the column reader because this was cancelled.
-			cr.Release()
-		}
+	// Create the stream input.
+	s := &StreamWriter{
+		ctx:  ctx,
+		key:  key,
+		cols: cols,
+		ch:   ch,
 	}
 
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
 		defer close(ch)
-		if err := f(ctx, send); err != nil {
+		if err := f(ctx, s); err != nil && err != context.Canceled {
 			ch <- streamBuffer{err: err}
 		}
 	}()
@@ -55,28 +114,13 @@ func StreamWithContext(ctx context.Context, f func(ctx context.Context, fn SendF
 	select {
 	case sp := <-ch:
 		cr, err := sp.cr, sp.err
-		if cr == nil {
-			if err == nil {
-				err = errors.New(codes.Internal, "empty table stream")
-			}
+		if err != nil {
 			cancel()
 			return nil, err
 		}
 
-		// Retrieve the group key and columns from the column reader.
-		key, cols := cr.Key(), cr.Cols()
-
-		// If the table is empty, signal to the context
-		// that we are not expecting more tables just
-		// in case the implementor does something wrong.
-		// We also release the column reader since we don't need
-		// it anymore and set it to nil.
-		empty := cr.Len() == 0
-		if empty {
-			cancel()
-			cr.Release()
-			cr = nil
-		}
+		// If no table was received, set empty to true.
+		empty := cr == nil
 		return &streamTable{
 			first:  cr,
 			key:    key,

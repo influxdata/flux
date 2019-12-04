@@ -371,19 +371,19 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 		sg.Type = vt.Type
 
 		for _, s := range sg.Series {
-			tbl, err := tableutil.Stream(func(ctx context.Context, fn tableutil.SendFunc) error {
-				// Construct the table columns.
-				cols := make([]flux.ColMeta, len(s.Cols())+2)
-				copy(cols, s.Cols())
-				cols[len(cols)-2] = flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime}
-				cols[len(cols)-1] = flux.ColMeta{Label: execute.DefaultValueColLabel, Type: sg.Type}
+			// Construct the table columns.
+			cols := make([]flux.ColMeta, len(s.Cols())+2)
+			copy(cols, s.Cols())
+			cols[len(cols)-2] = flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime}
+			cols[len(cols)-1] = flux.ColMeta{Label: execute.DefaultValueColLabel, Type: sg.Type}
 
+			tbl, err := tableutil.Stream(s, cols, func(ctx context.Context, w *tableutil.StreamWriter) error {
 				// Only construct the key values once for the first table
 				// and then reuse them for each one with a slice.
 				// The first table should always be the biggest because of
 				// the size constraint.
 				// These are constructed lazily below.
-				keyValues := make([]array.Interface, len(s.Cols()))
+				keyValues := make([]array.Interface, len(w.Cols()))
 				defer func() {
 					for _, vs := range keyValues {
 						if vs != nil {
@@ -394,11 +394,7 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 
 				start, n := dg.Start, dg.NumPoints
 				for n > 0 {
-					tb := &arrow.TableBuffer{
-						GroupKey: s,
-						Columns:  cols,
-						Values:   make([]array.Interface, len(cols)),
-					}
+					tvalues := make([]array.Interface, len(w.Cols()))
 
 					var ts *array.Int64
 					ts, start, n = dg.generateBufferTimes(start, n)
@@ -412,15 +408,13 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 						} else {
 							vs = arrow.Slice(vs, 0, int64(ts.Len()))
 						}
-						tb.Values[i] = vs
+						tvalues[i] = vs
 					}
-					tb.Values[len(cols)-2] = ts
-					tb.Values[len(cols)-1] = dg.generateBufferValues(dg.Rand, sg.Type, ts.Len())
-
-					if err := tb.Validate(); err != nil {
+					tvalues[len(cols)-2] = ts
+					tvalues[len(cols)-1] = dg.generateBufferValues(dg.Rand, sg.Type, ts.Len())
+					if err := w.Write(tvalues); err != nil {
 						return err
 					}
-					fn(tb)
 				}
 				return nil
 			})
