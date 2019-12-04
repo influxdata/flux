@@ -289,6 +289,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "libstd"
+version = "0.1.0"
+dependencies = [
+ "flatbuffers 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "flux 0.3.0",
+]
+
+[[package]]
 name = "log"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
