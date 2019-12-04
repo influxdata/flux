@@ -303,7 +303,7 @@ impl<'a> Iterator for NodeIterator<'a> {
                 match item {
                     Node::Package(m) => {
                         self.iter_stack.push(it);
-                        self.iter_stack.push(m.into_iter());
+                        self.iter_stack.push(m.iter());
                         self.next()
                     }
                     Node::Builtin(ty) => {
