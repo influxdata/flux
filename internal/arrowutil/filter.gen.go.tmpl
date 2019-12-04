@@ -1,0 +1,38 @@
+package arrowutil
+
+import (
+	"fmt"
+
+	"github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/arrow/bitutil"
+	"github.com/apache/arrow/go/arrow/memory"
+)
+
+func Filter(arr array.Interface, bitset []byte, mem memory.Allocator) array.Interface {
+	switch arr := arr.(type) {
+	{{range .}}
+	case *{{.Type}}:
+		return Filter{{.Name}}s(arr, bitset, mem)
+	{{end}}
+	default:
+		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
+	}
+}
+
+{{range .}}
+func Filter{{.Name}}s(arr *{{.Type}}, bitset []byte, mem memory.Allocator) *{{.Type}} {
+	n := bitutil.CountSetBits(bitset, 0, len(bitset))
+	b := New{{.Name}}Builder(mem)
+	b.Resize(n)
+	for i := 0; i < len(bitset); i++ {
+		if bitutil.BitIsSet(bitset, i) {
+			if arr.IsValid(i) {
+				b.{{.Append}}(arr.{{.Value}}(i))
+			} else {
+				b.AppendNull()
+			}
+		}
+	}
+	return b.{{.NewArray}}()
+}
+{{end}}

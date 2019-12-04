@@ -4,11 +4,17 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/arrow/bitutil"
+	arrowmem "github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/tableutil"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -189,50 +195,62 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	}
 
 	// Otherwise, we have to filter the existing table.
-	// TODO(jsternberg): I'm pretty sure this can be optimized
-	// too, but we're getting fewer returns on optimizing this
-	// area right now. In particular, I don't think it is
-	// more efficient to construct the table as we are
-	// processing. It is likely more efficient to perform
-	// the comparisons on each row and specify if it matches
-	// or not, then use that information to determine if using
-	// slices or reconstructing the table would be faster.
-	builder := execute.NewColListTableBuilder(tbl.Key(), t.alloc)
-	defer builder.Release()
-
-	if err := execute.AddTableCols(tbl, builder); err != nil {
-		return err
-	}
-
-	if err := tbl.Do(func(cr flux.ColReader) error {
-		l := cr.Len()
-		for i := 0; i < l; i++ {
-			for j := 0; j < len(cols); j++ {
-				label := cols[j].Label
-				if _, ok := properties[label]; ok {
-					record.Set(label, execute.ValueForRow(cr, i, j))
-				}
-			}
-			if pass, err := t.fn.Eval(t.ctx, record); err != nil {
-				return errors.Wrap(err, codes.Inherit, "failed to evaluate filter function")
-			} else if !pass {
-				// No match, skipping
-				continue
-			}
-			if err := execute.AppendRecord(i, cr, builder); err != nil {
-				return err
-			}
-		}
-		return nil
-	}); err != nil {
-		return err
-	}
-
-	table, err := builder.Table()
+	table, err := t.filterTable(tbl, record, properties)
 	if err != nil {
 		return err
 	}
 	return t.d.Process(table)
+}
+
+func (t *filterTransformation) filterTable(in flux.Table, record values.Object, properties map[string]semantic.Type) (flux.Table, error) {
+	return tableutil.StreamWithContext(t.ctx, in.Key(), in.Cols(), func(ctx context.Context, w *tableutil.StreamWriter) error {
+		return in.Do(func(cr flux.ColReader) error {
+			bitset, err := t.filter(cr, record, properties)
+			if err != nil {
+				return err
+			}
+			defer bitset.Release()
+
+			n := bitutil.CountSetBits(bitset.Buf(), 0, bitset.Len())
+			if n == 0 {
+				return nil
+			}
+
+			// Produce arrays for each column.
+			vs := make([]array.Interface, len(w.Cols()))
+			for j, col := range w.Cols() {
+				arr := tableutil.Values(cr, j)
+				if in.Key().HasCol(col.Label) {
+					vs[j] = arrow.Slice(arr, 0, int64(n))
+					continue
+				}
+				vs[j] = arrowutil.Filter(arr, bitset.Bytes(), t.alloc)
+			}
+			return w.Write(vs)
+		})
+	})
+}
+
+func (t *filterTransformation) filter(cr flux.ColReader, record values.Object, properties map[string]semantic.Type) (*arrowmem.Buffer, error) {
+	cols, l := cr.Cols(), cr.Len()
+	bitset := arrowmem.NewResizableBuffer(t.alloc)
+	bitset.Resize(l)
+	for i := 0; i < l; i++ {
+		for j := 0; j < len(cols); j++ {
+			label := cols[j].Label
+			if _, ok := properties[label]; ok {
+				record.Set(label, execute.ValueForRow(cr, i, j))
+			}
+		}
+
+		val, err := t.fn.Eval(t.ctx, record)
+		if err != nil {
+			bitset.Release()
+			return nil, errors.Wrap(err, codes.Inherit, "failed to evaluate filter function")
+		}
+		bitutil.SetBitTo(bitset.Buf(), i, val)
+	}
+	return bitset, nil
 }
 
 func (t *filterTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
