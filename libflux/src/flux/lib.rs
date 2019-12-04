@@ -2,7 +2,6 @@
 // XXX: phummer (2 Dec 2019) - These lints should be removed one at a time
 // until these lines are entirely removed. If lint still must be ignored, it
 // should be at a more specific module or file level.
-#![allow(clippy::useless_format, clippy::cmp_owned, clippy::while_let_loop)]
 #![allow(clippy::single_char_pattern, clippy::chars_last_cmp)]
 #![allow(clippy::chars_next_cmp, clippy::unnecessary_operation)]
 #![allow(clippy::new_without_default, clippy::wrong_self_convention)]

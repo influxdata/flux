@@ -1213,7 +1213,7 @@ impl Parser {
                                 ),
                                 errors: vec![],
                             },
-                            text: format!("{}", t.lit),
+                            text: t.lit.to_string(),
                             expression: None,
                         })));
                     }
@@ -1337,7 +1337,7 @@ impl Parser {
         let t = self.peek();
         match t.tok {
             TOK_IDENT => {
-                if t.lit != "with".to_string() {
+                if t.lit != "with" {
                     self.errs.push("".to_string())
                 }
                 self.consume();
