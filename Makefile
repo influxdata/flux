@@ -38,7 +38,6 @@ GENERATED_TARGETS = \
 	ast/asttest/cmpopts.go \
 	internal/scanner/scanner.gen.go \
 	stdlib/packages.go \
-	ast/internal/fbast \
 	semantic/flatbuffers_gen.go \
 	semantic/internal/fbsemantic \
 	libflux/src/flux/ast/flatbuffers/ast_generated.rs \

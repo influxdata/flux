@@ -2690,114 +2690,6 @@ pub mod fbsemantic {
         }
     }
 
-    pub enum BlockOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
-
-    pub struct Block<'a> {
-        pub _tab: flatbuffers::Table<'a>,
-    }
-
-    impl<'a> flatbuffers::Follow<'a> for Block<'a> {
-        type Inner = Block<'a>;
-        #[inline]
-        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
-            }
-        }
-    }
-
-    impl<'a> Block<'a> {
-        #[inline]
-        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-            Block { _tab: table }
-        }
-        #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-            args: &'args BlockArgs<'args>,
-        ) -> flatbuffers::WIPOffset<Block<'bldr>> {
-            let mut builder = BlockBuilder::new(_fbb);
-            if let Some(x) = args.body {
-                builder.add_body(x);
-            }
-            if let Some(x) = args.loc {
-                builder.add_loc(x);
-            }
-            builder.finish()
-        }
-
-        pub const VT_LOC: flatbuffers::VOffsetT = 4;
-        pub const VT_BODY: flatbuffers::VOffsetT = 6;
-
-        #[inline]
-        pub fn loc(&self) -> Option<SourceLocation<'a>> {
-            self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(Block::VT_LOC, None)
-        }
-        #[inline]
-        pub fn body(
-            &self,
-        ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<WrappedStatement<'a>>>>
-        {
-            self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<WrappedStatement<'a>>>,
-            >>(Block::VT_BODY, None)
-        }
-    }
-
-    pub struct BlockArgs<'a> {
-        pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
-        pub body: Option<
-            flatbuffers::WIPOffset<
-                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<WrappedStatement<'a>>>,
-            >,
-        >,
-    }
-    impl<'a> Default for BlockArgs<'a> {
-        #[inline]
-        fn default() -> Self {
-            BlockArgs {
-                loc: None,
-                body: None,
-            }
-        }
-    }
-    pub struct BlockBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
-    }
-    impl<'a: 'b, 'b> BlockBuilder<'a, 'b> {
-        #[inline]
-        pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
-            self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<SourceLocation>>(Block::VT_LOC, loc);
-        }
-        #[inline]
-        pub fn add_body(
-            &mut self,
-            body: flatbuffers::WIPOffset<
-                flatbuffers::Vector<'b, flatbuffers::ForwardsUOffset<WrappedStatement<'b>>>,
-            >,
-        ) {
-            self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(Block::VT_BODY, body);
-        }
-        #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> BlockBuilder<'a, 'b> {
-            let start = _fbb.start_table();
-            BlockBuilder {
-                fbb_: _fbb,
-                start_: start,
-            }
-        }
-        #[inline]
-        pub fn finish(self) -> flatbuffers::WIPOffset<Block<'a>> {
-            let o = self.fbb_.end_table(self.start_);
-            flatbuffers::WIPOffset::new(o.value())
-        }
-    }
-
     pub enum SourceLocationOffset {}
     #[derive(Copy, Clone, Debug, PartialEq)]
 
@@ -6630,6 +6522,114 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn finish(self) -> flatbuffers::WIPOffset<FunctionParameter<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
+    pub enum BlockOffset {}
+    #[derive(Copy, Clone, Debug, PartialEq)]
+
+    pub struct Block<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for Block<'a> {
+        type Inner = Block<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf: buf, loc: loc },
+            }
+        }
+    }
+
+    impl<'a> Block<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            Block { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args BlockArgs<'args>,
+        ) -> flatbuffers::WIPOffset<Block<'bldr>> {
+            let mut builder = BlockBuilder::new(_fbb);
+            if let Some(x) = args.body {
+                builder.add_body(x);
+            }
+            if let Some(x) = args.loc {
+                builder.add_loc(x);
+            }
+            builder.finish()
+        }
+
+        pub const VT_LOC: flatbuffers::VOffsetT = 4;
+        pub const VT_BODY: flatbuffers::VOffsetT = 6;
+
+        #[inline]
+        pub fn loc(&self) -> Option<SourceLocation<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(Block::VT_LOC, None)
+        }
+        #[inline]
+        pub fn body(
+            &self,
+        ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<WrappedStatement<'a>>>>
+        {
+            self._tab.get::<flatbuffers::ForwardsUOffset<
+                flatbuffers::Vector<flatbuffers::ForwardsUOffset<WrappedStatement<'a>>>,
+            >>(Block::VT_BODY, None)
+        }
+    }
+
+    pub struct BlockArgs<'a> {
+        pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
+        pub body: Option<
+            flatbuffers::WIPOffset<
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<WrappedStatement<'a>>>,
+            >,
+        >,
+    }
+    impl<'a> Default for BlockArgs<'a> {
+        #[inline]
+        fn default() -> Self {
+            BlockArgs {
+                loc: None,
+                body: None,
+            }
+        }
+    }
+    pub struct BlockBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> BlockBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<SourceLocation>>(Block::VT_LOC, loc);
+        }
+        #[inline]
+        pub fn add_body(
+            &mut self,
+            body: flatbuffers::WIPOffset<
+                flatbuffers::Vector<'b, flatbuffers::ForwardsUOffset<WrappedStatement<'b>>>,
+            >,
+        ) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(Block::VT_BODY, body);
+        }
+        #[inline]
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> BlockBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            BlockBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<Block<'a>> {
             let o = self.fbb_.end_table(self.start_);
             flatbuffers::WIPOffset::new(o.value())
         }
