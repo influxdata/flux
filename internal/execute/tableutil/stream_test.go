@@ -19,98 +19,81 @@ func TestStream(t *testing.T) {
 		executetest.TableTest{
 			NewFn: func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator {
 				// Only a single buffer.
-				tbl1 := MustStreamContext(ctx, func(ctx context.Context, fn tableutil.SendFunc) error {
-					key := execute.NewGroupKey(
-						[]flux.ColMeta{
-							{Label: "_measurement", Type: flux.TString},
-							{Label: "_field", Type: flux.TString},
-						},
-						[]values.Value{
-							values.NewString("m0"),
-							values.NewString("f0"),
-						},
-					)
-					cols := append(key.Cols(),
-						flux.ColMeta{Label: "_time", Type: flux.TTime},
-						flux.ColMeta{Label: "_value", Type: flux.TFloat},
-					)
-					vs := make([]array.Interface, len(cols))
-					vs[0] = arrow.Repeat(key.Value(0), 3, alloc)
-					vs[1] = arrow.Repeat(key.Value(1), 3, alloc)
+				key1 := execute.NewGroupKey(
+					[]flux.ColMeta{
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+					},
+					[]values.Value{
+						values.NewString("m0"),
+						values.NewString("f0"),
+					},
+				)
+				cols1 := append(key1.Cols(),
+					flux.ColMeta{Label: "_time", Type: flux.TTime},
+					flux.ColMeta{Label: "_value", Type: flux.TFloat},
+				)
+				tbl1 := MustStreamContext(ctx, key1, cols1, func(ctx context.Context, w *tableutil.StreamWriter) error {
+					vs := make([]array.Interface, len(w.Cols()))
+					vs[0] = arrow.Repeat(w.Key().Value(0), 3, alloc)
+					vs[1] = arrow.Repeat(w.Key().Value(1), 3, alloc)
 					vs[2] = arrow.NewInt([]int64{0, 1, 2}, alloc)
 					vs[3] = arrow.NewFloat([]float64{4, 8, 7}, alloc)
-					fn(&arrow.TableBuffer{
-						GroupKey: key,
-						Columns:  cols,
-						Values:   vs,
-					})
-					return nil
+					return w.Write(vs)
 				})
 				// Multiple buffers.
-				tbl2 := MustStreamContext(ctx, func(ctx context.Context, fn tableutil.SendFunc) error {
-					key := execute.NewGroupKey(
-						[]flux.ColMeta{
-							{Label: "_measurement", Type: flux.TString},
-							{Label: "_field", Type: flux.TString},
-						},
-						[]values.Value{
-							values.NewString("m1"),
-							values.NewString("f0"),
-						},
-					)
-					cols := append(key.Cols(),
-						flux.ColMeta{Label: "_time", Type: flux.TTime},
-						flux.ColMeta{Label: "_value", Type: flux.TFloat},
-					)
-					vs := make([]array.Interface, len(cols))
-					vs[0] = arrow.Repeat(key.Value(0), 3, alloc)
-					vs[1] = arrow.Repeat(key.Value(1), 3, alloc)
+				key2 := execute.NewGroupKey(
+					[]flux.ColMeta{
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+					},
+					[]values.Value{
+						values.NewString("m1"),
+						values.NewString("f0"),
+					},
+				)
+				cols2 := append(key2.Cols(),
+					flux.ColMeta{Label: "_time", Type: flux.TTime},
+					flux.ColMeta{Label: "_value", Type: flux.TFloat},
+				)
+				tbl2 := MustStreamContext(ctx, key2, cols2, func(ctx context.Context, w *tableutil.StreamWriter) error {
+					vs := make([]array.Interface, len(w.Cols()))
+					vs[0] = arrow.Repeat(w.Key().Value(0), 3, alloc)
+					vs[1] = arrow.Repeat(w.Key().Value(1), 3, alloc)
 					vs[2] = arrow.NewInt([]int64{0, 1, 2}, alloc)
 					vs[3] = arrow.NewFloat([]float64{4, 8, 7}, alloc)
-					fn(&arrow.TableBuffer{
-						GroupKey: key,
-						Columns:  cols,
-						Values:   vs,
-					})
+					if err := w.Write(vs); err != nil {
+						return err
+					}
 
-					vs = make([]array.Interface, len(cols))
-					vs[0] = arrow.Repeat(key.Value(0), 5, alloc)
-					vs[1] = arrow.Repeat(key.Value(1), 5, alloc)
+					vs = make([]array.Interface, len(w.Cols()))
+					vs[0] = arrow.Repeat(w.Key().Value(0), 5, alloc)
+					vs[1] = arrow.Repeat(w.Key().Value(1), 5, alloc)
 					vs[2] = arrow.NewInt([]int64{3, 4, 5, 6, 7}, alloc)
 					vs[3] = arrow.NewFloat([]float64{2, 9, 4, 6, 2}, alloc)
-					fn(&arrow.TableBuffer{
-						GroupKey: key,
-						Columns:  cols,
-						Values:   vs,
-					})
-					return nil
+					return w.Write(vs)
 				})
 				// Empty table.
-				tbl3 := MustStreamContext(ctx, func(ctx context.Context, fn tableutil.SendFunc) error {
-					key := execute.NewGroupKey(
-						[]flux.ColMeta{
-							{Label: "_measurement", Type: flux.TString},
-							{Label: "_field", Type: flux.TString},
-						},
-						[]values.Value{
-							values.NewString("m2"),
-							values.NewString("f0"),
-						},
-					)
-					cols := append(key.Cols(),
-						flux.ColMeta{Label: "_time", Type: flux.TTime},
-						flux.ColMeta{Label: "_value", Type: flux.TFloat},
-					)
-					vs := make([]array.Interface, len(cols))
-					for i, col := range cols {
+				key3 := execute.NewGroupKey(
+					[]flux.ColMeta{
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+					},
+					[]values.Value{
+						values.NewString("m2"),
+						values.NewString("f0"),
+					},
+				)
+				cols3 := append(key3.Cols(),
+					flux.ColMeta{Label: "_time", Type: flux.TTime},
+					flux.ColMeta{Label: "_value", Type: flux.TFloat},
+				)
+				tbl3 := MustStreamContext(ctx, key3, cols3, func(ctx context.Context, w *tableutil.StreamWriter) error {
+					vs := make([]array.Interface, len(w.Cols()))
+					for i, col := range w.Cols() {
 						vs[i] = arrow.NewBuilder(col.Type, alloc).NewArray()
 					}
-					fn(&arrow.TableBuffer{
-						GroupKey: key,
-						Columns:  cols,
-						Values:   vs,
-					})
-					return nil
+					return w.Write(vs)
 				})
 				return TableIterator(
 					[]flux.Table{tbl1, tbl2, tbl3},
@@ -123,8 +106,8 @@ func TestStream(t *testing.T) {
 	)
 }
 
-func MustStreamContext(ctx context.Context, f func(ctx context.Context, fn tableutil.SendFunc) error) flux.Table {
-	tbl, err := tableutil.StreamWithContext(ctx, f)
+func MustStreamContext(ctx context.Context, key flux.GroupKey, cols []flux.ColMeta, f func(ctx context.Context, w *tableutil.StreamWriter) error) flux.Table {
+	tbl, err := tableutil.StreamWithContext(ctx, key, cols, f)
 	if err != nil {
 		panic(err)
 	}
