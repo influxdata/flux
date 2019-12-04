@@ -39,7 +39,7 @@ impl From<InferError> for SemanticError {
 pub fn analyze_source(source: &str) -> AnalysisResult<nodes::Package> {
     let file = parse_string("", source);
     let errs = ast::check::check(ast::walk::Node::File(&file));
-    if errs.len() > 0 {
+    if !errs.is_empty() {
         return Err(format!("got errors on parsing: {:?}", errs));
     }
     let ast_pkg = ast::Package {

@@ -166,7 +166,7 @@ fn parse_magnitude(chars: &mut Peekable<Chars>) -> Result<i64, String> {
             None => break,
         }
     }
-    if m.len() == 0 {
+    if m.is_empty() {
         return Err(String::from("parsing empty magnitude"));
     }
     let parsed = m.parse::<i64>();
@@ -191,7 +191,7 @@ fn parse_unit(chars: &mut Peekable<Chars>) -> Result<String, String> {
             None => break,
         }
     }
-    if u.len() == 0 {
+    if u.is_empty() {
         return Err(String::from("parsing empty unit"));
     }
     if u == "µs" {
