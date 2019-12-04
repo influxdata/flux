@@ -504,8 +504,8 @@ impl Tvar {
     fn unify_with_tvar(self, tv: Tvar, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         // Kind constraints for both type variables
         let kinds = union(
-            cons.remove(&self).unwrap_or(Vec::new()),
-            cons.remove(&tv).unwrap_or(Vec::new()),
+            cons.remove(&self).unwrap_or_default(),
+            cons.remove(&tv).unwrap_or_default(),
         );
         if !kinds.is_empty() {
             cons.insert(tv, kinds);
@@ -622,14 +622,14 @@ impl cmp::PartialEq for Row {
                     head,
                     tail: MonoType::Row(o),
                 } => {
-                    a.entry(&head.k).or_insert(Vec::new()).push(&head.v);
+                    a.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
                     self = o;
                 }
                 Row::Extension {
                     head,
                     tail: MonoType::Var(t),
                 } => {
-                    a.entry(&head.k).or_insert(Vec::new()).push(&head.v);
+                    a.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
                     break Some(t);
                 }
                 _ => return false,
@@ -643,14 +643,14 @@ impl cmp::PartialEq for Row {
                     head,
                     tail: MonoType::Row(o),
                 } => {
-                    b.entry(&head.k).or_insert(Vec::new()).push(&head.v);
+                    b.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
                     r = o;
                 }
                 Row::Extension {
                     head,
                     tail: MonoType::Var(t),
                 } => {
-                    b.entry(&head.k).or_insert(Vec::new()).push(&head.v);
+                    b.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
                     break Some(t);
                 }
                 _ => return false,
