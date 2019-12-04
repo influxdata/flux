@@ -20,6 +20,8 @@ mod tests;
 #[allow(unused, non_snake_case)]
 mod flatbuffers;
 
+mod builtins;
+
 use crate::ast;
 use crate::parser::parse_string;
 use crate::semantic::analyze::analyze_with;
