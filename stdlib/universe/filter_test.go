@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -19,6 +20,7 @@ import (
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/valuestest"
 )
 
@@ -1013,5 +1015,61 @@ func TestFilter_Process(t *testing.T) {
 				},
 			)
 		})
+	}
+}
+
+func BenchmarkFilter_Values(b *testing.B) {
+	b.Run("1000", func(b *testing.B) {
+		benchmarkFilter(b, 1000, &semantic.FunctionExpression{
+			Block: &semantic.FunctionBlock{
+				Parameters: &semantic.FunctionParameters{
+					List: []*semantic.FunctionParameter{
+						{Key: &semantic.Identifier{Name: "r"}},
+					},
+				},
+				Body: &semantic.BinaryExpression{
+					Operator: ast.GreaterThanEqualOperator,
+					Left: &semantic.MemberExpression{
+						Object:   &semantic.IdentifierExpression{Name: "r"},
+						Property: "_value",
+					},
+					Right: &semantic.FloatLiteral{Value: 0.0},
+				},
+			},
+		})
+	})
+}
+
+func benchmarkFilter(b *testing.B, n int, fn *semantic.FunctionExpression) {
+	b.ReportAllocs()
+	spec := &universe.FilterProcedureSpec{
+		Fn: interpreter.ResolvedFunction{
+			Fn:    fn,
+			Scope: values.NewScope(),
+		},
+	}
+	for i := 0; i < b.N; i++ {
+		executetest.ProcessBenchmarkHelper(b,
+			func(alloc *memory.Allocator) (flux.TableIterator, error) {
+				schema := gen.Schema{
+					NumPoints: n,
+					Alloc:     alloc,
+					Tags: []gen.Tag{
+						{Name: "_measurement", Cardinality: 1},
+						{Name: "_field", Cardinality: 6},
+						{Name: "t0", Cardinality: 100},
+						{Name: "t1", Cardinality: 50},
+					},
+				}
+				return gen.Input(schema)
+			},
+			func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				t, d, err := universe.NewFilterTransformation(context.Background(), spec, id, alloc)
+				if err != nil {
+					b.Fatal(err)
+				}
+				return t, d
+			},
+		)
 	}
 }
