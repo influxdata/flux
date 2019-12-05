@@ -263,12 +263,6 @@ func NewFloat(v float64) Value {
 		v: v,
 	}
 }
-func NewBool(v bool) Value {
-	return value{
-		t: semantic.Bool,
-		v: v,
-	}
-}
 func NewTime(v Time) Value {
 	return value{
 		t: semantic.Time,

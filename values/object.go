@@ -20,7 +20,9 @@ type object struct {
 	labels semantic.LabelSet
 	values []Value
 	ptyp   map[string]semantic.PolyType
+	ptypv  semantic.PolyType
 	mtyp   map[string]semantic.Type
+	mtypv  semantic.Type
 }
 
 func NewObject() *object {
@@ -83,21 +85,42 @@ func (o *object) String() string {
 }
 
 func (o *object) Type() semantic.Type {
-	return semantic.NewObjectType(o.mtyp)
+	if o.mtypv == nil {
+		o.mtypv = semantic.NewObjectType(o.mtyp)
+	}
+	return o.mtypv
 }
 
 func (o *object) PolyType() semantic.PolyType {
-	return semantic.NewObjectPolyType(o.ptyp, nil, o.labels)
+	if o.ptypv == nil {
+		o.ptypv = semantic.NewObjectPolyType(o.ptyp, nil, o.labels)
+	}
+	return o.ptypv
 }
 
 func (o *object) Set(k string, v Value) {
 	// update type
-	o.ptyp[k] = v.PolyType()
+	pt := v.PolyType()
+	if o.ptypv != nil {
+		if optyp, ok := o.ptyp[k]; !ok || !pt.Equal(optyp) {
+			o.ptyp[k] = pt
+			o.ptypv = nil
+		}
+	} else {
+		o.ptyp[k] = pt
+	}
 	mt := v.Type()
 	if mt == nil {
 		mt = semantic.Invalid
 	}
-	o.mtyp[k] = mt
+	if o.mtypv != nil {
+		if omtyp, ok := o.mtyp[k]; !ok || mt != omtyp {
+			o.mtyp[k] = mt
+			o.mtypv = nil
+		}
+	} else {
+		o.mtyp[k] = mt
+	}
 
 	// update value
 	for i, l := range o.labels {
