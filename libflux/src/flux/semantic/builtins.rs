@@ -275,6 +275,27 @@ pub fn builtins() -> Builtins<'static> {
                 "splitRegexp" => Node::Builtin("forall [] (r: regexp, v: string, i: int) -> [string]"),
                 "getString" => Node::Builtin("forall [] (r: regexp) -> string"),
             }),
+            "runtime" => Node::Package(maplit::hashmap! {
+                "version" => Node::Builtin("forall [] () -> string"),
+            }),
+            "slack" => Node::Package(maplit::hashmap! {
+                "validateColorString" => Node::Builtin("forall [] (color: string) -> string"),
+            }),
+            "socket" => Node::Package(maplit::hashmap! {
+                "from" => Node::Builtin("forall [t0] (url: string, ?decoder: string) -> [t0]"),
+            }),
+            "sql" => Node::Package(maplit::hashmap! {
+                "from" => Node::Builtin("forall [t0] (driverName: string, dataSourceName: string, query: string) -> [t0]"),
+                "to" => Node::Builtin("forall [t0] (<-tables: [t0], driverName: string, dataSourceName: string, table: string, ?batchSize: int) -> [t0]"),
+            }),
+            "system" => Node::Package(maplit::hashmap! {
+                "time" => Node::Builtin("forall [] () -> time"),
+            }),
+            "testing" => Node::Package(maplit::hashmap! {
+                "assertEquals" => Node::Builtin("forall [t0] (name: string, got: [t0], want: [t0]) -> [t0]"),
+                "assertEmpty" => Node::Builtin("forall [t0] () -> [t0]"),
+                "diff" => Node::Builtin("forall [t0] (got: [t0], want: [t0], ?verbose: bool) -> [{_diff: string | t0}]"),
+            }),
         },
     }
 }
