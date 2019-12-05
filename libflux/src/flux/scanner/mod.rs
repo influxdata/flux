@@ -150,7 +150,7 @@ impl Scanner {
                 Some(nc) => {
                     let size = nc.len_utf8();
                     // Advance the data pointer to after the character we just emitted.
-                    self.p = unsafe { self.p.offset(size as isize) };
+                    self.p = unsafe { self.p.add(size) };
                     Token {
                         tok: TOK_ILLEGAL,
                         lit: nc.to_string(),
