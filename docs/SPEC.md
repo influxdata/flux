@@ -103,7 +103,7 @@ The following keywords are reserved and may not be used as identifiers:
 The following character sequences represent operators:
 
     +   ==   !=   (   )   =>
-    -   <    !~   [   ]
+    -   <    !~   [   ]   ^
     *   >    =~   {   }
     /   <=   =    ,   :
     %   >=   <-   .   |>
