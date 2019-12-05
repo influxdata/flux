@@ -118,9 +118,9 @@ func build() (string, error) {
 
 	version := mod.Version
 	if version == "" {
-		version = "latest"
+		version = "dev"
 	}
-	srcdir := filepath.Join(gocache, "libflux", "@"+mod.Version)
+	srcdir := filepath.Join(gocache, "libflux", "@"+version)
 	if err := os.MkdirAll(srcdir, 0755); err != nil {
 		return "", err
 	}
