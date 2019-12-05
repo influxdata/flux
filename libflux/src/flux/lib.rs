@@ -5,7 +5,6 @@
 #![allow(clippy::single_char_pattern, clippy::chars_last_cmp)]
 #![allow(clippy::chars_next_cmp, clippy::unnecessary_operation)]
 #![allow(clippy::new_without_default, clippy::wrong_self_convention)]
-#![allow(clippy::try_err, clippy::ptr_offset_with_cast, clippy::clone_on_copy)]
 #![allow(clippy::useless_let_if_seq, clippy::implicit_hasher, clippy::ptr_arg)]
 #![allow(clippy::large_enum_variant, clippy::single_match)]
 #![allow(clippy::unnecessary_fold, clippy::not_unsafe_ptr_arg_deref)]
