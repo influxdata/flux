@@ -9,7 +9,7 @@ pub struct Builtins<'a> {
 }
 
 impl<'a> Builtins<'a> {
-    fn iter(&'a self) -> NodeIterator {
+    pub fn iter(&'a self) -> NodeIterator {
         return NodeIterator::new(self);
     }
 }
@@ -24,7 +24,7 @@ pub fn builtins() -> Builtins<'static> {
         pkgs: hashmap! {
             "csv" => Node::Package(maplit::hashmap! {
                 // This is a "provide exactly one argument" function
-                "from" => Node::Builtin("forall [t0] (?csv: string, ?file: string) -> [t0]"),
+                "from" => Node::Builtin("forall [t0] where t0: Row (?csv: string, ?file: string) -> [t0]"),
             }),
             "date" => Node::Package(maplit::hashmap! {
                  "second" => Node::Builtin("forall [] (t: time) -> int"),
@@ -44,14 +44,20 @@ pub fn builtins() -> Builtins<'static> {
             }),
             "experimental" => Node::Package(maplit::hashmap! {
                  "bigtable" => Node::Package(maplit::hashmap! {
-                     "from" => Node::Builtin("forall [t0] (token: string, project: string, instance: string, table: string) -> [t0]"),
+                     "from" => Node::Builtin("forall [t0] where t0: Row (token: string, project: string, instance: string, table: string) -> [t0]"),
                  }),
                  "http" => Node::Package(maplit::hashmap! {
-                     "get" => Node::Builtin("forall [t0, t1] (url: string, ?headers: t0, ?timeout: duration) -> {statusCode: int | body: bytes | headers: t1}"),
+                     "get" => Node::Builtin(r#"
+                         forall [t0, t1] where t0: Row, t1: Row (
+                             url: string,
+                             ?headers: t0, 
+                             ?timeout: duration
+                         ) -> {statusCode: int | body: bytes | headers: t1}
+                     "#),
                  }),
                  "mqtt" => Node::Package(maplit::hashmap! {
                      "to" => Node::Builtin(r#"
-                         forall [t0, t1] (
+                         forall [t0, t1] where t0: Row, t1: Row (
                              <-tables: [t0],
                              broker: string,
                              ?topic: string,
@@ -69,23 +75,23 @@ pub fn builtins() -> Builtins<'static> {
                      "#),
                  }),
                  "prometheus" => Node::Package(maplit::hashmap! {
-                     "scrape" => Node::Builtin("forall [t0] (url: string) -> [t0]"),
+                     "scrape" => Node::Builtin("forall [t0] where t0: Row (url: string) -> [t0]"),
                  }),
                  "addDuration" => Node::Builtin("forall [] (d: duration, to: time) -> time"),
                  "subDuration" => Node::Builtin("forall [] (d: duration, from: time) -> time"),
-                 "group" => Node::Builtin("forall [t0] (<-tables: [t0], mode: string, columns: [string]) -> [t0]"),
-                 "objectKeys" => Node::Builtin("forall [t0] (o: t0) -> [string]"),
-                 "set" => Node::Builtin("forall [t0, t1, t2] (<-tables: t0, o: t1) -> t2"),
+                 "group" => Node::Builtin("forall [t0] where t0: Row (<-tables: [t0], mode: string, columns: [string]) -> [t0]"),
+                 "objectKeys" => Node::Builtin("forall [t0] where t0: Row (o: t0) -> [string]"),
+                 "set" => Node::Builtin("forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (<-tables: t0, o: t1) -> t2"),
                  // must specify exactly one of bucket, bucketID
                  // must specify exactly one of org, orgID
                  // if host is specified, token must be too.
-                 "to" => Node::Builtin("forall [t0] (<-tables: [t0], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) -> [t0]"),
+                 "to" => Node::Builtin("forall [t0] where t0: Row (<-tables: [t0], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) -> [t0]"),
             }),
             "generate" => Node::Package(maplit::hashmap! {
                 "from" => Node::Builtin("forall [] (start: time, stop: time, count: int, fn: (n: int) -> int) -> [{ _start: time | _stop: time | _time: time | _value:int }]"),
             }),
             "http" => Node::Package(maplit::hashmap! {
-                "post" => Node::Builtin("forall [t0] (url: string, ?headers: t0, ?data: bytes) -> int"),
+                "post" => Node::Builtin("forall [t0] where t0: Row (url: string, ?headers: t0, ?data: bytes) -> int"),
                 "basicAuth" => Node::Builtin("forall [] (u: string, p: string) -> string"),
             }),
             "influxdata" => Node::Package(maplit::hashmap! {
@@ -95,7 +101,7 @@ pub fn builtins() -> Builtins<'static> {
                     }),
                     "v1" => Node::Package(maplit::hashmap! {
                         // exactly one of json and file must be specified
-                        "json" => Node::Builtin("forall [t0] (?json: string, ?file: string) -> [t0]"),
+                        "json" => Node::Builtin("forall [t0] where t0: Row (?json: string, ?file: string) -> [t0]"),
                         "databases" => Node::Builtin(r#"
                             forall [] () -> {
                                 organizationID: string |
@@ -112,7 +118,7 @@ pub fn builtins() -> Builtins<'static> {
                     // exactly one of (bucket, bucketID) must be specified
                     // exactly one of (org, orgID) must be specified
                     "to" => Node::Builtin(r#"
-                        forall [t0, t1] (
+                        forall [t0, t1] where t0: Row, t1: Row (
                             <-tables: [t0],
                             ?bucket: string,
                             ?bucketID: string,
@@ -147,11 +153,11 @@ pub fn builtins() -> Builtins<'static> {
                     "linearRegression" => Node::Builtin("forall [t0, t1] (<-tables: [{_time: time | _stop: time | _value: float | t0}], ?predict: bool, ?fromNow: float) -> [{_value: float | t1}]"),
                     "promqlMinute" => Node::Builtin("forall [] (timestamp: float) -> float"),
                     "promqlMonth" => Node::Builtin("forall [] (timestamp: float) -> float"),
-                    "promHistogramQuantile" => Node::Builtin("forall [t0, t1] (<-tables: [t0], ?quantile: float, ?countColumn: string, ?upperBoundColumn: string, ?valueColumn: string) -> [t1]"),
+                    "promHistogramQuantile" => Node::Builtin("forall [t0, t1] where t0: Row, t1: Row (<-tables: [t0], ?quantile: float, ?countColumn: string, ?upperBoundColumn: string, ?valueColumn: string) -> [t1]"),
                     "resets" => Node::Builtin("forall [t0, t1] (<-tables: [{_value: float | t0}]) -> [{_value: float | t1}]"),
                     "timestamp" => Node::Builtin("forall [t0] (<-tables: [{_value: float | t0}]) -> [{_value: float | t0}]"),
                     "promqlYear" => Node::Builtin("forall [] (timestamp: float) -> float"),
-                    "join" => Node::Builtin("forall [t0, t1, t2] (left: [t0], right: [t1], fn: (left: t0, right: t1) -> t2) -> [t2]"),
+                    "join" => Node::Builtin("forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (left: [t0], right: [t1], fn: (left: t0, right: t1) -> t2) -> [t2]"),
                 }),
             }),
             "json" => Node::Package(maplit::hashmap! {
@@ -159,7 +165,7 @@ pub fn builtins() -> Builtins<'static> {
             }),
             "kafka" => Node::Package(maplit::hashmap! {
                 "to" => Node::Builtin(r#"
-                    forall [t0] (
+                    forall [t0] where t0: Row (
                         <-tables: [t0],
                         brokers: string,
                         topic: string,
@@ -273,13 +279,13 @@ pub fn builtins() -> Builtins<'static> {
     }
 }
 
-struct NodeIterator<'a> {
+pub struct NodeIterator<'a> {
     path_elems: Vec<&'a str>,
     iter_stack: Vec<hash_map::Iter<'a, &'a str, Node<'a>>>,
 }
 
 impl<'a> NodeIterator<'a> {
-    fn new(builtins: &'a Builtins) -> NodeIterator<'a> {
+    pub fn new(builtins: &'a Builtins) -> NodeIterator<'a> {
         return NodeIterator {
             path_elems: Vec::new(),
             iter_stack: vec![builtins.pkgs.iter()],

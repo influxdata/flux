@@ -74,9 +74,11 @@ impl From<fb::Kind> for Kind {
             fb::Kind::Addable => Kind::Addable,
             fb::Kind::Subtractable => Kind::Subtractable,
             fb::Kind::Divisible => Kind::Divisible,
+            fb::Kind::Numeric => Kind::Numeric,
             fb::Kind::Comparable => Kind::Comparable,
             fb::Kind::Equatable => Kind::Equatable,
             fb::Kind::Nullable => Kind::Nullable,
+            fb::Kind::Row => Kind::Row,
         }
     }
 }
@@ -87,9 +89,11 @@ impl From<Kind> for fb::Kind {
             Kind::Addable => fb::Kind::Addable,
             Kind::Subtractable => fb::Kind::Subtractable,
             Kind::Divisible => fb::Kind::Divisible,
+            Kind::Numeric => fb::Kind::Numeric,
             Kind::Comparable => fb::Kind::Comparable,
             Kind::Equatable => fb::Kind::Equatable,
             Kind::Nullable => fb::Kind::Nullable,
+            Kind::Row => fb::Kind::Row,
         }
     }
 }

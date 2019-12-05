@@ -169,7 +169,7 @@ pub fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
     from
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Error {
     msg: String,
 }
@@ -215,9 +215,11 @@ pub enum Kind {
     Addable,
     Subtractable,
     Divisible,
+    Numeric,
     Comparable,
     Equatable,
     Nullable,
+    Row,
 }
 
 impl fmt::Display for Kind {
@@ -226,9 +228,11 @@ impl fmt::Display for Kind {
             Kind::Addable => f.write_str("Addable"),
             Kind::Subtractable => f.write_str("Subtractable"),
             Kind::Divisible => f.write_str("Divisible"),
+            Kind::Numeric => f.write_str("Numeric"),
             Kind::Comparable => f.write_str("Comparable"),
             Kind::Equatable => f.write_str("Equatable"),
             Kind::Nullable => f.write_str("Nullable"),
+            Kind::Row => f.write_str("Row"),
         }
     }
 }
@@ -387,13 +391,16 @@ impl MonoType {
                 Kind::Addable
                 | Kind::Subtractable
                 | Kind::Divisible
+                | Kind::Numeric
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable => Ok(Substitution::empty()),
+                _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Uint => match with {
                 Kind::Addable
                 | Kind::Divisible
+                | Kind::Numeric
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable => Ok(Substitution::empty()),
@@ -403,9 +410,11 @@ impl MonoType {
                 Kind::Addable
                 | Kind::Subtractable
                 | Kind::Divisible
+                | Kind::Numeric
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable => Ok(Substitution::empty()),
+                _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::String => match with {
                 Kind::Addable | Kind::Comparable | Kind::Equatable | Kind::Nullable => {
@@ -814,7 +823,10 @@ impl Row {
     }
 
     fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
-        Err(Error::cannot_constrain(&self, with))
+        match with {
+            Kind::Row => Ok(Substitution::empty()),
+            _ => Err(Error::cannot_constrain(&self, with)),
+        }
     }
 
     fn contains(&self, tv: Tvar) -> bool {
@@ -1195,6 +1207,10 @@ mod tests {
         assert!(Kind::Divisible.to_string() == "Divisible");
     }
     #[test]
+    fn display_kind_numeric() {
+        assert!(Kind::Numeric.to_string() == "Numeric");
+    }
+    #[test]
     fn display_kind_comparable() {
         assert!(Kind::Comparable.to_string() == "Comparable");
     }
@@ -1205,6 +1221,10 @@ mod tests {
     #[test]
     fn display_kind_nullable() {
         assert!(Kind::Nullable.to_string() == "Nullable");
+    }
+    #[test]
+    fn display_kind_row() {
+        assert!(Kind::Row.to_string() == "Row");
     }
 
     #[test]
@@ -1767,6 +1787,44 @@ mod tests {
             .unify(MonoType::Int, &mut HashMap::new(), &mut Fresher::new())
             .unwrap();
         assert_eq!(sub, Substitution::empty());
+    }
+    #[test]
+    fn constrain_ints() {
+        let allowable_cons = vec![
+            Kind::Addable,
+            Kind::Subtractable,
+            Kind::Divisible,
+            Kind::Numeric,
+            Kind::Comparable,
+            Kind::Equatable,
+            Kind::Nullable,
+        ];
+        for c in allowable_cons {
+            let sub = MonoType::Int.constrain(c, &mut HashMap::new());
+            assert_eq!(Ok(Substitution::empty()), sub);
+        }
+
+        let sub = MonoType::Int.constrain(Kind::Row, &mut HashMap::new());
+        assert_eq!(Err(Error::cannot_constrain(&MonoType::Int, Kind::Row)), sub);
+    }
+    #[test]
+    fn constrain_rows() {
+        let sub = Row::Empty.constrain(Kind::Row, &mut HashMap::new());
+        assert_eq!(Ok(Substitution::empty()), sub);
+
+        let unallowable_cons = vec![
+            Kind::Addable,
+            Kind::Subtractable,
+            Kind::Divisible,
+            Kind::Numeric,
+            Kind::Comparable,
+            Kind::Equatable,
+            Kind::Nullable,
+        ];
+        for c in unallowable_cons {
+            let sub = Row::Empty.constrain(c, &mut HashMap::new());
+            assert_eq!(Err(Error::cannot_constrain(&Row::Empty, c)), sub);
+        }
     }
     #[test]
     fn unify_error() {

@@ -8,16 +8,20 @@ const (
 	KindAddable      Kind = 0
 	KindSubtractable Kind = 1
 	KindDivisible    Kind = 2
-	KindComparable   Kind = 3
-	KindEquatable    Kind = 4
-	KindNullable     Kind = 5
+	KindNumeric      Kind = 3
+	KindComparable   Kind = 4
+	KindEquatable    Kind = 5
+	KindNullable     Kind = 6
+	KindRow          Kind = 7
 )
 
 var EnumNamesKind = map[Kind]string{
 	KindAddable:      "Addable",
 	KindSubtractable: "Subtractable",
 	KindDivisible:    "Divisible",
+	KindNumeric:      "Numeric",
 	KindComparable:   "Comparable",
 	KindEquatable:    "Equatable",
 	KindNullable:     "Nullable",
+	KindRow:          "Row",
 }

@@ -394,9 +394,11 @@ impl Parser<'_> {
             "Addable" => Ok(Kind::Addable),
             "Subtractable" => Ok(Kind::Subtractable),
             "Divisible" => Ok(Kind::Divisible),
+            "Numeric" => Ok(Kind::Numeric),
             "Comparable" => Ok(Kind::Comparable),
             "Nullable" => Ok(Kind::Nullable),
             "Equatable" => Ok(Kind::Equatable),
+            "Row" => Ok(Kind::Row),
             _ => Err("Constraints must have a valid Kind"),
         }
     }

@@ -79,9 +79,11 @@ enum Kind : ubyte {
   Addable,
   Subtractable,
   Divisible,
+  Numeric,
   Comparable,
   Equatable,
   Nullable,
+  Row,
 }
 
 table Constraint {
