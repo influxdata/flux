@@ -24,6 +24,7 @@ pub fn builtins() -> Builtins<'static> {
         pkgs: hashmap! {
             "csv" => Node::Package(maplit::hashmap! {
                 // This is a "provide exactly one argument" function
+                // https://github.com/influxdata/flux/issues/2249
                 "from" => Node::Builtin("forall [t0] where t0: Row (?csv: string, ?file: string) -> [t0]"),
             }),
             "date" => Node::Package(maplit::hashmap! {
@@ -85,6 +86,7 @@ pub fn builtins() -> Builtins<'static> {
                  // must specify exactly one of bucket, bucketID
                  // must specify exactly one of org, orgID
                  // if host is specified, token must be too.
+                 // https://github.com/influxdata/flux/issues/1660
                  "to" => Node::Builtin("forall [t0] where t0: Row (<-tables: [t0], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) -> [t0]"),
             }),
             "generate" => Node::Package(maplit::hashmap! {
@@ -101,6 +103,7 @@ pub fn builtins() -> Builtins<'static> {
                     }),
                     "v1" => Node::Package(maplit::hashmap! {
                         // exactly one of json and file must be specified
+                        // https://github.com/influxdata/flux/issues/2250
                         "json" => Node::Builtin("forall [t0] where t0: Row (?json: string, ?file: string) -> [t0]"),
                         "databases" => Node::Builtin(r#"
                             forall [] () -> {
@@ -114,9 +117,11 @@ pub fn builtins() -> Builtins<'static> {
                         "#),
                     }),
                     // This is a one-or-the-other parameters function
+                    // https://github.com/influxdata/flux/issues/1659
                     "from" => Node::Builtin("forall [t0, t1] (?bucket: string, ?bucketID: string) -> [{_measurement: string | _field: string | _time: time | _value: t0 | t1}]"),
                     // exactly one of (bucket, bucketID) must be specified
                     // exactly one of (org, orgID) must be specified
+                    // https://github.com/influxdata/flux/issues/1660
                     "to" => Node::Builtin(r#"
                         forall [t0, t1] where t0: Row, t1: Row (
                             <-tables: [t0],
@@ -177,7 +182,6 @@ pub fn builtins() -> Builtins<'static> {
                         ?valueColumns: [string]
                     ) -> [t0]"#),
             }),
-
             "math" => Node::Package(maplit::hashmap! {
                 "pi" => Node::Builtin("forall [] float"),
                 "e" => Node::Builtin("forall [] float"),
@@ -295,6 +299,7 @@ pub fn builtins() -> Builtins<'static> {
                 "assertEquals" => Node::Builtin("forall [t0] (name: string, got: [t0], want: [t0]) -> [t0]"),
                 "assertEmpty" => Node::Builtin("forall [t0] () -> [t0]"),
                 "diff" => Node::Builtin("forall [t0] (got: [t0], want: [t0], ?verbose: bool) -> [{_diff: string | t0}]"),
+            }),
             "universe" => Node::Package(maplit::hashmap! {
                 "inf" => Node::Builtin("forall [] duration"),
                 "int" => Node::Builtin("forall [t0] (v: t0) -> int"),
@@ -315,6 +320,7 @@ pub fn builtins() -> Builtins<'static> {
                 "#),
                 // This function would almost have input/output types that match, but:
                 // input column may start as int, uint or float, and always ends up as float.
+                // https://github.com/influxdata/flux/issues/2252
                 "kaufmansAMA" => Node::Builtin(r#"
                     forall [t0, t1] where t0: Row, t1: Row (
                         <-tables: [t0],
@@ -323,6 +329,7 @@ pub fn builtins() -> Builtins<'static> {
                     ) -> [t1]
                 "#),
                 // either column list or predicate must be provided
+                // https://github.com/influxdata/flux/issues/2248
                 "keep" => Node::Builtin(r#"
                     forall [t0, t1] where t0: Row, t1: Row (
                         <-tables: [t0],
@@ -330,13 +337,11 @@ pub fn builtins() -> Builtins<'static> {
                         ?fn: (column: string) -> bool
                     ) -> [t1]
                 "#),
-                // the "fn" parameter to keyValues is suspicous: https://github.com/influxdata/flux/issues/2235
                 "keyValues" => Node::Builtin(r#"
-                    forall [t0, t1, t2, t3] where t0: Row, t3: Row (
+                    forall [t0, t1, t2] where t0: Row, t2: Row (
                         <-tables: [t0],
-                        ?keyColumns: [string],
-                        ?fn: t1
-                    ) -> [{_key: string | _value: t2 | t3}]
+                        ?keyColumns: [string]
+                    ) -> [{_key: string | _value: t1 | t2}]
                 "#),
                 "keys" => Node::Builtin(r#"
                     forall [t0, t1] where t0: Row, t1: Row (
@@ -363,6 +368,8 @@ pub fn builtins() -> Builtins<'static> {
                         ?infinity: bool
                     ) -> [float]
                 "#),
+                // Note: mergeKey parameter could be removed from map once the transpiler is updated:
+                // https://github.com/influxdata/flux/issues/816
                 "map" => Node::Builtin("forall [t0, t1] (<-tables: [t0], fn: (r: t0) -> t1, ?mergeKey: bool) -> [t1]"),
                 "max" => Node::Builtin("forall [t0] where t0: Row (<-tables: [t0], ?column: string) -> [t0]"),
                 "mean" => Node::Builtin(r#"
@@ -397,9 +404,11 @@ pub fn builtins() -> Builtins<'static> {
                     ) -> [t0]
                 "#),
                 // start and stop should be able to constrained to time or duration with a kind constraint:
-                // https://github.com/influxdata/flux/issues/2243
+                //   https://github.com/influxdata/flux/issues/2243
+                // Also, we should remove the column arguments so we can reuse t0 in the return type:
+                //   https://github.com/influxdata/flux/issues/2253
                 "range" => Node::Builtin(r#"
-                    forall [t0, t1] where t0: Row, t3: Row (
+                    forall [t0, t1, t2, t3] where t0: Row, t3: Row (
                         <-tables: [t0],
                         start: t1,
                         ?stop: t2,
@@ -408,6 +417,8 @@ pub fn builtins() -> Builtins<'static> {
                         ?stopColumn: string
                     ) -> [t3]
                 "#),
+                // This function could be updated to get better type inference:
+                //   https://github.com/influxdata/flux/issues/2254
                 "reduce" => Node::Builtin(r#"
                     forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (
                         <-tables: [t0],
@@ -423,6 +434,7 @@ pub fn builtins() -> Builtins<'static> {
                     ) -> [t1]
                 "#),
                 // Either fn or columns should be specified
+                // https://github.com/influxdata/flux/issues/2251
                 "rename" => Node::Builtin(r#"
                     forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (
                         <-tables: [t0],
@@ -524,12 +536,10 @@ pub fn builtins() -> Builtins<'static> {
                 "#),
                 "true" => Node::Builtin("forall [] bool"),
                 "uint" => Node::Builtin("forall [t0] (v: t0) -> uint"),
-                // This is suspicous: each input table stream is not restricted to the same schema.
-                // What's the right signature?
                 "union" => Node::Builtin(r#"
-                    forall [t0] where t0: Row, t1: Row (
+                    forall [t0] where t0: Row (
                         tables: [[t0]]
-                    ) -> [t1]
+                    ) -> [t0]
                 "#),
                 "unique" => Node::Builtin(r#"
                     forall [t0] where t0: Row (
@@ -537,6 +547,10 @@ pub fn builtins() -> Builtins<'static> {
                         ?column: string
                     ) -> [t0]
                 "#),
+                // This would produce an output the same as the input,
+                // except that startColumn and stopColumn will be added if they don't
+                // already exist.
+                // https://github.com/influxdata/flux/issues/2255
                 "window" => Node::Builtin(r#"
                     forall [t0] where t0: Row, t1: Row (
                         <-tables: [t0],
