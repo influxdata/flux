@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/internal/execute/traceconfig"
 	"github.com/opentracing/opentracing-go"
 )
 
@@ -199,9 +200,14 @@ func processMessage(ctx context.Context, t Transformation, m Message) (finished 
 		err = t.RetractTable(m.SrcDatasetID(), m.Key())
 	case ProcessMsg:
 		b := m.Table()
-		span, _ := opentracing.StartSpanFromContext(ctx, reflect.TypeOf(t).String())
+		var span opentracing.Span
+		if traceconfig.IsExperimentalTracingEnabled() {
+			span, _ = opentracing.StartSpanFromContext(ctx, reflect.TypeOf(t).String())
+		}
 		err = t.Process(m.SrcDatasetID(), b)
-		span.Finish()
+		if span != nil {
+			span.Finish()
+		}
 	case UpdateWatermarkMsg:
 		err = t.UpdateWatermark(m.SrcDatasetID(), m.WatermarkTime())
 	case UpdateProcessingTimeMsg:
