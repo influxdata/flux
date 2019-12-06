@@ -23,7 +23,7 @@ export GO_TEST_FLAGS=
 export GO_GENERATE=go generate $(GO_ARGS)
 export GO_VET=env GO111MODULE=on go vet $(GO_ARGS)
 export CARGO=cargo
-export CARGO_ARGS=--features strict
+export CARGO_ARGS=
 
 define go_deps
 	$(shell env GO111MODULE=on go list -f "{{range .GoFiles}} {{$$.Dir}}/{{.}}{{end}}" $(1))

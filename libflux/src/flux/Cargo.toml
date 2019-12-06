@@ -10,6 +10,8 @@ path = "lib.rs"
 crate-type = ["rlib", "staticlib", "cdylib"]
 
 [features]
+default = ["strict"]
+
 strict = []
 
 [dependencies]
