@@ -100,7 +100,7 @@ impl PolyType {
             .collect::<Vec<_>>()
             .join(", ")
     }
-    fn display_kinds(kinds: &Vec<Kind>) -> String {
+    fn display_kinds(kinds: &[Kind]) -> String {
         kinds
             .iter()
             // Sort kinds with BTree
@@ -973,7 +973,7 @@ impl Substitutable for Function {
     }
 }
 
-impl<U, T: MaxTvar> MaxTvar for HashMap<U, T> {
+impl<U, T: MaxTvar, S: ::std::hash::BuildHasher> MaxTvar for HashMap<U, T, S> {
     fn max_tvar(&self) -> Tvar {
         self.iter()
             .map(|(_, t)| t.max_tvar())
@@ -1128,13 +1128,13 @@ impl Function {
 
     fn contains(&self, tv: Tvar) -> bool {
         if let Some(pipe) = &self.pipe {
-            self.req.values().fold(false, |ok, t| ok || t.contains(tv))
-                || self.opt.values().fold(false, |ok, t| ok || t.contains(tv))
+            self.req.values().any(|t| t.contains(tv))
+                || self.opt.values().any(|t| t.contains(tv))
                 || pipe.v.contains(tv)
                 || self.retn.contains(tv)
         } else {
-            self.req.values().fold(false, |ok, t| ok || t.contains(tv))
-                || self.opt.values().fold(false, |ok, t| ok || t.contains(tv))
+            self.req.values().any(|t| t.contains(tv))
+                || self.opt.values().any(|t| t.contains(tv))
                 || self.retn.contains(tv)
         }
     }
@@ -1744,7 +1744,7 @@ mod tests {
     #[test]
     fn unify_ints() {
         let sub = MonoType::Int
-            .unify(MonoType::Int, &mut HashMap::new(), &mut Fresher::new())
+            .unify(MonoType::Int, &mut HashMap::new(), &mut Fresher::default())
             .unwrap();
         assert_eq!(sub, Substitution::empty());
     }
@@ -1789,7 +1789,11 @@ mod tests {
     #[test]
     fn unify_error() {
         let err = MonoType::Int
-            .unify(MonoType::String, &mut HashMap::new(), &mut Fresher::new())
+            .unify(
+                MonoType::String,
+                &mut HashMap::new(),
+                &mut Fresher::default(),
+            )
             .unwrap_err();
         assert_eq!(
             err.to_string(),
@@ -1802,7 +1806,7 @@ mod tests {
             .unify(
                 MonoType::Var(Tvar(1)),
                 &mut HashMap::new(),
-                &mut Fresher::new(),
+                &mut Fresher::default(),
             )
             .unwrap();
         assert_eq!(
@@ -1814,7 +1818,7 @@ mod tests {
     fn unify_constrained_tvars() {
         let mut cons = maplit::hashmap! {Tvar(0) => vec![Kind::Addable, Kind::Divisible]};
         let sub = MonoType::Var(Tvar(0))
-            .unify(MonoType::Var(Tvar(1)), &mut cons, &mut Fresher::new())
+            .unify(MonoType::Var(Tvar(1)), &mut cons, &mut Fresher::default())
             .unwrap();
         assert_eq!(
             sub,
@@ -1847,9 +1851,13 @@ mod tests {
         {
             // this extends the first map with the second by generating a new one.
             let mut cons = f_cons.into_iter().chain(g_cons).collect();
-            let res = f.clone().unify(*g.clone(), &mut cons, &mut Fresher::new());
+            let res = f
+                .clone()
+                .unify(*g.clone(), &mut cons, &mut Fresher::default());
             assert!(res.is_err());
-            let res = g.clone().unify(*f.clone(), &mut cons, &mut Fresher::new());
+            let res = g
+                .clone()
+                .unify(*f.clone(), &mut cons, &mut Fresher::default());
             assert!(res.is_err());
         } else {
             panic!("the monotypes under examination are not functions");
@@ -1872,9 +1880,13 @@ mod tests {
         ) = (f, g)
         {
             let mut cons = f_cons.into_iter().chain(g_cons).collect();
-            let res = f.clone().unify(*g.clone(), &mut cons, &mut Fresher::new());
+            let res = f
+                .clone()
+                .unify(*g.clone(), &mut cons, &mut Fresher::default());
             assert!(res.is_err());
-            let res = g.clone().unify(*f.clone(), &mut cons, &mut Fresher::new());
+            let res = g
+                .clone()
+                .unify(*f.clone(), &mut cons, &mut Fresher::default());
             assert!(res.is_err());
         } else {
             panic!("the monotypes under examination are not functions");
@@ -1902,7 +1914,9 @@ mod tests {
             expr: MonoType::Fun(f),
         } = fn_type
         {
-            let sub = f.unify(call_type, &mut cons, &mut Fresher::new()).unwrap();
+            let sub = f
+                .unify(call_type, &mut cons, &mut Fresher::default())
+                .unwrap();
             assert_eq!(
                 sub,
                 Substitution::from(maplit::hashmap! {Tvar(0) => MonoType::Int})
@@ -1934,7 +1948,7 @@ mod tests {
         {
             // this extends the first map with the second by generating a new one.
             let mut cons = f_cons.into_iter().chain(g_cons).collect();
-            let sub = f.unify(*g, &mut cons, &mut Fresher::new()).unwrap();
+            let sub = f.unify(*g, &mut cons, &mut Fresher::default()).unwrap();
             assert_eq!(
                 sub,
                 Substitution::from(maplit::hashmap! {
@@ -1970,7 +1984,7 @@ mod tests {
         {
             // this extends the first map with the second by generating a new one.
             let mut cons = f_cons.into_iter().chain(g_cons).collect();
-            let sub = f.unify(*g, &mut cons, &mut Fresher::new()).unwrap();
+            let sub = f.unify(*g, &mut cons, &mut Fresher::default()).unwrap();
             assert_eq!(
                 sub,
                 Substitution::from(maplit::hashmap! {
