@@ -12,6 +12,7 @@ import (
 var flags struct {
 	Cflags  bool
 	Libs    bool
+	Vendor  bool
 	Verbose bool
 }
 
@@ -31,6 +32,7 @@ func getLdflags() (string, error) {
 func main() {
 	pflag.BoolVar(&flags.Cflags, "cflags", false, "output all pre-processor and compiler flags")
 	pflag.BoolVar(&flags.Libs, "libs", false, "output all linker flags")
+	pflag.BoolVar(&flags.Vendor, "vendor", false, "use the version in the vendor directory")
 	pflag.BoolVarP(&flags.Verbose, "verbose", "v", false, "verbose output from builds")
 	pflag.Parse()
 
