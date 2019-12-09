@@ -54,7 +54,7 @@ impl From<&Position> for scanner::Position {
 
 impl Default for Position {
     fn default() -> Self {
-        return Self::invalid();
+        Self::invalid()
     }
 }
 

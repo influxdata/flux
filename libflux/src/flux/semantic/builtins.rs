@@ -10,7 +10,7 @@ pub struct Builtins<'a> {
 
 impl<'a> Builtins<'a> {
     pub fn iter(&'a self) -> NodeIterator {
-        return NodeIterator::new(self);
+        NodeIterator::new(self)
     }
 }
 
@@ -581,10 +581,10 @@ pub struct NodeIterator<'a> {
 
 impl<'a> NodeIterator<'a> {
     pub fn new(builtins: &'a Builtins) -> NodeIterator<'a> {
-        return NodeIterator {
+        NodeIterator {
             path_elems: Vec::new(),
             iter_stack: vec![builtins.pkgs.iter()],
-        };
+        }
     }
 }
 

@@ -45,7 +45,7 @@ impl Scanner {
         let ptr = data.as_ptr();
         let bytes = data.as_bytes();
         let end = ((ptr as usize) + bytes.len()) as *const CChar;
-        return Scanner {
+        Scanner {
             data,
             ps: ptr as *const CChar,
             p: ptr as *const CChar,
@@ -58,7 +58,7 @@ impl Scanner {
             checkpoint_line: 1,
             checkpoint_last_newline: ptr as *const CChar,
             positions: HashMap::new(),
-        };
+        }
     }
 
     // scan produces the next token from the input.
