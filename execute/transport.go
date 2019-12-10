@@ -1,10 +1,14 @@
 package execute
 
 import (
+	"context"
+	"reflect"
 	"sync"
 	"sync/atomic"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/internal/execute/traceconfig"
+	"github.com/opentracing/opentracing-go"
 )
 
 type Transport interface {
@@ -148,12 +152,12 @@ func (t *consecutiveTransport) transition(new int32) {
 	atomic.StoreInt32(&t.schedulerState, new)
 }
 
-func (t *consecutiveTransport) processMessages(throughput int) {
+func (t *consecutiveTransport) processMessages(ctx context.Context, throughput int) {
 PROCESS:
 	i := 0
 	for m := t.messages.Pop(); m != nil; m = t.messages.Pop() {
 		atomic.AddInt32(&t.inflight, -1)
-		if f, err := processMessage(t.t, m); err != nil || f {
+		if f, err := processMessage(ctx, t.t, m); err != nil || f {
 			// Set the error if there was any
 			t.setErr(err)
 
@@ -190,13 +194,20 @@ PROCESS:
 
 // processMessage processes the message on t.
 // The return value is true if the message was a FinishMsg.
-func processMessage(t Transformation, m Message) (finished bool, err error) {
+func processMessage(ctx context.Context, t Transformation, m Message) (finished bool, err error) {
 	switch m := m.(type) {
 	case RetractTableMsg:
 		err = t.RetractTable(m.SrcDatasetID(), m.Key())
 	case ProcessMsg:
 		b := m.Table()
+		var span opentracing.Span
+		if traceconfig.IsExperimentalTracingEnabled() {
+			span, _ = opentracing.StartSpanFromContext(ctx, reflect.TypeOf(t).String())
+		}
 		err = t.Process(m.SrcDatasetID(), b)
+		if span != nil {
+			span.Finish()
+		}
 	case UpdateWatermarkMsg:
 		err = t.UpdateWatermark(m.SrcDatasetID(), m.WatermarkTime())
 	case UpdateProcessingTimeMsg:
