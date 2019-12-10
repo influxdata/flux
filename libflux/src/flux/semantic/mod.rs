@@ -1,10 +1,11 @@
-mod analyze;
+pub mod analyze;
 pub use analyze::analyze;
 
 mod import;
 mod infer;
 mod sub;
 
+pub mod bootstrap;
 pub mod env;
 pub mod fresh;
 pub mod nodes;
@@ -26,22 +27,12 @@ use crate::ast;
 use crate::parser::parse_string;
 use crate::semantic::analyze::analyze_with;
 use crate::semantic::analyze::Result as AnalysisResult;
-use crate::semantic::analyze::SemanticError;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
-use crate::semantic::nodes::Error as InferError;
 use crate::semantic::nodes::{infer_pkg_types, inject_pkg_types};
 
-impl From<InferError> for SemanticError {
-    fn from(err: InferError) -> SemanticError {
-        err.msg.clone()
-    }
-}
-
-struct TypeImporter {}
-
-impl Importer for TypeImporter {}
+impl Importer for Option<()> {}
 
 pub fn analyze_source(source: &str) -> AnalysisResult<nodes::Package> {
     let file = parse_string("", source);
@@ -58,6 +49,6 @@ pub fn analyze_source(source: &str) -> AnalysisResult<nodes::Package> {
     let mut f = Fresher::new();
     let mut sem_pkg = analyze_with(ast_pkg, &mut f)?;
     // TODO(affo): add a stdlib Importer.
-    let (_, sub) = infer_pkg_types(&mut sem_pkg, Environment::empty(), &mut f, &TypeImporter {})?;
+    let (_, sub) = infer_pkg_types(&mut sem_pkg, Environment::empty(), &mut f, &None, &None)?;
     Ok(inject_pkg_types(sem_pkg, &sub))
 }

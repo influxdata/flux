@@ -24,15 +24,14 @@
 use std::collections::HashMap;
 
 use crate::semantic::analyze::analyze_with;
+use crate::semantic::bootstrap::build_polytype;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
-use crate::semantic::infer;
-use crate::semantic::infer::Constraints;
 use crate::semantic::nodes;
 use crate::semantic::parser::parse;
 use crate::semantic::sub::Substitutable;
-use crate::semantic::types::{Error, MaxTvar, MonoType, PolyType, Property, Row};
+use crate::semantic::types::{MaxTvar, MonoType, PolyType};
 
 use crate::ast;
 use crate::parser::parse_string;
@@ -76,39 +75,6 @@ fn parse_map(m: HashMap<&str, &str>) -> HashMap<String, PolyType> {
         .collect()
 }
 
-fn to_generic_row<'a, I>(types: I, f: &mut Fresher) -> Result<PolyType, Error>
-where
-    I: Iterator<Item = (&'a String, &'a PolyType)>,
-{
-    let (r, cons) = to_row(types, f);
-    let mut kinds = HashMap::new();
-    let sub = infer::solve(&cons, &mut kinds, f)?;
-    let poly = infer::generalize(
-        &Environment::empty(),
-        &kinds,
-        MonoType::Row(Box::new(r)).apply(&sub),
-    );
-    Ok(poly)
-}
-
-fn to_row<'a, I>(pkg: I, f: &mut Fresher) -> (Row, Constraints)
-where
-    I: Iterator<Item = (&'a String, &'a PolyType)>,
-{
-    pkg.fold(
-        (Row::Empty, infer::Constraints::empty()),
-        |(r, cons), (name, poly)| {
-            let (t, c) = infer::instantiate(poly.clone(), f);
-            let head = Property {
-                k: name.to_owned(),
-                v: t,
-            };
-            let tail = MonoType::Row(Box::new(r));
-            (Row::Extension { head, tail }, cons + c)
-        },
-    )
-}
-
 impl Importer for HashMap<&str, PolyType> {
     fn import(&self, name: &str) -> Option<&PolyType> {
         self.get(name)
@@ -134,21 +100,19 @@ fn infer_types(
     // Instantiate package importer using generic objects
     let importer: HashMap<&str, PolyType> = imports
         .into_iter()
-        .map(|(path, types)| (path, to_generic_row(types.iter(), &mut f).unwrap()))
+        .map(|(path, types)| (path, build_polytype(types, &mut f).unwrap()))
         .collect();
 
     // Parse polytype expressions in initial environment.
     let env = parse_map(env);
 
     // Compute the maximum type variable and init fresher
-    let max = {
-        let tv = env.max_tvar();
-        if tv > max {
-            tv
-        } else {
-            max
-        }
+    let max = if env.max_tvar() > max {
+        env.max_tvar()
+    } else {
+        max
     };
+
     let mut f = Fresher::from(max.0 + 1);
 
     let pkg = parse_program(src);
@@ -158,6 +122,7 @@ fn infer_types(
         Environment::new(env.into()),
         &mut f,
         &importer,
+        &None,
     ) {
         Ok((env, _)) => env.values,
         Err(e) => return Err(e),
