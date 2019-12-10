@@ -11,7 +11,7 @@ pub fn parse_string(lit: &str) -> Result<String, String> {
     if lit.len() < 2 || lit.chars().next().unwrap() != '"' || lit.chars().last().unwrap() != '"' {
         return Err("invalid string literal".to_string());
     }
-    return parse_text(&lit[1..lit.len() - 1]);
+    parse_text(&lit[1..lit.len() - 1])
 }
 
 pub fn parse_text(lit: &str) -> Result<String, String> {

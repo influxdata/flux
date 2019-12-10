@@ -590,7 +590,7 @@ impl StringExpr {
             }
         }
         constraints.push(Constraint::Equal(self.typ.clone(), MonoType::String));
-        return Ok((env, Constraints::from(constraints)));
+        Ok((env, Constraints::from(constraints)))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(&sub);
@@ -661,7 +661,7 @@ impl ArrayExpr {
         }
         let at = MonoType::Arr(Box::new(Array(elt)));
         cons.push(Constraint::Equal(at, self.typ.clone()));
-        return Ok((env, cons.into()));
+        Ok((env, cons.into()))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(&sub);
@@ -754,7 +754,7 @@ impl FunctionExpr {
         }));
         cons = cons + bcons;
         cons.add(Constraint::Equal(func, self.typ.clone()));
-        return Ok((env, cons));
+        Ok((env, cons))
     }
     pub fn pipe(&self) -> Option<&FunctionParameter> {
         for p in &self.params {
@@ -966,7 +966,7 @@ impl BinaryExpr {
         };
 
         // Otherwise, add the constraints together and return them.
-        return Ok((env, lcons + rcons + cons));
+        Ok((env, lcons + rcons + cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(&sub);
@@ -1084,7 +1084,7 @@ impl ConditionalExpr {
                 ),
                 Constraint::Equal(self.consequent.type_of().clone(), self.typ.clone()),
             ]);
-        return Ok((env, cons));
+        Ok((env, cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(&sub);
@@ -1118,7 +1118,7 @@ impl LogicalExpr {
                 Constraint::Equal(self.right.type_of().clone(), MonoType::Bool),
                 Constraint::Equal(self.typ.clone(), MonoType::Bool),
             ]);
-        return Ok((env, cons));
+        Ok((env, cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(&sub);
@@ -1190,7 +1190,7 @@ impl IndexExpr {
                     MonoType::Arr(Box::new(Array(self.typ.clone()))),
                 ),
             ]);
-        return Ok((env, cons));
+        Ok((env, cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(&sub);
@@ -1289,7 +1289,7 @@ impl UnaryExpr {
             ]),
             _ => return Err(Error::unsupported_unary_operator(&self.operator)),
         };
-        return Ok((env, acons + cons));
+        Ok((env, acons + cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(&sub);

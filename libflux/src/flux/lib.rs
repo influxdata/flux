@@ -8,7 +8,7 @@
 #![allow(clippy::useless_let_if_seq, clippy::implicit_hasher, clippy::ptr_arg)]
 #![allow(clippy::large_enum_variant, clippy::single_match)]
 #![allow(clippy::unnecessary_fold, clippy::not_unsafe_ptr_arg_deref)]
-#![allow(clippy::needless_return, clippy::module_inception)]
+#![allow(clippy::module_inception)]
 #![allow(clippy::many_single_char_names, clippy::redundant_field_names)]
 #![allow(clippy::unknown_clippy_lints)]
 
@@ -52,7 +52,7 @@ pub extern "C" fn flux_parse(cstr: *mut c_char) -> *mut flux_ast_t {
     let s = String::from_utf8(buf.to_vec()).unwrap();
     let mut p = Parser::new(&s);
     let file = p.parse_file(String::from(""));
-    return Box::into_raw(Box::new(file)) as *mut flux_ast_t;
+    Box::into_raw(Box::new(file)) as *mut flux_ast_t
 }
 
 #[no_mangle]
@@ -82,10 +82,10 @@ pub extern "C" fn flux_parse_fb(src_ptr: *const c_char) -> *mut flux_buffer_t {
     match r {
         Ok((vec, offset)) => {
             let data = &vec[offset..];
-            return Box::into_raw(Box::new(flux_buffer_t {
+            Box::into_raw(Box::new(flux_buffer_t {
                 data: data.as_ptr(),
                 len: data.len(),
-            }));
+            }))
         }
         Err(_) => 1 as *mut flux_buffer_t,
     }
@@ -108,14 +108,14 @@ pub extern "C" fn flux_ast_marshal_json(
     let buffer = unsafe { &mut *buf };
     buffer.len = data.len();
     buffer.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
-    return std::ptr::null_mut();
+    std::ptr::null_mut()
 }
 
 #[no_mangle]
 pub extern "C" fn flux_error_str(err: *mut flux_error_t) -> *mut c_char {
     let e = unsafe { &*(err as *mut ErrorHandle) };
     let s = CString::new(e.err.description()).unwrap();
-    return s.into_raw();
+    s.into_raw()
 }
 
 #[no_mangle]
