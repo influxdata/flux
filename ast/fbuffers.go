@@ -56,6 +56,7 @@ func (p Package) FromBuf(buf []byte) *Package {
 func (f File) FromBuf(buf *fbast.File) *File {
 	f.BaseNode.FromBuf(buf.BaseNode(nil))
 	f.Name = string(buf.Name())
+	f.Metadata = string(buf.Metadata())
 	f.Package = PackageClause{}.FromBuf(buf.Package(nil))
 	if buf.ImportsLength() > 0 {
 		f.Imports = make([]*ImportDeclaration, buf.ImportsLength())

@@ -59,6 +59,7 @@ fn test_check_collect_existing_error() {
             errors: vec![String::from("error 1")],
         },
         name: String::from("test_check_collect_existing_error"),
+        metadata: String::new(),
         package: None,
         imports: vec![],
         body: vec![Variable(VariableAssgn {

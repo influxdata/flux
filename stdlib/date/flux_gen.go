@@ -1497,8 +1497,9 @@ var pkgAST = &ast.Package{
 				Value: int64(12),
 			},
 		}},
-		Imports: nil,
-		Name:    "date.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "date.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

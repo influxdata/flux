@@ -2329,7 +2329,8 @@ var pkgAST = &ast.Package{
 				Value: "universe",
 			},
 		}},
-		Name: "promql.flux",
+		Metadata: "parser-type=go",
+		Name:     "promql.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

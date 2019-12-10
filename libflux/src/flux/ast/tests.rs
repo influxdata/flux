@@ -167,6 +167,7 @@ fn test_json_simple_file() {
         package: Option::None,
         imports: Vec::new(),
         name: String::new(),
+        metadata: String::new(),
         body: vec![Statement::Expr(ExprStmt {
             base: BaseNode::default(),
             expression: Expression::StringLit(StringLit {
@@ -226,6 +227,7 @@ fn test_json_file() {
             },
         }],
         name: String::new(),
+        metadata: String::from("parser-type=none"),
         body: vec![Statement::Expr(ExprStmt {
             base: BaseNode::default(),
             expression: Expression::StringLit(StringLit {
@@ -237,7 +239,7 @@ fn test_json_file() {
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"type":"File","package":{"type":"PackageClause","name":{"type":"Identifier","name":"foo"}},"imports":[{"type":"ImportDeclaration","as":{"type":"Identifier","name":"b"},"path":{"type":"StringLiteral","value":"path/bar"}}],"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}"#
+        r#"{"type":"File","metadata":"parser-type=none","package":{"type":"PackageClause","name":{"type":"Identifier","name":"foo"}},"imports":[{"type":"ImportDeclaration","as":{"type":"Identifier","name":"b"},"path":{"type":"StringLiteral","value":"path/bar"}}],"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}"#
     );
     let deserialized: File = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)

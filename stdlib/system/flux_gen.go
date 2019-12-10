@@ -67,8 +67,9 @@ var pkgAST = &ast.Package{
 				Name: "time",
 			},
 		}},
-		Imports: nil,
-		Name:    "system.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "system.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

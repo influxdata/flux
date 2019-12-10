@@ -3523,7 +3523,8 @@ var pkgAST = &ast.Package{
 				Value: "json",
 			},
 		}},
-		Name: "slack.flux",
+		Metadata: "parser-type=go",
+		Name:     "slack.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

@@ -10,6 +10,10 @@ import (
 	"github.com/influxdata/flux/internal/token"
 )
 
+const (
+	metadata = "parser-type=go"
+)
+
 // Scanner defines the interface for reading a stream of tokens.
 type Scanner interface {
 	// Scan will scan the next token.
@@ -99,7 +103,8 @@ func (p *parser) parseFile(fname string) *ast.File {
 				Start: p.s.File().Position(pos),
 			},
 		},
-		Name: fname,
+		Name:     fname,
+		Metadata: metadata,
 	}
 	file.Package = p.parsePackageClause()
 	if file.Package != nil {

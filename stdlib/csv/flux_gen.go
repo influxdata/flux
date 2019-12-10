@@ -67,8 +67,9 @@ var pkgAST = &ast.Package{
 				Name: "from",
 			},
 		}},
-		Imports: nil,
-		Name:    "csv.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "csv.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

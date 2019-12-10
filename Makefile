@@ -16,12 +16,12 @@ GO_ARGS=-tags '$(GO_TAGS)'
 
 # Test vars can be used by all recursive Makefiles
 export GOOS=$(shell go env GOOS)
-export GO_BUILD=env GO111MODULE=on go build $(GO_ARGS)
-export GO_TEST=env GO111MODULE=on go test $(GO_ARGS)
+export GO_BUILD=env FLUX_PARSER_TYPE=rust GO111MODULE=on go build $(GO_ARGS)
+export GO_TEST=env FLUX_PARSER_TYPE=rust GO111MODULE=on go test $(GO_ARGS)
 export GO_TEST_FLAGS=
 # Do not add GO111MODULE=on to the call to go generate so it doesn't pollute the environment.
 export GO_GENERATE=go generate $(GO_ARGS)
-export GO_VET=env GO111MODULE=on go vet $(GO_ARGS)
+export GO_VET=env FLUX_PARSER_TYPE=rust GO111MODULE=on go vet $(GO_ARGS)
 export CARGO=cargo
 export CARGO_ARGS=
 

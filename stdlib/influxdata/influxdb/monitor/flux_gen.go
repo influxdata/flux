@@ -12407,7 +12407,8 @@ var pkgAST = &ast.Package{
 				Value: "influxdata/influxdb",
 			},
 		}},
-		Name: "monitor.flux",
+		Metadata: "parser-type=go",
+		Name:     "monitor.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

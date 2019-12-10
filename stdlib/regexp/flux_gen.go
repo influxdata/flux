@@ -305,8 +305,9 @@ var pkgAST = &ast.Package{
 				Name: "getString",
 			},
 		}},
-		Imports: nil,
-		Name:    "regexp.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "regexp.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

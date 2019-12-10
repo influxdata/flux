@@ -1284,7 +1284,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "influxdata/influxdb/secrets",
 			},
 		}},
-		Name: "secrets_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "secrets_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

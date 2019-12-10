@@ -324,6 +324,8 @@ impl Parser {
         }
     }
 
+    const METADATA: &'static str = "parser-type=rust";
+
     pub fn parse_file(&mut self, fname: String) -> File {
         self.fname = fname;
         let t = self.peek();
@@ -349,6 +351,7 @@ impl Parser {
                 errors: vec![],
             },
             name: self.fname.clone(),
+            metadata: String::from(Self::METADATA),
             package: pkg,
             imports,
             body,

@@ -67,8 +67,9 @@ var pkgAST = &ast.Package{
 				Name: "to",
 			},
 		}},
-		Imports: nil,
-		Name:    "mqtt.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "mqtt.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

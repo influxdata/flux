@@ -70,6 +70,7 @@ table Package {
 table File {
   base_node:BaseNode;
   name:string;
+  metadata:string;
   package:PackageClause;
   imports:[ImportDeclaration];
   body:[WrappedStatement];

@@ -101,8 +101,9 @@ var pkgAST = &ast.Package{
 				Name: "to",
 			},
 		}},
-		Imports: nil,
-		Name:    "sql.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "sql.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

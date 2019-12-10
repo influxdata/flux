@@ -1474,7 +1474,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "combine_pivot_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "combine_pivot_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -2677,7 +2678,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "delete_drop_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "delete_drop_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -4231,7 +4233,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "eval_map_with_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "eval_map_with_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -5417,7 +5420,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "fill_default_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "fill_default_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -6932,7 +6936,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "flatten_pivot_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "flatten_pivot_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -8152,7 +8157,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "noop_yield_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "noop_yield_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

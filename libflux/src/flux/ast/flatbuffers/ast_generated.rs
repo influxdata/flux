@@ -1115,6 +1115,9 @@ pub mod fbast {
             if let Some(x) = args.package {
                 builder.add_package(x);
             }
+            if let Some(x) = args.metadata {
+                builder.add_metadata(x);
+            }
             if let Some(x) = args.name {
                 builder.add_name(x);
             }
@@ -1126,9 +1129,10 @@ pub mod fbast {
 
         pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
         pub const VT_NAME: flatbuffers::VOffsetT = 6;
-        pub const VT_PACKAGE: flatbuffers::VOffsetT = 8;
-        pub const VT_IMPORTS: flatbuffers::VOffsetT = 10;
-        pub const VT_BODY: flatbuffers::VOffsetT = 12;
+        pub const VT_METADATA: flatbuffers::VOffsetT = 8;
+        pub const VT_PACKAGE: flatbuffers::VOffsetT = 10;
+        pub const VT_IMPORTS: flatbuffers::VOffsetT = 12;
+        pub const VT_BODY: flatbuffers::VOffsetT = 14;
 
         #[inline]
         pub fn base_node(&self) -> Option<BaseNode<'a>> {
@@ -1139,6 +1143,11 @@ pub mod fbast {
         pub fn name(&self) -> Option<&'a str> {
             self._tab
                 .get::<flatbuffers::ForwardsUOffset<&str>>(File::VT_NAME, None)
+        }
+        #[inline]
+        pub fn metadata(&self) -> Option<&'a str> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<&str>>(File::VT_METADATA, None)
         }
         #[inline]
         pub fn package(&self) -> Option<PackageClause<'a>> {
@@ -1168,6 +1177,7 @@ pub mod fbast {
     pub struct FileArgs<'a> {
         pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a>>>,
         pub name: Option<flatbuffers::WIPOffset<&'a str>>,
+        pub metadata: Option<flatbuffers::WIPOffset<&'a str>>,
         pub package: Option<flatbuffers::WIPOffset<PackageClause<'a>>>,
         pub imports: Option<
             flatbuffers::WIPOffset<
@@ -1186,6 +1196,7 @@ pub mod fbast {
             FileArgs {
                 base_node: None,
                 name: None,
+                metadata: None,
                 package: None,
                 imports: None,
                 body: None,
@@ -1209,6 +1220,11 @@ pub mod fbast {
         pub fn add_name(&mut self, name: flatbuffers::WIPOffset<&'b str>) {
             self.fbb_
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(File::VT_NAME, name);
+        }
+        #[inline]
+        pub fn add_metadata(&mut self, metadata: flatbuffers::WIPOffset<&'b str>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(File::VT_METADATA, metadata);
         }
         #[inline]
         pub fn add_package(&mut self, package: flatbuffers::WIPOffset<PackageClause<'b>>) {

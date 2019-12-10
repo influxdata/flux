@@ -135,8 +135,9 @@ var pkgAST = &ast.Package{
 				Name: "buckets",
 			},
 		}},
-		Imports: nil,
-		Name:    "influxdb.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "influxdb.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

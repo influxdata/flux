@@ -299,6 +299,9 @@ pub struct File {
     #[serde(skip_serializing_if = "String::is_empty")]
     #[serde(default)]
     pub name: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    #[serde(default)]
+    pub metadata: String,
     pub package: Option<PackageClause>,
     #[serde(deserialize_with = "deserialize_default_from_null")]
     pub imports: Vec<ImportDeclaration>,

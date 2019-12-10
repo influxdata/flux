@@ -1811,7 +1811,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "json",
 			},
 		}},
-		Name: "http_endpoint_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "http_endpoint_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

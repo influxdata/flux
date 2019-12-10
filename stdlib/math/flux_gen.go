@@ -2719,8 +2719,9 @@ var pkgAST = &ast.Package{
 				Name: "yn",
 			},
 		}},
-		Imports: nil,
-		Name:    "math.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "math.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

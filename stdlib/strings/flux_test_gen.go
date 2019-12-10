@@ -1495,7 +1495,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Name: "length_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "length_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -3118,7 +3119,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Name: "replaceAll_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "replaceAll_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -4793,7 +4795,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Name: "replace_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "replace_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -6416,7 +6419,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Name: "subset_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "subset_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -8391,7 +8395,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Name: "substring_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "substring_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -9910,7 +9915,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Name: "title_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "title_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -11429,7 +11435,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Name: "toLower_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "toLower_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -12948,7 +12955,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Name: "toUpper_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "toUpper_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -14467,7 +14475,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Name: "trim_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "trim_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
