@@ -1,6 +1,9 @@
 package semantic
 
-import "fmt"
+import (
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
+)
 
 func Walk(v Visitor, node Node) {
 	walk(v, node)
@@ -371,7 +374,7 @@ func walk(v Visitor, n Node) {
 		}
 		v.Visit(n)
 	default:
-		panic(fmt.Errorf("walk not defined for node %T", n))
+		panic(errors.Newf(codes.Internal, "walk not defined for node %T", n))
 	}
 	// We cannot use defer here as we only call Done if n != nil,
 	// which we cannot check except for in each case.

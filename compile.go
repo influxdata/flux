@@ -2,7 +2,6 @@ package flux
 
 import (
 	"context"
-	stderrors "errors"
 	"fmt"
 	"path"
 	"regexp"
@@ -256,10 +255,10 @@ func Prelude() values.Scope {
 // RegisterPackage adds a builtin package
 func RegisterPackage(pkg *ast.Package) {
 	if finalized {
-		panic(stderrors.New("already finalized, cannot register builtin package"))
+		panic(errors.New(codes.Internal, "already finalized, cannot register builtin package"))
 	}
 	if _, ok := builtinPackages[pkg.Path]; ok {
-		panic(fmt.Errorf("duplicate builtin package %q", pkg.Path))
+		panic(errors.Newf(codes.Internal, "duplicate builtin package %q", pkg.Path))
 	}
 	builtinPackages[pkg.Path] = pkg
 	_, ok := stdlib.pkgs[pkg.Path]
@@ -282,7 +281,7 @@ func ReplacePackageValue(pkgpath, name string, value values.Value) {
 
 func registerPackageValue(pkgpath, name string, value values.Value, replace bool) {
 	if finalized {
-		panic(stderrors.New("already finalized, cannot register builtin package value"))
+		panic(errors.Newf(codes.Internal, "already finalized, cannot register builtin package value"))
 	}
 	packg, ok := stdlib.pkgs[pkgpath]
 	if !ok {
@@ -292,9 +291,9 @@ func registerPackageValue(pkgpath, name string, value values.Value, replace bool
 		stdlib.pkgs[pkgpath] = packg
 	}
 	if _, ok := packg.Get(name); ok && !replace {
-		panic(fmt.Errorf("duplicate builtin package value %q %q", pkgpath, name))
+		panic(errors.Newf(codes.Internal, "duplicate builtin package value %q %q", pkgpath, name))
 	} else if !ok && replace {
-		panic(fmt.Errorf("missing builtin package value %q %q", pkgpath, name))
+		panic(errors.Newf(codes.Internal, "missing builtin package value %q %q", pkgpath, name))
 	}
 	packg.Set(name, value)
 }
@@ -318,7 +317,7 @@ func FunctionValueWithSideEffect(name string, c CreateOperationSpec, sig semanti
 func functionValue(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature, sideEffects bool) values.Value {
 	if c == nil {
 		c = func(args Arguments, a *Administration) (OperationSpec, error) {
-			return nil, fmt.Errorf("function %q is not implemented", name)
+			return nil, errors.Newf(codes.Unimplemented, "function %q is not implemented", name)
 		}
 	}
 	return &function{
@@ -409,7 +408,7 @@ func validatePackageBuiltins(pkg *interpreter.Package, astPkg *ast.Package) erro
 		}
 	})
 	if len(missing) > 0 || len(extra) > 0 {
-		return fmt.Errorf("missing builtin values %v, extra builtin values %v", missing, extra)
+		return errors.Newf(codes.Internal, "missing builtin values %v, extra builtin values %v", missing, extra)
 	}
 	return nil
 }
@@ -621,7 +620,7 @@ func (a *Administration) AddParentFromArgs(args Arguments) error {
 	}
 	p, ok := parent.(*TableObject)
 	if !ok {
-		return fmt.Errorf("argument is not a table object: got %T", parent)
+		return errors.Newf(codes.Invalid, "argument is not a table object: got %T", parent)
 	}
 	a.AddParent(p)
 	return nil
@@ -753,7 +752,7 @@ func (a Arguments) GetRequiredTime(name string) (Time, error) {
 		return Time{}, err
 	}
 	if !ok {
-		return Time{}, fmt.Errorf("missing required keyword argument %q", name)
+		return Time{}, errors.Newf(codes.Invalid, "missing required keyword argument %q", name)
 	}
 	return qt, nil
 }
@@ -772,7 +771,7 @@ func (a Arguments) GetRequiredDuration(name string) (Duration, error) {
 		return ConvertDuration(0), err
 	}
 	if !ok {
-		return ConvertDuration(0), fmt.Errorf("missing required keyword argument %q", name)
+		return ConvertDuration(0), errors.Newf(codes.Invalid, "missing required keyword argument %q", name)
 	}
 	return d, nil
 }
@@ -793,7 +792,7 @@ func ToQueryTime(value values.Value) (Time, error) {
 			Absolute: time.Unix(value.Int(), 0),
 		}, nil
 	default:
-		return Time{}, fmt.Errorf("value is not a time, got %v", value.Type())
+		return Time{}, errors.Newf(codes.Invalid, "value is not a time, got %v", value.Type())
 	}
 }
 
@@ -854,7 +853,7 @@ func insertPkg(pkg *ast.Package, pkgs map[string]*ast.Package, order []*ast.Pack
 	for _, path := range imports {
 		dep, ok := pkgs[path]
 		if !ok {
-			return nil, fmt.Errorf("unknown builtin package %q", path)
+			return nil, errors.Newf(codes.Invalid, "unknown builtin package %q", path)
 		}
 		order, err = insertPkg(dep, pkgs, order)
 		if err != nil {

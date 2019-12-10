@@ -1,10 +1,11 @@
 package values
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -20,7 +21,7 @@ type BinaryFuncSignature struct {
 func LookupBinaryFunction(sig BinaryFuncSignature) (BinaryFunction, error) {
 	f, ok := binaryFuncLookup[sig]
 	if !ok {
-		return nil, fmt.Errorf("unsupported binary expression %v %v %v", sig.Left, sig.Operator, sig.Right)
+		return nil, errors.Newf(codes.Invalid, "unsupported binary expression %v %v %v", sig.Left, sig.Operator, sig.Right)
 	}
 	return binaryFuncNullCheck(f), nil
 }
@@ -122,7 +123,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.Int()
 		r := rv.Int()
 		if r == 0 {
-			return nil, fmt.Errorf("cannot divide by zero")
+			return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
 		}
 		return NewInt(l / r), nil
 	},
@@ -130,7 +131,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.UInt()
 		r := rv.UInt()
 		if r == 0 {
-			return nil, fmt.Errorf("cannot divide by zero")
+			return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
 		}
 		return NewUInt(l / r), nil
 	},
@@ -138,7 +139,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.Float()
 		r := rv.Float()
 		if r == 0 {
-			return nil, fmt.Errorf("cannot divide by zero")
+			return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
 		}
 		return NewFloat(l / r), nil
 	},
@@ -147,7 +148,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.Int()
 		r := rv.Int()
 		if r == 0 {
-			return nil, fmt.Errorf("cannot mod zero")
+			return nil, errors.Newf(codes.FailedPrecondition, "cannot mod zero")
 		}
 		return NewInt(l % r), nil
 	},
@@ -155,7 +156,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.UInt()
 		r := rv.UInt()
 		if r == 0 {
-			return nil, fmt.Errorf("cannot mod zero")
+			return nil, errors.Newf(codes.FailedPrecondition, "cannot mod zero")
 		}
 		return NewUInt(l % r), nil
 	},
@@ -163,7 +164,7 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.Float()
 		r := rv.Float()
 		if r == 0 {
-			return nil, fmt.Errorf("cannot mod zero")
+			return nil, errors.Newf(codes.FailedPrecondition, "cannot mod zero")
 		}
 		return NewFloat(math.Mod(l, r)), nil
 	},

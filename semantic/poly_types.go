@@ -1,7 +1,6 @@
 package semantic
 
 import (
-	stderrors "errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -116,7 +115,7 @@ func (l Tvar) unifyType(kinds map[Tvar]Kind, r PolyType) (Substitution, error) {
 func (tv Tvar) resolveType(kinds map[Tvar]Kind) (Type, error) {
 	k, ok := kinds[tv]
 	if !ok {
-		return nil, fmt.Errorf("type variable %q is not monomorphic", tv)
+		return nil, errors.Newf(codes.Invalid, "type variable %q is not monomorphic", tv)
 	}
 	return k.resolveType(kinds)
 }
@@ -150,12 +149,12 @@ func (n Nature) unifyType(kinds map[Tvar]Kind, t PolyType) (Substitution, error)
 	switch t := t.(type) {
 	case Nature:
 		if t != n {
-			return nil, fmt.Errorf("%v != %v", n, t)
+			return nil, errors.Newf(codes.Invalid, "%v != %v", n, t)
 		}
 	case Tvar:
 		return t.unifyType(kinds, n)
 	default:
-		return nil, fmt.Errorf("cannot unify %v with %T", n, t)
+		return nil, errors.Newf(codes.Invalid, "cannot unify %v with %T", n, t)
 	}
 	return nil, nil
 }
@@ -224,7 +223,7 @@ func (a array) unifyType(kinds map[Tvar]Kind, b PolyType) (Substitution, error) 
 	case Tvar:
 		return b.unifyType(kinds, a)
 	default:
-		return nil, fmt.Errorf("cannot unify list with %T", b)
+		return nil, errors.Newf(codes.Invalid, "cannot unify list with %T", b)
 	}
 }
 func (a array) resolveType(kinds map[Tvar]Kind) (Type, error) {
@@ -358,7 +357,7 @@ func (l function) unifyType(kinds map[Tvar]Kind, r PolyType) (Substitution, erro
 		for _, param := range r.required {
 			if _, ok := l.parameters[param]; !ok && param != r.pipeArgument {
 				// Pipe paramenters are validated below
-				return nil, fmt.Errorf("function does not take a parameter %q, required params %v", param, l.required)
+				return nil, errors.Newf(codes.Invalid, "function does not take a parameter %q, required params %v", param, l.required)
 			}
 		}
 		// Validate that every required parameter of the left function
@@ -372,7 +371,7 @@ func (l function) unifyType(kinds map[Tvar]Kind, r PolyType) (Substitution, erro
 			}
 		}
 		if len(lst) > 0 {
-			return nil, fmt.Errorf("missing required parameter(s) %q in call to function, which requires %q",
+			return nil, errors.Newf(codes.Invalid, "missing required parameter(s) %q in call to function, which requires %q",
 				strings.Join(lst, ", "), l.required)
 		}
 
@@ -396,7 +395,7 @@ func (l function) unifyType(kinds map[Tvar]Kind, r PolyType) (Substitution, erro
 			// If the left function does not take a pipe argument,
 			// the right function must not take one either.
 			if _, ok := r.lookupPipe(r.pipeArgument); ok {
-				return nil, fmt.Errorf("function does not take a pipe argument")
+				return nil, errors.New(codes.Invalid, "function does not take a pipe argument")
 			}
 		} else {
 			var pipeArgument string
@@ -409,7 +408,7 @@ func (l function) unifyType(kinds map[Tvar]Kind, r PolyType) (Substitution, erro
 			// the right must as well, and the types must unify.
 			rightPipeType, ok := r.lookupPipe(pipeArgument)
 			if !ok {
-				return nil, fmt.Errorf("function requires a pipe argument")
+				return nil, errors.New(codes.Invalid, "function requires a pipe argument")
 			}
 			s, err := unifyTypes(kinds, leftPipeType, rightPipeType)
 			if err != nil {
@@ -426,7 +425,7 @@ func (l function) unifyType(kinds map[Tvar]Kind, r PolyType) (Substitution, erro
 	case Tvar:
 		return r.unifyType(kinds, l)
 	default:
-		return nil, fmt.Errorf("cannot unify function with %T", r)
+		return nil, errors.Newf(codes.Invalid, "cannot unify function with %T", r)
 	}
 }
 
@@ -603,7 +602,7 @@ func (l object) unifyType(kinds map[Tvar]Kind, r PolyType) (Substitution, error)
 	case Tvar:
 		return r.unifyType(kinds, l)
 	default:
-		return nil, fmt.Errorf("cannot unify object with %T", r)
+		return nil, errors.Newf(codes.Invalid, "cannot unify object with %T", r)
 	}
 }
 func (o object) resolveType(kinds map[Tvar]Kind) (Type, error) {
@@ -654,13 +653,13 @@ func (l KClass) unifyKind(kinds map[Tvar]Kind, r Kind) (Kind, Substitution, erro
 	return nil, nil, nil
 }
 func (k KClass) resolveType(map[Tvar]Kind) (Type, error) {
-	return nil, stderrors.New("KClass has no type")
+	return nil, errors.New(codes.Internal, "KClass has no type")
 }
 func (k KClass) MonoType() (Type, bool) {
 	return nil, false
 }
 func (k KClass) resolvePolyType(map[Tvar]Kind) (PolyType, error) {
-	return nil, stderrors.New("KClass has no poly type")
+	return nil, errors.New(codes.Internal, "KClass has no poly type")
 }
 func (k KClass) occurs(Tvar) bool { return false }
 
@@ -714,7 +713,7 @@ func (k ObjectKind) freeVars(c *Constraints) TvarSet {
 func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, error) {
 	r, ok := k.(ObjectKind)
 	if !ok {
-		return nil, nil, fmt.Errorf("cannot unify record with %T", k)
+		return nil, nil, errors.Newf(codes.Invalid, "cannot unify record with %T", k)
 	}
 
 	// Merge properties building up a substitution
@@ -756,7 +755,7 @@ func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, 
 				continue
 			}
 		}
-		return nil, nil, fmt.Errorf("missing object properties %v", diff)
+		return nil, nil, errors.Newf(codes.Invalid, "missing object properties %v", diff)
 	}
 
 	var with *Tvar
@@ -770,7 +769,7 @@ func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, 
 		with = new(Tvar)
 		*with = *l.with
 	case l.with != nil && r.with != nil:
-		return nil, nil, stderrors.New("cannot unify two object each having a with constraint")
+		return nil, nil, errors.New(codes.Invalid, "cannot unify two object each having a with constraint")
 	}
 
 	kr := ObjectKind{

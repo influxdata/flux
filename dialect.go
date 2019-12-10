@@ -1,6 +1,9 @@
 package flux
 
-import "fmt"
+import (
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
+)
 
 // Dialect describes how to encode results.
 type Dialect interface {
@@ -18,7 +21,7 @@ type DialectMappings map[DialectType]CreateDialect
 
 func (m DialectMappings) Add(t DialectType, c CreateDialect) error {
 	if _, ok := m[t]; ok {
-		return fmt.Errorf("duplicate dialect mapping for %q", t)
+		return errors.Newf(codes.Internal, "duplicate dialect mapping for %q", t)
 	}
 	m[t] = c
 	return nil

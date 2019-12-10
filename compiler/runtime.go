@@ -2,13 +2,14 @@ package compiler
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"regexp"
 	"strings"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -34,11 +35,11 @@ func (c compiledFn) validate(input values.Object) error {
 	sig := c.fnType.FunctionSignature()
 	properties := input.Type().Properties()
 	if len(properties) != len(sig.Parameters) {
-		return errors.New("mismatched parameters and properties")
+		return errors.New(codes.Invalid, "mismatched parameters and properties")
 	}
 	for k, v := range sig.Parameters {
 		if !values.AssignableTo(properties[k], v) {
-			return fmt.Errorf("parameter %q has the wrong type, expected %v got %v", k, v, properties[k])
+			return errors.Newf(codes.Invalid, "parameter %q has the wrong type, expected %v got %v", k, v, properties[k])
 		}
 	}
 	return nil
@@ -281,7 +282,7 @@ func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 			return values.NewBool(true), nil
 		}
 	default:
-		panic(fmt.Errorf("unknown logical operator %v", e.operator))
+		panic(errors.Newf(codes.Internal, "unknown logical operator %v", e.operator))
 	}
 
 	r, err := e.right.Eval(ctx, scope)
@@ -370,7 +371,7 @@ func (e *unaryEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, e
 		case ast.SubtractionOperator, ast.NotOperator:
 			// Fallthrough to below.
 		default:
-			return nil, fmt.Errorf("unknown unary operator: %s", e.op)
+			return nil, errors.Newf(codes.Internal, "unknown unary operator: %s", e.op)
 		}
 
 		// The subtraction operator falls through to here.

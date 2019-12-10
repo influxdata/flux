@@ -2,7 +2,6 @@ package flux
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -39,7 +38,7 @@ func (o *Operation) UnmarshalJSON(data []byte) error {
 func unmarshalOpSpec(k OperationKind, data []byte) (OperationSpec, error) {
 	createOpSpec, ok := kindToOp[k]
 	if !ok {
-		return nil, fmt.Errorf("unknown operation spec kind %v", k)
+		return nil, errors.Newf(codes.Invalid, "unknown operation spec kind %v", k)
 	}
 	spec := createOpSpec()
 
@@ -86,7 +85,7 @@ var kindToOp = make(map[OperationKind]NewOperationSpec)
 // TODO:(nathanielc) make this part of RegisterMethod/RegisterFunction
 func RegisterOpSpec(k OperationKind, c NewOperationSpec) {
 	if kindToOp[k] != nil {
-		panic(fmt.Errorf("duplicate registration for operation kind %v", k))
+		panic(errors.Newf(codes.Internal, "duplicate registration for operation kind %v", k))
 	}
 	kindToOp[k] = c
 }
