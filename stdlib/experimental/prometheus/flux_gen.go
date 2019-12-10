@@ -1274,7 +1274,8 @@ var pkgAST = &ast.Package{
 				Value: "universe",
 			},
 		}},
-		Name: "prometheus.flux",
+		Metadata: "parser-type=go",
+		Name:     "prometheus.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

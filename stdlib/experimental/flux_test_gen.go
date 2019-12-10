@@ -1708,7 +1708,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "group_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "group_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -3000,7 +3001,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Name: "set_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "set_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

@@ -21895,7 +21895,8 @@ var pkgAST = &ast.Package{
 				Value: "regexp",
 			},
 		}},
-		Name: "universe.flux",
+		Metadata: "parser-type=go",
+		Name:     "universe.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

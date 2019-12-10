@@ -67,8 +67,9 @@ var pkgAST = &ast.Package{
 				Name: "encode",
 			},
 		}},
-		Imports: nil,
-		Name:    "json.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "json.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

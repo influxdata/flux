@@ -1337,7 +1337,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "influxdata/influxdb/v1",
 			},
 		}},
-		Name: "influxFieldsAsCols_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "influxFieldsAsCols_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -4148,7 +4149,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "influxdata/influxdb/v1",
 			},
 		}},
-		Name: "influxRawQuery_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "influxRawQuery_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -6005,7 +6007,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "measurement_tag_values_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "measurement_tag_values_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -7544,7 +7547,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "show_measurements_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "show_measurements_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -9013,7 +9017,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "show_tag_keys_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "show_tag_keys_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -10552,7 +10557,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "show_tag_values_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "show_tag_values_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

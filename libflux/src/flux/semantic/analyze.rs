@@ -612,6 +612,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: Some(ast::PackageClause {
                     base: b.clone(),
                     name: ast::Identifier {
@@ -653,6 +654,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: Some(ast::PackageClause {
                     base: b.clone(),
                     name: ast::Identifier {
@@ -736,6 +738,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![
@@ -805,6 +808,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![ast::Statement::Expr(ast::ExprStmt {
@@ -870,6 +874,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![ast::Statement::Expr(ast::ExprStmt {
@@ -935,6 +940,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![ast::Statement::Expr(ast::ExprStmt {
@@ -1027,6 +1033,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![ast::Statement::Expr(ast::ExprStmt {
@@ -1113,6 +1120,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![ast::Statement::Option(ast::OptionStmt {
@@ -1294,6 +1302,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![ast::Statement::Option(ast::OptionStmt {
@@ -1363,6 +1372,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![
@@ -1559,6 +1569,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![
@@ -1777,6 +1788,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![ast::Statement::Variable(ast::VariableAssgn {
@@ -1841,6 +1853,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![ast::Statement::Expr(ast::ExprStmt {
@@ -1904,6 +1917,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![
@@ -2217,6 +2231,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![ast::Statement::Expr(ast::ExprStmt {
@@ -2275,6 +2290,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![ast::Statement::Expr(ast::ExprStmt {
@@ -2349,6 +2365,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![ast::Statement::Expr(ast::ExprStmt {
@@ -2417,6 +2434,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![ast::Statement::Expr(ast::ExprStmt {
@@ -2483,6 +2501,7 @@ mod tests {
             files: vec![ast::File {
                 base: b.clone(),
                 name: "foo.flux".to_string(),
+                metadata: String::new(),
                 package: None,
                 imports: Vec::new(),
                 body: vec![ast::Statement::Expr(ast::ExprStmt {

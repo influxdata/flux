@@ -1395,7 +1395,8 @@ var pkgAST = &ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Name: "http.flux",
+		Metadata: "parser-type=go",
+		Name:     "http.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

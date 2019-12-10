@@ -67,8 +67,9 @@ var pkgAST = &ast.Package{
 				Name: "version",
 			},
 		}},
-		Imports: nil,
-		Name:    "runtime.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "runtime.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

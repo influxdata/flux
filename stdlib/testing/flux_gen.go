@@ -2654,7 +2654,8 @@ var pkgAST = &ast.Package{
 				Value: "csv",
 			},
 		}},
-		Name: "testing.flux",
+		Metadata: "parser-type=go",
+		Name:     "testing.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

@@ -23,6 +23,19 @@ var CompareOptions = []cmp.Option{
 		}
 		return re.String()
 	}),
+	cmp.Transformer("", func(f *ast.File) *ast.File {
+		// File contains metadata about the parser that created it:
+		//   parser-type=go or parser-type=rust
+		// Make them the same, so they compare as equal.
+		re := regexp.MustCompile("parser-type=(.*)")
+		is := re.FindStringSubmatchIndex(f.Metadata)
+		if len(is) > 0 {
+			f = f.Copy().(*ast.File)
+			newMeta := f.Metadata[0:is[0]] + "**redacted**"
+			f.Metadata = newMeta
+		}
+		return f
+	}),
 }
 
 func TestRoundTrip(t *testing.T) {

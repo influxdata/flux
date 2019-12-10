@@ -67,8 +67,9 @@ var pkgAST = &ast.Package{
 				Name: "tables",
 			},
 		}},
-		Imports: nil,
-		Name:    "gen.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "gen.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

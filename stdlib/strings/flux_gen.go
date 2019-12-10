@@ -1223,8 +1223,9 @@ var pkgAST = &ast.Package{
 				Name: "substring",
 			},
 		}},
-		Imports: nil,
-		Name:    "strings.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "strings.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

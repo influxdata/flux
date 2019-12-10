@@ -237,8 +237,9 @@ var pkgAST = &ast.Package{
 				Name: "to",
 			},
 		}},
-		Imports: nil,
-		Name:    "experimental.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "experimental.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

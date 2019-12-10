@@ -674,6 +674,7 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
             }
             walk::Node::File(f) => {
                 let name = v.create_string(&f.name);
+                let metadata = v.create_string(&f.metadata);
                 let package = v.package_clause;
                 v.package_clause = None;
 
@@ -687,6 +688,7 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                     &fbast::FileArgs {
                         base_node,
                         name,
+                        metadata,
                         package,
                         imports,
                         body,

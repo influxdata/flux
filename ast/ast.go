@@ -191,10 +191,11 @@ func (p *Package) Copy() Node {
 // File represents a source from a single file
 type File struct {
 	BaseNode
-	Name    string               `json:"name,omitempty"` // name of the file
-	Package *PackageClause       `json:"package"`
-	Imports []*ImportDeclaration `json:"imports"`
-	Body    []Statement          `json:"body"`
+	Name     string               `json:"name,omitempty"` // name of the file
+	Metadata string               `json:"metadata,omitempty"`
+	Package  *PackageClause       `json:"package"`
+	Imports  []*ImportDeclaration `json:"imports"`
+	Body     []Statement          `json:"body"`
 }
 
 // Type is the abstract type

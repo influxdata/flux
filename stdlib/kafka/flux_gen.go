@@ -67,8 +67,9 @@ var pkgAST = &ast.Package{
 				Name: "to",
 			},
 		}},
-		Imports: nil,
-		Name:    "kafka.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "kafka.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

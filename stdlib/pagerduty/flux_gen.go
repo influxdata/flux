@@ -5222,7 +5222,8 @@ var pkgAST = &ast.Package{
 				Value: "strings",
 			},
 		}},
-		Name: "pagerduty.flux",
+		Metadata: "parser-type=go",
+		Name:     "pagerduty.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

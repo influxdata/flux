@@ -257,6 +257,7 @@ fn compare_pkg_fb(ast_pkg: &ast::Package, fb_pkg: &fbast::Package) -> Result<(),
 fn compare_files(ast_file: &ast::File, fb_file: &fbast::File) -> Result<(), String> {
     compare_base(&ast_file.base, &fb_file.base_node())?;
     compare_strings("file name", &ast_file.name, &fb_file.name())?;
+    compare_strings("metadata", &ast_file.metadata, &fb_file.metadata())?;
     compare_package_clause(&ast_file.package, &fb_file.package())?;
     compare_imports(&ast_file.imports, &fb_file.imports())?;
     compare_stmt_vectors(&ast_file.body, &fb_file.body())?;

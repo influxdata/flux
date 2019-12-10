@@ -1749,7 +1749,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "aggregate_window_count_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "aggregate_window_count_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -3522,7 +3523,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "aggregate_window_mean_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "aggregate_window_mean_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -5592,7 +5594,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "aggregate_window_median_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "aggregate_window_median_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -6727,7 +6730,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "buckets_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "buckets_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -8514,7 +8518,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "measurement_tag_keys_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "measurement_tag_keys_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

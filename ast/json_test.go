@@ -81,6 +81,7 @@ func TestJSONMarshal(t *testing.T) {
 		{
 			name: "file",
 			node: &ast.File{
+				Metadata: "parser-type=none",
 				Package: &ast.PackageClause{
 					Name: &ast.Identifier{Name: "foo"},
 				},
@@ -94,7 +95,7 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"File","package":{"type":"PackageClause","name":{"type":"Identifier","name":"foo"}},"imports":[{"type":"ImportDeclaration","as":{"type":"Identifier","name":"b"},"path":{"type":"StringLiteral","value":"path/bar"}}],"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
+			want: `{"type":"File","metadata":"parser-type=none","package":{"type":"PackageClause","name":{"type":"Identifier","name":"foo"}},"imports":[{"type":"ImportDeclaration","as":{"type":"Identifier","name":"b"},"path":{"type":"StringLiteral","value":"path/bar"}}],"body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}`,
 		},
 		{
 			name: "block",

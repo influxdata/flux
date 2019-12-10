@@ -6,11 +6,16 @@ import (
 	"encoding/json"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/internal/parser"
 	"github.com/influxdata/flux/internal/token"
 	"github.com/influxdata/flux/libflux/go/libflux"
 )
 
 func parseFile(f *token.File, src []byte) (*ast.File, error) {
+	if !useRustParser() {
+		return parser.ParseFile(f, src), nil
+	}
+
 	astFile := libflux.Parse(string(src))
 	defer astFile.Free()
 

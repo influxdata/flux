@@ -61,6 +61,7 @@ fn string_interpolation_simple() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -128,6 +129,7 @@ fn string_interpolation_multiple() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -201,6 +203,7 @@ fn string_interpolation_nested() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -296,6 +299,7 @@ fn string_interp_with_escapes() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -356,6 +360,7 @@ fn bad_string_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -418,6 +423,7 @@ fn package_clause() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: Some(PackageClause {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
@@ -450,6 +456,7 @@ fn import() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![ImportDeclaration {
                 base: BaseNode {
@@ -483,6 +490,7 @@ fn import_as() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![ImportDeclaration {
                 base: BaseNode {
@@ -525,6 +533,7 @@ import "path/bar""#,
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![
                 ImportDeclaration {
@@ -580,6 +589,7 @@ import "path/bar""#,
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: Some(PackageClause {
                 base: BaseNode {
                     location: loc.get(2, 1, 2, 12),
@@ -649,6 +659,7 @@ import "path/bar"
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: Some(PackageClause {
                 base: BaseNode {
                     location: loc.get(2, 1, 2, 12),
@@ -744,6 +755,7 @@ fn optional_query_metadata() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Option(OptionStmt {
@@ -905,6 +917,7 @@ fn optional_query_metadata_preceding_query_text() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -1037,6 +1050,7 @@ fn qualified_option() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Option(OptionStmt {
@@ -1095,6 +1109,7 @@ fn builtin() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Builtin(BuiltinStmt {
@@ -1127,6 +1142,7 @@ fn test_statement() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Test(TestStmt {
@@ -1214,6 +1230,7 @@ fn from() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -1256,6 +1273,7 @@ fn comment() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -1295,6 +1313,7 @@ fn identifier_with_number() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -1334,6 +1353,7 @@ fn regex_literal() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -1366,6 +1386,7 @@ fn regex_literal_with_escape_sequence() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -1398,6 +1419,7 @@ fn bad_regex_literal() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -1433,6 +1455,7 @@ fn regex_match_operators() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -1507,6 +1530,7 @@ fn declare_variable_as_an_int() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -1546,6 +1570,7 @@ fn declare_variable_as_a_float() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -1585,6 +1610,7 @@ fn declare_variable_as_an_array() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -1653,6 +1679,7 @@ fn declare_variable_as_an_empty_array() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -1695,6 +1722,7 @@ fn use_variable_to_declare_something() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -1759,6 +1787,7 @@ fn variable_is_from_statement() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -1840,6 +1869,7 @@ fn pipe_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -1899,6 +1929,7 @@ fn pipe_expression_to_member_expression_function() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -1990,6 +2021,7 @@ fn literal_pipe_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -2042,6 +2074,7 @@ fn member_expression_pipe_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -2107,6 +2140,7 @@ fn multiple_pipe_expressions() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -2206,6 +2240,7 @@ fn pipe_expression_into_non_call_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -2270,6 +2305,7 @@ fn two_variables_for_two_froms() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -2411,6 +2447,7 @@ fn from_with_database() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -2481,6 +2518,7 @@ fn map_member_expressions() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -2616,6 +2654,7 @@ fn object_with_string_literal_key() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -2675,6 +2714,7 @@ fn object_with_mixed_keys() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -2756,6 +2796,7 @@ fn implicit_key_object_literal() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -2826,6 +2867,7 @@ fn implicit_key_object_literal_error() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -2897,6 +2939,7 @@ fn implicit_and_explicit_keys_object_literal_error() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -2973,6 +3016,7 @@ fn object_with() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -3053,6 +3097,7 @@ fn object_with_implicit_keys() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -3121,6 +3166,7 @@ fn index_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -3166,6 +3212,7 @@ fn nested_index_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -3224,6 +3271,7 @@ fn access_indexed_object_returned_from_function_call() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -3276,6 +3324,7 @@ fn index_with_member_expressions() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -3334,6 +3383,7 @@ fn index_with_member_with_call_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -3399,6 +3449,7 @@ fn index_with_unclosed_bracket() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -3451,6 +3502,7 @@ fn index_with_unbalanced_parenthesis() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -3503,6 +3555,7 @@ fn index_with_unexpected_rparen() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -3548,6 +3601,7 @@ fn binary_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -3594,6 +3648,7 @@ fn member_expression_binary_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -3658,6 +3713,7 @@ fn var_as_binary_expression_of_other_vars() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -3776,6 +3832,7 @@ fn var_as_unary_expression_of_other_vars() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -3847,6 +3904,7 @@ fn var_as_both_binary_and_unary_expressions() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -3932,6 +3990,7 @@ fn unary_expressions_within_logical_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -4056,6 +4115,7 @@ fn unary_expression_with_member_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -4115,6 +4175,7 @@ a = 5.0
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -4239,6 +4300,7 @@ fn expressions_with_function_calls() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -4302,6 +4364,7 @@ fn mix_unary_logical_and_binary_expressions() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -4406,6 +4469,7 @@ fn mix_unary_logical_and_binary_expressions_with_extra_parens() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -4513,6 +4577,7 @@ fn modulo_op_ints() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -4559,6 +4624,7 @@ fn modulo_op_floats() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -4605,6 +4671,7 @@ fn power_op() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -4651,6 +4718,7 @@ fn binary_operator_precedence() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -4711,6 +4779,7 @@ fn binary_operator_precedence_literals_only() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -4771,6 +4840,7 @@ fn binary_operator_precedence_double_subtraction() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -4831,6 +4901,7 @@ fn binary_operator_precedence_double_subtraction_with_parens() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -4897,6 +4968,7 @@ fn binary_operator_precedence_double_sum() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -4957,6 +5029,7 @@ fn binary_operator_precedence_double_sum_with_parens() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -5023,6 +5096,7 @@ fn logical_unary_operator_precedence() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -5086,6 +5160,7 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -5501,6 +5576,7 @@ fn logical_operators_precedence_1() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -5554,6 +5630,7 @@ fn logical_operators_precedence_2() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -5607,6 +5684,7 @@ fn logical_operators_precedence_3() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -5660,6 +5738,7 @@ fn logical_operators_precedence_4() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -5713,6 +5792,7 @@ fn logical_operators_precedence_5() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -5773,6 +5853,7 @@ fn logical_operators_precedence_6() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -5833,6 +5914,7 @@ fn logical_operators_precedence_7() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -5892,6 +5974,7 @@ fn logical_operators_precedence_8() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -5951,6 +6034,7 @@ fn logical_operators_precedence_9() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -6017,6 +6101,7 @@ fn logical_operators_precedence_10() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -6089,6 +6174,7 @@ fn two_logical_operations_with_parens() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -6211,6 +6297,7 @@ fn arrow_function_called() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -6332,6 +6419,7 @@ fn arrow_function_return_map() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -6417,6 +6505,7 @@ fn arrow_function_with_default_arg() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -6516,6 +6605,7 @@ fn arrow_function_called_in_binary_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -6672,6 +6762,7 @@ fn arrow_function_as_single_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -6763,6 +6854,7 @@ fn arrow_function_as_block() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -6883,6 +6975,7 @@ fn conditional() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -6944,6 +7037,7 @@ fn conditional_with_unary_logical_operators() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -7125,6 +7219,7 @@ fn nested_conditionals() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -7281,6 +7376,7 @@ fn from_with_filter_with_no_parens() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -7523,6 +7619,7 @@ fn from_with_range() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -7669,6 +7766,7 @@ fn from_with_limit() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -7806,6 +7904,7 @@ fn from_with_range_and_count() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -7984,6 +8083,7 @@ fn from_with_range_limit_and_count() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -8208,6 +8308,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -8645,6 +8746,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -9344,6 +9446,7 @@ fn duration_literal_all_units() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -9424,6 +9527,7 @@ fn duration_literal_months() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -9466,6 +9570,7 @@ fn duration_literal_milliseconds() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -9508,6 +9613,7 @@ fn duration_literal_months_minutes_milliseconds() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -9560,6 +9666,7 @@ fn date_literal_in_the_default_location() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -9599,6 +9706,7 @@ fn date_time_literal() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -9638,6 +9746,7 @@ fn date_time_literal_with_fractional_seconds() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -9678,6 +9787,7 @@ fn function_call_with_unbalanced_braces() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -9828,6 +9938,7 @@ fn string_with_utf_8() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -9860,6 +9971,7 @@ fn string_with_byte_values() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -9892,6 +10004,7 @@ fn string_with_mixed_values() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -9928,6 +10041,7 @@ backslash \\
         File {
             base: BaseNode {location: loc.get(1, 1, 6, 2), errors: vec![] },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -9960,6 +10074,7 @@ string"
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -9993,6 +10108,7 @@ fn illegal_statement_token() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![
@@ -10036,6 +10152,7 @@ fn multiple_idents_in_parens() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -10091,6 +10208,7 @@ fn missing_left_hand_side() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -10148,6 +10266,7 @@ fn missing_right_hand_side() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -10203,6 +10322,7 @@ fn illegal_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -10243,6 +10363,7 @@ fn missing_arrow_in_function_expression() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -10317,6 +10438,7 @@ fn property_list_missing_property() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -10412,6 +10534,7 @@ fn property_list_missing_key() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -10471,6 +10594,7 @@ fn property_list_missing_value() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -10525,6 +10649,7 @@ fn property_list_missing_comma() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -10623,6 +10748,7 @@ fn property_list_trailing_comma() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -10682,6 +10808,7 @@ fn property_list_bad_property() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Variable(VariableAssgn {
@@ -10781,6 +10908,7 @@ fn invalid_expression_in_array() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {
@@ -10819,6 +10947,7 @@ fn integer_literal_overflow() {
                 errors: vec![]
             },
             name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
             body: vec![Statement::Expr(ExprStmt {

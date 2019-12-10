@@ -3899,7 +3899,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Name: "check_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "check_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -5391,7 +5392,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Name: "deadman_add_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "deadman_add_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -6865,7 +6867,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Name: "deadman_sub_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "deadman_sub_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -9273,7 +9276,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Name: "notify_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "notify_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -11159,7 +11163,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Name: "state_changes_test.flux",
+		Metadata: "parser-type=go",
+		Name:     "state_changes_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

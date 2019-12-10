@@ -205,8 +205,9 @@ var pkgAST = &ast.Package{
 				},
 			},
 		}},
-		Imports: nil,
-		Name:    "planner.flux",
+		Imports:  nil,
+		Metadata: "parser-type=go",
+		Name:     "planner.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
