@@ -1,6 +1,9 @@
 package semantic
 
-import "fmt"
+import (
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
+)
 
 func runChecks(n Node, vars, opts map[string]bool) error {
 	// Check for options declared below package block.
@@ -43,7 +46,7 @@ func optionStatements(n Node) ([]*OptionStatement, error) {
 		if err != nil {
 			return nil, err
 		}
-		return nil, fmt.Errorf("option %q declared below package block at %v", name, errStmt.Location())
+		return nil, errors.Newf(codes.Invalid, "option %q declared below package block at %v", name, errStmt.Location())
 	}
 	return stmts, nil
 }
@@ -56,11 +59,11 @@ func optionName(opt *OptionStatement) (string, error) {
 		obj := n.Member.Object
 		id, ok := obj.(*IdentifierExpression)
 		if !ok {
-			return "", fmt.Errorf("unsupported option qualifier %T", obj)
+			return "", errors.Newf(codes.Invalid, "unsupported option qualifier %T", obj)
 		}
 		return id.Name + "." + n.Member.Property, nil
 	default:
-		return "", fmt.Errorf("unsupported assignment %T", n)
+		return "", errors.Newf(codes.Internal, "unsupported assignment %T", n)
 	}
 }
 
@@ -98,10 +101,10 @@ func optionReAssignments(stmts []*OptionStatement, vars, options map[string]bool
 			return err
 		}
 		if options[name] {
-			return fmt.Errorf("option %q redeclared at %v", name, stmt.Location())
+			return errors.Newf(codes.Invalid, "option %q redeclared at %v", name, stmt.Location())
 		}
 		if vars[name] {
-			return fmt.Errorf("cannot declare option %q at %v; variable with same name already declared", name, stmt.Location())
+			return errors.Newf(codes.Invalid, "cannot declare option %q at %v; variable with same name already declared", name, stmt.Location())
 		}
 		options[name] = true
 	}
@@ -125,11 +128,11 @@ func varReAssignments(n Node, vars, opts map[string]bool) error {
 	Walk(NewScopedVisitor(visitor), n)
 	if varDec != nil {
 		name := varDec.Identifier.Name
-		return fmt.Errorf("var %q redeclared at %v", name, varDec.Location())
+		return errors.Newf(codes.Invalid, "var %q redeclared at %v", name, varDec.Location())
 	}
 	if optDec != nil {
 		name := optDec.Identifier.Name
-		return fmt.Errorf("cannot declare variable %q at %v; option with same name already declared", name, optDec.Location())
+		return errors.Newf(codes.Invalid, "cannot declare variable %q at %v; option with same name already declared", name, optDec.Location())
 	}
 	return nil
 }
@@ -193,7 +196,7 @@ func optionDependencies(stmts []*OptionStatement, options map[string]bool) error
 		name := n.Identifier.Name
 		Walk(NewScopedVisitor(visitor), n.Init)
 		if dep != nil {
-			return fmt.Errorf("option dependency: option %q depends on option %q defined in the same package at %v", name, dep.Name, dep.Location())
+			return errors.Newf(codes.Invalid, "option dependency: option %q depends on option %q defined in the same package at %v", name, dep.Name, dep.Location())
 		}
 	}
 	return nil

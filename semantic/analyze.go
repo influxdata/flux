@@ -1,8 +1,6 @@
 package semantic
 
 import (
-	"fmt"
-
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -382,7 +380,7 @@ func analyzeFunctionExpression(arrow *ast.FunctionExpression) (*FunctionExpressi
 		for i, p := range arrow.Params {
 			ident, ok := p.Key.(*ast.Identifier)
 			if !ok {
-				return nil, fmt.Errorf("function params must be identifiers")
+				return nil, errors.New(codes.Invalid, "function params must be identifiers")
 			}
 			key, err := analyzeIdentifier(ident)
 			if err != nil {
@@ -456,11 +454,11 @@ func analyzeCallExpression(call *ast.CallExpression) (*CallExpression, error) {
 	}
 	var args *ObjectExpression
 	if l := len(call.Arguments); l > 1 {
-		return nil, fmt.Errorf("arguments are not a single object expression %v", args)
+		return nil, errors.Newf(codes.Internal, "arguments are not a single object expression %v", args)
 	} else if l == 1 {
 		obj, ok := call.Arguments[0].(*ast.ObjectExpression)
 		if !ok {
-			return nil, fmt.Errorf("arguments not an object expression")
+			return nil, errors.New(codes.Internal, "arguments not an object expression")
 		}
 		var err error
 		args, err = analyzeObjectExpression(obj)

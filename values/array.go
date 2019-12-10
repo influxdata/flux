@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -63,14 +65,14 @@ func (a *array) PolyType() semantic.PolyType {
 
 func (a *array) Get(i int) Value {
 	if i >= len(a.elements) {
-		panic(fmt.Errorf("index out of bounds: i:%d len:%d", i, len(a.elements)))
+		panic(errors.Newf(codes.Internal, "index out of bounds: i:%d len:%d", i, len(a.elements)))
 	}
 	return a.elements[i]
 }
 
 func (a *array) Set(i int, v Value) {
 	if i >= len(a.elements) {
-		panic(fmt.Errorf("index out of bounds: i:%d len:%d", i, len(a.elements)))
+		panic(errors.Newf(codes.Internal, "index out of bounds: i:%d len:%d", i, len(a.elements)))
 	}
 	a.elements[i] = v
 }

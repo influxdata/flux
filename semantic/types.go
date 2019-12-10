@@ -9,6 +9,9 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // Type is the representation of a Flux type.
@@ -94,16 +97,16 @@ func (n Nature) PolyType() PolyType { return n }
 func (n Nature) Nature() Nature     { return n }
 
 func (n Nature) PropertyType(name string) Type {
-	panic(fmt.Errorf("cannot get type of property %q, from kind %q", name, n))
+	panic(errors.Newf(codes.Internal, "cannot get type of property %q, from kind %q", name, n))
 }
 func (n Nature) Properties() map[string]Type {
-	panic(fmt.Errorf("cannot get properties from kind %s", n))
+	panic(errors.Newf(codes.Internal, "cannot get properties from kind %s", n))
 }
 func (n Nature) ElementType() Type {
-	panic(fmt.Errorf("cannot get element type from kind %s", n))
+	panic(errors.Newf(codes.Internal, "cannot get element type from kind %s", n))
 }
 func (n Nature) FunctionSignature() FunctionSignature {
-	panic(fmt.Errorf("cannot get function signature from kind %s", n))
+	panic(errors.Newf(codes.Internal, "cannot get function signature from kind %s", n))
 }
 func (n Nature) typ() {}
 
@@ -119,16 +122,16 @@ func (t *arrayType) Nature() Nature {
 	return Array
 }
 func (t *arrayType) PropertyType(name string) Type {
-	panic(fmt.Errorf("cannot get property type of kind %s", t.Nature()))
+	panic(errors.Newf(codes.Internal, "cannot get property type of kind %s", t.Nature()))
 }
 func (t *arrayType) Properties() map[string]Type {
-	panic(fmt.Errorf("cannot get properties type of kind %s", t.Nature()))
+	panic(errors.Newf(codes.Internal, "cannot get properties type of kind %s", t.Nature()))
 }
 func (t *arrayType) ElementType() Type {
 	return t.elementType
 }
 func (t *arrayType) FunctionSignature() FunctionSignature {
-	panic(fmt.Errorf("cannot get function signature of kind %s", t.Nature()))
+	panic(errors.Newf(codes.Internal, "cannot get function signature of kind %s", t.Nature()))
 }
 func (t *arrayType) PolyType() PolyType {
 	if t.elementType == nil {
@@ -205,10 +208,10 @@ func (t *objectType) Properties() map[string]Type {
 	return t.properties
 }
 func (t *objectType) ElementType() Type {
-	panic(fmt.Errorf("cannot get element type of kind %s", t.Nature()))
+	panic(errors.Newf(codes.Internal, "cannot get element type of kind %s", t.Nature()))
 }
 func (t *objectType) FunctionSignature() FunctionSignature {
-	panic(fmt.Errorf("cannot get function signature of kind %s", t.Nature()))
+	panic(errors.Newf(codes.Internal, "cannot get function signature of kind %s", t.Nature()))
 }
 func (t *objectType) PolyType() PolyType {
 	properties := make(map[string]PolyType, len(t.properties))
@@ -352,13 +355,13 @@ func (t *functionType) Nature() Nature {
 	return Function
 }
 func (t *functionType) PropertyType(name string) Type {
-	panic(fmt.Errorf("cannot get property type of kind %s", t.Nature()))
+	panic(errors.Newf(codes.Internal, "cannot get property type of kind %s", t.Nature()))
 }
 func (t *functionType) Properties() map[string]Type {
-	panic(fmt.Errorf("cannot get properties type of kind %s", t.Nature()))
+	panic(errors.Newf(codes.Internal, "cannot get properties type of kind %s", t.Nature()))
 }
 func (t *functionType) ElementType() Type {
-	panic(fmt.Errorf("cannot get element type of kind %s", t.Nature()))
+	panic(errors.Newf(codes.Internal, "cannot get element type of kind %s", t.Nature()))
 }
 func (t *functionType) FunctionSignature() FunctionSignature {
 	return FunctionSignature{

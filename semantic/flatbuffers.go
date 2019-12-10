@@ -1,7 +1,6 @@
 package semantic
 
 import (
-	"fmt"
 	"regexp"
 	"time"
 
@@ -38,7 +37,7 @@ func posFromBuf(p *ast.Position, fb *fbsemantic.Position) *ast.Position {
 func fromWrappedStatement(fb *fbsemantic.WrappedStatement) (Statement, error) {
 	tbl := new(flatbuffers.Table)
 	if !fb.Statement(tbl) {
-		return nil, fmt.Errorf("missing table in wrapped statement")
+		return nil, errors.Newf(codes.Internal, "missing table in wrapped statement")
 	}
 	switch st := fb.StatementType(); st {
 	case fbsemantic.StatementOptionStatement:

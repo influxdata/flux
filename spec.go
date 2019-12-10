@@ -1,7 +1,6 @@
 package flux
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/influxdata/flux/codes"
@@ -111,7 +110,7 @@ func (q *Spec) computeLookup() (map[OperationID]*Operation, error) {
 	lookup := make(map[OperationID]*Operation, len(q.Operations))
 	for _, o := range q.Operations {
 		if _, ok := lookup[o.ID]; ok {
-			return nil, fmt.Errorf("found duplicate operation ID %q", o.ID)
+			return nil, errors.Newf(codes.Internal, "found duplicate operation ID %q", o.ID)
 		}
 		lookup[o.ID] = o
 	}
@@ -129,14 +128,14 @@ func (q *Spec) determineParentsChildrenAndRoots() (parents, children map[Operati
 		// Build children map
 		c, ok := lookup[e.Child]
 		if !ok {
-			return nil, nil, nil, fmt.Errorf("edge references unknown child operation %q", e.Child)
+			return nil, nil, nil, errors.Newf(codes.Internal, "edge references unknown child operation %q", e.Child)
 		}
 		children[e.Parent] = append(children[e.Parent], c)
 
 		// Build parents map
 		p, ok := lookup[e.Parent]
 		if !ok {
-			return nil, nil, nil, fmt.Errorf("edge references unknown parent operation %q", e.Parent)
+			return nil, nil, nil, errors.Newf(codes.Internal, "edge references unknown parent operation %q", e.Parent)
 		}
 		parents[e.Child] = append(parents[e.Child], p)
 	}

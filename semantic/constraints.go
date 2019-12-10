@@ -1,7 +1,6 @@
 package semantic
 
 import (
-	stderrors "errors"
 	"fmt"
 	"strings"
 
@@ -90,10 +89,10 @@ func (v ConstraintGenerator) Done(node Node) {
 func (v ConstraintGenerator) lookup(n Node) (PolyType, error) {
 	a, ok := v.cs.annotations[n]
 	if !ok {
-		return nil, fmt.Errorf("no annotation found for %T@%v", n, n.Location())
+		return nil, errors.Newf(codes.Internal, "no annotation found for %T@%v", n, n.Location())
 	}
 	if a.Type == nil {
-		return nil, fmt.Errorf("no type annotation found for %T@%v", n, n.Location())
+		return nil, errors.Newf(codes.Internal, "no type annotation found for %T@%v", n, n.Location())
 	}
 	return a.Type, a.Err
 }
@@ -114,7 +113,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 	case *ImportDeclaration:
 		pkg, ok := v.importer.Import(n.Path.Value)
 		if !ok {
-			return nil, fmt.Errorf("unknown import path: %q", n.Path.Value)
+			return nil, errors.Newf(codes.NotFound, "unknown import path: %q", n.Path.Value)
 		}
 		// Do not trust imported type variables,
 		// substitute them with fresh vars.
@@ -208,7 +207,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			v.cs.AddTypeConst(r, Regexp, n.Location())
 			return Bool, nil
 		default:
-			return nil, fmt.Errorf("unsupported binary operator %v", n.Operator)
+			return nil, errors.Newf(codes.Invalid, "unsupported binary operator %v", n.Operator)
 		}
 	case *LogicalExpression:
 		l, err := v.lookup(n.Left)
@@ -353,12 +352,12 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			}
 			tv, ok := t.(Tvar)
 			if !ok {
-				return nil, stderrors.New("object 'with' identifier must be a type variable")
+				return nil, errors.Newf(codes.Internal, "object 'with' identifier must be a type variable")
 			}
 			for _, k := range v.cs.kindConst[tv] {
 				obj, ok := k.(ObjectKind)
 				if !ok {
-					return nil, stderrors.New("object 'with' identifier must have only object kind constraints")
+					return nil, errors.Newf(codes.Internal, "object 'with' identifier must have only object kind constraints")
 				}
 				if obj.upper.isAllLabels() {
 					continue
@@ -391,7 +390,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		}
 		tv, ok := t.(Tvar)
 		if !ok {
-			return nil, stderrors.New("member object must be a type variable")
+			return nil, errors.Newf(codes.Internal, "member object must be a type variable")
 		}
 		v.cs.AddKindConst(tv, ObjectKind{
 			properties: map[string]PolyType{n.Property: nodeVar},
@@ -406,7 +405,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		}
 		tv, ok := t.(Tvar)
 		if !ok {
-			return nil, stderrors.New("array must be a type variable")
+			return nil, errors.Newf(codes.Internal, "array must be a type variable")
 		}
 		idx, err := v.lookup(n.Index)
 		if err != nil {
@@ -471,7 +470,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		*InterpolatedPart:
 		return nil, nil
 	default:
-		return nil, fmt.Errorf("unsupported %T", n)
+		return nil, errors.Newf(codes.Internal, "unsupported %T", n)
 	}
 }
 

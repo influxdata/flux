@@ -2,7 +2,6 @@ package semantic
 
 import (
 	"encoding/json"
-	"fmt"
 	"regexp"
 	"strconv"
 
@@ -1031,7 +1030,7 @@ func unmarshalStatement(msg json.RawMessage) (Statement, error) {
 	}
 	s, ok := n.(Statement)
 	if !ok {
-		return nil, fmt.Errorf("node %q is not a statement", n.NodeType())
+		return nil, errors.Newf(codes.Internal, "node %q is not a statement", n.NodeType())
 	}
 	return s, nil
 }
@@ -1045,7 +1044,7 @@ func unmarshalExpression(msg json.RawMessage) (Expression, error) {
 	}
 	e, ok := n.(Expression)
 	if !ok {
-		return nil, fmt.Errorf("node %q is not an expression", n.NodeType())
+		return nil, errors.Newf(codes.Internal, "node %q is not an expression", n.NodeType())
 	}
 	return e, nil
 }
@@ -1059,7 +1058,7 @@ func unmarshalPropertyKey(msg json.RawMessage) (PropertyKey, error) {
 	}
 	k, ok := n.(PropertyKey)
 	if !ok {
-		return nil, fmt.Errorf("node %q is not property key", n.NodeType())
+		return nil, errors.Newf(codes.Internal, "node %q is not property key", n.NodeType())
 	}
 	return k, nil
 }
@@ -1073,7 +1072,7 @@ func unmarshalStringPart(msg json.RawMessage) (StringExpressionPart, error) {
 	}
 	p, ok := n.(StringExpressionPart)
 	if !ok {
-		return nil, fmt.Errorf("node %q is not a string expression part", n.NodeType())
+		return nil, errors.Newf(codes.Internal, "node %q is not a string expression part", n.NodeType())
 	}
 	return p, nil
 }
@@ -1087,7 +1086,7 @@ func unmarshalAssignment(msg json.RawMessage) (Assignment, error) {
 	}
 	a, ok := n.(Assignment)
 	if !ok {
-		return nil, fmt.Errorf("node %q is not an assignment", n.NodeType())
+		return nil, errors.Newf(codes.Internal, "node %q is not an assignment", n.NodeType())
 	}
 	return a, nil
 }
@@ -1186,7 +1185,7 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 	case "Property":
 		node = new(Property)
 	default:
-		return nil, fmt.Errorf("unknown type %q", typ.Type)
+		return nil, errors.Newf(codes.Internal, "unknown type %q", typ.Type)
 	}
 
 	if err := json.Unmarshal(msg, node); err != nil {

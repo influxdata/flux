@@ -4,8 +4,6 @@ import (
 	"bufio"
 	"context"
 	"encoding/binary"
-	"errors"
-	"fmt"
 	"io"
 	"net/url"
 	"sort"
@@ -13,7 +11,9 @@ import (
 
 	"github.com/cespare/xxhash"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -85,7 +85,7 @@ func (o *ToKafkaOpSpec) ReadArgs(args flux.Arguments) error {
 
 	o.Brokers = make([]string, l)
 	if brokers.Len() < 1 {
-		return errors.New("at least one broker is required")
+		return errors.New(codes.Invalid, "at least one broker is required")
 	}
 	for i := 0; i < l; i++ {
 		o.Brokers[i] = brokers.Get(i).Str()
@@ -96,7 +96,7 @@ func (o *ToKafkaOpSpec) ReadArgs(args flux.Arguments) error {
 		return err
 	}
 	if len(o.Topic) == 0 {
-		return errors.New("invalid topic name")
+		return errors.New(codes.Invalid, "invalid topic name")
 	}
 
 	o.Balancer, _, err = args.GetString("balancer")
@@ -213,14 +213,14 @@ func (o *ToKafkaProcedureSpec) Copy() plan.ProcedureSpec {
 func newToKafkaProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*ToKafkaOpSpec)
 	if !ok && spec != nil {
-		return nil, fmt.Errorf("invalid spec type %T", qs)
+		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &ToKafkaProcedureSpec{Spec: spec}, nil
 }
 func createToKafkaTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	s, ok := spec.(*ToKafkaProcedureSpec)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
@@ -246,10 +246,10 @@ func NewToKafkaTransformation(d execute.Dataset, deps flux.Dependencies, cache e
 	for _, b := range spec.Spec.Brokers {
 		u, err := url.Parse(b)
 		if err != nil {
-			return nil, fmt.Errorf("invalid kafka broker url: %v", err)
+			return nil, errors.Newf(codes.Invalid, "invalid kafka broker url: %v", err)
 		}
 		if err := validator.Validate(u); err != nil {
-			return nil, fmt.Errorf("kafka broker url did not pass validation: %v", err)
+			return nil, errors.Newf(codes.Invalid, "kafka broker url did not pass validation: %v", err)
 		}
 	}
 	return &ToKafkaTransformation{
@@ -324,10 +324,10 @@ func (t *ToKafkaTransformation) Process(id execute.DatasetID, tbl flux.Table) (e
 	timeColLabel := t.spec.Spec.TimeColumn
 	timeColIdx, ok := labels[timeColLabel]
 	if !ok {
-		return errors.New("could not get time column")
+		return errors.New(codes.FailedPrecondition, "could not get time column")
 	}
 	if timeColIdx.Type != flux.TTime {
-		return fmt.Errorf("column %s is not of type %s", timeColLabel, timeColIdx.Type)
+		return errors.Newf(codes.FailedPrecondition, "column %s is not of type %s", timeColLabel, timeColIdx.Type)
 	}
 	var measurementNameCol string
 	if t.spec.Spec.Name == "" {
@@ -362,12 +362,12 @@ func (t *ToKafkaTransformation) Process(id execute.DatasetID, tbl flux.Table) (e
 						m.t = values.Time(er.Times(j).Value(i)).Time()
 					case measurementNameCol != "" && measurementNameCol == col.Label:
 						if col.Type != flux.TString {
-							return errors.New("invalid type for measurement column")
+							return errors.New(codes.FailedPrecondition, "invalid type for measurement column")
 						}
 						m.name = er.Strings(j).ValueString(i)
 					case isTag[j]:
 						if col.Type != flux.TString {
-							return errors.New("invalid type for measurement column")
+							return errors.New(codes.FailedPrecondition, "invalid type for measurement column")
 						}
 						m.tags = append(m.tags, &protocol.Tag{Key: col.Label, Value: er.Strings(j).ValueString(i)})
 					case isValue[j]:
@@ -385,7 +385,7 @@ func (t *ToKafkaTransformation) Process(id execute.DatasetID, tbl flux.Table) (e
 						case flux.TBool:
 							m.fields = append(m.fields, &protocol.Field{Key: col.Label, Value: er.Bools(j).Value(i)})
 						default:
-							return fmt.Errorf("invalid type for column %s", col.Label)
+							return errors.Newf(codes.FailedPrecondition, "invalid type for column %s", col.Label)
 						}
 					}
 				}

@@ -167,7 +167,7 @@ func (sol *Solution) unifyKinds(kinds map[Tvar]Kind) (Substitution, error) {
 			for tv := range unvisited {
 				remaining = append(remaining, tv)
 			}
-			return nil, fmt.Errorf("unable to resolve tvars for all kinds because of a cycle: %v", remaining)
+			return nil, errors.Newf(codes.Internal, "unable to resolve tvars for all kinds because of a cycle: %v", remaining)
 		}
 	}
 	return subst, nil
@@ -187,13 +187,13 @@ func (s *Solution) TypeOf(n Node) (Type, error) {
 func (s *Solution) PolyTypeOf(n Node) (PolyType, error) {
 	a, ok := s.cs.annotations[n]
 	if !ok {
-		return nil, fmt.Errorf("no type annotation for node %T@%v", n, n.Location())
+		return nil, errors.Newf(codes.Internal, "no type annotation for node %T@%v", n, n.Location())
 	}
 	if a.Err != nil {
 		return nil, a.Err
 	}
 	if a.Type == nil {
-		return nil, fmt.Errorf("node %T@%v has no poly type", n, n.Location())
+		return nil, errors.Newf(codes.Internal, "node %T@%v has no poly type", n, n.Location())
 	}
 	return a.Type.resolvePolyType(s.kinds)
 }
@@ -229,7 +229,7 @@ func unifyKinds(kinds map[Tvar]Kind, tvl, tvr Tvar, l, r Kind) (Substitution, er
 
 func unifyVarAndType(kinds map[Tvar]Kind, tv Tvar, t PolyType) (Substitution, error) {
 	if t.occurs(tv) {
-		return nil, fmt.Errorf("type var %v occurs in %v creating a cycle", tv, t)
+		return nil, errors.Newf(codes.Internal, "type var %v occurs in %v creating a cycle", tv, t)
 	}
 	return Substitution{tv: t}, nil
 }

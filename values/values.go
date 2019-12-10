@@ -3,12 +3,13 @@ package values
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"regexp"
 	"runtime/debug"
 	"strconv"
 
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -228,7 +229,7 @@ func NewFromString(t semantic.Type, s string) (Value, error) {
 		}
 
 	default:
-		return nil, errors.New("invalid type for value stringer")
+		return nil, errors.New(codes.Invalid, "invalid type for value stringer")
 	}
 	return v, nil
 }
@@ -322,7 +323,7 @@ func AssignableTo(V, T semantic.Type) bool {
 }
 
 func UnexpectedKind(got, exp semantic.Nature) error {
-	return fmt.Errorf("unexpected kind: got %q expected %q, trace: %s", got, exp, string(debug.Stack()))
+	return errors.Newf(codes.Internal, "unexpected kind: got %q expected %q, trace: %s", got, exp, string(debug.Stack()))
 }
 
 // CheckKind panics if got != exp.

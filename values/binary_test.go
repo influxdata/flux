@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -80,7 +82,7 @@ func TestBinaryOperator(t *testing.T) {
 		// null / null
 		{lhs: nil, op: "/", rhs: nil, want: nil},
 		// int / zero
-		{lhs: int64(8), op: "/", rhs: int64(0), want: nil, wantErr: fmt.Errorf("cannot divide by zero")},
+		{lhs: int64(8), op: "/", rhs: int64(0), want: nil, wantErr: errors.New(codes.FailedPrecondition, "cannot divide by zero")},
 		// int % int
 		{lhs: int64(10), op: "%", rhs: int64(3), want: int64(1)},
 		{lhs: int64(6), op: "%", rhs: intNullValue, want: nil},
@@ -93,7 +95,7 @@ func TestBinaryOperator(t *testing.T) {
 		// null * null
 		{lhs: nil, op: "%", rhs: nil, want: nil},
 		// int / zero
-		{lhs: int64(2), op: "%", rhs: int64(0), want: nil, wantErr: fmt.Errorf("cannot mod zero")},
+		{lhs: int64(2), op: "%", rhs: int64(0), want: nil, wantErr: errors.Newf(codes.FailedPrecondition, "cannot mod zero")},
 		// int % int
 		{lhs: int64(2), op: "^", rhs: int64(4), want: float64(16)},
 		{lhs: int64(6), op: "^", rhs: intNullValue, want: nil},

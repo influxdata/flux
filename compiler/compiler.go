@@ -1,9 +1,6 @@
 package compiler
 
 import (
-	stderrors "errors"
-	"fmt"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -16,7 +13,7 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.Type) (Fun
 		scope = NewScope()
 	}
 	if in.Nature() != semantic.Object {
-		return nil, fmt.Errorf("function input must be an object @ %v", f.Location())
+		return nil, errors.Newf(codes.Invalid, "function input must be an object @ %v", f.Location())
 	}
 	extern := values.BuildExternAssignments(f, scope)
 
@@ -86,7 +83,7 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, scope Scope, funcEx
 			body: body,
 		}, nil
 	case *semantic.ExpressionStatement:
-		return nil, stderrors.New("statement does nothing, side effects are not supported by the compiler")
+		return nil, errors.New(codes.Internal, "statement does nothing, side effects are not supported by the compiler")
 	case *semantic.ReturnStatement:
 		node, err := compile(n.Argument, typeSol, scope, funcExprs)
 		if err != nil {
@@ -133,7 +130,7 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, scope Scope, funcEx
 			}
 			with, ok := node.(*identifierEvaluator)
 			if !ok {
-				return nil, stderrors.New("unknown identifier in with expression")
+				return nil, errors.New(codes.Internal, "unknown identifier in with expression")
 			}
 			obj.with = with
 
@@ -396,7 +393,7 @@ func compile(n semantic.Node, typeSol semantic.TypeSolution, scope Scope, funcEx
 			body:   body,
 		}, nil
 	default:
-		return nil, fmt.Errorf("unknown semantic node of type %T", n)
+		return nil, errors.Newf(codes.Internal, "unknown semantic node of type %T", n)
 	}
 }
 
@@ -435,13 +432,13 @@ type funcErr struct {
 	Err error
 }
 
-// Utility function for compiling an `fn` parameter for rename or drop/keep. In addition
+// CompileFnParam is a utility function for compiling an `fn` parameter for rename or drop/keep. In addition
 // to the function expression, it takes two types to verify the result against:
 // a single argument type, and a single return type.
 func CompileFnParam(fn *semantic.FunctionExpression, scope Scope, paramType, returnType semantic.Type) (Func, string, error) {
 	compileCache := NewCompilationCache(fn, scope)
 	if fn.Block.Parameters != nil && len(fn.Block.Parameters.List) != 1 {
-		return nil, "", stderrors.New("function should only have a single parameter")
+		return nil, "", errors.New(codes.Invalid, "function should only have a single parameter")
 	}
 	paramName := fn.Block.Parameters.List[0].Key.Name
 
@@ -453,7 +450,7 @@ func CompileFnParam(fn *semantic.FunctionExpression, scope Scope, paramType, ret
 	}
 
 	if compiled.Type() != returnType {
-		return nil, "", fmt.Errorf("provided function does not evaluate to type %s", returnType.Nature())
+		return nil, "", errors.Newf(codes.Invalid, "provided function does not evaluate to type %s", returnType.Nature())
 	}
 
 	return compiled, paramName, nil
