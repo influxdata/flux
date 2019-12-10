@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::io;
 use std::path::PathBuf;
@@ -75,14 +75,35 @@ fn imports(file: &ast::File) -> Vec<&str> {
     dependencies
 }
 
-// dependencies adds all of the packages that must be evaluated(type checked)
-// before a package can be evaluated(type checked) to the deps vector.
-fn dependencies<'a>(pkg: &'a str, deps: &mut Vec<&'a str>, files: &'a HashMap<String, ast::File>) {
-    if let Some(file) = files.get(pkg) {
-        for name in imports(file) {
-            dependencies(name, deps, files);
-            if !deps.contains(&name) {
-                deps.push(name);
+// Determines the dependencies of a package. That is, all packages
+// that must be evaluated before the package in question. Each
+// dependency is added to the `deps` vector in evaluation order.
+#[allow(clippy::type_complexity)]
+fn dependencies<'a>(
+    name: &'a str,
+    pkgs: &'a HashMap<String, ast::File>,
+    mut deps: Vec<&'a str>,
+    mut seen: HashSet<&'a str>,
+    mut done: HashSet<&'a str>,
+) -> Result<(Vec<&'a str>, HashSet<&'a str>, HashSet<&'a str>), Error> {
+    if seen.contains(name) && !done.contains(name) {
+        Err(format!(r#"package "{}" depends on itself"#, name))
+    } else {
+        seen.insert(name);
+        match pkgs.get(name) {
+            None => Err(format!(r#"package "{}" not found"#, name)),
+            Some(file) => {
+                for name in imports(file) {
+                    let (x, y, z) = dependencies(name, pkgs, deps, seen, done)?;
+                    deps = x;
+                    seen = y;
+                    done = z;
+                    if !deps.contains(&name) {
+                        deps.push(name);
+                    }
+                }
+                done.insert(name);
+                Ok((deps, seen, done))
             }
         }
     }
@@ -116,6 +137,7 @@ fn build_row(from: HashMap<String, PolyType>, f: &mut Fresher) -> (Row, Constrai
 }
 
 #[allow(dead_code)]
+#[allow(clippy::type_complexity)]
 fn infer_prelude<I: Importer>(
     f: &mut Fresher,
     files: &HashMap<String, ast::File>,
@@ -136,6 +158,7 @@ fn infer_prelude<I: Importer>(
 // Infer the types in a package(file), returning a hash map containing
 // the inferred types along with a possibly updated map of package imports.
 //
+#[allow(clippy::type_complexity)]
 fn infer_pkg<I: Importer>(
     name: &str,                         // name of package to infer
     f: &mut Fresher,                    // type variable fresher
@@ -151,17 +174,16 @@ fn infer_pkg<I: Importer>(
     Error,
 > {
     // Determine the order in which we must infer dependencies
-    let mut deps = Vec::new();
-    dependencies(name, &mut deps, files);
+    let (deps, _, _) = dependencies(name, files, Vec::new(), HashSet::new(), HashSet::new())?;
 
     let mut imports = imports;
 
     // Infer all dependencies
     for pkg in deps {
-        if let None = imports.import(pkg) {
+        if imports.import(pkg).is_none() {
             let file = files.get(pkg);
-            if let None = file {
-                return Err(format!("package '{}' not found", pkg));
+            if file.is_none() {
+                return Err(format!(r#"package "{}" not found"#, pkg));
             }
             let file = file.unwrap().to_owned();
 
@@ -190,7 +212,7 @@ fn infer_pkg<I: Importer>(
     }
 
     let file = files.get(name);
-    if let None = file {
+    if file.is_none() {
         return Err(format!("package '{}' not found", name));
     }
     let file = file.unwrap().to_owned();
@@ -278,11 +300,31 @@ mod tests {
     fn prelude_dependencies() {
         let files = file_map(parse_flux_files("../../../stdlib").unwrap());
 
-        let deps = PRELUDE.iter().fold(Vec::new(), |mut deps, name| {
-            dependencies(name, &mut deps, &files);
-            deps
-        });
+        let r = PRELUDE.iter().try_fold(
+            (Vec::new(), HashSet::new(), HashSet::new()),
+            |(deps, seen, done), name| dependencies(name, &files, deps, seen, done),
+        );
 
-        assert_eq!(vec!["system", "date", "math", "strings", "regexp"], deps);
+        let names = r.unwrap().0;
+
+        assert_eq!(vec!["system", "date", "math", "strings", "regexp"], names,);
+    }
+
+    #[test]
+    fn cyclic_dependency() {
+        let a = r#"
+            import "b"
+        "#;
+        let b = r#"
+            import "a"
+        "#;
+        let files = maplit::hashmap! {
+            String::from("a") => parse_string("a.flux", a),
+            String::from("b") => parse_string("b.flux", b),
+        };
+        assert_eq!(
+            Err(r#"package "b" depends on itself"#.to_string()),
+            dependencies("b", &files, Vec::new(), HashSet::new(), HashSet::new(),),
+        );
     }
 }
