@@ -363,7 +363,7 @@ fn test_json_return_statement() {
 fn test_json_option_statement() {
     let n = OptionStmt {
         base: BaseNode::default(),
-        assignment: Assignment::Variable(VariableAssgn {
+        assignment: Assignment::Variable(Box::new(VariableAssgn {
             base: BaseNode::default(),
             id: Identifier {
                 base: BaseNode::default(),
@@ -400,7 +400,7 @@ fn test_json_option_statement() {
                     },
                 ],
             })),
-        }),
+        })),
     };
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
@@ -540,7 +540,7 @@ fn test_json_test_statement() {
 fn test_json_qualified_option_statement() {
     let n = OptionStmt {
         base: BaseNode::default(),
-        assignment: Assignment::Member(MemberAssgn {
+        assignment: Assignment::Member(Box::new(MemberAssgn {
             base: BaseNode::default(),
             member: MemberExpr {
                 base: BaseNode::default(),
@@ -557,7 +557,7 @@ fn test_json_qualified_option_statement() {
                 base: Default::default(),
                 value: "Warning".to_string(),
             }),
-        }),
+        })),
     };
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(

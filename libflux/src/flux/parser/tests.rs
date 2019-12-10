@@ -363,7 +363,7 @@ fn bad_string_expression() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 18),
                     errors: vec![]
@@ -405,7 +405,7 @@ fn bad_string_expression() {
                         parts: vec![],
                     })))
                 })),
-            })],
+            }))],
         },
     )
 }
@@ -758,12 +758,12 @@ fn optional_query_metadata() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Option(OptionStmt {
+            body: vec![Statement::Option(Box::new(OptionStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 7, 7),
                     errors: vec![]
                 },
-                assignment: Assignment::Variable(VariableAssgn {
+                assignment: Assignment::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 8, 7, 7),
                         errors: vec![]
@@ -890,8 +890,8 @@ fn optional_query_metadata() {
                             }
                         ]
                     }))
-                })
-            })]
+                }))
+            }))]
         },
     )
 }
@@ -921,12 +921,12 @@ fn optional_query_metadata_preceding_query_text() {
             package: None,
             imports: vec![],
             body: vec![
-                Statement::Option(OptionStmt {
+                Statement::Option(Box::new(OptionStmt {
                     base: BaseNode {
                         location: loc.get(1, 1, 4, 6),
                         errors: vec![]
                     },
-                    assignment: Assignment::Variable(VariableAssgn {
+                    assignment: Assignment::Variable(Box::new(VariableAssgn {
                         base: BaseNode {
                             location: loc.get(1, 8, 4, 6),
                             errors: vec![]
@@ -990,8 +990,8 @@ fn optional_query_metadata_preceding_query_text() {
                                 }
                             ]
                         }))
-                    })
-                }),
+                    }))
+                })),
                 Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(7, 5, 7, 22),
@@ -1053,12 +1053,12 @@ fn qualified_option() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Option(OptionStmt {
+            body: vec![Statement::Option(Box::new(OptionStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 31),
                     errors: vec![]
                 },
-                assignment: Assignment::Member(MemberAssgn {
+                assignment: Assignment::Member(Box::new(MemberAssgn {
                     base: BaseNode {
                         location: loc.get(1, 8, 1, 31),
                         errors: vec![]
@@ -1090,8 +1090,8 @@ fn qualified_option() {
                         },
                         value: "Warning".to_string()
                     })
-                })
-            })]
+                }))
+            }))]
         },
     )
 }
@@ -1145,7 +1145,7 @@ fn test_statement() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Test(TestStmt {
+            body: vec![Statement::Test(Box::new(TestStmt {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 30),
                     errors: vec![]
@@ -1212,7 +1212,7 @@ fn test_statement() {
                         ]
                     }))
                 }
-            })]
+            }))]
         },
     )
 }
@@ -1533,7 +1533,7 @@ fn declare_variable_as_an_int() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 10),
                     errors: vec![]
@@ -1552,7 +1552,7 @@ fn declare_variable_as_an_int() {
                     },
                     value: 1
                 })
-            })]
+            }))]
         },
     )
 }
@@ -1573,7 +1573,7 @@ fn declare_variable_as_a_float() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
@@ -1592,7 +1592,7 @@ fn declare_variable_as_a_float() {
                     },
                     value: 1.1
                 })
-            })]
+            }))]
         },
     )
 }
@@ -1613,7 +1613,7 @@ fn declare_variable_as_an_array() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 21),
                     errors: vec![]
@@ -1661,7 +1661,7 @@ fn declare_variable_as_an_array() {
                         })
                     ]
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -1682,7 +1682,7 @@ fn declare_variable_as_an_empty_array() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 11),
                     errors: vec![]
@@ -1701,7 +1701,7 @@ fn declare_variable_as_an_empty_array() {
                     },
                     elements: vec![],
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -1726,7 +1726,7 @@ fn use_variable_to_declare_something() {
             package: None,
             imports: vec![],
             body: vec![
-                Statement::Variable(VariableAssgn {
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 10),
                         errors: vec![]
@@ -1745,7 +1745,7 @@ fn use_variable_to_declare_something() {
                         },
                         value: 1
                     })
-                }),
+                })),
                 Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(2, 4, 2, 10),
@@ -1791,7 +1791,7 @@ fn variable_is_from_statement() {
             package: None,
             imports: vec![],
             body: vec![
-                Statement::Variable(VariableAssgn {
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 15),
                         errors: vec![]
@@ -1817,7 +1817,7 @@ fn variable_is_from_statement() {
                             name: "from".to_string()
                         })
                     })),
-                }),
+                })),
                 Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(2, 4, 2, 17),
@@ -2309,7 +2309,7 @@ fn two_variables_for_two_froms() {
             package: None,
             imports: vec![],
             body: vec![
-                Statement::Variable(VariableAssgn {
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 15),
                         errors: vec![]
@@ -2335,8 +2335,8 @@ fn two_variables_for_two_froms() {
                             name: "from".to_string()
                         })
                     })),
-                }),
-                Statement::Variable(VariableAssgn {
+                })),
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 4, 2, 18),
                         errors: vec![]
@@ -2362,7 +2362,7 @@ fn two_variables_for_two_froms() {
                             name: "from".to_string()
                         })
                     })),
-                }),
+                })),
                 Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(3, 4, 3, 18),
@@ -2522,7 +2522,7 @@ fn map_member_expressions() {
             package: None,
             imports: vec![],
             body: vec![
-                Statement::Variable(VariableAssgn {
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 29),
                         errors: vec![]
@@ -2583,7 +2583,7 @@ fn map_member_expressions() {
                             }
                         ]
                     }))
-                }),
+                })),
                 Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(2, 4, 2, 10),
@@ -2657,7 +2657,7 @@ fn object_with_string_literal_key() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 14),
                     errors: vec![]
@@ -2696,7 +2696,7 @@ fn object_with_string_literal_key() {
                         }))
                     }]
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -2717,7 +2717,7 @@ fn object_with_mixed_keys() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 21),
                     errors: vec![]
@@ -2778,7 +2778,7 @@ fn object_with_mixed_keys() {
                         }
                     ]
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -2799,7 +2799,7 @@ fn implicit_key_object_literal() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 11),
                     errors: vec![]
@@ -2848,7 +2848,7 @@ fn implicit_key_object_literal() {
                         }
                     ]
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -2870,7 +2870,7 @@ fn implicit_key_object_literal_error() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 13),
                     errors: vec![]
@@ -2920,7 +2920,7 @@ fn implicit_key_object_literal_error() {
                         }
                     ]
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -2942,7 +2942,7 @@ fn implicit_and_explicit_keys_object_literal_error() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 13),
                     errors: vec![]
@@ -2998,7 +2998,7 @@ fn implicit_and_explicit_keys_object_literal_error() {
                         }
                     ]
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -3717,7 +3717,7 @@ fn var_as_binary_expression_of_other_vars() {
             package: None,
             imports: vec![],
             body: vec![
-                Statement::Variable(VariableAssgn {
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         errors: vec![]
@@ -3736,8 +3736,8 @@ fn var_as_binary_expression_of_other_vars() {
                         },
                         value: 1
                     })
-                }),
-                Statement::Variable(VariableAssgn {
+                })),
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 13, 2, 18),
                         errors: vec![]
@@ -3756,8 +3756,8 @@ fn var_as_binary_expression_of_other_vars() {
                         },
                         value: 2
                     })
-                }),
-                Statement::Variable(VariableAssgn {
+                })),
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(3, 13, 3, 22),
                         errors: vec![]
@@ -3790,8 +3790,8 @@ fn var_as_binary_expression_of_other_vars() {
                             name: "b".to_string()
                         })
                     }))
-                }),
-                Statement::Variable(VariableAssgn {
+                })),
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(4, 13, 4, 18),
                         errors: vec![]
@@ -3810,7 +3810,7 @@ fn var_as_binary_expression_of_other_vars() {
                         },
                         name: "a".to_string()
                     })
-                })
+                }))
             ]
         },
     )
@@ -3836,7 +3836,7 @@ fn var_as_unary_expression_of_other_vars() {
             package: None,
             imports: vec![],
             body: vec![
-                Statement::Variable(VariableAssgn {
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         errors: vec![]
@@ -3855,8 +3855,8 @@ fn var_as_unary_expression_of_other_vars() {
                         },
                         value: 5
                     })
-                }),
-                Statement::Variable(VariableAssgn {
+                })),
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 13, 2, 19),
                         errors: vec![]
@@ -3882,7 +3882,7 @@ fn var_as_unary_expression_of_other_vars() {
                             name: "a".to_string()
                         })
                     }))
-                })
+                }))
             ]
         },
     )
@@ -3908,7 +3908,7 @@ fn var_as_both_binary_and_unary_expressions() {
             package: None,
             imports: vec![],
             body: vec![
-                Statement::Variable(VariableAssgn {
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         errors: vec![]
@@ -3927,8 +3927,8 @@ fn var_as_both_binary_and_unary_expressions() {
                         },
                         value: 5
                     })
-                }),
-                Statement::Variable(VariableAssgn {
+                })),
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 13, 2, 24),
                         errors: vec![]
@@ -3968,7 +3968,7 @@ fn var_as_both_binary_and_unary_expressions() {
                             })
                         }))
                     }))
-                })
+                }))
             ]
         },
     )
@@ -3994,7 +3994,7 @@ fn unary_expressions_within_logical_expression() {
             package: None,
             imports: vec![],
             body: vec![
-                Statement::Variable(VariableAssgn {
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 8),
                         errors: vec![]
@@ -4013,7 +4013,7 @@ fn unary_expressions_within_logical_expression() {
                         },
                         value: 5.0
                     })
-                }),
+                })),
                 Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(2, 13, 2, 42),
@@ -4179,7 +4179,7 @@ a = 5.0
             package: None,
             imports: vec![],
             body: vec![
-                Statement::Variable(VariableAssgn {
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 1, 2, 8),
                         errors: vec![]
@@ -4198,7 +4198,7 @@ a = 5.0
                         },
                         value: 5.0
                     })
-                }),
+                })),
                 Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(4, 1, 6, 13),
@@ -4303,7 +4303,7 @@ fn expressions_with_function_calls() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 16),
                     errors: vec![]
@@ -4343,7 +4343,7 @@ fn expressions_with_function_calls() {
                         value: 10
                     })
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -6301,7 +6301,7 @@ fn arrow_function_called() {
             package: None,
             imports: vec![],
             body: vec![
-                Statement::Variable(VariableAssgn {
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 23),
                         errors: vec![]
@@ -6354,7 +6354,7 @@ fn arrow_function_called() {
                             })
                         })))
                     }))
-                }),
+                })),
                 Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(2, 4, 2, 16),
@@ -6422,7 +6422,7 @@ fn arrow_function_return_map() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 22),
                     errors: vec![]
@@ -6487,7 +6487,7 @@ fn arrow_function_return_map() {
                         }))
                     })))
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -6508,7 +6508,7 @@ fn arrow_function_with_default_arg() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 25),
                     errors: vec![]
@@ -6583,7 +6583,7 @@ fn arrow_function_with_default_arg() {
                         })
                     })))
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -6609,7 +6609,7 @@ fn arrow_function_called_in_binary_expression() {
             package: None,
             imports: vec![],
             body: vec![
-                Statement::Variable(VariableAssgn {
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 13, 2, 35),
                         errors: vec![]
@@ -6662,7 +6662,7 @@ fn arrow_function_called_in_binary_expression() {
                             })
                         })))
                     }))
-                }),
+                })),
                 Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(3, 13, 3, 39),
@@ -6765,7 +6765,7 @@ fn arrow_function_as_single_expression() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 38),
                     errors: vec![]
@@ -6831,7 +6831,7 @@ fn arrow_function_as_single_expression() {
                         })
                     })))
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -6857,7 +6857,7 @@ fn arrow_function_as_block() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 4, 14),
                     errors: vec![]
@@ -6894,7 +6894,7 @@ fn arrow_function_as_block() {
                             errors: vec![]
                         },
                         body: vec![
-                            Statement::Variable(VariableAssgn {
+                            Statement::Variable(Box::new(VariableAssgn {
                                 base: BaseNode {
                                     location: loc.get(2, 17, 2, 38),
                                     errors: vec![]
@@ -6926,7 +6926,7 @@ fn arrow_function_as_block() {
                                         value: "_measurement".to_string()
                                     })
                                 }))
-                            }),
+                            })),
                             Statement::Return(ReturnStmt {
                                 base: BaseNode {
                                     location: loc.get(3, 17, 3, 34),
@@ -6957,7 +6957,7 @@ fn arrow_function_as_block() {
                         ]
                     })
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -6978,7 +6978,7 @@ fn conditional() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 26),
                     errors: vec![]
@@ -7017,7 +7017,7 @@ fn conditional() {
                         value: 1
                     })
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -7040,7 +7040,7 @@ fn conditional_with_unary_logical_operators() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 85),
                     errors: vec![]
@@ -7197,7 +7197,7 @@ fn conditional_with_unary_logical_operators() {
                         }))
                     }))
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -8312,7 +8312,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
             package: None,
             imports: vec![],
             body: vec![
-                Statement::Variable(VariableAssgn {
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 1, 2, 51),
                         errors: vec![]
@@ -8420,8 +8420,8 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                             }))]
                         }
                     }))
-                }),
-                Statement::Variable(VariableAssgn {
+                })),
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(3, 1, 3, 51),
                         errors: vec![]
@@ -8529,7 +8529,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                             }))]
                         }
                     }))
-                }),
+                })),
                 Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(4, 1, 4, 72),
@@ -8750,7 +8750,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
             package: None,
             imports: vec![],
             body: vec![
-                Statement::Variable(VariableAssgn {
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(2, 1, 4, 21),
                         errors: vec![]
@@ -8962,8 +8962,8 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                             }))]
                         }
                     }))
-                }),
-                Statement::Variable(VariableAssgn {
+                })),
+                Statement::Variable(Box::new(VariableAssgn {
                     base: BaseNode {
                         location: loc.get(6, 1, 8, 21),
                         errors: vec![]
@@ -9175,7 +9175,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                             }))]
                         }
                     }))
-                }),
+                })),
                 Statement::Expr(ExprStmt {
                     base: BaseNode {
                         location: loc.get(10, 1, 10, 86),
@@ -9449,7 +9449,7 @@ fn duration_literal_all_units() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 34),
                     errors: vec![]
@@ -9509,7 +9509,7 @@ fn duration_literal_all_units() {
                         }
                     ]
                 })
-            })]
+            }))]
         },
     )
 }
@@ -9530,7 +9530,7 @@ fn duration_literal_months() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 10),
                     errors: vec![]
@@ -9552,7 +9552,7 @@ fn duration_literal_months() {
                         unit: "mo".to_string()
                     }]
                 })
-            })]
+            }))]
         },
     )
 }
@@ -9573,7 +9573,7 @@ fn duration_literal_milliseconds() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
@@ -9595,7 +9595,7 @@ fn duration_literal_milliseconds() {
                         unit: "ms".to_string()
                     }]
                 })
-            })]
+            }))]
         },
     )
 }
@@ -9616,7 +9616,7 @@ fn duration_literal_months_minutes_milliseconds() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 18),
                     errors: vec![]
@@ -9648,7 +9648,7 @@ fn duration_literal_months_minutes_milliseconds() {
                         }
                     ]
                 })
-            })]
+            }))]
         },
     )
 }
@@ -9669,7 +9669,7 @@ fn date_literal_in_the_default_location() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 17),
                     errors: vec![]
@@ -9688,7 +9688,7 @@ fn date_literal_in_the_default_location() {
                     },
                     value: chrono::DateTime::parse_from_rfc3339("2018-11-29T00:00:00Z").unwrap()
                 })
-            })]
+            }))]
         },
     )
 }
@@ -9709,7 +9709,7 @@ fn date_time_literal() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 27),
                     errors: vec![]
@@ -9728,7 +9728,7 @@ fn date_time_literal() {
                     },
                     value: chrono::DateTime::parse_from_rfc3339("2018-11-29T09:00:00Z").unwrap()
                 })
-            })]
+            }))]
         },
     )
 }
@@ -9749,7 +9749,7 @@ fn date_time_literal_with_fractional_seconds() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 37),
                     errors: vec![]
@@ -9769,7 +9769,7 @@ fn date_time_literal_with_fractional_seconds() {
                     value: chrono::DateTime::parse_from_rfc3339("2018-11-29T09:00:00.100000000Z")
                         .unwrap()
                 })
-            })]
+            }))]
         },
     )
 }
@@ -10441,7 +10441,7 @@ fn property_list_missing_property() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 20),
                     errors: vec![]
@@ -10516,7 +10516,7 @@ fn property_list_missing_property() {
                         }
                     ]
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -10537,7 +10537,7 @@ fn property_list_missing_key() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 12),
                     errors: vec![]
@@ -10576,7 +10576,7 @@ fn property_list_missing_key() {
                         }))
                     }]
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -10597,7 +10597,7 @@ fn property_list_missing_value() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 9),
                     errors: vec![]
@@ -10630,7 +10630,7 @@ fn property_list_missing_value() {
                         value: None
                     }]
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -10652,7 +10652,7 @@ fn property_list_missing_comma() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 19),
                     errors: vec![]
@@ -10730,7 +10730,7 @@ fn property_list_missing_comma() {
                         }
                     ]
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -10751,7 +10751,7 @@ fn property_list_trailing_comma() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 14),
                     errors: vec![]
@@ -10790,7 +10790,7 @@ fn property_list_trailing_comma() {
                         }))
                     }]
                 }))
-            })]
+            }))]
         },
     )
 }
@@ -10811,7 +10811,7 @@ fn property_list_bad_property() {
             metadata: "parser-type=rust".to_string(),
             package: None,
             imports: vec![],
-            body: vec![Statement::Variable(VariableAssgn {
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 23),
                     errors: vec![]
@@ -10888,7 +10888,7 @@ fn property_list_bad_property() {
                         }
                     ]
                 }))
-            })]
+            }))]
         },
     )
 }
