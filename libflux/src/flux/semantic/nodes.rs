@@ -13,6 +13,7 @@ use crate::ast;
 use crate::semantic::infer;
 use crate::semantic::types;
 use crate::semantic::{
+    analyze::SemanticError,
     env::Environment,
     fresh::Fresher,
     import::Importer,
@@ -53,10 +54,21 @@ impl From<types::Error> for Error {
     }
 }
 
+impl From<SemanticError> for Error {
+    fn from(err: SemanticError) -> Error {
+        Error { msg: err }
+    }
+}
+
 impl Error {
     fn undeclared_variable(name: String) -> Error {
         Error {
             msg: format!("undeclared variable {}", name),
+        }
+    }
+    fn undefined_builtin(name: &str) -> Error {
+        Error {
+            msg: format!("builtin identifier {} not defined", name),
         }
     }
     fn invalid_statement(msg: String) -> Error {
@@ -242,17 +254,33 @@ impl Expression {
 }
 
 // Infer the types of a flux package
-pub fn infer_pkg_types<I>(
+pub fn infer_pkg_types<T, S>(
     pkg: &mut Package,
     env: Environment,
     f: &mut Fresher,
-    i: &I,
+    importer: &T,
+    builtins: &S,
 ) -> std::result::Result<(Environment, Substitution), Error>
 where
-    I: Importer,
+    T: Importer,
+    S: Importer,
 {
-    let (env, cons) = pkg.infer(env, f, i)?;
+    let (env, cons) = pkg.infer(env, f, importer, builtins)?;
     Ok((env, infer::solve(&cons, &mut HashMap::new(), f)?))
+}
+
+pub fn infer_file<T, S>(
+    file: &mut File,
+    env: Environment,
+    f: &mut Fresher,
+    importer: &T,
+    builtins: &S,
+) -> Result
+where
+    T: Importer,
+    S: Importer,
+{
+    file.infer(env, f, importer, builtins)
 }
 
 pub fn inject_pkg_types(pkg: Package, sub: &Substitution) -> Package {
@@ -268,14 +296,21 @@ pub struct Package {
 }
 
 impl Package {
-    fn infer<I: Importer>(&mut self, env: Environment, f: &mut Fresher, i: &I) -> Result
+    fn infer<T, S>(
+        &mut self,
+        env: Environment,
+        f: &mut Fresher,
+        importer: &T,
+        builtins: &S,
+    ) -> Result
     where
-        I: Importer,
+        T: Importer,
+        S: Importer,
     {
         self.files
             .iter_mut()
             .try_fold((env, Constraints::empty()), |(env, rest), file| {
-                let (env, cons) = file.infer(env, f, i)?;
+                let (env, cons) = file.infer(env, f, importer, builtins)?;
                 Ok((env, cons + rest))
             })
     }
@@ -299,9 +334,16 @@ pub struct File {
 }
 
 impl File {
-    fn infer<I>(&mut self, mut env: Environment, f: &mut Fresher, i: &I) -> Result
+    fn infer<T, S>(
+        &mut self,
+        mut env: Environment,
+        f: &mut Fresher,
+        importer: &T,
+        builtins: &S,
+    ) -> Result
     where
-        I: Importer,
+        T: Importer,
+        S: Importer,
     {
         let mut imports = Vec::with_capacity(self.imports.len());
 
@@ -311,7 +353,7 @@ impl File {
 
             imports.push(name);
 
-            match i.import(path) {
+            match importer.import(path) {
                 Some(poly) => env.add(name.to_owned(), poly.clone()),
                 None => return Err(Error::unknown_import_path(path)),
             };
@@ -324,8 +366,8 @@ impl File {
                     (env, Constraints::empty()),
                     |(env, rest), node| match node {
                         Statement::Builtin(stmt) => {
-                            let (env, cons) = stmt.infer(env, f)?;
-                            Ok((env, cons + rest))
+                            let env = stmt.infer(env, builtins)?;
+                            Ok((env, rest))
                         }
                         Statement::Variable(stmt) => {
                             let (env, cons) = stmt.infer(env, f)?;
@@ -415,11 +457,20 @@ pub struct BuiltinStmt {
 }
 
 impl BuiltinStmt {
-    fn infer(&self, _: Environment, _: &mut Fresher) -> Result {
-        unimplemented!();
+    fn infer<I: Importer>(
+        &self,
+        mut env: Environment,
+        importer: &I,
+    ) -> std::result::Result<Environment, Error> {
+        if let Some(ty) = importer.import(&self.id.name) {
+            env.add(self.id.name.clone(), ty.clone());
+            Ok(env)
+        } else {
+            Err(Error::undefined_builtin(&self.id.name))
+        }
     }
-    fn apply(self, _sub: &Substitution) -> Self {
-        unimplemented!()
+    fn apply(self, _: &Substitution) -> Self {
+        self
     }
 }
 
@@ -1619,15 +1670,7 @@ mod tests {
         let mut f: Fresher = 1.into();
         let mut pkg = analyze_with(ast, &mut f).unwrap();
 
-        let (env, _) = infer_pkg_types(
-            &mut pkg,
-            env,
-            &mut f,
-            &TestImporter {
-                imports: HashMap::new(),
-            },
-        )
-        .unwrap();
+        let (env, _) = infer_pkg_types(&mut pkg, env, &mut f, &None, &None).unwrap();
 
         let normalized: HashMap<String, PolyType> = env
             .values

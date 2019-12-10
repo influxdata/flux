@@ -36,7 +36,7 @@ fn analyze_package(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> 
     })
 }
 
-fn analyze_file(file: ast::File, fresher: &mut Fresher) -> Result<File> {
+pub fn analyze_file(file: ast::File, fresher: &mut Fresher) -> Result<File> {
     let package = analyze_package_clause(file.package, fresher)?;
     let imports = file
         .imports
