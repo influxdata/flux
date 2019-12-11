@@ -431,27 +431,27 @@ impl Parser {
         let t = self.expect(TOK_OPTION);
         let ident = self.parse_identifier();
         let assignment = self.parse_option_assignment_suffix(ident);
-        Statement::Option(OptionStmt {
+        Statement::Option(Box::new(OptionStmt {
             base: self.base_node_from_other_end(&t, assignment.base()),
             assignment,
-        })
+        }))
     }
     fn parse_option_assignment_suffix(&mut self, id: Identifier) -> Assignment {
         let t = self.peek();
         match t.tok {
             TOK_ASSIGN => {
                 let init = self.parse_assign_statement();
-                Assignment::Variable(VariableAssgn {
+                Assignment::Variable(Box::new(VariableAssgn {
                     base: self.base_node_from_others(&id.base, init.base()),
                     id,
                     init,
-                })
+                }))
             }
             TOK_DOT => {
                 self.consume();
                 let prop = self.parse_identifier();
                 let init = self.parse_assign_statement();
-                Assignment::Member(MemberAssgn {
+                Assignment::Member(Box::new(MemberAssgn {
                     base: self.base_node_from_others(&id.base, init.base()),
                     member: MemberExpr {
                         base: self.base_node_from_others(&id.base, &prop.base),
@@ -459,7 +459,7 @@ impl Parser {
                         property: PropertyKey::Identifier(prop),
                     },
                     init,
-                })
+                }))
             }
             _ => panic!("invalid option assignment suffix"),
         }
@@ -476,14 +476,14 @@ impl Parser {
         let t = self.expect(TOK_TEST);
         let id = self.parse_identifier();
         let assignment = self.parse_assign_statement();
-        Statement::Test(TestStmt {
+        Statement::Test(Box::new(TestStmt {
             base: self.base_node_from_other_end(&t, assignment.base()),
             assignment: VariableAssgn {
                 base: self.base_node_from_others(&id.base, assignment.base()),
                 id: id,
                 init: assignment,
             },
-        })
+        }))
     }
     fn parse_ident_statement(&mut self) -> Statement {
         let id = self.parse_identifier();
@@ -491,11 +491,11 @@ impl Parser {
         match t.tok {
             TOK_ASSIGN => {
                 let init = self.parse_assign_statement();
-                Statement::Variable(VariableAssgn {
+                Statement::Variable(Box::new(VariableAssgn {
                     base: self.base_node_from_others(&id.base, init.base()),
                     id,
                     init,
-                })
+                }))
             }
             _ => {
                 let expr = self.parse_expression_suffix(Expression::Identifier(id));

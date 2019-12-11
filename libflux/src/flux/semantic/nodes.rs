@@ -94,10 +94,10 @@ impl Error {
 #[derive(Debug, PartialEq, Clone)]
 pub enum Statement {
     Expr(ExprStmt),
-    Variable(VariableAssgn),
-    Option(OptionStmt),
+    Variable(Box<VariableAssgn>),
+    Option(Box<OptionStmt>),
     Return(ReturnStmt),
-    Test(TestStmt),
+    Test(Box<TestStmt>),
     Builtin(BuiltinStmt),
 }
 
@@ -105,10 +105,10 @@ impl Statement {
     fn apply(self, sub: &Substitution) -> Self {
         match self {
             Statement::Expr(stmt) => Statement::Expr(stmt.apply(&sub)),
-            Statement::Variable(stmt) => Statement::Variable(stmt.apply(&sub)),
-            Statement::Option(stmt) => Statement::Option(stmt.apply(&sub)),
+            Statement::Variable(stmt) => Statement::Variable(Box::new(stmt.apply(&sub))),
+            Statement::Option(stmt) => Statement::Option(Box::new(stmt.apply(&sub))),
             Statement::Return(stmt) => Statement::Return(stmt.apply(&sub)),
-            Statement::Test(stmt) => Statement::Test(stmt.apply(&sub)),
+            Statement::Test(stmt) => Statement::Test(Box::new(stmt.apply(&sub))),
             Statement::Builtin(stmt) => Statement::Builtin(stmt.apply(&sub)),
         }
     }
@@ -846,7 +846,7 @@ impl FunctionExpr {
 //
 #[derive(Debug, PartialEq, Clone)]
 pub enum Block {
-    Variable(VariableAssgn, Box<Block>),
+    Variable(Box<VariableAssgn>, Box<Block>),
     Expr(ExprStmt, Box<Block>),
     Return(Expression),
 }
@@ -889,7 +889,7 @@ impl Block {
     fn apply(self, sub: &Substitution) -> Self {
         match self {
             Block::Variable(ass, next) => {
-                Block::Variable(ass.apply(&sub), Box::new(next.apply(&sub)))
+                Block::Variable(Box::new(ass.apply(&sub)), Box::new(next.apply(&sub)))
             }
             Block::Expr(es, next) => Block::Expr(es.apply(&sub), Box::new(next.apply(&sub))),
             Block::Return(e) => Block::Return(e.apply(&sub)),
@@ -1837,7 +1837,7 @@ mod tests {
                 package: None,
                 imports: Vec::new(),
                 body: vec![
-                    Statement::Variable(VariableAssgn::new(
+                    Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
                             name: "f".to_string(),
@@ -1882,7 +1882,7 @@ mod tests {
                             }))),
                         })),
                         b.location.clone(),
-                    )),
+                    ))),
                     Statement::Expr(ExprStmt {
                         loc: b.location.clone(),
                         expression: Expression::Call(Box::new(CallExpr {

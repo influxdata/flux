@@ -52,7 +52,7 @@ f(a: s)
             package: None,
             imports: Vec::new(),
             body: vec![
-                Statement::Variable(VariableAssgn::new(
+                Statement::Variable(Box::new(VariableAssgn::new(
                     Identifier {
                         loc: ast::BaseNode::default().location,
                         name: "n".to_string(),
@@ -63,8 +63,8 @@ f(a: s)
                         value: 1,
                     }),
                     ast::BaseNode::default().location,
-                )),
-                Statement::Variable(VariableAssgn::new(
+                ))),
+                Statement::Variable(Box::new(VariableAssgn::new(
                     Identifier {
                         loc: ast::BaseNode::default().location,
                         name: "s".to_string(),
@@ -75,8 +75,8 @@ f(a: s)
                         value: "string".to_string(),
                     }),
                     ast::BaseNode::default().location,
-                )),
-                Statement::Variable(VariableAssgn::new(
+                ))),
+                Statement::Variable(Box::new(VariableAssgn::new(
                     Identifier {
                         loc: ast::BaseNode::default().location,
                         name: "f".to_string(),
@@ -110,7 +110,7 @@ f(a: s)
                         }))),
                     })),
                     ast::BaseNode::default().location,
-                )),
+                ))),
                 Statement::Expr(ExprStmt {
                     loc: ast::BaseNode::default().location,
                     expression: Expression::Call(Box::new(CallExpr {

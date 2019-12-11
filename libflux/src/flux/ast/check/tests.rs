@@ -62,7 +62,7 @@ fn test_check_collect_existing_error() {
         metadata: String::new(),
         package: None,
         imports: vec![],
-        body: vec![Variable(VariableAssgn {
+        body: vec![Variable(Box::new(VariableAssgn {
             base: BaseNode {
                 location: SourceLocation {
                     file: Some(String::from("test_check_collect_existing_error")),
@@ -96,7 +96,7 @@ fn test_check_collect_existing_error() {
                 },
                 value: 1,
             }),
-        })],
+        }))],
     };
     let got = check(walk::Node::File(&file));
     assert_eq!(3, got.len());

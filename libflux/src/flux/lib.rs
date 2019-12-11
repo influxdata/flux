@@ -6,7 +6,7 @@
 #![allow(clippy::chars_next_cmp, clippy::unnecessary_operation)]
 #![allow(clippy::new_without_default, clippy::wrong_self_convention)]
 #![allow(clippy::useless_let_if_seq, clippy::implicit_hasher, clippy::ptr_arg)]
-#![allow(clippy::large_enum_variant, clippy::single_match)]
+#![allow(clippy::single_match)]
 #![allow(clippy::unnecessary_fold, clippy::not_unsafe_ptr_arg_deref)]
 #![allow(clippy::module_inception)]
 #![allow(clippy::many_single_char_names, clippy::redundant_field_names)]
