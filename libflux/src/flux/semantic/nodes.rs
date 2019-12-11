@@ -123,8 +123,8 @@ pub enum Assignment {
 impl Assignment {
     fn apply(self, sub: &Substitution) -> Self {
         match self {
-            Assignment::Variable(ass) => Assignment::Variable(ass.apply(&sub)),
-            Assignment::Member(ass) => Assignment::Member(ass.apply(&sub)),
+            Assignment::Variable(assign) => Assignment::Variable(assign.apply(&sub)),
+            Assignment::Member(assign) => Assignment::Member(assign.apply(&sub)),
         }
     }
 }
@@ -844,11 +844,13 @@ impl FunctionExpr {
 // must always have a return value. This means a function block is by
 // definition an expression.
 //
+// A function block is an expression that evaluates to the argument of
+// its terminating ReturnStmt.
 #[derive(Debug, PartialEq, Clone)]
 pub enum Block {
     Variable(Box<VariableAssgn>, Box<Block>),
     Expr(ExprStmt, Box<Block>),
-    Return(Expression),
+    Return(ReturnStmt),
 }
 
 impl Block {
@@ -871,9 +873,9 @@ impl Block {
     }
     pub fn loc(&self) -> &ast::SourceLocation {
         match self {
-            Block::Variable(ass, _) => &ass.loc,
+            Block::Variable(assign, _) => &assign.loc,
             Block::Expr(es, _) => es.expression.loc(),
-            Block::Return(expr) => expr.loc(),
+            Block::Return(ret) => &ret.loc,
         }
     }
     pub fn type_of(&self) -> &MonoType {
@@ -882,14 +884,14 @@ impl Block {
             n = match n {
                 Block::Variable(_, b) => b.as_ref(),
                 Block::Expr(_, b) => b.as_ref(),
-                Block::Return(e) => return e.type_of(),
+                Block::Return(r) => return r.argument.type_of(),
             }
         }
     }
     fn apply(self, sub: &Substitution) -> Self {
         match self {
-            Block::Variable(ass, next) => {
-                Block::Variable(Box::new(ass.apply(&sub)), Box::new(next.apply(&sub)))
+            Block::Variable(assign, next) => {
+                Block::Variable(Box::new(assign.apply(&sub)), Box::new(next.apply(&sub)))
             }
             Block::Expr(es, next) => Block::Expr(es.apply(&sub), Box::new(next.apply(&sub))),
             Block::Return(e) => Block::Return(e.apply(&sub)),
@@ -1865,21 +1867,24 @@ mod tests {
                                     default: None,
                                 },
                             ],
-                            body: Block::Return(Expression::Binary(Box::new(BinaryExpr {
+                            body: Block::Return(ReturnStmt {
                                 loc: b.location.clone(),
-                                typ: MonoType::Var(Tvar(1)),
-                                operator: ast::Operator::AdditionOperator,
-                                left: Expression::Identifier(IdentifierExpr {
+                                argument: Expression::Binary(Box::new(BinaryExpr {
                                     loc: b.location.clone(),
-                                    typ: MonoType::Var(Tvar(2)),
-                                    name: "a".to_string(),
-                                }),
-                                right: Expression::Identifier(IdentifierExpr {
-                                    loc: b.location.clone(),
-                                    typ: MonoType::Var(Tvar(3)),
-                                    name: "piped".to_string(),
-                                }),
-                            }))),
+                                    typ: MonoType::Var(Tvar(1)),
+                                    operator: ast::Operator::AdditionOperator,
+                                    left: Expression::Identifier(IdentifierExpr {
+                                        loc: b.location.clone(),
+                                        typ: MonoType::Var(Tvar(2)),
+                                        name: "a".to_string(),
+                                    }),
+                                    right: Expression::Identifier(IdentifierExpr {
+                                        loc: b.location.clone(),
+                                        typ: MonoType::Var(Tvar(3)),
+                                        name: "piped".to_string(),
+                                    }),
+                                })),
+                            }),
                         })),
                         b.location.clone(),
                     ))),

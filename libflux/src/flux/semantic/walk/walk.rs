@@ -435,7 +435,7 @@ where
                     walk(v, Rc::new(Node::ExprStmt(estmt)));
                     walk(v, Rc::new(Node::Block(&*next)))
                 }
-                Block::Return(ref expr) => walk(v, Rc::new(Node::from_expr(expr))),
+                Block::Return(ref ret_stmt) => walk(v, Rc::new(Node::ReturnStmt(ret_stmt))),
             },
             Node::Property(ref n) => {
                 walk(v, Rc::new(Node::Identifier(&n.key)));
@@ -531,6 +531,7 @@ mod tests {
                     "ExprStmt",
                     "FunctionExpr",
                     "Block::Return",
+                    "ReturnStmt",
                     "IntegerLit",
                 ],
             )
@@ -564,6 +565,7 @@ mod tests {
                     "IdentifierExpr",
                     "IdentifierExpr",
                     "Block::Return",
+                    "ReturnStmt",
                     "IdentifierExpr",
                 ],
             )
@@ -580,6 +582,7 @@ mod tests {
                     "Identifier",
                     "IntegerLit",
                     "Block::Return",
+                    "ReturnStmt",
                     "IdentifierExpr",
                 ],
             )
@@ -761,6 +764,7 @@ mod tests {
                     "FunctionParameter",
                     "Identifier",
                     "Block::Return",
+                    "ReturnStmt",
                     "IdentifierExpr",
                 ],
             )
@@ -790,6 +794,7 @@ mod tests {
                     "ExprStmt",
                     "FunctionExpr",
                     "Block::Return",
+                    "ReturnStmt",
                     "IntegerLit",
                 ],
             )

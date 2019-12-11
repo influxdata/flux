@@ -169,30 +169,6 @@ impl<'a> NodeMut<'a> {
         }
     }
     pub fn set_loc(&mut self, loc: SourceLocation) {
-        let mut_expr_loc = |expr: &mut Expression, loc: SourceLocation| {
-            match expr {
-                Expression::Identifier(ref mut e) => e.loc = loc,
-                Expression::Array(ref mut e) => e.loc = loc,
-                Expression::Function(ref mut e) => e.loc = loc,
-                Expression::Logical(ref mut e) => e.loc = loc,
-                Expression::Object(ref mut e) => e.loc = loc,
-                Expression::Member(ref mut e) => e.loc = loc,
-                Expression::Index(ref mut e) => e.loc = loc,
-                Expression::Binary(ref mut e) => e.loc = loc,
-                Expression::Unary(ref mut e) => e.loc = loc,
-                Expression::Call(ref mut e) => e.loc = loc,
-                Expression::Conditional(ref mut e) => e.loc = loc,
-                Expression::StringExpr(ref mut e) => e.loc = loc,
-                Expression::Integer(ref mut e) => e.loc = loc,
-                Expression::Float(ref mut e) => e.loc = loc,
-                Expression::StringLit(ref mut e) => e.loc = loc,
-                Expression::Duration(ref mut e) => e.loc = loc,
-                Expression::Uint(ref mut e) => e.loc = loc,
-                Expression::Boolean(ref mut e) => e.loc = loc,
-                Expression::DateTime(ref mut e) => e.loc = loc,
-                Expression::Regexp(ref mut e) => e.loc = loc,
-            };
-        };
         match self {
             NodeMut::Package(ref mut n) => n.loc = loc,
             NodeMut::File(ref mut n) => n.loc = loc,
@@ -225,11 +201,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::ReturnStmt(ref mut n) => n.loc = loc,
             NodeMut::TestStmt(ref mut n) => n.loc = loc,
             NodeMut::BuiltinStmt(ref mut n) => n.loc = loc,
-            NodeMut::Block(Block::Variable(ref mut assgn, _)) => assgn.loc = loc,
-            NodeMut::Block(Block::Expr(ref mut estmt, _)) => {
-                mut_expr_loc(&mut estmt.expression, loc)
-            }
-            NodeMut::Block(Block::Return(ref mut expr)) => mut_expr_loc(expr, loc),
+            NodeMut::Block(_) => (),
             NodeMut::Property(ref mut n) => n.loc = loc,
             NodeMut::TextPart(ref mut n) => n.loc = loc,
             NodeMut::InterpolatedPart(ref mut n) => n.loc = loc,
@@ -477,7 +449,7 @@ where
                     walk_mut(v, &mut NodeMut::ExprStmt(estmt));
                     walk_mut(v, &mut NodeMut::Block(&mut *next))
                 }
-                Block::Return(ref mut expr) => walk_mut(v, &mut NodeMut::from_expr(expr)),
+                Block::Return(ref mut ret_stmt) => walk_mut(v, &mut NodeMut::ReturnStmt(ret_stmt)),
             },
             NodeMut::Property(ref mut n) => {
                 walk_mut(v, &mut NodeMut::Identifier(&mut n.key));
@@ -574,6 +546,7 @@ mod tests {
                     "ExprStmt",
                     "FunctionExpr",
                     "Block::Return",
+                    "ReturnStmt",
                     "IntegerLit",
                 ],
             )
@@ -607,6 +580,7 @@ mod tests {
                     "IdentifierExpr",
                     "IdentifierExpr",
                     "Block::Return",
+                    "ReturnStmt",
                     "IdentifierExpr",
                 ],
             )
@@ -623,6 +597,7 @@ mod tests {
                     "Identifier",
                     "IntegerLit",
                     "Block::Return",
+                    "ReturnStmt",
                     "IdentifierExpr",
                 ],
             )
@@ -804,6 +779,7 @@ mod tests {
                     "FunctionParameter",
                     "Identifier",
                     "Block::Return",
+                    "ReturnStmt",
                     "IdentifierExpr",
                 ],
             )
@@ -833,6 +809,7 @@ mod tests {
                     "ExprStmt",
                     "FunctionExpr",
                     "Block::Return",
+                    "ReturnStmt",
                     "IntegerLit",
                 ],
             )

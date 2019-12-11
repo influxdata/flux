@@ -262,7 +262,13 @@ fn analyze_function_params(
 
 fn analyze_function_body(body: ast::FunctionBody, fresher: &mut Fresher) -> Result<Block> {
     match body {
-        ast::FunctionBody::Expr(e) => Ok(Block::Return(analyze_expression(e, fresher)?)),
+        ast::FunctionBody::Expr(expr) => {
+            let argument = analyze_expression(expr, fresher)?;
+            Ok(Block::Return(ReturnStmt {
+                loc: argument.loc().clone(),
+                argument,
+            }))
+        }
         ast::FunctionBody::Block(block) => Ok(analyze_block(block, fresher)?),
     }
 }
@@ -271,7 +277,11 @@ fn analyze_block(block: ast::Block, fresher: &mut Fresher) -> Result<Block> {
     let mut body = block.body.into_iter().rev();
 
     let block = if let Some(ast::Statement::Return(stmt)) = body.next() {
-        Block::Return(analyze_expression(stmt.argument, fresher)?)
+        let argument = analyze_expression(stmt.argument, fresher)?;
+        Block::Return(ReturnStmt {
+            loc: argument.loc().clone(),
+            argument,
+        })
     } else {
         return Err("missing return statement in block".to_string());
     };
@@ -1499,21 +1509,24 @@ mod tests {
                                     default: None,
                                 },
                             ],
-                            body: Block::Return(Expression::Binary(Box::new(BinaryExpr {
+                            body: Block::Return(ReturnStmt {
                                 loc: b.location.clone(),
-                                typ: type_info(),
-                                operator: ast::Operator::AdditionOperator,
-                                left: Expression::Identifier(IdentifierExpr {
+                                argument: Expression::Binary(Box::new(BinaryExpr {
                                     loc: b.location.clone(),
                                     typ: type_info(),
-                                    name: "a".to_string(),
-                                }),
-                                right: Expression::Identifier(IdentifierExpr {
-                                    loc: b.location.clone(),
-                                    typ: type_info(),
-                                    name: "b".to_string(),
-                                }),
-                            }))),
+                                    operator: ast::Operator::AdditionOperator,
+                                    left: Expression::Identifier(IdentifierExpr {
+                                        loc: b.location.clone(),
+                                        typ: type_info(),
+                                        name: "a".to_string(),
+                                    }),
+                                    right: Expression::Identifier(IdentifierExpr {
+                                        loc: b.location.clone(),
+                                        typ: type_info(),
+                                        name: "b".to_string(),
+                                    }),
+                                })),
+                            }),
                         })),
                         b.location.clone(),
                     ))),
@@ -1722,31 +1735,34 @@ mod tests {
                                     default: None,
                                 },
                             ],
-                            body: Block::Return(Expression::Binary(Box::new(BinaryExpr {
+                            body: Block::Return(ReturnStmt {
                                 loc: b.location.clone(),
-                                typ: type_info(),
-                                operator: ast::Operator::AdditionOperator,
-                                left: Expression::Binary(Box::new(BinaryExpr {
+                                argument: Expression::Binary(Box::new(BinaryExpr {
                                     loc: b.location.clone(),
                                     typ: type_info(),
                                     operator: ast::Operator::AdditionOperator,
-                                    left: Expression::Identifier(IdentifierExpr {
+                                    left: Expression::Binary(Box::new(BinaryExpr {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        name: "a".to_string(),
-                                    }),
+                                        operator: ast::Operator::AdditionOperator,
+                                        left: Expression::Identifier(IdentifierExpr {
+                                            loc: b.location.clone(),
+                                            typ: type_info(),
+                                            name: "a".to_string(),
+                                        }),
+                                        right: Expression::Identifier(IdentifierExpr {
+                                            loc: b.location.clone(),
+                                            typ: type_info(),
+                                            name: "b".to_string(),
+                                        }),
+                                    })),
                                     right: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        name: "b".to_string(),
+                                        name: "c".to_string(),
                                     }),
                                 })),
-                                right: Expression::Identifier(IdentifierExpr {
-                                    loc: b.location.clone(),
-                                    typ: type_info(),
-                                    name: "c".to_string(),
-                                }),
-                            }))),
+                            }),
                         })),
                         b.location.clone(),
                     ))),
@@ -2044,21 +2060,24 @@ mod tests {
                                     default: None,
                                 },
                             ],
-                            body: Block::Return(Expression::Binary(Box::new(BinaryExpr {
+                            body: Block::Return(ReturnStmt {
                                 loc: b.location.clone(),
-                                typ: type_info(),
-                                operator: ast::Operator::AdditionOperator,
-                                left: Expression::Identifier(IdentifierExpr {
+                                argument: Expression::Binary(Box::new(BinaryExpr {
                                     loc: b.location.clone(),
                                     typ: type_info(),
-                                    name: "a".to_string(),
-                                }),
-                                right: Expression::Identifier(IdentifierExpr {
-                                    loc: b.location.clone(),
-                                    typ: type_info(),
-                                    name: "piped".to_string(),
-                                }),
-                            }))),
+                                    operator: ast::Operator::AdditionOperator,
+                                    left: Expression::Identifier(IdentifierExpr {
+                                        loc: b.location.clone(),
+                                        typ: type_info(),
+                                        name: "a".to_string(),
+                                    }),
+                                    right: Expression::Identifier(IdentifierExpr {
+                                        loc: b.location.clone(),
+                                        typ: type_info(),
+                                        name: "piped".to_string(),
+                                    }),
+                                })),
+                            }),
                         })),
                         b.location.clone(),
                     ))),
@@ -2124,21 +2143,24 @@ mod tests {
                     default: None,
                 },
             ],
-            body: Block::Return(Expression::Binary(Box::new(BinaryExpr {
+            body: Block::Return(ReturnStmt {
                 loc: b.location.clone(),
-                typ: type_info(),
-                operator: ast::Operator::AdditionOperator,
-                left: Expression::Identifier(IdentifierExpr {
+                argument: Expression::Binary(Box::new(BinaryExpr {
                     loc: b.location.clone(),
                     typ: type_info(),
-                    name: "a".to_string(),
-                }),
-                right: Expression::Identifier(IdentifierExpr {
-                    loc: b.location.clone(),
-                    typ: type_info(),
-                    name: "b".to_string(),
-                }),
-            }))),
+                    operator: ast::Operator::AdditionOperator,
+                    left: Expression::Identifier(IdentifierExpr {
+                        loc: b.location.clone(),
+                        typ: type_info(),
+                        name: "a".to_string(),
+                    }),
+                    right: Expression::Identifier(IdentifierExpr {
+                        loc: b.location.clone(),
+                        typ: type_info(),
+                        name: "b".to_string(),
+                    }),
+                })),
+            }),
         };
         assert_eq!(Vec::<&FunctionParameter>::new(), f.defaults());
         assert_eq!(None, f.pipe());
@@ -2205,21 +2227,24 @@ mod tests {
                 default2.clone(),
                 no_default.clone(),
             ],
-            body: Block::Return(Expression::Binary(Box::new(BinaryExpr {
+            body: Block::Return(ReturnStmt {
                 loc: b.location.clone(),
-                typ: type_info(),
-                operator: ast::Operator::AdditionOperator,
-                left: Expression::Identifier(IdentifierExpr {
+                argument: Expression::Binary(Box::new(BinaryExpr {
                     loc: b.location.clone(),
                     typ: type_info(),
-                    name: "a".to_string(),
-                }),
-                right: Expression::Identifier(IdentifierExpr {
-                    loc: b.location.clone(),
-                    typ: type_info(),
-                    name: "b".to_string(),
-                }),
-            }))),
+                    operator: ast::Operator::AdditionOperator,
+                    left: Expression::Identifier(IdentifierExpr {
+                        loc: b.location.clone(),
+                        typ: type_info(),
+                        name: "a".to_string(),
+                    }),
+                    right: Expression::Identifier(IdentifierExpr {
+                        loc: b.location.clone(),
+                        typ: type_info(),
+                        name: "b".to_string(),
+                    }),
+                })),
+            }),
         };
         assert_eq!(defaults, f.defaults());
         assert_eq!(Some(&piped), f.pipe());
