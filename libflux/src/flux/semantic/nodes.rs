@@ -354,7 +354,11 @@ impl File {
 
         for dec in &self.imports {
             let path = &dec.path.value;
-            let name = pkg_name_from_path(&path);
+
+            let name = match &dec.alias {
+                None => path.rsplitn(2, '/').collect::<Vec<&str>>()[0],
+                Some(id) => &id.name[..],
+            };
 
             imports.push(name);
 
@@ -420,10 +424,6 @@ pub struct ImportDeclaration {
 
     pub alias: Option<Identifier>,
     pub path: StringLit,
-}
-
-fn pkg_name_from_path(path: &str) -> &str {
-    path.rsplitn(2, '/').next().unwrap()
 }
 
 #[derive(Debug, PartialEq, Clone)]
