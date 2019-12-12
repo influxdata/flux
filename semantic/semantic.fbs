@@ -200,7 +200,7 @@ table NativeVariableAssignment {
   loc:SourceLocation;
   identifier:Identifier;
   init_:Expression;
-  typ:MonoType;
+  typ:PolyType;
 }
 
 table MemberAssignment {

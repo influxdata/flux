@@ -4072,7 +4072,6 @@ pub mod fbsemantic {
             if let Some(x) = args.loc {
                 builder.add_loc(x);
             }
-            builder.add_typ_type(args.typ_type);
             builder.add_init__type(args.init__type);
             builder.finish()
         }
@@ -4081,8 +4080,7 @@ pub mod fbsemantic {
         pub const VT_IDENTIFIER: flatbuffers::VOffsetT = 6;
         pub const VT_INIT__TYPE: flatbuffers::VOffsetT = 8;
         pub const VT_INIT_: flatbuffers::VOffsetT = 10;
-        pub const VT_TYP_TYPE: flatbuffers::VOffsetT = 12;
-        pub const VT_TYP: flatbuffers::VOffsetT = 14;
+        pub const VT_TYP: flatbuffers::VOffsetT = 12;
 
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
@@ -4118,18 +4116,11 @@ pub mod fbsemantic {
                 )
         }
         #[inline]
-        pub fn typ_type(&self) -> MonoType {
-            self._tab
-                .get::<MonoType>(NativeVariableAssignment::VT_TYP_TYPE, Some(MonoType::NONE))
-                .unwrap()
-        }
-        #[inline]
-        pub fn typ(&self) -> Option<flatbuffers::Table<'a>> {
-            self._tab
-                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
-                    NativeVariableAssignment::VT_TYP,
-                    None,
-                )
+        pub fn typ(&self) -> Option<PolyType<'a>> {
+            self._tab.get::<flatbuffers::ForwardsUOffset<PolyType<'a>>>(
+                NativeVariableAssignment::VT_TYP,
+                None,
+            )
         }
         #[inline]
         #[allow(non_snake_case)]
@@ -4333,56 +4324,6 @@ pub mod fbsemantic {
                 None
             }
         }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
-            if self.typ_type() == MonoType::Basic {
-                self.typ().map(|u| Basic::init_from_table(u))
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_var(&self) -> Option<Var<'a>> {
-            if self.typ_type() == MonoType::Var {
-                self.typ().map(|u| Var::init_from_table(u))
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
-            if self.typ_type() == MonoType::Arr {
-                self.typ().map(|u| Arr::init_from_table(u))
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_row(&self) -> Option<Row<'a>> {
-            if self.typ_type() == MonoType::Row {
-                self.typ().map(|u| Row::init_from_table(u))
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
-            if self.typ_type() == MonoType::Fun {
-                self.typ().map(|u| Fun::init_from_table(u))
-            } else {
-                None
-            }
-        }
     }
 
     pub struct NativeVariableAssignmentArgs<'a> {
@@ -4390,8 +4331,7 @@ pub mod fbsemantic {
         pub identifier: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
         pub init__type: Expression,
         pub init_: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
-        pub typ_type: MonoType,
-        pub typ: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+        pub typ: Option<flatbuffers::WIPOffset<PolyType<'a>>>,
     }
     impl<'a> Default for NativeVariableAssignmentArgs<'a> {
         #[inline]
@@ -4401,7 +4341,6 @@ pub mod fbsemantic {
                 identifier: None,
                 init__type: Expression::NONE,
                 init_: None,
-                typ_type: MonoType::NONE,
                 typ: None,
             }
         }
@@ -4443,19 +4382,12 @@ pub mod fbsemantic {
             );
         }
         #[inline]
-        pub fn add_typ_type(&mut self, typ_type: MonoType) {
-            self.fbb_.push_slot::<MonoType>(
-                NativeVariableAssignment::VT_TYP_TYPE,
-                typ_type,
-                MonoType::NONE,
-            );
-        }
-        #[inline]
-        pub fn add_typ(&mut self, typ: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
-            self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(
-                NativeVariableAssignment::VT_TYP,
-                typ,
-            );
+        pub fn add_typ(&mut self, typ: flatbuffers::WIPOffset<PolyType<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<PolyType>>(
+                    NativeVariableAssignment::VT_TYP,
+                    typ,
+                );
         }
         #[inline]
         pub fn new(
