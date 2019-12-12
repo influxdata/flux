@@ -1,24 +1,62 @@
-use std::env;
-use std::fs::File;
-use std::io::Write;
-use std::path::PathBuf;
+use std::{env, fs, io, io::Write, path};
 
-fn prelude() -> Vec<u8> {
-    Vec::new()
+use flux::semantic::bootstrap;
+use flux::semantic::env::Environment;
+use flux::semantic::flatbuffers::types as fb;
+
+use flatbuffers;
+
+#[derive(Debug)]
+struct Error {
+    msg: String,
 }
 
-fn stdlib() -> Vec<u8> {
-    Vec::new()
+impl From<env::VarError> for Error {
+    fn from(err: env::VarError) -> Error {
+        Error {
+            msg: err.to_string(),
+        }
+    }
 }
 
-fn main() {
-    let dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Error {
+        Error {
+            msg: format!("{:?}", err),
+        }
+    }
+}
 
-    let buf = prelude();
-    let mut file = File::create(dir.join("prelude.data")).unwrap();
-    file.write_all(&buf).unwrap();
+impl From<bootstrap::Error> for Error {
+    fn from(err: bootstrap::Error) -> Error {
+        Error { msg: err.msg }
+    }
+}
 
-    let buf = stdlib();
-    let mut file = File::create(dir.join("stdlib.data")).unwrap();
-    file.write_all(&buf).unwrap();
+fn serialize<'a, T, S, F>(ty: T, f: F, path: &path::Path) -> Result<(), Error>
+where
+    F: Fn(&mut flatbuffers::FlatBufferBuilder<'a>, T) -> flatbuffers::WIPOffset<S>,
+{
+    let mut builder = flatbuffers::FlatBufferBuilder::new();
+    let buf = fb::serialize(&mut builder, ty, f);
+    let mut file = fs::File::create(path)?;
+    file.write_all(&buf)?;
+    Ok(())
+}
+
+fn main() -> Result<(), Error> {
+    let dir = path::PathBuf::from(env::var("OUT_DIR")?);
+
+    let (pre, lib, fresher) = bootstrap::infer_stdlib()?;
+
+    let path = dir.join("prelude.data");
+    serialize(Environment::from(pre), fb::build_env, &path)?;
+
+    let path = dir.join("stdlib.data");
+    serialize(Environment::from(lib), fb::build_env, &path)?;
+
+    let path = dir.join("fresher.data");
+    serialize(fresher, fb::build_fresher, &path)?;
+
+    Ok(())
 }

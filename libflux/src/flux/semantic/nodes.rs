@@ -13,7 +13,6 @@ use crate::ast;
 use crate::semantic::infer;
 use crate::semantic::types;
 use crate::semantic::{
-    analyze::SemanticError,
     env::Environment,
     fresh::Fresher,
     import::Importer,
@@ -54,9 +53,15 @@ impl From<types::Error> for Error {
     }
 }
 
-impl From<SemanticError> for Error {
-    fn from(err: SemanticError) -> Error {
-        Error { msg: err }
+impl From<String> for Error {
+    fn from(msg: String) -> Error {
+        Error { msg }
+    }
+}
+
+impl From<Error> for String {
+    fn from(err: Error) -> String {
+        err.to_string()
     }
 }
 

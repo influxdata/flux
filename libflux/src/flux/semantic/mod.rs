@@ -12,8 +12,8 @@ pub mod nodes;
 pub mod types;
 pub mod walk;
 
-#[cfg(test)]
-mod parser;
+#[allow(dead_code)]
+pub mod parser;
 
 #[cfg(test)]
 mod tests;
