@@ -82,7 +82,7 @@ pub fn builtins() -> Builtins<'static> {
                  "subDuration" => Node::Builtin("forall [] (d: duration, from: time) -> time"),
                  "group" => Node::Builtin("forall [t0] where t0: Row (<-tables: [t0], mode: string, columns: [string]) -> [t0]"),
                  "objectKeys" => Node::Builtin("forall [t0] where t0: Row (o: t0) -> [string]"),
-                 "set" => Node::Builtin("forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (<-tables: t0, o: t1) -> t2"),
+                 "set" => Node::Builtin("forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (<-tables: t0, o: t1) -> [t2]"),
                  // must specify exactly one of bucket, bucketID
                  // must specify exactly one of org, orgID
                  // if host is specified, token must be too.
@@ -333,15 +333,15 @@ pub fn builtins() -> Builtins<'static> {
                 "time" => Node::Builtin("forall [] () -> time"),
             }),
             "testing" => Node::Package(maplit::hashmap! {
-                "assertEquals" => Node::Builtin("forall [t0] (name: string, got: [t0], want: [t0]) -> [t0]"),
-                "assertEmpty" => Node::Builtin("forall [t0] () -> [t0]"),
-                "diff" => Node::Builtin("forall [t0] (got: [t0], want: [t0], ?verbose: bool) -> [{_diff: string | t0}]"),
+                "assertEquals" => Node::Builtin("forall [t0] (name: string, <-got: [t0], want: [t0]) -> [t0]"),
+                "assertEmpty" => Node::Builtin("forall [t0] (<-tables: [t0]) -> [t0]"),
+                "diff" => Node::Builtin("forall [t0] (<-got: [t0], want: [t0], ?verbose: bool) -> [{_diff: string | t0}]"),
             }),
             "universe" => Node::Package(maplit::hashmap! {
                 "bool" => Node::Builtin("forall [t0] (v: t0) -> bool"),
                 "bytes" => Node::Builtin("forall [t0] (v: t0) -> bytes"),
                 "chandeMomentumOscillator" => Node::Builtin(r#"
-                    forall [t0, t1] where t0: Row, t1: Row(
+                    forall [t0, t1] where t0: Row, t1: Row (
                         <-tables: [t0],
                         n: int,
                         ?columns: [string]
@@ -367,6 +367,7 @@ pub fn builtins() -> Builtins<'static> {
                 "#),
                 "covariance" => Node::Builtin(r#"
                     forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
                         ?pearsonr: bool,
                         ?valueDst: string,
                         columns: [string]
@@ -402,11 +403,11 @@ pub fn builtins() -> Builtins<'static> {
                     ) -> [t1]
                 "#),
                 "drop" => Node::Builtin(r#"
-                    forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (
+                    forall [t0, t1] where t0: Row, t1: Row (
                         <-tables: [t0],
                         ?fn: (column: string) -> bool,
-                        ?columns: t1
-                    ) -> [t2]
+                        ?columns: [string]
+                    ) -> [t1]
                 "#),
                 "duplicate" => Node::Builtin(r#"
                     forall [t0, t1] where t0: Row, t1: Row (
@@ -430,7 +431,7 @@ pub fn builtins() -> Builtins<'static> {
                         n: int
                     ) -> [{ _value: t0 | t1}]
                 "#),
-                "false" => Node::Builtin("forall [] () -> bool"),
+                "false" => Node::Builtin("forall [] bool"),
                 "fill" => Node::Builtin(r#"
                     forall [t0, t1, t2] where t0: Row, t2: Row (
                         <-tables: [t0],
@@ -453,10 +454,10 @@ pub fn builtins() -> Builtins<'static> {
                 "#),
                 "float" => Node::Builtin("forall [t0] (v: t0) -> float"),
                 "getColumn" => Node::Builtin(r#"
-                    forall [t0] where t0: Row (
+                    forall [t0, t1] where t0: Row (
                         <-table: [t0],
                         column: string
-                    ) -> t0
+                    ) -> [t1]
                 "#),
                 "getRecord" => Node::Builtin(r#"
                     forall [t0] where t0: Row (
