@@ -98,8 +98,8 @@ b = true
 dt = 2030-01-01T00:00:00Z
 re =~ /foo/
 re !~ /foo/
+bad_expr = 3 * / 1
 bad_expr = 3 * + 1
-// bad_expr = 3 * / 1
 `}
 	for _, src := range srcs {
 		astFbs := libflux.ParseIntoFbs(src)

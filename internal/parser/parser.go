@@ -661,13 +661,25 @@ func (p *parser) parseMultiplicativeExpressionSuffix(expr *ast.Expression) func(
 			return false
 		}
 		rhs := p.parsePipeExpression()
+
+		var endPos ast.Position
+		// If we couldn't parse a RHS, use the buffered token to determine the
+		// end location of the binary expr.
+		if rhs == nil {
+			if p.buffered {
+				endPos = p.s.File().Position(p.pos + token.Pos(len(p.lit)))
+			}
+		} else {
+			endPos = locEnd(rhs)
+		}
+
 		*expr = &ast.BinaryExpression{
 			Operator: op,
 			Left:     *expr,
 			Right:    rhs,
 			BaseNode: p.baseNode(p.sourceLocation(
 				locStart(*expr),
-				locEnd(rhs),
+				endPos,
 			)),
 		}
 		return true

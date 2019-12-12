@@ -29,6 +29,13 @@ func NewFile(name string, sz int) *File {
 }
 
 func (f *File) AddLine(offset int) {
+	// if we performed an unread then we may need to remove some lines to preserve
+	// the sortedness of the lines slice.
+	last := len(f.lines)
+	for last > 0 && f.lines[last-1] >= offset {
+		last--
+	}
+	f.lines = f.lines[0:last]
 	f.lines = append(f.lines, offset)
 }
 

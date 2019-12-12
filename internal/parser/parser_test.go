@@ -5604,9 +5604,8 @@ string"
 							BaseNode: base("1:1", "1:5"),
 							Expression: &ast.BinaryExpression{
 								Right: nil,
-								// TODO(affo): when one operand in the BinaryExpression is nil, the location is not reported.
-								//  This is because of locStart/locEnd implementation.
 								BaseNode: ast.BaseNode{
+									Loc: loc("1:2", "1:5"),
 									Errors: []ast.Error{
 										{Msg: "missing right hand side of expression"},
 									},
