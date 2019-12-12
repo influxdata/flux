@@ -87,6 +87,7 @@ impl From<fb::Kind> for Kind {
             fb::Kind::Equatable => Kind::Equatable,
             fb::Kind::Nullable => Kind::Nullable,
             fb::Kind::Row => Kind::Row,
+            fb::Kind::Signed => Kind::Signed,
         }
     }
 }
@@ -102,6 +103,7 @@ impl From<Kind> for fb::Kind {
             Kind::Equatable => fb::Kind::Equatable,
             Kind::Nullable => fb::Kind::Nullable,
             Kind::Row => fb::Kind::Row,
+            Kind::Signed => fb::Kind::Signed,
         }
     }
 }

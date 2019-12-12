@@ -164,10 +164,11 @@ pub mod fbsemantic {
         Equatable = 5,
         Nullable = 6,
         Row = 7,
+        Signed = 8,
     }
 
     const ENUM_MIN_KIND: u8 = 0;
-    const ENUM_MAX_KIND: u8 = 7;
+    const ENUM_MAX_KIND: u8 = 8;
 
     impl<'a> flatbuffers::Follow<'a> for Kind {
         type Inner = Self;
@@ -201,7 +202,7 @@ pub mod fbsemantic {
     }
 
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_KIND: [Kind; 8] = [
+    const ENUM_VALUES_KIND: [Kind; 9] = [
         Kind::Addable,
         Kind::Subtractable,
         Kind::Divisible,
@@ -210,10 +211,11 @@ pub mod fbsemantic {
         Kind::Equatable,
         Kind::Nullable,
         Kind::Row,
+        Kind::Signed,
     ];
 
     #[allow(non_camel_case_types)]
-    const ENUM_NAMES_KIND: [&'static str; 8] = [
+    const ENUM_NAMES_KIND: [&'static str; 9] = [
         "Addable",
         "Subtractable",
         "Divisible",
@@ -222,6 +224,7 @@ pub mod fbsemantic {
         "Equatable",
         "Nullable",
         "Row",
+        "Signed",
     ];
 
     pub fn enum_name_kind(e: Kind) -> &'static str {

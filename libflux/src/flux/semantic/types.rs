@@ -220,6 +220,7 @@ pub enum Kind {
     Equatable,
     Nullable,
     Row,
+    Signed,
 }
 
 impl fmt::Display for Kind {
@@ -233,6 +234,7 @@ impl fmt::Display for Kind {
             Kind::Equatable => f.write_str("Equatable"),
             Kind::Nullable => f.write_str("Nullable"),
             Kind::Row => f.write_str("Row"),
+            Kind::Signed => f.write_str("Signed"),
         }
     }
 }
@@ -394,7 +396,8 @@ impl MonoType {
                 | Kind::Numeric
                 | Kind::Comparable
                 | Kind::Equatable
-                | Kind::Nullable => Ok(Substitution::empty()),
+                | Kind::Nullable
+                | Kind::Signed => Ok(Substitution::empty()),
                 _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Uint => match with {
@@ -413,7 +416,8 @@ impl MonoType {
                 | Kind::Numeric
                 | Kind::Comparable
                 | Kind::Equatable
-                | Kind::Nullable => Ok(Substitution::empty()),
+                | Kind::Nullable
+                | Kind::Signed => Ok(Substitution::empty()),
                 _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::String => match with {
@@ -423,7 +427,9 @@ impl MonoType {
                 _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Duration => match with {
-                Kind::Comparable | Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
+                Kind::Comparable | Kind::Equatable | Kind::Nullable | Kind::Signed => {
+                    Ok(Substitution::empty())
+                }
                 _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Time => match with {

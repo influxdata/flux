@@ -1335,14 +1335,12 @@ impl UnaryExpr {
             ast::Operator::ExistsOperator => {
                 Constraints::from(Constraint::Equal(self.typ.clone(), MonoType::Bool))
             }
-            ast::Operator::AdditionOperator => Constraints::from(vec![
-                Constraint::Equal(self.argument.type_of().clone(), self.typ.clone()),
-                Constraint::Kind(self.argument.type_of().clone(), Kind::Addable),
-            ]),
-            ast::Operator::SubtractionOperator => Constraints::from(vec![
-                Constraint::Equal(self.argument.type_of().clone(), self.typ.clone()),
-                Constraint::Kind(self.argument.type_of().clone(), Kind::Subtractable),
-            ]),
+            ast::Operator::AdditionOperator | ast::Operator::SubtractionOperator => {
+                Constraints::from(vec![
+                    Constraint::Equal(self.argument.type_of().clone(), self.typ.clone()),
+                    Constraint::Kind(self.argument.type_of().clone(), Kind::Signed),
+                ])
+            }
             _ => return Err(Error::unsupported_unary_operator(&self.operator)),
         };
         Ok((env, acons + cons))
