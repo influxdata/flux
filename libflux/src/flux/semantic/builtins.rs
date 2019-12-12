@@ -299,6 +299,7 @@ pub fn builtins() -> Builtins<'static> {
                 "trim" => Node::Builtin("forall [] (v: string, cutset: string) -> string"),
                 "trimPrefix" => Node::Builtin("forall [] (v: string, prefix: string) -> string"),
                 "trimSpace" => Node::Builtin("forall [] (v: string) -> string"),
+                "trimSuffix" => Node::Builtin("forall [] (v: string, suffix: string) -> string"),
                 "trimRight" => Node::Builtin("forall [] (v: string, cutset: string) -> string"),
                 "trimLeft" => Node::Builtin("forall [] (v: string, cutset: string) -> string"),
                 "toTitle" => Node::Builtin("forall [] (v: string) -> string"),
