@@ -1,5 +1,9 @@
 namespace fbsemantic;
 
+table Fresher {
+  u:ulong;
+}
+
 table TypeEnvironment {
   assignments:[TypeAssignment];
 }

@@ -1,7 +1,7 @@
 use crate::semantic::types::Tvar;
 
 // Fresher returns incrementing type variables
-pub struct Fresher(u64);
+pub struct Fresher(pub u64);
 
 // Create a tvar fresher from a u64
 impl From<u64> for Fresher {

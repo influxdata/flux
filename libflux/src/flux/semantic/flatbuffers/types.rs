@@ -7,6 +7,8 @@ use crate::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 use flatbuffers;
 use std::collections::HashMap;
 
+use crate::semantic::fresh::Fresher;
+
 #[rustfmt::skip]
 use crate::semantic::types::{
     Array,
@@ -18,6 +20,12 @@ use crate::semantic::types::{
     Row,
     Tvar,
 };
+
+impl From<fb::Fresher<'_>> for Fresher {
+    fn from(f: fb::Fresher) -> Fresher {
+        Fresher::from(f.u())
+    }
+}
 
 impl From<fb::TypeEnvironment<'_>> for Option<Environment> {
     fn from(env: fb::TypeEnvironment) -> Option<Environment> {
@@ -229,7 +237,14 @@ where
     mapped
 }
 
-fn build_env<'a>(
+pub fn build_fresher<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    f: Fresher,
+) -> flatbuffers::WIPOffset<fb::Fresher<'a>> {
+    fb::Fresher::create(builder, &fb::FresherArgs { u: f.0 })
+}
+
+pub fn build_env<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     env: Environment,
 ) -> flatbuffers::WIPOffset<fb::TypeEnvironment<'a>> {
