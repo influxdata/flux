@@ -337,6 +337,178 @@ pub fn builtins() -> Builtins<'static> {
                 "diff" => Node::Builtin("forall [t0] (got: [t0], want: [t0], ?verbose: bool) -> [{_diff: string | t0}]"),
             }),
             "universe" => Node::Package(maplit::hashmap! {
+                "bool" => Node::Builtin("forall [t0] (v: t0) -> bool"),
+                "bytes" => Node::Builtin("forall [t0] (v: t0) -> bytes"),
+                "chandeMomentumOscillator" => Node::Builtin(r#"
+                    forall [t0, t1] where t0: Row, t1: Row(
+                        <-tables: [t0],
+                        n: int,
+                        ?columns: [string]
+                    ) -> [t1]
+                "#),
+                "columns" => Node::Builtin(r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        column: string
+                    ) -> [t1]
+                "#),
+                "contains" => Node::Builtin(r#"
+                    forall [t0] where t0: Nullable (
+                        value: t0,
+                        set: [t0]
+                    ) -> bool
+                "#),
+                "count" => Node::Builtin(r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        ?column: [string]
+                    ) -> [t1]
+                "#),
+                "covariance" => Node::Builtin(r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        ?pearsonr: bool,
+                        ?valueDst: string,
+                        columns: [string]
+                    ) -> [t1]
+                "#),
+                "cumulativeSum" => Node::Builtin(r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        ?columns: [string]
+                    ) -> [t1]
+                "#),
+                "derivative" => Node::Builtin(r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        ?unit: duration,
+                        ?nonNegative: bool,
+                        ?columns: [string],
+                        ?timeColumn: string
+                    ) -> [t1]
+                "#),
+                "difference" => Node::Builtin(r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        ?nonNegative: bool,
+                        ?columns: [string],
+                        ?keepFirst: bool
+                    ) -> [t1]
+                "#),
+                "distinct" => Node::Builtin(r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        ?column: string
+                    ) -> [t1]
+                "#),
+                "drop" => Node::Builtin(r#"
+                    forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (
+                        <-tables: [t0],
+                        ?fn: (column: string) -> bool,
+                        ?columns: t1
+                    ) -> [t2]
+                "#),
+                "duplicate" => Node::Builtin(r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        column: string,
+                        as: string
+                    ) -> [t1]
+                "#),
+                "duration" => Node::Builtin("forall [t0] (v: t0) -> duration"),
+                "elapsed" => Node::Builtin(r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        ?unit: duration,
+                        ?timeColumn: string,
+                        ?columnName: string
+                    ) -> [t1]
+                "#),
+                "exponentialMovingAverage" => Node::Builtin(r#"
+                    forall [t0, t1] where t0: Numeric (
+                        <-tables: [{ _value: t0 | t1 }],
+                        n: int
+                    ) -> [{ _value: t0 | t1}]
+                "#),
+                "false" => Node::Builtin("forall [] () -> bool"),
+                "fill" => Node::Builtin(r#"
+                    forall [t0, t1, t2] where t0: Row, t2: Row (
+                        <-tables: [t0],
+                        ?column: string,
+                        value: [t1],
+                        usePrevious: bool
+                    ) -> [t2]
+                "#),
+                "filter" => Node::Builtin(r#"
+                    forall [t0] where t0: Row (
+                        <-tables: [t0],
+                        fn: (r: t0) -> bool
+                    ) -> [t0]
+                "#),
+                "first" => Node::Builtin(r#"
+                    forall [t0] where t0: Row (
+                        <-tables: [t0],
+                        ?column: string
+                    ) -> [t0]
+                "#),
+                "float" => Node::Builtin("forall [t0] (v: t0) -> float"),
+                "getColumn" => Node::Builtin(r#"
+                    forall [t0] where t0: Row (
+                        <-table: [t0],
+                        column: string
+                    ) -> t0
+                "#),
+                "getRecord" => Node::Builtin(r#"
+                    forall [t0] where t0: Row (
+                        <-table: [t0],
+                        idx: int
+                    ) -> t0
+                "#),
+                "group" => Node::Builtin(r#"
+                    forall [t0] where t0: Row (
+                        <-tables: [t0],
+                        ?mode: string,
+                        ?columns: [string]
+                    ) -> [t0]
+                "#),
+                "histogram" => Node::Builtin(r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        ?column: string,
+                        ?upperBoundColumn: string,
+                        ?countColumn: string,
+                        bins: [float],
+                        normalize: bool
+                    ) -> [t1]
+                "#),
+                "histogramQuantile" => Node::Builtin(r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        ?quantile: float,
+                        ?countColumn: string,
+                        ?upperBoundColumn: string,
+                        ?valueColumn: string,
+                        ?minValue: float
+                    ) -> [t1]
+                "#),
+                "holtWinters" => Node::Builtin(r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        ?withFit: bool,
+                        ?column: string,
+                        ?timeColumn: string,
+                        n: int,
+                        seasonality: int,
+                        interval: duration
+                    ) -> [t1]
+                "#),
+                "hourSelection" => Node::Builtin(r#"
+                    forall [t0] where t0: Row (
+                        <-tables: [t0],
+                        start: int,
+                        stop: int,
+                        ?timeColumn: string
+                    ) -> [t0]
+                "#),
                 "inf" => Node::Builtin("forall [] duration"),
                 "int" => Node::Builtin("forall [t0] (v: t0) -> int"),
                 "integral" => Node::Builtin(r#"
@@ -547,7 +719,7 @@ pub fn builtins() -> Builtins<'static> {
                     forall [t0, t1] where t0: Row, t1: Row (
                         <-tables: [t0],
                         fn: (key: t1) -> bool
-                    ) -> t0
+                    ) -> [t0]
                 "#),
                 "tail" => Node::Builtin(r#"
                     forall [t0] (
