@@ -5,8 +5,8 @@ import (
 )
 
 func TestFluxParserTypeEnvVar(t *testing.T) {
-	tcs := []struct{
-		name string
+	tcs := []struct {
+		name   string
 		envVar string
 	}{
 		{
@@ -14,7 +14,7 @@ func TestFluxParserTypeEnvVar(t *testing.T) {
 			envVar: "go",
 		},
 		{
-			name: "rust parser",
+			name:   "rust parser",
 			envVar: "rust",
 		},
 	}
@@ -28,7 +28,7 @@ a = 10
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			origCachedUseRustParser := cachedUseRustParser
-			defer func() {cachedUseRustParser = origCachedUseRustParser}()
+			defer func() { cachedUseRustParser = origCachedUseRustParser }()
 			cachedUseRustParser = tc.envVar == parserTypeRust
 			var wantMeta string
 			var wantPanic bool

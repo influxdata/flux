@@ -72,6 +72,14 @@ func fromWrappedStatement(fb *fbsemantic.WrappedStatement) (Statement, error) {
 			return nil, err
 		}
 		return s, nil
+	case fbsemantic.StatementNativeVariableAssignment:
+		fbStmt := new(fbsemantic.NativeVariableAssignment)
+		fbStmt.Init(tbl.Bytes, tbl.Pos)
+		s := &NativeVariableAssignment{}
+		if err := s.FromBuf(fbStmt); err != nil {
+			return nil, err
+		}
+		return s, nil
 	case fbsemantic.StatementReturnStatement:
 		fbStmt := new(fbsemantic.ReturnStatement)
 		fbStmt.Init(tbl.Bytes, tbl.Pos)
@@ -555,4 +563,44 @@ func (p *FunctionParameter) FromBuf(fb *fbsemantic.FunctionParameter) error {
 		return err
 	}
 	return nil
+}
+
+type fbTyper interface {
+	TypType() byte
+	Typ(obj *flatbuffers.Table) bool
+}
+
+// getMonoType produces an FBMonoType from the given FlatBuffers expression that has
+// a union "typ" field (which is all the different kinds of expressions).
+func getMonoType(fbExpr fbTyper) (*MonoType, error) {
+	tbl := new(flatbuffers.Table)
+	if !fbExpr.Typ(tbl) {
+		return nil, errors.Newf(codes.Internal, "missing monotype")
+	}
+
+	t := fbExpr.TypType()
+	return getMonoTypeFromTable(tbl, t)
+}
+
+func getMonoTypeFromTable(tbl *flatbuffers.Table, t fbsemantic.MonoType) (*MonoType, error) {
+	var tbler fbTabler
+	switch t {
+	case fbsemantic.MonoTypeNONE:
+		return nil, errors.Newf(codes.Internal, "missing type, got type: %v", fbsemantic.EnumNamesMonoType[t])
+	case fbsemantic.MonoTypeBasic:
+		tbler = new(fbsemantic.Basic)
+	case fbsemantic.MonoTypeVar:
+		tbler = new(fbsemantic.Var)
+	case fbsemantic.MonoTypeArr:
+		tbler = new(fbsemantic.Arr)
+	case fbsemantic.MonoTypeRow:
+		tbler = new(fbsemantic.Row)
+	case fbsemantic.MonoTypeFun:
+		tbler = new(fbsemantic.Fun)
+	default:
+		return nil, errors.Newf(codes.Internal, "unknown type (%v)", t)
+	}
+	tbler.Init(tbl.Bytes, tbl.Pos)
+	return &MonoType{mt: t, tbl: tbler}, nil
+
 }
