@@ -3072,7 +3072,6 @@ fn function_pipe_identity() {
     }
 }
 #[test]
-#[ignore]
 fn function_default_arguments_and_pipes() {
     test_infer! {
         src: r#"
@@ -3085,7 +3084,6 @@ fn function_default_arguments_and_pipes() {
         exp: map![
             "f" => "forall [t0, t1, t2] (<-t: t1, f: (<-: t1, a: t0) -> t2, g: t0) -> t2",
             "x" => "forall [] (a: int, ?b: int, <-m: int) -> int",
-            // TODO(joshua): fix tvars permutation issue in comparison.
             "z" => "forall [t0, t1] (a: {m: t0 | t1}, ?b: float, ?c: float, <-m: float) -> {r: t0 | s: float}",
             "y" => "forall [] int",
             "v" => "forall [] {r: string | s: float}",
