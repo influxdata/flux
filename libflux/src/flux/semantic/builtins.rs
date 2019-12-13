@@ -106,14 +106,14 @@ pub fn builtins() -> Builtins<'static> {
                         // https://github.com/influxdata/flux/issues/2250
                         "json" => Node::Builtin("forall [t0] where t0: Row (?json: string, ?file: string) -> [t0]"),
                         "databases" => Node::Builtin(r#"
-                            forall [] () -> {
+                            forall [] () -> [{
                                 organizationID: string |
                                 databaseName: string |
                                 retentionPolicy: string |
                                 retentionPeriod: int |
                                 default: bool |
                                 bucketID: string
-                            }
+                            }]
                         "#),
                     }),
                     // This is a one-or-the-other parameters function
@@ -136,13 +136,21 @@ pub fn builtins() -> Builtins<'static> {
                             ?fieldFn: (r: t0) -> t1
                         ) -> [t1]
                     "#),
-                    "buckets" => Node::Builtin("forall [] () -> {name: string | id: string | organizationID: string | retentionPolicy: string | retentionPeriod: int}"),
+                    "buckets" => Node::Builtin(r#"
+                        forall [] () -> [{
+                            name: string |
+                            id: string |
+                            organizationID: string |
+                            retentionPolicy: string |
+                            retentionPeriod: int
+                        }]
+                    "#),
                 }),
 
             }),
             "internal" => Node::Package(maplit::hashmap! {
                 "gen" => Node::Package(maplit::hashmap! {
-                    "tables" => Node::Builtin("forall [t0] (n: int, tags: [{name: string | cardinality: int}]) -> {_time: time | _value: float | t0}"),
+                    "tables" => Node::Builtin("forall [t0] (n: int, tags: [{name: string | cardinality: int}]) -> [{_time: time | _value: float | t0}]"),
                 }),
                 "promql" => Node::Package(maplit::hashmap! {
                     "changes" => Node::Builtin("forall [t0, t1] (<-tables: [{_value: float | t0}]) -> [{_value: float | t1}]"),
