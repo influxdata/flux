@@ -6,8 +6,7 @@
 #![allow(clippy::chars_next_cmp, clippy::unnecessary_operation)]
 #![allow(clippy::new_without_default, clippy::wrong_self_convention)]
 #![allow(clippy::useless_let_if_seq, clippy::implicit_hasher, clippy::ptr_arg)]
-#![allow(clippy::single_match)]
-#![allow(clippy::unnecessary_fold, clippy::not_unsafe_ptr_arg_deref)]
+#![allow(clippy::single_match, clippy::unnecessary_fold)]
 #![allow(clippy::module_inception)]
 #![allow(clippy::many_single_char_names, clippy::redundant_field_names)]
 #![allow(clippy::unknown_clippy_lints)]
@@ -46,18 +45,28 @@ pub struct flux_buffer_t {
     pub len: usize,
 }
 
+/// # Safety
+///
+/// This function is unsafe because it takes a dereferences a raw pointer passed
+/// in as a parameter. For example, if that pointer is NULL, undefined behavior
+/// could occur.
 #[no_mangle]
-pub extern "C" fn flux_parse(cstr: *mut c_char) -> *mut flux_ast_t {
-    let buf = unsafe { CStr::from_ptr(cstr).to_bytes() };
+pub unsafe extern "C" fn flux_parse(cstr: *mut c_char) -> *mut flux_ast_t {
+    let buf = CStr::from_ptr(cstr).to_bytes(); // Unsafe
     let s = String::from_utf8(buf.to_vec()).unwrap();
     let mut p = Parser::new(&s);
     let file = p.parse_file(String::from(""));
     Box::into_raw(Box::new(file)) as *mut flux_ast_t
 }
 
+/// # Safety
+///
+/// This function is unsafe because it takes a dereferences a raw pointer passed
+/// in as a parameter. For example, if that pointer is NULL, undefined behavior
+/// could occur.
 #[no_mangle]
-pub extern "C" fn flux_parse_fb(src_ptr: *const c_char) -> *mut flux_buffer_t {
-    let src_bytes = unsafe { CStr::from_ptr(src_ptr).to_bytes() };
+pub unsafe extern "C" fn flux_parse_fb(src_ptr: *const c_char) -> *mut flux_buffer_t {
+    let src_bytes = CStr::from_ptr(src_ptr).to_bytes(); // Unsafe
     let src = String::from_utf8(src_bytes.to_vec()).unwrap();
     let mut p = Parser::new(&src);
     let file = p.parse_file(String::from(""));
@@ -91,12 +100,17 @@ pub extern "C" fn flux_parse_fb(src_ptr: *const c_char) -> *mut flux_buffer_t {
     }
 }
 
+/// # Safety
+///
+/// This function is unsafe because it takes a dereferences raw pointers passed
+/// in as parameters. For example, if that pointer is NULL, undefined behavior
+/// could occur.
 #[no_mangle]
-pub extern "C" fn flux_ast_marshal_json(
+pub unsafe extern "C" fn flux_ast_marshal_json(
     ast: *mut flux_ast_t,
     buf: *mut flux_buffer_t,
 ) -> *mut flux_error_t {
-    let self_ = unsafe { &*(ast as *mut ast::File) } as &ast::File;
+    let self_ = &*(ast as *mut ast::File) as &ast::File; // Unsafe
     let data = match serde_json::to_vec(self_) {
         Ok(v) => v,
         Err(err) => {
@@ -105,7 +119,7 @@ pub extern "C" fn flux_ast_marshal_json(
         }
     };
 
-    let buffer = unsafe { &mut *buf };
+    let buffer = &mut *buf; // Unsafe
     buffer.len = data.len();
     buffer.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
     std::ptr::null_mut()
@@ -118,9 +132,12 @@ pub extern "C" fn flux_error_str(err: *mut flux_error_t) -> *mut c_char {
     s.into_raw()
 }
 
+/// # Safety
+///
+/// This function is unsafe because improper use may lead to memory problems.
+/// For example, a double-free may occur if the function is called twice on
+/// the same raw pointer.
 #[no_mangle]
-pub extern "C" fn flux_free(err: *mut c_void) {
-    unsafe {
-        let _ = Box::from_raw(err);
-    }
+pub unsafe extern "C" fn flux_free(err: *mut c_void) {
+    Box::from_raw(err);
 }
