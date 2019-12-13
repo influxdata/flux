@@ -362,10 +362,9 @@ impl Parser<'_> {
         let mut kinds = Vec::new();
         loop {
             let next_token = self.peek();
-            if next_token.token_type != TokenType::COLON {
-                if next_token.token_type != TokenType::PLUS {
-                    break;
-                }
+            if next_token.token_type != TokenType::COLON && next_token.token_type != TokenType::PLUS
+            {
+                break;
             }
             self.next();
             let kind = self.parse_kind();
@@ -572,7 +571,7 @@ impl Parser<'_> {
                 retn: return_val,
             })))
         } else {
-            return Err("Function must have a valid return type");
+            Err("Function must have a valid return type")
         }
     }
 

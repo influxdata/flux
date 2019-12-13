@@ -92,7 +92,7 @@ impl Fresh for MonoType {
 
 impl Fresh for Tvar {
     fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
-        *sub.entry(self).or_insert(f.fresh())
+        *sub.entry(self).or_insert_with(|| f.fresh())
     }
 }
 

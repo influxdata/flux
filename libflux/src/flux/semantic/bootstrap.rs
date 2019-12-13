@@ -66,7 +66,7 @@ impl From<&str> for Error {
     }
 }
 
-#[allow(dead_code)]
+#[allow(clippy::type_complexity)]
 // Infer the types of the standard library returning two importers, one for the prelude
 // and one for the standard library, as well as a type variable fresher.
 pub fn infer_stdlib() -> Result<
@@ -87,6 +87,7 @@ pub fn infer_stdlib() -> Result<
     Ok((prelude, importer, f))
 }
 
+#[allow(clippy::type_complexity)]
 fn builtin_types() -> Result<(HashMap<String, HashMap<String, PolyType>>, Fresher), Error> {
     let mut tv = Tvar(0);
     let mut ty = HashMap::new();
@@ -100,7 +101,7 @@ fn builtin_types() -> Result<(HashMap<String, HashMap<String, PolyType>>, Freshe
         }
 
         ty.entry(path.join("/"))
-            .or_insert(HashMap::new())
+            .or_insert_with(HashMap::new)
             .insert(name.to_string(), expr);
     }
     Ok((ty, Fresher::from(tv.0 + 1)))
@@ -432,14 +433,14 @@ mod tests {
             String::from("a") => parse_string("a.flux", a),
             String::from("b") => parse_string("b.flux", b),
         };
-        let want_err = dependencies("b", &files, Vec::new(), HashSet::new(), HashSet::new())
+        let got_err = dependencies("b", &files, Vec::new(), HashSet::new(), HashSet::new())
             .expect_err("expected cyclic dependency error");
 
         assert_eq!(
             Error {
                 msg: r#"package "b" depends on itself"#.to_string()
             },
-            want_err
+            got_err
         );
     }
 }

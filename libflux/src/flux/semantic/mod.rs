@@ -9,11 +9,9 @@ pub mod bootstrap;
 pub mod env;
 pub mod fresh;
 pub mod nodes;
+pub mod parser;
 pub mod types;
 pub mod walk;
-
-#[allow(dead_code)]
-pub mod parser;
 
 #[cfg(test)]
 mod tests;
