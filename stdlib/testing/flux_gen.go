@@ -255,7 +255,6 @@ var pkgAST = &ast.Package{
 									Name: "csv",
 								},
 							}},
-							With: nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Errors: nil,
@@ -500,7 +499,6 @@ var pkgAST = &ast.Package{
 									Name: "csv",
 								},
 							}},
-							With: nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Errors: nil,
@@ -1108,7 +1106,6 @@ var pkgAST = &ast.Package{
 											},
 										},
 									}},
-									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -1509,7 +1506,6 @@ var pkgAST = &ast.Package{
 													Value: "want",
 												},
 											}},
-											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
 											Errors: nil,
@@ -1684,7 +1680,6 @@ var pkgAST = &ast.Package{
 													Value: "got",
 												},
 											}},
-											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
 											Errors: nil,
@@ -1859,7 +1854,6 @@ var pkgAST = &ast.Package{
 													Value: "diff",
 												},
 											}},
-											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
 											Errors: nil,
@@ -1897,7 +1891,6 @@ var pkgAST = &ast.Package{
 									},
 								},
 							}},
-							With: nil,
 						},
 						BaseNode: ast.BaseNode{
 							Errors: nil,
@@ -2107,7 +2100,6 @@ var pkgAST = &ast.Package{
 												Name: "case",
 											},
 										}},
-										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Errors: nil,
