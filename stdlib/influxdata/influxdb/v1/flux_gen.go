@@ -392,7 +392,6 @@ var pkgAST = &ast.Package{
 									Value: "_value",
 								},
 							}},
-							With: nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Errors: nil,
@@ -605,7 +604,6 @@ var pkgAST = &ast.Package{
 													Name: "bucket",
 												},
 											}},
-											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
 											Errors: nil,
@@ -726,7 +724,6 @@ var pkgAST = &ast.Package{
 													Name: "start",
 												},
 											}},
-											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
 											Errors: nil,
@@ -848,7 +845,6 @@ var pkgAST = &ast.Package{
 												Name: "predicate",
 											},
 										}},
-										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Errors: nil,
@@ -987,7 +983,6 @@ var pkgAST = &ast.Package{
 											}},
 										},
 									}},
-									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -1161,7 +1156,6 @@ var pkgAST = &ast.Package{
 									Name: "tag",
 								},
 							}},
-							With: nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Errors: nil,
@@ -1444,7 +1438,7 @@ var pkgAST = &ast.Package{
 								},
 							},
 						},
-						Operator: 6,
+						Operator: 4,
 					},
 				}},
 			},
@@ -1738,7 +1732,7 @@ var pkgAST = &ast.Package{
 											Name: "_measurement",
 										},
 									},
-									Operator: 17,
+									Operator: 14,
 									Right: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
@@ -1796,7 +1790,6 @@ var pkgAST = &ast.Package{
 								}},
 							},
 						}},
-						With: nil,
 					}},
 					BaseNode: ast.BaseNode{
 						Errors: nil,
@@ -2064,7 +2057,6 @@ var pkgAST = &ast.Package{
 													Name: "bucket",
 												},
 											}},
-											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
 											Errors: nil,
@@ -2185,7 +2177,6 @@ var pkgAST = &ast.Package{
 													Name: "start",
 												},
 											}},
-											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
 											Errors: nil,
@@ -2307,7 +2298,6 @@ var pkgAST = &ast.Package{
 												Name: "predicate",
 											},
 										}},
-										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Errors: nil,
@@ -2498,7 +2488,6 @@ var pkgAST = &ast.Package{
 										}},
 									},
 								}},
-								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
 								Errors: nil,
@@ -2798,7 +2787,7 @@ var pkgAST = &ast.Package{
 								},
 							},
 						},
-						Operator: 6,
+						Operator: 4,
 					},
 				}},
 			},
@@ -3040,7 +3029,7 @@ var pkgAST = &ast.Package{
 											Name: "_measurement",
 										},
 									},
-									Operator: 17,
+									Operator: 14,
 									Right: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
@@ -3098,7 +3087,6 @@ var pkgAST = &ast.Package{
 								}},
 							},
 						}},
-						With: nil,
 					}},
 					BaseNode: ast.BaseNode{
 						Errors: nil,
@@ -3378,7 +3366,6 @@ var pkgAST = &ast.Package{
 								Value: "_measurement",
 							},
 						}},
-						With: nil,
 					}},
 					BaseNode: ast.BaseNode{
 						Errors: nil,
