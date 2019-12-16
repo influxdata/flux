@@ -13,7 +13,7 @@ Questions about Flux? Ask our [InfluxData Community](https://community.influxdat
    * Whether Flux was installed from a package or built from source
    * Test cases, if applicable, to demonstrate the issue
    
-        **_Tip_**: The easier it is for us to reproduce the bug, the faster we can fix it. For handy bug reporting tips, check out [Simon Tatham's essay "How to Report Bugs Effectively."](http://www.chiark.greenend.org.uk/~sgtatham/bugs.html)
+    **_Tip_**: The easier it is for us to reproduce the bug, the faster we can fix it. For handy bug reporting tips, check out [Simon Tatham's essay "How to Report Bugs Effectively."](http://www.chiark.greenend.org.uk/~sgtatham/bugs.html)
 
 ## Request a feature
 

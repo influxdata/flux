@@ -25,8 +25,10 @@ import "testing"
 
 ```
 
-- Set this option to a distant future so that queries based on ```now()``` will be consistent
-```option now = () => (2030-01-01T00:00:00Z)```
+- Fix the time of execution for consistent results across multiple test runs:
+```
+option now = () => (2030-01-01T00:00:00Z)
+```
 
 - In the correct format, copy the data from another test, or run a query via HTTP using `curl` 
 ```
@@ -41,7 +43,7 @@ inData = "
 ```
 
 - To generate output data do one of the following
-* Run the utility [here](../cmd/refactortests) to help generate the outData.  
+* Run the utility [here](../internal/cmd/refactortests) to help generate the outData.  
 * Build data manually.  
 ```
 outData = "
@@ -53,10 +55,10 @@ outData = "
 "
 ```
 
-- The following code is the actual test.  The query inputs tables with inData and outputs equivalent tables with outDtata.
+- The following code is the actual test.  The query inputs tables with inData and outputs equivalent tables with outData.
 
 ```
-// ]This query is source-independent. The test framework will gather the inData and outData into tables and then execute this function on them.  
+// This query is source-independent. The test framework will gather the inData and outData into tables and then execute this function on them.  
 simple_max = (table=<-) =>
 	table
 		|> range(start: 2018-04-17T00:00:00Z)
