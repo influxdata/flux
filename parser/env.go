@@ -9,6 +9,8 @@ const (
 	parserTypeRust       = "rust"
 )
 
+var cachedUseRustParser = os.Getenv(fluxParserTypeEnvVar) == parserTypeRust
+
 func useRustParser() bool {
-	return os.Getenv(fluxParserTypeEnvVar) == parserTypeRust
+	return cachedUseRustParser
 }

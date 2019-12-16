@@ -16,3 +16,7 @@ func parseFile(f *token.File, src []byte) (*ast.File, error) {
 	}
 	return parser.ParseFile(f, src), nil
 }
+
+func isLibfluxBuild() bool {
+	return false
+}
