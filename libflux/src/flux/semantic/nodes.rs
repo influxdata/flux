@@ -13,7 +13,6 @@ use crate::ast;
 use crate::semantic::infer;
 use crate::semantic::types;
 use crate::semantic::{
-    analyze::SemanticError,
     env::Environment,
     fresh::Fresher,
     import::Importer,
@@ -54,9 +53,15 @@ impl From<types::Error> for Error {
     }
 }
 
-impl From<SemanticError> for Error {
-    fn from(err: SemanticError) -> Error {
-        Error { msg: err }
+impl From<String> for Error {
+    fn from(msg: String) -> Error {
+        Error { msg }
+    }
+}
+
+impl From<Error> for String {
+    fn from(err: Error) -> String {
+        err.to_string()
     }
 }
 
@@ -349,7 +354,11 @@ impl File {
 
         for dec in &self.imports {
             let path = &dec.path.value;
-            let name = pkg_name_from_path(&path);
+
+            let name = match &dec.alias {
+                None => path.rsplitn(2, '/').collect::<Vec<&str>>()[0],
+                Some(id) => &id.name[..],
+            };
 
             imports.push(name);
 
@@ -415,10 +424,6 @@ pub struct ImportDeclaration {
 
     pub alias: Option<Identifier>,
     pub path: StringLit,
-}
-
-fn pkg_name_from_path(path: &str) -> &str {
-    path.rsplitn(2, '/').next().unwrap()
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -1330,14 +1335,12 @@ impl UnaryExpr {
             ast::Operator::ExistsOperator => {
                 Constraints::from(Constraint::Equal(self.typ.clone(), MonoType::Bool))
             }
-            ast::Operator::AdditionOperator => Constraints::from(vec![
-                Constraint::Equal(self.argument.type_of().clone(), self.typ.clone()),
-                Constraint::Kind(self.argument.type_of().clone(), Kind::Addable),
-            ]),
-            ast::Operator::SubtractionOperator => Constraints::from(vec![
-                Constraint::Equal(self.argument.type_of().clone(), self.typ.clone()),
-                Constraint::Kind(self.argument.type_of().clone(), Kind::Subtractable),
-            ]),
+            ast::Operator::AdditionOperator | ast::Operator::SubtractionOperator => {
+                Constraints::from(vec![
+                    Constraint::Equal(self.argument.type_of().clone(), self.typ.clone()),
+                    Constraint::Kind(self.argument.type_of().clone(), Kind::Signed),
+                ])
+            }
             _ => return Err(Error::unsupported_unary_operator(&self.operator)),
         };
         Ok((env, acons + cons))
@@ -1603,136 +1606,10 @@ pub fn convert_duration(duration: &Vec<ast::Duration>) -> std::result::Result<Du
 mod tests {
     use super::*;
     use crate::ast;
-    use crate::parser::parse_string;
-    use crate::semantic::analyze::analyze_with;
-    use crate::semantic::import::Importer;
-    use crate::semantic::types::{MonoType, PolyType, Tvar};
+    use crate::semantic::types::{MonoType, Tvar};
     use crate::semantic::walk::{walk, Node};
     use maplit::hashmap;
-    use std::collections::HashMap;
     use std::rc::Rc;
-
-    struct TestImporter {
-        imports: HashMap<String, PolyType>,
-    }
-
-    impl Importer for TestImporter {
-        fn import(&self, name: &str) -> Option<&PolyType> {
-            self.imports.get(name)
-        }
-    }
-
-    #[test]
-    fn test_infer_instantiation() {
-        let src = r#"
-            x = f
-            y = f
-            z = a
-        "#;
-
-        // This environment represents our prelude
-        //
-        //     a = 5
-        //     f = (a, b) => 2 * (a + b)
-        //
-        let env = Environment::from(maplit::hashmap! {
-            // a = 5
-            String::from("a") => PolyType {
-                vars: Vec::new(),
-                cons: HashMap::new(),
-                expr: MonoType::Int,
-            },
-            // f = (a, b) => 2 * (a + b)
-            String::from("f") => PolyType {
-                vars: vec![Tvar(0)],
-                cons: maplit::hashmap! { Tvar(0) => vec![Kind::Addable, Kind::Divisible]},
-                expr: MonoType::Fun(Box::new(types::Function {
-                    req: maplit::hashmap! {
-                        String::from("a") => MonoType::Var(Tvar(0)),
-                        String::from("b") => MonoType::Var(Tvar(0)),
-                    },
-                    opt: HashMap::new(),
-                    pipe: None,
-                    retn: MonoType::Var(Tvar(0)),
-                })),
-            },
-        });
-
-        let file = parse_string("file", src);
-
-        let ast = ast::Package {
-            base: file.base.clone(),
-            path: "path/to/pkg".to_string(),
-            package: "main".to_string(),
-            files: vec![file],
-        };
-
-        let mut f: Fresher = 1.into();
-        let mut pkg = analyze_with(ast, &mut f).unwrap();
-
-        let (env, _) = infer_pkg_types(&mut pkg, env, &mut f, &None, &None).unwrap();
-
-        let normalized: HashMap<String, PolyType> = env
-            .values
-            .into_iter()
-            .map(|(k, v)| (k, v.fresh(&mut Fresher::new())))
-            .collect();
-
-        assert_eq!(
-            normalized,
-            maplit::hashmap! {
-                String::from("f") => PolyType {
-                    vars: vec![Tvar(0)],
-                    cons: maplit::hashmap! { Tvar(0) => vec![Kind::Addable, Kind::Divisible]},
-                    expr: MonoType::Fun(Box::new(types::Function {
-                        req: maplit::hashmap! {
-                            String::from("a") => MonoType::Var(Tvar(0)),
-                            String::from("b") => MonoType::Var(Tvar(0)),
-                        },
-                        opt: HashMap::new(),
-                        pipe: None,
-                        retn: MonoType::Var(Tvar(0)),
-                    })),
-                },
-                String::from("a") => PolyType {
-                    vars: Vec::new(),
-                    cons: HashMap::new(),
-                    expr: MonoType::Int,
-                },
-                String::from("x") => PolyType {
-                    vars: vec![Tvar(0)],
-                    cons: maplit::hashmap! { Tvar(0) => vec![Kind::Addable, Kind::Divisible]},
-                    expr: MonoType::Fun(Box::new(types::Function {
-                        req: maplit::hashmap! {
-                            String::from("a") => MonoType::Var(Tvar(0)),
-                            String::from("b") => MonoType::Var(Tvar(0)),
-                        },
-                        opt: HashMap::new(),
-                        pipe: None,
-                        retn: MonoType::Var(Tvar(0)),
-                    })),
-                },
-                String::from("y") => PolyType {
-                    vars: vec![Tvar(0)],
-                    cons: maplit::hashmap! { Tvar(0) => vec![Kind::Addable, Kind::Divisible]},
-                    expr: MonoType::Fun(Box::new(types::Function {
-                        req: maplit::hashmap! {
-                            String::from("a") => MonoType::Var(Tvar(0)),
-                            String::from("b") => MonoType::Var(Tvar(0)),
-                        },
-                        opt: HashMap::new(),
-                        pipe: None,
-                        retn: MonoType::Var(Tvar(0)),
-                    })),
-                },
-                String::from("z") => PolyType {
-                    vars: Vec::new(),
-                    cons: HashMap::new(),
-                    expr: MonoType::Int,
-                },
-            }
-        );
-    }
 
     #[test]
     fn duration_conversion_ok() {

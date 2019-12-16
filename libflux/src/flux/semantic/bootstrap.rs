@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use crate::ast;
 use crate::parser;
 use crate::semantic::analyze::analyze_file;
+use crate::semantic::builtins::builtins;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
@@ -13,29 +14,136 @@ use crate::semantic::infer;
 use crate::semantic::infer::Constraints;
 use crate::semantic::nodes;
 use crate::semantic::nodes::infer_file;
+use crate::semantic::parser::parse;
 use crate::semantic::sub::Substitutable;
 use crate::semantic::types;
-use crate::semantic::types::{MonoType, PolyType, Property, Row};
+use crate::semantic::types::{MaxTvar, MonoType, PolyType, Property, Row, Tvar};
 
 use walkdir::WalkDir;
 
 const PRELUDE: [&str; 2] = ["universe", "influxdata/influxdb"];
 
-type Error = String;
+#[derive(Debug, PartialEq)]
+pub struct Error {
+    pub msg: String,
+}
+
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Error {
+        Error {
+            msg: format!("{:?}", err),
+        }
+    }
+}
 
 impl From<nodes::Error> for Error {
     fn from(err: nodes::Error) -> Error {
-        err.to_string()
+        Error {
+            msg: err.to_string(),
+        }
     }
 }
 
 impl From<types::Error> for Error {
     fn from(err: types::Error) -> Error {
-        err.to_string()
+        Error {
+            msg: err.to_string(),
+        }
     }
 }
 
-#[allow(dead_code)]
+impl From<String> for Error {
+    fn from(msg: String) -> Error {
+        Error { msg }
+    }
+}
+
+impl From<&str> for Error {
+    fn from(msg: &str) -> Error {
+        Error {
+            msg: msg.to_string(),
+        }
+    }
+}
+
+#[allow(clippy::type_complexity)]
+// Infer the types of the standard library returning two importers, one for the prelude
+// and one for the standard library, as well as a type variable fresher.
+pub fn infer_stdlib() -> Result<
+    (
+        HashMap<String, PolyType>,
+        HashMap<String, PolyType>,
+        Fresher,
+    ),
+    Error,
+> {
+    let (builtins, mut f) = builtin_types()?;
+
+    let files = file_map(parse_flux_files("../../../stdlib")?);
+
+    let (prelude, importer) = infer_pre(&mut f, &files, &builtins)?;
+    let importer = infer_std(&mut f, &files, &builtins, prelude.clone(), importer)?;
+
+    Ok((prelude, importer, f))
+}
+
+#[allow(clippy::type_complexity)]
+fn builtin_types() -> Result<(HashMap<String, HashMap<String, PolyType>>, Fresher), Error> {
+    let mut tv = Tvar(0);
+    let mut ty = HashMap::new();
+    for (mut path, expr) in builtins().iter() {
+        let name = path.pop().unwrap();
+        let expr = parse(expr)?;
+
+        let tvar = expr.max_tvar();
+        if tvar > tv {
+            tv = tvar;
+        }
+
+        ty.entry(path.join("/"))
+            .or_insert_with(HashMap::new)
+            .insert(name.to_string(), expr);
+    }
+    Ok((ty, Fresher::from(tv.0 + 1)))
+}
+
+#[allow(clippy::type_complexity)]
+fn infer_pre<I: Importer>(
+    f: &mut Fresher,
+    files: &HashMap<String, ast::File>,
+    builtin: &HashMap<String, I>,
+) -> Result<(HashMap<String, PolyType>, HashMap<String, PolyType>), Error> {
+    let mut prelude = HashMap::new();
+    let mut imports = HashMap::new();
+    for name in &PRELUDE {
+        let (types, importer) = infer_pkg(name, f, files, builtin, HashMap::new(), imports)?;
+        for (k, v) in types {
+            prelude.insert(k, v);
+        }
+        imports = importer;
+    }
+    Ok((prelude, imports))
+}
+
+#[allow(clippy::type_complexity)]
+fn infer_std<I: Importer>(
+    f: &mut Fresher,
+    files: &HashMap<String, ast::File>,
+    builtin: &HashMap<String, I>,
+    prelude: HashMap<String, PolyType>,
+    mut imports: HashMap<String, PolyType>,
+) -> Result<HashMap<String, PolyType>, Error> {
+    for (path, _) in files.iter() {
+        if imports.contains_key(path) {
+            continue;
+        }
+        let (types, mut importer) = infer_pkg(path, f, files, builtin, prelude.clone(), imports)?;
+        importer.insert(path.to_string(), build_polytype(types, f)?);
+        imports = importer;
+    }
+    Ok(imports)
+}
+
 // Recursively parse all flux files within a directory.
 fn parse_flux_files(path: &str) -> io::Result<Vec<ast::File>> {
     let mut files = Vec::new();
@@ -57,7 +165,6 @@ fn parse_flux_files(path: &str) -> io::Result<Vec<ast::File>> {
     Ok(files)
 }
 
-#[allow(dead_code)]
 // Associates an import path with each file
 fn file_map(files: Vec<ast::File>) -> HashMap<String, ast::File> {
     files.into_iter().fold(HashMap::new(), |mut acc, file| {
@@ -87,11 +194,15 @@ fn dependencies<'a>(
     mut done: HashSet<&'a str>,
 ) -> Result<(Vec<&'a str>, HashSet<&'a str>, HashSet<&'a str>), Error> {
     if seen.contains(name) && !done.contains(name) {
-        Err(format!(r#"package "{}" depends on itself"#, name))
+        Err(Error {
+            msg: format!(r#"package "{}" depends on itself"#, name),
+        })
     } else {
         seen.insert(name);
         match pkgs.get(name) {
-            None => Err(format!(r#"package "{}" not found"#, name)),
+            None => Err(Error {
+                msg: format!(r#"package "{}" not found"#, name),
+            }),
             Some(file) => {
                 for name in imports(file) {
                     let (x, y, z) = dependencies(name, pkgs, deps, seen, done)?;
@@ -136,25 +247,6 @@ fn build_row(from: HashMap<String, PolyType>, f: &mut Fresher) -> (Row, Constrai
     (r, cons)
 }
 
-#[allow(dead_code)]
-#[allow(clippy::type_complexity)]
-fn infer_prelude<I: Importer>(
-    f: &mut Fresher,
-    files: &HashMap<String, ast::File>,
-    builtin: &HashMap<&str, I>,
-) -> Result<(HashMap<String, PolyType>, HashMap<String, PolyType>), Error> {
-    let mut prelude = HashMap::new();
-    let mut imports = HashMap::new();
-    for name in &PRELUDE {
-        let (types, importer) = infer_pkg(name, f, files, builtin, HashMap::new(), imports)?;
-        for (k, v) in types {
-            prelude.insert(k, v);
-        }
-        imports = importer;
-    }
-    Ok((prelude, imports))
-}
-
 // Infer the types in a package(file), returning a hash map containing
 // the inferred types along with a possibly updated map of package imports.
 //
@@ -163,7 +255,7 @@ fn infer_pkg<I: Importer>(
     name: &str,                         // name of package to infer
     f: &mut Fresher,                    // type variable fresher
     files: &HashMap<String, ast::File>, // files available for inference
-    builtin: &HashMap<&str, I>,         // builtin types
+    builtin: &HashMap<String, I>,       // builtin types
     prelude: HashMap<String, PolyType>, // prelude types
     imports: HashMap<String, PolyType>, // types available for import
 ) -> Result<
@@ -183,7 +275,9 @@ fn infer_pkg<I: Importer>(
         if imports.import(pkg).is_none() {
             let file = files.get(pkg);
             if file.is_none() {
-                return Err(format!(r#"package "{}" not found"#, pkg));
+                return Err(Error {
+                    msg: format!(r#"package "{}" not found"#, pkg),
+                });
             }
             let file = file.unwrap().to_owned();
 
@@ -213,7 +307,9 @@ fn infer_pkg<I: Importer>(
 
     let file = files.get(name);
     if file.is_none() {
-        return Err(format!("package '{}' not found", name));
+        return Err(Error {
+            msg: format!("package '{}' not found", name),
+        });
     }
     let file = file.unwrap().to_owned();
 
@@ -248,7 +344,7 @@ mod tests {
     use crate::semantic::parser::parse;
 
     #[test]
-    fn infer_program() {
+    fn infer_program() -> Result<(), Error> {
         let a = r#"
             f = (x) => x
         "#;
@@ -270,8 +366,8 @@ mod tests {
             String::from("c") => parse_string("c.flux", c),
         };
         let builtins = maplit::hashmap! {
-            "b" => Environment::from(maplit::hashmap! {
-                String::from("x") => parse("forall [] int").unwrap(),
+            String::from("b") => Environment::from(maplit::hashmap! {
+                String::from("x") => parse("forall [] int")?,
             }),
         };
         let (types, imports) = infer_pkg(
@@ -281,19 +377,34 @@ mod tests {
             &builtins,
             HashMap::new(),
             HashMap::new(),
-        )
-        .unwrap();
+        )?;
 
         let want = maplit::hashmap! {
-            String::from("z") => parse("forall [] int").unwrap(),
+            String::from("z") => parse("forall [] int")?,
         };
-        assert_eq!(want, types);
+        if want != types {
+            return Err(Error {
+                msg: format!(
+                    "unexpected inference result:\n\nwant: {:?}\n\ngot: {:?}",
+                    want, types
+                ),
+            });
+        }
 
         let want = maplit::hashmap! {
-            String::from("a") => parse("forall [t0] {f: (x: t0) -> t0}").unwrap(),
-            String::from("b") => parse("forall [] {x: int | y: int}").unwrap(),
+            String::from("a") => parse("forall [t0] {f: (x: t0) -> t0}")?,
+            String::from("b") => parse("forall [] {x: int | y: int}")?,
         };
-        assert_eq!(want, imports);
+        if want != imports {
+            return Err(Error {
+                msg: format!(
+                    "unexpected type importer:\n\nwant: {:?}\n\ngot: {:?}",
+                    want, types
+                ),
+            });
+        }
+
+        Ok(())
     }
 
     #[test]
@@ -322,9 +433,14 @@ mod tests {
             String::from("a") => parse_string("a.flux", a),
             String::from("b") => parse_string("b.flux", b),
         };
+        let got_err = dependencies("b", &files, Vec::new(), HashSet::new(), HashSet::new())
+            .expect_err("expected cyclic dependency error");
+
         assert_eq!(
-            Err(r#"package "b" depends on itself"#.to_string()),
-            dependencies("b", &files, Vec::new(), HashSet::new(), HashSet::new(),),
+            Error {
+                msg: r#"package "b" depends on itself"#.to_string()
+            },
+            got_err
         );
     }
 }

@@ -587,33 +587,6 @@ fn array_lit() {
     test_infer_err! {
         src: "a = [1, 1.1]",
     }
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] t1",
-    //     ],
-    //     src: r#"
-    //            c = [a, b]
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] t3",
-    //         "b" => "forall [] t3",
-    //         "c" => "forall [] [t3]",
-    //     ],
-    // }
-    // test_infer! {
-    //     env: map![
-    //         "a" => "forall [] t0",
-    //         "b" => "forall [] int",
-    //     ],
-    //     src: r#"
-    //            c = [a, b]
-    //        "#,
-    //     exp: map![
-    //         "a" => "forall [] int",
-    //         "c" => "forall [] [int]",
-    //     ],
-    // }
 }
 #[test]
 fn array_expr() {
@@ -2204,15 +2177,6 @@ fn unary_add() {
     }
     test_infer! {
         env: map![
-            "a" => "forall [] uint",
-        ],
-        src: "b = +a",
-        exp: map![
-            "b" => "forall [] uint",
-        ],
-    }
-    test_infer! {
-        env: map![
             "a" => "forall [] float",
         ],
         src: "b = +a",
@@ -2222,11 +2186,11 @@ fn unary_add() {
     }
     test_infer! {
         env: map![
-            "a" => "forall [] string",
+            "a" => "forall [] duration",
         ],
         src: "b = +a",
         exp: map![
-            "b" => "forall [] string",
+            "b" => "forall [] duration",
         ],
     }
     test_infer_err! {
@@ -2237,7 +2201,13 @@ fn unary_add() {
     }
     test_infer_err! {
         env: map![
-            "a" => "forall [] duration",
+            "a" => "forall [] uint",
+        ],
+        src: "+a",
+    }
+    test_infer_err! {
+        env: map![
+            "a" => "forall [] string",
         ],
         src: "+a",
     }
@@ -2286,6 +2256,15 @@ fn unary_sub() {
             "b" => "forall [] float",
         ],
     }
+    test_infer! {
+        env: map![
+            "a" => "forall [] duration",
+        ],
+        src: "b = -a",
+        exp: map![
+            "b" => "forall [] duration",
+        ],
+    }
     test_infer_err! {
         env: map![
             "a" => "forall [] bool",
@@ -2301,12 +2280,6 @@ fn unary_sub() {
     test_infer_err! {
         env: map![
             "a" => "forall [] string",
-        ],
-        src: "-a",
-    }
-    test_infer_err! {
-        env: map![
-            "a" => "forall [] duration",
         ],
         src: "-a",
     }
@@ -3099,7 +3072,6 @@ fn function_pipe_identity() {
     }
 }
 #[test]
-#[ignore]
 fn function_default_arguments_and_pipes() {
     test_infer! {
         src: r#"
@@ -3112,7 +3084,6 @@ fn function_default_arguments_and_pipes() {
         exp: map![
             "f" => "forall [t0, t1, t2] (<-t: t1, f: (<-: t1, a: t0) -> t2, g: t0) -> t2",
             "x" => "forall [] (a: int, ?b: int, <-m: int) -> int",
-            // TODO(joshua): fix tvars permutation issue in comparison.
             "z" => "forall [t0, t1] (a: {m: t0 | t1}, ?b: float, ?c: float, <-m: float) -> {r: t0 | s: float}",
             "y" => "forall [] int",
             "v" => "forall [] {r: string | s: float}",

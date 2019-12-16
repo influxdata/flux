@@ -7,6 +7,8 @@ use crate::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 use flatbuffers;
 use std::collections::HashMap;
 
+use crate::semantic::fresh::Fresher;
+
 #[rustfmt::skip]
 use crate::semantic::types::{
     Array,
@@ -18,6 +20,12 @@ use crate::semantic::types::{
     Row,
     Tvar,
 };
+
+impl From<fb::Fresher<'_>> for Fresher {
+    fn from(f: fb::Fresher) -> Fresher {
+        Fresher::from(f.u())
+    }
+}
 
 impl From<fb::TypeEnvironment<'_>> for Option<Environment> {
     fn from(env: fb::TypeEnvironment) -> Option<Environment> {
@@ -79,6 +87,7 @@ impl From<fb::Kind> for Kind {
             fb::Kind::Equatable => Kind::Equatable,
             fb::Kind::Nullable => Kind::Nullable,
             fb::Kind::Row => Kind::Row,
+            fb::Kind::Signed => Kind::Signed,
         }
     }
 }
@@ -94,6 +103,7 @@ impl From<Kind> for fb::Kind {
             Kind::Equatable => fb::Kind::Equatable,
             Kind::Nullable => fb::Kind::Nullable,
             Kind::Row => fb::Kind::Row,
+            Kind::Signed => fb::Kind::Signed,
         }
     }
 }
@@ -218,6 +228,27 @@ impl From<fb::Argument<'_>> for Option<(String, MonoType, bool, bool)> {
     }
 }
 
+pub fn serialize<'a, 'b, T, S, F>(
+    builder: &'a mut flatbuffers::FlatBufferBuilder<'b>,
+    t: T,
+    f: F,
+) -> &'a [u8]
+where
+    F: Fn(&mut flatbuffers::FlatBufferBuilder<'b>, T) -> flatbuffers::WIPOffset<S>,
+{
+    let offset = f(builder, t);
+    builder.finish(offset, None);
+    builder.finished_data()
+}
+
+pub fn deserialize<'a, T: 'a, S>(buf: &'a [u8]) -> S
+where
+    T: flatbuffers::Follow<'a>,
+    S: std::convert::From<T::Inner>,
+{
+    flatbuffers::get_root::<T>(buf).into()
+}
+
 fn build_vec<T, S, F, B>(v: Vec<T>, b: &mut B, f: F) -> Vec<S>
 where
     F: Fn(&mut B, T) -> S,
@@ -229,7 +260,14 @@ where
     mapped
 }
 
-fn build_env<'a>(
+pub fn build_fresher<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    f: Fresher,
+) -> flatbuffers::WIPOffset<fb::Fresher<'a>> {
+    fb::Fresher::create(builder, &fb::FresherArgs { u: f.0 })
+}
+
+pub fn build_env<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     env: Environment,
 ) -> flatbuffers::WIPOffset<fb::TypeEnvironment<'a>> {
@@ -536,30 +574,11 @@ mod tests {
         WrappedStatementArgs,
     };
 
-    fn fb_serde<'a, T: 'a, S: 'a, F>(
-        fb: &'a mut flatbuffers::FlatBufferBuilder<'a>,
-        ty: T,
-        f: F,
-    ) -> S::Inner
-    where
-        F: Fn(&mut flatbuffers::FlatBufferBuilder<'a>, T) -> flatbuffers::WIPOffset<S>,
-        S: flatbuffers::Follow<'a>,
-        Option<T>: std::convert::From<S>,
-    {
-        let off = f(fb, ty);
-        fb.finish(off, None);
-        let buf = fb.finished_data();
-        flatbuffers::get_root::<S>(buf)
-    }
-
     fn test_serde(expr: &'static str) {
         let want = parser::parse(expr).unwrap();
-        let got: Option<PolyType> = fb_serde(
-            &mut flatbuffers::FlatBufferBuilder::new(),
-            want.clone(),
-            build_polytype,
-        )
-        .into();
+        let mut builder = flatbuffers::FlatBufferBuilder::new();
+        let buf = serialize(&mut builder, want.clone(), build_polytype);
+        let got = deserialize::<fb::PolyType, Option<PolyType>>(buf);
         assert_eq!(want, got.unwrap())
     }
 
@@ -574,12 +593,9 @@ mod tests {
         }
         .into();
 
-        let got: Option<Environment> = fb_serde(
-            &mut flatbuffers::FlatBufferBuilder::new(),
-            want.clone(),
-            build_env,
-        )
-        .into();
+        let mut builder = flatbuffers::FlatBufferBuilder::new();
+        let buf = serialize(&mut builder, want.clone(), build_env);
+        let got = deserialize::<fb::TypeEnvironment, Option<Environment>>(buf);
 
         assert_eq!(want, got.unwrap());
     }

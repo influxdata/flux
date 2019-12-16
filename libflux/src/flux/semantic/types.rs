@@ -1,7 +1,6 @@
-use crate::semantic::{
-    fresh::Fresher,
-    sub::{Substitutable, Substitution},
-};
+use crate::semantic::fresh::{Fresh, Fresher};
+use crate::semantic::sub::{Substitutable, Substitution};
+
 use std::{
     cmp,
     collections::{BTreeMap, BTreeSet, HashMap},
@@ -47,9 +46,20 @@ impl PartialEq for PolyType {
         let mut f = Fresher::from(max + 1);
         let mut g = Fresher::from(max + 1);
 
-        self.clone()
-            .fresh(&mut f)
-            .equal(&poly.clone().fresh(&mut g))
+        let mut a = self.clone().fresh(&mut f, &mut HashMap::new());
+        let mut b = poly.clone().fresh(&mut g, &mut HashMap::new());
+
+        a.vars.sort();
+        b.vars.sort();
+
+        for kinds in a.cons.values_mut() {
+            kinds.sort();
+        }
+        for kinds in b.cons.values_mut() {
+            kinds.sort();
+        }
+
+        a.vars == b.vars && a.cons == b.cons && a.expr == b.expr
     }
 }
 
@@ -80,44 +90,6 @@ impl MaxTvar for PolyType {
 }
 
 impl PolyType {
-    // Fresh takes a polytype and generates an equivalent polytype but with
-    // completely fresh type variables.
-    //
-    // Note in order to be sure that the retured polytype is equivalent to
-    // the one that was passed in, the fresher 'f' must generate type
-    // variables that do not exist in the given polytype. In order to ensure
-    // that this is the case, one should use a fresher that is instantiated
-    // with a type variable that is strictly greater than all other type
-    // variables in the given polytype.
-    //
-    pub fn fresh(self, f: &mut Fresher) -> Self {
-        let mut sub = HashMap::new();
-        for tv in &self.vars {
-            sub.insert(*tv, f.fresh());
-        }
-
-        let mut vars = Vec::new();
-        for tv in &self.vars {
-            vars.push(*sub.get(tv).unwrap());
-        }
-
-        let mut cons = HashMap::new();
-        for (tv, kinds) in &self.cons {
-            cons.insert(*sub.get(tv).unwrap(), kinds.to_owned());
-        }
-
-        let sub: Substitution = sub
-            .into_iter()
-            .map(|(a, b)| (a, MonoType::Var(b)))
-            .collect::<HashMap<Tvar, MonoType>>()
-            .into();
-
-        PolyType {
-            vars: vars,
-            cons: cons,
-            expr: self.expr.apply(&sub),
-        }
-    }
     fn display_constraints(cons: &HashMap<Tvar, Vec<Kind>>) -> String {
         cons.iter()
             // A BTree produces a sorted iterator for
@@ -137,24 +109,6 @@ impl PolyType {
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
             .join(" + ")
-    }
-    fn equal(&self, poly: &PolyType) -> bool {
-        self.vars == poly.vars && self.expr == poly.expr && self.cons.len() == poly.cons.len() && {
-            for (tvar, kinds) in self.cons.iter() {
-                if let Some(pkinds) = poly.cons.get(tvar) {
-                    let mut kinds = kinds.clone();
-                    let mut pkinds = pkinds.clone();
-                    kinds.sort();
-                    pkinds.sort();
-                    if kinds != pkinds {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-            }
-            true
-        }
     }
 }
 
@@ -220,6 +174,7 @@ pub enum Kind {
     Equatable,
     Nullable,
     Row,
+    Signed,
 }
 
 impl fmt::Display for Kind {
@@ -233,6 +188,7 @@ impl fmt::Display for Kind {
             Kind::Equatable => f.write_str("Equatable"),
             Kind::Nullable => f.write_str("Nullable"),
             Kind::Row => f.write_str("Row"),
+            Kind::Signed => f.write_str("Signed"),
         }
     }
 }
@@ -394,7 +350,8 @@ impl MonoType {
                 | Kind::Numeric
                 | Kind::Comparable
                 | Kind::Equatable
-                | Kind::Nullable => Ok(Substitution::empty()),
+                | Kind::Nullable
+                | Kind::Signed => Ok(Substitution::empty()),
                 _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Uint => match with {
@@ -413,7 +370,8 @@ impl MonoType {
                 | Kind::Numeric
                 | Kind::Comparable
                 | Kind::Equatable
-                | Kind::Nullable => Ok(Substitution::empty()),
+                | Kind::Nullable
+                | Kind::Signed => Ok(Substitution::empty()),
                 _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::String => match with {
@@ -423,7 +381,9 @@ impl MonoType {
                 _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Duration => match with {
-                Kind::Comparable | Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
+                Kind::Comparable | Kind::Equatable | Kind::Nullable | Kind::Signed => {
+                    Ok(Substitution::empty())
+                }
                 _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Time => match with {

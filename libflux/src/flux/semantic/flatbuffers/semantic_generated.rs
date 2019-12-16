@@ -164,10 +164,11 @@ pub mod fbsemantic {
         Equatable = 5,
         Nullable = 6,
         Row = 7,
+        Signed = 8,
     }
 
     const ENUM_MIN_KIND: u8 = 0;
-    const ENUM_MAX_KIND: u8 = 7;
+    const ENUM_MAX_KIND: u8 = 8;
 
     impl<'a> flatbuffers::Follow<'a> for Kind {
         type Inner = Self;
@@ -201,7 +202,7 @@ pub mod fbsemantic {
     }
 
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_KIND: [Kind; 8] = [
+    const ENUM_VALUES_KIND: [Kind; 9] = [
         Kind::Addable,
         Kind::Subtractable,
         Kind::Divisible,
@@ -210,10 +211,11 @@ pub mod fbsemantic {
         Kind::Equatable,
         Kind::Nullable,
         Kind::Row,
+        Kind::Signed,
     ];
 
     #[allow(non_camel_case_types)]
-    const ENUM_NAMES_KIND: [&'static str; 8] = [
+    const ENUM_NAMES_KIND: [&'static str; 9] = [
         "Addable",
         "Subtractable",
         "Divisible",
@@ -222,6 +224,7 @@ pub mod fbsemantic {
         "Equatable",
         "Nullable",
         "Row",
+        "Signed",
     ];
 
     pub fn enum_name_kind(e: Kind) -> &'static str {
@@ -777,6 +780,79 @@ pub mod fbsemantic {
         }
         pub fn column<'a>(&'a self) -> i32 {
             self.column_.from_little_endian()
+        }
+    }
+
+    pub enum FresherOffset {}
+    #[derive(Copy, Clone, Debug, PartialEq)]
+
+    pub struct Fresher<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for Fresher<'a> {
+        type Inner = Fresher<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf: buf, loc: loc },
+            }
+        }
+    }
+
+    impl<'a> Fresher<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            Fresher { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args FresherArgs,
+        ) -> flatbuffers::WIPOffset<Fresher<'bldr>> {
+            let mut builder = FresherBuilder::new(_fbb);
+            builder.add_u(args.u);
+            builder.finish()
+        }
+
+        pub const VT_U: flatbuffers::VOffsetT = 4;
+
+        #[inline]
+        pub fn u(&self) -> u64 {
+            self._tab.get::<u64>(Fresher::VT_U, Some(0)).unwrap()
+        }
+    }
+
+    pub struct FresherArgs {
+        pub u: u64,
+    }
+    impl<'a> Default for FresherArgs {
+        #[inline]
+        fn default() -> Self {
+            FresherArgs { u: 0 }
+        }
+    }
+    pub struct FresherBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> FresherBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_u(&mut self, u: u64) {
+            self.fbb_.push_slot::<u64>(Fresher::VT_U, u, 0);
+        }
+        #[inline]
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> FresherBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            FresherBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<Fresher<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
         }
     }
 
