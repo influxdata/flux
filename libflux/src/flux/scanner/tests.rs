@@ -1013,6 +1013,185 @@ fn test_scan_unread_with_newlines() {
 }
 
 #[test]
+fn test_scan_with_regex_unread() {
+    // We had a bug where calling scan_with_regex() and the next token
+    // is a '/' with no closing '/' like a regex would have, it would return
+    // incorrect token location info.
+    let text = r#"3 * / 1
+         y
+    "#;
+    let cdata = CString::new(text).expect("CString::new failed");
+    let mut s = Scanner::new(cdata);
+
+    let mut toks = vec![];
+    toks.push(s.scan()); // 3
+    toks.push(s.scan()); // *
+    toks.push(s.scan()); // /
+    s.unread();
+    toks.push(s.scan_with_regex()); // /
+    toks.push(s.scan()); // 1
+    toks.push(s.scan()); // y
+    toks.push(s.scan()); // EOF
+    assert_eq!(
+        vec![
+            Token {
+                tok: TOK_INT,
+                lit: String::from("3"),
+                start_offset: 0,
+                end_offset: 1,
+                start_pos: Position { line: 1, column: 1 },
+                end_pos: Position { line: 1, column: 2 },
+            },
+            Token {
+                tok: TOK_MUL,
+                lit: String::from("*"),
+                start_offset: 2,
+                end_offset: 3,
+                start_pos: Position { line: 1, column: 3 },
+                end_pos: Position { line: 1, column: 4 },
+            },
+            Token {
+                tok: TOK_DIV,
+                lit: String::from("/"),
+                start_offset: 4,
+                end_offset: 5,
+                start_pos: Position { line: 1, column: 5 },
+                end_pos: Position { line: 1, column: 6 },
+            },
+            Token {
+                tok: TOK_DIV,
+                lit: String::from("/"),
+                start_offset: 4,
+                end_offset: 5,
+                start_pos: Position { line: 1, column: 5 },
+                end_pos: Position { line: 1, column: 6 },
+            },
+            Token {
+                tok: TOK_INT,
+                lit: String::from("1"),
+                start_offset: 6,
+                end_offset: 7,
+                start_pos: Position { line: 1, column: 7 },
+                end_pos: Position { line: 1, column: 8 },
+            },
+            Token {
+                tok: TOK_IDENT,
+                lit: String::from("y"),
+                start_offset: 17,
+                end_offset: 18,
+                start_pos: Position {
+                    line: 2,
+                    column: 10
+                },
+                end_pos: Position {
+                    line: 2,
+                    column: 11
+                },
+            },
+            Token {
+                tok: TOK_EOF,
+                lit: String::new(),
+                start_offset: 23,
+                end_offset: 23,
+                start_pos: Position { line: 3, column: 5 },
+                end_pos: Position { line: 3, column: 5 },
+            },
+        ],
+        toks
+    );
+}
+
+#[test]
+fn test_unclosed_quote() {
+    let text = r#"x = "foo
+        bar
+        baz"#;
+    let cdata = CString::new(text).expect("CString::new failed");
+    let mut s = Scanner::new(cdata);
+    let mut toks = vec![];
+    toks.push(s.scan()); // x
+    toks.push(s.scan()); // =
+    toks.push(s.scan()); // "
+    toks.push(s.scan()); // foo
+    toks.push(s.scan()); // bar
+    toks.push(s.scan()); // baz
+    toks.push(s.scan()); // eof
+    assert_eq!(
+        vec![
+            Token {
+                tok: TOK_IDENT,
+                lit: String::from("x"),
+                start_offset: 0,
+                end_offset: 1,
+                start_pos: Position { line: 1, column: 1 },
+                end_pos: Position { line: 1, column: 2 },
+            },
+            Token {
+                tok: TOK_ASSIGN,
+                lit: String::from("="),
+                start_offset: 2,
+                end_offset: 3,
+                start_pos: Position { line: 1, column: 3 },
+                end_pos: Position { line: 1, column: 4 },
+            },
+            Token {
+                tok: TOK_QUOTE,
+                lit: String::from("\""),
+                start_offset: 4,
+                end_offset: 5,
+                start_pos: Position { line: 1, column: 5 },
+                end_pos: Position { line: 1, column: 6 },
+            },
+            Token {
+                tok: TOK_IDENT,
+                lit: String::from("foo"),
+                start_offset: 5,
+                end_offset: 8,
+                start_pos: Position { line: 1, column: 6 },
+                end_pos: Position { line: 1, column: 9 },
+            },
+            Token {
+                tok: TOK_IDENT,
+                lit: String::from("bar"),
+                start_offset: 17,
+                end_offset: 20,
+                start_pos: Position { line: 2, column: 9 },
+                end_pos: Position {
+                    line: 2,
+                    column: 12,
+                },
+            },
+            Token {
+                tok: TOK_IDENT,
+                lit: String::from("baz"),
+                start_offset: 29,
+                end_offset: 32,
+                start_pos: Position { line: 3, column: 9 },
+                end_pos: Position {
+                    line: 3,
+                    column: 12,
+                },
+            },
+            Token {
+                tok: TOK_EOF,
+                lit: String::from(""),
+                start_offset: 32,
+                end_offset: 32,
+                start_pos: Position {
+                    line: 3,
+                    column: 12
+                },
+                end_pos: Position {
+                    line: 3,
+                    column: 12
+                },
+            }
+        ],
+        toks
+    );
+}
+
+#[test]
 fn test_scan_comments() {
     let text = r#"// this is a comment.
 a

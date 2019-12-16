@@ -192,6 +192,17 @@ int scan(
     *token_start_col = ts - last_newline_before_token + 1;
 
     *token_end = te - data;
+
+    if (*last_newline > te) {
+        // te (the token end pointer) will only be less than last_newline
+        // (pointer to the last newline the scanner saw) if we are trying
+        // to find a multi-line token (either string or regex literal)
+        // but don't find the closing `/` or `"`.
+        // In that case we need to reset last_newline and cur_line.
+        *cur_line = cur_line_token_start;
+        *last_newline = last_newline_before_token;
+    }
+
     *token_end_line = *cur_line;
     *token_end_col = te - *last_newline + 1;
 

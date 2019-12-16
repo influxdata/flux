@@ -76,6 +76,16 @@ impl Scanner {
         self._scan(2)
     }
 
+    // unread will reset the Scanner to go back to the Scanner's location
+    // before the last scan_with_regex or scan call. If either of the scan_with_regex methods
+    // returned an EOF token, a call to unread will not unread the discarded whitespace.
+    // This method is a no-op if called multiple times.
+    pub fn unread(&mut self) {
+        self.p = self.checkpoint;
+        self.cur_line = self.checkpoint_line;
+        self.last_newline = self.checkpoint_last_newline;
+    }
+
     pub fn offset(&self, pos: &Position) -> u32 {
         *self.positions.get(pos).expect("position should be in map")
     }
@@ -207,16 +217,6 @@ impl Scanner {
             } => self.scan(),
             _ => t,
         }
-    }
-
-    // unread will reset the Scanner to go back to the Scanner's location
-    // before the last scan_with_regex or scan call. If either of the scan_with_regex methods
-    // returned an EOF token, a call to unread will not unread the discarded whitespace.
-    // This method is a no-op if called multiple times.
-    pub fn unread(&mut self) {
-        self.p = self.checkpoint;
-        self.cur_line = self.checkpoint_line;
-        self.last_newline = self.checkpoint_last_newline;
     }
 }
 
