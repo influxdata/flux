@@ -6825,7 +6825,6 @@ var pkgAST = &ast.Package{
 						Name: "yn",
 					},
 				}},
-				With: nil,
 			},
 		}},
 		Imports: nil,
