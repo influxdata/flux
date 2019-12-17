@@ -13,7 +13,7 @@ import (
 	gparser "github.com/influxdata/flux/internal/parser"
 	"github.com/influxdata/flux/internal/token"
 	"github.com/influxdata/flux/libflux/go/libflux"
-	//rparser "github.com/influxdata/flux/parser"
+	rparser "github.com/influxdata/flux/parser"
 )
 
 var CompareOptions = []cmp.Option{
@@ -115,18 +115,16 @@ bad_expr = 3 * + 1
 			Package: packageName,
 			Files:   []*ast.File{file},
 		}
-		//astRust := rparser.ParseSource(src)
+		astRust := rparser.ParseSource(src)
 
 		if !cmp.Equal(astFbs, astGo, CompareOptions...) {
 			t.Errorf("AST roundtrip vs. Go unexpected packages -fbs/+go:\n%s",
 				cmp.Diff(astFbs, astGo, CompareOptions...))
 		}
-		// TODO: https://github.com/influxdata/flux/issues/2187
-		// TODO: https://github.com/influxdata/flux/issues/2186
-		//if !cmp.Equal(astFbs, astRust, CompareOptions...) {
-		//	t.Errorf("AST roundtrip vs. Rust unexpected packages -fbs/+rust:\n%s",
-		//		cmp.Diff(astFbs, astRust, CompareOptions...))
-		//}
+		if !cmp.Equal(astFbs, astRust, CompareOptions...) {
+			t.Errorf("AST roundtrip vs. Rust unexpected packages -fbs/+rust:\n%s",
+				cmp.Diff(astFbs, astRust, CompareOptions...))
+		}
 	}
 }
 
