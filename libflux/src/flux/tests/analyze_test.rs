@@ -93,21 +93,24 @@ f(a: s)
                             },
                             default: None,
                         }],
-                        body: Block::Return(Expression::Binary(Box::new(BinaryExpr {
+                        body: Block::Return(ReturnStmt {
                             loc: ast::BaseNode::default().location,
-                            typ: MonoType::Var(Tvar(4)),
-                            operator: ast::Operator::AdditionOperator,
-                            left: Expression::Identifier(IdentifierExpr {
+                            argument: Expression::Binary(Box::new(BinaryExpr {
                                 loc: ast::BaseNode::default().location,
                                 typ: MonoType::Var(Tvar(4)),
-                                name: "a".to_string(),
-                            }),
-                            right: Expression::Identifier(IdentifierExpr {
-                                loc: ast::BaseNode::default().location,
-                                typ: MonoType::Var(Tvar(4)),
-                                name: "a".to_string(),
-                            }),
-                        }))),
+                                operator: ast::Operator::AdditionOperator,
+                                left: Expression::Identifier(IdentifierExpr {
+                                    loc: ast::BaseNode::default().location,
+                                    typ: MonoType::Var(Tvar(4)),
+                                    name: "a".to_string(),
+                                }),
+                                right: Expression::Identifier(IdentifierExpr {
+                                    loc: ast::BaseNode::default().location,
+                                    typ: MonoType::Var(Tvar(4)),
+                                    name: "a".to_string(),
+                                }),
+                            })),
+                        }),
                     })),
                     ast::BaseNode::default().location,
                 ))),
