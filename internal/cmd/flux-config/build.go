@@ -210,8 +210,8 @@ func runCargo(srcdir string) error {
 	cmd.Stderr = out
 	cmd.Dir = srcdir
 	if err := cmd.Run(); err != nil {
-		if r, ok := out.(io.Reader); ok {
-			_, _ = io.Copy(os.Stderr, r)
+		if !flags.Verbose {
+			_, _ = io.Copy(os.Stderr, out.(io.Reader))
 		}
 		return err
 	}
