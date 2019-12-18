@@ -471,8 +471,8 @@ func (rcv *NativeVariableAssignment) FromBuf(fb *fbsemantic.NativeVariableAssign
 	if rcv.Init, err = fromExpressionTable(fb.Init_, fb.Init_type()); err != nil {
 		return errors.Wrap(err, codes.Inherit, "NativeVariableAssignment.Init")
 	}
-	if rcv.Typ = fb.Typ(nil); rcv.Typ == nil {
-		return errors.New(codes.Internal, "NativeVariableAssignment.Typ: missing type")
+	if rcv.Typ, err = getPolyType(fb); err != nil {
+		return errors.Wrap(err, codes.Inherit, "NativeVariableAssignment.Typ")
 	}
 	return nil
 }

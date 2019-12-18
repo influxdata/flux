@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic/internal/fbsemantic"
+	"github.com/influxdata/flux/semantic/types"
 )
 
 // TODO(cwolff): There needs to be more testing here.  Once we can serialize an arbitrary semantic graph
@@ -37,10 +38,10 @@ var cmpOpts = []cmp.Option{
 	),
 	// Just ignore types when comparing against Go semantic graph, since
 	// Go does not annotate expressions nodes with types directly.
-	cmp.Transformer("", func(ty *MonoType) int {
+	cmp.Transformer("", func(ty *types.MonoType) int {
 		return 0
 	}),
-	cmp.Transformer("", func(ty *fbsemantic.PolyType) int {
+	cmp.Transformer("", func(ty *types.PolyType) int {
 		return 0
 	}),
 }
@@ -84,7 +85,7 @@ func TestDeserializeFromFlatBuffer(t *testing.T) {
 
 			// Make sure the polytype looks as expected
 			pt := got.Files[0].Body[0].(*NativeVariableAssignment).Typ
-			if diff := cmp.Diff(tc.polyType, PolyTypeToString(pt)); diff != "" {
+			if diff := cmp.Diff(tc.polyType, pt.String()); diff != "" {
 				t.Fatalf("unexpected polytype: -want/+got:\n%v", diff)
 			}
 		})
@@ -123,7 +124,7 @@ func getUnaryOpFlatBuffer() (string, []byte) {
 	id := fbsemantic.IdentifierEnd(b)
 
 	asnLoc := getFBLoc(b, "1:1", "1:9", src)
-	ty := getPolyType(b, fty)
+	ty := getFBPolyType(b, fty)
 	fbsemantic.NativeVariableAssignmentStart(b)
 	fbsemantic.NativeVariableAssignmentAddLoc(b, asnLoc)
 	fbsemantic.NativeVariableAssignmentAddTyp(b, ty)
@@ -260,7 +261,7 @@ func getFBBasicType(b *flatbuffers.Builder, t fbsemantic.Type) flatbuffers.UOffs
 	return fbsemantic.BasicEnd(b)
 }
 
-func getPolyType(b *flatbuffers.Builder, mt flatbuffers.UOffsetT) flatbuffers.UOffsetT {
+func getFBPolyType(b *flatbuffers.Builder, mt flatbuffers.UOffsetT) flatbuffers.UOffsetT {
 	fbsemantic.PolyTypeStartVarsVector(b, 0)
 	varsVec := b.EndVector(0)
 	fbsemantic.PolyTypeStartConsVector(b, 0)
