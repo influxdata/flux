@@ -743,11 +743,6 @@ func TestTableObjectCompiler(t *testing.T) {
 
 	filteredDataRaw := `#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string
 #group,false,false,true,true,false,false,false,false,true,true
-#default,_result,0,2017-10-10T00:00:00Z,2018-05-22T19:54:00Z,,,,,host.local,disk0
-,result,table,_start,_stop,_time,_value,_field,_measurement,host,name
-
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string
-#group,false,false,true,true,false,false,false,false,true,true
 #default,_result,,,,,,,,,
 ,result,table,_start,_stop,_time,_value,_field,_measurement,host,name
 ,,1,2017-10-10T00:00:00Z,2018-05-22T19:54:00Z,2018-05-22T19:53:26Z,648,io_time,diskio,host.local,disk2

@@ -543,6 +543,79 @@ func TestFilter_NewQuery(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name: "from with drop",
+			Raw:  `from(bucket:"mybucket") |> filter(fn: (r) => true, onEmpty: "drop")`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: "mybucket",
+						},
+					},
+					{
+						ID: "filter1",
+						Spec: &universe.FilterOpSpec{
+							Fn: interpreter.ResolvedFunction{
+								Fn: &semantic.FunctionExpression{
+									Block: &semantic.FunctionBlock{
+										Parameters: &semantic.FunctionParameters{
+											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+										},
+										Body: &semantic.BooleanLiteral{Value: true},
+									},
+								},
+								Scope: valuestest.NowScope(),
+							},
+							OnEmpty: "drop",
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "filter1"},
+				},
+			},
+		},
+		{
+			Name: "from with keep",
+			Raw:  `from(bucket:"mybucket") |> filter(fn: (r) => true, onEmpty: "keep")`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: "mybucket",
+						},
+					},
+					{
+						ID: "filter1",
+						Spec: &universe.FilterOpSpec{
+							Fn: interpreter.ResolvedFunction{
+								Fn: &semantic.FunctionExpression{
+									Block: &semantic.FunctionBlock{
+										Parameters: &semantic.FunctionParameters{
+											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+										},
+										Body: &semantic.BooleanLiteral{Value: true},
+									},
+								},
+								Scope: valuestest.NowScope(),
+							},
+							OnEmpty: "keep",
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "filter1"},
+				},
+			},
+		},
+		{
+			Name:    "from with invalid parameter",
+			Raw:     `from(bucket:"mybucket") |> filter(fn: (r) => true, onEmpty: "invalid")`,
+			WantErr: true,
+		},
 	}
 	for _, tc := range tests {
 		tc := tc
