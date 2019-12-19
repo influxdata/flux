@@ -451,7 +451,8 @@ pub fn builtins() -> Builtins<'static> {
                 "filter" => Node::Builtin(r#"
                     forall [t0] where t0: Row (
                         <-tables: [t0],
-                        fn: (r: t0) -> bool
+                        fn: (r: t0) -> bool,
+                        ?onEmpty: string
                     ) -> [t0]
                 "#),
                 "first" => Node::Builtin(r#"

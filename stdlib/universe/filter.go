@@ -25,7 +25,8 @@ import (
 const FilterKind = "filter"
 
 type FilterOpSpec struct {
-	Fn interpreter.ResolvedFunction `json:"fn"`
+	Fn      interpreter.ResolvedFunction `json:"fn"`
+	OnEmpty string                       `json:"onEmpty,omitempty"`
 }
 
 func init() {
@@ -38,6 +39,7 @@ func init() {
 				Required: semantic.LabelSet{"r"},
 				Return:   semantic.Bool,
 			}),
+			"onEmpty": semantic.String,
 		},
 		[]string{"fn"},
 	)
@@ -60,13 +62,26 @@ func createFilterOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		return nil, err
 	}
 
+	onEmpty, ok, err := args.GetString("onEmpty")
+	if err != nil {
+		return nil, err
+	} else if ok {
+		// Check that the string is ok.
+		switch onEmpty {
+		case "keep", "drop":
+		default:
+			return nil, errors.Newf(codes.Invalid, "onEmpty must be keep or drop, was %q", onEmpty)
+		}
+	}
+
 	fn, err := interpreter.ResolveFunction(f)
 	if err != nil {
 		return nil, err
 	}
 
 	return &FilterOpSpec{
-		Fn: fn,
+		Fn:      fn,
+		OnEmpty: onEmpty,
 	}, nil
 }
 func newFilterOp() flux.OperationSpec {
@@ -79,7 +94,8 @@ func (s *FilterOpSpec) Kind() flux.OperationKind {
 
 type FilterProcedureSpec struct {
 	plan.DefaultCost
-	Fn interpreter.ResolvedFunction
+	Fn              interpreter.ResolvedFunction
+	KeepEmptyTables bool
 }
 
 func newFilterProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -88,8 +104,14 @@ func newFilterProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Pro
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 
+	onEmpty := spec.OnEmpty
+	if onEmpty == "" {
+		onEmpty = "drop"
+	}
+
 	return &FilterProcedureSpec{
-		Fn: spec.Fn,
+		Fn:              spec.Fn,
+		KeepEmptyTables: onEmpty == "keep",
 	}, nil
 }
 
@@ -128,10 +150,11 @@ func (s *FilterProcedureSpec) PlanDetails() string {
 }
 
 type filterTransformation struct {
-	d     *execute.PassthroughDataset
-	ctx   context.Context
-	fn    *execute.RowPredicateFn
-	alloc *memory.Allocator
+	d               *execute.PassthroughDataset
+	ctx             context.Context
+	fn              *execute.RowPredicateFn
+	keepEmptyTables bool
+	alloc           *memory.Allocator
 }
 
 func NewFilterTransformation(ctx context.Context, spec *FilterProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
@@ -141,10 +164,11 @@ func NewFilterTransformation(ctx context.Context, spec *FilterProcedureSpec, id 
 	}
 
 	t := &filterTransformation{
-		d:     execute.NewPassthroughDataset(id),
-		fn:    fn,
-		ctx:   ctx,
-		alloc: alloc,
+		d:               execute.NewPassthroughDataset(id),
+		fn:              fn,
+		ctx:             ctx,
+		keepEmptyTables: spec.KeepEmptyTables,
+		alloc:           alloc,
 	}
 	return t, t.d, nil
 }
@@ -189,6 +213,12 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 
 		if !v {
 			tbl.Done()
+			if !t.keepEmptyTables {
+				return nil
+			}
+			// If we are supposed to keep empty tables, produce
+			// an empty table with this group key and send it
+			// to the next transformation to process it.
 			tbl = execute.NewEmptyTable(tbl.Key(), tbl.Cols())
 		}
 		return t.d.Process(tbl)
@@ -198,6 +228,9 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	table, err := t.filterTable(tbl, record, properties)
 	if err != nil {
 		return err
+	} else if table.Empty() && !t.keepEmptyTables {
+		// Drop the table.
+		return nil
 	}
 	return t.d.Process(table)
 }
