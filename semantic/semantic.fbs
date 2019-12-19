@@ -101,6 +101,8 @@ union Statement {
   BuiltinStatement,
   TestStatement,
   ExpressionStatement,
+  NativeVariableAssignment,
+  MemberAssignment,
   ReturnStatement,
 }
 

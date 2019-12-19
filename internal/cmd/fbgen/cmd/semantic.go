@@ -494,6 +494,22 @@ func doPointer(o types.Object, field *types.Var) ([]jen.Code, error) {
 					jen.Id("rcv").Dot(field.Name()),
 				),
 			)
+		case "MonoType":
+			cs = append(cs,
+				ifErrorPropagate(
+					jen.Id("getMonoType").Params(jen.Id("fb")),
+					fieldForError,
+					jen.Id("rcv").Dot(field.Name()),
+				),
+			)
+		case "PolyType":
+			cs = append(cs,
+				ifErrorPropagate(
+					jen.Id("getPolyType").Params(jen.Id("fb")),
+					fieldForError,
+					jen.Id("rcv").Dot(field.Name()),
+				),
+			)
 		default:
 			var err error
 			if cs, err = handleMissingf(cs, "unknown pointer to named type: %#v", n); err != nil {

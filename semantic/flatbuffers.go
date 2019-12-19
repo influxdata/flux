@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic/internal/fbsemantic"
+	"github.com/influxdata/flux/semantic/types"
 )
 
 func DeserializeFromFlatBuffer(buf []byte) (*Package, error) {
@@ -68,6 +69,14 @@ func fromWrappedStatement(fb *fbsemantic.WrappedStatement) (Statement, error) {
 		fbStmt := new(fbsemantic.ExpressionStatement)
 		fbStmt.Init(tbl.Bytes, tbl.Pos)
 		s := &ExpressionStatement{}
+		if err := s.FromBuf(fbStmt); err != nil {
+			return nil, err
+		}
+		return s, nil
+	case fbsemantic.StatementNativeVariableAssignment:
+		fbStmt := new(fbsemantic.NativeVariableAssignment)
+		fbStmt.Init(tbl.Bytes, tbl.Pos)
+		s := &NativeVariableAssignment{}
 		if err := s.FromBuf(fbStmt); err != nil {
 			return nil, err
 		}
@@ -555,4 +564,26 @@ func (p *FunctionParameter) FromBuf(fb *fbsemantic.FunctionParameter) error {
 		return err
 	}
 	return nil
+}
+
+type fbTyper interface {
+	TypType() byte
+	Typ(obj *flatbuffers.Table) bool
+}
+
+// getMonoType produces an FBMonoType from the given FlatBuffers expression that has
+// a union "typ" field (which is all the different kinds of expressions).
+func getMonoType(fbExpr fbTyper) (*types.MonoType, error) {
+	tbl := new(flatbuffers.Table)
+	if !fbExpr.Typ(tbl) {
+		return nil, errors.Newf(codes.Internal, "missing monotype")
+	}
+
+	t := fbExpr.TypType()
+	return types.NewMonoType(tbl, t)
+}
+
+func getPolyType(fb *fbsemantic.NativeVariableAssignment) (*types.PolyType, error) {
+	t := fb.Typ(nil)
+	return types.NewPolyType(t)
 }
