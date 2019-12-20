@@ -54,7 +54,7 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
         let loc = v.create_loc(node.loc());
         match node {
             walk::Node::IntegerLit(int) => {
-                // TODO (fchikwekwe): change `build_type` so that it accepts a reference. 
+                // TODO (fchikwekwe): change `build_type` so that it accepts a reference.
                 // Bug filed here: https://github.com/influxdata/flux/issues/2292
                 let int_typ = int.typ.clone();
                 let (typ, typ_type) = types::build_type(&mut v.builder, int_typ);
