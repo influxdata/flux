@@ -481,6 +481,10 @@ func NewCompilationCache(fn *semantic.FunctionExpression, scope Scope) *Compilat
 // Compile returns a compiled function based on the provided type.
 // The result will be cached for subsequent calls.
 func (c *CompilationCache) Compile(in semantic.MonoType) (Func, error) {
+	// The cache can be implemented in terms of the input type properties and basic types.
+	// We do not need to cache for arbitrary mono types rather we know its a record with basic types for its properties.
+	// We can special case creating a hash from property name and basic type (which is a byte).
+
 	//f, ok := c.compiled[in]
 	//if ok {
 	//	return f.F, f.Err
