@@ -409,11 +409,15 @@ func fromFBDurationVector(fbDurLit *fbsemantic.DurationLiteral) ([]ast.Duration,
 		if !fbDurLit.Value(fbDur, i) {
 			return nil, errors.Newf(codes.Internal, "missing duration at position %v", i)
 		}
-		dur := ast.Duration{
-			Magnitude: fbDur.Magnitude(),
-			Unit:      fbsemantic.EnumNamesTimeUnit[fbDur.Unit()],
+		nano := ast.Duration{
+			Magnitude: fbDur.Nanoseconds(),
+			Unit:      "ns",
 		}
-		durs[i] = dur
+		month := ast.Duration{
+			Magnitude: fbDur.Months(),
+			Unit:      "mo",
+		}
+		durs = append(durs, nano, month)
 	}
 	return durs, nil
 }
