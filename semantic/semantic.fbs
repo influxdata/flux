@@ -111,7 +111,7 @@ union Assignment {
   NativeVariableAssignment,
 }
 
-union Expression  {
+union Expression {
   StringExpression,
   ArrayExpression,
   FunctionExpression,
@@ -302,7 +302,7 @@ table BinaryExpression {
 table CallExpression {
   loc:SourceLocation;
   callee:Expression;
-  arguments:ObjectExpression;
+  arguments:[Property];
   pipe:Expression;
   typ:MonoType;
 }
@@ -341,7 +341,7 @@ table ObjectExpression {
   loc:SourceLocation;
   with:IdentifierExpression;
   properties:[Property];
-  typ:MonoType;
+  typ: MonoType; 
 }
 
 table UnaryExpression {

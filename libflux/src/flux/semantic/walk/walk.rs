@@ -171,9 +171,9 @@ impl<'a> Node<'a> {
     }
 }
 
-// Private utility functions.
+// Utility functions.
 impl<'a> Node<'a> {
-    fn from_expr(expr: &'a Expression) -> Node {
+    pub fn from_expr(expr: &'a Expression) -> Node {
         match *expr {
             Expression::Identifier(ref e) => Node::IdentifierExpr(e),
             Expression::Array(ref e) => Node::ArrayExpr(e),
@@ -197,7 +197,7 @@ impl<'a> Node<'a> {
             Expression::Regexp(ref e) => Node::RegexpLit(e),
         }
     }
-    fn from_stmt(stmt: &'a Statement) -> Node {
+    pub fn from_stmt(stmt: &'a Statement) -> Node {
         match *stmt {
             Statement::Expr(ref s) => Node::ExprStmt(s),
             Statement::Variable(ref s) => Node::VariableAssgn(s),
