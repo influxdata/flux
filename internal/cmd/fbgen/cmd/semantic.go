@@ -471,21 +471,36 @@ func doPointer(o types.Object, field *types.Var) ([]jen.Code, error) {
 		case "PackageClause", "Identifier", "ObjectExpression",
 			"StringLiteral", "MemberExpression", "IdentifierExpression",
 			"NativeVariableAssignment", "FunctionParameters", "FunctionBlock":
-			fbVar := jen.Id("fb" + field.Name())
-			fbField := toFBName(o.Name(), field.Name())
-			cs = append(cs,
-				jen.If(
-					fbVar.Clone().Op(":=").Id("fb").Dot(fbField).Params(jen.Nil()),
-					fbVar.Clone().Op("!=").Nil(),
-				).Block(
-					jen.Id("rcv").Dot(field.Name()).Op("=").New(jen.Id(n)),
+			// CallExpression's argument in the Rust semantic graph and in the semantic
+			// Flatbuffers schema is defined as list of properties. This is different
+			// from the Go semantic graph where it is a pointer to an ObjectExpression.
+			// This code helps to bridge that difference.
+			if o.Name() == "CallExpression" && field.Name() == "Arguments" {
+				cs = append(cs,
 					ifErrorPropagate(
-						jen.Id("rcv").Dot(field.Name()).
-							Dot("FromBuf").Params(fbVar),
+						jen.Id("objectExprFromProperties").Params(jen.Id("fb")),
 						fieldForError,
+						jen.Id("rcv").Dot(field.Name()),
 					),
-				),
-			)
+				)
+			} else {
+				fbVar := jen.Id("fb" + field.Name())
+				fbField := toFBName(o.Name(), field.Name())
+				cs = append(cs,
+					jen.If(
+						fbVar.Clone().Op(":=").Id("fb").Dot(fbField).Params(jen.Nil()),
+						fbVar.Clone().Op("!=").Nil(),
+					).Block(
+						jen.Id("rcv").Dot(field.Name()).Op("=").New(jen.Id(n)),
+						ifErrorPropagate(
+							jen.Id("rcv").Dot(field.Name()).
+								Dot("FromBuf").Params(fbVar),
+							fieldForError,
+						),
+					),
+				)
+			}
+
 		case "Regexp":
 			cs = append(cs,
 				ifErrorPropagate(
