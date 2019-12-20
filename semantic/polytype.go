@@ -1,4 +1,4 @@
-package types
+package semantic
 
 import (
 	"strings"
@@ -16,20 +16,20 @@ type PolyType struct {
 }
 
 // NewPolyType returns a new polytype given a flatbuffers polytype.
-func NewPolyType(fb *fbsemantic.PolyType) (*PolyType, error) {
+func NewPolyType(fb *fbsemantic.PolyType) (PolyType, error) {
 	if fb == nil {
-		return nil, errors.New(codes.Internal, "got nil fbsemantic.polytype")
+		return PolyType{}, errors.New(codes.Internal, "got nil fbsemantic.polytype")
 	}
-	return &PolyType{fb: fb}, nil
+	return PolyType{fb: fb}, nil
 }
 
 // NumVars returns the number of type variables in this polytype.
-func (pt *PolyType) NumVars() int {
+func (pt PolyType) NumVars() int {
 	return pt.fb.VarsLength()
 }
 
 // Var returns the type variable at ordinal position i.
-func (pt *PolyType) Var(i int) (*fbsemantic.Var, error) {
+func (pt PolyType) Var(i int) (*fbsemantic.Var, error) {
 	if i < 0 || i >= pt.NumVars() {
 		return nil, errors.Newf(codes.Internal, "request for polytype var out of bounds: %v in %v", i, pt.NumVars())
 	}
@@ -41,12 +41,12 @@ func (pt *PolyType) Var(i int) (*fbsemantic.Var, error) {
 }
 
 // NumConstraints returns the number of kind constraints in this polytype.
-func (pt *PolyType) NumConstraints() int {
+func (pt PolyType) NumConstraints() int {
 	return pt.fb.ConsLength()
 }
 
 // Constraint returns the constraint at ordinal position i.
-func (pt *PolyType) Constraint(i int) (*fbsemantic.Constraint, error) {
+func (pt PolyType) Constraint(i int) (*fbsemantic.Constraint, error) {
 	if i < 0 || i >= pt.NumConstraints() {
 		return nil, errors.Newf(codes.Internal, "request for constraint out of bounds: %v in %v", i, pt.NumConstraints())
 	}
@@ -59,17 +59,17 @@ func (pt *PolyType) Constraint(i int) (*fbsemantic.Constraint, error) {
 }
 
 // Expr returns the monotype expression for this polytype.
-func (pt *PolyType) Expr() (*MonoType, error) {
+func (pt PolyType) Expr() (MonoType, error) {
 	tbl := new(flatbuffers.Table)
 	if !pt.fb.Expr(tbl) {
-		return nil, errors.New(codes.Internal, "missing a polytype expr")
+		return MonoType{}, errors.New(codes.Internal, "missing a polytype expr")
 	}
 
 	return NewMonoType(tbl, pt.fb.ExprType())
 }
 
 // String returns a string representation for this polytype.
-func (pt *PolyType) String() string {
+func (pt PolyType) String() string {
 	var sb strings.Builder
 
 	sb.WriteString("forall [")

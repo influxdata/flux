@@ -24,18 +24,18 @@ type Array interface {
 }
 
 type array struct {
-	t        semantic.Type
+	t        semantic.MonoType
 	elements []Value
 }
 
-func NewArray(elementType semantic.Type) Array {
+func NewArray(arrType semantic.MonoType) Array {
 	return &array{
-		t: semantic.NewArrayType(elementType),
+		t: arrType,
 	}
 }
-func NewArrayWithBacking(elementType semantic.Type, elements []Value) Array {
+func NewArrayWithBacking(arrType semantic.MonoType, elements []Value) Array {
 	return &array{
-		t:        semantic.NewArrayType(elementType),
+		t:        arrType,
 		elements: elements,
 	}
 }
@@ -56,11 +56,8 @@ func (a *array) String() string {
 	return b.String()
 }
 
-func (a *array) Type() semantic.Type {
+func (a *array) Type() semantic.MonoType {
 	return a.t
-}
-func (a *array) PolyType() semantic.PolyType {
-	return a.t.PolyType()
 }
 
 func (a *array) Get(i int) Value {

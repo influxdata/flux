@@ -14,8 +14,7 @@ import (
 )
 
 type Typer interface {
-	Type() semantic.Type
-	PolyType() semantic.PolyType
+	Type() semantic.MonoType
 }
 
 type Value interface {
@@ -41,15 +40,12 @@ type ValueStringer interface {
 }
 
 type value struct {
-	t semantic.Type
+	t semantic.MonoType
 	v interface{}
 }
 
-func (v value) Type() semantic.Type {
+func (v value) Type() semantic.MonoType {
 	return v.t
-}
-func (v value) PolyType() semantic.PolyType {
-	return v.t.PolyType()
 }
 func (v value) IsNull() bool {
 	return v.v == nil
@@ -147,10 +143,12 @@ func (v value) String() string {
 
 var (
 	// InvalidValue is a non nil value who's type is semantic.Invalid
-	InvalidValue = value{t: semantic.Invalid}
+	// TODO create a invalid monotype
+	InvalidValue = value{t: semantic.BasicBool}
 
 	// Null is an untyped nil value.
-	Null = value{t: semantic.Nil}
+	// TODO create a null monotype
+	Null = value{t: semantic.BasicBool}
 )
 
 // New constructs a new Value by inferring the type from the interface. If the interface
@@ -184,17 +182,17 @@ func New(v interface{}) Value {
 	}
 }
 
-func NewNull(t semantic.Type) Value {
+func NewNull(t semantic.MonoType) Value {
 	return value{
 		t: t,
 		v: nil,
 	}
 }
 
-func NewFromString(t semantic.Type, s string) (Value, error) {
+func NewFromString(t semantic.MonoType, s string) (Value, error) {
 	var err error
 	v := value{t: t}
-	switch t {
+	switch t.Nature() {
 	case semantic.String:
 		v.v = s
 	case semantic.Int:
@@ -236,89 +234,50 @@ func NewFromString(t semantic.Type, s string) (Value, error) {
 
 func NewString(v string) Value {
 	return value{
-		t: semantic.String,
+		t: semantic.BasicString,
 		v: v,
 	}
 }
 func NewBytes(v []byte) Value {
 	return value{
-		t: semantic.Bytes,
+		t: semantic.BasicBytes,
 		v: v,
 	}
 }
 func NewInt(v int64) Value {
 	return value{
-		t: semantic.Int,
+		t: semantic.BasicInt,
 		v: v,
 	}
 }
 func NewUInt(v uint64) Value {
 	return value{
-		t: semantic.UInt,
+		t: semantic.BasicUint,
 		v: v,
 	}
 }
 func NewFloat(v float64) Value {
 	return value{
-		t: semantic.Float,
+		t: semantic.BasicFloat,
 		v: v,
 	}
 }
 func NewTime(v Time) Value {
 	return value{
-		t: semantic.Time,
+		t: semantic.BasicTime,
 		v: v,
 	}
 }
 func NewDuration(v Duration) Value {
 	return value{
-		t: semantic.Duration,
+		t: semantic.BasicDuration,
 		v: v,
 	}
 }
 func NewRegexp(v *regexp.Regexp) Value {
 	return value{
-		t: semantic.Regexp,
+		t: semantic.BasicRegexp,
 		v: v,
-	}
-}
-
-// AssignableTo returns true if type V is assignable to type T.
-func AssignableTo(V, T semantic.Type) bool {
-	switch tn := T.Nature(); tn {
-	case semantic.Int,
-		semantic.UInt,
-		semantic.Float,
-		semantic.String,
-		semantic.Bool,
-		semantic.Time,
-		semantic.Duration:
-		vn := V.Nature()
-		return vn == tn || vn == semantic.Nil
-	case semantic.Array:
-		if V.Nature() != semantic.Array {
-			return false
-		}
-		// Exact match is required at the moment.
-		return V.ElementType() == T.ElementType()
-	case semantic.Object:
-		if V.Nature() != semantic.Object {
-			return false
-		}
-		properties := V.Properties()
-		for name, ttyp := range T.Properties() {
-			vtyp, ok := properties[name]
-			if !ok {
-				vtyp = semantic.Nil
-			}
-
-			if !AssignableTo(vtyp, ttyp) {
-				return false
-			}
-		}
-		return true
-	default:
-		return V.Nature() == T.Nature()
 	}
 }
 

@@ -610,37 +610,37 @@ func Value(v interface{}) values.Value {
 	switch v := v.(type) {
 	case *int64:
 		if v == nil {
-			return values.NewNull(semantic.Int)
+			return values.NewNull(semantic.BasicInt)
 		}
 		return values.NewInt(*v)
 	case *uint64:
 		if v == nil {
-			return values.NewNull(semantic.UInt)
+			return values.NewNull(semantic.BasicUint)
 		}
 		return values.NewUInt(*v)
 	case *float64:
 		if v == nil {
-			return values.NewNull(semantic.Float)
+			return values.NewNull(semantic.BasicFloat)
 		}
 		return values.NewFloat(*v)
 	case *string:
 		if v == nil {
-			return values.NewNull(semantic.String)
+			return values.NewNull(semantic.BasicString)
 		}
 		return values.NewString(*v)
 	case *bool:
 		if v == nil {
-			return values.NewNull(semantic.Bool)
+			return values.NewNull(semantic.BasicBool)
 		}
 		return values.NewBool(*v)
 	case *values.Time:
 		if v == nil {
-			return values.NewNull(semantic.Time)
+			return values.NewNull(semantic.BasicTime)
 		}
 		return values.NewTime(*v)
 	case *values.Duration:
 		if v == nil {
-			return values.NewNull(semantic.Duration)
+			return values.NewNull(semantic.BasicDuration)
 		}
 		return values.NewDuration(*v)
 	}

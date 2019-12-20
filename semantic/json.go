@@ -76,48 +76,6 @@ func (p *ImportDeclaration) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
-func (e *Extern) MarshalJSON() ([]byte, error) {
-	type Alias Extern
-	raw := struct {
-		Type string `json:"type"`
-		*Alias
-	}{
-		Type:  e.NodeType(),
-		Alias: (*Alias)(e),
-	}
-	return json.Marshal(raw)
-}
-func (e *ExternBlock) MarshalJSON() ([]byte, error) {
-	type Alias ExternBlock
-	raw := struct {
-		Type string `json:"type"`
-		*Alias
-	}{
-		Type:  e.NodeType(),
-		Alias: (*Alias)(e),
-	}
-	return json.Marshal(raw)
-}
-func (e *ExternBlock) UnmarshalJSON(data []byte) error {
-	type Alias ExternBlock
-	raw := struct {
-		*Alias
-		Node json.RawMessage `json:"node"`
-	}{}
-	if err := json.Unmarshal(data, &raw); err != nil {
-		return err
-	}
-	if raw.Alias != nil {
-		*e = *(*ExternBlock)(raw.Alias)
-	}
-
-	n, err := unmarshalNode(raw.Node)
-	if err != nil {
-		return err
-	}
-	e.Node = n
-	return nil
-}
 func (s *Block) MarshalJSON() ([]byte, error) {
 	type Alias Block
 	raw := struct {
@@ -329,9 +287,6 @@ func (d *NativeVariableAssignment) UnmarshalJSON(data []byte) error {
 	}
 	d.Init = e
 	return nil
-}
-func (d *ExternalVariableAssignment) MarshalJSON() ([]byte, error) {
-	return nil, errors.New(codes.Internal, "cannot marshal ExternalVariableAssignment")
 }
 func (e *StringExpression) MarshalJSON() ([]byte, error) {
 	type Alias StringExpression

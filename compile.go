@@ -121,9 +121,7 @@ func SetNowOption(now time.Time) ScopeMutator {
 
 func generateNowFunc(now time.Time) values.Function {
 	timeVal := values.NewTime(values.ConvertTime(now))
-	ftype := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Return: semantic.Time,
-	})
+	ftype := semantic.NewFunctionType()
 	call := func(ctx context.Context, args values.Object) (values.Value, error) {
 		return timeVal, nil
 	}
@@ -298,34 +296,49 @@ func registerPackageValue(pkgpath, name string, value values.Value, replace bool
 	packg.Set(name, value)
 }
 
+// MustValue panics if err is not nil, otherwise value is returned.
+func MustValue(v values.Value, err error) values.Value {
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
 // FunctionValue creates a values.Value from the operation spec and signature.
 // Name is the name of the function as it would be called.
 // c is a function reference of type CreateOperationSpec
 // sig is a function signature type that specifies the names and types of each argument for the function.
-func FunctionValue(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature) values.Value {
-	return functionValue(name, c, sig, false)
+func FunctionValue(name string, c CreateOperationSpec, ft semantic.PolyType) (values.Value, error) {
+	return functionValue(name, c, ft, false)
 }
 
 // FunctionValueWithSideEffect creates a values.Value from the operation spec and signature.
 // Name is the name of the function as it would be called.
 // c is a function reference of type CreateOperationSpec
 // sig is a function signature type that specifies the names and types of each argument for the function.
-func FunctionValueWithSideEffect(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature) values.Value {
-	return functionValue(name, c, sig, true)
+func FunctionValueWithSideEffect(name string, c CreateOperationSpec, ft semantic.PolyType) (values.Value, error) {
+	return functionValue(name, c, ft, true)
 }
 
-func functionValue(name string, c CreateOperationSpec, sig semantic.FunctionPolySignature, sideEffects bool) values.Value {
+func functionValue(name string, c CreateOperationSpec, ft semantic.PolyType, sideEffects bool) (values.Value, error) {
 	if c == nil {
 		c = func(args Arguments, a *Administration) (OperationSpec, error) {
 			return nil, errors.Newf(codes.Unimplemented, "function %q is not implemented", name)
 		}
 	}
+	mt, err := ft.Expr()
+	if err != nil {
+		return nil, err
+	}
+	if mt.Nature() != semantic.Function {
+		return nil, errors.Newf(codes.Invalid, "cannot implement function %q with value of type %v", name, ft)
+	}
 	return &function{
-		t:             semantic.NewFunctionPolyType(sig),
+		t:             ft,
 		name:          name,
 		createOpSpec:  c,
 		hasSideEffect: sideEffects,
-	}
+	}, nil
 }
 
 // FinalizeBuiltIns must be called to complete registration.
@@ -413,24 +426,7 @@ func validatePackageBuiltins(pkg *interpreter.Package, astPkg *ast.Package) erro
 	return nil
 }
 
-var TableObjectType = semantic.NewObjectPolyType(
-	//TODO: When values.Value support polytyped values, we can add the commented fields back in
-	map[string]semantic.PolyType{
-		tableKindKey: semantic.String,
-		//tableSpecKey:    semantic.Tvar(1),
-		//tableParentsKey: semantic.Tvar(2),
-	},
-	nil,
-	//semantic.LabelSet{tableKindKey, tableSpecKey, tableParentsKey},
-	semantic.LabelSet{tableKindKey},
-)
 var _ = tableSpecKey // So that linter doesn't think tableSpecKey is unused, considering above TODO.
-
-var TableObjectMonoType semantic.Type
-
-func init() {
-	TableObjectMonoType, _ = TableObjectType.MonoType()
-}
 
 // IDer produces the mapping of table Objects to OperationIDs
 type IDer interface {
@@ -495,12 +491,9 @@ func (t *TableObject) str(b *strings.Builder, arrow bool) {
 	}
 }
 
-func (t *TableObject) Type() semantic.Type {
-	typ, _ := TableObjectType.MonoType()
-	return typ
-}
-func (t *TableObject) PolyType() semantic.PolyType {
-	return TableObjectType
+func (t *TableObject) Type() semantic.MonoType {
+	// TODO should this return the type of the function operations?
+	return semantic.MonoType{}
 }
 
 func (t *TableObject) Str() string {
@@ -585,21 +578,6 @@ func (t *TableObject) Range(f func(name string, v values.Value)) {
 	f(tableParentsKey, t.Parents)
 }
 
-// FunctionSignature returns a standard functions signature which accepts a table piped argument,
-// with any additional arguments.
-func FunctionSignature(parameters map[string]semantic.PolyType, required []string) semantic.FunctionPolySignature {
-	if parameters == nil {
-		parameters = make(map[string]semantic.PolyType)
-	}
-	parameters[TablesParameter] = TableObjectType
-	return semantic.FunctionPolySignature{
-		Parameters:   parameters,
-		Required:     semantic.LabelSet(required),
-		Return:       TableObjectType,
-		PipeArgument: TablesParameter,
-	}
-}
-
 type Administration struct {
 	parents values.Array
 }
@@ -608,7 +586,7 @@ func newAdministration() *Administration {
 	return &Administration{
 		// TODO(nathanielc): Once we can support recursive types change this to,
 		// interpreter.NewArray(TableObjectType)
-		parents: values.NewArray(semantic.EmptyObject),
+		parents: values.NewArray(semantic.NewObjectType()),
 	}
 }
 
@@ -648,13 +626,9 @@ type function struct {
 	hasSideEffect bool
 }
 
-func (f *function) Type() semantic.Type {
-	// TODO(nathanielc): Update values.Value interface to use PolyTypes
-	t, _ := f.t.MonoType()
+func (f *function) Type() semantic.MonoType {
+	t, _ := f.t.Expr()
 	return t
-}
-func (f *function) PolyType() semantic.PolyType {
-	return f.t
 }
 func (f *function) IsNull() bool {
 	return false
@@ -817,7 +791,8 @@ func (imp *importer) Import(path string) (semantic.PackageType, bool) {
 	}
 	return semantic.PackageType{
 		Name: p.Name(),
-		Type: p.PolyType(),
+		// TODO how do we want to represent Packages?
+		//Type: p.Type(),
 	}, true
 }
 

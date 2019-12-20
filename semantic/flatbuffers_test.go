@@ -10,7 +10,6 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic/internal/fbsemantic"
-	"github.com/influxdata/flux/semantic/types"
 )
 
 // TODO(cwolff): There needs to be more testing here.  Once we can serialize an arbitrary semantic graph
@@ -38,10 +37,10 @@ var cmpOpts = []cmp.Option{
 	),
 	// Just ignore types when comparing against Go semantic graph, since
 	// Go does not annotate expressions nodes with types directly.
-	cmp.Transformer("", func(ty *types.MonoType) int {
+	cmp.Transformer("", func(ty MonoType) int {
 		return 0
 	}),
-	cmp.Transformer("", func(ty *types.PolyType) int {
+	cmp.Transformer("", func(ty *PolyType) int {
 		return 0
 	}),
 }

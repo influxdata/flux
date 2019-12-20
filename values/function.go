@@ -17,6 +17,7 @@ type Function interface {
 
 // NewFunction returns a new function value
 func NewFunction(name string, typ semantic.PolyType, call func(ctx context.Context, args Object) (Value, error), sideEffect bool) *function {
+	// TODO error if type is not a function type
 	return &function{
 		name:          name,
 		t:             typ,
@@ -40,15 +41,9 @@ func (f *function) String() string {
 	return fmt.Sprintf("%s()", f.name)
 }
 
-func (f *function) Type() semantic.Type {
-	typ, ok := f.t.MonoType()
-	if ok {
-		return typ
-	}
-	return semantic.Invalid
-}
-func (f *function) PolyType() semantic.PolyType {
-	return f.t
+func (f *function) Type() semantic.MonoType {
+	mt, _ := f.t.Expr()
+	return mt
 }
 
 func (f *function) Str() string {

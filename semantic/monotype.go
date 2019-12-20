@@ -1,4 +1,4 @@
-package types
+package semantic
 
 import (
 	"fmt"
@@ -23,11 +23,11 @@ type MonoType struct {
 }
 
 // NewMonoType constructs a new monotype from a FlatBuffers table and the given kind of monotype.
-func NewMonoType(tbl *flatbuffers.Table, t fbsemantic.MonoType) (*MonoType, error) {
+func NewMonoType(tbl *flatbuffers.Table, t fbsemantic.MonoType) (MonoType, error) {
 	var tbler fbTabler
 	switch t {
 	case fbsemantic.MonoTypeNONE:
-		return nil, errors.Newf(codes.Internal, "missing type, got type: %v", fbsemantic.EnumNamesMonoType[t])
+		return MonoType{}, errors.Newf(codes.Internal, "missing type, got type: %v", fbsemantic.EnumNamesMonoType[t])
 	case fbsemantic.MonoTypeBasic:
 		tbler = new(fbsemantic.Basic)
 	case fbsemantic.MonoTypeVar:
@@ -39,10 +39,50 @@ func NewMonoType(tbl *flatbuffers.Table, t fbsemantic.MonoType) (*MonoType, erro
 	case fbsemantic.MonoTypeFun:
 		tbler = new(fbsemantic.Fun)
 	default:
-		return nil, errors.Newf(codes.Internal, "unknown type (%v)", t)
+		return MonoType{}, errors.Newf(codes.Internal, "unknown type (%v)", t)
 	}
 	tbler.Init(tbl.Bytes, tbl.Pos)
-	return &MonoType{mt: t, tbl: tbler}, nil
+	return MonoType{mt: t, tbl: tbler}, nil
+}
+
+func (mt MonoType) Nature() Nature {
+	switch mt.mt {
+	case fbsemantic.MonoTypeBasic:
+		t, _ := mt.Basic()
+		switch t {
+		case fbsemantic.TypeBool:
+			return Bool
+		case fbsemantic.TypeInt:
+			return Int
+		case fbsemantic.TypeUint:
+			return UInt
+		case fbsemantic.TypeFloat:
+			return Float
+		case fbsemantic.TypeString:
+			return String
+		case fbsemantic.TypeDuration:
+			return Duration
+		case fbsemantic.TypeTime:
+			return Time
+		case fbsemantic.TypeRegexp:
+			return Regexp
+		case fbsemantic.TypeBytes:
+			return Bytes
+		default:
+			return Invalid
+		}
+	case fbsemantic.MonoTypeArr:
+		return Array
+	case fbsemantic.MonoTypeRow:
+		return Object
+	case fbsemantic.MonoTypeFun:
+		return Function
+	case fbsemantic.MonoTypeNONE,
+		fbsemantic.MonoTypeVar:
+		fallthrough
+	default:
+		return Invalid
+	}
 }
 
 // Kind specifies a particular kind of monotype.
@@ -58,24 +98,40 @@ const (
 )
 
 // Kind returns what kind of monotype the receiver is.
-func (mt *MonoType) Kind() Kind {
+func (mt MonoType) Kind() Kind {
 	return Kind(mt.mt)
 }
 
-// BasicKind specifies a basic type.
-type BasicKind fbsemantic.Type
+var (
+	basicTable *flatbuffers.Table
 
-const (
-	Bool     = BasicKind(fbsemantic.TypeBool)
-	Int      = BasicKind(fbsemantic.TypeInt)
-	Uint     = BasicKind(fbsemantic.TypeUint)
-	Float    = BasicKind(fbsemantic.TypeFloat)
-	String   = BasicKind(fbsemantic.TypeString)
-	Duration = BasicKind(fbsemantic.TypeDuration)
-	Time     = BasicKind(fbsemantic.TypeTime)
-	Regexp   = BasicKind(fbsemantic.TypeRegexp)
-	Bytes    = BasicKind(fbsemantic.TypeBytes)
+	BasicBool     MonoType
+	BasicInt      MonoType
+	BasicUint     MonoType
+	BasicFloat    MonoType
+	BasicString   MonoType
+	BasicDuration MonoType
+	BasicTime     MonoType
+	BasicRegexp   MonoType
+	BasicBytes    MonoType
 )
+
+func init() {
+	builder := flatbuffers.NewBuilder(1024)
+	fbsemantic.BasicStart(builder)
+	fbsemantic.BasicAddT(builder, fbsemantic.TypeBool)
+	basicBool := fbsemantic.BasicEnd(builder)
+
+	// TODO initial all basic values
+
+	// TODO this probably doesn't work...
+	builder.Finish(basicBool)
+	basicTable = &flatbuffers.Table{
+		Bytes: builder.FinishedBytes(),
+		Pos:   basicBool,
+	}
+	BasicBool, _ = NewMonoType(basicTable, fbsemantic.MonoTypeBasic)
+}
 
 func getBasic(tbl fbTabler) (*fbsemantic.Basic, error) {
 	b, ok := tbl.(*fbsemantic.Basic)
@@ -87,12 +143,12 @@ func getBasic(tbl fbTabler) (*fbsemantic.Basic, error) {
 
 // Basic returns the basic type for this monotype if it is a basic type,
 // and an error otherwise.
-func (mt *MonoType) Basic() (BasicKind, error) {
+func (mt MonoType) Basic() (fbsemantic.Type, error) {
 	b, err := getBasic(mt.tbl)
 	if err != nil {
-		return Bool, err
+		return fbsemantic.TypeBool, err
 	}
-	return BasicKind(b.T()), nil
+	return b.T(), nil
 }
 
 func getVar(tbl fbTabler) (*fbsemantic.Var, error) {
@@ -106,7 +162,7 @@ func getVar(tbl fbTabler) (*fbsemantic.Var, error) {
 
 // VarNum returns the type variable number if this monotype is a type variable,
 // and an error otherwise.
-func (mt *MonoType) VarNum() (uint64, error) {
+func (mt MonoType) VarNum() (uint64, error) {
 	v, err := getVar(mt.tbl)
 	if err != nil {
 		return 0, err
@@ -114,8 +170,8 @@ func (mt *MonoType) VarNum() (uint64, error) {
 	return v.I(), nil
 }
 
-func monoTypeFromVar(v *fbsemantic.Var) *MonoType {
-	return &MonoType{
+func monoTypeFromVar(v *fbsemantic.Var) MonoType {
+	return MonoType{
 		mt:  fbsemantic.MonoTypeVar,
 		tbl: v,
 	}
@@ -131,7 +187,7 @@ func getFun(tbl fbTabler) (*fbsemantic.Fun, error) {
 
 // NumArguments returns the number of arguments if this monotype is a function,
 // and an error otherwise.
-func (mt *MonoType) NumArguments() (int, error) {
+func (mt MonoType) NumArguments() (int, error) {
 	f, err := getFun(mt.tbl)
 	if err != nil {
 		return 0, err
@@ -141,7 +197,7 @@ func (mt *MonoType) NumArguments() (int, error) {
 
 // Argument returns the argument give an ordinal position if this monotype is a function,
 // and an error otherwise.
-func (mt *MonoType) Argument(i int) (*Argument, error) {
+func (mt MonoType) Argument(i int) (*Argument, error) {
 	f, err := getFun(mt.tbl)
 	if err != nil {
 		return nil, err
@@ -156,14 +212,14 @@ func (mt *MonoType) Argument(i int) (*Argument, error) {
 	return newArgument(a)
 }
 
-func (mt *MonoType) ReturnType() (*MonoType, error) {
+func (mt MonoType) ReturnType() (MonoType, error) {
 	f, ok := mt.tbl.(*fbsemantic.Fun)
 	if !ok {
-		return nil, errors.New(codes.Internal, "ReturnType() called on non-function MonoType")
+		return MonoType{}, errors.New(codes.Internal, "ReturnType() called on non-function MonoType")
 	}
 	tbl := new(flatbuffers.Table)
 	if !f.Retn(tbl) {
-		return nil, errors.New(codes.Internal, "missing return type")
+		return MonoType{}, errors.New(codes.Internal, "missing return type")
 	}
 	return NewMonoType(tbl, f.RetnType())
 }
@@ -177,14 +233,14 @@ func getArr(tbl fbTabler) (*fbsemantic.Arr, error) {
 }
 
 // ElemType returns the element type if this monotype is an array, and an error otherise.
-func (mt *MonoType) ElemType() (*MonoType, error) {
+func (mt MonoType) ElemType() (MonoType, error) {
 	arr, err := getArr(mt.tbl)
 	if err != nil {
-		return nil, err
+		return MonoType{}, err
 	}
 	tbl := new(flatbuffers.Table)
 	if !arr.T(tbl) {
-		return nil, errors.New(codes.Internal, "missing array type")
+		return MonoType{}, errors.New(codes.Internal, "missing array type")
 	}
 	return NewMonoType(tbl, arr.TType())
 }
@@ -199,7 +255,7 @@ func getRow(tbl fbTabler) (*fbsemantic.Row, error) {
 }
 
 // NumProperties returns the number of properties if this monotype is a row, and an error otherwise.
-func (mt *MonoType) NumProperties() (int, error) {
+func (mt MonoType) NumProperties() (int, error) {
 	row, err := getRow(mt.tbl)
 	if err != nil {
 		return 0, err
@@ -207,8 +263,8 @@ func (mt *MonoType) NumProperties() (int, error) {
 	return row.PropsLength(), nil
 }
 
-// Property returns a property given its ordinal position if this monotype is a row, and an error otherwise.
-func (mt *MonoType) Property(i int) (*Property, error) {
+// RowProperty returns a property given its ordinal position if this monotype is a row, and an error otherwise.
+func (mt MonoType) RowProperty(i int) (*RowProperty, error) {
 	row, err := getRow(mt.tbl)
 	if err != nil {
 		return nil, err
@@ -220,20 +276,21 @@ func (mt *MonoType) Property(i int) (*Property, error) {
 	if !row.Props(p, i) {
 		return nil, errors.New(codes.Internal, "missing property")
 	}
-	return &Property{fb: p}, nil
+	return &RowProperty{fb: p}, nil
 }
 
 // Extends returns the extending type variable if this monotype is a row, and an error otherwise.
-func (mt *MonoType) Extends() (*MonoType, error) {
+// If the type is a row but does not extend anything a false is returned.
+func (mt MonoType) Extends() (MonoType, bool, error) {
 	row, err := getRow(mt.tbl)
 	if err != nil {
-		return nil, err
+		return MonoType{}, false, err
 	}
 	v := row.Extends(nil)
 	if v == nil {
-		return nil, nil
+		return MonoType{}, false, nil
 	}
-	return monoTypeFromVar(v), nil
+	return monoTypeFromVar(v), true, nil
 }
 
 // Argument represents a function argument.
@@ -249,39 +306,39 @@ func newArgument(fb *fbsemantic.Argument) (*Argument, error) {
 }
 
 // TypeOf returns the type of the function argument.
-func (a *Argument) TypeOf() (*MonoType, error) {
+func (a *Argument) TypeOf() (MonoType, error) {
 	tbl := new(flatbuffers.Table)
 	if !a.T(tbl) {
-		return nil, errors.New(codes.Internal, "missing argument type")
+		return MonoType{}, errors.New(codes.Internal, "missing argument type")
 	}
 	argTy, err := NewMonoType(tbl, a.TType())
 	if err != nil {
-		return nil, err
+		return MonoType{}, err
 	}
 	return argTy, nil
 }
 
 // Property represents a property of a row.
-type Property struct {
+type RowProperty struct {
 	fb *fbsemantic.Prop
 }
 
 // Name returns the name of the property.
-func (p *Property) Name() string {
+func (p *RowProperty) Name() string {
 	return string(p.fb.K())
 }
 
 // TypeOf returns the type of the property.
-func (p *Property) TypeOf() (*MonoType, error) {
+func (p *RowProperty) TypeOf() (MonoType, error) {
 	tbl := new(flatbuffers.Table)
 	if !p.fb.V(tbl) {
-		return nil, errors.Newf(codes.Internal, "missing property type")
+		return MonoType{}, errors.Newf(codes.Internal, "missing property type")
 	}
 	return NewMonoType(tbl, p.fb.VType())
 }
 
 // String returns a string representation of this monotype.
-func (mt *MonoType) String() string {
+func (mt MonoType) String() string {
 	switch tk := mt.Kind(); tk {
 	case Unknown:
 		return "<" + fbsemantic.EnumNamesMonoType[fbsemantic.MonoType(tk)] + ">"
@@ -317,7 +374,7 @@ func (mt *MonoType) String() string {
 			} else {
 				needBar = true
 			}
-			prop, err := mt.Property(i)
+			prop, err := mt.RowProperty(i)
 			if err != nil {
 				return "<" + err.Error() + ">"
 			}
@@ -328,11 +385,11 @@ func (mt *MonoType) String() string {
 			}
 			sb.WriteString(ty.String())
 		}
-		extends, err := mt.Extends()
+		extends, ok, err := mt.Extends()
 		if err != nil {
 			return "<" + err.Error() + ">"
 		}
-		if extends != nil {
+		if ok {
 			if needBar {
 				sb.WriteString(" | ")
 			}
@@ -380,4 +437,27 @@ func (mt *MonoType) String() string {
 	default:
 		return "<" + fmt.Sprintf("unknown monotype (%v)", tk) + ">"
 	}
+}
+
+func (l MonoType) Equal(r MonoType) bool {
+	// TODO, can we use bytes.Compare here?
+	return false
+}
+
+func NewArrayType(elemType MonoType) MonoType {
+	//builder := flatbuffers.NewBuilder(1024)
+	//fbsemantic.ArrStart(builder)
+	//fbsemantic.AddTType(builder, elemType.Type())
+	//// TODO how do we inject the elemType?
+	//fbsemantic.AddT(builder, flatbuffer.UOffsetT)
+
+	return MonoType{}
+}
+func NewFunctionType() PolyType {
+	// TODO needs both a list of vars constraints and the monotype
+	return PolyType{}
+}
+func NewObjectType() MonoType {
+	// TODO needs both a list of vars constraints and the monotype
+	return MonoType{}
 }

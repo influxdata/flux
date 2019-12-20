@@ -5,7 +5,6 @@ import (
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/semantic"
 )
 
 type Scope interface {
@@ -179,24 +178,4 @@ func (s scopeFormatter) Format(state fmt.State, _ rune) {
 		state.Write([]byte("} -> "))
 	}
 	state.Write([]byte("nil ]"))
-}
-
-// BuildExternAssignments constructs nested semantic.ExternAssignment nodes mirroring the nested structure of the scope.
-func BuildExternAssignments(node semantic.Node, scope Scope) semantic.Node {
-	var n = node
-	for s := scope; s != nil; s = s.Pop() {
-		extern := &semantic.Extern{
-			Block: &semantic.ExternBlock{
-				Node: n,
-			},
-		}
-		s.LocalRange(func(k string, v Value) {
-			extern.Assignments = append(extern.Assignments, &semantic.ExternalVariableAssignment{
-				Identifier: &semantic.Identifier{Name: k},
-				ExternType: v.PolyType(),
-			})
-		})
-		n = extern
-	}
-	return n
 }

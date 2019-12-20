@@ -13,9 +13,9 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
+const PackageMain = "main"
+
 type Interpreter struct {
-	types           map[semantic.Node]semantic.Type
-	polyTypes       map[semantic.Node]semantic.PolyType
 	sideEffects     []SideEffect // a list of the side effects occurred during the last call to `Eval`.
 	pkg             *Package
 	modifiedOptions []optionMutation
@@ -23,9 +23,7 @@ type Interpreter struct {
 
 func NewInterpreter(pkg *Package) *Interpreter {
 	return &Interpreter{
-		types:     make(map[semantic.Node]semantic.Type),
-		polyTypes: make(map[semantic.Node]semantic.PolyType),
-		pkg:       pkg,
+		pkg: pkg,
 	}
 }
 
@@ -37,21 +35,8 @@ type SideEffect struct {
 
 // Eval evaluates the expressions composing a Flux package and returns any side effects that occurred during this evaluation.
 func (itrp *Interpreter) Eval(ctx context.Context, node semantic.Node, scope values.Scope, importer Importer) ([]SideEffect, error) {
-	n := values.BuildExternAssignments(node, scope)
-
-	sol, err := semantic.InferTypes(n, importer)
-	if err != nil {
-		return nil, err
-	}
-
-	semantic.Walk(semantic.CreateVisitor(func(node semantic.Node) {
-		if typ, err := sol.TypeOf(node); err == nil {
-			itrp.types[node] = typ
-		}
-		if polyType, err := sol.PolyTypeOf(node); err == nil {
-			itrp.polyTypes[node] = polyType
-		}
-	}), node)
+	// TODO how does this change?
+	//n := values.BuildExternAssignments(node, scope)
 
 	// reset side effect list
 	itrp.sideEffects = itrp.sideEffects[:0]
@@ -67,16 +52,9 @@ func (itrp *Interpreter) doRoot(ctx context.Context, node semantic.Node, scope v
 		return itrp.doPackage(ctx, n, scope, importer)
 	case *semantic.File:
 		return itrp.doFile(ctx, n, scope, importer)
-	case *semantic.Extern:
-		return itrp.doExtern(ctx, n, scope, importer)
 	default:
 		return errors.Newf(codes.Internal, "unsupported root node %T", node)
 	}
-}
-
-func (itrp *Interpreter) doExtern(ctx context.Context, extern *semantic.Extern, scope values.Scope, importer Importer) error {
-	// We do not care about the type declarations, they were only important for type inference.
-	return itrp.doRoot(ctx, extern.Block.Node, scope, importer)
 }
 
 func (itrp *Interpreter) doPackage(ctx context.Context, pkg *semantic.Package, scope values.Scope, importer Importer) error {
@@ -105,7 +83,7 @@ func (itrp *Interpreter) doFile(ctx context.Context, file *semantic.File, scope 
 		if es, ok := stmt.(*semantic.ExpressionStatement); ok {
 			// Only in the main package are all unassigned package
 			// level expressions coerced into producing side effects.
-			if itrp.pkg.Name() == semantic.PackageMain {
+			if itrp.pkg.Name() == PackageMain {
 				itrp.sideEffects = append(itrp.sideEffects, SideEffect{Node: es, Value: val})
 			}
 		}
@@ -114,7 +92,7 @@ func (itrp *Interpreter) doFile(ctx context.Context, file *semantic.File, scope 
 }
 
 func (itrp *Interpreter) doPackageClause(pkg *semantic.PackageClause) error {
-	name := semantic.PackageMain
+	name := PackageMain
 	if pkg != nil {
 		name = pkg.Name.Name
 	}
@@ -357,12 +335,12 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		}
 		switch e.Operator {
 		case ast.NotOperator:
-			if v.Type() != semantic.Bool {
+			if v.Type().Nature() != semantic.Bool {
 				return nil, errors.Newf(codes.Invalid, "operand to unary expression is not a boolean value, got %v", v.Type())
 			}
 			return values.NewBool(!v.Bool()), nil
 		case ast.SubtractionOperator:
-			switch t := v.Type(); t {
+			switch t := v.Type().Nature(); t {
 			case semantic.Int:
 				return values.NewInt(-v.Int()), nil
 			case semantic.Float:
@@ -388,22 +366,21 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			return nil, err
 		}
 
-		ltyp := itrp.typeof(e.Left, l.Type())
-		rtyp := itrp.typeof(e.Right, r.Type())
+		// TODO validate that indeed type inference fixes this
 		// TODO(jsternberg): This next section needs to be removed
 		// since type inference should give the correct type.
-		if ltyp == semantic.Nil && l.Type() != semantic.Nil {
-			// There's a weird bug in type inference where it
-			// determines the type is null even when it's not.
-			ltyp = l.Type()
-		}
-		if rtyp == semantic.Nil && r.Type() != semantic.Nil {
-			rtyp = r.Type()
-		}
+		//if ltyp == semantic.Nil && l.Type().Nature() != semantic.Nil {
+		//	// There's a weird bug in type inference where it
+		//	// determines the type is null even when it's not.
+		//	ltyp = l.Type()
+		//}
+		//if rtyp == semantic.Nil && r.Type().Nature() != semantic.Nil {
+		//	rtyp = r.Type()
+		//}
 		bf, err := values.LookupBinaryFunction(values.BinaryFuncSignature{
 			Operator: e.Operator,
-			Left:     ltyp.Nature(),
-			Right:    rtyp.Nature(),
+			Left:     e.Left.TypeOf().Nature(),
+			Right:    e.Right.TypeOf().Nature(),
 		})
 		if err != nil {
 			return nil, err
@@ -414,7 +391,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		if err != nil {
 			return nil, err
 		}
-		if l.Type() != semantic.Bool {
+		if l.Type().Nature() != semantic.Bool {
 			return nil, errors.Newf(codes.Invalid, "left operand to logcial expression is not a boolean value, got %v", l.Type())
 		}
 		left := l.Bool()
@@ -431,7 +408,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		if err != nil {
 			return nil, err
 		}
-		if r.Type() != semantic.Bool {
+		if r.Type().Nature() != semantic.Bool {
 			return nil, errors.New(codes.Invalid, "right operand to logical expression is not a boolean value")
 		}
 		right := r.Bool()
@@ -449,34 +426,20 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		if err != nil {
 			return nil, err
 		}
-		if t.Type() != semantic.Bool {
+		if t.Type().Nature() != semantic.Bool {
 			return nil, errors.New(codes.Invalid, "conditional test expression is not a boolean value")
 		}
 		if t.Bool() {
 			return itrp.doExpression(ctx, e.Consequent, scope)
-		} else {
-			return itrp.doExpression(ctx, e.Alternate, scope)
 		}
+		return itrp.doExpression(ctx, e.Alternate, scope)
 	case *semantic.FunctionExpression:
-		// Capture type information
-		types := make(map[semantic.Node]semantic.Type)
-		polyTypes := make(map[semantic.Node]semantic.PolyType)
-		semantic.Walk(semantic.CreateVisitor(func(node semantic.Node) {
-			if typ, ok := itrp.types[node]; ok {
-				types[node] = typ
-			}
-			if polyType, ok := itrp.polyTypes[node]; ok {
-				polyTypes[node] = polyType
-			}
-		}), e)
 		// In the case of builtin functions this function value is shared across all query requests
 		// and as such must NOT be a pointer value.
 		return function{
-			e:         e,
-			scope:     scope,
-			pkg:       itrp.pkg,
-			types:     types,
-			polyTypes: polyTypes,
+			e:     e,
+			scope: scope,
+			pkg:   itrp.pkg,
 		}, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "unsupported expression %T", expr)
@@ -507,11 +470,12 @@ func (itrp *Interpreter) doStringPart(ctx context.Context, part semantic.StringE
 
 func (itrp *Interpreter) doArray(ctx context.Context, a *semantic.ArrayExpression, scope values.Scope) (values.Value, error) {
 	elements := make([]values.Value, len(a.Elements))
-	arrayType, ok := itrp.types[a]
-	if !ok {
-		return nil, errors.New(codes.Internal, "expecting array type")
+
+	arrayType := a.TypeOf()
+	elementType, err := arrayType.ElemType()
+	if err != nil {
+		return nil, err
 	}
-	elementType := arrayType.ElementType()
 	for i, el := range a.Elements {
 		v, err := itrp.doExpression(ctx, el, scope)
 		if err != nil {
@@ -609,36 +573,24 @@ func DoFunctionCallContext(f func(ctx context.Context, args Arguments) (values.V
 	return v, nil
 }
 
-type functionType interface {
-	Signature() semantic.FunctionPolySignature
-}
-
 func (itrp *Interpreter) doCall(ctx context.Context, call *semantic.CallExpression, scope values.Scope) (values.Value, error) {
 	callee, err := itrp.doExpression(ctx, call.Callee, scope)
 	if err != nil {
 		return nil, err
 	}
-	ft := callee.PolyType()
+	ft := callee.Type()
 	if ft.Nature() != semantic.Function {
 		return nil, errors.Newf(codes.Invalid, "cannot call function, value is of type %v", callee.Type())
 	}
-	f := callee.Function()
-	sig := ft.(functionType).Signature()
-	argObj, err := itrp.doArguments(ctx, call.Arguments, scope, sig.PipeArgument, call.Pipe)
+	argObj, err := itrp.doArguments(ctx, call.Arguments, scope, ft, call.Pipe)
 	if err != nil {
 		return nil, err
 	}
 
+	f := callee.Function()
+
 	// Check if the function is an interpFunction and rebind it.
 	if af, ok := f.(function); ok {
-		semantic.Walk(semantic.CreateVisitor(func(node semantic.Node) {
-			if typ, ok := af.TypeOf(node); ok {
-				itrp.types[node] = typ
-			}
-			if polyType, ok := af.PolyTypeOf(node); ok {
-				itrp.polyTypes[node] = polyType
-			}
-		}), af.e)
 		af, err = itrp.mutateFunctionScope(af)
 		if err != nil {
 			return nil, err
@@ -660,7 +612,7 @@ func (itrp *Interpreter) doCall(ctx context.Context, call *semantic.CallExpressi
 	return value, nil
 }
 
-func (itrp *Interpreter) doArguments(ctx context.Context, args *semantic.ObjectExpression, scope values.Scope, pipeArgument string, pipe semantic.Expression) (values.Object, error) {
+func (itrp *Interpreter) doArguments(ctx context.Context, args *semantic.ObjectExpression, scope values.Scope, funcType semantic.MonoType, pipe semantic.Expression) (values.Object, error) {
 	obj := values.NewObject()
 	if pipe == nil && (args == nil || len(args.Properties) == 0) {
 		return obj, nil
@@ -686,6 +638,21 @@ func (itrp *Interpreter) doArguments(ctx context.Context, args *semantic.ObjectE
 
 		obj.Set(p.Key.Key(), value)
 	}
+	n, err := funcType.NumArguments()
+	if err != nil {
+		return nil, err
+	}
+
+	var pipeArgument string
+	for i := 0; i < n; i++ {
+		arg, err := funcType.Argument(i)
+		if err != nil {
+			return nil, err
+		}
+		if arg.Pipe() {
+			pipeArgument = string(arg.Name())
+		}
+	}
 	if pipe != nil && pipeArgument == "" {
 		return nil, errors.New(codes.Invalid, "pipe parameter value provided to function with no pipe parameter defined")
 	}
@@ -699,19 +666,10 @@ func (itrp *Interpreter) doArguments(ctx context.Context, args *semantic.ObjectE
 	return obj, nil
 }
 
-// typeof returns the typeof a node or returns the default
-// if there is no registered type.
-func (itrp *Interpreter) typeof(n semantic.Node, def semantic.Type) semantic.Type {
-	if typ, ok := itrp.types[n]; ok {
-		return typ
-	}
-	return def
-}
-
 // Value represents any value that can be the result of evaluating any expression.
 type Value interface {
 	// Type reports the type of value
-	Type() semantic.Type
+	Type() semantic.MonoType
 	// Value returns the actual value represented.
 	Value() interface{}
 	// Property returns a new value which is a property of this value.
@@ -726,31 +684,11 @@ type function struct {
 	scope values.Scope
 	pkg   *Package
 
-	types     map[semantic.Node]semantic.Type
-	polyTypes map[semantic.Node]semantic.PolyType
-
 	itrp *Interpreter
 }
 
-func (f function) TypeOf(node semantic.Node) (semantic.Type, bool) {
-	t, ok := f.types[node]
-	return t, ok
-}
-func (f function) PolyTypeOf(node semantic.Node) (semantic.PolyType, bool) {
-	p, ok := f.polyTypes[node]
-	return p, ok
-}
-func (f function) Type() semantic.Type {
-	if t, ok := f.TypeOf(f.e); ok {
-		return t
-	}
-	return semantic.Invalid
-}
-func (f function) PolyType() semantic.PolyType {
-	if t, ok := f.PolyTypeOf(f.e); ok {
-		return t
-	}
-	return semantic.Invalid
+func (f function) Type() semantic.MonoType {
+	return f.e.TypeOf()
 }
 
 func (f function) IsNull() bool {
@@ -818,10 +756,8 @@ func (f function) Call(ctx context.Context, args values.Object) (values.Value, e
 }
 func (f function) doCall(ctx context.Context, args Arguments) (values.Value, error) {
 	if f.itrp == nil {
-		f.itrp = &Interpreter{
-			types:     f.types,
-			polyTypes: f.polyTypes,
-		}
+		// Create an new interpreter
+		f.itrp = &Interpreter{}
 	}
 
 	blockScope := f.scope.Nest(nil)
@@ -873,7 +809,7 @@ func (f function) doCall(ctx context.Context, args Arguments) (values.Value, err
 		// TODO(jlapacik): Return values should not be associated with variable scope.
 		// This check should be performed during type inference, not here.
 		v := nested.Return()
-		if v.PolyType().Nature() == semantic.Invalid {
+		if v.Type().Nature() == semantic.Invalid {
 			return nil, errors.New(codes.Invalid, "function has no return value")
 		}
 		return v, nil
@@ -883,7 +819,7 @@ func (f function) doCall(ctx context.Context, args Arguments) (values.Value, err
 }
 
 func (f function) String() string {
-	return fmt.Sprintf("%v", f.PolyType())
+	return fmt.Sprintf("%v", f.Type())
 }
 
 // Resolver represents a value that can resolve itself.
@@ -1224,8 +1160,12 @@ func resolveValue(v values.Value) (semantic.Node, bool, error) {
 }
 
 func ToStringArray(a values.Array) ([]string, error) {
-	if a.Type().ElementType() != semantic.String {
-		return nil, errors.Newf(codes.Invalid, "cannot convert array of %v to an array of strings", a.Type().ElementType())
+	t, err := a.Type().ElemType()
+	if err != nil {
+		return nil, err
+	}
+	if t.Nature() != semantic.String {
+		return nil, errors.Newf(codes.Invalid, "cannot convert array of %v to an array of strings", t)
 	}
 	strs := make([]string, a.Len())
 	a.Range(func(i int, v values.Value) {
@@ -1234,8 +1174,12 @@ func ToStringArray(a values.Array) ([]string, error) {
 	return strs, nil
 }
 func ToFloatArray(a values.Array) ([]float64, error) {
-	if a.Type().ElementType() != semantic.Float {
-		return nil, errors.Newf(codes.Invalid, "cannot convert array of %v to an array of floats", a.Type().ElementType())
+	t, err := a.Type().ElemType()
+	if err != nil {
+		return nil, err
+	}
+	if t.Nature() != semantic.Float {
+		return nil, errors.Newf(codes.Invalid, "cannot convert array of %v to an array of floats", t)
 	}
 	vs := make([]float64, a.Len())
 	a.Range(func(i int, v values.Value) {
@@ -1377,7 +1321,11 @@ func (a *arguments) GetArray(name string, t semantic.Nature) (values.Array, bool
 		return nil, ok, err
 	}
 	arr := v.Array()
-	if arr.Type().ElementType() != t {
+	et, err := arr.Type().ElemType()
+	if err != nil {
+		return nil, false, err
+	}
+	if et.Nature() != t {
 		return nil, true, errors.Newf(codes.Invalid, "keyword argument %q should be of an array of type %v, but got an array of type %v", name, t, arr.Type())
 	}
 	return v.Array(), ok, nil
@@ -1388,8 +1336,12 @@ func (a *arguments) GetRequiredArray(name string, t semantic.Nature) (values.Arr
 		return nil, err
 	}
 	arr := v.Array()
-	if arr.Type().ElementType().Nature() != t {
-		return nil, errors.Newf(codes.Invalid, "keyword argument %q should be of an array of type %v, but got an array of type %v", name, t, arr.Type().ElementType().Nature())
+	et, err := arr.Type().ElemType()
+	if err != nil {
+		return nil, err
+	}
+	if et.Nature() != t {
+		return nil, errors.Newf(codes.Invalid, "keyword argument %q should be of an array of type %v, but got an array of type %v", name, t, arr.Type())
 	}
 	return arr, nil
 }
@@ -1432,8 +1384,8 @@ func (a *arguments) get(name string, kind semantic.Nature, required bool) (value
 		}
 		return nil, false, nil
 	}
-	if v.PolyType().Nature() != kind {
-		return nil, true, errors.Newf(codes.Invalid, "keyword argument %q should be of kind %v, but got %v", name, kind, v.PolyType().Nature())
+	if v.Type().Nature() != kind {
+		return nil, true, errors.Newf(codes.Invalid, "keyword argument %q should be of kind %v, but got %v", name, kind, v.Type().Nature())
 	}
 	return v, true, nil
 }

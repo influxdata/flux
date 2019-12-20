@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic/internal/fbsemantic"
-	"github.com/influxdata/flux/semantic/types"
 )
 
 func DeserializeFromFlatBuffer(buf []byte) (*Package, error) {
@@ -573,17 +572,17 @@ type fbTyper interface {
 
 // getMonoType produces an FBMonoType from the given FlatBuffers expression that has
 // a union "typ" field (which is all the different kinds of expressions).
-func getMonoType(fbExpr fbTyper) (*types.MonoType, error) {
+func getMonoType(fbExpr fbTyper) (MonoType, error) {
 	tbl := new(flatbuffers.Table)
 	if !fbExpr.Typ(tbl) {
-		return nil, errors.Newf(codes.Internal, "missing monotype")
+		return MonoType{}, errors.Newf(codes.Internal, "missing monotype")
 	}
 
 	t := fbExpr.TypType()
-	return types.NewMonoType(tbl, t)
+	return NewMonoType(tbl, t)
 }
 
-func getPolyType(fb *fbsemantic.NativeVariableAssignment) (*types.PolyType, error) {
+func getPolyType(fb *fbsemantic.NativeVariableAssignment) (PolyType, error) {
 	t := fb.Typ(nil)
-	return types.NewPolyType(t)
+	return NewPolyType(t)
 }

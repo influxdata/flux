@@ -55,11 +55,8 @@ func (p *Package) Name() string {
 func (p *Package) SideEffects() []SideEffect {
 	return p.sideEffects
 }
-func (p *Package) Type() semantic.Type {
+func (p *Package) Type() semantic.MonoType {
 	return p.object.Type()
-}
-func (p *Package) PolyType() semantic.PolyType {
-	return p.object.PolyType()
 }
 func (p *Package) Get(name string) (values.Value, bool) {
 	v, ok := p.object.Get(name)
@@ -152,7 +149,7 @@ func (p *Package) String() string {
 		}
 		builder.WriteString(k)
 		builder.WriteString(": ")
-		builder.WriteString(fmt.Sprintf("%v", v.PolyType()))
+		builder.WriteString(fmt.Sprintf("%v", v.Type()))
 		i++
 	})
 	builder.WriteRune('}')
