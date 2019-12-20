@@ -692,7 +692,6 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                         package,
                         imports,
                         body,
-                        ..fbast::FileArgs::default()
                     },
                 );
                 v.files.push(f);

@@ -60,17 +60,24 @@ func (rcv *CallExpression) Callee(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func (rcv *CallExpression) Arguments(obj *ObjectExpression) *ObjectExpression {
+func (rcv *CallExpression) Arguments(obj *Property, j int) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
-		x := rcv._tab.Indirect(o + rcv._tab.Pos)
-		if obj == nil {
-			obj = new(ObjectExpression)
-		}
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
 		obj.Init(rcv._tab.Bytes, x)
-		return obj
+		return true
 	}
-	return nil
+	return false
+}
+
+func (rcv *CallExpression) ArgumentsLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
 }
 
 func (rcv *CallExpression) PipeType() byte {
@@ -129,6 +136,9 @@ func CallExpressionAddCallee(builder *flatbuffers.Builder, callee flatbuffers.UO
 }
 func CallExpressionAddArguments(builder *flatbuffers.Builder, arguments flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(arguments), 0)
+}
+func CallExpressionStartArgumentsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
 }
 func CallExpressionAddPipeType(builder *flatbuffers.Builder, pipeType byte) {
 	builder.PrependByteSlot(4, pipeType, 0)

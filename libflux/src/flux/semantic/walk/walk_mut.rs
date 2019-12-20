@@ -50,7 +50,7 @@ pub enum NodeMut<'a> {
     InterpolatedPart(&'a mut InterpolatedPart),
 
     // Assignment.
-    VariableAssgn(&'a mut VariableAssgn),
+    VariableAssgn(&'a mut VariableAssgn), // Native variable assignment
     MemberAssgn(&'a mut MemberAssgn),
 }
 

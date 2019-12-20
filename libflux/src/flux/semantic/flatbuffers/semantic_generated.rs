@@ -7428,12 +7428,12 @@ pub mod fbsemantic {
                 )
         }
         #[inline]
-        pub fn arguments(&self) -> Option<ObjectExpression<'a>> {
-            self._tab
-                .get::<flatbuffers::ForwardsUOffset<ObjectExpression<'a>>>(
-                    CallExpression::VT_ARGUMENTS,
-                    None,
-                )
+        pub fn arguments(
+            &self,
+        ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Property<'a>>>> {
+            self._tab.get::<flatbuffers::ForwardsUOffset<
+                flatbuffers::Vector<flatbuffers::ForwardsUOffset<Property<'a>>>,
+            >>(CallExpression::VT_ARGUMENTS, None)
         }
         #[inline]
         pub fn pipe_type(&self) -> Expression {
@@ -7925,7 +7925,11 @@ pub mod fbsemantic {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub callee_type: Expression,
         pub callee: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
-        pub arguments: Option<flatbuffers::WIPOffset<ObjectExpression<'a>>>,
+        pub arguments: Option<
+            flatbuffers::WIPOffset<
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Property<'a>>>,
+            >,
+        >,
         pub pipe_type: Expression,
         pub pipe: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
         pub typ_type: MonoType,
@@ -7973,12 +7977,16 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(CallExpression::VT_CALLEE, callee);
         }
         #[inline]
-        pub fn add_arguments(&mut self, arguments: flatbuffers::WIPOffset<ObjectExpression<'b>>) {
-            self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<ObjectExpression>>(
-                    CallExpression::VT_ARGUMENTS,
-                    arguments,
-                );
+        pub fn add_arguments(
+            &mut self,
+            arguments: flatbuffers::WIPOffset<
+                flatbuffers::Vector<'b, flatbuffers::ForwardsUOffset<Property<'b>>>,
+            >,
+        ) {
+            self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(
+                CallExpression::VT_ARGUMENTS,
+                arguments,
+            );
         }
         #[inline]
         pub fn add_pipe_type(&mut self, pipe_type: Expression) {
