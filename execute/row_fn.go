@@ -35,9 +35,9 @@ func newDynamicFn(fn *semantic.FunctionExpression, scope compiler.Scope) dynamic
 	}
 }
 
-func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.Type) error {
+func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) error {
 	// Prepare types and recordCols
-	propertyTypes := make(map[string]semantic.Type, len(f.references))
+	propertyTypes := make(map[string]semantic.MonoType, len(f.references))
 	f.recordCols = make(map[string]int)
 	for j, c := range cols {
 		propertyTypes[c.Label] = ConvertToKind(c.Type)
@@ -46,7 +46,7 @@ func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.
 
 	f.record = NewRecord(semantic.NewObjectType(propertyTypes))
 	if extraTypes == nil {
-		extraTypes = map[string]semantic.Type{
+		extraTypes = map[string]semantic.MonoType{
 			f.recordName: f.record.Type(),
 		}
 	} else {
@@ -197,7 +197,7 @@ func (f *RowPredicateFn) Prepare(cols []flux.ColMeta) error {
 	return nil
 }
 
-func (f *RowPredicateFn) InputType() semantic.Type {
+func (f *RowPredicateFn) InputType() semantic.MonoType {
 	sig := f.preparedFn.FunctionSignature()
 	return sig.Parameters[f.recordName]
 }
@@ -245,7 +245,7 @@ func (f *RowMapFn) Prepare(cols []flux.ColMeta) error {
 	return nil
 }
 
-func (f *RowMapFn) Type() semantic.Type {
+func (f *RowMapFn) Type() semantic.MonoType {
 	return f.preparedFn.Type()
 }
 
@@ -273,7 +273,7 @@ func NewRowReduceFn(fn *semantic.FunctionExpression, scope compiler.Scope) (*Row
 	}, nil
 }
 
-func (f *RowReduceFn) Prepare(cols []flux.ColMeta, reducerType map[string]semantic.Type) error {
+func (f *RowReduceFn) Prepare(cols []flux.ColMeta, reducerType map[string]semantic.MonoType) error {
 	err := f.rowFn.prepare(cols, reducerType)
 	if err != nil {
 		return err
@@ -281,14 +281,14 @@ func (f *RowReduceFn) Prepare(cols []flux.ColMeta, reducerType map[string]semant
 	k := f.preparedFn.Type().Nature()
 	f.isWrap = k != semantic.Object
 	if f.isWrap {
-		f.wrapObj = NewRecord(semantic.NewObjectType(map[string]semantic.Type{
+		f.wrapObj = NewRecord(semantic.NewObjectType(map[string]semantic.MonoType{
 			DefaultValueColLabel: f.preparedFn.Type(),
 		}))
 	}
 	return nil
 }
 
-func (f *RowReduceFn) Type() semantic.Type {
+func (f *RowReduceFn) Type() semantic.MonoType {
 	if f.isWrap {
 		return f.wrapObj.Type()
 	}
@@ -332,22 +332,19 @@ func (c *colReferenceVisitor) Visit(node semantic.Node) semantic.Visitor {
 func (c *colReferenceVisitor) Done(semantic.Node) {}
 
 type Record struct {
-	t      semantic.Type
+	t      semantic.MonoType
 	values map[string]values.Value
 }
 
-func NewRecord(t semantic.Type) *Record {
+func NewRecord(t semantic.MonoType) *Record {
 	return &Record{
 		t:      t,
 		values: make(map[string]values.Value),
 	}
 }
 
-func (r *Record) Type() semantic.Type {
+func (r *Record) Type() semantic.MonoType {
 	return r.t
-}
-func (r *Record) PolyType() semantic.PolyType {
-	return r.t.PolyType()
 }
 
 func (r *Record) IsNull() bool {

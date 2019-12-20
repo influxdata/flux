@@ -15,33 +15,33 @@ import (
 )
 
 type Func interface {
-	FunctionSignature() semantic.FunctionSignature
-	Type() semantic.Type
+	Type() semantic.MonoType
 	Eval(ctx context.Context, input values.Object) (values.Value, error)
 }
 
 type Evaluator interface {
-	Type() semantic.Type
+	Type() semantic.MonoType
 	Eval(ctx context.Context, scope Scope) (values.Value, error)
 }
 
 type compiledFn struct {
 	root       Evaluator
-	fnType     semantic.Type
+	fnType     semantic.MonoType
 	inputScope Scope
 }
 
 func (c compiledFn) validate(input values.Object) error {
-	sig := c.fnType.FunctionSignature()
-	properties := input.Type().Properties()
-	if len(properties) != len(sig.Parameters) {
-		return errors.New(codes.Invalid, "mismatched parameters and properties")
-	}
-	for k, v := range sig.Parameters {
-		if !values.AssignableTo(properties[k], v) {
-			return errors.Newf(codes.Invalid, "parameter %q has the wrong type, expected %v got %v", k, v, properties[k])
-		}
-	}
+	// TODO update to use new types
+	//sig := c.fnType.FunctionSignature()
+	//properties := input.Type().Properties()
+	//if len(properties) != len(sig.Parameters) {
+	//	return errors.New(codes.Invalid, "mismatched parameters and properties")
+	//}
+	//for k, v := range sig.Parameters {
+	//	if !values.AssignableTo(properties[k], v) {
+	//		return errors.Newf(codes.Invalid, "parameter %q has the wrong type, expected %v got %v", k, v, properties[k])
+	//	}
+	//}
 	return nil
 }
 
@@ -55,12 +55,10 @@ func (c compiledFn) buildScope(input values.Object) error {
 	return nil
 }
 
-func (c compiledFn) FunctionSignature() semantic.FunctionSignature {
-	return c.fnType.FunctionSignature()
-}
-
-func (c compiledFn) Type() semantic.Type {
-	return c.fnType.FunctionSignature().Return
+func (c compiledFn) Type() semantic.MonoType {
+	// TODO validate we have a function type
+	rt, _ := c.fnType.ReturnType()
+	return rt
 }
 
 func (c compiledFn) Eval(ctx context.Context, input values.Object) (values.Value, error) {
@@ -111,12 +109,12 @@ func eval(ctx context.Context, e Evaluator, scope Scope) (values.Value, error) {
 }
 
 type blockEvaluator struct {
-	t     semantic.Type
+	t     semantic.MonoType
 	body  []Evaluator
 	value values.Value
 }
 
-func (e *blockEvaluator) Type() semantic.Type {
+func (e *blockEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -137,12 +135,12 @@ type returnEvaluator struct {
 }
 
 type declarationEvaluator struct {
-	t    semantic.Type
+	t    semantic.MonoType
 	id   string
 	init Evaluator
 }
 
-func (e *declarationEvaluator) Type() semantic.Type {
+func (e *declarationEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -157,11 +155,11 @@ func (e *declarationEvaluator) Eval(ctx context.Context, scope Scope) (values.Va
 }
 
 type stringExpressionEvaluator struct {
-	t     semantic.Type
+	t     semantic.MonoType
 	parts []Evaluator
 }
 
-func (e *stringExpressionEvaluator) Type() semantic.Type {
+func (e *stringExpressionEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -181,8 +179,8 @@ type textEvaluator struct {
 	value string
 }
 
-func (*textEvaluator) Type() semantic.Type {
-	return semantic.String
+func (*textEvaluator) Type() semantic.MonoType {
+	return semantic.BasicString
 }
 
 func (e *textEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
@@ -193,8 +191,8 @@ type interpolatedEvaluator struct {
 	s Evaluator
 }
 
-func (*interpolatedEvaluator) Type() semantic.Type {
-	return semantic.String
+func (*interpolatedEvaluator) Type() semantic.MonoType {
+	return semantic.BasicString
 }
 
 func (e *interpolatedEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
@@ -202,12 +200,12 @@ func (e *interpolatedEvaluator) Eval(ctx context.Context, scope Scope) (values.V
 }
 
 type objEvaluator struct {
-	t          semantic.Type
+	t          semantic.MonoType
 	with       *identifierEvaluator
 	properties map[string]Evaluator
 }
 
-func (e *objEvaluator) Type() semantic.Type {
+func (e *objEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -235,16 +233,16 @@ func (e *objEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, err
 }
 
 type arrayEvaluator struct {
-	t     semantic.Type
+	t     semantic.MonoType
 	array []Evaluator
 }
 
-func (e *arrayEvaluator) Type() semantic.Type {
+func (e *arrayEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
 func (e *arrayEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
-	arr := values.NewArray(e.t.ElementType())
+	arr := values.NewArray(e.t)
 	for _, ev := range e.array {
 		v, err := eval(ctx, ev, scope)
 		if err != nil {
@@ -256,12 +254,12 @@ func (e *arrayEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, e
 }
 
 type logicalEvaluator struct {
-	t           semantic.Type
+	t           semantic.MonoType
 	operator    ast.LogicalOperatorKind
 	left, right Evaluator
 }
 
-func (e *logicalEvaluator) Type() semantic.Type {
+func (e *logicalEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -293,13 +291,13 @@ func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 }
 
 type conditionalEvaluator struct {
-	t          semantic.Type
+	t          semantic.MonoType
 	test       Evaluator
 	consequent Evaluator
 	alternate  Evaluator
 }
 
-func (e *conditionalEvaluator) Type() semantic.Type {
+func (e *conditionalEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -317,12 +315,12 @@ func (e *conditionalEvaluator) Eval(ctx context.Context, scope Scope) (values.Va
 }
 
 type binaryEvaluator struct {
-	t           semantic.Type
+	t           semantic.MonoType
 	left, right Evaluator
 	f           values.BinaryFunction
 }
 
-func (e *binaryEvaluator) Type() semantic.Type {
+func (e *binaryEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -339,12 +337,12 @@ func (e *binaryEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, 
 }
 
 type unaryEvaluator struct {
-	t    semantic.Type
+	t    semantic.MonoType
 	node Evaluator
 	op   ast.OperatorKind
 }
 
-func (e *unaryEvaluator) Type() semantic.Type {
+func (e *unaryEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -396,11 +394,11 @@ func (e *unaryEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, e
 }
 
 type integerEvaluator struct {
-	t semantic.Type
+	t semantic.MonoType
 	i int64
 }
 
-func (e *integerEvaluator) Type() semantic.Type {
+func (e *integerEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -409,11 +407,11 @@ func (e *integerEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 }
 
 type unsignedIntegerEvaluator struct {
-	t semantic.Type
+	t semantic.MonoType
 	i uint64
 }
 
-func (e *unsignedIntegerEvaluator) Type() semantic.Type {
+func (e *unsignedIntegerEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -422,11 +420,11 @@ func (e *unsignedIntegerEvaluator) Eval(ctx context.Context, scope Scope) (value
 }
 
 type stringEvaluator struct {
-	t semantic.Type
+	t semantic.MonoType
 	s string
 }
 
-func (e *stringEvaluator) Type() semantic.Type {
+func (e *stringEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -435,11 +433,11 @@ func (e *stringEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, 
 }
 
 type regexpEvaluator struct {
-	t semantic.Type
+	t semantic.MonoType
 	r *regexp.Regexp
 }
 
-func (e *regexpEvaluator) Type() semantic.Type {
+func (e *regexpEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -448,11 +446,11 @@ func (e *regexpEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, 
 }
 
 type booleanEvaluator struct {
-	t semantic.Type
+	t semantic.MonoType
 	b bool
 }
 
-func (e *booleanEvaluator) Type() semantic.Type {
+func (e *booleanEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -461,11 +459,11 @@ func (e *booleanEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 }
 
 type floatEvaluator struct {
-	t semantic.Type
+	t semantic.MonoType
 	f float64
 }
 
-func (e *floatEvaluator) Type() semantic.Type {
+func (e *floatEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -474,11 +472,11 @@ func (e *floatEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, e
 }
 
 type timeEvaluator struct {
-	t    semantic.Type
+	t    semantic.MonoType
 	time values.Time
 }
 
-func (e *timeEvaluator) Type() semantic.Type {
+func (e *timeEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -487,11 +485,11 @@ func (e *timeEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, er
 }
 
 type durationEvaluator struct {
-	t        semantic.Type
+	t        semantic.MonoType
 	duration values.Duration
 }
 
-func (e *durationEvaluator) Type() semantic.Type {
+func (e *durationEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -500,16 +498,12 @@ func (e *durationEvaluator) Eval(ctx context.Context, scope Scope) (values.Value
 }
 
 type identifierEvaluator struct {
-	t    semantic.PolyType
+	t    semantic.MonoType
 	name string
 }
 
-func (e *identifierEvaluator) Type() semantic.Type {
-	t, ok := e.t.MonoType()
-	if !ok {
-		return semantic.Invalid
-	}
-	return t
+func (e *identifierEvaluator) Type() semantic.MonoType {
+	return e.t
 }
 
 func (e *identifierEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
@@ -526,22 +520,18 @@ func (e *identifierEvaluator) Eval(ctx context.Context, scope Scope) (values.Val
 	// value's **polytype** as this value will return an
 	// invalid monotype.
 	//
-	values.CheckKind(v.PolyType().Nature(), e.t.Nature())
+	values.CheckKind(v.Type().Nature(), e.t.Nature())
 	return v, nil
 }
 
 type memberEvaluator struct {
-	t        semantic.PolyType
+	t        semantic.MonoType
 	object   Evaluator
 	property string
 }
 
-func (e *memberEvaluator) Type() semantic.Type {
-	t, ok := e.t.MonoType()
-	if !ok {
-		return semantic.Invalid
-	}
-	return t
+func (e *memberEvaluator) Type() semantic.MonoType {
+	return e.t
 }
 
 func (e *memberEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
@@ -555,12 +545,12 @@ func (e *memberEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, 
 }
 
 type arrayIndexEvaluator struct {
-	t     semantic.Type
+	t     semantic.MonoType
 	array Evaluator
 	index Evaluator
 }
 
-func (e *arrayIndexEvaluator) Type() semantic.Type {
+func (e *arrayIndexEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -577,12 +567,12 @@ func (e *arrayIndexEvaluator) Eval(ctx context.Context, scope Scope) (values.Val
 }
 
 type callEvaluator struct {
-	t      semantic.Type
+	t      semantic.MonoType
 	callee Evaluator
 	args   Evaluator
 }
 
-func (e *callEvaluator) Type() semantic.Type {
+func (e *callEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -599,12 +589,12 @@ func (e *callEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, er
 }
 
 type functionEvaluator struct {
-	t      semantic.Type
+	t      semantic.MonoType
 	body   Evaluator
 	params []functionParam
 }
 
-func (e *functionEvaluator) Type() semantic.Type {
+func (e *functionEvaluator) Type() semantic.MonoType {
 	return e.t
 }
 
@@ -618,7 +608,7 @@ func (e *functionEvaluator) Eval(ctx context.Context, scope Scope) (values.Value
 }
 
 type functionValue struct {
-	t      semantic.Type
+	t      semantic.MonoType
 	body   Evaluator
 	params []functionParam
 	scope  Scope
@@ -627,7 +617,7 @@ type functionValue struct {
 type functionParam struct {
 	Key     string
 	Default Evaluator
-	Type    semantic.Type
+	Type    semantic.MonoType
 }
 
 func (f *functionValue) HasSideEffect() bool {
@@ -650,9 +640,8 @@ func (f *functionValue) Call(ctx context.Context, args values.Object) (values.Va
 	return eval(ctx, f.body, scope)
 }
 
-func (f *functionValue) Type() semantic.Type         { return f.t }
-func (f *functionValue) PolyType() semantic.PolyType { return f.t.PolyType() }
-func (f *functionValue) IsNull() bool                { return false }
+func (f *functionValue) Type() semantic.MonoType { return f.t }
+func (f *functionValue) IsNull() bool            { return false }
 func (f *functionValue) Str() string {
 	panic(values.UnexpectedKind(semantic.Function, semantic.String))
 }
@@ -699,8 +688,9 @@ func (f *functionValue) Equal(rhs values.Value) bool {
 
 type noopEvaluator struct{}
 
-func (noopEvaluator) Type() semantic.Type {
-	return semantic.Nil
+func (noopEvaluator) Type() semantic.MonoType {
+	// TODO this is supposed to be semantic.Nil
+	return semantic.BasicBool
 }
 
 func (noopEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
