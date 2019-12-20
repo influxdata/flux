@@ -406,10 +406,22 @@ fn compare_exprs(
         ) => {
             let fb_dur_lit = fbsemantic::DurationLiteral::init_from_table(*fb_tbl);
             compare_loc(&semantic_dur.loc, &fb_dur_lit.loc())?;
+
             let fb_val = fb_dur_lit.value();
-            let fb_val_unwrap = unwrap_or_fail("dur lit values", &fb_val)?;
-            let fb_d = fb_val_unwrap.get(0);
-            compare_duration(&semantic_dur.value, &fb_d)?;
+            let fb_values = unwrap_or_fail("dur lit values", &fb_val)?;
+            let semantic_val = &semantic_dur.value;
+
+            let fb_d = fb_values.get(0);
+            let sem_mag = match semantic_val.num_nanoseconds() {
+                Some(mag) => mag,
+                None => {
+                    return Err(String::from("empty flatbuffer duration"));
+                }
+            };
+
+            if sem_mag != fb_d.magnitude() {
+                return Err(String::from("invalid duration magnitude"));
+            }
             Ok(())
         }
         (
@@ -610,36 +622,6 @@ fn compare_exprs(
             )))
         }
     }
-}
-
-fn compare_duration(
-    semantic_dur: &semantic::nodes::Duration,
-    fb_dur: &fbsemantic::Duration,
-) -> Result<(), String> {
-    if semantic_dur.months != fb_dur.months() {
-        return Err(String::from(format!(
-            "duration months do not match; semantic = {}, fb = {}",
-            semantic_dur.months,
-            fb_dur.months()
-        )));
-    }
-
-    if semantic_dur.nanoseconds != fb_dur.nanoseconds() {
-        return Err(String::from(format!(
-            "duration nanoseconds do not match; semantic = {}, fb = {}",
-            semantic_dur.nanoseconds,
-            fb_dur.nanoseconds()
-        )));
-    }
-
-    if semantic_dur.negative != fb_dur.negative() {
-        return Err(String::from(format!(
-            "durations are not the same sign; semantic is negative = {}, fb is negative = {}",
-            semantic_dur.negative,
-            fb_dur.negative()
-        )));
-    }
-    Ok(())
 }
 
 fn compare_property_list(

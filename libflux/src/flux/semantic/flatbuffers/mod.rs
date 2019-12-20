@@ -13,7 +13,7 @@ use flatbuffers::{UnionWIPOffset, WIPOffset};
 use semantic_generated::fbsemantic;
 
 extern crate chrono;
-use chrono::Duration as ChronoDuration;
+use chrono::Offset;
 
 pub fn serialize(semantic_pkg: &mut semantic::nodes::Package) -> Result<(Vec<u8>, usize), String> {
     let mut v = new_serializing_visitor_with_capacity(1024);
@@ -36,23 +36,24 @@ struct SerializingVisitor<'a> {
 impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
     fn visit(&mut self, _node: Rc<walk::Node<'_>>) -> bool {
         let v = self.inner.borrow();
-        if v.err.is_some() {
+        if let Some(_) = &v.err {
             return false;
         }
+        Some(SerializingVisitor {
+            inner: Rc::clone(&self.inner),
+        });
         true
     }
 
     fn done(&mut self, node: Rc<walk::Node<'_>>) {
         let mut v = &mut *self.inner.borrow_mut();
-        if v.err.is_some() {
+        if let Some(_) = &v.err {
             return;
         }
         let node = &*node;
         let loc = v.create_loc(node.loc());
         match node {
             walk::Node::IntegerLit(int) => {
-                // TODO (fchikwekwe): change `build_type` so that it accepts a reference.
-                // Bug filed here: https://github.com/influxdata/flux/issues/2292
                 let int_typ = int.typ.clone();
                 let (typ, typ_type) = types::build_type(&mut v.builder, int_typ);
 
@@ -140,21 +141,23 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                     fbsemantic::Expression::StringLiteral,
                 ))
             }
+
             walk::Node::DurationLit(dur_lit) => {
                 let mut dur_vec: Vec<WIPOffset<fbsemantic::Duration>> = Vec::new();
-                let nanoseconds = dur_lit.value.nanoseconds;
-                let months = dur_lit.value.months;
-                let negative = dur_lit.value.negative;
-
+                let magnitude = match dur_lit.value.num_nanoseconds() {
+                    Some(mag) => mag,
+                    None => {
+                        v.err = Some(String::from("Empty duration value"));
+                        return;
+                    }
+                };
                 let dur = fbsemantic::Duration::create(
                     &mut v.builder,
                     &fbsemantic::DurationArgs {
-                        months,
-                        nanoseconds,
-                        negative,
+                        magnitude,
+                        unit: fbsemantic::TimeUnit::ns,
                     },
                 );
-
                 dur_vec.push(dur);
                 let value = Some(v.builder.create_vector(dur_vec.as_slice()));
 
@@ -182,14 +185,14 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
 
                 let secs = datetime.value.timestamp();
                 let nano_secs = datetime.value.timestamp_subsec_nanos();
-                let offset = datetime.value.offset().local_minus_utc();
+                let offset = datetime.value.offset().fix().local_minus_utc();
 
                 let time = fbsemantic::Time::create(
                     &mut v.builder,
                     &fbsemantic::TimeArgs {
-                        secs,
+                        secs: secs,
                         nsecs: nano_secs,
-                        offset,
+                        offset: offset,
                     },
                 );
 
@@ -435,7 +438,10 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
             walk::Node::CallExpr(call) => {
                 let (pipe, pipe_type) = {
                     match &call.pipe {
-                        Some(_) => v.pop_expr(),
+                        Some(_) => {
+                            let expr = v.pop_expr();
+                            expr
+                        }
                         _ => (None, fbsemantic::Expression::NONE),
                     }
                 };
@@ -786,7 +792,8 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                                 (Some(nva), fbsemantic::Assignment::NativeVariableAssignment)
                             }
                             Some((_, ty)) => {
-                                v.err = Some(format!("found {:?} in stmt vector", ty));
+                                v.err =
+                                    Some(String::from(format!("found {:?} in stmt vector", ty)));
                                 return;
                             }
                             None => {
@@ -961,7 +968,7 @@ impl<'a> SerializingVisitorState<'a> {
         match self.expr_stack.pop() {
             None => {
                 self.err = Some(String::from("Tried popping empty expression stack"));
-                (None, fbsemantic::Expression::NONE)
+                return (None, fbsemantic::Expression::NONE);
             }
             Some((o, e)) => (Some(o), e),
         }
@@ -973,17 +980,19 @@ impl<'a> SerializingVisitorState<'a> {
                 if e == kind {
                     Some(WIPOffset::new(wipo.value()))
                 } else {
-                    self.err = Some(format!(
+                    self.err = Some(String::from(format!(
                         "expected {} on expr stack, got {}",
                         fbsemantic::enum_name_expression(kind),
                         fbsemantic::enum_name_expression(e)
-                    ));
-                    None
+                    )));
+                    return None;
                 }
             }
             None => {
-                self.err = Some("Tried popping empty expression stack".to_string());
-                None
+                self.err = Some(String::from(format!(
+                    "Tried popping empty expression stack"
+                )));
+                return None;
             }
         }
     }
@@ -991,15 +1000,17 @@ impl<'a> SerializingVisitorState<'a> {
     fn pop_ident<T>(&mut self) -> Option<WIPOffset<T>> {
         match self.identifiers.pop() {
             None => {
-                self.err = Some("Tried popping empty identifier stack".to_string());
-                None
+                self.err = Some(String::from(format!(
+                    "Tried popping empty identifier stack"
+                )));
+                return None;
             }
             Some(wip) => Some(WIPOffset::new(wip.value())),
         }
     }
 
-    fn create_string(&mut self, string: &str) -> Option<WIPOffset<&'a str>> {
-        Some(self.builder.create_string(string))
+    fn create_string(&mut self, str: &String) -> Option<WIPOffset<&'a str>> {
+        Some(self.builder.create_string(str.as_str()))
     }
 
     fn create_opt_string(&mut self, str: &Option<String>) -> Option<WIPOffset<&'a str>> {
@@ -1117,6 +1128,22 @@ fn fb_logical_operator(lo: &ast::LogicalOperator) -> fbsemantic::LogicalOperator
     match lo {
         ast::LogicalOperator::AndOperator => fbsemantic::LogicalOperator::AndOperator,
         ast::LogicalOperator::OrOperator => fbsemantic::LogicalOperator::OrOperator,
+    }
+}
+
+fn fb_duration(d: &String) -> Result<fbsemantic::TimeUnit, String> {
+    match d.as_str() {
+        "y" => Ok(fbsemantic::TimeUnit::y),
+        "mo" => Ok(fbsemantic::TimeUnit::mo),
+        "w" => Ok(fbsemantic::TimeUnit::w),
+        "d" => Ok(fbsemantic::TimeUnit::d),
+        "h" => Ok(fbsemantic::TimeUnit::h),
+        "m" => Ok(fbsemantic::TimeUnit::m),
+        "s" => Ok(fbsemantic::TimeUnit::s),
+        "ms" => Ok(fbsemantic::TimeUnit::ms),
+        "us" => Ok(fbsemantic::TimeUnit::us),
+        "ns" => Ok(fbsemantic::TimeUnit::ns),
+        s => Err(String::from(format!("unknown time unit {}", s))),
     }
 }
 
