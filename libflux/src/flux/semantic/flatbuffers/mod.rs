@@ -54,6 +54,8 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
         let loc = v.create_loc(node.loc());
         match node {
             walk::Node::IntegerLit(int) => {
+                // TODO (fchikwekwe): change `build_type` so that it accepts a reference. 
+                // Bug filed here: https://github.com/influxdata/flux/issues/2292
                 let int_typ = int.typ.clone();
                 let (typ, typ_type) = types::build_type(&mut v.builder, int_typ);
 
@@ -142,6 +144,8 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 ))
             }
 
+            // TODO(fchikwekwe): change duration struct so that it contains months, nanoseconds and negative/positve value
+            // Bug filed here: https://github.com/influxdata/flux/issues/2290
             walk::Node::DurationLit(dur_lit) => {
                 let mut dur_vec: Vec<WIPOffset<fbsemantic::Duration>> = Vec::new();
                 let magnitude = match dur_lit.value.num_nanoseconds() {
