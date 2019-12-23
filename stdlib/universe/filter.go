@@ -178,7 +178,7 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	inType := t.fn.InputType()
 	n, _ := inType.NumProperties()
 	for i := 0; i < n; i++ {
-		// TODO add error handling
+		// TODO (algow): add error handling
 		p, _ := inType.RowProperty(i)
 		t, _ := p.TypeOf()
 		properties[p.Name()] = t

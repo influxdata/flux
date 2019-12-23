@@ -35,7 +35,7 @@ type SideEffect struct {
 
 // Eval evaluates the expressions composing a Flux package and returns any side effects that occurred during this evaluation.
 func (itrp *Interpreter) Eval(ctx context.Context, node semantic.Node, scope values.Scope, importer Importer) ([]SideEffect, error) {
-	// TODO how does this change?
+	// TODO (algow): how does this change?
 	//n := values.BuildExternAssignments(node, scope)
 
 	// reset side effect list
@@ -366,7 +366,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			return nil, err
 		}
 
-		// TODO validate that indeed type inference fixes this
+		// TODO (algow): validate that indeed type inference fixes this
 		// TODO(jsternberg): This next section needs to be removed
 		// since type inference should give the correct type.
 		//if ltyp == semantic.Nil && l.Type().Nature() != semantic.Nil {

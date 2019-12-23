@@ -18,7 +18,7 @@ import (
 // TODO(affo): we decided not to expose the schema, for now.
 var (
 	TableType = semantic.NewObjectType(
-	// TODO determine the correct type here
+	// TODO (algow): determine the correct type here
 	//map[string]semantic.PolyType{
 	//	"schema": semantic.NewArrayPolyType(SchemaType),
 	//},
@@ -27,7 +27,7 @@ var (
 	)
 	TableMonoType semantic.MonoType //, _ = TableType.MonoType()
 	SchemaType    = semantic.NewObjectType(
-	// TODO determine the correct type here
+	// TODO (algow): determine the correct type here
 	//map[string]semantic.PolyType{
 	//	"label":   semantic.String,
 	//	"grouped": semantic.Bool,

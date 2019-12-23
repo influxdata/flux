@@ -437,7 +437,7 @@ func getRules(plannerPkg values.Object, optionName string) ([]string, error) {
 	rules := value.Array()
 	et, err := rules.Type().ElemType()
 	if err != nil {
-		//TODO correctly wrap error
+		//TODO (algow): correctly wrap error
 		return nil, err
 	}
 	if et.Nature() != semantic.String {

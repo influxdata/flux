@@ -14,7 +14,7 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 	if in.Nature() != semantic.Object {
 		return nil, errors.Newf(codes.Invalid, "function input must be an object @ %v", f.Location())
 	}
-	// TODO how do externs work now?
+	// TODO (algow): how do externs work now?
 	//extern := values.BuildExternAssignments(f, scope)
 
 	// The function expression may be polymorphic,
@@ -28,7 +28,7 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 	// forall [t0,t1] where t0 is Rowable (r: { bar: t1 | t0}) -> {foo: t1 | bar: t1 | t0}
 	// (r) => ({r with foo: r.bar + 1})
 
-	// TODO f needs to have a poly type
+	// TODO (algow): f needs to have a poly type
 	ft := f.TypeOf()
 	r, err := ft.Argument(0)
 	if err != nil {
@@ -43,7 +43,7 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 	if err != nil {
 		return nil, err
 	}
-	// TODO allocate space for the number of poly type vars
+	// TODO (algow): allocate space for the number of poly type vars
 	subst := make(map[uint64]semantic.MonoType)
 	for i := 0; i < n; i++ {
 		p, err := rt.RowProperty(i)
@@ -64,14 +64,14 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 		}
 		inb, err := inpt.Basic()
 		if err != nil {
-			return nil, err // TODO error message about requiring basic types to compiled functions
+			return nil, err // TODO (algow): error message about requiring basic types to compiled functions
 		}
 		b, err := pt.Basic()
 		if err != nil {
-			return nil, err // TODO error message about requiring basic types to compiled functions
+			return nil, err // TODO (algow): error message about requiring basic types to compiled functions
 		}
 		if b != inb {
-			return nil, errors.New(codes.Invalid, "TODO something about mismatched input types")
+			return nil, errors.New(codes.Invalid, "TODO (algow): something about mismatched input types")
 		}
 
 		if pt.Kind() == semantic.Var {
@@ -80,7 +80,7 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 				return nil, err
 			}
 			subst[vn] = inpt
-			// TODO check kind constraints
+			// TODO (algow): check kind constraints
 			// against the input type
 		}
 	}
@@ -110,7 +110,7 @@ func findProperty(name string, t semantic.MonoType) (*semantic.RowProperty, erro
 			return p, nil
 		}
 	}
-	// TODO use correct error here
+	// TODO (algow): use correct error here
 	return nil, errors.New(codes.Internal, "not found")
 }
 
@@ -121,7 +121,7 @@ func monoType(subst map[uint64]semantic.MonoType, t semantic.MonoType) semantic.
 	if err != nil {
 		return t
 	}
-	// TODO do we care about the case when the tvar is not in the substitution?
+	// TODO (algow): do we care about the case when the tvar is not in the substitution?
 	return subst[tv]
 }
 
@@ -211,7 +211,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			array: elements,
 		}, nil
 	case *semantic.IdentifierExpression:
-		// TODO do we need this anymore?
+		// TODO (algow): do we need this anymore?
 		// Create type instance of the function
 		//if fe, ok := funcExprs[n.Name]; ok {
 		//	it, err := subst.PolyTypeOf(n)

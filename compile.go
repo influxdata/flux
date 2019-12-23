@@ -492,7 +492,7 @@ func (t *TableObject) str(b *strings.Builder, arrow bool) {
 }
 
 func (t *TableObject) Type() semantic.MonoType {
-	// TODO should this return the type of the function operations?
+	// TODO (algow): should this return the type of the function operations?
 	return semantic.MonoType{}
 }
 
@@ -791,7 +791,7 @@ func (imp *importer) Import(path string) (semantic.PackageType, bool) {
 	}
 	return semantic.PackageType{
 		Name: p.Name(),
-		// TODO how do we want to represent Packages?
+		// TODO (algow): how do we want to represent Packages?
 		//Type: p.Type(),
 	}, true
 }

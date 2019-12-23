@@ -19,7 +19,7 @@ type Object interface {
 type object struct {
 	labels semantic.LabelSet
 	values []Value
-	// TODO reimplement mutable object value
+	// TODO (algow): reimplement mutable object value
 	//ptyp   map[string]semantic.PolyType
 	//ptypv  semantic.PolyType
 	//mtyp   map[string]semantic.Type
@@ -87,7 +87,7 @@ func (o *object) String() string {
 }
 
 func (o *object) Type() semantic.MonoType {
-	// TODO
+	// TODO (algow): finish implementation of object
 	return semantic.MonoType{}
 }
 

@@ -284,7 +284,7 @@ func (f *RowReduceFn) Prepare(cols []flux.ColMeta, reducerType map[string]semant
 	f.isWrap = k != semantic.Object
 	if f.isWrap {
 		f.wrapObj = NewRecord(semantic.NewObjectType(
-		//TODO create correct type
+		//TODO (algow): create correct type
 		//map[string]semantic.MonoType{
 		//	DefaultValueColLabel: f.preparedFn.Type(),
 		//},

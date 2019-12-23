@@ -122,9 +122,9 @@ func init() {
 	fbsemantic.BasicAddT(builder, fbsemantic.TypeBool)
 	basicBool := fbsemantic.BasicEnd(builder)
 
-	// TODO initial all basic values
+	// TODO (algow): initial all basic values
 
-	// TODO this probably doesn't work...
+	// TODO (algow): this probably doesn't work...
 	builder.Finish(basicBool)
 	basicTable = &flatbuffers.Table{
 		Bytes: builder.FinishedBytes(),
@@ -440,7 +440,7 @@ func (mt MonoType) String() string {
 }
 
 func (l MonoType) Equal(r MonoType) bool {
-	// TODO, can we use bytes.Compare here?
+	// TODO (algow):, can we use bytes.Compare here?
 	return false
 }
 
@@ -448,16 +448,16 @@ func NewArrayType(elemType MonoType) MonoType {
 	//builder := flatbuffers.NewBuilder(1024)
 	//fbsemantic.ArrStart(builder)
 	//fbsemantic.AddTType(builder, elemType.Type())
-	//// TODO how do we inject the elemType?
+	//// TODO (algow): how do we inject the elemType?
 	//fbsemantic.AddT(builder, flatbuffer.UOffsetT)
 
 	return MonoType{}
 }
 func NewFunctionType() PolyType {
-	// TODO needs both a list of vars constraints and the monotype
+	// TODO (algow): needs both a list of vars constraints and the monotype
 	return PolyType{}
 }
 func NewObjectType() MonoType {
-	// TODO needs both a list of vars constraints and the monotype
+	// TODO (algow): needs both a list of vars constraints and the monotype
 	return MonoType{}
 }

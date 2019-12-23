@@ -17,7 +17,7 @@ type Function interface {
 
 // NewFunction returns a new function value
 func NewFunction(name string, typ semantic.PolyType, call func(ctx context.Context, args Object) (Value, error), sideEffect bool) *function {
-	// TODO error if type is not a function type
+	// TODO (algow): error if type is not a function type
 	return &function{
 		name:          name,
 		t:             typ,

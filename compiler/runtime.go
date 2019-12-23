@@ -31,7 +31,7 @@ type compiledFn struct {
 }
 
 func (c compiledFn) validate(input values.Object) error {
-	// TODO update to use new types
+	// TODO (algow): update to use new types
 	//sig := c.fnType.FunctionSignature()
 	//properties := input.Type().Properties()
 	//if len(properties) != len(sig.Parameters) {
@@ -56,7 +56,7 @@ func (c compiledFn) buildScope(input values.Object) error {
 }
 
 func (c compiledFn) Type() semantic.MonoType {
-	// TODO validate we have a function type
+	// TODO (algow): validate we have a function type
 	rt, _ := c.fnType.ReturnType()
 	return rt
 }
@@ -689,7 +689,7 @@ func (f *functionValue) Equal(rhs values.Value) bool {
 type noopEvaluator struct{}
 
 func (noopEvaluator) Type() semantic.MonoType {
-	// TODO this is supposed to be semantic.Nil
+	// TODO (algow): this is supposed to be semantic.Nil
 	return semantic.BasicBool
 }
 

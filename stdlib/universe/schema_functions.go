@@ -73,7 +73,7 @@ func (m MutationRegistrar) Register() {
 var Registrars = []MutationRegistrar{
 	{
 		Kind: RenameKind,
-		// TODO determine correct types
+		// TODO (algow): determine correct types
 		//Args: map[string]semantic.PolyType{
 		//"columns": semantic.Object,
 		//"fn": semantic.NewFunctionType(
@@ -91,7 +91,7 @@ var Registrars = []MutationRegistrar{
 	},
 	{
 		Kind: DropKind,
-		// TODO determine correct types
+		// TODO (algow): determine correct types
 		//Args: map[string]semantic.PolyType{
 		//"columns": semantic.NewArrayPolyType(semantic.String),
 		//"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
@@ -107,7 +107,7 @@ var Registrars = []MutationRegistrar{
 	},
 	{
 		Kind: KeepKind,
-		// TODO determine correct types
+		// TODO (algow): determine correct types
 		//Args: map[string]semantic.PolyType{
 		//"columns": semantic.NewArrayPolyType(semantic.String),
 		//"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
@@ -123,7 +123,7 @@ var Registrars = []MutationRegistrar{
 	},
 	{
 		Kind: DuplicateKind,
-		// TODO determine correct t
+		// TODO (algow): determine correct t
 		//Args: map[string]semantic.PolyType{
 		//"column": semantic.String,
 		//"as":     semantic.String,
