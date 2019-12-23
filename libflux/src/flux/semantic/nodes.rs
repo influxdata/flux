@@ -595,7 +595,7 @@ impl VariableAssgn {
         self.cons = p.cons.clone();
 
         // Update the type environment
-        &mut env.add(String::from(&self.id.name), p);
+        env.add(String::from(&self.id.name), p);
         Ok((env, constraints))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -823,10 +823,9 @@ impl FunctionExpr {
     pub fn defaults(&self) -> Vec<&FunctionParameter> {
         let mut ds = Vec::new();
         for p in &self.params {
-            match p.default {
-                Some(_) => ds.push(p),
-                None => (),
-            }
+            if p.default.is_some() {
+                ds.push(p);
+            };
         }
         ds
     }
@@ -1585,7 +1584,7 @@ const YEARS: f64 = MONTHS * 12.0;
 // TODO(affo): this is not accurate, a duration value depends on the time in which it is calculated.
 // 1 month is different if now is the 1st of January, or the 1st of February.
 // Some days do not last 24 hours because of light savings.
-pub fn convert_duration(duration: &Vec<ast::Duration>) -> std::result::Result<Duration, String> {
+pub fn convert_duration(duration: &[ast::Duration]) -> std::result::Result<Duration, String> {
     let d = duration
         .iter()
         .try_fold(0 as i64, |acc, d| match d.unit.as_str() {

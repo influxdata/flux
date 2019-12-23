@@ -1,4 +1,4 @@
-#![allow(clippy::all)]
+#[allow(clippy::all)]
 pub mod semantic_generated;
 pub mod types;
 
@@ -36,18 +36,16 @@ struct SerializingVisitor<'a> {
 impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
     fn visit(&mut self, _node: Rc<walk::Node<'_>>) -> bool {
         let v = self.inner.borrow();
-        if let Some(_) = &v.err {
+        if v.err.is_some() {
             return false;
         }
-        Some(SerializingVisitor {
-            inner: Rc::clone(&self.inner),
-        });
+        Rc::clone(&self.inner);
         true
     }
 
     fn done(&mut self, node: Rc<walk::Node<'_>>) {
         let mut v = &mut *self.inner.borrow_mut();
-        if let Some(_) = &v.err {
+        if v.err.is_some() {
             return;
         }
         let node = &*node;
@@ -190,9 +188,9 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 let time = fbsemantic::Time::create(
                     &mut v.builder,
                     &fbsemantic::TimeArgs {
-                        secs: secs,
+                        secs,
                         nsecs: nano_secs,
-                        offset: offset,
+                        offset,
                     },
                 );
 
@@ -438,10 +436,7 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
             walk::Node::CallExpr(call) => {
                 let (pipe, pipe_type) = {
                     match &call.pipe {
-                        Some(_) => {
-                            let expr = v.pop_expr();
-                            expr
-                        }
+                        Some(_) => v.pop_expr(),
                         _ => (None, fbsemantic::Expression::NONE),
                     }
                 };
@@ -792,8 +787,7 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                                 (Some(nva), fbsemantic::Assignment::NativeVariableAssignment)
                             }
                             Some((_, ty)) => {
-                                v.err =
-                                    Some(String::from(format!("found {:?} in stmt vector", ty)));
+                                v.err = Some(format!("found {:?} in stmt vector", ty));
                                 return;
                             }
                             None => {
@@ -968,7 +962,7 @@ impl<'a> SerializingVisitorState<'a> {
         match self.expr_stack.pop() {
             None => {
                 self.err = Some(String::from("Tried popping empty expression stack"));
-                return (None, fbsemantic::Expression::NONE);
+                (None, fbsemantic::Expression::NONE)
             }
             Some((o, e)) => (Some(o), e),
         }
@@ -980,19 +974,17 @@ impl<'a> SerializingVisitorState<'a> {
                 if e == kind {
                     Some(WIPOffset::new(wipo.value()))
                 } else {
-                    self.err = Some(String::from(format!(
+                    self.err = Some(format!(
                         "expected {} on expr stack, got {}",
                         fbsemantic::enum_name_expression(kind),
                         fbsemantic::enum_name_expression(e)
-                    )));
-                    return None;
+                    ));
+                    None
                 }
             }
             None => {
-                self.err = Some(String::from(format!(
-                    "Tried popping empty expression stack"
-                )));
-                return None;
+                self.err = Some("Tried popping empty expression stack".to_string());
+                None
             }
         }
     }
@@ -1000,17 +992,15 @@ impl<'a> SerializingVisitorState<'a> {
     fn pop_ident<T>(&mut self) -> Option<WIPOffset<T>> {
         match self.identifiers.pop() {
             None => {
-                self.err = Some(String::from(format!(
-                    "Tried popping empty identifier stack"
-                )));
-                return None;
+                self.err = Some("Tried popping empty identifier stack".to_string());
+                None
             }
             Some(wip) => Some(WIPOffset::new(wip.value())),
         }
     }
 
-    fn create_string(&mut self, str: &String) -> Option<WIPOffset<&'a str>> {
-        Some(self.builder.create_string(str.as_str()))
+    fn create_string(&mut self, string: &str) -> Option<WIPOffset<&'a str>> {
+        Some(self.builder.create_string(string))
     }
 
     fn create_opt_string(&mut self, str: &Option<String>) -> Option<WIPOffset<&'a str>> {
@@ -1131,8 +1121,8 @@ fn fb_logical_operator(lo: &ast::LogicalOperator) -> fbsemantic::LogicalOperator
     }
 }
 
-fn fb_duration(d: &String) -> Result<fbsemantic::TimeUnit, String> {
-    match d.as_str() {
+fn fb_duration(d: &str) -> Result<fbsemantic::TimeUnit, String> {
+    match d {
         "y" => Ok(fbsemantic::TimeUnit::y),
         "mo" => Ok(fbsemantic::TimeUnit::mo),
         "w" => Ok(fbsemantic::TimeUnit::w),
@@ -1143,7 +1133,7 @@ fn fb_duration(d: &String) -> Result<fbsemantic::TimeUnit, String> {
         "ms" => Ok(fbsemantic::TimeUnit::ms),
         "us" => Ok(fbsemantic::TimeUnit::us),
         "ns" => Ok(fbsemantic::TimeUnit::ns),
-        s => Err(String::from(format!("unknown time unit {}", s))),
+        s => Err(format!("unknown time unit {}", s)),
     }
 }
 
