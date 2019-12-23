@@ -1,6 +1,6 @@
-mod walk;
+mod _walk;
 mod walk_mut;
-pub use walk::*;
+pub use _walk::*;
 pub use walk_mut::*;
 
 #[cfg(test)]
