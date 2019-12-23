@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const HoltWintersKind = "promHoltWinters"
@@ -20,15 +19,9 @@ type HoltWintersOpSpec struct {
 }
 
 func init() {
-	holtWintersSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"smoothingFactor": semantic.Float,
-			"trendFactor":     semantic.Float,
-		},
-		nil,
-	)
+	holtWintersSignature := flux.LookupBuiltInType("internal/promql", "holtWinters")
 
-	flux.RegisterPackageValue("internal/promql", "holtWinters", flux.FunctionValue(HoltWintersKind, createHoltWintersOpSpec, holtWintersSignature))
+	flux.RegisterPackageValue("internal/promql", "holtWinters", flux.MustValue(flux.FunctionValue(HoltWintersKind, createHoltWintersOpSpec, holtWintersSignature)))
 	flux.RegisterOpSpec(HoltWintersKind, newHoltWintersOp)
 	plan.RegisterProcedureSpec(HoltWintersKind, newHoltWintersProcedure, HoltWintersKind)
 	execute.RegisterTransformation(HoltWintersKind, createHoltWintersTransformation)

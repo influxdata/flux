@@ -37,14 +37,14 @@ func newDynamicFn(fn *semantic.FunctionExpression, scope compiler.Scope) dynamic
 
 func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) error {
 	// Prepare types and recordCols
-	propertyTypes := make(map[string]semantic.MonoType, len(f.references))
+	propertyTypes := make(map[string]semantic.Nature, len(f.references))
 	f.recordCols = make(map[string]int)
 	for j, c := range cols {
 		propertyTypes[c.Label] = ConvertToKind(c.Type)
 		f.recordCols[c.Label] = j
 	}
 
-	f.record = NewRecord(semantic.NewObjectType(propertyTypes))
+	f.record = NewRecord(semantic.NewObjectType())
 	if extraTypes == nil {
 		extraTypes = map[string]semantic.MonoType{
 			f.recordName: f.record.Type(),
@@ -54,7 +54,7 @@ func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.
 	}
 
 	// Compile fn for given types
-	fn, err := f.compilationCache.Compile(semantic.NewObjectType(extraTypes))
+	fn, err := f.compilationCache.Compile(semantic.NewObjectType())
 	if err != nil {
 		return err
 	}
@@ -137,7 +137,7 @@ func (f *TablePredicateFn) Prepare(tbl flux.Table) error {
 	if err := f.tableFn.prepare(tbl.Key().Cols(), nil); err != nil {
 		return err
 	}
-	if f.preparedFn.Type() != semantic.Bool {
+	if f.preparedFn.Type().Nature() != semantic.Bool {
 		return errors.New(codes.Invalid, "table predicate function does not evaluate to a boolean")
 	}
 	return nil
@@ -191,15 +191,17 @@ func (f *RowPredicateFn) Prepare(cols []flux.ColMeta) error {
 	if err := f.rowFn.prepare(cols, nil); err != nil {
 		return err
 	}
-	if f.preparedFn.Type() != semantic.Bool {
+	if f.preparedFn.Type().Nature() != semantic.Bool {
 		return errors.New(codes.Invalid, "row predicate function does not evaluate to a boolean")
 	}
 	return nil
 }
 
 func (f *RowPredicateFn) InputType() semantic.MonoType {
-	sig := f.preparedFn.FunctionSignature()
-	return sig.Parameters[f.recordName]
+	t := f.preparedFn.Type()
+	arg, _ := t.Argument(0)
+	at, _ := arg.TypeOf()
+	return at
 }
 
 func (f *RowPredicateFn) EvalRow(ctx context.Context, row int, cr flux.ColReader) (bool, error) {
@@ -281,9 +283,12 @@ func (f *RowReduceFn) Prepare(cols []flux.ColMeta, reducerType map[string]semant
 	k := f.preparedFn.Type().Nature()
 	f.isWrap = k != semantic.Object
 	if f.isWrap {
-		f.wrapObj = NewRecord(semantic.NewObjectType(map[string]semantic.MonoType{
-			DefaultValueColLabel: f.preparedFn.Type(),
-		}))
+		f.wrapObj = NewRecord(semantic.NewObjectType(
+		//TODO create correct type
+		//map[string]semantic.MonoType{
+		//	DefaultValueColLabel: f.preparedFn.Type(),
+		//},
+		))
 	}
 	return nil
 }

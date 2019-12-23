@@ -24,17 +24,9 @@ type DerivativeOpSpec struct {
 }
 
 func init() {
-	derivativeSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"unit":        semantic.Duration,
-			"nonNegative": semantic.Bool,
-			"columns":     semantic.NewArrayPolyType(semantic.String),
-			"timeColumn":  semantic.String,
-		},
-		nil,
-	)
+	derivativeSignature := flux.LookupBuiltInType("universe", "derivative")
 
-	flux.RegisterPackageValue("universe", DerivativeKind, flux.FunctionValue(DerivativeKind, createDerivativeOpSpec, derivativeSignature))
+	flux.RegisterPackageValue("universe", DerivativeKind, flux.MustValue(flux.FunctionValue(DerivativeKind, createDerivativeOpSpec, derivativeSignature)))
 	flux.RegisterOpSpec(DerivativeKind, newDerivativeOp)
 	plan.RegisterProcedureSpec(DerivativeKind, newDerivativeProcedure, DerivativeKind)
 	execute.RegisterTransformation(DerivativeKind, createDerivativeTransformation)

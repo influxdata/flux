@@ -18,7 +18,7 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/influxdata/line-protocol"
+	protocol "github.com/influxdata/line-protocol"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -40,20 +40,8 @@ type ToKafkaOpSpec struct {
 }
 
 func init() {
-	toKafkaSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"brokers":      semantic.NewArrayPolyType(semantic.String),
-			"topic":        semantic.String,
-			"balancer":     semantic.String,
-			"name":         semantic.String,
-			"nameColumn":   semantic.String,
-			"timeColumn":   semantic.String,
-			"tagColumns":   semantic.NewArrayPolyType(semantic.String),
-			"valueColumns": semantic.NewArrayPolyType(semantic.String),
-		},
-		[]string{"brokers", "topic"},
-	)
-	flux.RegisterPackageValue("kafka", "to", flux.FunctionValueWithSideEffect(ToKafkaKind, createToKafkaOpSpec, toKafkaSignature))
+	toKafkaSignature := flux.LookupBuiltInType("kafka", "to")
+	flux.RegisterPackageValue("kafka", "to", flux.MustValue(flux.FunctionValueWithSideEffect(ToKafkaKind, createToKafkaOpSpec, toKafkaSignature)))
 	flux.RegisterOpSpec(ToKafkaKind, func() flux.OperationSpec { return &ToKafkaOpSpec{} })
 	plan.RegisterProcedureSpecWithSideEffect(ToKafkaKind, newToKafkaProcedure, ToKafkaKind)
 	execute.RegisterTransformation(ToKafkaKind, createToKafkaTransformation)

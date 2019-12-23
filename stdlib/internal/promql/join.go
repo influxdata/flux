@@ -20,23 +20,8 @@ import (
 const joinKind = "internal/promql.join"
 
 func init() {
-	signature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"left":  flux.TableObjectType,
-			"right": flux.TableObjectType,
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"left":  semantic.NewEmptyObjectPolyType(),
-					"right": semantic.NewEmptyObjectPolyType(),
-				},
-				Required: semantic.LabelSet{"left", "right"},
-				Return:   semantic.NewEmptyObjectPolyType(),
-			}),
-		},
-		Required: semantic.LabelSet{"left", "right", "fn"},
-		Return:   flux.TableObjectType,
-	}
-	flux.RegisterPackageValue("internal/promql", "join", flux.FunctionValue("join", createJoinOpSpec, signature))
+	signature := flux.LookupBuiltInType("internal/promql", "join")
+	flux.RegisterPackageValue("internal/promql", "join", flux.MustValue(flux.FunctionValue("join", createJoinOpSpec, signature)))
 	flux.RegisterOpSpec(joinKind, newJoinOp)
 	plan.RegisterProcedureSpec(joinKind, newMergeJoinProcedure, joinKind)
 	execute.RegisterTransformation(joinKind, createMergeJoinTransformation)
@@ -523,20 +508,23 @@ func newRowJoinFn(fn *semantic.FunctionExpression, scope compiler.Scope) *rowJoi
 }
 
 func (fn *rowJoinFn) Prepare(left, right []flux.ColMeta) error {
-	l := make(map[string]semantic.Type, len(left))
+	l := make(map[string]semantic.Nature, len(left))
 	for _, col := range left {
 		l[col.Label] = execute.ConvertToKind(col.Type)
 	}
 
-	r := make(map[string]semantic.Type, len(right))
+	r := make(map[string]semantic.Nature, len(right))
 	for _, col := range right {
 		r[col.Label] = execute.ConvertToKind(col.Type)
 	}
 
-	f, err := fn.cache.Compile(semantic.NewObjectType(map[string]semantic.Type{
-		"left":  semantic.NewObjectType(l),
-		"right": semantic.NewObjectType(r),
-	}))
+	f, err := fn.cache.Compile(semantic.NewObjectType(
+	// TODO determine the correct type
+	//map[string]semantic.MonoType{
+	//	"left":  semantic.NewObjectType(l),
+	//	"right": semantic.NewObjectType(r),
+	//},
+	))
 	if err != nil {
 		return err
 	}

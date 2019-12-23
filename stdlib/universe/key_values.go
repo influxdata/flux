@@ -18,15 +18,9 @@ type KeyValuesOpSpec struct {
 }
 
 func init() {
-	keyValuesSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"keyColumns": semantic.NewArrayPolyType(semantic.String),
-			"fn":         semantic.Function,
-		},
-		nil,
-	)
+	keyValuesSignature := flux.LookupBuiltInType("universe", "keyValues")
 
-	flux.RegisterPackageValue("universe", KeyValuesKind, flux.FunctionValue(KeyValuesKind, createKeyValuesOpSpec, keyValuesSignature))
+	flux.RegisterPackageValue("universe", KeyValuesKind, flux.MustValue(flux.FunctionValue(KeyValuesKind, createKeyValuesOpSpec, keyValuesSignature)))
 	flux.RegisterOpSpec(KeyValuesKind, newKeyValuesOp)
 	plan.RegisterProcedureSpec(KeyValuesKind, newKeyValuesProcedure, KeyValuesKind)
 	execute.RegisterTransformation(KeyValuesKind, createKeyValuesTransformation)

@@ -8,7 +8,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const FromKind = "from"
@@ -18,15 +17,9 @@ type FromOpSpec struct {
 }
 
 func init() {
-	fromSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"bucket": semantic.String,
-		},
-		Required: nil,
-		Return:   flux.TableObjectType,
-	}
+	fromSignature := flux.LookupBuiltInType("influxdata/influxdb", "from")
 
-	flux.RegisterPackageValue("influxdata/influxdb", FromKind, flux.FunctionValue(FromKind, createFromOpSpec, fromSignature))
+	flux.RegisterPackageValue("influxdata/influxdb", FromKind, flux.MustValue(flux.FunctionValue(FromKind, createFromOpSpec, fromSignature)))
 	flux.RegisterOpSpec(FromKind, newFromOp)
 	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
 }

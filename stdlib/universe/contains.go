@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -17,14 +16,7 @@ import (
 func MakeContainsFunc() values.Function {
 	return values.NewFunction(
 		"contains",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				"value": semantic.Tvar(1),
-				"set":   semantic.NewArrayPolyType(semantic.Tvar(1)),
-			},
-			Required: semantic.LabelSet{"value", "set"},
-			Return:   semantic.Bool,
-		}),
+		flux.LookupBuiltInType("universe", "contains"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
 			v, err := a.GetRequired("value")

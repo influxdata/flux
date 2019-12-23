@@ -62,7 +62,7 @@ func (m *BigtableRowReader) GetNextRow() ([]values.Value, error) {
 
 	for _, idx := range m.columnIndices {
 		if !encountered[idx] {
-			rowValues[idx] = values.NewNull(semantic.String)
+			rowValues[idx] = values.NewNull(semantic.BasicString)
 		}
 	}
 

@@ -22,15 +22,9 @@ type ExtrapolatedRateOpSpec struct {
 }
 
 func init() {
-	extrapolatedRateSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"isCounter": semantic.Bool,
-			"isRate":    semantic.Bool,
-		},
-		nil,
-	)
+	extrapolatedRateSignature := flux.LookupBuiltInType("internal/promql", ExtrapolatedRateKind)
 
-	flux.RegisterPackageValue("internal/promql", ExtrapolatedRateKind, flux.FunctionValue(ExtrapolatedRateKind, createExtrapolatedRateOpSpec, extrapolatedRateSignature))
+	flux.RegisterPackageValue("internal/promql", ExtrapolatedRateKind, flux.MustValue(flux.FunctionValue(ExtrapolatedRateKind, createExtrapolatedRateOpSpec, extrapolatedRateSignature)))
 	flux.RegisterOpSpec(ExtrapolatedRateKind, newExtrapolatedRateOp)
 	plan.RegisterProcedureSpec(ExtrapolatedRateKind, newExtrapolatedRateProcedure, ExtrapolatedRateKind)
 	execute.RegisterTransformation(ExtrapolatedRateKind, createExtrapolatedRateTransformation)
@@ -161,10 +155,10 @@ func (t *extrapolatedRateTransformation) Process(id execute.DatasetID, tbl flux.
 		return fmt.Errorf("value column not found (cols: %v): %s", cols, execute.DefaultValueColLabel)
 	}
 
-	if key.Value(startIdx).Type() != semantic.Time {
+	if key.Value(startIdx).Type().Nature() != semantic.Time {
 		return fmt.Errorf("start column is not of time type")
 	}
-	if key.Value(stopIdx).Type() != semantic.Time {
+	if key.Value(stopIdx).Type().Nature() != semantic.Time {
 		return fmt.Errorf("stop column is not of time type")
 	}
 	rangeStart := key.ValueTime(startIdx).Time()

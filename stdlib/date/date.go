@@ -20,11 +20,7 @@ func init() {
 	SpecialFns = map[string]values.Function{
 		"second": values.NewFunction(
 			"second",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
-				Required:   semantic.LabelSet{"t"},
-				Return:     semantic.Int,
-			}),
+			flux.LookupBuiltInType("date", "second"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -39,11 +35,7 @@ func init() {
 		),
 		"minute": values.NewFunction(
 			"minute",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
-				Required:   semantic.LabelSet{"t"},
-				Return:     semantic.Int,
-			}),
+			flux.LookupBuiltInType("date", "minute"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -58,11 +50,7 @@ func init() {
 		),
 		"hour": values.NewFunction(
 			"hour",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
-				Required:   semantic.LabelSet{"t"},
-				Return:     semantic.Int,
-			}),
+			flux.LookupBuiltInType("date", "hour"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -77,11 +65,7 @@ func init() {
 		),
 		"weekDay": values.NewFunction(
 			"weekDay",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
-				Required:   semantic.LabelSet{"t"},
-				Return:     semantic.Int,
-			}),
+			flux.LookupBuiltInType("date", "weekDay"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -96,11 +80,7 @@ func init() {
 		),
 		"monthDay": values.NewFunction(
 			"monthDay",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
-				Required:   semantic.LabelSet{"t"},
-				Return:     semantic.Int,
-			}),
+			flux.LookupBuiltInType("date", "monthDay"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -115,11 +95,7 @@ func init() {
 		),
 		"yearDay": values.NewFunction(
 			"yearDay",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
-				Required:   semantic.LabelSet{"t"},
-				Return:     semantic.Int,
-			}),
+			flux.LookupBuiltInType("date", "yearDay"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -134,11 +110,7 @@ func init() {
 		),
 		"month": values.NewFunction(
 			"month",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
-				Required:   semantic.LabelSet{"t"},
-				Return:     semantic.Int,
-			}),
+			flux.LookupBuiltInType("date", "month"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -153,11 +125,7 @@ func init() {
 		),
 		"year": values.NewFunction(
 			"year",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
-				Required:   semantic.LabelSet{"t"},
-				Return:     semantic.Int,
-			}),
+			flux.LookupBuiltInType("date", "year"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -172,11 +140,7 @@ func init() {
 		),
 		"week": values.NewFunction(
 			"week",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
-				Required:   semantic.LabelSet{"t"},
-				Return:     semantic.Int,
-			}),
+			flux.LookupBuiltInType("date", "week"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -192,11 +156,7 @@ func init() {
 		),
 		"quarter": values.NewFunction(
 			"quarter",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
-				Required:   semantic.LabelSet{"t"},
-				Return:     semantic.Int,
-			}),
+			flux.LookupBuiltInType("date", "quarter"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -212,11 +172,7 @@ func init() {
 		),
 		"millisecond": values.NewFunction(
 			"millisecond",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
-				Required:   semantic.LabelSet{"t"},
-				Return:     semantic.Int,
-			}),
+			flux.LookupBuiltInType("date", "millisecond"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -232,11 +188,7 @@ func init() {
 		),
 		"microsecond": values.NewFunction(
 			"microsecond",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
-				Required:   semantic.LabelSet{"t"},
-				Return:     semantic.Int,
-			}),
+			flux.LookupBuiltInType("date", "microsecond"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -252,11 +204,7 @@ func init() {
 		),
 		"nanosecond": values.NewFunction(
 			"nanosecond",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"t": semantic.Time},
-				Required:   semantic.LabelSet{"t"},
-				Return:     semantic.Int,
-			}),
+			flux.LookupBuiltInType("date", "nanosecond"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -271,11 +219,7 @@ func init() {
 		),
 		"truncate": values.NewFunction(
 			"truncate",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"t": semantic.Time, "unit": semantic.Duration},
-				Required:   semantic.LabelSet{"t", "unit"},
-				Return:     semantic.Time,
-			}),
+			flux.LookupBuiltInType("date", "truncate"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("t")
 				if !ok {

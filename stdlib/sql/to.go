@@ -10,7 +10,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -27,16 +26,8 @@ type ToSQLOpSpec struct {
 }
 
 func init() {
-	toSQLSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"driverName":     semantic.String,
-			"dataSourceName": semantic.String,
-			"table":          semantic.String,
-			"batchSize":      semantic.Int,
-		},
-		[]string{"driverName", "dataSourceName", "table"},
-	)
-	flux.RegisterPackageValue("sql", "to", flux.FunctionValueWithSideEffect(ToSQLKind, createToSQLOpSpec, toSQLSignature))
+	toSQLSignature := flux.LookupBuiltInType("sql", "ro")
+	flux.RegisterPackageValue("sql", "to", flux.MustValue(flux.FunctionValueWithSideEffect(ToSQLKind, createToSQLOpSpec, toSQLSignature)))
 	flux.RegisterOpSpec(ToSQLKind, func() flux.OperationSpec { return &ToSQLOpSpec{} })
 	plan.RegisterProcedureSpecWithSideEffect(ToSQLKind, newToSQLProcedure, ToSQLKind)
 	execute.RegisterTransformation(ToSQLKind, createToSQLTransformation)

@@ -21,15 +21,9 @@ type ShiftOpSpec struct {
 }
 
 func init() {
-	shiftSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"duration": semantic.Duration,
-			"columns":  semantic.NewArrayPolyType(semantic.String),
-		},
-		[]string{"duration"},
-	)
+	shiftSignature := flux.LookupBuiltInType("universe", "timeShift")
 
-	flux.RegisterPackageValue("universe", ShiftKind, flux.FunctionValue(ShiftKind, createShiftOpSpec, shiftSignature))
+	flux.RegisterPackageValue("universe", ShiftKind, flux.MustValue(flux.FunctionValue(ShiftKind, createShiftOpSpec, shiftSignature)))
 	flux.RegisterOpSpec(ShiftKind, newShiftOp)
 	plan.RegisterProcedureSpec(ShiftKind, newShiftProcedure, ShiftKind)
 	execute.RegisterTransformation(ShiftKind, createShiftTransformation)

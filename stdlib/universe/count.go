@@ -16,8 +16,8 @@ type CountOpSpec struct {
 }
 
 func init() {
-	countSignature := execute.AggregateSignature(nil, nil)
-	flux.RegisterPackageValue("universe", CountKind, flux.FunctionValue(CountKind, createCountOpSpec, countSignature))
+	countSignature := flux.LookupBuiltInType("universe", "count")
+	flux.RegisterPackageValue("universe", CountKind, flux.MustValue(flux.FunctionValue(CountKind, createCountOpSpec, countSignature)))
 	flux.RegisterOpSpec(CountKind, newCountOp)
 	plan.RegisterProcedureSpec(CountKind, newCountProcedure, CountKind)
 	execute.RegisterTransformation(CountKind, createCountTransformation)

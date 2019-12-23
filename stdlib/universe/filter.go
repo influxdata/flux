@@ -30,21 +30,9 @@ type FilterOpSpec struct {
 }
 
 func init() {
-	filterSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"r": semantic.Tvar(1),
-				},
-				Required: semantic.LabelSet{"r"},
-				Return:   semantic.Bool,
-			}),
-			"onEmpty": semantic.String,
-		},
-		[]string{"fn"},
-	)
+	filterSignature := flux.LookupBuiltInType("universe", "filter")
 
-	flux.RegisterPackageValue("universe", FilterKind, flux.FunctionValue(FilterKind, createFilterOpSpec, filterSignature))
+	flux.RegisterPackageValue("universe", FilterKind, flux.MustValue(flux.FunctionValue(FilterKind, createFilterOpSpec, filterSignature)))
 	flux.RegisterOpSpec(FilterKind, newFilterOp)
 	plan.RegisterProcedureSpec(FilterKind, newFilterProcedure, FilterKind)
 	execute.RegisterTransformation(FilterKind, createFilterTransformation)
@@ -186,9 +174,14 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	}
 
 	// Copy out the properties so we can modify the map.
-	properties := make(map[string]semantic.Type)
-	for name, typ := range t.fn.InputType().Properties() {
-		properties[name] = typ
+	properties := make(map[string]semantic.MonoType)
+	inType := t.fn.InputType()
+	n, _ := inType.NumProperties()
+	for i := 0; i < n; i++ {
+		// TODO add error handling
+		p, _ := inType.RowProperty(i)
+		t, _ := p.TypeOf()
+		properties[p.Name()] = t
 	}
 
 	// Iterate through the properties and prefill a record
@@ -235,7 +228,7 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	return t.d.Process(table)
 }
 
-func (t *filterTransformation) filterTable(in flux.Table, record values.Object, properties map[string]semantic.Type) (flux.Table, error) {
+func (t *filterTransformation) filterTable(in flux.Table, record values.Object, properties map[string]semantic.MonoType) (flux.Table, error) {
 	return tableutil.StreamWithContext(t.ctx, in.Key(), in.Cols(), func(ctx context.Context, w *tableutil.StreamWriter) error {
 		return in.Do(func(cr flux.ColReader) error {
 			bitset, err := t.filter(cr, record, properties)
@@ -264,7 +257,7 @@ func (t *filterTransformation) filterTable(in flux.Table, record values.Object, 
 	})
 }
 
-func (t *filterTransformation) filter(cr flux.ColReader, record values.Object, properties map[string]semantic.Type) (*arrowmem.Buffer, error) {
+func (t *filterTransformation) filter(cr flux.ColReader, record values.Object, properties map[string]semantic.MonoType) (*arrowmem.Buffer, error) {
 	cols, l := cr.Cols(), cr.Len()
 	bitset := arrowmem.NewResizableBuffer(t.alloc)
 	bitset.Resize(l)

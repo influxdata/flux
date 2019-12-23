@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const SampleKind = "sample"
@@ -21,15 +20,9 @@ type SampleOpSpec struct {
 }
 
 func init() {
-	sampleSignature := execute.SelectorSignature(
-		map[string]semantic.PolyType{
-			"n":   semantic.Int,
-			"pos": semantic.Int,
-		},
-		[]string{"n"},
-	)
+	sampleSignature := flux.LookupBuiltInType("universe", "sample")
 
-	flux.RegisterPackageValue("universe", SampleKind, flux.FunctionValue(SampleKind, createSampleOpSpec, sampleSignature))
+	flux.RegisterPackageValue("universe", SampleKind, flux.MustValue(flux.FunctionValue(SampleKind, createSampleOpSpec, sampleSignature)))
 	flux.RegisterOpSpec(SampleKind, newSampleOp)
 	plan.RegisterProcedureSpec(SampleKind, newSampleProcedure, SampleKind)
 	execute.RegisterTransformation(SampleKind, createSampleTransformation)

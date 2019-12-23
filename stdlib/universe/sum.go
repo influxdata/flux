@@ -17,9 +17,9 @@ type SumOpSpec struct {
 }
 
 func init() {
-	sumSignature := execute.AggregateSignature(nil, nil)
+	sumSignature := flux.LookupBuiltInType("universe", "sum")
 
-	flux.RegisterPackageValue("universe", SumKind, flux.FunctionValue(SumKind, createSumOpSpec, sumSignature))
+	flux.RegisterPackageValue("universe", SumKind, flux.MustValue(flux.FunctionValue(SumKind, createSumOpSpec, sumSignature)))
 	flux.RegisterOpSpec(SumKind, newSumOp)
 	plan.RegisterProcedureSpec(SumKind, newSumProcedure, SumKind)
 	execute.RegisterTransformation(SumKind, createSumTransformation)

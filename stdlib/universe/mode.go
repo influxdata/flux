@@ -8,7 +8,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -19,14 +18,9 @@ type ModeOpSpec struct {
 }
 
 func init() {
-	modeSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"column": semantic.String,
-		},
-		nil,
-	)
+	modeSignature := flux.LookupBuiltInType("universe", "mode")
 
-	flux.RegisterPackageValue("universe", ModeKind, flux.FunctionValue(ModeKind, createModeOpSpec, modeSignature))
+	flux.RegisterPackageValue("universe", ModeKind, flux.MustValue(flux.FunctionValue(ModeKind, createModeOpSpec, modeSignature)))
 	flux.RegisterOpSpec(ModeKind, newModeOp)
 	plan.RegisterProcedureSpec(ModeKind, newModeProcedure, ModeKind)
 	execute.RegisterTransformation(ModeKind, createModeTransformation)

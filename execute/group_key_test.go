@@ -131,7 +131,7 @@ func TestGroupKey_Equal(t *testing.T) {
 					{Label: "a", Type: flux.TString},
 				},
 				[]values.Value{
-					values.NewNull(semantic.String),
+					values.NewNull(semantic.BasicString),
 				},
 			),
 			right: execute.NewGroupKey(
@@ -139,7 +139,7 @@ func TestGroupKey_Equal(t *testing.T) {
 					{Label: "a", Type: flux.TString},
 				},
 				[]values.Value{
-					values.NewNull(semantic.String),
+					values.NewNull(semantic.BasicString),
 				},
 			),
 			want: true,
@@ -151,7 +151,7 @@ func TestGroupKey_Equal(t *testing.T) {
 					{Label: "a", Type: flux.TString},
 				},
 				[]values.Value{
-					values.NewNull(semantic.String),
+					values.NewNull(semantic.BasicString),
 				},
 			),
 			right: execute.NewGroupKey(
@@ -298,7 +298,7 @@ func TestGroupKey_Less(t *testing.T) {
 					{Label: "a", Type: flux.TString},
 				},
 				[]values.Value{
-					values.NewNull(semantic.String),
+					values.NewNull(semantic.BasicString),
 				},
 			),
 			right: execute.NewGroupKey(
@@ -306,7 +306,7 @@ func TestGroupKey_Less(t *testing.T) {
 					{Label: "a", Type: flux.TString},
 				},
 				[]values.Value{
-					values.NewNull(semantic.String),
+					values.NewNull(semantic.BasicString),
 				},
 			),
 			want: [2]bool{false, false},
@@ -318,7 +318,7 @@ func TestGroupKey_Less(t *testing.T) {
 					{Label: "a", Type: flux.TString},
 				},
 				[]values.Value{
-					values.NewNull(semantic.String),
+					values.NewNull(semantic.BasicString),
 				},
 			),
 			right: execute.NewGroupKey(

@@ -22,16 +22,9 @@ type FillOpSpec struct {
 }
 
 func init() {
-	fillSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"column":      semantic.String,
-			"value":       semantic.Tvar(1),
-			"usePrevious": semantic.Bool,
-		},
-		[]string{},
-	)
+	fillSignature := flux.LookupBuiltInType("universe", "fill")
 
-	flux.RegisterPackageValue("universe", FillKind, flux.FunctionValue(FillKind, createFillOpSpec, fillSignature))
+	flux.RegisterPackageValue("universe", FillKind, flux.MustValue(flux.FunctionValue(FillKind, createFillOpSpec, fillSignature)))
 	flux.RegisterOpSpec(FillKind, newFillOp)
 	plan.RegisterProcedureSpec(FillKind, newFillProcedure, FillKind)
 	execute.RegisterTransformation(FillKind, createFillTransformation)
@@ -56,7 +49,7 @@ func createFillOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	if valOk {
 		typ := val.Type()
 		spec.Type = typ.Nature().String()
-		switch typ {
+		switch typ.Nature() {
 		case semantic.Bool:
 			spec.Value = strconv.FormatBool(val.Bool())
 		case semantic.Int:

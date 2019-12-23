@@ -40,11 +40,7 @@ func validateColorString(color string) error {
 
 var validateColorStringFluxFn = values.NewFunction(
 	"validateColorString",
-	semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{"color": semantic.String},
-		Required:   semantic.LabelSet{"color"},
-		Return:     semantic.String,
-	}),
+	flux.LookupBuiltInType("slack", "validateColorString"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		v, ok := args.Get("color")
 

@@ -25,15 +25,7 @@ const maxResponseBody = 512 * 1024 // 512 KB
 func init() {
 	flux.RegisterPackageValue("http", "post", values.NewFunction(
 		"post",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				"url":     semantic.String,
-				"headers": semantic.Tvar(1),
-				"data":    semantic.Bytes,
-			},
-			Required: []string{"url"},
-			Return:   semantic.Int,
-		}),
+		flux.LookupBuiltInType("http", "post"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			// Get and validate URL
 			uV, ok := args.Get("url")
@@ -71,7 +63,7 @@ func init() {
 			if ok && !header.IsNull() {
 				var rangeErr error
 				header.Object().Range(func(k string, v values.Value) {
-					if v.Type() == semantic.String {
+					if v.Type().Nature() == semantic.String {
 						req.Header.Set(k, v.Str())
 					} else {
 						rangeErr = errors.Newf(codes.Invalid, "header value %q must be a string", k)

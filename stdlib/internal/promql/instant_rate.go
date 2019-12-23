@@ -10,7 +10,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -21,14 +20,9 @@ type InstantRateOpSpec struct {
 }
 
 func init() {
-	instantRateSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"isRate": semantic.Bool,
-		},
-		nil,
-	)
+	instantRateSignature := flux.LookupBuiltInType("internal/promql", InstantRateKind)
 
-	flux.RegisterPackageValue("internal/promql", InstantRateKind, flux.FunctionValue(InstantRateKind, createInstantRateOpSpec, instantRateSignature))
+	flux.RegisterPackageValue("internal/promql", InstantRateKind, flux.MustValue(flux.FunctionValue(InstantRateKind, createInstantRateOpSpec, instantRateSignature)))
 	flux.RegisterOpSpec(InstantRateKind, newInstantRateOp)
 	plan.RegisterProcedureSpec(InstantRateKind, newInstantRateProcedure, InstantRateKind)
 	execute.RegisterTransformation(InstantRateKind, createInstantRateTransformation)

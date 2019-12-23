@@ -12,7 +12,6 @@ import (
 	"github.com/influxdata/flux/internal/moving_average"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -23,14 +22,9 @@ type TripleExponentialDerivativeOpSpec struct {
 }
 
 func init() {
-	tripleExponentialDerivativeSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"n": semantic.Int,
-		},
-		[]string{"n"},
-	)
+	tripleExponentialDerivativeSignature := flux.LookupBuiltInType("universe", "tripleExponentialDerivative")
 
-	flux.RegisterPackageValue("universe", TripleExponentialDerivativeKind, flux.FunctionValue(TripleExponentialDerivativeKind, createTripleExponentialDerivativeOpSpec, tripleExponentialDerivativeSignature))
+	flux.RegisterPackageValue("universe", TripleExponentialDerivativeKind, flux.MustValue(flux.FunctionValue(TripleExponentialDerivativeKind, createTripleExponentialDerivativeOpSpec, tripleExponentialDerivativeSignature)))
 	flux.RegisterOpSpec(TripleExponentialDerivativeKind, newTripleExponentialDerivativeOp)
 	plan.RegisterProcedureSpec(TripleExponentialDerivativeKind, newTripleExponentialDerivativeProcedure, TripleExponentialDerivativeKind)
 	execute.RegisterTransformation(TripleExponentialDerivativeKind, createTripleExponentialDerivativeTransformation)

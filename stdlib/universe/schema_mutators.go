@@ -91,7 +91,7 @@ func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
 	}
 
 	if s.Fn.Fn != nil {
-		compiledFn, param, err := compiler.CompileFnParam(s.Fn.Fn, compiler.ToScope(s.Fn.Scope), semantic.String, semantic.String)
+		compiledFn, param, err := compiler.CompileFnParam(s.Fn.Fn, compiler.ToScope(s.Fn.Scope), semantic.BasicString, semantic.BasicString)
 		if err != nil {
 			return nil, err
 		}
@@ -176,7 +176,7 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 			m.DropCols = toStringSet(s.Columns)
 		}
 		if s.Predicate.Fn != nil {
-			compiledFn, param, err := compiler.CompileFnParam(s.Predicate.Fn, compiler.ToScope(s.Predicate.Scope), semantic.String, semantic.Bool)
+			compiledFn, param, err := compiler.CompileFnParam(s.Predicate.Fn, compiler.ToScope(s.Predicate.Scope), semantic.BasicString, semantic.BasicBool)
 			if err != nil {
 				return nil, err
 			}
@@ -189,7 +189,7 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 			m.KeepCols = toStringSet(s.Columns)
 		}
 		if s.Predicate.Fn != nil {
-			compiledFn, param, err := compiler.CompileFnParam(s.Predicate.Fn, compiler.ToScope(s.Predicate.Scope), semantic.String, semantic.Bool)
+			compiledFn, param, err := compiler.CompileFnParam(s.Predicate.Fn, compiler.ToScope(s.Predicate.Scope), semantic.BasicString, semantic.BasicBool)
 			if err != nil {
 				return nil, err
 			}

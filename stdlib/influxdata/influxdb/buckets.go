@@ -5,7 +5,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const BucketsKind = "buckets"
@@ -14,11 +13,9 @@ type BucketsOpSpec struct {
 }
 
 func init() {
-	bucketsSignature := semantic.FunctionPolySignature{
-		Return: flux.TableObjectType,
-	}
+	bucketsSignature := flux.LookupBuiltInType("influxdata/influxdb", "buckets")
 
-	flux.RegisterPackageValue("influxdata/influxdb", BucketsKind, flux.FunctionValue(BucketsKind, createBucketsOpSpec, bucketsSignature))
+	flux.RegisterPackageValue("influxdata/influxdb", BucketsKind, flux.MustValue(flux.FunctionValue(BucketsKind, createBucketsOpSpec, bucketsSignature)))
 	flux.RegisterOpSpec(BucketsKind, newBucketsOp)
 	plan.RegisterProcedureSpec(BucketsKind, newBucketsProcedure, BucketsKind)
 }

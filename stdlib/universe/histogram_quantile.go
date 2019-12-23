@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const HistogramQuantileKind = "histogramQuantile"
@@ -25,15 +24,9 @@ type HistogramQuantileOpSpec struct {
 }
 
 func init() {
-	histogramQuantileSignature := flux.FunctionSignature(map[string]semantic.PolyType{
-		"quantile":         semantic.Float,
-		"countColumn":      semantic.String,
-		"upperBoundColumn": semantic.String,
-		"valueColumn":      semantic.String,
-		"minValue":         semantic.Float,
-	}, nil)
+	histogramQuantileSignature := flux.LookupBuiltInType("universe", "histogramQuantile")
 
-	flux.RegisterPackageValue("universe", HistogramQuantileKind, flux.FunctionValue(HistogramQuantileKind, createHistogramQuantileOpSpec, histogramQuantileSignature))
+	flux.RegisterPackageValue("universe", HistogramQuantileKind, flux.MustValue(flux.FunctionValue(HistogramQuantileKind, createHistogramQuantileOpSpec, histogramQuantileSignature)))
 	flux.RegisterOpSpec(HistogramQuantileKind, newHistogramQuantileOp)
 	plan.RegisterProcedureSpec(HistogramQuantileKind, newHistogramQuantileProcedure, HistogramQuantileKind)
 	execute.RegisterTransformation(HistogramQuantileKind, createHistogramQuantileTransformation)

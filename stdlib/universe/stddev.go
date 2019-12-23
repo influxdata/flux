@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const (
@@ -25,14 +24,9 @@ type StddevOpSpec struct {
 }
 
 func init() {
-	stddevSignature := execute.AggregateSignature(
-		map[string]semantic.PolyType{
-			"mode": semantic.String,
-		},
-		nil,
-	)
+	stddevSignature := flux.LookupBuiltInType("universe", "stddev")
 
-	flux.RegisterPackageValue("universe", StddevKind, flux.FunctionValue(StddevKind, createStddevOpSpec, stddevSignature))
+	flux.RegisterPackageValue("universe", StddevKind, flux.MustValue(flux.FunctionValue(StddevKind, createStddevOpSpec, stddevSignature)))
 	flux.RegisterOpSpec(StddevKind, newStddevOp)
 	plan.RegisterProcedureSpec(StddevKind, newStddevProcedure, StddevKind)
 	execute.RegisterTransformation(StddevKind, createStddevTransformation)

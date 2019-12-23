@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const KeysKind = "keys"
@@ -17,11 +16,9 @@ type KeysOpSpec struct {
 }
 
 func init() {
-	keysSignature := flux.FunctionSignature(map[string]semantic.PolyType{
-		"column": semantic.String,
-	}, nil)
+	keysSignature := flux.LookupBuiltInType("universe", "keys")
 
-	flux.RegisterPackageValue("universe", KeysKind, flux.FunctionValue(KeysKind, createKeysOpSpec, keysSignature))
+	flux.RegisterPackageValue("universe", KeysKind, flux.MustValue(flux.FunctionValue(KeysKind, createKeysOpSpec, keysSignature)))
 	flux.RegisterOpSpec(KeysKind, newKeysOp)
 	plan.RegisterProcedureSpec(KeysKind, newKeysProcedure, KeysKind)
 	execute.RegisterTransformation(KeysKind, createKeysTransformation)

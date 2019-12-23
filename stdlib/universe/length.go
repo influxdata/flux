@@ -17,13 +17,7 @@ import (
 func MakeLengthFunc() values.Function {
 	return values.NewFunction(
 		"length",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				"arr": semantic.NewArrayPolyType(semantic.Tvar(1)),
-			},
-			Required: semantic.LabelSet{"arr"},
-			Return:   semantic.Int,
-		}),
+		flux.LookupBuiltInType("universe", "length"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
 			v, err := a.GetRequired("arr")

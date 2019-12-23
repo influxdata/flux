@@ -6,7 +6,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -18,15 +17,9 @@ type SetOpSpec struct {
 }
 
 func init() {
-	setSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"key":   semantic.String,
-			"value": semantic.String,
-		},
-		[]string{"key", "value"},
-	)
+	setSignature := flux.LookupBuiltInType("universe", "set")
 
-	flux.RegisterPackageValue("universe", SetKind, flux.FunctionValue(SetKind, createSetOpSpec, setSignature))
+	flux.RegisterPackageValue("universe", SetKind, flux.MustValue(flux.FunctionValue(SetKind, createSetOpSpec, setSignature)))
 	flux.RegisterOpSpec(SetKind, newSetOp)
 	plan.RegisterProcedureSpec(SetKind, newSetProcedure, SetKind)
 	execute.RegisterTransformation(SetKind, createSetTransformation)

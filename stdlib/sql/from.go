@@ -10,7 +10,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 	_ "github.com/lib/pq"
 )
 
@@ -26,16 +25,8 @@ type FromSQLOpSpec struct {
 }
 
 func init() {
-	fromSQLSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"driverName":     semantic.String,
-			"dataSourceName": semantic.String,
-			"query":          semantic.String,
-		},
-		Required: semantic.LabelSet{"driverName", "dataSourceName", "query"},
-		Return:   flux.TableObjectType,
-	}
-	flux.RegisterPackageValue("sql", "from", flux.FunctionValue(FromSQLKind, createFromSQLOpSpec, fromSQLSignature))
+	fromSQLSignature := flux.LookupBuiltInType("sql", "from")
+	flux.RegisterPackageValue("sql", "from", flux.MustValue(flux.FunctionValue(FromSQLKind, createFromSQLOpSpec, fromSQLSignature)))
 	flux.RegisterOpSpec(FromSQLKind, newFromSQLOp)
 	plan.RegisterProcedureSpec(FromSQLKind, newFromSQLProcedure, FromSQLKind)
 	execute.RegisterSource(FromSQLKind, createFromSQLSource)

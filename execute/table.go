@@ -489,32 +489,32 @@ func ValueForRow(cr flux.ColReader, i, j int) values.Value {
 	switch t {
 	case flux.TString:
 		if cr.Strings(j).IsNull(i) {
-			return values.NewNull(semantic.String)
+			return values.NewNull(semantic.BasicString)
 		}
 		return values.NewString(cr.Strings(j).ValueString(i))
 	case flux.TInt:
 		if cr.Ints(j).IsNull(i) {
-			return values.NewNull(semantic.Int)
+			return values.NewNull(semantic.BasicInt)
 		}
 		return values.NewInt(cr.Ints(j).Value(i))
 	case flux.TUInt:
 		if cr.UInts(j).IsNull(i) {
-			return values.NewNull(semantic.UInt)
+			return values.NewNull(semantic.BasicUint)
 		}
 		return values.NewUInt(cr.UInts(j).Value(i))
 	case flux.TFloat:
 		if cr.Floats(j).IsNull(i) {
-			return values.NewNull(semantic.Float)
+			return values.NewNull(semantic.BasicFloat)
 		}
 		return values.NewFloat(cr.Floats(j).Value(i))
 	case flux.TBool:
 		if cr.Bools(j).IsNull(i) {
-			return values.NewNull(semantic.Bool)
+			return values.NewNull(semantic.BasicBool)
 		}
 		return values.NewBool(cr.Bools(j).Value(i))
 	case flux.TTime:
 		if cr.Times(j).IsNull(i) {
-			return values.NewNull(semantic.Time)
+			return values.NewNull(semantic.BasicTime)
 		}
 		return values.NewTime(values.Time(cr.Times(j).Value(i)))
 	default:
@@ -1109,7 +1109,7 @@ func (b *ColListTableBuilder) SetValue(i, j int, v values.Value) error {
 		return b.SetNil(i, j)
 	}
 
-	switch v.Type() {
+	switch v.Type().Nature() {
 	case semantic.Bool:
 		return b.SetBool(i, j, v.Bool())
 	case semantic.Int:
@@ -1132,7 +1132,7 @@ func (b *ColListTableBuilder) AppendValue(j int, v values.Value) error {
 		return b.AppendNil(j)
 	}
 
-	switch v.Type() {
+	switch v.Type().Nature() {
 	case semantic.Bool:
 		return b.AppendBool(j, v.Bool())
 	case semantic.Int:

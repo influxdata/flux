@@ -18,7 +18,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/line"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -30,16 +29,9 @@ type FromSocketOpSpec struct {
 }
 
 func init() {
-	fromSocketSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"url":     semantic.String,
-			"decoder": semantic.String,
-		},
-		Required: semantic.LabelSet{"url"},
-		Return:   flux.TableObjectType,
-	}
+	fromSocketSignature := flux.LookupBuiltInType("socket", "from")
 
-	flux.RegisterPackageValue("socket", "from", flux.FunctionValue(FromSocketKind, createFromSocketOpSpec, fromSocketSignature))
+	flux.RegisterPackageValue("socket", "from", flux.MustValue(flux.FunctionValue(FromSocketKind, createFromSocketOpSpec, fromSocketSignature)))
 	flux.RegisterOpSpec(FromSocketKind, newFromSocketOp)
 	plan.RegisterProcedureSpec(FromSocketKind, newFromSocketProcedure, FromSocketKind)
 	execute.RegisterSource(FromSocketKind, createFromSocketSource)

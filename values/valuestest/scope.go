@@ -23,9 +23,9 @@ var ScopeComparer = cmp.Comparer(func(l, r values.Scope) bool {
 		equal := true
 		l.LocalRange(func(k string, lv values.Value) {
 			rv, ok := r.LocalLookup(k)
-			if lv.PolyType().Nature() == semantic.Function {
+			if lv.Type().Nature() == semantic.Function {
 				// only compare functions by type
-				equal = equal && ok && lv.PolyType().Equal(rv.PolyType())
+				equal = equal && ok && lv.Type().Equal(rv.Type())
 			} else {
 				equal = equal && ok && lv.Equal(rv)
 			}
@@ -51,9 +51,7 @@ func NowScope() values.Scope {
 	scope := flux.Prelude()
 	scope.SetOption("universe", "now", values.NewFunction(
 		"now",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Return: semantic.Time,
-		}),
+		flux.LookupBuiltInType("universe", "now"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			//Functions are only compared by type so the function body here is not important
 			return nil, errors.New("NowScope was called")

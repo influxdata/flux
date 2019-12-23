@@ -31,11 +31,7 @@ const (
 func generateSingleArgStringFunction(name string, stringFn func(string) string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{stringArgV: semantic.String},
-			Required:   semantic.LabelSet{stringArgV},
-			Return:     semantic.String,
-		}),
+		flux.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var str string
 
@@ -63,14 +59,7 @@ func generateDualArgStringFunction(name string, argNames []string, stringFn func
 
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				argNames[0]: semantic.String,
-				argNames[1]: semantic.String,
-			},
-			Required: semantic.LabelSet{argNames[0], argNames[1]},
-			Return:   semantic.String,
-		}),
+		flux.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
@@ -100,14 +89,7 @@ func generateDualArgStringFunctionReturnBool(name string, argNames []string, str
 
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				argNames[0]: semantic.String,
-				argNames[1]: semantic.String,
-			},
-			Required: semantic.LabelSet{argNames[0], argNames[1]},
-			Return:   semantic.Bool,
-		}),
+		flux.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
@@ -137,14 +119,7 @@ func generateDualArgStringFunctionReturnInt(name string, argNames []string, stri
 
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				argNames[0]: semantic.String,
-				argNames[1]: semantic.String,
-			},
-			Required: semantic.LabelSet{argNames[0], argNames[1]},
-			Return:   semantic.Int,
-		}),
+		flux.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
@@ -170,14 +145,7 @@ func generateDualArgStringFunctionReturnInt(name string, argNames []string, stri
 func generateSplit(name string, argNames []string, fn func(string, string) []string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				argNames[0]: semantic.String,
-				argNames[1]: semantic.String,
-			},
-			Required: semantic.LabelSet{argNames[0], argNames[1]},
-			Return:   semantic.NewArrayPolyType(semantic.String),
-		}),
+		flux.LookupBuiltInType("string", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
@@ -199,7 +167,7 @@ func generateSplit(name string, argNames []string, fn func(string, string) []str
 			for _, v := range result {
 				resultValue = append(resultValue, values.NewString(v))
 			}
-			return values.NewArrayWithBacking(semantic.String, resultValue), nil
+			return values.NewArrayWithBacking(semantic.NewArrayType(semantic.BasicString), resultValue), nil
 		},
 		false,
 	)
@@ -208,18 +176,10 @@ func generateSplit(name string, argNames []string, fn func(string, string) []str
 func generateSplitN(name string, argNames []string, fn func(string, string, int) []string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				argNames[0]: semantic.String,
-				argNames[1]: semantic.String,
-				argNames[2]: semantic.Int,
-			},
-			Required: semantic.LabelSet{argNames[0], argNames[1], argNames[2]},
-			Return:   semantic.Array,
-		}),
+		flux.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 3)
-			var argTypes = []semantic.PolyType{semantic.String, semantic.String, semantic.Int}
+			var argTypes = []semantic.Nature{semantic.String, semantic.String, semantic.Int}
 
 			for i, name := range argNames {
 				val, ok := args.Get(name)
@@ -239,7 +199,7 @@ func generateSplitN(name string, argNames []string, fn func(string, string, int)
 			for _, v := range result {
 				resultValue = append(resultValue, values.NewString(v))
 			}
-			return values.NewArrayWithBacking(semantic.String, resultValue), nil
+			return values.NewArrayWithBacking(semantic.NewArrayType(semantic.BasicString), resultValue), nil
 		},
 		false,
 	)
@@ -248,17 +208,10 @@ func generateSplitN(name string, argNames []string, fn func(string, string, int)
 func generateRepeat(name string, argNames []string, fn func(string, int) string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				argNames[0]: semantic.String,
-				argNames[1]: semantic.Int,
-			},
-			Required: semantic.LabelSet{argNames[0], argNames[1]},
-			Return:   semantic.String,
-		}),
+		flux.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
-			var argType = []semantic.PolyType{semantic.String, semantic.Int}
+			var argType = []semantic.Nature{semantic.String, semantic.Int}
 
 			for i, name := range argNames {
 				val, ok := args.Get(name)
@@ -282,19 +235,10 @@ func generateRepeat(name string, argNames []string, fn func(string, int) string)
 func generateReplace(name string, argNames []string, fn func(string, string, string, int) string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				argNames[0]: semantic.String,
-				argNames[1]: semantic.String,
-				argNames[2]: semantic.String,
-				argNames[3]: semantic.Int,
-			},
-			Required: semantic.LabelSet{argNames[0], argNames[1], argNames[2], argNames[3]},
-			Return:   semantic.String,
-		}),
+		flux.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 4)
-			var argType = []semantic.PolyType{semantic.String, semantic.String, semantic.String, semantic.Int}
+			var argType = []semantic.Nature{semantic.String, semantic.String, semantic.String, semantic.Int}
 
 			for i, name := range argNames {
 				val, ok := args.Get(name)
@@ -318,15 +262,7 @@ func generateReplace(name string, argNames []string, fn func(string, string, str
 func generateReplaceAll(name string, argNames []string, fn func(string, string, string) string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				argNames[0]: semantic.String,
-				argNames[1]: semantic.String,
-				argNames[2]: semantic.String,
-			},
-			Required: semantic.LabelSet{argNames[0], argNames[1], argNames[2]},
-			Return:   semantic.String,
-		}),
+		flux.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 3)
 
@@ -352,11 +288,7 @@ func generateReplaceAll(name string, argNames []string, fn func(string, string, 
 func generateUnicodeIsFunction(name string, Fn func(rune) bool) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{stringArgV: semantic.String},
-			Required:   semantic.LabelSet{stringArgV},
-			Return:     semantic.Bool,
-		}),
+		flux.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var str string
 
@@ -388,11 +320,7 @@ func generateUnicodeIsFunction(name string, Fn func(rune) bool) values.Function 
 
 var strlen = values.NewFunction(
 	"strlen",
-	semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{stringArgV: semantic.String},
-		Required:   semantic.LabelSet{stringArgV},
-		Return:     semantic.Int,
-	}),
+	flux.LookupBuiltInType("strings", "strlen"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		v, ok := args.Get(stringArgV)
 		if !ok {
@@ -409,14 +337,7 @@ var strlen = values.NewFunction(
 
 var substring = values.NewFunction(
 	"substring",
-	semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			stringArgV: semantic.String,
-			start:      semantic.Int,
-			end:        semantic.Int},
-		Required: semantic.LabelSet{stringArgV, start, end},
-		Return:   semantic.String,
-	}),
+	flux.LookupBuiltInType("strings", "substring"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		v, vOk := args.Get(stringArgV)
 		a, aOk := args.Get(start)
@@ -525,14 +446,7 @@ func init() {
 	SpecialFns = map[string]values.Function{
 		"joinStr": values.NewFunction(
 			"joinStr",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"arr": semantic.NewArrayPolyType(semantic.String),
-					"v":   semantic.String,
-				},
-				Required: semantic.LabelSet{"arr", "v"},
-				Return:   semantic.String,
-			}),
+			flux.LookupBuiltInType("strings", "joinStr"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				var argVals = make([]values.Value, 2)
 
@@ -542,7 +456,8 @@ func init() {
 				}
 				arr := val.Array()
 				if arr.Len() >= 0 {
-					if arr.Type().ElementType().Nature() != semantic.String {
+					et, _ := arr.Type().ElemType()
+					if et.Nature() != semantic.String {
 						return nil, fmt.Errorf("expected elements of argument %q to be of type %v, got type %v", "arr", semantic.String, arr.Get(0).Type().Nature())
 					}
 				}

@@ -16,9 +16,9 @@ type FirstOpSpec struct {
 }
 
 func init() {
-	firstSignature := execute.SelectorSignature(nil, nil)
+	firstSignature := flux.LookupBuiltInType("universe", "first")
 
-	flux.RegisterPackageValue("universe", FirstKind, flux.FunctionValue(FirstKind, createFirstOpSpec, firstSignature))
+	flux.RegisterPackageValue("universe", FirstKind, flux.MustValue(flux.FunctionValue(FirstKind, createFirstOpSpec, firstSignature)))
 	flux.RegisterOpSpec(FirstKind, newFirstOp)
 	plan.RegisterProcedureSpec(FirstKind, newFirstProcedure, FirstKind)
 	execute.RegisterTransformation(FirstKind, createFirstTransformation)

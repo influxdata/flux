@@ -14,11 +14,7 @@ import (
 func generateDateFunction(name string, dateFn func(time.Time) int) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{"timestamp": semantic.Float},
-			Required:   semantic.LabelSet{"timestamp"},
-			Return:     semantic.Float,
-		}),
+		flux.LookupBuiltInType("internal/promql", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			v, ok := args.Get("timestamp")
 			if !ok {

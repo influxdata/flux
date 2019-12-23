@@ -6,7 +6,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const HourSelectionKind = "hourSelection"
@@ -18,16 +17,9 @@ type HourSelectionOpSpec struct {
 }
 
 func init() {
-	hourSelectionSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"start":      semantic.Int,
-			"stop":       semantic.Int,
-			"timeColumn": semantic.String,
-		},
-		[]string{"start", "stop"},
-	)
+	hourSelectionSignature := flux.LookupBuiltInType("universe", "hourSelection")
 
-	flux.RegisterPackageValue("universe", HourSelectionKind, flux.FunctionValue(HourSelectionKind, createHourSelectionOpSpec, hourSelectionSignature))
+	flux.RegisterPackageValue("universe", HourSelectionKind, flux.MustValue(flux.FunctionValue(HourSelectionKind, createHourSelectionOpSpec, hourSelectionSignature)))
 	flux.RegisterOpSpec(HourSelectionKind, newHourSelectionOp)
 	plan.RegisterProcedureSpec(HourSelectionKind, newHourSelectionProcedure, HourSelectionKind)
 	execute.RegisterTransformation(HourSelectionKind, createHourSelectionTransformation)

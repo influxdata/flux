@@ -6,7 +6,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const UniqueKind = "unique"
@@ -16,14 +15,9 @@ type UniqueOpSpec struct {
 }
 
 func init() {
-	uniqueSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"column": semantic.String,
-		},
-		nil,
-	)
+	uniqueSignature := flux.LookupBuiltInType("universe", "unique")
 
-	flux.RegisterPackageValue("universe", UniqueKind, flux.FunctionValue(UniqueKind, createUniqueOpSpec, uniqueSignature))
+	flux.RegisterPackageValue("universe", UniqueKind, flux.MustValue(flux.FunctionValue(UniqueKind, createUniqueOpSpec, uniqueSignature)))
 	flux.RegisterOpSpec(UniqueKind, newUniqueOp)
 	plan.RegisterProcedureSpec(UniqueKind, newUniqueProcedure, UniqueKind)
 	execute.RegisterTransformation(UniqueKind, createUniqueTransformation)

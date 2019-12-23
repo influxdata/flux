@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -21,13 +20,7 @@ func init() {
 var GetFunc = makeGetFunc()
 
 func makeGetFunc() values.Function {
-	sig := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"key": semantic.String,
-		},
-		Required: semantic.LabelSet{"key"},
-		Return:   semantic.String,
-	})
+	sig := flux.LookupBuiltInType("influxdata/influxdb/secrets", "get")
 	return values.NewFunction("get", sig, Get, false)
 }
 

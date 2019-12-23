@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 // TODO: Added "prom" prefix to avoid duplicate registration error. Decide whether to
@@ -26,14 +25,9 @@ type HistogramQuantileOpSpec struct {
 }
 
 func init() {
-	histogramQuantileSignature := flux.FunctionSignature(map[string]semantic.PolyType{
-		"quantile":         semantic.Float,
-		"countColumn":      semantic.String,
-		"upperBoundColumn": semantic.String,
-		"valueColumn":      semantic.String,
-	}, nil)
+	histogramQuantileSignature := flux.LookupBuiltInType("internal/promql", HistogramQuantileKind)
 
-	flux.RegisterPackageValue("internal/promql", HistogramQuantileKind, flux.FunctionValue(HistogramQuantileKind, createHistogramQuantileOpSpec, histogramQuantileSignature))
+	flux.RegisterPackageValue("internal/promql", HistogramQuantileKind, flux.MustValue(flux.FunctionValue(HistogramQuantileKind, createHistogramQuantileOpSpec, histogramQuantileSignature)))
 	flux.RegisterOpSpec(HistogramQuantileKind, newHistogramQuantileOp)
 	plan.RegisterProcedureSpec(HistogramQuantileKind, newHistogramQuantileProcedure, HistogramQuantileKind)
 	execute.RegisterTransformation(HistogramQuantileKind, createHistogramQuantileTransformation)

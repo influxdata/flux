@@ -16,9 +16,9 @@ type MaxOpSpec struct {
 }
 
 func init() {
-	maxSignature := execute.SelectorSignature(nil, nil)
+	maxSignature := flux.LookupBuiltInType("universe", "max")
 
-	flux.RegisterPackageValue("universe", MaxKind, flux.FunctionValue(MaxKind, createMaxOpSpec, maxSignature))
+	flux.RegisterPackageValue("universe", MaxKind, flux.MustValue(flux.FunctionValue(MaxKind, createMaxOpSpec, maxSignature)))
 	flux.RegisterOpSpec(MaxKind, newMaxOp)
 	plan.RegisterProcedureSpec(MaxKind, newMaxProcedure, MaxKind)
 	execute.RegisterTransformation(MaxKind, createMaxTransformation)

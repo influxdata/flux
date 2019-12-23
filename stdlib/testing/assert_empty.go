@@ -17,9 +17,9 @@ func (s *AssertEmptyOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-	assertEmptySignature := flux.FunctionSignature(nil, nil)
+	assertEmptySignature := flux.LookupBuiltInType("testing", "assertEmpty")
 
-	flux.RegisterPackageValue("testing", "assertEmpty", flux.FunctionValue(AssertEmptyKind, createAssertEmptyOpSpec, assertEmptySignature))
+	flux.RegisterPackageValue("testing", "assertEmpty", flux.MustValue(flux.FunctionValue(AssertEmptyKind, createAssertEmptyOpSpec, assertEmptySignature)))
 	flux.RegisterOpSpec(AssertEmptyKind, newAssertEmptyOp)
 	plan.RegisterProcedureSpec(AssertEmptyKind, newAssertEmptyProcedure, AssertEmptyKind)
 	execute.RegisterTransformation(AssertEmptyKind, createAssertEmptyTransformation)

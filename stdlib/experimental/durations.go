@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -20,14 +19,7 @@ func init() {
 }
 
 func addDuration(name string) values.Value {
-	tp := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"d":  semantic.Duration,
-			"to": semantic.Time,
-		},
-		Required: semantic.LabelSet{"d", "to"},
-		Return:   semantic.Time,
-	})
+	tp := flux.LookupBuiltInType("experimental", "addDuration")
 	fn := func(ctx context.Context, args values.Object) (values.Value, error) {
 		d, ok := args.Get("d")
 		if !ok {
@@ -43,14 +35,7 @@ func addDuration(name string) values.Value {
 }
 
 func subDuration(name string) values.Value {
-	tp := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"d":    semantic.Duration,
-			"from": semantic.Time,
-		},
-		Required: semantic.LabelSet{"d", "from"},
-		Return:   semantic.Time,
-	})
+	tp := flux.LookupBuiltInType("experimental", "subDuration")
 	fn := func(ctx context.Context, args values.Object) (values.Value, error) {
 		d, ok := args.Get("d")
 		if !ok {

@@ -435,7 +435,12 @@ func getRules(plannerPkg values.Object, optionName string) ([]string, error) {
 		return nil, fmt.Errorf("'planner.%s' must be an array of string, got %s", optionName, t.String())
 	}
 	rules := value.Array()
-	if et := rules.Type().ElementType().Nature(); et != semantic.String {
+	et, err := rules.Type().ElemType()
+	if err != nil {
+		//TODO correctly wrap error
+		return nil, err
+	}
+	if et.Nature() != semantic.String {
 		return nil, fmt.Errorf("'planner.%s' must be an array of string, got an array of %s", optionName, et.String())
 	}
 	noRules := rules.Len()

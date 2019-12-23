@@ -23,15 +23,9 @@ func (s *UnionOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-	unionSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"tables": semantic.NewArrayPolyType(flux.TableObjectType),
-		},
-		Required: semantic.LabelSet{"tables"},
-		Return:   flux.TableObjectType,
-	}
+	unionSignature := flux.LookupBuiltInType("universe", "union")
 
-	flux.RegisterPackageValue("universe", UnionKind, flux.FunctionValue(UnionKind, createUnionOpSpec, unionSignature))
+	flux.RegisterPackageValue("universe", UnionKind, flux.MustValue(flux.FunctionValue(UnionKind, createUnionOpSpec, unionSignature)))
 	flux.RegisterOpSpec(UnionKind, newUnionOp)
 	plan.RegisterProcedureSpec(UnionKind, newUnionProcedure, UnionKind)
 	execute.RegisterTransformation(UnionKind, createUnionTransformation)

@@ -2,7 +2,6 @@ package universe
 
 import (
 	"context"
-	"sort"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -19,27 +18,14 @@ const ReduceKind = "reduce"
 
 type ReduceOpSpec struct {
 	Fn          interpreter.ResolvedFunction `json:"fn"`
-	ReducerType semantic.Type                `json:"reducer_type"`
+	ReducerType semantic.MonoType            `json:"reducer_type"`
 	Identity    map[string]string            `json:"identity"`
 }
 
 func init() {
-	reduceSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"r":           semantic.Tvar(1),
-					"accumulator": semantic.Tvar(2),
-				},
-				Required: semantic.LabelSet{"r", "accumulator"},
-				Return:   semantic.Tvar(2),
-			}),
-			"identity": semantic.Tvar(2),
-		},
-		[]string{"fn", "identity"},
-	)
+	reduceSignature := flux.LookupBuiltInType("universe", "reduce")
 
-	flux.RegisterPackageValue("universe", ReduceKind, flux.FunctionValue(ReduceKind, createReduceOpSpec, reduceSignature))
+	flux.RegisterPackageValue("universe", ReduceKind, flux.MustValue(flux.FunctionValue(ReduceKind, createReduceOpSpec, reduceSignature)))
 	flux.RegisterOpSpec(ReduceKind, newReduceOp)
 	plan.RegisterProcedureSpec(ReduceKind, newReduceProcedure, ReduceKind)
 	execute.RegisterTransformation(ReduceKind, createReduceTransformation)
@@ -95,7 +81,7 @@ func (s *ReduceOpSpec) Kind() flux.OperationKind {
 type ReduceProcedureSpec struct {
 	plan.DefaultCost
 	Fn          interpreter.ResolvedFunction
-	ReducerType semantic.Type
+	ReducerType semantic.MonoType
 	Identity    map[string]string
 }
 
@@ -155,13 +141,14 @@ func NewReduceTransformation(ctx context.Context, spec *ReduceProcedureSpec, d e
 	}
 
 	ne := make(map[string]values.Value)
-	for k, v := range spec.ReducerType.Properties() {
-		newVal, err := values.NewFromString(v.Nature(), spec.Identity[k])
-		if err != nil {
-			return nil, err
-		}
-		ne[k] = newVal
-	}
+	// TODO(algow): update now that types are complete
+	//for k, v := range spec.ReducerType.Properties() {
+	//	newVal, err := values.NewFromString(v.Nature(), spec.Identity[k])
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	ne[k] = newVal
+	//}
 
 	return &reduceTransformation{
 		d:              d,
@@ -179,7 +166,7 @@ func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	// plus the reducer type.  For a given set of type values, we will cache the compiled function to
 	// avoid costly recompilation.
 	cols := tbl.Cols()
-	err := t.fn.Prepare(cols, map[string]semantic.Type{"accumulator": reducer.Type()})
+	err := t.fn.Prepare(cols, map[string]semantic.MonoType{"accumulator": reducer.Type()})
 	if err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
 		return err
@@ -205,64 +192,65 @@ func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		return err
 	}
 
-	gkb := execute.NewGroupKeyBuilder(tbl.Key())
-	typ := reducer.Type().Properties()
-	var typeKeys []string
-	for k := range typ {
-		typeKeys = append(typeKeys, k)
-	}
-	// go maps have unsorted keys, so we need to extract the keys and sort them
-	sort.Strings(typeKeys)
-	for _, k := range typeKeys {
-		if tbl.Key().HasCol(k) {
-			val, _ := reducer.Get(k)
-			gkb.SetKeyValue(k, val)
-		}
-	}
+	// TODO(algow): now that type inference is complete rework this logic
+	//gkb := execute.NewGroupKeyBuilder(tbl.Key())
+	//typ := reducer.Type().Properties()
+	//var typeKeys []string
+	//for k := range typ {
+	//	typeKeys = append(typeKeys, k)
+	//}
+	//// go maps have unsorted keys, so we need to extract the keys and sort them
+	//sort.Strings(typeKeys)
+	//for _, k := range typeKeys {
+	//	if tbl.Key().HasCol(k) {
+	//		val, _ := reducer.Get(k)
+	//		gkb.SetKeyValue(k, val)
+	//	}
+	//}
 
-	// Find the output table that we will write to.  For reduce, we will write rows with the same
-	// table group key
-	tblKey, err := gkb.Build()
-	if err != nil {
-		return err
-	}
-	builder, created := t.cache.TableBuilder(tblKey)
-	if created {
-		// add the key columns to the table.
-		if err := execute.AddTableKeyCols(tblKey, builder); err != nil {
-			return err
-		}
+	//// Find the output table that we will write to.  For reduce, we will write rows with the same
+	//// table group key
+	//tblKey, err := gkb.Build()
+	//if err != nil {
+	//	return err
+	//}
+	//builder, created := t.cache.TableBuilder(tblKey)
+	//if created {
+	//	// add the key columns to the table.
+	//	if err := execute.AddTableKeyCols(tblKey, builder); err != nil {
+	//		return err
+	//	}
 
-		// add table columns for each key in the reducer type map
-		for _, k := range typeKeys {
-			if tblKey.HasCol(k) {
-				continue
-			}
-			if _, err := builder.AddCol(flux.ColMeta{
-				Label: k,
-				Type:  flux.ColumnType(typ[k]),
-			}); err != nil {
-				return err
-			}
-		}
+	//	// add table columns for each key in the reducer type map
+	//	for _, k := range typeKeys {
+	//		if tblKey.HasCol(k) {
+	//			continue
+	//		}
+	//		if _, err := builder.AddCol(flux.ColMeta{
+	//			Label: k,
+	//			Type:  flux.ColumnType(typ[k]),
+	//		}); err != nil {
+	//			return err
+	//		}
+	//	}
 
-		for j, c := range builder.Cols() {
-			v, ok := reducer.Get(c.Label)
-			if !ok {
-				if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); idx >= 0 {
-					v = tbl.Key().Value(idx)
-				} else {
-					// This should be unreachable
-					return errors.Newf(codes.Internal, "could not find value for column %q", c.Label)
-				}
-			}
-			if err := builder.AppendValue(j, v); err != nil {
-				return err
-			}
-		}
-	} else {
-		return errors.New(codes.FailedPrecondition, "two reducers writing result to the same table")
-	}
+	//	for j, c := range builder.Cols() {
+	//		v, ok := reducer.Get(c.Label)
+	//		if !ok {
+	//			if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); idx >= 0 {
+	//				v = tbl.Key().Value(idx)
+	//			} else {
+	//				// This should be unreachable
+	//				return errors.Newf(codes.Internal, "could not find value for column %q", c.Label)
+	//			}
+	//		}
+	//		if err := builder.AppendValue(j, v); err != nil {
+	//			return err
+	//		}
+	//	}
+	//} else {
+	//	return errors.New(codes.FailedPrecondition, "two reducers writing result to the same table")
+	//}
 	return nil
 }
 

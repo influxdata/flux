@@ -15,13 +15,7 @@ import (
 func init() {
 	flux.RegisterPackageValue("json", "encode", values.NewFunction(
 		"encode",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				"v": semantic.Tvar(1),
-			},
-			Required: []string{"v"},
-			Return:   semantic.Bytes,
-		}),
+		flux.LookupBuiltInType("json", "encode"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			v, ok := args.Get("v")
 			if !ok {

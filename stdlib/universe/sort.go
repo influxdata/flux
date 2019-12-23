@@ -19,15 +19,9 @@ type SortOpSpec struct {
 }
 
 func init() {
-	sortSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"columns": semantic.NewArrayPolyType(semantic.String),
-			"desc":    semantic.Bool,
-		},
-		nil,
-	)
+	sortSignature := flux.LookupBuiltInType("universe", "sort")
 
-	flux.RegisterPackageValue("universe", SortKind, flux.FunctionValue(SortKind, createSortOpSpec, sortSignature))
+	flux.RegisterPackageValue("universe", SortKind, flux.MustValue(flux.FunctionValue(SortKind, createSortOpSpec, sortSignature)))
 	flux.RegisterOpSpec(SortKind, newSortOp)
 	plan.RegisterProcedureSpec(SortKind, newSortProcedure, SortKind)
 	execute.RegisterTransformation(SortKind, createSortTransformation)

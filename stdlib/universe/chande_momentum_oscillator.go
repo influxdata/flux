@@ -18,15 +18,9 @@ type ChandeMomentumOscillatorOpSpec struct {
 }
 
 func init() {
-	chandeMomentumOscillatorSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"n":       semantic.Int,
-			"columns": semantic.NewArrayPolyType(semantic.String),
-		},
-		[]string{"n"},
-	)
+	chandeMomentumOscillatorSignature := flux.LookupBuiltInType("universe", ChandeMomentumOscillatorKind)
 
-	flux.RegisterPackageValue("universe", ChandeMomentumOscillatorKind, flux.FunctionValue(ChandeMomentumOscillatorKind, createChandeMomentumOscillatorOpSpec, chandeMomentumOscillatorSignature))
+	flux.RegisterPackageValue("universe", ChandeMomentumOscillatorKind, flux.MustValue(flux.FunctionValue(ChandeMomentumOscillatorKind, createChandeMomentumOscillatorOpSpec, chandeMomentumOscillatorSignature)))
 	flux.RegisterOpSpec(ChandeMomentumOscillatorKind, newChandeMomentumOscillatorOp)
 	plan.RegisterProcedureSpec(ChandeMomentumOscillatorKind, newChandeMomentumOscillatorProcedure, ChandeMomentumOscillatorKind)
 	execute.RegisterTransformation(ChandeMomentumOscillatorKind, createChandeMomentumOscillatorTransformation)

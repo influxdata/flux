@@ -22,13 +22,8 @@ type RelativeStrengthIndexOpSpec struct {
 }
 
 func init() {
-	relativeStrengthIndexSignature := flux.FunctionSignature(map[string]semantic.PolyType{
-		"n":       semantic.Int,
-		"columns": semantic.NewArrayPolyType(semantic.String),
-	},
-		[]string{"n"},
-	)
-	flux.RegisterPackageValue("universe", RelativeStrengthIndexKind, flux.FunctionValue(RelativeStrengthIndexKind, createRelativeStrengthIndexOpSpec, relativeStrengthIndexSignature))
+	relativeStrengthIndexSignature := flux.LookupBuiltInType("universe", "relativeStrenthIndex")
+	flux.RegisterPackageValue("universe", RelativeStrengthIndexKind, flux.MustValue(flux.FunctionValue(RelativeStrengthIndexKind, createRelativeStrengthIndexOpSpec, relativeStrengthIndexSignature)))
 	flux.RegisterOpSpec(RelativeStrengthIndexKind, newRelativeStrengthIndexOp)
 	plan.RegisterProcedureSpec(RelativeStrengthIndexKind, newRelativeStrengthIndexProcedure, RelativeStrengthIndexKind)
 	execute.RegisterTransformation(RelativeStrengthIndexKind, createRelativeStrengthIndexTransformation)

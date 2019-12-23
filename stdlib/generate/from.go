@@ -25,23 +25,8 @@ type FromGeneratorOpSpec struct {
 }
 
 func init() {
-	fromGeneratorSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"start": semantic.Time,
-			"stop":  semantic.Time,
-			"count": semantic.Int,
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"n": semantic.Int,
-				},
-				Required: semantic.LabelSet{"n"},
-				Return:   semantic.Int,
-			}),
-		},
-		Required: semantic.LabelSet{"start", "stop", "count", "fn"},
-		Return:   flux.TableObjectType,
-	}
-	flux.RegisterPackageValue("generate", "from", flux.FunctionValue(FromGeneratorKind, createFromGeneratorOpSpec, fromGeneratorSignature))
+	fromGeneratorSignature := flux.LookupBuiltInType("generate", "from")
+	flux.RegisterPackageValue("generate", "from", flux.MustValue(flux.FunctionValue(FromGeneratorKind, createFromGeneratorOpSpec, fromGeneratorSignature)))
 	flux.RegisterOpSpec(FromGeneratorKind, newFromGeneratorOp)
 	plan.RegisterProcedureSpec(FromGeneratorKind, newFromGeneratorProcedure, FromGeneratorKind)
 	execute.RegisterSource(FromGeneratorKind, createFromGeneratorSource)
@@ -132,7 +117,7 @@ func createFromGeneratorSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID
 	s.Start = spec.Start
 	s.Stop = spec.Stop
 	s.Count = spec.Count
-	fn, _, err := compiler.CompileFnParam(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope), semantic.Int, semantic.Int)
+	fn, _, err := compiler.CompileFnParam(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope), semantic.BasicInt, semantic.BasicInt)
 	if err != nil {
 		return nil, err
 	}

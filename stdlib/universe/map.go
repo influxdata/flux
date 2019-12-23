@@ -2,7 +2,6 @@ package universe
 
 import (
 	"context"
-	"sort"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -11,7 +10,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -23,21 +21,9 @@ type MapOpSpec struct {
 }
 
 func init() {
-	mapSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"r": semantic.Tvar(1),
-				},
-				Required: semantic.LabelSet{"r"},
-				Return:   semantic.Tvar(2),
-			}),
-			"mergeKey": semantic.Bool,
-		},
-		[]string{"fn"},
-	)
+	mapSignature := flux.LookupBuiltInType("universe", "map")
 
-	flux.RegisterPackageValue("universe", MapKind, flux.FunctionValue(MapKind, createMapOpSpec, mapSignature))
+	flux.RegisterPackageValue("universe", MapKind, flux.MustValue(flux.FunctionValue(MapKind, createMapOpSpec, mapSignature)))
 	flux.RegisterOpSpec(MapKind, newMapOp)
 	plan.RegisterProcedureSpec(MapKind, newMapProcedure, MapKind)
 	execute.RegisterTransformation(MapKind, createMapTransformation)
@@ -163,104 +149,107 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 	// that are directly referenced which are the ones capable of changing and the
 	// only ones that can be a null value.
 	// TODO (adam): these are a pointer to a property list that is definitely shared by the type checking code (semantic/types.go NewObjectType)
-	unsafeProperties := t.fn.Type().Properties()
-	properties := make(map[string]semantic.Type)
 
-	var on map[string]bool
-	return tbl.Do(func(cr flux.ColReader) error {
-		l := cr.Len()
-		for i := 0; i < l; i++ {
-			m, err := t.fn.Eval(t.ctx, i, cr)
-			if err != nil {
-				return errors.Wrap(err, codes.Inherit, "failed to evaluate map function")
-			}
+	// TODO(algow): rewrite this now that type inference is complete
+	//unsafeProperties := t.fn.Type().Properties()
+	//properties := make(map[string]semantic.MonoType)
 
-			// Merge in the types that we may have missed because type inference omitted them.
-			if i == 0 {
-				// Merge in the missing properties from the type.
-				// This will catch all of the non-referenced keys that are
-				// merged in from the merge key or with.
-				for k, typ := range m.Type().Properties() {
-					// TODO(jsternberg): Type inference can sometimes tell us something is nil
-					// when it actually has a value because of a bug in type inference.
-					// If the property is missing or null, then take whatever the first value
-					// is. This won't catch all situations, but we'll have to consider it good
-					// enough until type inference works in this scenario.
-					if t, ok := unsafeProperties[k]; !ok || t == semantic.Nil {
-						properties[k] = typ
-					} else {
-						properties[k] = unsafeProperties[k]
-					}
-				}
-			}
+	//var on map[string]bool
+	//return tbl.Do(func(cr flux.ColReader) error {
+	//	l := cr.Len()
+	//	for i := 0; i < l; i++ {
+	//		m, err := t.fn.Eval(t.ctx, i, cr)
+	//		if err != nil {
+	//			return errors.Wrap(err, codes.Inherit, "failed to evaluate map function")
+	//		}
 
-			// If we haven't determined the columns to group on, do that now.
-			if on == nil {
-				on = make(map[string]bool, len(tbl.Key().Cols()))
-				for _, c := range tbl.Key().Cols() {
-					if !t.mergeKey {
-						// If the label isn't included in the properties,
-						// then it wasn't returned by the eval.
-						if _, ok := properties[c.Label]; !ok {
-							continue
-						}
-					}
-					on[c.Label] = true
-				}
-			}
+	//		// Merge in the types that we may have missed because type inference omitted them.
+	//		if i == 0 {
+	//			// Merge in the missing properties from the type.
+	//			// This will catch all of the non-referenced keys that are
+	//			// merged in from the merge key or with.
+	//			for k, typ := range m.Type().Properties() {
+	//				// TODO(jsternberg): Type inference can sometimes tell us something is nil
+	//				// when it actually has a value because of a bug in type inference.
+	//				// If the property is missing or null, then take whatever the first value
+	//				// is. This won't catch all situations, but we'll have to consider it good
+	//				// enough until type inference works in this scenario.
+	//				if t, ok := unsafeProperties[k]; !ok || t == semantic.Nil {
+	//					properties[k] = typ
+	//				} else {
+	//					properties[k] = unsafeProperties[k]
+	//				}
+	//			}
+	//		}
 
-			key := groupKeyForObject(i, cr, m, on)
-			builder, created := t.cache.TableBuilder(key)
-			if created {
-				if t.mergeKey {
-					if err := execute.AddTableKeyCols(tbl.Key(), builder); err != nil {
-						return err
-					}
-				}
+	//		// If we haven't determined the columns to group on, do that now.
+	//		if on == nil {
+	//			on = make(map[string]bool, len(tbl.Key().Cols()))
+	//			for _, c := range tbl.Key().Cols() {
+	//				if !t.mergeKey {
+	//					// If the label isn't included in the properties,
+	//					// then it wasn't returned by the eval.
+	//					if _, ok := properties[c.Label]; !ok {
+	//						continue
+	//					}
+	//				}
+	//				on[c.Label] = true
+	//			}
+	//		}
 
-				// Add columns from function in sorted order.
-				keys := make([]string, 0, len(properties))
-				for k := range properties {
-					keys = append(keys, k)
-				}
-				sort.Strings(keys)
+	//		key := groupKeyForObject(i, cr, m, on)
+	//		builder, created := t.cache.TableBuilder(key)
+	//		if created {
+	//			if t.mergeKey {
+	//				if err := execute.AddTableKeyCols(tbl.Key(), builder); err != nil {
+	//					return err
+	//				}
+	//			}
 
-				for _, k := range keys {
-					if t.mergeKey && tbl.Key().HasCol(k) {
-						continue
-					}
+	//			// Add columns from function in sorted order.
+	//			keys := make([]string, 0, len(properties))
+	//			for k := range properties {
+	//				keys = append(keys, k)
+	//			}
+	//			sort.Strings(keys)
 
-					n := properties[k].Nature()
-					if n == semantic.Nil {
-						// If the column is null, then do not add it as a column.
-						continue
-					}
+	//			for _, k := range keys {
+	//				if t.mergeKey && tbl.Key().HasCol(k) {
+	//					continue
+	//				}
 
-					if _, err := builder.AddCol(flux.ColMeta{
-						Label: k,
-						Type:  execute.ConvertFromKind(n),
-					}); err != nil {
-						return err
-					}
-				}
-			}
-			for j, c := range builder.Cols() {
-				v, ok := m.Get(c.Label)
-				if !ok {
-					if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); t.mergeKey && idx >= 0 {
-						v = tbl.Key().Value(idx)
-					} else {
-						// This should be unreachable
-						return errors.Newf(codes.Internal, "could not find value for column %q", c.Label)
-					}
-				}
-				if err := builder.AppendValue(j, v); err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	})
+	//				n := properties[k].Nature()
+	//				if n == semantic.Nil {
+	//					// If the column is null, then do not add it as a column.
+	//					continue
+	//				}
+
+	//				if _, err := builder.AddCol(flux.ColMeta{
+	//					Label: k,
+	//					Type:  execute.ConvertFromKind(n),
+	//				}); err != nil {
+	//					return err
+	//				}
+	//			}
+	//		}
+	//		for j, c := range builder.Cols() {
+	//			v, ok := m.Get(c.Label)
+	//			if !ok {
+	//				if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); t.mergeKey && idx >= 0 {
+	//					v = tbl.Key().Value(idx)
+	//				} else {
+	//					// This should be unreachable
+	//					return errors.Newf(codes.Internal, "could not find value for column %q", c.Label)
+	//				}
+	//			}
+	//			if err := builder.AppendValue(j, v); err != nil {
+	//				return err
+	//			}
+	//		}
+	//	}
+	//	return nil
+	//})
+	return nil
 }
 
 func groupKeyForObject(i int, cr flux.ColReader, obj values.Object, on map[string]bool) flux.GroupKey {

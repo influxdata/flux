@@ -26,14 +26,16 @@ func prelude() compiler.Scope {
 
 func createRecord(row []interface{}) (*execute.Record, error) {
 	if len(row) == 0 {
-		return execute.NewRecord(semantic.Invalid), nil
+		// TODO(algow): determine correct type for this case
+		return execute.NewRecord(semantic.BasicBool), nil
 	}
 
 	if len(row)%2 != 0 {
 		return nil, errors.New("row must contain couples")
 	}
 
-	r := execute.NewRecord(semantic.Object)
+	// TODO(algow): determine correct type
+	r := execute.NewRecord(semantic.BasicBool)
 	for i := 0; i < len(row); i += 2 {
 		if key, ok := row[i].(string); !ok {
 			return nil, fmt.Errorf("keys must be strings: %v", row[i])
@@ -241,9 +243,11 @@ func TestRowMapFn_Eval(t *testing.T) {
 				for i := 0; i < cr.Len(); i++ {
 					obj, err := f.Eval(ctx, i, cr)
 					if err != nil {
-						got = append(got, execute.NewRecord(semantic.Invalid))
+						// TODO(algow): determine correct type
+						got = append(got, execute.NewRecord(semantic.BasicBool))
 					} else {
-						r := execute.NewRecord(semantic.Object)
+						// TODO(algow): determine correct type
+						r := execute.NewRecord(semantic.BasicBool)
 						obj.Range(func(k string, v values.Value) {
 							r.Set(k, v)
 						})

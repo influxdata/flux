@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const LimitKind = "limit"
@@ -19,15 +18,9 @@ type LimitOpSpec struct {
 }
 
 func init() {
-	limitSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"n":      semantic.Int,
-			"offset": semantic.Int,
-		},
-		[]string{"n"},
-	)
+	limitSignature := flux.LookupBuiltInType("universe", "limit")
 
-	flux.RegisterPackageValue("universe", LimitKind, flux.FunctionValue(LimitKind, createLimitOpSpec, limitSignature))
+	flux.RegisterPackageValue("universe", LimitKind, flux.MustValue(flux.FunctionValue(LimitKind, createLimitOpSpec, limitSignature)))
 	flux.RegisterOpSpec(LimitKind, newLimitOp)
 	plan.RegisterProcedureSpec(LimitKind, newLimitProcedure, LimitKind)
 	// TODO register a range transformation. Currently range is only supported if it is pushed down into a select procedure.

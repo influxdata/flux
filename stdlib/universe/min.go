@@ -16,9 +16,9 @@ type MinOpSpec struct {
 }
 
 func init() {
-	minSignature := execute.SelectorSignature(nil, nil)
+	minSignature := flux.LookupBuiltInType("universe", "min")
 
-	flux.RegisterPackageValue("universe", MinKind, flux.FunctionValue(MinKind, createMinOpSpec, minSignature))
+	flux.RegisterPackageValue("universe", MinKind, flux.MustValue(flux.FunctionValue(MinKind, createMinOpSpec, minSignature)))
 	flux.RegisterOpSpec(MinKind, newMinOp)
 	plan.RegisterProcedureSpec(MinKind, newMinProcedure, MinKind)
 	execute.RegisterTransformation(MinKind, createMinTransformation)

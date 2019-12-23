@@ -13,7 +13,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const DiffKind = "diff"
@@ -27,18 +26,9 @@ func (s *DiffOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-	diffSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"verbose": semantic.Bool,
-			"got":     flux.TableObjectType,
-			"want":    flux.TableObjectType,
-		},
-		Required:     semantic.LabelSet{"got", "want"},
-		Return:       flux.TableObjectType,
-		PipeArgument: "got",
-	}
+	diffSignature := flux.LookupBuiltInType("testing", "diff")
 
-	flux.RegisterPackageValue("testing", "diff", flux.FunctionValue(DiffKind, createDiffOpSpec, diffSignature))
+	flux.RegisterPackageValue("testing", "diff", flux.MustValue(flux.FunctionValue(DiffKind, createDiffOpSpec, diffSignature)))
 	flux.RegisterOpSpec(DiffKind, newDiffOp)
 	plan.RegisterProcedureSpec(DiffKind, newDiffProcedure, DiffKind)
 	execute.RegisterTransformation(DiffKind, createDiffTransformation)

@@ -10,7 +10,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const AssertEqualsKind = "assertEquals"
@@ -24,18 +23,9 @@ func (s *AssertEqualsOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-	assertEqualsSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"name": semantic.String,
-			"got":  flux.TableObjectType,
-			"want": flux.TableObjectType,
-		},
-		Required:     semantic.LabelSet{"name", "got", "want"},
-		Return:       flux.TableObjectType,
-		PipeArgument: "got",
-	}
+	assertEqualsSignature := flux.LookupBuiltInType("testing", "assertEquals")
 
-	flux.RegisterPackageValue("testing", "assertEquals", flux.FunctionValue(AssertEqualsKind, createAssertEqualsOpSpec, assertEqualsSignature))
+	flux.RegisterPackageValue("testing", "assertEquals", flux.MustValue(flux.FunctionValue(AssertEqualsKind, createAssertEqualsOpSpec, assertEqualsSignature)))
 	flux.RegisterOpSpec(AssertEqualsKind, newAssertEqualsOp)
 	plan.RegisterProcedureSpec(AssertEqualsKind, newAssertEqualsProcedure, AssertEqualsKind)
 	execute.RegisterTransformation(AssertEqualsKind, createAssertEqualsTransformation)

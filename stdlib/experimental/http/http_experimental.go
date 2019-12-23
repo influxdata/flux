@@ -3,6 +3,12 @@ package http
 import (
 	"context"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"time"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -10,11 +16,6 @@ import (
 	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"time"
 )
 
 // maxResponseBody is the maximum response body we will read before just discarding
@@ -24,15 +25,7 @@ const maxResponseBody = 512 * 1024 // 512 KB
 // http get mirrors the http post originally completed for alerts & notifications
 var get = values.NewFunction(
 	"get",
-	semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"url":     semantic.String,
-			"headers": semantic.Tvar(1),
-			"timeout": semantic.Duration,
-		},
-		Required: []string{"url"},
-		Return:   semantic.NewObjectPolyType(map[string]semantic.PolyType{"statusCode": semantic.Int, "headers": semantic.Object, "body": semantic.Bytes}, semantic.LabelSet{"status", "headers", "body"}, nil),
-	}),
+	flux.LookupBuiltInType("experimental/http", "get"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		// Get and validate URL
 		uV, ok := args.Get("url")
@@ -74,7 +67,7 @@ var get = values.NewFunction(
 		if ok && !header.IsNull() {
 			var rangeErr error
 			header.Object().Range(func(k string, v values.Value) {
-				if v.Type() == semantic.String {
+				if v.Type().Nature() == semantic.String {
 					req.Header.Set(k, v.Str())
 				} else {
 					rangeErr = errors.Newf(codes.Invalid, "header value %q must be a string", k)

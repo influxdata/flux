@@ -14,13 +14,7 @@ import (
 func init() {
 	flux.RegisterPackageValue("experimental", "objectKeys", values.NewFunction(
 		"objectKeys",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				"o": semantic.Tvar(1),
-			},
-			Required: []string{"o"},
-			Return:   semantic.NewArrayPolyType(semantic.String),
-		}),
+		flux.LookupBuiltInType("experimental", "objectKeys"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			o, ok := args.Get("o")
 			if !ok {
@@ -34,7 +28,7 @@ func init() {
 			obj.Range(func(name string, _ values.Value) {
 				keys = append(keys, values.NewString(name))
 			})
-			return values.NewArrayWithBacking(semantic.String, keys), nil
+			return values.NewArrayWithBacking(semantic.NewArrayType(semantic.BasicString), keys), nil
 		},
 		false,
 	))

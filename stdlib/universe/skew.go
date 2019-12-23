@@ -18,9 +18,9 @@ type SkewOpSpec struct {
 }
 
 func init() {
-	skewSignature := execute.AggregateSignature(nil, nil)
+	skewSignature := flux.LookupBuiltInType("universe", "skew")
 
-	flux.RegisterPackageValue("universe", SkewKind, flux.FunctionValue(SkewKind, createSkewOpSpec, skewSignature))
+	flux.RegisterPackageValue("universe", SkewKind, flux.MustValue(flux.FunctionValue(SkewKind, createSkewOpSpec, skewSignature)))
 	flux.RegisterOpSpec(SkewKind, newSkewOp)
 	plan.RegisterProcedureSpec(SkewKind, newSkewProcedure, SkewKind)
 	execute.RegisterTransformation(SkewKind, createSkewTransformation)

@@ -12,7 +12,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -27,24 +26,9 @@ type StateTrackingOpSpec struct {
 }
 
 func init() {
-	stateTrackingSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"r": semantic.Tvar(1),
-				},
-				Required: semantic.LabelSet{"r"},
-				Return:   semantic.Bool,
-			}),
-			"countColumn":    semantic.String,
-			"durationColumn": semantic.String,
-			"durationUnit":   semantic.Duration,
-			"timeColumn":     semantic.String,
-		},
-		[]string{"fn"},
-	)
+	stateTrackingSignature := flux.LookupBuiltInType("universe", "stateTracking")
 
-	flux.RegisterPackageValue("universe", StateTrackingKind, flux.FunctionValue(StateTrackingKind, createStateTrackingOpSpec, stateTrackingSignature))
+	flux.RegisterPackageValue("universe", StateTrackingKind, flux.MustValue(flux.FunctionValue(StateTrackingKind, createStateTrackingOpSpec, stateTrackingSignature)))
 	flux.RegisterOpSpec(StateTrackingKind, newStateTrackingOp)
 	plan.RegisterProcedureSpec(StateTrackingKind, newStateTrackingProcedure, StateTrackingKind)
 	execute.RegisterTransformation(StateTrackingKind, createStateTrackingTransformation)

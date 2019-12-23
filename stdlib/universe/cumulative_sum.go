@@ -17,14 +17,9 @@ type CumulativeSumOpSpec struct {
 }
 
 func init() {
-	cumulativeSumSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"columns": semantic.NewArrayPolyType(semantic.String),
-		},
-		nil,
-	)
+	cumulativeSumSignature := flux.LookupBuiltInType("univsere", "cumulativeSum")
 
-	flux.RegisterPackageValue("universe", CumulativeSumKind, flux.FunctionValue(CumulativeSumKind, createCumulativeSumOpSpec, cumulativeSumSignature))
+	flux.RegisterPackageValue("universe", CumulativeSumKind, flux.MustValue(flux.FunctionValue(CumulativeSumKind, createCumulativeSumOpSpec, cumulativeSumSignature)))
 	flux.RegisterOpSpec(CumulativeSumKind, newCumulativeSumOp)
 	plan.RegisterProcedureSpec(CumulativeSumKind, newCumulativeSumProcedure, CumulativeSumKind)
 	execute.RegisterTransformation(CumulativeSumKind, createCumulativeSumTransformation)

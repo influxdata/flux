@@ -19,9 +19,9 @@ type MeanOpSpec struct {
 }
 
 func init() {
-	meanSignature := execute.AggregateSignature(nil, nil)
+	meanSignature := flux.LookupBuiltInType("universe", "mean")
 
-	flux.RegisterPackageValue("universe", MeanKind, flux.FunctionValue(MeanKind, createMeanOpSpec, meanSignature))
+	flux.RegisterPackageValue("universe", MeanKind, flux.MustValue(flux.FunctionValue(MeanKind, createMeanOpSpec, meanSignature)))
 	flux.RegisterOpSpec(MeanKind, newMeanOp)
 	plan.RegisterProcedureSpec(MeanKind, newMeanProcedure, MeanKind)
 	execute.RegisterTransformation(MeanKind, createMeanTransformation)

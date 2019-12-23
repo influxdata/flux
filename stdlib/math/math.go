@@ -17,11 +17,7 @@ var SpecialFns map[string]values.Function
 func generateMathFunctionX(name string, mathFn func(float64) float64) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{"x": semantic.Float},
-			Required:   semantic.LabelSet{"x"},
-			Return:     semantic.Float,
-		}),
+		flux.LookupBuiltInType("math", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			v, ok := args.Get("x")
 			if !ok {
@@ -43,11 +39,7 @@ func generateMathFunctionXY(name string, mathFn func(float64, float64) float64, 
 	}
 	return values.NewFunction(
 		name,
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{argNames[0]: semantic.Float, argNames[1]: semantic.Float},
-			Required:   argNames,
-			Return:     semantic.Float,
-		}),
+		flux.LookupBuiltInType("math", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			v1, ok := args.Get(argNames[0])
 			if !ok {
@@ -143,11 +135,7 @@ func init() {
 		// float --> uint
 		"float64bits": values.NewFunction(
 			"float64bits",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"f": semantic.Float},
-				Required:   semantic.LabelSet{"f"},
-				Return:     semantic.UInt,
-			}),
+			flux.LookupBuiltInType("math", "float64bits"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -161,12 +149,8 @@ func init() {
 			}, false,
 		),
 		"float64frombits": values.NewFunction(
-			"float64bits",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"b": semantic.UInt},
-				Required:   semantic.LabelSet{"b"},
-				Return:     semantic.Float,
-			}),
+			"float64frombits",
+			flux.LookupBuiltInType("math", "float64frombits"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("b")
 				if !ok {
@@ -182,11 +166,7 @@ func init() {
 		// float --> int
 		"ilogb": values.NewFunction(
 			"ilogb",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"x": semantic.Float},
-				Required:   semantic.LabelSet{"x"},
-				Return:     semantic.Int,
-			}),
+			flux.LookupBuiltInType("math", "ilogb"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
@@ -202,11 +182,7 @@ func init() {
 		// float --> {frac: float, exp: int}
 		"frexp": values.NewFunction(
 			"frexp",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"f": semantic.Float},
-				Required:   semantic.LabelSet{"f"},
-				Return:     semantic.NewObjectPolyType(map[string]semantic.PolyType{"frac": semantic.Float, "exp": semantic.Int}, semantic.LabelSet{"frac", "exp"}, nil),
-			}),
+			flux.LookupBuiltInType("math", "frexp"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -223,11 +199,7 @@ func init() {
 		// float --> {lgamma: float, sign: int}
 		"lgamma": values.NewFunction(
 			"lgamma",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"x": semantic.Float},
-				Required:   semantic.LabelSet{"x"},
-				Return:     semantic.NewObjectPolyType(map[string]semantic.PolyType{"lgamma": semantic.Float, "sign": semantic.Int}, semantic.LabelSet{"lgamma", "sign"}, nil),
-			}),
+			flux.LookupBuiltInType("math", "lgamma"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
@@ -244,11 +216,7 @@ func init() {
 		// float --> {int: float, frac: float}
 		"modf": values.NewFunction(
 			"modf",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"f": semantic.Float},
-				Required:   semantic.LabelSet{"f"},
-				Return:     semantic.NewObjectPolyType(map[string]semantic.PolyType{"int": semantic.Float, "frac": semantic.Float}, semantic.LabelSet{"int", "frac"}, nil),
-			}),
+			flux.LookupBuiltInType("math", "modf"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -265,11 +233,7 @@ func init() {
 		// float --> {sin: float, cos: float}
 		"sincos": values.NewFunction(
 			"sincos",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"x": semantic.Float},
-				Required:   semantic.LabelSet{"x"},
-				Return:     semantic.NewObjectPolyType(map[string]semantic.PolyType{"sin": semantic.Float, "cos": semantic.Float}, semantic.LabelSet{"sin", "cos"}, nil),
-			}),
+			flux.LookupBuiltInType("math", "sincos"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
@@ -286,11 +250,7 @@ func init() {
 		// float, int --> bool
 		"isInf": values.NewFunction(
 			"isInf",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"f": semantic.Float, "sign": semantic.Int},
-				Required:   semantic.LabelSet{"f", "sign"},
-				Return:     semantic.Bool,
-			}),
+			flux.LookupBuiltInType("math", "isInf"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -314,11 +274,7 @@ func init() {
 		// float --> bool
 		"isNaN": values.NewFunction(
 			"isNaN",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"f": semantic.Float},
-				Required:   semantic.LabelSet{"f"},
-				Return:     semantic.Bool,
-			}),
+			flux.LookupBuiltInType("math", "isNaN"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -334,11 +290,7 @@ func init() {
 		// float --> bool
 		"signbit": values.NewFunction(
 			"signbit",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"x": semantic.Float},
-				Required:   semantic.LabelSet{"x"},
-				Return:     semantic.Bool,
-			}),
+			flux.LookupBuiltInType("math", "signbit"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
@@ -354,11 +306,7 @@ func init() {
 		// () --> float
 		"NaN": values.NewFunction(
 			"NaN",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{},
-				Required:   semantic.LabelSet{},
-				Return:     semantic.Float,
-			}),
+			flux.LookupBuiltInType("math", "NaN"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				return values.NewFloat(math.NaN()), nil
 			}, false,
@@ -366,11 +314,7 @@ func init() {
 		// (int) --> float
 		"mInf": values.NewFunction(
 			"inf",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"sign": semantic.Int},
-				Required:   semantic.LabelSet{"sign"},
-				Return:     semantic.Float,
-			}),
+			flux.LookupBuiltInType("math", "inf"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 
 				v1, ok := args.Get("sign")
@@ -387,11 +331,7 @@ func init() {
 		// (int, float) --> float
 		"jn": values.NewFunction(
 			"jn",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"n": semantic.Int, "x": semantic.Float},
-				Required:   semantic.LabelSet{"n", "x"},
-				Return:     semantic.Float,
-			}),
+			flux.LookupBuiltInType("math", "jn"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("n")
 				if !ok {
@@ -415,11 +355,7 @@ func init() {
 		// (int, float) --> float
 		"yn": values.NewFunction(
 			"yn",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"n": semantic.Int, "x": semantic.Float},
-				Required:   semantic.LabelSet{"n", "x"},
-				Return:     semantic.Float,
-			}),
+			flux.LookupBuiltInType("math", "yn"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("n")
 				if !ok {
@@ -443,11 +379,7 @@ func init() {
 		// (float, int) --> float
 		"ldexp": values.NewFunction(
 			"ldexp",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"frac": semantic.Float, "exp": semantic.Int},
-				Required:   semantic.LabelSet{"frac", "exp"},
-				Return:     semantic.Float,
-			}),
+			flux.LookupBuiltInType("math", "ldexp"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("frac")
 				if !ok {
@@ -471,11 +403,7 @@ func init() {
 		// int --> float
 		"pow10": values.NewFunction(
 			"pow10",
-			semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{"n": semantic.Int},
-				Required:   semantic.LabelSet{"n"},
-				Return:     semantic.Float,
-			}),
+			flux.LookupBuiltInType("math", "pow10"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("n")
 				if !ok {

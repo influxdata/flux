@@ -22,15 +22,8 @@ type CovarianceOpSpec struct {
 }
 
 func init() {
-	var covarianceSignature = flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"pearsonr": semantic.Bool,
-			"valueDst": semantic.String,
-			"columns":  semantic.NewArrayPolyType(semantic.String),
-		},
-		[]string{"columns"},
-	)
-	flux.RegisterPackageValue("universe", CovarianceKind, flux.FunctionValue(CovarianceKind, createCovarianceOpSpec, covarianceSignature))
+	var covarianceSignature = flux.LookupBuiltInType("universe", "covariance")
+	flux.RegisterPackageValue("universe", CovarianceKind, flux.MustValue(flux.FunctionValue(CovarianceKind, createCovarianceOpSpec, covarianceSignature)))
 	flux.RegisterOpSpec(CovarianceKind, newCovarianceOp)
 	plan.RegisterProcedureSpec(CovarianceKind, newCovarianceProcedure, CovarianceKind)
 	execute.RegisterTransformation(CovarianceKind, createCovarianceTransformation)

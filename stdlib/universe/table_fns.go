@@ -34,21 +34,7 @@ func init() {
 
 func NewTableFindFunction() values.Value {
 	return values.NewFunction("tableFind",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				tableFindStreamArg: flux.TableObjectType,
-				tableFindFunctionArg: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-					Parameters: map[string]semantic.PolyType{
-						tableFindFunctionGroupKeyArg: semantic.Tvar(1),
-					},
-					Required: semantic.LabelSet{tableFindFunctionGroupKeyArg},
-					Return:   semantic.Bool,
-				}),
-			},
-			Required:     semantic.LabelSet{tableFindStreamArg, tableFindFunctionArg},
-			PipeArgument: tableFindStreamArg,
-			Return:       objects.TableType,
-		}),
+		flux.LookupBuiltInType("universe", "tableFind"),
 		tableFindCall,
 		false)
 }
@@ -58,8 +44,9 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 	var to *flux.TableObject
 	if v, err := arguments.GetRequired(tableFindStreamArg); err != nil {
 		return nil, err
-	} else if v.Type() != flux.TableObjectMonoType {
-		return nil, errors.Newf(codes.Invalid, "unexpected type for %v: want %v, got %v", tableFindStreamArg, "table stream", v.Type())
+		// TODO(algow): how to check for table object types?
+		//} else if v.Type().Nature() != flux.TableObjectMonoType {
+		//return nil, errors.Newf(codes.Invalid, "unexpected type for %v: want %v, got %v", tableFindStreamArg, "table stream", v.Type())
 	} else {
 		to = v.(*flux.TableObject)
 	}
@@ -140,15 +127,7 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 
 func NewGetColumnFunction() values.Value {
 	return values.NewFunction("getColumn",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				getColumnTableArg:  objects.TableType,
-				getColumnColumnArg: semantic.String,
-			},
-			Required:     semantic.LabelSet{getColumnTableArg, getColumnColumnArg},
-			PipeArgument: getColumnTableArg,
-			Return:       semantic.Array,
-		}),
+		flux.LookupBuiltInType("universe", "getColumn"),
 		getColumnCall,
 		false)
 }
@@ -192,37 +171,37 @@ func arrayFromColumn(idx int, cr flux.ColReader) values.Array {
 			if vs := cr.Strings(idx); vs.IsValid(i) {
 				vsSlice = append(vsSlice, values.New(vs.ValueString(i)))
 			} else {
-				vsSlice = append(vsSlice, values.NewNull(semantic.String))
+				vsSlice = append(vsSlice, values.NewNull(semantic.BasicString))
 			}
 		case flux.TInt:
 			if vs := cr.Ints(idx); vs.IsValid(i) {
 				vsSlice = append(vsSlice, values.New(vs.Value(i)))
 			} else {
-				vsSlice = append(vsSlice, values.NewNull(semantic.Int))
+				vsSlice = append(vsSlice, values.NewNull(semantic.BasicInt))
 			}
 		case flux.TUInt:
 			if vs := cr.UInts(idx); vs.IsValid(i) {
 				vsSlice = append(vsSlice, values.New(vs.Value(i)))
 			} else {
-				vsSlice = append(vsSlice, values.NewNull(semantic.UInt))
+				vsSlice = append(vsSlice, values.NewNull(semantic.BasicUint))
 			}
 		case flux.TFloat:
 			if vs := cr.Floats(idx); vs.IsValid(i) {
 				vsSlice = append(vsSlice, values.New(vs.Value(i)))
 			} else {
-				vsSlice = append(vsSlice, values.NewNull(semantic.Float))
+				vsSlice = append(vsSlice, values.NewNull(semantic.BasicFloat))
 			}
 		case flux.TBool:
 			if vs := cr.Bools(idx); vs.IsValid(i) {
 				vsSlice = append(vsSlice, values.New(vs.Value(i)))
 			} else {
-				vsSlice = append(vsSlice, values.NewNull(semantic.Bool))
+				vsSlice = append(vsSlice, values.NewNull(semantic.BasicBool))
 			}
 		case flux.TTime:
 			if vs := cr.Times(idx); vs.IsValid(i) {
 				vsSlice = append(vsSlice, values.New(values.Time(vs.Value(i))))
 			} else {
-				vsSlice = append(vsSlice, values.NewNull(semantic.Time))
+				vsSlice = append(vsSlice, values.NewNull(semantic.BasicTime))
 			}
 		default:
 			execute.PanicUnknownType(typ)
@@ -233,17 +212,7 @@ func arrayFromColumn(idx int, cr flux.ColReader) values.Array {
 
 func NewGetRecordFunction() values.Value {
 	return values.NewFunction("getRecord",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				getRecordTableArg: objects.TableType,
-				getRecordIndexArg: semantic.Int,
-			},
-			Required:     semantic.LabelSet{getRecordTableArg, getRecordIndexArg},
-			PipeArgument: getRecordTableArg,
-			// TODO(affo): this return type should be parameterized by the input types. It cannot be TVar,
-			//  because if there is a TVar on the right, there must be one on the left.
-			Return: semantic.Object,
-		}),
+		flux.LookupBuiltInType("universe", "getRecord"),
 		getRecordCall,
 		false)
 }
@@ -286,37 +255,37 @@ func objectFromRow(idx int, cr flux.ColReader) values.Object {
 			if vs := cr.Strings(j); vs.IsValid(idx) {
 				v = values.New(vs.ValueString(idx))
 			} else {
-				v = values.NewNull(semantic.String)
+				v = values.NewNull(semantic.BasicString)
 			}
 		case flux.TInt:
 			if vs := cr.Ints(j); vs.IsValid(idx) {
 				v = values.New(vs.Value(idx))
 			} else {
-				v = values.NewNull(semantic.Int)
+				v = values.NewNull(semantic.BasicInt)
 			}
 		case flux.TUInt:
 			if vs := cr.UInts(j); vs.IsValid(idx) {
 				v = values.New(vs.Value(idx))
 			} else {
-				v = values.NewNull(semantic.UInt)
+				v = values.NewNull(semantic.BasicUint)
 			}
 		case flux.TFloat:
 			if vs := cr.Floats(j); vs.IsValid(idx) {
 				v = values.New(vs.Value(idx))
 			} else {
-				v = values.NewNull(semantic.Float)
+				v = values.NewNull(semantic.BasicFloat)
 			}
 		case flux.TBool:
 			if vs := cr.Bools(j); vs.IsValid(idx) {
 				v = values.New(vs.Value(idx))
 			} else {
-				v = values.NewNull(semantic.Bool)
+				v = values.NewNull(semantic.BasicBool)
 			}
 		case flux.TTime:
 			if vs := cr.Times(j); vs.IsValid(idx) {
 				v = values.New(values.Time(vs.Value(idx)))
 			} else {
-				v = values.NewNull(semantic.Time)
+				v = values.NewNull(semantic.BasicTime)
 			}
 		default:
 			execute.PanicUnknownType(c.Type)

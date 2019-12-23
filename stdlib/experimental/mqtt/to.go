@@ -26,25 +26,9 @@ const (
 )
 
 func init() {
-	toMQTTSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"broker":       semantic.String,
-			"topic":        semantic.String,
-			"message":      semantic.String,
-			"qos":          semantic.Int,
-			"clientid":     semantic.String,
-			"username":     semantic.String,
-			"password":     semantic.String,
-			"name":         semantic.String,
-			"timeout":      semantic.Duration,
-			"timeColumn":   semantic.String,
-			"tagColumns":   semantic.NewArrayPolyType(semantic.String),
-			"valueColumns": semantic.NewArrayPolyType(semantic.String),
-		},
-		[]string{"broker"},
-	)
+	toMQTTSignature := flux.LookupBuiltInType("experimental/mqtt", "to")
 
-	flux.RegisterPackageValue("experimental/mqtt", "to", flux.FunctionValueWithSideEffect(ToMQTTKind, createToMQTTOpSpec, toMQTTSignature))
+	flux.RegisterPackageValue("experimental/mqtt", "to", flux.MustValue(flux.FunctionValueWithSideEffect(ToMQTTKind, createToMQTTOpSpec, toMQTTSignature)))
 	flux.RegisterOpSpec(ToMQTTKind, func() flux.OperationSpec { return &ToMQTTOpSpec{} })
 	plan.RegisterProcedureSpecWithSideEffect(ToMQTTKind, newToMQTTProcedure, ToMQTTKind)
 	execute.RegisterTransformation(ToMQTTKind, createToMQTTTransformation)
