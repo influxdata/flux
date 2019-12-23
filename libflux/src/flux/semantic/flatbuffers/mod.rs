@@ -39,7 +39,6 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
         if v.err.is_some() {
             return false;
         }
-        Rc::clone(&self.inner);
         true
     }
 
