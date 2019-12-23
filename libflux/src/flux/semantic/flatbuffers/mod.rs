@@ -1120,5 +1120,24 @@ fn fb_logical_operator(lo: &ast::LogicalOperator) -> fbsemantic::LogicalOperator
     }
 }
 
+<<<<<<< HEAD
+=======
+fn fb_duration(d: &str) -> Result<fbsemantic::TimeUnit, String> {
+    match d {
+        "y" => Ok(fbsemantic::TimeUnit::y),
+        "mo" => Ok(fbsemantic::TimeUnit::mo),
+        "w" => Ok(fbsemantic::TimeUnit::w),
+        "d" => Ok(fbsemantic::TimeUnit::d),
+        "h" => Ok(fbsemantic::TimeUnit::h),
+        "m" => Ok(fbsemantic::TimeUnit::m),
+        "s" => Ok(fbsemantic::TimeUnit::s),
+        "ms" => Ok(fbsemantic::TimeUnit::ms),
+        "us" => Ok(fbsemantic::TimeUnit::us),
+        "ns" => Ok(fbsemantic::TimeUnit::ns),
+        s => Err(format!("unknown time unit {}", s)),
+    }
+}
+
+>>>>>>> 8e266553... chore(libflux): continue driving down lint (#2247)
 #[cfg(test)]
 mod tests;
