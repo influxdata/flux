@@ -284,15 +284,16 @@ impl Parser<'_> {
             return Err("Missing right square bracket");
         }
 
-        let mut cons = HashMap::new();
-        if self.peek().token_type == TokenType::WHERE {
+        let cons = if self.peek().token_type == TokenType::WHERE {
             self.next(); // move to where
-            cons = self.parse_constraints()?;
-        }
+            self.parse_constraints()?
+        } else {
+            HashMap::new()
+        };
 
         Ok(PolyType {
-            vars: vars,
-            cons: cons,
+            vars,
+            cons,
             expr: self.parse_monotype()?,
         })
     }
@@ -323,7 +324,7 @@ impl Parser<'_> {
     fn parse_type_var(&mut self, token: &Token) -> Result<Tvar, &'static str> {
         match &token.text {
             Some(text) => {
-                let num = text.trim_start_matches("t").parse::<u64>();
+                let num = text.trim_start_matches('t').parse::<u64>();
                 match num {
                     Err(_e) => Err("Not a valid type variable"),
                     Ok(num) => {
