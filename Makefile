@@ -130,6 +130,9 @@ libflux/target/debug/liblibstd.deps: libflux/target/debug/liblibstd.d
 build: libflux
 	$(GO_BUILD) ./...
 
+rustparser: libflux
+	$(GO_BUILD) -x -v ./cmd/rustparser
+
 clean:
 	rm -rf bin
 	cd libflux && $(CARGO) clean && rm -rf pkg
