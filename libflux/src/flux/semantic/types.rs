@@ -582,7 +582,7 @@ impl fmt::Display for Row {
 }
 
 impl cmp::PartialEq for Row {
-    fn eq(mut self: &Self, mut r: &Self) -> bool {
+    fn eq(mut self: &Self, mut other: &Self) -> bool {
         let mut a = HashMap::new();
         let t = loop {
             match self {
@@ -606,14 +606,14 @@ impl cmp::PartialEq for Row {
         };
         let mut b = HashMap::new();
         let v = loop {
-            match r {
+            match other {
                 Row::Empty => break None,
                 Row::Extension {
                     head,
                     tail: MonoType::Row(o),
                 } => {
                     b.entry(&head.k).or_insert_with(Vec::new).push(&head.v);
-                    r = o;
+                    other = o;
                 }
                 Row::Extension {
                     head,
@@ -656,6 +656,7 @@ impl MaxTvar for Row {
     }
 }
 
+#[allow(clippy::many_single_char_names)]
 impl Row {
     // Below are the rules for record unification. In what follows monotypes
     // are denoted using lowercase letters, and type variables are denoted
@@ -682,7 +683,7 @@ impl Row {
         self,
         with: Self,
         cons: &mut TvarKinds,
-        f: &mut Fresher,
+        fresher: &mut Fresher,
     ) -> Result<Substitution, Error> {
         match (self, with) {
             (Row::Empty, Row::Empty) => Ok(Substitution::empty()),
@@ -708,15 +709,15 @@ impl Row {
                         };
                         Err(Error::cannot_unify(&l, &r))
                     } else {
-                        t.unify(u, cons, f)
+                        t.unify(u, cons, fresher)
                     }
                 } else if a == b {
                     let lv = MonoType::Var(l);
                     let rv = MonoType::Var(r);
-                    let sub = t.unify(u, cons, f)?;
-                    apply_then_unify(lv, rv, sub, cons, f)
+                    let sub = t.unify(u, cons, fresher)?;
+                    apply_then_unify(lv, rv, sub, cons, fresher)
                 } else {
-                    let var = f.fresh();
+                    let var = fresher.fresh();
                     let sub = l.unify(
                         MonoType::from(Row::Extension {
                             head: Property { k: b, v: u },
@@ -732,7 +733,7 @@ impl Row {
                         }),
                         sub,
                         cons,
-                        f,
+                        fresher,
                     )
                 }
             }
@@ -747,17 +748,17 @@ impl Row {
                 },
             ) => {
                 if a == b {
-                    let sub = t.unify(u, cons, f)?;
-                    apply_then_unify(l, r, sub, cons, f)
+                    let sub = t.unify(u, cons, fresher)?;
+                    apply_then_unify(l, r, sub, cons, fresher)
                 } else {
-                    let var = f.fresh();
+                    let var = fresher.fresh();
                     let sub = l.unify(
                         MonoType::from(Row::Extension {
                             head: Property { k: b, v: u },
                             tail: MonoType::Var(var),
                         }),
                         cons,
-                        f,
+                        fresher,
                     )?;
                     apply_then_unify(
                         r,
@@ -767,7 +768,7 @@ impl Row {
                         }),
                         sub,
                         cons,
-                        f,
+                        fresher,
                     )
                 }
             }

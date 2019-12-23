@@ -65,21 +65,21 @@ impl From<Constraint> for Constraints {
 pub fn solve(
     cons: &Constraints,
     with: &mut HashMap<Tvar, Vec<Kind>>,
-    f: &mut Fresher,
+    fresher: &mut Fresher,
 ) -> Result<Substitution, Error> {
     cons.0
         .iter()
         .try_fold(Substitution::empty(), |sub, constraint| match constraint {
-            Constraint::Kind(t, kind) => {
+            Constraint::Kind(monotype, kind) => {
                 // Apply the current substitution to the type, then constrain
-                let s = t.clone().apply(&sub).constrain(*kind, with)?;
+                let s = monotype.clone().apply(&sub).constrain(*kind, with)?;
                 Ok(sub.merge(s))
             }
-            Constraint::Equal(t, p) => {
+            Constraint::Equal(first, second) => {
                 // Apply the current substitution to the constraint, then unify
-                let l = t.clone().apply(&sub);
-                let r = p.clone().apply(&sub);
-                let s = l.unify(r, with, f)?;
+                let l = first.clone().apply(&sub);
+                let r = second.clone().apply(&sub);
+                let s = l.unify(r, with, fresher)?;
                 Ok(sub.merge(s))
             }
         })
