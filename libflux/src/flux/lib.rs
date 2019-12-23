@@ -1,9 +1,5 @@
 #![cfg_attr(feature = "strict", deny(warnings))]
 #![allow(clippy::unknown_clippy_lints)]
-// XXX: phummer (2 Dec 2019) - These lints should be removed one at a time
-// until these lines are entirely removed. If lint still must be ignored, it
-// should be at a more specific module or file level.
-#![allow(clippy::module_inception, clippy::many_single_char_names)]
 
 extern crate chrono;
 #[macro_use]
