@@ -13,14 +13,16 @@ impl From<u64> for Fresher {
 }
 
 impl Fresher {
-    pub fn new() -> Fresher {
-        Fresher(0)
-    }
-
     pub fn fresh(&mut self) -> Tvar {
         let u = self.0;
         self.0 += 1;
         Tvar(u)
+    }
+}
+
+impl Default for Fresher {
+    fn default() -> Self {
+        Self(0)
     }
 }
 
@@ -43,6 +45,7 @@ impl<T: Fresh> Fresh for Option<T> {
     }
 }
 
+#[allow(clippy::implicit_hasher)]
 impl<T: Fresh> Fresh for HashMap<String, T> {
     fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
         self.into_iter()
@@ -53,6 +56,7 @@ impl<T: Fresh> Fresh for HashMap<String, T> {
     }
 }
 
+#[allow(clippy::implicit_hasher)]
 impl<T: Hash + Ord + Eq + Fresh, S> Fresh for HashMap<T, S> {
     fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
         self.into_iter()

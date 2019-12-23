@@ -221,7 +221,10 @@ fn dependencies<'a>(
 }
 
 // Constructs a polytype, or more specifically a generic row type, from a hash map
-pub fn build_polytype(from: HashMap<String, PolyType>, f: &mut Fresher) -> Result<PolyType, Error> {
+pub fn build_polytype<S: ::std::hash::BuildHasher>(
+    from: HashMap<String, PolyType, S>,
+    f: &mut Fresher,
+) -> Result<PolyType, Error> {
     let (r, cons) = build_row(from, f);
     let mut kinds = HashMap::new();
     let sub = infer::solve(&cons, &mut kinds, f)?;
@@ -232,7 +235,10 @@ pub fn build_polytype(from: HashMap<String, PolyType>, f: &mut Fresher) -> Resul
     ))
 }
 
-fn build_row(from: HashMap<String, PolyType>, f: &mut Fresher) -> (Row, Constraints) {
+fn build_row<S: ::std::hash::BuildHasher>(
+    from: HashMap<String, PolyType, S>,
+    f: &mut Fresher,
+) -> (Row, Constraints) {
     let mut r = Row::Empty;
     let mut cons = Constraints::empty();
 

@@ -102,8 +102,8 @@ pub fn generalize(env: &Environment, with: &HashMap<Tvar, Vec<Kind>>, t: MonoTyp
         }
     }
     PolyType {
-        vars: vars,
-        cons: cons,
+        vars,
+        cons,
         expr: t,
     }
 }

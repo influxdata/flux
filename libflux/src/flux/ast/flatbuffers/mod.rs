@@ -1,5 +1,4 @@
-#![allow(clippy::all)]
-#[allow(non_snake_case, unused)]
+#[allow(non_snake_case, unused, clippy::all)]
 mod ast_generated;
 
 use std::cell::RefCell;
@@ -65,7 +64,7 @@ impl<'a> SerializingVisitor<'a> {
 impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
     fn visit(&self, _node: Rc<walk::Node<'a>>) -> Option<Self> {
         let v = self.inner.borrow();
-        if let Some(_) = &v.err {
+        if v.err.is_some() {
             return None;
         }
         Some(SerializingVisitor {
@@ -75,7 +74,7 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
 
     fn done(&self, node: Rc<walk::Node<'a>>) {
         let mut v = &mut *self.inner.borrow_mut();
-        if let Some(_) = &v.err {
+        if v.err.is_some() {
             return;
         }
         let node = node.as_ref();
@@ -759,7 +758,7 @@ impl<'a> SerializingVisitorState<'a> {
         match self.expr_stack.pop() {
             None => {
                 self.err = Some(String::from("pop empty expr stack"));
-                return (None, fbast::Expression::NONE);
+                (None, fbast::Expression::NONE)
             }
             Some((o, e)) => (Some(o), e),
         }
@@ -771,23 +770,23 @@ impl<'a> SerializingVisitorState<'a> {
                 if e == kind {
                     Some(WIPOffset::new(wipo.value()))
                 } else {
-                    self.err = Some(String::from(format!(
+                    self.err = Some(format!(
                         "expected {} on expr stack, got {}",
                         fbast::enum_name_expression(kind),
                         fbast::enum_name_expression(e)
-                    )));
-                    return None;
+                    ));
+                    None
                 }
             }
             None => {
                 self.err = Some(String::from("pop empty expr stack"));
-                return None;
+                None
             }
         }
     }
 
-    fn create_string(&mut self, str: &String) -> Option<WIPOffset<&'a str>> {
-        Some(self.builder.create_string(str.as_str()))
+    fn create_string(&mut self, string: &str) -> Option<WIPOffset<&'a str>> {
+        Some(self.builder.create_string(string))
     }
 
     fn create_opt_string(&mut self, str: &Option<String>) -> Option<WIPOffset<&'a str>> {
@@ -892,7 +891,7 @@ impl<'a> SerializingVisitorState<'a> {
 
     fn create_base_node_errs(
         &mut self,
-        ast_errs: &Vec<String>,
+        ast_errs: &[String],
     ) -> Option<
         flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>,
     > {
@@ -910,8 +909,8 @@ impl<'a> SerializingVisitorState<'a> {
 
 // This is a convenience function for debugging.
 #[allow(dead_code)]
-fn print_expr_stack(st: &Vec<(WIPOffset<UnionWIPOffset>, fbast::Expression)>) {
-    if st.len() == 0 {
+fn print_expr_stack(st: &[(WIPOffset<UnionWIPOffset>, fbast::Expression)]) {
+    if st.is_empty() {
         return;
     }
     for (_, et) in &st[..st.len() - 1] {
@@ -954,8 +953,8 @@ fn fb_logical_operator(lo: &ast::LogicalOperator) -> fbast::LogicalOperator {
     }
 }
 
-fn fb_duration(d: &String) -> Result<fbast::TimeUnit, String> {
-    match d.as_str() {
+fn fb_duration(d: &str) -> Result<fbast::TimeUnit, String> {
+    match d {
         "y" => Ok(fbast::TimeUnit::y),
         "mo" => Ok(fbast::TimeUnit::mo),
         "w" => Ok(fbast::TimeUnit::w),
@@ -966,7 +965,7 @@ fn fb_duration(d: &String) -> Result<fbast::TimeUnit, String> {
         "ms" => Ok(fbast::TimeUnit::ms),
         "us" => Ok(fbast::TimeUnit::us),
         "ns" => Ok(fbast::TimeUnit::ns),
-        s => Err(String::from(format!("unknown time unit {}", s))),
+        s => Err(format!("unknown time unit {}", s)),
     }
 }
 

@@ -60,7 +60,7 @@ impl From<fb::PolyType<'_>> for Option<PolyType> {
         for i in 0..c.len() {
             let constraint: Option<(Tvar, Kind)> = c.get(i).into();
             let (tv, kind) = constraint?;
-            cons.entry(tv).or_insert(Vec::new()).push(kind);
+            cons.entry(tv).or_insert_with(Vec::new).push(kind);
         }
         Some(PolyType {
             vars,
