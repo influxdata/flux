@@ -5,19 +5,22 @@ use flux::semantic::env::Environment;
 use flux::semantic::nodes;
 use flux::semantic::nodes::{infer_pkg_types, inject_pkg_types};
 use libstd;
+use std::io::{self, Read};
 
-fn main() {
-    // TODO: read source from stdin
-    let src = "";
-    analyze_source(src).unwrap();
+fn main() -> io::Result<()> {
+    let mut src = String::new();
+    io::stdin().read_to_string(&mut src)?;
+    analyze_source(&src).unwrap();
+    Ok(())
 }
 
 fn analyze_source(source: &str) -> Result<nodes::Package> {
     let file = parse_string("", source);
     let errs = ast::check::check(ast::walk::Node::File(&file));
     if !errs.is_empty() {
-        return Err(format!("got errors on parsing: {:?}", errs));
+        return Err(format!("Parsing Error: {:?}", errs));
     }
+
     let ast_pkg = ast::Package {
         base: file.base.clone(),
         path: "".to_string(),
