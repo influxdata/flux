@@ -26,7 +26,7 @@ func (rcv *Duration) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *Duration) Magnitude() int64 {
+func (rcv *Duration) Months() int64 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		return rcv._tab.GetInt64(o + rcv._tab.Pos)
@@ -34,30 +34,45 @@ func (rcv *Duration) Magnitude() int64 {
 	return 0
 }
 
-func (rcv *Duration) MutateMagnitude(n int64) bool {
+func (rcv *Duration) MutateMonths(n int64) bool {
 	return rcv._tab.MutateInt64Slot(4, n)
 }
 
-func (rcv *Duration) Unit() TimeUnit {
+func (rcv *Duration) Nanoseconds() int64 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetInt8(o + rcv._tab.Pos)
+		return rcv._tab.GetInt64(o + rcv._tab.Pos)
 	}
 	return 0
 }
 
-func (rcv *Duration) MutateUnit(n TimeUnit) bool {
-	return rcv._tab.MutateInt8Slot(6, n)
+func (rcv *Duration) MutateNanoseconds(n int64) bool {
+	return rcv._tab.MutateInt64Slot(6, n)
+}
+
+func (rcv *Duration) Negative() bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetBool(o + rcv._tab.Pos)
+	}
+	return false
+}
+
+func (rcv *Duration) MutateNegative(n bool) bool {
+	return rcv._tab.MutateBoolSlot(8, n)
 }
 
 func DurationStart(builder *flatbuffers.Builder) {
-	builder.StartObject(2)
+	builder.StartObject(3)
 }
-func DurationAddMagnitude(builder *flatbuffers.Builder, magnitude int64) {
-	builder.PrependInt64Slot(0, magnitude, 0)
+func DurationAddMonths(builder *flatbuffers.Builder, months int64) {
+	builder.PrependInt64Slot(0, months, 0)
 }
-func DurationAddUnit(builder *flatbuffers.Builder, unit int8) {
-	builder.PrependInt8Slot(1, unit, 0)
+func DurationAddNanoseconds(builder *flatbuffers.Builder, nanoseconds int64) {
+	builder.PrependInt64Slot(1, nanoseconds, 0)
+}
+func DurationAddNegative(builder *flatbuffers.Builder, negative bool) {
+	builder.PrependBoolSlot(2, negative, false)
 }
 func DurationEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

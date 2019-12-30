@@ -657,79 +657,6 @@ pub mod fbsemantic {
         ENUM_NAMES_LOGICAL_OPERATOR[index as usize]
     }
 
-    #[allow(non_camel_case_types)]
-    #[repr(i8)]
-    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-    pub enum TimeUnit {
-        y = 0,
-        mo = 1,
-        w = 2,
-        d = 3,
-        h = 4,
-        m = 5,
-        s = 6,
-        ms = 7,
-        us = 8,
-        ns = 9,
-    }
-
-    const ENUM_MIN_TIME_UNIT: i8 = 0;
-    const ENUM_MAX_TIME_UNIT: i8 = 9;
-
-    impl<'a> flatbuffers::Follow<'a> for TimeUnit {
-        type Inner = Self;
-        #[inline]
-        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            flatbuffers::read_scalar_at::<Self>(buf, loc)
-        }
-    }
-
-    impl flatbuffers::EndianScalar for TimeUnit {
-        #[inline]
-        fn to_little_endian(self) -> Self {
-            let n = i8::to_le(self as i8);
-            let p = &n as *const i8 as *const TimeUnit;
-            unsafe { *p }
-        }
-        #[inline]
-        fn from_little_endian(self) -> Self {
-            let n = i8::from_le(self as i8);
-            let p = &n as *const i8 as *const TimeUnit;
-            unsafe { *p }
-        }
-    }
-
-    impl flatbuffers::Push for TimeUnit {
-        type Output = TimeUnit;
-        #[inline]
-        fn push(&self, dst: &mut [u8], _rest: &[u8]) {
-            flatbuffers::emplace_scalar::<TimeUnit>(dst, *self);
-        }
-    }
-
-    #[allow(non_camel_case_types)]
-    const ENUM_VALUES_TIME_UNIT: [TimeUnit; 10] = [
-        TimeUnit::y,
-        TimeUnit::mo,
-        TimeUnit::w,
-        TimeUnit::d,
-        TimeUnit::h,
-        TimeUnit::m,
-        TimeUnit::s,
-        TimeUnit::ms,
-        TimeUnit::us,
-        TimeUnit::ns,
-    ];
-
-    #[allow(non_camel_case_types)]
-    const ENUM_NAMES_TIME_UNIT: [&'static str; 10] =
-        ["y", "mo", "w", "d", "h", "m", "s", "ms", "us", "ns"];
-
-    pub fn enum_name_time_unit(e: TimeUnit) -> &'static str {
-        let index = e as i8;
-        ENUM_NAMES_TIME_UNIT[index as usize]
-    }
-
     // struct Position, aligned to 4
     #[repr(C, align(4))]
     #[derive(Clone, Copy, Debug, PartialEq)]
@@ -12478,6 +12405,111 @@ pub mod fbsemantic {
         }
     }
 
+    pub enum DurationOffset {}
+    #[derive(Copy, Clone, Debug, PartialEq)]
+
+    pub struct Duration<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for Duration<'a> {
+        type Inner = Duration<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf: buf, loc: loc },
+            }
+        }
+    }
+
+    impl<'a> Duration<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            Duration { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args DurationArgs,
+        ) -> flatbuffers::WIPOffset<Duration<'bldr>> {
+            let mut builder = DurationBuilder::new(_fbb);
+            builder.add_nanoseconds(args.nanoseconds);
+            builder.add_months(args.months);
+            builder.add_negative(args.negative);
+            builder.finish()
+        }
+
+        pub const VT_MONTHS: flatbuffers::VOffsetT = 4;
+        pub const VT_NANOSECONDS: flatbuffers::VOffsetT = 6;
+        pub const VT_NEGATIVE: flatbuffers::VOffsetT = 8;
+
+        #[inline]
+        pub fn months(&self) -> i64 {
+            self._tab.get::<i64>(Duration::VT_MONTHS, Some(0)).unwrap()
+        }
+        #[inline]
+        pub fn nanoseconds(&self) -> i64 {
+            self._tab
+                .get::<i64>(Duration::VT_NANOSECONDS, Some(0))
+                .unwrap()
+        }
+        #[inline]
+        pub fn negative(&self) -> bool {
+            self._tab
+                .get::<bool>(Duration::VT_NEGATIVE, Some(false))
+                .unwrap()
+        }
+    }
+
+    pub struct DurationArgs {
+        pub months: i64,
+        pub nanoseconds: i64,
+        pub negative: bool,
+    }
+    impl<'a> Default for DurationArgs {
+        #[inline]
+        fn default() -> Self {
+            DurationArgs {
+                months: 0,
+                nanoseconds: 0,
+                negative: false,
+            }
+        }
+    }
+    pub struct DurationBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> DurationBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_months(&mut self, months: i64) {
+            self.fbb_.push_slot::<i64>(Duration::VT_MONTHS, months, 0);
+        }
+        #[inline]
+        pub fn add_nanoseconds(&mut self, nanoseconds: i64) {
+            self.fbb_
+                .push_slot::<i64>(Duration::VT_NANOSECONDS, nanoseconds, 0);
+        }
+        #[inline]
+        pub fn add_negative(&mut self, negative: bool) {
+            self.fbb_
+                .push_slot::<bool>(Duration::VT_NEGATIVE, negative, false);
+        }
+        #[inline]
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> DurationBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            DurationBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<Duration<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
     pub enum DurationLiteralOffset {}
     #[derive(Copy, Clone, Debug, PartialEq)]
 
@@ -12671,99 +12703,6 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn finish(self) -> flatbuffers::WIPOffset<DurationLiteral<'a>> {
-            let o = self.fbb_.end_table(self.start_);
-            flatbuffers::WIPOffset::new(o.value())
-        }
-    }
-
-    pub enum DurationOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
-
-    pub struct Duration<'a> {
-        pub _tab: flatbuffers::Table<'a>,
-    }
-
-    impl<'a> flatbuffers::Follow<'a> for Duration<'a> {
-        type Inner = Duration<'a>;
-        #[inline]
-        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
-            }
-        }
-    }
-
-    impl<'a> Duration<'a> {
-        #[inline]
-        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-            Duration { _tab: table }
-        }
-        #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-            args: &'args DurationArgs,
-        ) -> flatbuffers::WIPOffset<Duration<'bldr>> {
-            let mut builder = DurationBuilder::new(_fbb);
-            builder.add_magnitude(args.magnitude);
-            builder.add_unit(args.unit);
-            builder.finish()
-        }
-
-        pub const VT_MAGNITUDE: flatbuffers::VOffsetT = 4;
-        pub const VT_UNIT: flatbuffers::VOffsetT = 6;
-
-        #[inline]
-        pub fn magnitude(&self) -> i64 {
-            self._tab
-                .get::<i64>(Duration::VT_MAGNITUDE, Some(0))
-                .unwrap()
-        }
-        #[inline]
-        pub fn unit(&self) -> TimeUnit {
-            self._tab
-                .get::<TimeUnit>(Duration::VT_UNIT, Some(TimeUnit::y))
-                .unwrap()
-        }
-    }
-
-    pub struct DurationArgs {
-        pub magnitude: i64,
-        pub unit: TimeUnit,
-    }
-    impl<'a> Default for DurationArgs {
-        #[inline]
-        fn default() -> Self {
-            DurationArgs {
-                magnitude: 0,
-                unit: TimeUnit::y,
-            }
-        }
-    }
-    pub struct DurationBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
-    }
-    impl<'a: 'b, 'b> DurationBuilder<'a, 'b> {
-        #[inline]
-        pub fn add_magnitude(&mut self, magnitude: i64) {
-            self.fbb_
-                .push_slot::<i64>(Duration::VT_MAGNITUDE, magnitude, 0);
-        }
-        #[inline]
-        pub fn add_unit(&mut self, unit: TimeUnit) {
-            self.fbb_
-                .push_slot::<TimeUnit>(Duration::VT_UNIT, unit, TimeUnit::y);
-        }
-        #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> DurationBuilder<'a, 'b> {
-            let start = _fbb.start_table();
-            DurationBuilder {
-                fbb_: _fbb,
-                start_: start,
-            }
-        }
-        #[inline]
-        pub fn finish(self) -> flatbuffers::WIPOffset<Duration<'a>> {
             let o = self.fbb_.end_table(self.start_);
             flatbuffers::WIPOffset::new(o.value())
         }
