@@ -1255,7 +1255,11 @@ mod tests {
                                     value: Expression::Duration(DurationLit {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        value: chrono::Duration::hours(1),
+                                        value: Duration {
+                                            months: 5,
+                                            nanoseconds: 5000,
+                                            negative: false,
+                                        },
                                     }),
                                 },
                                 Property {
@@ -1267,7 +1271,11 @@ mod tests {
                                     value: Expression::Duration(DurationLit {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        value: chrono::Duration::minutes(10),
+                                        value: Duration {
+                                            months: 1,
+                                            nanoseconds: 50,
+                                            negative: true,
+                                        },
                                     }),
                                 },
                                 Property {

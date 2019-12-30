@@ -13,7 +13,7 @@ use flatbuffers::{UnionWIPOffset, WIPOffset};
 use semantic_generated::fbsemantic;
 
 extern crate chrono;
-use chrono::Offset;
+use chrono::Duration as ChronoDuration;
 
 pub fn serialize(semantic_pkg: &mut semantic::nodes::Package) -> Result<(Vec<u8>, usize), String> {
     let mut v = new_serializing_visitor_with_capacity(1024);
@@ -51,6 +51,8 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
         let loc = v.create_loc(node.loc());
         match node {
             walk::Node::IntegerLit(int) => {
+                // TODO (fchikwekwe): change `build_type` so that it accepts a reference.
+                // Bug filed here: https://github.com/influxdata/flux/issues/2292
                 let int_typ = int.typ.clone();
                 let (typ, typ_type) = types::build_type(&mut v.builder, int_typ);
 
@@ -138,23 +140,21 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                     fbsemantic::Expression::StringLiteral,
                 ))
             }
-
             walk::Node::DurationLit(dur_lit) => {
                 let mut dur_vec: Vec<WIPOffset<fbsemantic::Duration>> = Vec::new();
-                let magnitude = match dur_lit.value.num_nanoseconds() {
-                    Some(mag) => mag,
-                    None => {
-                        v.err = Some(String::from("Empty duration value"));
-                        return;
-                    }
-                };
+                let nanoseconds = dur_lit.value.nanoseconds;
+                let months = dur_lit.value.months;
+                let negative = dur_lit.value.negative;
+
                 let dur = fbsemantic::Duration::create(
                     &mut v.builder,
                     &fbsemantic::DurationArgs {
-                        magnitude,
-                        unit: fbsemantic::TimeUnit::ns,
+                        months,
+                        nanoseconds,
+                        negative,
                     },
                 );
+
                 dur_vec.push(dur);
                 let value = Some(v.builder.create_vector(dur_vec.as_slice()));
 
@@ -182,7 +182,7 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
 
                 let secs = datetime.value.timestamp();
                 let nano_secs = datetime.value.timestamp_subsec_nanos();
-                let offset = datetime.value.offset().fix().local_minus_utc();
+                let offset = datetime.value.offset().local_minus_utc();
 
                 let time = fbsemantic::Time::create(
                     &mut v.builder,
@@ -1117,22 +1117,6 @@ fn fb_logical_operator(lo: &ast::LogicalOperator) -> fbsemantic::LogicalOperator
     match lo {
         ast::LogicalOperator::AndOperator => fbsemantic::LogicalOperator::AndOperator,
         ast::LogicalOperator::OrOperator => fbsemantic::LogicalOperator::OrOperator,
-    }
-}
-
-fn fb_duration(d: &str) -> Result<fbsemantic::TimeUnit, String> {
-    match d {
-        "y" => Ok(fbsemantic::TimeUnit::y),
-        "mo" => Ok(fbsemantic::TimeUnit::mo),
-        "w" => Ok(fbsemantic::TimeUnit::w),
-        "d" => Ok(fbsemantic::TimeUnit::d),
-        "h" => Ok(fbsemantic::TimeUnit::h),
-        "m" => Ok(fbsemantic::TimeUnit::m),
-        "s" => Ok(fbsemantic::TimeUnit::s),
-        "ms" => Ok(fbsemantic::TimeUnit::ms),
-        "us" => Ok(fbsemantic::TimeUnit::us),
-        "ns" => Ok(fbsemantic::TimeUnit::ns),
-        s => Err(format!("unknown time unit {}", s)),
     }
 }
 
