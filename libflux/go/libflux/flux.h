@@ -35,6 +35,9 @@ struct flux_buffer_t *flux_parse_fb(const char *);
 // using flux_free if it is non-null.
 struct flux_error_t *flux_ast_marshal_json(struct flux_ast_t *, struct flux_buffer_t *);
 
+// Take a Flux source program, analyze it, and return its flatbuffer.
+struct flux_error_t *flux_semantic_analyze(const char* src, struct flux_buffer_t *);
+
 // flux_buffer_free will free the memory that was allocated for a buffer.
 // This should only be called if the caller is the one who owns the data.
 void flux_buffer_free(struct flux_buffer_t *);

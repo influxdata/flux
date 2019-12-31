@@ -11,8 +11,9 @@ pub mod parser;
 pub mod scanner;
 pub mod semantic;
 
-use std::error::Error;
+use std::error;
 use std::ffi::*;
+use std::fmt;
 use std::os::raw::{c_char, c_void};
 
 use parser::Parser;
@@ -25,8 +26,37 @@ pub mod ctypes {
 }
 use ctypes::*;
 
-struct ErrorHandle {
-    err: Box<dyn Error>,
+pub struct ErrorHandle {
+    pub err: Box<dyn error::Error>,
+}
+
+#[derive(Debug)]
+pub struct Error {
+    msg: String,
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&self.msg)
+    }
+}
+
+impl error::Error for Error {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        None
+    }
+}
+
+impl From<String> for Error {
+    fn from(msg: String) -> Self {
+        Error { msg }
+    }
+}
+
+impl From<semantic::nodes::Error> for Error {
+    fn from(sn_err: semantic::nodes::Error) -> Self {
+        Error { msg: sn_err.msg }
+    }
 }
 
 #[repr(C)]
