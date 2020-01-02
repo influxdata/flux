@@ -134,7 +134,7 @@ pub fn builtins() -> Builtins<'static> {
                             ?measurementColumn: string,
                             ?tagColumns: [string],
                             ?fieldFn: (r: t0) -> t1
-                        ) -> [t1]
+                        ) -> [t0]
                     "#),
                     "buckets" => Node::Builtin(r#"
                         forall [] () -> [{
