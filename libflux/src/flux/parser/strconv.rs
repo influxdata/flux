@@ -21,7 +21,7 @@ pub fn parse_text(lit: &str) -> Result<String, String> {
         match c {
             '\\' => {
                 if let Err(e) = push_unescaped(&mut s, &mut chars) {
-                    return Err(e.to_string());
+                    return Err(e);
                 }
             }
             // this char can have any byte length

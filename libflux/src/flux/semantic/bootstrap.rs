@@ -322,7 +322,7 @@ fn infer_pkg<I: Importer>(
     let env = if let Some(builtins) = builtin.get(name) {
         infer_file(
             &mut analyze_file(file, f)?,
-            Environment::new(prelude.clone().into()),
+            Environment::new(prelude.into()),
             f,
             &imports,
             builtins,
@@ -331,7 +331,7 @@ fn infer_pkg<I: Importer>(
     } else {
         infer_file(
             &mut analyze_file(file, f)?,
-            Environment::new(prelude.clone().into()),
+            Environment::new(prelude.into()),
             f,
             &imports,
             &None,

@@ -1055,7 +1055,7 @@ impl Function {
             (Some(fp), Some(gp)) => {
                 if fp.k != "<-" && gp.k != "<-" && fp.k != gp.k {
                     // Both are named and the name differs, fail unification.
-                    return Err(err.clone());
+                    return Err(err);
                 } else {
                     // At least one is unnamed or they are both named with the same name.
                     // This means they should match. Enforce this condition by inserting
@@ -1069,7 +1069,7 @@ impl Function {
                 if fp.k == "<-" {
                     // The pipe argument is unnamed and g does not have one.
                     // Fail unification.
-                    return Err(err.clone());
+                    return Err(err);
                 } else {
                     // This is a named argument, simply put it into the required ones.
                     f.req.insert(fp.k, fp.v);
@@ -1080,7 +1080,7 @@ impl Function {
                 if gp.k == "<-" {
                     // The pipe argument is unnamed and f does not have one.
                     // Fail unification.
-                    return Err(err.clone());
+                    return Err(err);
                 } else {
                     // This is a named argument, simply put it into the required ones.
                     g.req.insert(gp.k, gp.v);
@@ -1092,7 +1092,7 @@ impl Function {
         // Now that f has not been consumed yet, check that every required argument in g is in f too.
         for (arg_name, _) in g.req.iter() {
             if !f.req.contains_key(arg_name) && !f.opt.contains_key(arg_name) {
-                return Err(err.clone());
+                return Err(err);
             }
         }
         let mut sub = Substitution::empty();
@@ -1105,7 +1105,7 @@ impl Function {
                 // The required argument is in g's optional arguments.
                 sub = apply_then_unify(f_arg_type, g_arg_type, sub, cons, fresh)?;
             } else {
-                return Err(err.clone());
+                return Err(err);
             }
         }
         // Unify f's optional arguments.
