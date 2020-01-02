@@ -1201,7 +1201,7 @@ impl Parser {
                                 ),
                                 errors: vec![],
                             },
-                            text: t.lit.to_string(),
+                            text: t.lit,
                             expression: None,
                         })));
                     }
