@@ -3,13 +3,17 @@ package universe
 import (
 	"sort"
 
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 )
 
 const GroupKind = "group"
@@ -135,84 +139,231 @@ func createGroupTransformation(id execute.DatasetID, mode execute.AccumulationMo
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-	cache := execute.NewTableBuilderCache(a.Allocator())
-	d := execute.NewDataset(id, mode, cache)
-	t := NewGroupTransformation(d, cache, s)
+	t, d := NewGroupTransformation(s, id, a.Allocator())
 	return t, d, nil
 }
 
 type groupTransformation struct {
 	d     execute.Dataset
-	cache execute.TableBuilderCache
+	cache table.BuilderCache
+	mem   *memory.Allocator
 
 	mode flux.GroupMode
 	keys []string
 }
 
-func NewGroupTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *GroupProcedureSpec) *groupTransformation {
+func NewGroupTransformation(spec *GroupProcedureSpec, id execute.DatasetID, mem *memory.Allocator) (execute.Transformation, execute.Dataset) {
 	t := &groupTransformation{
-		d:     d,
-		cache: cache,
-		mode:  spec.GroupMode,
-		keys:  spec.GroupKeys,
+		cache: table.BuilderCache{
+			New: func(key flux.GroupKey) table.Builder {
+				return table.NewBufferedBuilder(key, mem)
+			},
+		},
+		mem:  mem,
+		mode: spec.GroupMode,
+		keys: spec.GroupKeys,
 	}
+	t.d = table.NewDataset(id, &t.cache)
 	sort.Strings(t.keys)
-	return t
+	return t, t.d
 }
 
-func (t *groupTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) (err error) {
-	panic("not implemented")
+func (t *groupTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
+	return t.d.RetractTable(key)
 }
 
 func (t *groupTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	cols := tbl.Cols()
-	on := make(map[string]bool, len(cols))
-	switch t.mode {
-	case flux.GroupModeBy:
-		for _, k := range t.keys {
-			on[k] = true
-		}
-	case flux.GroupModeExcept:
-	COLS:
-		for _, c := range cols {
-			for _, label := range t.keys {
-				if c.Label == label {
-					continue COLS
-				}
-			}
-			on[c.Label] = true
-		}
-	default:
-		panic("unimplemented group mode")
+	// Determine the group key of this table if the grouped columns
+	// are all part of the group key.
+	if key, ok, err := t.getTableKey(tbl); err != nil {
+		return err
+	} else if ok {
+		ab, _ := table.GetBufferedBuilder(key, &t.cache)
+		return t.appendTable(ab, tbl)
 	}
 
-	colMap := make([]int, 0, len(tbl.Cols()))
-	return tbl.Do(func(cr flux.ColReader) error {
-		l := cr.Len()
-		for i := 0; i < l; i++ {
-			key := execute.GroupKeyForRowOn(i, cr, on)
-			builder, _ := t.cache.TableBuilder(key)
+	// We are grouping by something that is not within the group key,
+	// so we have to determine which row goes in which column.
+	// TODO(jsternberg): This can probably be optimized for memory, but
+	// not going to do that at the moment.
+	return t.groupByRow(tbl)
+}
 
-			colMap, err := execute.AddNewTableCols(tbl, builder, colMap)
-			if err != nil {
-				return err
+// getTableKey returns the table key if the entire table matches
+// the same table key. If the entire table does not match the key,
+// this will return false and no key will be returned.
+func (t *groupTransformation) getTableKey(tbl flux.Table) (flux.GroupKey, bool, error) {
+	var indices []int
+	switch t.mode {
+	case flux.GroupModeBy:
+		indices = make([]int, 0, len(t.keys))
+		for _, label := range t.keys {
+			if execute.ColIdx(label, tbl.Cols()) < 0 {
+				// Skip past this label since it doesn't exist in the table.
+				continue
 			}
 
-			err = execute.AppendMappedRecordWithNulls(i, cr, builder, colMap)
-			if err != nil {
-				return err
+			// If this column is in the table but not part of the group key,
+			// return false since this table cannot be easily categorized.
+			idx := execute.ColIdx(label, tbl.Key().Cols())
+			if idx < 0 {
+				return nil, false, nil
+			}
+			indices = append(indices, idx)
+		}
+	case flux.GroupModeExcept:
+		indices = make([]int, 0, len(tbl.Cols()))
+		for _, c := range tbl.Cols() {
+			// If this string is part of except, then it is not included.
+			if execute.ContainsStr(t.keys, c.Label) {
+				continue
+			}
+
+			// If this column is not part of the group key, return false.
+			idx := execute.ColIdx(c.Label, tbl.Key().Cols())
+			if idx < 0 {
+				return nil, false, nil
+			}
+			indices = append(indices, idx)
+		}
+	default:
+		panic(errors.Newf(codes.Internal, "unsupported group mode: %v", t.mode))
+	}
+
+	// Produce the group key from the indices.
+	cols := make([]flux.ColMeta, len(indices))
+	vs := make([]values.Value, len(indices))
+	for j, idx := range indices {
+		cols[j], vs[j] = tbl.Key().Cols()[idx], tbl.Key().Value(idx)
+	}
+	return execute.NewGroupKey(cols, vs), true, nil
+}
+
+func (t *groupTransformation) appendTable(ab *table.BufferedBuilder, tbl flux.Table) error {
+	// Read the table and append each of the columns.
+	return tbl.Do(ab.AppendBuffer)
+}
+
+// groupByRow will determine which table each row belongs to
+// and to append them to that table.
+func (t *groupTransformation) groupByRow(tbl flux.Table) error {
+	var on map[string]bool
+	switch t.mode {
+	case flux.GroupModeBy:
+		on = make(map[string]bool, len(t.keys))
+		for _, key := range t.keys {
+			on[key] = true
+		}
+	case flux.GroupModeExcept:
+		on = make(map[string]bool, len(tbl.Cols()))
+		for _, c := range tbl.Cols() {
+			if !execute.ContainsStr(t.keys, c.Label) {
+				on[c.Label] = true
+			}
+		}
+	}
+
+	// Construct a builder cache for the built tables.
+	cache := table.BuilderCache{
+		New: func(key flux.GroupKey) table.Builder {
+			return table.NewArrowBuilder(key, t.mem)
+		},
+	}
+	if err := tbl.Do(func(cr flux.ColReader) error {
+		for i, l := 0, cr.Len(); i < l; i++ {
+			key := execute.GroupKeyForRowOn(i, cr, on)
+			ab, created := table.GetArrowBuilder(key, &cache)
+			if created {
+				for _, c := range cr.Cols() {
+					_, _ = ab.AddCol(c)
+				}
+			}
+			for j := range cr.Cols() {
+				if err := t.appendValueFromRow(ab.Builders[j], cr, i, j); err != nil {
+					return err
+				}
 			}
 		}
 		return nil
+	}); err != nil {
+		return err
+	}
+
+	return cache.ForEach(func(key flux.GroupKey, builder table.Builder) error {
+		tbl, err := builder.Table()
+		if err != nil {
+			return err
+		}
+
+		ab, _ := table.GetBufferedBuilder(key, &t.cache)
+		return t.appendTable(ab, tbl)
 	})
 }
 
-func (t *groupTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
-	return t.d.UpdateWatermark(mark)
+func (t *groupTransformation) appendValueFromRow(b array.Builder, cr flux.ColReader, i, j int) error {
+	switch cr.Cols()[j].Type {
+	case flux.TInt:
+		b := b.(*array.Int64Builder)
+		vs := cr.Ints(j)
+		if vs.IsNull(i) {
+			b.AppendNull()
+		} else {
+			b.Append(vs.Value(i))
+		}
+	case flux.TUInt:
+		b := b.(*array.Uint64Builder)
+		vs := cr.UInts(j)
+		if vs.IsNull(i) {
+			b.AppendNull()
+		} else {
+			b.Append(vs.Value(i))
+		}
+	case flux.TFloat:
+		b := b.(*array.Float64Builder)
+		vs := cr.Floats(j)
+		if vs.IsNull(i) {
+			b.AppendNull()
+		} else {
+			b.Append(vs.Value(i))
+		}
+	case flux.TString:
+		b := b.(*array.BinaryBuilder)
+		vs := cr.Strings(j)
+		if vs.IsNull(i) {
+			b.AppendNull()
+		} else {
+			b.Append(vs.Value(i))
+		}
+	case flux.TBool:
+		b := b.(*array.BooleanBuilder)
+		vs := cr.Bools(j)
+		if vs.IsNull(i) {
+			b.AppendNull()
+		} else {
+			b.Append(vs.Value(i))
+		}
+	case flux.TTime:
+		b := b.(*array.Int64Builder)
+		vs := cr.Times(j)
+		if vs.IsNull(i) {
+			b.AppendNull()
+		} else {
+			b.Append(vs.Value(i))
+		}
+	default:
+		return errors.New(codes.Internal, "invalid builder type")
+	}
+	return nil
 }
-func (t *groupTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
-	return t.d.UpdateProcessingTime(pt)
+
+func (t *groupTransformation) UpdateWatermark(id execute.DatasetID, ts execute.Time) error {
+	return t.d.UpdateWatermark(ts)
 }
+
+func (t *groupTransformation) UpdateProcessingTime(id execute.DatasetID, ts execute.Time) error {
+	return t.d.UpdateProcessingTime(ts)
+}
+
 func (t *groupTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }

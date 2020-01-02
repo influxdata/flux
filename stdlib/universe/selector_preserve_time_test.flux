@@ -6,7 +6,7 @@ option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
-#group,false,false,false,false,true,true,true
+#group,false,false,false,false,true,true,false
 #default,_result,,,,,,
 ,result,table,_time,_value,_field,_measurement,host
 ,,0,2018-05-22T19:53:26Z,36.946678161621094,available_percent,mem,host1
