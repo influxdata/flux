@@ -36,27 +36,8 @@ pub type Result = std::result::Result<(Environment, Constraints), Error>;
 
 #[derive(Debug)]
 pub struct Error {
+    pub loc: ast::SourceLocation,
     pub msg: String,
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(&self.msg)
-    }
-}
-
-impl From<types::Error> for Error {
-    fn from(err: types::Error) -> Error {
-        Error {
-            msg: err.to_string(),
-        }
-    }
-}
-
-impl From<String> for Error {
-    fn from(msg: String) -> Error {
-        Error { msg }
-    }
 }
 
 impl From<Error> for String {
@@ -65,32 +46,49 @@ impl From<Error> for String {
     }
 }
 
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(format!("{} at location {}", &self.msg, &self.loc).as_str())
+    }
+}
+
 impl Error {
-    fn undeclared_variable(name: String) -> Error {
+    fn from_type_error(err: types::Error, loc: ast::SourceLocation) -> Error {
         Error {
+            loc: loc,
+            msg: err.to_string(),
+        }
+    }
+    fn undeclared_variable(loc: ast::SourceLocation, name: String) -> Error {
+        Error {
+            loc: loc,
             msg: format!("undeclared variable {}", name),
         }
     }
-    fn undefined_builtin(name: &str) -> Error {
+    fn undefined_builtin(loc: ast::SourceLocation, name: &str) -> Error {
         Error {
+            loc: loc,
             msg: format!("builtin identifier {} not defined", name),
         }
     }
-    fn invalid_statement(msg: String) -> Error {
-        Error { msg }
+    fn invalid_statement(loc: ast::SourceLocation, msg: String) -> Error {
+        Error { loc: loc, msg: msg }
     }
-    fn unsupported_binary_operator(op: &ast::Operator) -> Error {
+    fn unsupported_binary_operator(loc: ast::SourceLocation, op: &ast::Operator) -> Error {
         Error {
+            loc: loc,
             msg: format!("unsupported binary operator {}", op.to_string()),
         }
     }
-    fn unsupported_unary_operator(op: &ast::Operator) -> Error {
+    fn unsupported_unary_operator(loc: ast::SourceLocation, op: &ast::Operator) -> Error {
         Error {
+            loc: loc,
             msg: format!("unsupported unary operator {}", op.to_string()),
         }
     }
-    fn unknown_import_path(path: &str) -> Error {
+    fn unknown_import_path(loc: ast::SourceLocation, path: &str) -> Error {
         Error {
+            loc: loc,
             msg: format!("\"{}\" is not a known import path", path),
         }
     }
@@ -271,7 +269,10 @@ where
     S: Importer,
 {
     let (env, cons) = pkg.infer(env, f, importer, builtins)?;
-    Ok((env, infer::solve(&cons, &mut HashMap::new(), f)?))
+    match infer::solve(&cons, &mut HashMap::new(), f) {
+        Ok(subst) => Ok((env, subst)),
+        Err(err) => Err(Error::from_type_error(err, pkg.loc.clone())),
+    }
 }
 
 pub fn infer_file<T, S>(
@@ -364,7 +365,7 @@ impl File {
 
             match importer.import(path) {
                 Some(poly) => env.add(name.to_owned(), poly.clone()),
-                None => return Err(Error::unknown_import_path(path)),
+                None => return Err(Error::unknown_import_path(self.loc.clone(), path)),
             };
         }
 
@@ -394,9 +395,10 @@ impl File {
                             let (env, cons) = stmt.infer(env, f)?;
                             Ok((env, cons + rest))
                         }
-                        Statement::Return(_) => Err(Error::invalid_statement(String::from(
-                            "cannot have return statement in file block",
-                        ))),
+                        Statement::Return(stmt) => Err(Error::invalid_statement(
+                            stmt.loc.clone(),
+                            String::from("cannot have return statement in file block"),
+                        )),
                     },
                 )?;
 
@@ -471,7 +473,7 @@ impl BuiltinStmt {
             env.add(self.id.name.clone(), ty.clone());
             Ok(env)
         } else {
-            Err(Error::undefined_builtin(&self.id.name))
+            Err(Error::undefined_builtin(self.loc.clone(), &self.id.name))
         }
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -506,7 +508,10 @@ pub struct ExprStmt {
 impl ExprStmt {
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
         let (env, cons) = self.expression.infer(env, f)?;
-        let sub = infer::solve(&cons, &mut HashMap::new(), f)?;
+        let sub = match infer::solve(&cons, &mut HashMap::new(), f) {
+            Ok(subst) => subst,
+            Err(err) => return Err(Error::from_type_error(err, self.loc.clone())),
+        };
         Ok((env.apply(&sub), cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -578,7 +583,10 @@ impl VariableAssgn {
         let (env, constraints) = self.init.infer(env, f)?;
 
         let mut kinds = HashMap::new();
-        let sub = infer::solve(&constraints, &mut kinds, f)?;
+        let sub = match infer::solve(&constraints, &mut kinds, f) {
+            Ok(subst) => subst,
+            Err(err) => return Err(Error::from_type_error(err, self.loc.clone())),
+        };
 
         // Apply substitution to the type environment
         let mut env = env.apply(&sub);
@@ -1019,7 +1027,12 @@ impl BinaryExpr {
                 Constraint::Equal(self.right.type_of().clone(), MonoType::Regexp),
                 Constraint::Equal(self.typ.clone(), MonoType::Bool),
             ]),
-            _ => return Err(Error::unsupported_binary_operator(&self.operator)),
+            _ => {
+                return Err(Error::unsupported_binary_operator(
+                    self.loc.clone(),
+                    &self.operator,
+                ))
+            }
         };
 
         // Otherwise, add the constraints together and return them.
@@ -1342,7 +1355,12 @@ impl UnaryExpr {
                     Constraint::Kind(self.argument.type_of().clone(), Kind::Signed),
                 ])
             }
-            _ => return Err(Error::unsupported_unary_operator(&self.operator)),
+            _ => {
+                return Err(Error::unsupported_unary_operator(
+                    self.loc.clone(),
+                    &self.operator,
+                ))
+            }
         };
         Ok((env, acons + cons))
     }
@@ -1388,7 +1406,10 @@ impl IdentifierExpr {
                     cons + Constraints::from(vec![Constraint::Equal(t, self.typ.clone())]),
                 ))
             }
-            None => Err(Error::undeclared_variable(self.name.to_string())),
+            None => Err(Error::undeclared_variable(
+                self.loc.clone(),
+                self.name.to_string(),
+            )),
         }
     }
     fn apply(mut self, sub: &Substitution) -> Self {
