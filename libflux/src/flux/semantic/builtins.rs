@@ -444,7 +444,7 @@ pub fn builtins() -> Builtins<'static> {
                     forall [t0, t1, t2] where t0: Row, t2: Row (
                         <-tables: [t0],
                         ?column: string,
-                        value: [t1],
+                        value: t1,
                         usePrevious: bool
                     ) -> [t2]
                 "#),
