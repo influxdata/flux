@@ -440,7 +440,7 @@ func (mt MonoType) String() string {
 }
 
 func (l MonoType) Equal(r MonoType) bool {
-	// TODO (algow):, can we use bytes.Compare here?
+	// TODO (algow): Remove this method, we will not support comparing types for equality.
 	return false
 }
 
