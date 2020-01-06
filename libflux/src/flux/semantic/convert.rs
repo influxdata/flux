@@ -282,7 +282,7 @@ fn convert_block(block: ast::Block, fresher: &mut Fresher) -> Result<Block> {
     let block = if let Some(ast::Statement::Return(stmt)) = body.next() {
         let argument = convert_expression(stmt.argument, fresher)?;
         Block::Return(ReturnStmt {
-            loc: argument.loc().clone(),
+            loc: stmt.base.location.clone(),
             argument,
         })
     } else {
