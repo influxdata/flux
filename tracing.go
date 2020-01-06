@@ -1,6 +1,6 @@
 package flux
 
-import "github.com/influxdata/flux/internal/execute/traceconfig"
+var experimentalTracingEnabled = false
 
 // EnableExperimentalTracing will enable any experimental
 // tracing in the flux binary. Experimental tracing may provide
@@ -10,5 +10,9 @@ import "github.com/influxdata/flux/internal/execute/traceconfig"
 // Traces that are enabled this way may be removed or may be enabled
 // by default in the future.
 func EnableExperimentalTracing() {
-	traceconfig.EnableExperimentalTracing()
+	experimentalTracingEnabled = true
+}
+
+func IsExperimentalTracingEnabled() bool {
+	return experimentalTracingEnabled
 }
