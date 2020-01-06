@@ -7,7 +7,6 @@ import (
 	"sync/atomic"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/internal/execute/traceconfig"
 	"github.com/opentracing/opentracing-go"
 )
 
@@ -201,7 +200,7 @@ func processMessage(ctx context.Context, t Transformation, m Message) (finished 
 	case ProcessMsg:
 		b := m.Table()
 		var span opentracing.Span
-		if traceconfig.IsExperimentalTracingEnabled() {
+		if flux.IsExperimentalTracingEnabled() {
 			span, _ = opentracing.StartSpanFromContext(ctx, reflect.TypeOf(t).String())
 		}
 		err = t.Process(m.SrcDatasetID(), b)
