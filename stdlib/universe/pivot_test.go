@@ -1417,31 +1417,29 @@ func benchmarkPivot(b *testing.B, n int) {
 			return true
 		},
 	}
-	for i := 0; i < b.N; i++ {
-		executetest.ProcessBenchmarkHelper(b,
-			func(alloc *memory.Allocator) (flux.TableIterator, error) {
-				schema := gen.Schema{
-					NumPoints: n,
-					Alloc:     alloc,
-					Tags: []gen.Tag{
-						{Name: "_measurement", Cardinality: 1},
-						{Name: "_field", Cardinality: 6},
-						{Name: "t0", Cardinality: 100},
-						{Name: "t1", Cardinality: 50},
-					},
-				}
-				return gen.Input(schema)
-			},
-			func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-				// cache := execute.NewTableBuilderCache(alloc)
-				// d := execute.NewDataset(id, execute.DiscardingMode, cache)
-				// t := NewPivotTransformation(d, cache, spec)
-				t, d, err := universe.NewPivotTransformation2(context.Background(), *spec, id, alloc)
-				if err != nil {
-					b.Fatal(err)
-				}
-				return t, d
-			},
-		)
-	}
+	executetest.ProcessBenchmarkHelper(b,
+		func(alloc *memory.Allocator) (flux.TableIterator, error) {
+			schema := gen.Schema{
+				NumPoints: n,
+				Alloc:     alloc,
+				Tags: []gen.Tag{
+					{Name: "_measurement", Cardinality: 1},
+					{Name: "_field", Cardinality: 6},
+					{Name: "t0", Cardinality: 100},
+					{Name: "t1", Cardinality: 50},
+				},
+			}
+			return gen.Input(schema)
+		},
+		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+			// cache := execute.NewTableBuilderCache(alloc)
+			// d := execute.NewDataset(id, execute.DiscardingMode, cache)
+			// t := NewPivotTransformation(d, cache, spec)
+			t, d, err := universe.NewPivotTransformation2(context.Background(), *spec, id, alloc)
+			if err != nil {
+				b.Fatal(err)
+			}
+			return t, d
+		},
+	)
 }
