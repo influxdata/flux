@@ -6,6 +6,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/gen"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
@@ -224,15 +226,47 @@ func TestLimit_Process(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			executetest.ProcessTestHelper(
+			executetest.ProcessTestHelper2(
 				t,
 				tc.data,
 				tc.want,
 				nil,
-				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					return universe.NewLimitTransformation(d, c, tc.spec)
+				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+					return universe.NewLimitTransformation(tc.spec, id)
 				},
 			)
 		})
 	}
+}
+
+func BenchmarkLimit_1N_1000(b *testing.B) {
+	benchmarkLimit(b, 1, 1000)
+}
+
+func BenchmarkLimit_100N_1000(b *testing.B) {
+	benchmarkLimit(b, 100, 1000)
+}
+
+func benchmarkLimit(b *testing.B, n, l int) {
+	spec := &universe.LimitProcedureSpec{
+		N: int64(n),
+	}
+	executetest.ProcessBenchmarkHelper(b,
+		func(alloc *memory.Allocator) (flux.TableIterator, error) {
+			schema := gen.Schema{
+				NumPoints: l,
+				Alloc:     alloc,
+				Tags: []gen.Tag{
+					{Name: "_measurement", Cardinality: 1},
+					{Name: "_field", Cardinality: 6},
+					{Name: "t0", Cardinality: 100},
+					{Name: "t1", Cardinality: 50},
+				},
+			}
+			return gen.Input(schema)
+		},
+		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+			return universe.NewLimitTransformation(spec, id)
+		},
+	)
 }
