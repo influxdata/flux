@@ -1,6 +1,7 @@
 package types
 
 import (
+	"sort"
 	"strings"
 
 	flatbuffers "github.com/google/flatbuffers/go"
@@ -68,17 +69,34 @@ func (pt *PolyType) Expr() (*MonoType, error) {
 	return NewMonoType(tbl, pt.fb.ExprType())
 }
 
+func (pt PolyType) SortedVars() ([]*fbsemantic.Var, error) {
+	nvars := pt.NumVars()
+	vars := make([]*fbsemantic.Var, nvars)
+	for i := 0; i < nvars; i++ {
+		arg, err := pt.Var(i)
+		if err != nil {
+			return nil, err
+		}
+		vars[i] = arg
+	}
+	sort.Slice(vars, func(i, j int) bool {
+		return vars[i].I() < vars[j].I()
+	})
+	return vars, nil
+
+}
+
 // String returns a string representation for this polytype.
 func (pt *PolyType) String() string {
 	var sb strings.Builder
 
 	sb.WriteString("forall [")
 	needComma := false
-	for i := 0; i < pt.NumVars(); i++ {
-		v, err := pt.Var(i)
-		if err != nil {
-			return "<" + err.Error() + ">"
-		}
+	svars, err := pt.SortedVars()
+	if err != nil {
+		return "<" + err.Error() + ">"
+	}
+	for _, v := range svars {
 		if needComma {
 			sb.WriteString(", ")
 		} else {

@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	flatbuffers "github.com/google/flatbuffers/go"
@@ -154,6 +155,27 @@ func (mt *MonoType) Argument(i int) (*Argument, error) {
 		return nil, errors.New(codes.Internal, "missing argument")
 	}
 	return newArgument(a)
+}
+
+// SortedArguments returns a slice of function arguments,
+// sorted by argument name, if this monotype is a function.
+func (mt MonoType) SortedArguments() ([]*Argument, error) {
+	nargs, err := mt.NumArguments()
+	if err != nil {
+		return nil, err
+	}
+	args := make([]*Argument, nargs)
+	for i := 0; i < nargs; i++ {
+		arg, err := mt.Argument(i)
+		if err != nil {
+			return nil, err
+		}
+		args[i] = arg
+	}
+	sort.Slice(args, func(i, j int) bool {
+		return string(args[i].Name()) < string(args[j].Name())
+	})
+	return args, nil
 }
 
 func (mt *MonoType) ReturnType() (*MonoType, error) {
@@ -344,15 +366,11 @@ func (mt *MonoType) String() string {
 		var sb strings.Builder
 		sb.WriteString("(")
 		needComma := false
-		nargs, err := mt.NumArguments()
+		sargs, err := mt.SortedArguments()
 		if err != nil {
 			return "<" + err.Error() + ">"
 		}
-		for i := 0; i < nargs; i++ {
-			arg, err := mt.Argument(i)
-			if err != nil {
-				return "<" + err.Error() + ">"
-			}
+		for _, arg := range sargs {
 			if needComma {
 				sb.WriteString(", ")
 			} else {
