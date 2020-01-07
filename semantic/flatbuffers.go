@@ -577,8 +577,8 @@ type fbTyper interface {
 // getMonoType produces an FBMonoType from the given FlatBuffers expression that has
 // a union "typ" field (which is all the different kinds of expressions).
 func getMonoType(fbExpr fbTyper) (MonoType, error) {
-	tbl := new(flatbuffers.Table)
-	if !fbExpr.Typ(tbl) {
+	var tbl flatbuffers.Table
+	if !fbExpr.Typ(&tbl) {
 		return MonoType{}, errors.Newf(codes.Internal, "missing monotype")
 	}
 

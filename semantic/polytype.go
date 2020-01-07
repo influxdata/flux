@@ -60,8 +60,8 @@ func (pt PolyType) Constraint(i int) (*fbsemantic.Constraint, error) {
 
 // Expr returns the monotype expression for this polytype.
 func (pt PolyType) Expr() (MonoType, error) {
-	tbl := new(flatbuffers.Table)
-	if !pt.fb.Expr(tbl) {
+	var tbl flatbuffers.Table
+	if !pt.fb.Expr(&tbl) {
 		return MonoType{}, errors.New(codes.Internal, "missing a polytype expr")
 	}
 
