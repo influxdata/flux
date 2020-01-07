@@ -167,6 +167,10 @@ func downloadSources(srcdir string, mod *Module) error {
 
 		if strings.HasPrefix(relpath, "libflux/") {
 			relpath = relpath[strings.Index(relpath, "/")+1:]
+			// Do not extract the symlink for the standard library.
+			if relpath == "stdlib" {
+				continue
+			}
 		} else if relpath != "stdlib" && !strings.HasPrefix(relpath, "stdlib/") {
 			// Allow extracting the standard library.
 			continue
