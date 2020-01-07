@@ -13,7 +13,7 @@ use flatbuffers::{UnionWIPOffset, WIPOffset};
 use semantic_generated::fbsemantic;
 
 extern crate chrono;
-use chrono::Offset;
+use chrono::Duration as ChronoDuration;
 
 pub fn serialize(semantic_pkg: &mut semantic::nodes::Package) -> Result<(Vec<u8>, usize), String> {
     let mut v = new_serializing_visitor_with_capacity(1024);
@@ -36,55 +36,23 @@ struct SerializingVisitor<'a> {
 impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
     fn visit(&mut self, _node: Rc<walk::Node<'_>>) -> bool {
         let v = self.inner.borrow();
-<<<<<<< HEAD
-        if let Some(_) = &v.err {
-            return false;
-        }
-        Some(SerializingVisitor {
-            inner: Rc::clone(&self.inner),
-        });
-=======
-<<<<<<< HEAD
         if v.err.is_some() {
             return false;
         }
-=======
-        if let Some(_) = &v.err {
-            return false;
-        }
-        Some(SerializingVisitor {
-            inner: Rc::clone(&self.inner),
-        });
->>>>>>> ca6d0dc6... feat(libflux/semantic): serialize semantic graph flatbuffers (#2192)
->>>>>>> fix: remove master rebase
         true
     }
 
     fn done(&mut self, node: Rc<walk::Node<'_>>) {
         let mut v = &mut *self.inner.borrow_mut();
-<<<<<<< HEAD
-        if let Some(_) = &v.err {
-=======
-<<<<<<< HEAD
         if v.err.is_some() {
-=======
-        if let Some(_) = &v.err {
->>>>>>> ca6d0dc6... feat(libflux/semantic): serialize semantic graph flatbuffers (#2192)
->>>>>>> fix: remove master rebase
             return;
         }
         let node = &*node;
         let loc = v.create_loc(node.loc());
         match node {
             walk::Node::IntegerLit(int) => {
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
                 // TODO (fchikwekwe): change `build_type` so that it accepts a reference.
                 // Bug filed here: https://github.com/influxdata/flux/issues/2292
-=======
->>>>>>> ca6d0dc6... feat(libflux/semantic): serialize semantic graph flatbuffers (#2192)
->>>>>>> fix: remove master rebase
                 let int_typ = int.typ.clone();
                 let (typ, typ_type) = types::build_type(&mut v.builder, int_typ);
 
@@ -172,50 +140,21 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                     fbsemantic::Expression::StringLiteral,
                 ))
             }
-<<<<<<< HEAD
-
-=======
-<<<<<<< HEAD
->>>>>>> fix: remove master rebase
             walk::Node::DurationLit(dur_lit) => {
                 let mut dur_vec: Vec<WIPOffset<fbsemantic::Duration>> = Vec::new();
-                let magnitude = match dur_lit.value.num_nanoseconds() {
-                    Some(mag) => mag,
-                    None => {
-                        v.err = Some(String::from("Empty duration value"));
-                        return;
-                    }
-                };
+                let nanoseconds = dur_lit.value.nanoseconds;
+                let months = dur_lit.value.months;
+                let negative = dur_lit.value.negative;
+
                 let dur = fbsemantic::Duration::create(
                     &mut v.builder,
                     &fbsemantic::DurationArgs {
-                        magnitude,
-                        unit: fbsemantic::TimeUnit::ns,
+                        months,
+                        nanoseconds,
+                        negative,
                     },
                 );
-<<<<<<< HEAD
-=======
 
-=======
-
-            walk::Node::DurationLit(dur_lit) => {
-                let mut dur_vec: Vec<WIPOffset<fbsemantic::Duration>> = Vec::new();
-                let magnitude = match dur_lit.value.num_nanoseconds() {
-                    Some(mag) => mag,
-                    None => {
-                        v.err = Some(String::from("Empty duration value"));
-                        return;
-                    }
-                };
-                let dur = fbsemantic::Duration::create(
-                    &mut v.builder,
-                    &fbsemantic::DurationArgs {
-                        magnitude,
-                        unit: fbsemantic::TimeUnit::ns,
-                    },
-                );
->>>>>>> ca6d0dc6... feat(libflux/semantic): serialize semantic graph flatbuffers (#2192)
->>>>>>> fix: remove master rebase
                 dur_vec.push(dur);
                 let value = Some(v.builder.create_vector(dur_vec.as_slice()));
 
@@ -243,34 +182,14 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
 
                 let secs = datetime.value.timestamp();
                 let nano_secs = datetime.value.timestamp_subsec_nanos();
-<<<<<<< HEAD
-                let offset = datetime.value.offset().fix().local_minus_utc();
-=======
-<<<<<<< HEAD
                 let offset = datetime.value.offset().local_minus_utc();
-=======
-                let offset = datetime.value.offset().fix().local_minus_utc();
->>>>>>> ca6d0dc6... feat(libflux/semantic): serialize semantic graph flatbuffers (#2192)
->>>>>>> fix: remove master rebase
 
                 let time = fbsemantic::Time::create(
                     &mut v.builder,
                     &fbsemantic::TimeArgs {
-<<<<<<< HEAD
-                        secs: secs,
-                        nsecs: nano_secs,
-                        offset: offset,
-=======
-<<<<<<< HEAD
                         secs,
                         nsecs: nano_secs,
                         offset,
-=======
-                        secs: secs,
-                        nsecs: nano_secs,
-                        offset: offset,
->>>>>>> ca6d0dc6... feat(libflux/semantic): serialize semantic graph flatbuffers (#2192)
->>>>>>> fix: remove master rebase
                     },
                 );
 
@@ -516,20 +435,7 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
             walk::Node::CallExpr(call) => {
                 let (pipe, pipe_type) = {
                     match &call.pipe {
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
                         Some(_) => v.pop_expr(),
-=======
->>>>>>> fix: remove master rebase
-                        Some(_) => {
-                            let expr = v.pop_expr();
-                            expr
-                        }
-<<<<<<< HEAD
-=======
->>>>>>> ca6d0dc6... feat(libflux/semantic): serialize semantic graph flatbuffers (#2192)
->>>>>>> fix: remove master rebase
                         _ => (None, fbsemantic::Expression::NONE),
                     }
                 };
@@ -872,7 +778,6 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 ));
             }
 
-
             walk::Node::OptionStmt(opt) => {
                 let (assignment, assignment_type) = {
                     match &opt.assignment {
@@ -1056,15 +961,7 @@ impl<'a> SerializingVisitorState<'a> {
         match self.expr_stack.pop() {
             None => {
                 self.err = Some(String::from("Tried popping empty expression stack"));
-<<<<<<< HEAD
-                return (None, fbsemantic::Expression::NONE);
-=======
-<<<<<<< HEAD
                 (None, fbsemantic::Expression::NONE)
-=======
-                return (None, fbsemantic::Expression::NONE);
->>>>>>> ca6d0dc6... feat(libflux/semantic): serialize semantic graph flatbuffers (#2192)
->>>>>>> fix: remove master rebase
             }
             Some((o, e)) => (Some(o), e),
         }
@@ -1076,43 +973,17 @@ impl<'a> SerializingVisitorState<'a> {
                 if e == kind {
                     Some(WIPOffset::new(wipo.value()))
                 } else {
-<<<<<<< HEAD
-                    self.err = Some(String::from(format!(
-=======
-<<<<<<< HEAD
                     self.err = Some(format!(
->>>>>>> fix: remove master rebase
                         "expected {} on expr stack, got {}",
                         fbsemantic::enum_name_expression(kind),
                         fbsemantic::enum_name_expression(e)
-                    )));
-                    return None;
+                    ));
+                    None
                 }
             }
             None => {
-<<<<<<< HEAD
-=======
                 self.err = Some("Tried popping empty expression stack".to_string());
                 None
-=======
-                    self.err = Some(String::from(format!(
-                        "expected {} on expr stack, got {}",
-                        fbsemantic::enum_name_expression(kind),
-                        fbsemantic::enum_name_expression(e)
-                    )));
-                    return None;
-                }
-            }
-            None => {
->>>>>>> fix: remove master rebase
-                self.err = Some(String::from(format!(
-                    "Tried popping empty expression stack"
-                )));
-                return None;
-<<<<<<< HEAD
-=======
->>>>>>> ca6d0dc6... feat(libflux/semantic): serialize semantic graph flatbuffers (#2192)
->>>>>>> fix: remove master rebase
             }
         }
     }
@@ -1120,38 +991,15 @@ impl<'a> SerializingVisitorState<'a> {
     fn pop_ident<T>(&mut self) -> Option<WIPOffset<T>> {
         match self.identifiers.pop() {
             None => {
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
                 self.err = Some("Tried popping empty identifier stack".to_string());
                 None
-=======
->>>>>>> fix: remove master rebase
-                self.err = Some(String::from(format!(
-                    "Tried popping empty identifier stack"
-                )));
-                return None;
-<<<<<<< HEAD
-=======
->>>>>>> ca6d0dc6... feat(libflux/semantic): serialize semantic graph flatbuffers (#2192)
->>>>>>> fix: remove master rebase
             }
             Some(wip) => Some(WIPOffset::new(wip.value())),
         }
     }
 
-<<<<<<< HEAD
-    fn create_string(&mut self, str: &String) -> Option<WIPOffset<&'a str>> {
-        Some(self.builder.create_string(str.as_str()))
-=======
-<<<<<<< HEAD
     fn create_string(&mut self, string: &str) -> Option<WIPOffset<&'a str>> {
         Some(self.builder.create_string(string))
-=======
-    fn create_string(&mut self, str: &String) -> Option<WIPOffset<&'a str>> {
-        Some(self.builder.create_string(str.as_str()))
->>>>>>> ca6d0dc6... feat(libflux/semantic): serialize semantic graph flatbuffers (#2192)
->>>>>>> fix: remove master rebase
     }
 
     fn create_opt_string(&mut self, str: &Option<String>) -> Option<WIPOffset<&'a str>> {
@@ -1272,30 +1120,5 @@ fn fb_logical_operator(lo: &ast::LogicalOperator) -> fbsemantic::LogicalOperator
     }
 }
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> fix: remove master rebase
-fn fb_duration(d: &String) -> Result<fbsemantic::TimeUnit, String> {
-    match d.as_str() {
-        "y" => Ok(fbsemantic::TimeUnit::y),
-        "mo" => Ok(fbsemantic::TimeUnit::mo),
-        "w" => Ok(fbsemantic::TimeUnit::w),
-        "d" => Ok(fbsemantic::TimeUnit::d),
-        "h" => Ok(fbsemantic::TimeUnit::h),
-        "m" => Ok(fbsemantic::TimeUnit::m),
-        "s" => Ok(fbsemantic::TimeUnit::s),
-        "ms" => Ok(fbsemantic::TimeUnit::ms),
-        "us" => Ok(fbsemantic::TimeUnit::us),
-        "ns" => Ok(fbsemantic::TimeUnit::ns),
-        s => Err(String::from(format!("unknown time unit {}", s))),
-    }
-}
-
-<<<<<<< HEAD
-=======
->>>>>>> ca6d0dc6... feat(libflux/semantic): serialize semantic graph flatbuffers (#2192)
->>>>>>> fix: remove master rebase
 #[cfg(test)]
 mod tests;
