@@ -17,7 +17,7 @@ type HourSelectionOpSpec struct {
 }
 
 func init() {
-	hourSelectionSignature := flux.LookupBuiltInType("universe", "hourSelection")
+	hourSelectionSignature := semantic.LookupBuiltInType("universe", "hourSelection")
 
 	flux.RegisterPackageValue("universe", HourSelectionKind, flux.MustValue(flux.FunctionValue(HourSelectionKind, createHourSelectionOpSpec, hourSelectionSignature)))
 	flux.RegisterOpSpec(HourSelectionKind, newHourSelectionOp)

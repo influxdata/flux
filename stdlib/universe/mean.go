@@ -19,7 +19,7 @@ type MeanOpSpec struct {
 }
 
 func init() {
-	meanSignature := flux.LookupBuiltInType("universe", "mean")
+	meanSignature := semantic.LookupBuiltInType("universe", "mean")
 
 	flux.RegisterPackageValue("universe", MeanKind, flux.MustValue(flux.FunctionValue(MeanKind, createMeanOpSpec, meanSignature)))
 	flux.RegisterOpSpec(MeanKind, newMeanOp)

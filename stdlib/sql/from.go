@@ -25,7 +25,7 @@ type FromSQLOpSpec struct {
 }
 
 func init() {
-	fromSQLSignature := flux.LookupBuiltInType("sql", "from")
+	fromSQLSignature := semantic.LookupBuiltInType("sql", "from")
 	flux.RegisterPackageValue("sql", "from", flux.MustValue(flux.FunctionValue(FromSQLKind, createFromSQLOpSpec, fromSQLSignature)))
 	flux.RegisterOpSpec(FromSQLKind, newFromSQLOp)
 	plan.RegisterProcedureSpec(FromSQLKind, newFromSQLProcedure, FromSQLKind)

@@ -20,7 +20,7 @@ type ElapsedOpSpec struct {
 }
 
 func init() {
-	elapsedSignature := flux.LookupBuiltInType("universe", "elapsed")
+	elapsedSignature := semantic.LookupBuiltInType("universe", "elapsed")
 
 	flux.RegisterPackageValue("universe", ElapsedKind, flux.MustValue(flux.FunctionValue(ElapsedKind, createElapsedOpSpec, elapsedSignature)))
 	flux.RegisterOpSpec(ElapsedKind, newElapsedOp)

@@ -45,7 +45,7 @@ func (p *SemanticPkg) Free() {
 }
 
 // Analyze parses the given Flux source, performs type inference
-// (taking into account types from prelude and stldlib) and returns
+// (taking into account types from prelude and stdlib) and returns
 // an a SemanticPkg containing an opaque pointer to the semantic graph.
 // The graph can be deserialized by calling MarshalFB.
 //
@@ -67,4 +67,14 @@ func Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 	p := &SemanticPkg{ptr: semPkg}
 	runtime.SetFinalizer(p, free)
 	return p, nil
+}
+// EnvStdlib takes care of creating a flux_buffer_t, passes the buffer to
+// the Flatbuffers TypeEnvironment and then takes care of freeing the data
+func EnvStdlib() []byte {
+	var buf C.struct_flux_buffer_t
+	C.flux_get_env_stdlib(&buf)
+
+	defer C.flux_free(buf.data)
+
+	return C.GoBytes(buf.data, C.int(buf.len))
 }

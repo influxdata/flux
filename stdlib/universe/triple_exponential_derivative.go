@@ -22,7 +22,7 @@ type TripleExponentialDerivativeOpSpec struct {
 }
 
 func init() {
-	tripleExponentialDerivativeSignature := flux.LookupBuiltInType("universe", "tripleExponentialDerivative")
+	tripleExponentialDerivativeSignature := semantic.LookupBuiltInType("universe", "tripleExponentialDerivative")
 
 	flux.RegisterPackageValue("universe", TripleExponentialDerivativeKind, flux.MustValue(flux.FunctionValue(TripleExponentialDerivativeKind, createTripleExponentialDerivativeOpSpec, tripleExponentialDerivativeSignature)))
 	flux.RegisterOpSpec(TripleExponentialDerivativeKind, newTripleExponentialDerivativeOp)

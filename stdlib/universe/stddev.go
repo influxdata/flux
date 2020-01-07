@@ -24,7 +24,7 @@ type StddevOpSpec struct {
 }
 
 func init() {
-	stddevSignature := flux.LookupBuiltInType("universe", "stddev")
+	stddevSignature := semantic.LookupBuiltInType("universe", "stddev")
 
 	flux.RegisterPackageValue("universe", StddevKind, flux.MustValue(flux.FunctionValue(StddevKind, createStddevOpSpec, stddevSignature)))
 	flux.RegisterOpSpec(StddevKind, newStddevOp)

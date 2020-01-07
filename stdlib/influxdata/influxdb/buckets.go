@@ -13,7 +13,7 @@ type BucketsOpSpec struct {
 }
 
 func init() {
-	bucketsSignature := flux.LookupBuiltInType("influxdata/influxdb", "buckets")
+	bucketsSignature := semantic.LookupBuiltInType("influxdata/influxdb", "buckets")
 
 	flux.RegisterPackageValue("influxdata/influxdb", BucketsKind, flux.MustValue(flux.FunctionValue(BucketsKind, createBucketsOpSpec, bucketsSignature)))
 	flux.RegisterOpSpec(BucketsKind, newBucketsOp)

@@ -29,7 +29,7 @@ type GroupOpSpec struct {
 }
 
 func init() {
-	groupSignature := flux.LookupBuiltInType("universe", "group")
+	groupSignature := semantic.LookupBuiltInType("universe", "group")
 
 	flux.RegisterPackageValue("universe", GroupKind, flux.MustValue(flux.FunctionValue(GroupKind, createGroupOpSpec, groupSignature)))
 	flux.RegisterOpSpec(GroupKind, newGroupOp)

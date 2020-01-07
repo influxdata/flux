@@ -14,7 +14,7 @@ type YieldOpSpec struct {
 }
 
 func init() {
-	yieldSignature := flux.LookupBuiltInType("universe", "yield")
+	yieldSignature := semantic.LookupBuiltInType("universe", "yield")
 
 	flux.RegisterPackageValue("universe", YieldKind, flux.MustValue(flux.FunctionValueWithSideEffect(YieldKind, createYieldOpSpec, yieldSignature)))
 	flux.RegisterOpSpec(YieldKind, newYieldOp)

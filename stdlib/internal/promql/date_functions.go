@@ -14,7 +14,7 @@ import (
 func generateDateFunction(name string, dateFn func(time.Time) int) values.Function {
 	return values.NewFunction(
 		name,
-		flux.LookupBuiltInType("internal/promql", name),
+		semantic.LookupBuiltInType("internal/promql", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			v, ok := args.Get("timestamp")
 			if !ok {

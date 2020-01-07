@@ -25,7 +25,7 @@ type FromGeneratorOpSpec struct {
 }
 
 func init() {
-	fromGeneratorSignature := flux.LookupBuiltInType("generate", "from")
+	fromGeneratorSignature := semantic.LookupBuiltInType("generate", "from")
 	flux.RegisterPackageValue("generate", "from", flux.MustValue(flux.FunctionValue(FromGeneratorKind, createFromGeneratorOpSpec, fromGeneratorSignature)))
 	flux.RegisterOpSpec(FromGeneratorKind, newFromGeneratorOp)
 	plan.RegisterProcedureSpec(FromGeneratorKind, newFromGeneratorProcedure, FromGeneratorKind)

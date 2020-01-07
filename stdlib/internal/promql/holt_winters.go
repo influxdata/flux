@@ -19,7 +19,7 @@ type HoltWintersOpSpec struct {
 }
 
 func init() {
-	holtWintersSignature := flux.LookupBuiltInType("internal/promql", "holtWinters")
+	holtWintersSignature := semantic.LookupBuiltInType("internal/promql", "holtWinters")
 
 	flux.RegisterPackageValue("internal/promql", "holtWinters", flux.MustValue(flux.FunctionValue(HoltWintersKind, createHoltWintersOpSpec, holtWintersSignature)))
 	flux.RegisterOpSpec(HoltWintersKind, newHoltWintersOp)

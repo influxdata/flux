@@ -16,7 +16,7 @@ type FirstOpSpec struct {
 }
 
 func init() {
-	firstSignature := flux.LookupBuiltInType("universe", "first")
+	firstSignature := semantic.LookupBuiltInType("universe", "first")
 
 	flux.RegisterPackageValue("universe", FirstKind, flux.MustValue(flux.FunctionValue(FirstKind, createFirstOpSpec, firstSignature)))
 	flux.RegisterOpSpec(FirstKind, newFirstOp)

@@ -13,7 +13,7 @@ import (
 const SpreadKind = "spread"
 
 func init() {
-	spreadSignature := flux.LookupBuiltInType("universe", "spread")
+	spreadSignature := semantic.LookupBuiltInType("universe", "spread")
 
 	flux.RegisterPackageValue("universe", SpreadKind, flux.MustValue(flux.FunctionValue(SpreadKind, createSpreadOpSpec, spreadSignature)))
 	flux.RegisterOpSpec(SpreadKind, newSpreadOp)

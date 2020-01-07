@@ -1,10 +1,12 @@
 use flatbuffers;
 use flux::ast;
 use flux::ctypes::*;
+use flux::flux_buffer_t;
 use flux::semantic::env::Environment;
 use flux::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 use flux::semantic::fresh::Fresher;
 use flux::semantic::nodes::{infer_pkg_types, inject_pkg_types};
+use flux::semantic::flatbuffers::types::build_env; 
 
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
@@ -12,7 +14,7 @@ pub fn prelude() -> Option<Environment> {
 }
 
 pub fn imports() -> Option<Environment> {
-    let buf = include_bytes!(concat!(env!("OUT_DIR"), "/stdlib.data"));
+    let buf = include_bytes!(concat!(env!("OUT_DIR"), "/stdlib.data")); 
     flatbuffers::get_root::<fb::TypeEnvironment>(buf).into()
 }
 
@@ -61,6 +63,22 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<flux::semantic::nodes::Package, 
     let (_, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, &imports, &None)?;
     sem_pkg = inject_pkg_types(sem_pkg, &sub);
     Ok(sem_pkg)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
+    let env = imports().unwrap(); 
+    let mut builder = flatbuffers::FlatBufferBuilder::new(); 
+    let fb_type_env = build_env(&mut builder, env); 
+
+    builder.finish(fb_type_env, None); 
+    let (mut vec, offset) = builder.collapse();
+
+    // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
+    let data = vec.split_off(offset);
+    let buf = &mut *buf; // Unsafe
+    buf.len = data.len();
+    buf.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
 }
 
 #[cfg(test)]

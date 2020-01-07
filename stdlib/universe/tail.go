@@ -17,7 +17,7 @@ type TailOpSpec struct {
 }
 
 func init() {
-	tailSignature := flux.LookupBuiltInType("universe", "tail")
+	tailSignature := semantic.LookupBuiltInType("universe", "tail")
 
 	flux.RegisterPackageValue("universe", TailKind, flux.MustValue(flux.FunctionValue(TailKind, createTailOpSpec, tailSignature)))
 	flux.RegisterOpSpec(TailKind, newTailOp)

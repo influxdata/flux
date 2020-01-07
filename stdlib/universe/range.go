@@ -20,7 +20,7 @@ type RangeOpSpec struct {
 }
 
 func init() {
-	rangeSignature := flux.LookupBuiltInType("universe", "range")
+	rangeSignature := semantic.LookupBuiltInType("universe", "range")
 
 	flux.RegisterPackageValue("universe", RangeKind, flux.MustValue(flux.FunctionValue(RangeKind, createRangeOpSpec, rangeSignature)))
 	flux.RegisterOpSpec(RangeKind, newRangeOp)

@@ -16,7 +16,7 @@ type CountOpSpec struct {
 }
 
 func init() {
-	countSignature := flux.LookupBuiltInType("universe", "count")
+	countSignature := semantic.LookupBuiltInType("universe", "count")
 	flux.RegisterPackageValue("universe", CountKind, flux.MustValue(flux.FunctionValue(CountKind, createCountOpSpec, countSignature)))
 	flux.RegisterOpSpec(CountKind, newCountOp)
 	plan.RegisterProcedureSpec(CountKind, newCountProcedure, CountKind)

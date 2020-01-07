@@ -6,7 +6,7 @@ import (
 
 const DatabasesKind = "databases"
 
-var DatabasesSignature = flux.LookupBuiltInType("influxdata/influxdb/v1", "databses")
+var DatabasesSignature = semantic.LookupBuiltInType("influxdata/influxdb/v1", "databses")
 
 func init() {
 	flux.RegisterPackageValue("influxdata/influxdb/v1", DatabasesKind, flux.MustValue(flux.FunctionValue(DatabasesKind, nil, DatabasesSignature)))

@@ -51,6 +51,10 @@ struct flux_error_t *flux_ast_marshal_fb(struct flux_ast_pkg_t *, struct flux_bu
 // and their contents.
 struct flux_semantic_pkg_t;
 
+// flux_get_env_stdlib instantiates a flatbuffers TypeEnvironment and creates a pointer
+// to it to use when performing lookups on the stdlib
+void flux_get_env_stdlib(struct flux_buffer_t *);
+
 // flux_analyze analyzes the given AST and will populate the second pointer argument with
 // a pointer to the resulting semantic graph.
 // It is the caller's responsibility to free the resulting semantic graph with a call to flux_free().

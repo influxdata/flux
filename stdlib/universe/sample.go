@@ -20,7 +20,7 @@ type SampleOpSpec struct {
 }
 
 func init() {
-	sampleSignature := flux.LookupBuiltInType("universe", "sample")
+	sampleSignature := semantic.LookupBuiltInType("universe", "sample")
 
 	flux.RegisterPackageValue("universe", SampleKind, flux.MustValue(flux.FunctionValue(SampleKind, createSampleOpSpec, sampleSignature)))
 	flux.RegisterOpSpec(SampleKind, newSampleOp)

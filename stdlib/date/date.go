@@ -20,7 +20,7 @@ func init() {
 	SpecialFns = map[string]values.Function{
 		"second": values.NewFunction(
 			"second",
-			flux.LookupBuiltInType("date", "second"),
+			semantic.LookupBuiltInType("date", "second"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -35,7 +35,7 @@ func init() {
 		),
 		"minute": values.NewFunction(
 			"minute",
-			flux.LookupBuiltInType("date", "minute"),
+			semantic.LookupBuiltInType("date", "minute"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -50,7 +50,7 @@ func init() {
 		),
 		"hour": values.NewFunction(
 			"hour",
-			flux.LookupBuiltInType("date", "hour"),
+			semantic.LookupBuiltInType("date", "hour"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -65,7 +65,7 @@ func init() {
 		),
 		"weekDay": values.NewFunction(
 			"weekDay",
-			flux.LookupBuiltInType("date", "weekDay"),
+			semantic.LookupBuiltInType("date", "weekDay"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -80,7 +80,7 @@ func init() {
 		),
 		"monthDay": values.NewFunction(
 			"monthDay",
-			flux.LookupBuiltInType("date", "monthDay"),
+			semantic.LookupBuiltInType("date", "monthDay"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -95,7 +95,7 @@ func init() {
 		),
 		"yearDay": values.NewFunction(
 			"yearDay",
-			flux.LookupBuiltInType("date", "yearDay"),
+			semantic.LookupBuiltInType("date", "yearDay"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -110,7 +110,7 @@ func init() {
 		),
 		"month": values.NewFunction(
 			"month",
-			flux.LookupBuiltInType("date", "month"),
+			semantic.LookupBuiltInType("date", "month"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -125,7 +125,7 @@ func init() {
 		),
 		"year": values.NewFunction(
 			"year",
-			flux.LookupBuiltInType("date", "year"),
+			semantic.LookupBuiltInType("date", "year"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -140,7 +140,7 @@ func init() {
 		),
 		"week": values.NewFunction(
 			"week",
-			flux.LookupBuiltInType("date", "week"),
+			semantic.LookupBuiltInType("date", "week"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -156,7 +156,7 @@ func init() {
 		),
 		"quarter": values.NewFunction(
 			"quarter",
-			flux.LookupBuiltInType("date", "quarter"),
+			semantic.LookupBuiltInType("date", "quarter"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -172,7 +172,7 @@ func init() {
 		),
 		"millisecond": values.NewFunction(
 			"millisecond",
-			flux.LookupBuiltInType("date", "millisecond"),
+			semantic.LookupBuiltInType("date", "millisecond"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -188,7 +188,7 @@ func init() {
 		),
 		"microsecond": values.NewFunction(
 			"microsecond",
-			flux.LookupBuiltInType("date", "microsecond"),
+			semantic.LookupBuiltInType("date", "microsecond"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -204,7 +204,7 @@ func init() {
 		),
 		"nanosecond": values.NewFunction(
 			"nanosecond",
-			flux.LookupBuiltInType("date", "nanosecond"),
+			semantic.LookupBuiltInType("date", "nanosecond"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -219,7 +219,7 @@ func init() {
 		),
 		"truncate": values.NewFunction(
 			"truncate",
-			flux.LookupBuiltInType("date", "truncate"),
+			semantic.LookupBuiltInType("date", "truncate"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("t")
 				if !ok {

@@ -15,7 +15,7 @@ type UniqueOpSpec struct {
 }
 
 func init() {
-	uniqueSignature := flux.LookupBuiltInType("universe", "unique")
+	uniqueSignature := semantic.LookupBuiltInType("universe", "unique")
 
 	flux.RegisterPackageValue("universe", UniqueKind, flux.MustValue(flux.FunctionValue(UniqueKind, createUniqueOpSpec, uniqueSignature)))
 	flux.RegisterOpSpec(UniqueKind, newUniqueOp)

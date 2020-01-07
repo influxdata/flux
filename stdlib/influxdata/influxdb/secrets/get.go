@@ -20,7 +20,7 @@ func init() {
 var GetFunc = makeGetFunc()
 
 func makeGetFunc() values.Function {
-	sig := flux.LookupBuiltInType("influxdata/influxdb/secrets", "get")
+	sig := semantic.LookupBuiltInType("influxdata/influxdb/secrets", "get")
 	return values.NewFunction("get", sig, Get, false)
 }
 

@@ -25,7 +25,7 @@ type HistogramQuantileOpSpec struct {
 }
 
 func init() {
-	histogramQuantileSignature := flux.LookupBuiltInType("internal/promql", HistogramQuantileKind)
+	histogramQuantileSignature := semantic.LookupBuiltInType("internal/promql", HistogramQuantileKind)
 
 	flux.RegisterPackageValue("internal/promql", HistogramQuantileKind, flux.MustValue(flux.FunctionValue(HistogramQuantileKind, createHistogramQuantileOpSpec, histogramQuantileSignature)))
 	flux.RegisterOpSpec(HistogramQuantileKind, newHistogramQuantileOp)

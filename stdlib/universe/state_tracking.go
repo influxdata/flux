@@ -26,7 +26,7 @@ type StateTrackingOpSpec struct {
 }
 
 func init() {
-	stateTrackingSignature := flux.LookupBuiltInType("universe", "stateTracking")
+	stateTrackingSignature := semantic.LookupBuiltInType("universe", "stateTracking")
 
 	flux.RegisterPackageValue("universe", StateTrackingKind, flux.MustValue(flux.FunctionValue(StateTrackingKind, createStateTrackingOpSpec, stateTrackingSignature)))
 	flux.RegisterOpSpec(StateTrackingKind, newStateTrackingOp)

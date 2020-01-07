@@ -18,7 +18,7 @@ const (
 type TimestampOpSpec struct{}
 
 func init() {
-	timestampSignature := flux.LookupBuiltInType("internal/promql", "timestamp")
+	timestampSignature := semantic.LookupBuiltInType("internal/promql", "timestamp")
 	flux.RegisterPackageValue("internal/promql", "timestamp", flux.MustValue(flux.FunctionValue(TimestampKind, createTimestampOpSpec, timestampSignature)))
 	flux.RegisterOpSpec(TimestampKind, func() flux.OperationSpec { return &TimestampOpSpec{} })
 	plan.RegisterProcedureSpec(TimestampKind, newTimestampProcedure, TimestampKind)

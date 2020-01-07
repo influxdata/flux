@@ -20,7 +20,7 @@ type InstantRateOpSpec struct {
 }
 
 func init() {
-	instantRateSignature := flux.LookupBuiltInType("internal/promql", InstantRateKind)
+	instantRateSignature := semantic.LookupBuiltInType("internal/promql", InstantRateKind)
 
 	flux.RegisterPackageValue("internal/promql", InstantRateKind, flux.MustValue(flux.FunctionValue(InstantRateKind, createInstantRateOpSpec, instantRateSignature)))
 	flux.RegisterOpSpec(InstantRateKind, newInstantRateOp)

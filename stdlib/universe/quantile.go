@@ -35,7 +35,7 @@ type QuantileOpSpec struct {
 }
 
 func init() {
-	quantileSignature := flux.LookupBuiltInType("universe", "quantile")
+	quantileSignature := semantic.LookupBuiltInType("universe", "quantile")
 
 	flux.RegisterPackageValue("universe", QuantileKind, flux.MustValue(flux.FunctionValue(QuantileKind, createQuantileOpSpec, quantileSignature)))
 

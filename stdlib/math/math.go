@@ -17,7 +17,7 @@ var SpecialFns map[string]values.Function
 func generateMathFunctionX(name string, mathFn func(float64) float64) values.Function {
 	return values.NewFunction(
 		name,
-		flux.LookupBuiltInType("math", name),
+		semantic.LookupBuiltInType("math", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			v, ok := args.Get("x")
 			if !ok {
@@ -39,7 +39,7 @@ func generateMathFunctionXY(name string, mathFn func(float64, float64) float64, 
 	}
 	return values.NewFunction(
 		name,
-		flux.LookupBuiltInType("math", name),
+		semantic.LookupBuiltInType("math", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			v1, ok := args.Get(argNames[0])
 			if !ok {
@@ -135,7 +135,7 @@ func init() {
 		// float --> uint
 		"float64bits": values.NewFunction(
 			"float64bits",
-			flux.LookupBuiltInType("math", "float64bits"),
+			semantic.LookupBuiltInType("math", "float64bits"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -150,7 +150,7 @@ func init() {
 		),
 		"float64frombits": values.NewFunction(
 			"float64frombits",
-			flux.LookupBuiltInType("math", "float64frombits"),
+			semantic.LookupBuiltInType("math", "float64frombits"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("b")
 				if !ok {
@@ -166,7 +166,7 @@ func init() {
 		// float --> int
 		"ilogb": values.NewFunction(
 			"ilogb",
-			flux.LookupBuiltInType("math", "ilogb"),
+			semantic.LookupBuiltInType("math", "ilogb"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
@@ -182,7 +182,7 @@ func init() {
 		// float --> {frac: float, exp: int}
 		"frexp": values.NewFunction(
 			"frexp",
-			flux.LookupBuiltInType("math", "frexp"),
+			semantic.LookupBuiltInType("math", "frexp"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -199,7 +199,7 @@ func init() {
 		// float --> {lgamma: float, sign: int}
 		"lgamma": values.NewFunction(
 			"lgamma",
-			flux.LookupBuiltInType("math", "lgamma"),
+			semantic.LookupBuiltInType("math", "lgamma"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
@@ -216,7 +216,7 @@ func init() {
 		// float --> {int: float, frac: float}
 		"modf": values.NewFunction(
 			"modf",
-			flux.LookupBuiltInType("math", "modf"),
+			semantic.LookupBuiltInType("math", "modf"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -233,7 +233,7 @@ func init() {
 		// float --> {sin: float, cos: float}
 		"sincos": values.NewFunction(
 			"sincos",
-			flux.LookupBuiltInType("math", "sincos"),
+			semantic.LookupBuiltInType("math", "sincos"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
@@ -250,7 +250,7 @@ func init() {
 		// float, int --> bool
 		"isInf": values.NewFunction(
 			"isInf",
-			flux.LookupBuiltInType("math", "isInf"),
+			semantic.LookupBuiltInType("math", "isInf"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -274,7 +274,7 @@ func init() {
 		// float --> bool
 		"isNaN": values.NewFunction(
 			"isNaN",
-			flux.LookupBuiltInType("math", "isNaN"),
+			semantic.LookupBuiltInType("math", "isNaN"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -290,7 +290,7 @@ func init() {
 		// float --> bool
 		"signbit": values.NewFunction(
 			"signbit",
-			flux.LookupBuiltInType("math", "signbit"),
+			semantic.LookupBuiltInType("math", "signbit"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
@@ -306,7 +306,7 @@ func init() {
 		// () --> float
 		"NaN": values.NewFunction(
 			"NaN",
-			flux.LookupBuiltInType("math", "NaN"),
+			semantic.LookupBuiltInType("math", "NaN"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				return values.NewFloat(math.NaN()), nil
 			}, false,
@@ -314,7 +314,7 @@ func init() {
 		// (int) --> float
 		"mInf": values.NewFunction(
 			"inf",
-			flux.LookupBuiltInType("math", "inf"),
+			semantic.LookupBuiltInType("math", "inf"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 
 				v1, ok := args.Get("sign")
@@ -331,7 +331,7 @@ func init() {
 		// (int, float) --> float
 		"jn": values.NewFunction(
 			"jn",
-			flux.LookupBuiltInType("math", "jn"),
+			semantic.LookupBuiltInType("math", "jn"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("n")
 				if !ok {
@@ -355,7 +355,7 @@ func init() {
 		// (int, float) --> float
 		"yn": values.NewFunction(
 			"yn",
-			flux.LookupBuiltInType("math", "yn"),
+			semantic.LookupBuiltInType("math", "yn"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("n")
 				if !ok {
@@ -379,7 +379,7 @@ func init() {
 		// (float, int) --> float
 		"ldexp": values.NewFunction(
 			"ldexp",
-			flux.LookupBuiltInType("math", "ldexp"),
+			semantic.LookupBuiltInType("math", "ldexp"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("frac")
 				if !ok {
@@ -403,7 +403,7 @@ func init() {
 		// int --> float
 		"pow10": values.NewFunction(
 			"pow10",
-			flux.LookupBuiltInType("math", "pow10"),
+			semantic.LookupBuiltInType("math", "pow10"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("n")
 				if !ok {

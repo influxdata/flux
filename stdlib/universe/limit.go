@@ -22,7 +22,7 @@ type LimitOpSpec struct {
 }
 
 func init() {
-	limitSignature := flux.LookupBuiltInType("universe", "limit")
+	limitSignature := semantic.LookupBuiltInType("universe", "limit")
 
 	flux.RegisterPackageValue("universe", LimitKind, flux.MustValue(flux.FunctionValue(LimitKind, createLimitOpSpec, limitSignature)))
 	flux.RegisterOpSpec(LimitKind, newLimitOp)

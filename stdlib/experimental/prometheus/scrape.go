@@ -34,7 +34,7 @@ type ScrapePrometheusOpSpec struct {
 }
 
 func init() {
-	scrapePrometheusSignature := flux.LookupBuiltInType("experimental/prometheus", "scrape")
+	scrapePrometheusSignature := semantic.LookupBuiltInType("experimental/prometheus", "scrape")
 	flux.RegisterPackageValue("experimental/prometheus", "scrape", flux.MustValue(flux.FunctionValue(ScrapePrometheusKind, createScrapePrometheusOpSpec, scrapePrometheusSignature)))
 	flux.RegisterOpSpec(ScrapePrometheusKind, newScrapePrometheusOp)
 	plan.RegisterProcedureSpec(ScrapePrometheusKind, newScrapePrometheusProcedure, ScrapePrometheusKind)

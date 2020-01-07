@@ -26,7 +26,7 @@ func (s *DiffOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-	diffSignature := flux.LookupBuiltInType("testing", "diff")
+	diffSignature := semantic.LookupBuiltInType("testing", "diff")
 
 	flux.RegisterPackageValue("testing", "diff", flux.MustValue(flux.FunctionValue(DiffKind, createDiffOpSpec, diffSignature)))
 	flux.RegisterOpSpec(DiffKind, newDiffOp)

@@ -16,7 +16,7 @@ type ExponentialMovingAverageOpSpec struct {
 }
 
 func init() {
-	exponentialMovingAverageSignature := flux.LookupBuiltInType("universe", "exponentialMovingAverage")
+	exponentialMovingAverageSignature := semantic.LookupBuiltInType("universe", "exponentialMovingAverage")
 
 	flux.RegisterPackageValue("universe", ExponentialMovingAverageKind, flux.MustValue(flux.FunctionValue(ExponentialMovingAverageKind, createExponentialMovingAverageOpSpec, exponentialMovingAverageSignature)))
 	flux.RegisterOpSpec(ExponentialMovingAverageKind, newExponentialMovingAverageOp)

@@ -13,7 +13,7 @@ const ResetsKind = "resets"
 type ResetsOpSpec struct{}
 
 func init() {
-	resetsSignature := flux.LookupBuiltInType("internal/promql", ResetsKind)
+	resetsSignature := semantic.LookupBuiltInType("internal/promql", ResetsKind)
 
 	flux.RegisterPackageValue("internal/promql", ResetsKind, flux.MustValue(flux.FunctionValue(ResetsKind, createResetsOpSpec, resetsSignature)))
 	flux.RegisterOpSpec(ResetsKind, newResetsOp)

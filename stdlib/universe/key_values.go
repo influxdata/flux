@@ -18,7 +18,7 @@ type KeyValuesOpSpec struct {
 }
 
 func init() {
-	keyValuesSignature := flux.LookupBuiltInType("universe", "keyValues")
+	keyValuesSignature := semantic.LookupBuiltInType("universe", "keyValues")
 
 	flux.RegisterPackageValue("universe", KeyValuesKind, flux.MustValue(flux.FunctionValue(KeyValuesKind, createKeyValuesOpSpec, keyValuesSignature)))
 	flux.RegisterOpSpec(KeyValuesKind, newKeyValuesOp)

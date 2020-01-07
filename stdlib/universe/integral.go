@@ -20,7 +20,7 @@ type IntegralOpSpec struct {
 }
 
 func init() {
-	integralSignature := flux.LookupBuiltInType("universe", "integral")
+	integralSignature := semantic.LookupBuiltInType("universe", "integral")
 
 	flux.RegisterPackageValue("universe", IntegralKind, flux.MustValue(flux.FunctionValue(IntegralKind, createIntegralOpSpec, integralSignature)))
 	flux.RegisterOpSpec(IntegralKind, newIntegralOp)
