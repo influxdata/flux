@@ -115,20 +115,32 @@ var (
 )
 
 func init() {
-	builder := flatbuffers.NewBuilder(1024)
+	BasicBool = buildBasic(fbsemantic.TypeBool)
+	BasicInt = buildBasic(fbsemantic.TypeInt)
+	BasicUint = buildBasic(fbsemantic.TypeUint)
+	BasicFloat = buildBasic(fbsemantic.TypeFloat)
+	BasicString = buildBasic(fbsemantic.TypeString)
+	BasicDuration = buildBasic(fbsemantic.TypeDuration)
+	BasicTime = buildBasic(fbsemantic.TypeTime)
+	BasicRegexp = buildBasic(fbsemantic.TypeRegexp)
+	BasicBytes = buildBasic(fbsemantic.TypeBytes)
+}
+
+func buildBasic(ty fbsemantic.Type) MonoType {
+	builder := flatbuffers.NewBuilder(0)
+
 	fbsemantic.BasicStart(builder)
-	fbsemantic.BasicAddT(builder, fbsemantic.TypeBool)
-	basicBool := fbsemantic.BasicEnd(builder)
+	fbsemantic.BasicAddT(builder, ty)
+	offset := fbsemantic.BasicEnd(builder)
 
-	// TODO (algow): initial all basic values
-
-	// TODO (algow): this probably doesn't work...
-	builder.Finish(basicBool)
-	basicTable := flatbuffers.Table{
+	builder.Finish(offset)
+	table := flatbuffers.Table{
 		Bytes: builder.FinishedBytes(),
-		Pos:   basicBool,
+		Pos:   offset,
 	}
-	BasicBool, _ = NewMonoType(basicTable, fbsemantic.MonoTypeBasic)
+
+	basic, _ := NewMonoType(&table, fbsemantic.MonoTypeBasic)
+	return basic
 }
 
 func getBasic(tbl fbTabler) (*fbsemantic.Basic, error) {
