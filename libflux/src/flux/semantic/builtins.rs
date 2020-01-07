@@ -82,7 +82,7 @@ pub fn builtins() -> Builtins<'static> {
                  "subDuration" => Node::Builtin("forall [] (d: duration, from: time) -> time"),
                  "group" => Node::Builtin("forall [t0] where t0: Row (<-tables: [t0], mode: string, columns: [string]) -> [t0]"),
                  "objectKeys" => Node::Builtin("forall [t0] where t0: Row (o: t0) -> [string]"),
-                 "set" => Node::Builtin("forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (<-tables: t0, o: t1) -> [t2]"),
+                 "set" => Node::Builtin("forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (<-tables: [t0], o: t1) -> [t2]"),
                  // must specify exactly one of bucket, bucketID
                  // must specify exactly one of org, orgID
                  // if host is specified, token must be too.
@@ -134,7 +134,7 @@ pub fn builtins() -> Builtins<'static> {
                             ?measurementColumn: string,
                             ?tagColumns: [string],
                             ?fieldFn: (r: t0) -> t1
-                        ) -> [t1]
+                        ) -> [t0]
                     "#),
                     "buckets" => Node::Builtin(r#"
                         forall [] () -> [{
@@ -370,7 +370,7 @@ pub fn builtins() -> Builtins<'static> {
                 "count" => Node::Builtin(r#"
                     forall [t0, t1] where t0: Row, t1: Row (
                         <-tables: [t0],
-                        ?column: [string]
+                        ?column: string
                     ) -> [t1]
                 "#),
                 "covariance" => Node::Builtin(r#"
@@ -444,7 +444,7 @@ pub fn builtins() -> Builtins<'static> {
                     forall [t0, t1, t2] where t0: Row, t2: Row (
                         <-tables: [t0],
                         ?column: string,
-                        value: [t1],
+                        value: t1,
                         usePrevious: bool
                     ) -> [t2]
                 "#),

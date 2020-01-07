@@ -60,7 +60,7 @@ impl From<fb::PolyType<'_>> for Option<PolyType> {
         for i in 0..c.len() {
             let constraint: Option<(Tvar, Kind)> = c.get(i).into();
             let (tv, kind) = constraint?;
-            cons.entry(tv).or_insert(Vec::new()).push(kind);
+            cons.entry(tv).or_insert_with(Vec::new).push(kind);
         }
         Some(PolyType {
             vars,
@@ -301,7 +301,7 @@ fn build_type_assignment<'a>(
 }
 
 /// Encodes a polytype as a flatbuffer
-fn build_polytype<'a>(
+pub fn build_polytype<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     t: PolyType,
 ) -> flatbuffers::WIPOffset<fb::PolyType<'a>> {
@@ -343,7 +343,7 @@ fn build_constraint<'a>(
     )
 }
 
-fn build_type<'a>(
+pub fn build_type<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     t: MonoType,
 ) -> (

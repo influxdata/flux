@@ -2,6 +2,7 @@ pub mod analyze;
 pub use analyze::analyze;
 
 mod import;
+
 mod infer;
 mod sub;
 
@@ -44,7 +45,7 @@ pub fn analyze_source(source: &str) -> AnalysisResult<nodes::Package> {
         package: "main".to_string(),
         files: vec![file],
     };
-    let mut f = Fresher::new();
+    let mut f = Fresher::default();
     let mut sem_pkg = analyze_with(ast_pkg, &mut f)?;
     // TODO(affo): add a stdlib Importer.
     let (_, sub) = infer_pkg_types(&mut sem_pkg, Environment::empty(), &mut f, &None, &None)?;

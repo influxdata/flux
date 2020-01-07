@@ -56,6 +56,11 @@ impl Environment {
             values: HashMap::new(),
         }
     }
+    // The following clippy lint is ignored due to taking a `Self` type as the
+    // first parameter, which clippy wrongly identifies as the parameter name,
+    // used in a place that shouldn't take a `self` parameter.
+    // See https://github.com/rust-lang/rust-clippy/issues/3414
+    #[allow(clippy::wrong_self_convention)]
     pub fn new(from: Self) -> Environment {
         Environment {
             parent: Some(Box::new(from)),

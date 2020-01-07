@@ -150,13 +150,10 @@ impl Parser {
 
     // peek_with_regex is the same as peek, except that the scan step will allow scanning regexp tokens.
     fn peek_with_regex(&mut self) -> Token {
-        match &self.t {
-            Some(Token { tok: TOK_DIV, .. }) => {
-                self.t = None;
-                self.s.unread();
-            }
-            _ => (),
-        };
+        if let Some(Token { tok: TOK_DIV, .. }) = &self.t {
+            self.t = None;
+            self.s.unread();
+        }
         match self.t.clone() {
             Some(t) => t,
             None => {
@@ -331,19 +328,16 @@ impl Parser {
         let t = self.peek();
         let mut end = ast::Position::invalid();
         let pkg = self.parse_package_clause();
-        match &pkg {
-            Some(pkg) => end = pkg.base.location.end.clone(),
-            _ => (),
+        if let Some(pkg) = &pkg {
+            end = pkg.base.location.end.clone();
         }
         let imports = self.parse_import_list();
-        match imports.last() {
-            Some(import) => end = import.base.location.end.clone(),
-            _ => (),
+        if let Some(import) = imports.last() {
+            end = import.base.location.end.clone();
         }
         let body = self.parse_statement_list();
-        match body.last() {
-            Some(stmt) => end = stmt.base().location.end.clone(),
-            _ => (),
+        if let Some(stmt) = body.last() {
+            end = stmt.base().location.end.clone();
         }
         File {
             base: BaseNode {
@@ -392,8 +386,8 @@ impl Parser {
         let path = self.parse_string_literal();
         ImportDeclaration {
             base: self.base_node_from_other_end(&t, &path.base),
-            alias: alias,
-            path: path,
+            alias,
+            path,
         }
     }
 
@@ -480,7 +474,7 @@ impl Parser {
             base: self.base_node_from_other_end(&t, assignment.base()),
             assignment: VariableAssgn {
                 base: self.base_node_from_others(&id.base, assignment.base()),
-                id: id,
+                id,
                 init: assignment,
             },
         }))
@@ -558,21 +552,18 @@ impl Parser {
             !stop_tokens.contains(&t.tok) && self.more()
         } {
             let e = self.parse_expression();
-            match e {
-                Expression::Bad(_) => {
-                    // We got a BadExpression, push the error and consume the token.
-                    // TODO(jsternberg): We should pretend the token is
-                    //  an operator and create a binary expression. For now, skip past it.
-                    let invalid_t = self.scan();
-                    let loc = self.source_location(
-                        &ast::Position::from(&invalid_t.start_pos),
-                        &ast::Position::from(&invalid_t.end_pos),
-                    );
-                    self.errs
-                        .push(format!("invalid expression {}: {}", loc, invalid_t.lit));
-                    continue;
-                }
-                _ => (),
+            if let Expression::Bad(_) = e {
+                // We got a BadExpression, push the error and consume the token.
+                // TODO(jsternberg): We should pretend the token is
+                //  an operator and create a binary expression. For now, skip past it.
+                let invalid_t = self.scan();
+                let loc = self.source_location(
+                    &ast::Position::from(&invalid_t.start_pos),
+                    &ast::Position::from(&invalid_t.end_pos),
+                );
+                self.errs
+                    .push(format!("invalid expression {}: {}", loc, invalid_t.lit));
+                continue;
             };
             match expr {
                 Some(ex) => {
@@ -766,9 +757,8 @@ impl Parser {
             TOK_REGEXNEQ => res = Some(Operator::NotRegexpMatchOperator),
             _ => (),
         }
-        match res {
-            Some(_) => self.consume(),
-            None => (),
+        if res.is_some() {
+            self.consume();
         }
         res
     }
@@ -803,9 +793,8 @@ impl Parser {
             TOK_SUB => res = Some(Operator::SubtractionOperator),
             _ => (),
         }
-        match res {
-            Some(_) => self.consume(),
-            None => (),
+        if res.is_some() {
+            self.consume();
         }
         res
     }
@@ -842,9 +831,8 @@ impl Parser {
             TOK_POW => res = Some(Operator::PowerOperator),
             _ => (),
         }
-        match res {
-            Some(_) => self.consume(),
-            None => (),
+        if res.is_some() {
+            self.consume();
         }
         res
     }
@@ -883,7 +871,7 @@ impl Parser {
                     res = Expression::PipeExpr(Box::new(PipeExpr {
                         base: self.base_node_from_others(res.base(), &call.base),
                         argument: res,
-                        call: call,
+                        call,
                     }));
                 }
             }
@@ -901,17 +889,14 @@ impl Parser {
     fn parse_unary_expression(&mut self) -> Expression {
         let t = self.peek();
         let op = self.parse_additive_operator();
-        match op {
-            Some(op) => {
-                let expr = self.parse_unary_expression();
-                return Expression::Unary(Box::new(UnaryExpr {
-                    base: self.base_node_from_other_end(&t, expr.base()),
-                    operator: op,
-                    argument: expr,
-                }));
-            }
-            None => (),
-        }
+        if let Some(op) = op {
+            let expr = self.parse_unary_expression();
+            return Expression::Unary(Box::new(UnaryExpr {
+                base: self.base_node_from_other_end(&t, expr.base()),
+                operator: op,
+                argument: expr,
+            }));
+        };
         self.parse_postfix_expression()
     }
     fn parse_postfix_expression(&mut self) -> Expression {
@@ -1066,7 +1051,7 @@ impl Parser {
                 TOK_QUOTE => {
                     return StringExpr {
                         base: self.base_node_from_tokens(&start, &t),
-                        parts: parts,
+                        parts,
                     }
                 }
                 _ => {
@@ -1129,7 +1114,7 @@ impl Parser {
         let value = strconv::parse_string(t.lit.as_str()).unwrap();
         StringLit {
             base: self.base_node_from_token(&t),
-            value: value,
+            value,
         }
     }
     fn parse_regexp_literal(&mut self) -> RegexpLit {
@@ -1154,7 +1139,7 @@ impl Parser {
         let value = strconv::parse_time(t.lit.as_str()).unwrap();
         DateTimeLit {
             base: self.base_node_from_token(&t),
-            value: value,
+            value,
         }
     }
     fn parse_duration_literal(&mut self) -> DurationLit {
@@ -1162,7 +1147,7 @@ impl Parser {
         let values = strconv::parse_duration(t.lit.as_str()).unwrap();
         DurationLit {
             base: self.base_node_from_token(&t),
-            values: values,
+            values,
         }
     }
     fn parse_pipe_literal(&mut self) -> PipeLit {
@@ -1216,7 +1201,7 @@ impl Parser {
                                 ),
                                 errors: vec![],
                             },
-                            text: t.lit.to_string(),
+                            text: t.lit,
                             expression: None,
                         })));
                     }
@@ -1283,18 +1268,15 @@ impl Parser {
                 let mut expr = self.parse_expression_suffix(Expression::Identifier(key));
                 while self.more() {
                     let rhs = self.parse_expression();
-                    match rhs {
-                        Expression::Bad(_) => {
-                            let invalid_t = self.scan();
-                            let loc = self.source_location(
-                                &ast::Position::from(&invalid_t.start_pos),
-                                &&ast::Position::from(&invalid_t.end_pos),
-                            );
-                            self.errs
-                                .push(format!("invalid expression {}: {}", loc, invalid_t.lit));
-                            continue;
-                        }
-                        _ => (),
+                    if let Expression::Bad(_) = rhs {
+                        let invalid_t = self.scan();
+                        let loc = self.source_location(
+                            &ast::Position::from(&invalid_t.start_pos),
+                            &&ast::Position::from(&invalid_t.end_pos),
+                        );
+                        self.errs
+                            .push(format!("invalid expression {}: {}", loc, invalid_t.lit));
+                        continue;
                     };
                     expr = Expression::Binary(Box::new(BinaryExpr {
                         base: self.base_node_from_others(expr.base(), rhs.base()),
@@ -1431,8 +1413,8 @@ impl Parser {
         };
         Property {
             base: self.base_node_from_others(key.base(), value_base),
-            key: key,
-            value: value,
+            key,
+            value,
         }
     }
     fn parse_invalid_property(&mut self) -> Property {
@@ -1483,10 +1465,9 @@ impl Parser {
     }
     fn parse_property_value(&mut self) -> Option<Expression> {
         let res = self.parse_expression_while_more(None, &[TOK_COMMA, TOK_COLON]);
-        match res {
+        if res.is_none() {
             // TODO: return a BadExpr here. It would help simplify logic.
-            None => self.errs.push(String::from("missing property value")),
-            _ => (),
+            self.errs.push(String::from("missing property value"));
         }
         res
     }
@@ -1504,15 +1485,15 @@ impl Parser {
     fn parse_parameter(&mut self) -> Property {
         let key = self.parse_identifier();
         let base: BaseNode;
-        let mut value = None;
-        if self.peek().tok == TOK_ASSIGN {
+        let value = if self.peek().tok == TOK_ASSIGN {
             self.consume();
             let v = self.parse_expression();
             base = self.base_node_from_others(&key.base, v.base());
-            value = Some(v);
+            Some(v)
         } else {
-            base = self.base_node(key.base.location.clone())
-        }
+            base = self.base_node(key.base.location.clone());
+            None
+        };
         Property {
             base,
             key: PropertyKey::Identifier(key),

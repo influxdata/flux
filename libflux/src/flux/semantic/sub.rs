@@ -18,7 +18,12 @@ impl From<HashMap<Tvar, MonoType>> for Substitution {
     }
 }
 
+// The `allow` attribute below is a side effect of the orphan impl rule as
+// well as the implicit_hasher lint. For more info, see
+// https://github.com/rust-lang/rfcs/issues/1856
+
 // Derive a hash map from a substitution.
+#[allow(clippy::implicit_hasher)]
 impl From<Substitution> for HashMap<Tvar, MonoType> {
     fn from(sub: Substitution) -> HashMap<Tvar, MonoType> {
         sub.0

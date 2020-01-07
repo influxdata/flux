@@ -14,7 +14,7 @@ pub type Result<T> = result::Result<T, SemanticError>;
 // If one wants to do so, he should explicitly pkg.clone() and incur consciously in the memory
 // overhead involved.
 pub fn analyze(pkg: ast::Package) -> Result<Package> {
-    analyze_with(pkg, &mut Fresher::new())
+    analyze_with(pkg, &mut Fresher::default())
 }
 
 // analyze_with runs analyze using the provided Fresher.
@@ -32,7 +32,7 @@ fn analyze_package(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> 
     Ok(Package {
         loc: pkg.base.location,
         package: pkg.package,
-        files: files,
+        files,
     })
 }
 
@@ -236,8 +236,8 @@ fn analyze_function_params(
         let key = analyze_identifier(id, fresher)?;
         let mut default: Option<Expression> = None;
         let mut is_pipe = false;
-        match prop.value {
-            Some(expr) => match expr {
+        if let Some(expr) = prop.value {
+            match expr {
                 ast::Expression::PipeLit(_) => {
                     if piped {
                         return Err("only a single argument may be piped".to_string());
@@ -247,8 +247,7 @@ fn analyze_function_params(
                     };
                 }
                 e => default = Some(analyze_expression(e, fresher)?),
-            },
-            None => (),
+            }
         };
         params.push(FunctionParameter {
             loc: prop.base.location,
@@ -1256,7 +1255,11 @@ mod tests {
                                     value: Expression::Duration(DurationLit {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        value: chrono::Duration::hours(1),
+                                        value: Duration {
+                                            months: 5,
+                                            nanoseconds: 5000,
+                                            negative: false,
+                                        },
                                     }),
                                 },
                                 Property {
@@ -1268,7 +1271,11 @@ mod tests {
                                     value: Expression::Duration(DurationLit {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        value: chrono::Duration::minutes(10),
+                                        value: Duration {
+                                            months: 1,
+                                            nanoseconds: 50,
+                                            negative: true,
+                                        },
                                     }),
                                 },
                                 Property {

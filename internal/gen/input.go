@@ -13,7 +13,7 @@ import (
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/execute/tableutil"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
 )
@@ -377,7 +377,7 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 			cols[len(cols)-2] = flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime}
 			cols[len(cols)-1] = flux.ColMeta{Label: execute.DefaultValueColLabel, Type: sg.Type}
 
-			tbl, err := tableutil.Stream(s, cols, func(ctx context.Context, w *tableutil.StreamWriter) error {
+			tbl, err := table.Stream(s, cols, func(ctx context.Context, w *table.StreamWriter) error {
 				// Only construct the key values once for the first table
 				// and then reuse them for each one with a slice.
 				// The first table should always be the biggest because of

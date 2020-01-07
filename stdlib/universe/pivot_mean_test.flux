@@ -12,9 +12,9 @@ inData = "
 ,,0,2018-05-22T19:53:26Z,34.98234271799806,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T19:53:36Z,34.98234941084654,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T19:53:46Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.local,/
-,,0,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.remote,/
-,,0,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.remote,/
-,,0,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.remote,/
+,,1,2018-05-22T19:53:56Z,34.982447293755506,used_percent,disk,disk1s1,apfs,host.remote,/
+,,1,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s1,apfs,host.remote,/
+,,1,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s1,apfs,host.remote,/
 "
 
 outData = "

@@ -22,7 +22,6 @@ use crate::semantic::{
 };
 
 use chrono::prelude::DateTime;
-use chrono::Duration;
 use chrono::FixedOffset;
 use derivative::Derivative;
 use std::collections::HashMap;
@@ -595,7 +594,7 @@ impl VariableAssgn {
         self.cons = p.cons.clone();
 
         // Update the type environment
-        &mut env.add(String::from(&self.id.name), p);
+        env.add(String::from(&self.id.name), p);
         Ok((env, constraints))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -823,10 +822,9 @@ impl FunctionExpr {
     pub fn defaults(&self) -> Vec<&FunctionParameter> {
         let mut ds = Vec::new();
         for p in &self.params {
-            match p.default {
-                Some(_) => ds.push(p),
-                None => (),
-            }
+            if p.default.is_some() {
+                ds.push(p);
+            };
         }
         ds
     }
@@ -1546,13 +1544,27 @@ impl DateTimeLit {
     }
 }
 
+// Duration is a struct that keeps track of time in months and nanoseconds.
+// Months and nanoseconds must be positive values. Negative is a bool to indicate
+// whether the magnitude of durations converted from the AST have a positive or
+// negative value
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(rename = "Duration")]
+pub struct Duration {
+    pub months: i64,
+    pub nanoseconds: i64,
+    pub negative: bool,
+}
+
+// DurationLit is a pair consisting of length of time and the unit of time measured.
+// It is the atomic unit from which all duration literals are composed.
 #[derive(Derivative)]
 #[derivative(Debug, PartialEq, Clone)]
 pub struct DurationLit {
     pub loc: ast::SourceLocation,
     #[derivative(PartialEq = "ignore")]
     pub typ: MonoType,
-
+    #[derivative(PartialEq = "ignore")]
     pub value: Duration,
 }
 
@@ -1571,6 +1583,7 @@ fn infer_literal(env: Environment, typ: &MonoType, is: MonoType) -> Result {
     Ok((env, constraints))
 }
 
+// The following durations have nanosecond base units
 const NANOS: i64 = 1;
 const MICROS: i64 = NANOS * 1000;
 const MILLIS: i64 = MICROS * 1000;
@@ -1579,29 +1592,48 @@ const MINUTES: i64 = SECONDS * 60;
 const HOURS: i64 = MINUTES * 60;
 const DAYS: i64 = HOURS * 24;
 const WEEKS: i64 = DAYS * 7;
-const MONTHS: f64 = WEEKS as f64 * (365.25 / 12.0 / 7.0);
-const YEARS: f64 = MONTHS * 12.0;
 
-// TODO(affo): this is not accurate, a duration value depends on the time in which it is calculated.
-// 1 month is different if now is the 1st of January, or the 1st of February.
-// Some days do not last 24 hours because of light savings.
-pub fn convert_duration(duration: &Vec<ast::Duration>) -> std::result::Result<Duration, String> {
-    let d = duration
-        .iter()
-        .try_fold(0 as i64, |acc, d| match d.unit.as_str() {
-            "y" => Ok(acc + (d.magnitude as f64 * YEARS) as i64),
-            "mo" => Ok(acc + (d.magnitude as f64 * MONTHS) as i64),
-            "w" => Ok(acc + d.magnitude * WEEKS),
-            "d" => Ok(acc + d.magnitude * DAYS),
-            "h" => Ok(acc + d.magnitude * HOURS),
-            "m" => Ok(acc + d.magnitude * MINUTES),
-            "s" => Ok(acc + d.magnitude * SECONDS),
-            "ms" => Ok(acc + d.magnitude * MILLIS),
-            "us" | "µs" => Ok(acc + d.magnitude * MICROS),
-            "ns" => Ok(acc + d.magnitude * NANOS),
-            _ => Err(format!("unrecognized magnitude for duration: {}", d.unit)),
-        })?;
-    Ok(Duration::nanoseconds(d))
+// The following durations have month base units
+const MONTHS: i64 = 1;
+const YEARS: i64 = MONTHS * 12;
+
+pub fn convert_duration(ast_dur: &[ast::Duration]) -> std::result::Result<Duration, String> {
+    if ast_dur.is_empty() {
+        return Err(String::from(
+            "AST duration vector must contain at least one duration value",
+        ));
+    };
+
+    let negative = ast_dur[0].magnitude.is_negative();
+
+    let (nanoseconds, months) = ast_dur.iter().try_fold((0i64, 0i64), |acc, d| {
+        if (d.magnitude.is_negative() && !negative) || (!d.magnitude.is_negative() && negative) {
+            return Err("all values in AST duration vector must have the same sign");
+        }
+
+        match d.unit.as_str() {
+            "y" => Ok((acc.0, acc.1 + d.magnitude * YEARS)),
+            "mo" => Ok((acc.0, acc.1 + d.magnitude * MONTHS)),
+            "w" => Ok((acc.0 + d.magnitude * WEEKS, acc.1)),
+            "d" => Ok((acc.0 + d.magnitude * DAYS, acc.1)),
+            "h" => Ok((acc.0 + d.magnitude * HOURS, acc.1)),
+            "m" => Ok((acc.0 + d.magnitude * MINUTES, acc.1)),
+            "s" => Ok((acc.0 + d.magnitude * SECONDS, acc.1)),
+            "ms" => Ok((acc.0 + d.magnitude * MILLIS, acc.1)),
+            "us" | "µs" => Ok((acc.0 + d.magnitude * MICROS, acc.1)),
+            "ns" => Ok((acc.0 + d.magnitude * NANOS, acc.1)),
+            _ => Err("unrecognized magnitude for duration"),
+        }
+    })?;
+
+    let nanoseconds = nanoseconds.abs();
+    let months = months.abs();
+
+    Ok(Duration {
+        months,
+        nanoseconds,
+        negative,
+    })
 }
 
 #[cfg(test)]
@@ -1637,13 +1669,17 @@ mod tests {
                 unit: "ns".to_string(),
             },
         ];
-        let exp = (1.0 * YEARS + 2.0 * MONTHS) as i64 + 3 * WEEKS + 4 * MINUTES + 5 * NANOS;
+        let expect_nano = 3 * WEEKS + 4 * MINUTES + 5 * NANOS;
+        let expect_months = 1 * YEARS + 2 * MONTHS;
+
         let got = convert_duration(&t).unwrap();
-        assert_eq!(exp, got.num_nanoseconds().expect("should not overflow"));
+        assert_eq!(expect_nano, got.nanoseconds);
+        assert_eq!(expect_months, got.months);
+        assert_eq!(false, got.negative);
     }
 
     #[test]
-    fn duration_conversion_doubled_magnitude() {
+    fn duration_conversion_same_magnitude_twice() {
         let t = vec![
             ast::Duration {
                 magnitude: 1,
@@ -1658,20 +1694,24 @@ mod tests {
                 unit: "y".to_string(),
             },
         ];
-        let exp = (4.0 * YEARS + 2.0 * MONTHS) as i64;
+        let expect_nano = 0;
+        let expect_months = 4 * YEARS + 2 * MONTHS;
+
         let got = convert_duration(&t).unwrap();
-        assert_eq!(exp, got.num_nanoseconds().expect("should not overflow"));
+        assert_eq!(expect_nano, got.nanoseconds);
+        assert_eq!(expect_months, got.months);
+        assert_eq!(false, got.negative);
     }
 
     #[test]
-    fn duration_conversion_negative() {
+    fn duration_conversion_negative_ok() {
         let t = vec![
             ast::Duration {
                 magnitude: -1,
                 unit: "y".to_string(),
             },
             ast::Duration {
-                magnitude: 2,
+                magnitude: -2,
                 unit: "mo".to_string(),
             },
             ast::Duration {
@@ -1679,20 +1719,24 @@ mod tests {
                 unit: "w".to_string(),
             },
         ];
-        let exp = (-1.0 * YEARS + 2.0 * MONTHS) as i64 - 3 * WEEKS;
+        let expect_months = (-1 * YEARS + (-2 * MONTHS)).abs();
+        let expect_nano = (-3 * WEEKS).abs();
+
         let got = convert_duration(&t).unwrap();
-        assert_eq!(exp, got.num_nanoseconds().expect("should not overflow"));
+        assert_eq!(expect_nano, got.nanoseconds);
+        assert_eq!(expect_months, got.months);
+        assert_eq!(true, got.negative);
     }
 
     #[test]
-    fn duration_conversion_error() {
+    fn duration_conversion_unit_error() {
         let t = vec![
             ast::Duration {
                 magnitude: -1,
                 unit: "y".to_string(),
             },
             ast::Duration {
-                magnitude: 2,
+                magnitude: -2,
                 unit: "--idk--".to_string(),
             },
             ast::Duration {
@@ -1700,7 +1744,36 @@ mod tests {
                 unit: "w".to_string(),
             },
         ];
-        let exp = "unrecognized magnitude for duration: --idk--";
+        let exp = "unrecognized magnitude for duration";
+        let got = convert_duration(&t).err().expect("should be an error");
+        assert_eq!(exp, got.to_string());
+    }
+
+    #[test]
+    fn duration_conversion_different_signs_error() {
+        let t = vec![
+            ast::Duration {
+                magnitude: -1,
+                unit: "y".to_string(),
+            },
+            ast::Duration {
+                magnitude: 2,
+                unit: "ns".to_string(),
+            },
+            ast::Duration {
+                magnitude: -3,
+                unit: "w".to_string(),
+            },
+        ];
+        let exp = "all values in AST duration vector must have the same sign";
+        let got = convert_duration(&t).err().expect("should be an error");
+        assert_eq!(exp, got.to_string());
+    }
+
+    #[test]
+    fn duration_conversion_empty_error() {
+        let t = Vec::new();
+        let exp = "AST duration vector must contain at least one duration value";
         let got = convert_duration(&t).err().expect("should be an error");
         assert_eq!(exp, got.to_string());
     }

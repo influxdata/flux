@@ -261,6 +261,39 @@ func ProcessBenchmarkHelper(
 ) {
 	b.Helper()
 
+	alloc := &memory.Allocator{}
+	input, err := genInput(alloc)
+	if err != nil {
+		b.Fatalf("error generating input: %s", err)
+	}
+
+	var tables []flux.BufferedTable
+	if err := input.Do(func(table flux.Table) error {
+		buf, err := execute.CopyTable(table)
+		if err != nil {
+			return err
+		}
+		tables = append(tables, buf)
+		return nil
+	}); err != nil {
+		b.Fatalf("error processing input tables: %s", err)
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		RunBenchmark(b, tables, create, alloc)
+	}
+}
+
+func RunBenchmark(
+	b *testing.B,
+	tables []flux.BufferedTable,
+	create func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset),
+	alloc *memory.Allocator,
+) {
+	b.Helper()
+
 	defer func() {
 		if err := recover(); err != nil {
 			debug.PrintStack()
@@ -268,22 +301,19 @@ func ProcessBenchmarkHelper(
 		}
 	}()
 
-	alloc := &memory.Allocator{}
 	parentID := RandomDatasetID()
-	tables, err := genInput(alloc)
-	if err != nil {
-		b.Fatalf("unexpected error: %s", err)
-	}
-
 	store := NewDevNullStore()
 	tx, d := create(RandomDatasetID(), alloc)
 	d.SetTriggerSpec(plan.DefaultTriggerSpec)
 	d.AddTransformation(store)
 
-	if err := tables.Do(func(table flux.Table) error {
-		return tx.Process(parentID, table)
-	}); err != nil {
-		b.Fatalf("unexpected error: %s", err)
+	// The tables have already been materialized before
+	// we start so we just copy each table and process it.
+	for _, table := range tables {
+		buf := table.Copy()
+		if err := tx.Process(parentID, buf); err != nil {
+			b.Fatalf("unexpected error: %s", err)
+		}
 	}
 
 	// We always return a fatal error on failure so

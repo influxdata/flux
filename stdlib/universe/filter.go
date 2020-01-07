@@ -14,7 +14,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/execute/tableutil"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -229,7 +229,7 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 }
 
 func (t *filterTransformation) filterTable(in flux.Table, record values.Object, properties map[string]semantic.MonoType) (flux.Table, error) {
-	return tableutil.StreamWithContext(t.ctx, in.Key(), in.Cols(), func(ctx context.Context, w *tableutil.StreamWriter) error {
+	return table.StreamWithContext(t.ctx, in.Key(), in.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
 		return in.Do(func(cr flux.ColReader) error {
 			bitset, err := t.filter(cr, record, properties)
 			if err != nil {
@@ -245,7 +245,7 @@ func (t *filterTransformation) filterTable(in flux.Table, record values.Object, 
 			// Produce arrays for each column.
 			vs := make([]array.Interface, len(w.Cols()))
 			for j, col := range w.Cols() {
-				arr := tableutil.Values(cr, j)
+				arr := table.Values(cr, j)
 				if in.Key().HasCol(col.Label) {
 					vs[j] = arrow.Slice(arr, 0, int64(n))
 					continue

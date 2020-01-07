@@ -13,7 +13,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/execute/tableutil"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -698,5 +698,5 @@ func (gr *pivotTableGroup) doPivot(key flux.GroupKey, mem arrowmemory.Allocator)
 	if err := tb.Validate(); err != nil {
 		return nil, err
 	}
-	return tableutil.FromBuffer(tb), nil
+	return table.FromBuffer(tb), nil
 }

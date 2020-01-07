@@ -243,7 +243,7 @@ impl FunctionBody {
     }
 }
 
-fn serialize_errors<S>(errors: &Vec<String>, ser: S) -> Result<S::Ok, S::Error>
+fn serialize_errors<S>(errors: &[String], ser: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
@@ -256,7 +256,7 @@ where
     seq.end()
 }
 
-// BaseNode holds the attributes every expression or statement should have
+// BaseNode holds the attributes every expression or statement must have
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 pub struct BaseNode {
     #[serde(default)]
@@ -1013,6 +1013,7 @@ pub struct Duration {
 // DurationLit represents the elapsed time between two instants as an
 // int64 nanosecond count with syntax of golang's time.Duration
 // TODO: this may be better as a class initialization
+// All magnitudes in Duration vector should have the same sign
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(rename = "DurationLiteral", tag = "type")]
 pub struct DurationLit {
