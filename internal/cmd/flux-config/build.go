@@ -165,10 +165,13 @@ func downloadSources(srcdir string, mod *Module) error {
 			relpath = relpath[slash+1:]
 		}
 
-		if !strings.HasPrefix(relpath, "libflux/") {
+		if strings.HasPrefix(relpath, "libflux/") {
+			relpath = relpath[strings.Index(relpath, "/")+1:]
+		} else if !strings.HasPrefix(relpath, "stdlib/") || relpath == "libflux/stdlib" {
+			// Allow extracting the stdlib, but do not extract the symlink since we are
+			// extracting the actual files.
 			continue
 		}
-		relpath = relpath[strings.Index(relpath, "/")+1:]
 
 		fpath := filepath.Join(srcdir, relpath)
 		if file.Mode().IsDir() {
