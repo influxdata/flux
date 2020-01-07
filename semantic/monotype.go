@@ -23,7 +23,7 @@ type MonoType struct {
 }
 
 // NewMonoType constructs a new monotype from a FlatBuffers table and the given kind of monotype.
-func NewMonoType(tbl *flatbuffers.Table, t fbsemantic.MonoType) (MonoType, error) {
+func NewMonoType(tbl flatbuffers.Table, t fbsemantic.MonoType) (MonoType, error) {
 	var tbler fbTabler
 	switch t {
 	case fbsemantic.MonoTypeNONE:
@@ -103,8 +103,6 @@ func (mt MonoType) Kind() Kind {
 }
 
 var (
-	basicTable *flatbuffers.Table
-
 	BasicBool     MonoType
 	BasicInt      MonoType
 	BasicUint     MonoType
@@ -126,7 +124,7 @@ func init() {
 
 	// TODO (algow): this probably doesn't work...
 	builder.Finish(basicBool)
-	basicTable = &flatbuffers.Table{
+	basicTable := flatbuffers.Table{
 		Bytes: builder.FinishedBytes(),
 		Pos:   basicBool,
 	}
@@ -217,8 +215,8 @@ func (mt MonoType) ReturnType() (MonoType, error) {
 	if !ok {
 		return MonoType{}, errors.New(codes.Internal, "ReturnType() called on non-function MonoType")
 	}
-	tbl := new(flatbuffers.Table)
-	if !f.Retn(tbl) {
+	var tbl flatbuffers.Table
+	if !f.Retn(&tbl) {
 		return MonoType{}, errors.New(codes.Internal, "missing return type")
 	}
 	return NewMonoType(tbl, f.RetnType())
@@ -238,8 +236,8 @@ func (mt MonoType) ElemType() (MonoType, error) {
 	if err != nil {
 		return MonoType{}, err
 	}
-	tbl := new(flatbuffers.Table)
-	if !arr.T(tbl) {
+	var tbl flatbuffers.Table
+	if !arr.T(&tbl) {
 		return MonoType{}, errors.New(codes.Internal, "missing array type")
 	}
 	return NewMonoType(tbl, arr.TType())
@@ -307,8 +305,8 @@ func newArgument(fb *fbsemantic.Argument) (*Argument, error) {
 
 // TypeOf returns the type of the function argument.
 func (a *Argument) TypeOf() (MonoType, error) {
-	tbl := new(flatbuffers.Table)
-	if !a.T(tbl) {
+	var tbl flatbuffers.Table
+	if !a.T(&tbl) {
 		return MonoType{}, errors.New(codes.Internal, "missing argument type")
 	}
 	argTy, err := NewMonoType(tbl, a.TType())
@@ -330,8 +328,8 @@ func (p *RowProperty) Name() string {
 
 // TypeOf returns the type of the property.
 func (p *RowProperty) TypeOf() (MonoType, error) {
-	tbl := new(flatbuffers.Table)
-	if !p.fb.V(tbl) {
+	var tbl flatbuffers.Table
+	if !p.fb.V(&tbl) {
 		return MonoType{}, errors.Newf(codes.Internal, "missing property type")
 	}
 	return NewMonoType(tbl, p.fb.VType())
