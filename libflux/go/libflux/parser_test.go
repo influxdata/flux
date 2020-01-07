@@ -18,10 +18,18 @@ from(bucket: "telegraf")
 	|> mean()
 `
 	ast := libflux.Parse(text)
-	buf, err := ast.MarshalJSON()
+
+	jsonBuf, err := ast.MarshalJSON()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(string(buf))
+	fmt.Printf("json has %v bytes:\n%v\n", len(jsonBuf), string(jsonBuf))
+
+	fbBuf, err := ast.MarshalFB()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("flatbuffer has %v bytes\n", len(fbBuf))
+
 	ast.Free()
 }

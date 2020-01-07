@@ -9,9 +9,12 @@ import (
 // AnalyzeSource parses and analyzes the given Flux source,
 // using libflux.
 func AnalyzeSource(fluxSrc string) (*Package, error) {
-	data, err := libflux.Analyze(fluxSrc)
+	ast := libflux.Parse(fluxSrc)
+	sem, err := libflux.Analyze(ast)
+	fb, err := sem.MarshalFB()
+
 	if err != nil {
 		return nil, err
 	}
-	return DeserializeFromFlatBuffer(data)
+	return DeserializeFromFlatBuffer(fb)
 }

@@ -19,15 +19,16 @@ func parseFile(f *token.File, src []byte) (*ast.File, error) {
 	astFile := libflux.Parse(string(src))
 	defer astFile.Free()
 
-	data, err := astFile.MarshalJSON()
+	data, err := astFile.MarshalFB()
 	if err != nil {
 		return nil, err
 	}
 
-	var file ast.File
-	if err := json.Unmarshal(data, &file); err != nil {
+	var pkg ast.Package
+	if err := json.Unmarshal(data, &pkg); err != nil {
 		return nil, err
 	}
+	file := pkg.Files[0]
 	file.Name = f.Name()
 
 	// The go parser will not fill in the imports if there are
@@ -35,7 +36,7 @@ func parseFile(f *token.File, src []byte) (*ast.File, error) {
 	if len(file.Imports) == 0 {
 		file.Imports = nil
 	}
-	return &file, nil
+	return file, nil
 }
 
 func isLibfluxBuild() bool {
