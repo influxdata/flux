@@ -115,18 +115,18 @@ var (
 )
 
 func init() {
-	BasicBool = buildBasic(fbsemantic.TypeBool)
-	BasicInt = buildBasic(fbsemantic.TypeInt)
-	BasicUint = buildBasic(fbsemantic.TypeUint)
-	BasicFloat = buildBasic(fbsemantic.TypeFloat)
-	BasicString = buildBasic(fbsemantic.TypeString)
-	BasicDuration = buildBasic(fbsemantic.TypeDuration)
-	BasicTime = buildBasic(fbsemantic.TypeTime)
-	BasicRegexp = buildBasic(fbsemantic.TypeRegexp)
-	BasicBytes = buildBasic(fbsemantic.TypeBytes)
+	BasicBool = buildBasicType(fbsemantic.TypeBool)
+	BasicInt = buildBasicType(fbsemantic.TypeInt)
+	BasicUint = buildBasicType(fbsemantic.TypeUint)
+	BasicFloat = buildBasicType(fbsemantic.TypeFloat)
+	BasicString = buildBasicType(fbsemantic.TypeString)
+	BasicDuration = buildBasicType(fbsemantic.TypeDuration)
+	BasicTime = buildBasicType(fbsemantic.TypeTime)
+	BasicRegexp = buildBasicType(fbsemantic.TypeRegexp)
+	BasicBytes = buildBasicType(fbsemantic.TypeBytes)
 }
 
-func buildBasic(ty fbsemantic.Type) MonoType {
+func buildBasicType(ty fbsemantic.Type) MonoType {
 	builder := flatbuffers.NewBuilder(0)
 
 	fbsemantic.BasicStart(builder)
@@ -134,12 +134,12 @@ func buildBasic(ty fbsemantic.Type) MonoType {
 	offset := fbsemantic.BasicEnd(builder)
 
 	builder.Finish(offset)
-	table := flatbuffers.Table{
-		Bytes: builder.FinishedBytes(),
-		Pos:   offset,
-	}
 
-	basic, _ := NewMonoType(&table, fbsemantic.MonoTypeBasic)
+	table := fbsemantic.GetRootAsBasic(builder.FinishedBytes(), 0).Table()
+	basic, err := NewMonoType(table, fbsemantic.MonoTypeBasic)
+	if err != nil {
+		panic(err)
+	}
 	return basic
 }
 
