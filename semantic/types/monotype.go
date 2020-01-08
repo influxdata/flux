@@ -245,6 +245,30 @@ func (mt *MonoType) Property(i int) (*Property, error) {
 	return &Property{fb: p}, nil
 }
 
+// SortedProperties returns the properties for a Row monotype, sorted by
+// key.  It's possible that there are duplicate keys with different types,
+// in this case, this function preserves their order.
+func (mt *MonoType) SortedProperties() ([]*Property, error) {
+	nps, err := mt.NumProperties()
+	if err != nil {
+		return nil, err
+	}
+	ps := make([]*Property, nps)
+	for i := 0; i < nps; i++ {
+		ps[i], err = mt.Property(i)
+		if err != nil {
+			return nil, err
+		}
+	}
+	sort.Slice(ps, func(i, j int) bool {
+		if ps[i].Name() == ps[j].Name() {
+			return i < j
+		}
+		return ps[i].Name() < ps[j].Name()
+	})
+	return ps, nil
+}
+
 // Extends returns the extending type variable if this monotype is a row, and an error otherwise.
 func (mt *MonoType) Extends() (*MonoType, error) {
 	row, err := getRow(mt.tbl)
@@ -328,21 +352,18 @@ func (mt *MonoType) String() string {
 	case Row:
 		var sb strings.Builder
 		sb.WriteString("{")
-		nprops, err := mt.NumProperties()
+		sprops, err := mt.SortedProperties()
 		if err != nil {
 			return "<" + err.Error() + ">"
 		}
 		needBar := false
-		for i := 0; i < nprops; i++ {
+		for i := 0; i < len(sprops); i++ {
 			if needBar {
 				sb.WriteString(" | ")
 			} else {
 				needBar = true
 			}
-			prop, err := mt.Property(i)
-			if err != nil {
-				return "<" + err.Error() + ">"
-			}
+			prop := sprops[i]
 			sb.WriteString(prop.Name() + ": ")
 			ty, err := prop.TypeOf()
 			if err != nil {

@@ -59,6 +59,27 @@ func (pt *PolyType) Constraint(i int) (*fbsemantic.Constraint, error) {
 
 }
 
+// SortedConstraints returns the constraints for this polytype sorted by type variable and constraint kind.
+func (pt *PolyType) SortedConstraints() ([]*fbsemantic.Constraint, error) {
+	ncs := pt.NumConstraints()
+	cs := make([]*fbsemantic.Constraint, ncs)
+	for i := 0; i < ncs; i++ {
+		c, err := pt.Constraint(i)
+		if err != nil {
+			return nil, err
+		}
+		cs[i] = c
+	}
+	sort.Slice(cs, func(i, j int) bool {
+		tvi, tvj := cs[i].Tvar(nil).I(), cs[j].Tvar(nil).I()
+		if tvi == tvj {
+			return cs[i].Kind() < cs[j].Kind()
+		}
+		return tvi < tvj
+	})
+	return cs, nil
+}
+
 // Expr returns the monotype expression for this polytype.
 func (pt *PolyType) Expr() (*MonoType, error) {
 	tbl := new(flatbuffers.Table)
@@ -108,11 +129,12 @@ func (pt *PolyType) String() string {
 	sb.WriteString("] ")
 
 	needWhere := true
-	for i := 0; i < pt.NumConstraints(); i++ {
-		cons, err := pt.Constraint(i)
-		if err != nil {
-			return "<" + err.Error() + ">"
-		}
+	cs, err := pt.SortedConstraints()
+	if err != nil {
+		return "<" + err.Error() + ">"
+	}
+	for i := 0; i < len(cs); i++ {
+		cons := cs[i]
 		tv := cons.Tvar(nil)
 		k := cons.Kind()
 
