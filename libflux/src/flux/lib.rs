@@ -169,7 +169,7 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
 #[no_mangle]
 pub extern "C" fn flux_error_str(err: *mut flux_error_t) -> *mut c_char {
     let e = unsafe { &*(err as *mut ErrorHandle) };
-    let s = CString::new(e.err.description()).unwrap();
+    let s = CString::new(format!("{}", e.err)).unwrap();
     s.into_raw()
 }
 
