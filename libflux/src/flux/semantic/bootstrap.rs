@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use crate::ast;
 use crate::parser;
-use crate::semantic::analyze::analyze_file;
+use crate::semantic::convert::convert_file;
 use crate::semantic::builtins::builtins;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
@@ -289,7 +289,7 @@ fn infer_pkg<I: Importer>(
 
             let env = if let Some(builtins) = builtin.get(pkg) {
                 infer_file(
-                    &mut analyze_file(file, f)?,
+                    &mut convert_file(file, f)?,
                     Environment::new(prelude.clone().into()),
                     f,
                     &imports,
@@ -298,7 +298,7 @@ fn infer_pkg<I: Importer>(
                 .0
             } else {
                 infer_file(
-                    &mut analyze_file(file, f)?,
+                    &mut convert_file(file, f)?,
                     Environment::new(prelude.clone().into()),
                     f,
                     &imports,
@@ -321,7 +321,7 @@ fn infer_pkg<I: Importer>(
 
     let env = if let Some(builtins) = builtin.get(name) {
         infer_file(
-            &mut analyze_file(file, f)?,
+            &mut convert_file(file, f)?,
             Environment::new(prelude.into()),
             f,
             &imports,
@@ -330,7 +330,7 @@ fn infer_pkg<I: Importer>(
         .0
     } else {
         infer_file(
-            &mut analyze_file(file, f)?,
+            &mut convert_file(file, f)?,
             Environment::new(prelude.into()),
             f,
             &imports,

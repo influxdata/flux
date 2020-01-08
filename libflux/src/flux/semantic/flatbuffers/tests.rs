@@ -4,7 +4,7 @@ extern crate walkdir;
 use super::semantic_generated::fbsemantic;
 use crate::ast;
 use crate::semantic;
-use crate::semantic::analyze;
+use crate::semantic::convert;
 use chrono::FixedOffset;
 
 #[test]
@@ -84,7 +84,7 @@ re !~ /foo/
         package: String::from("test"),
         files: f,
     };
-    let mut pkg = match analyze(pkg) {
+    let mut pkg = match convert::convert(pkg) {
         Ok(pkg) => pkg,
         Err(e) => {
             assert!(false, e);

@@ -7,31 +7,31 @@ use std::result;
 pub type SemanticError = String;
 pub type Result<T> = result::Result<T, SemanticError>;
 
-/// analyze analyzes an AST package node and returns its semantic analysis.
-/// 
+/// convert converts an AST package node to its semantic representation.
+///
 /// Note: most external callers of this function will want to use the analyze()
 /// function in the libstd crate instead, which is aware of everything in the Flux stdlib and prelude.
 ///
 /// The function explicitly moves the ast::Package because it adds information to it.
 /// We follow here the principle that every compilation step should be isolated and should add meaning
-/// to the previous one. In other terms, once one analyzes an AST he should not use it anymore.
+/// to the previous one. In other terms, once one converts an AST he should not use it anymore.
 /// If one wants to do so, he should explicitly pkg.clone() and incur consciously in the memory
 /// overhead involved.
-pub fn analyze(pkg: ast::Package) -> Result<Package> {
-    analyze_with(pkg, &mut Fresher::default())
+pub fn convert(pkg: ast::Package) -> Result<Package> {
+    convert_with(pkg, &mut Fresher::default())
 }
 
-// analyze_with runs analyze using the provided Fresher.
-pub fn analyze_with(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> {
-    analyze_package(pkg, fresher)
+// convert_with runs convert using the provided Fresher.
+pub fn convert_with(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> {
+    convert_package(pkg, fresher)
     // TODO(affo): run checks on the semantic graph.
 }
 
-fn analyze_package(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> {
+fn convert_package(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> {
     let files = pkg
         .files
         .into_iter()
-        .map(|f| analyze_file(f, fresher))
+        .map(|f| convert_file(f, fresher))
         .collect::<Result<Vec<File>>>()?;
     Ok(Package {
         loc: pkg.base.location,
@@ -40,17 +40,17 @@ fn analyze_package(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> 
     })
 }
 
-pub fn analyze_file(file: ast::File, fresher: &mut Fresher) -> Result<File> {
-    let package = analyze_package_clause(file.package, fresher)?;
+pub fn convert_file(file: ast::File, fresher: &mut Fresher) -> Result<File> {
+    let package = convert_package_clause(file.package, fresher)?;
     let imports = file
         .imports
         .into_iter()
-        .map(|i| analyze_import_declaration(i, fresher))
+        .map(|i| convert_import_declaration(i, fresher))
         .collect::<Result<Vec<ImportDeclaration>>>()?;
     let body = file
         .body
         .into_iter()
-        .map(|s| analyze_statement(s, fresher))
+        .map(|s| convert_statement(s, fresher))
         .collect::<Result<Vec<Statement>>>()?;
     Ok(File {
         loc: file.base.location,
@@ -60,7 +60,7 @@ pub fn analyze_file(file: ast::File, fresher: &mut Fresher) -> Result<File> {
     })
 }
 
-fn analyze_package_clause(
+fn convert_package_clause(
     pkg: Option<ast::PackageClause>,
     fresher: &mut Fresher,
 ) -> Result<Option<PackageClause>> {
@@ -68,22 +68,22 @@ fn analyze_package_clause(
         return Ok(None);
     }
     let pkg = pkg.unwrap();
-    let name = analyze_identifier(pkg.name, fresher)?;
+    let name = convert_identifier(pkg.name, fresher)?;
     Ok(Some(PackageClause {
         loc: pkg.base.location,
         name,
     }))
 }
 
-fn analyze_import_declaration(
+fn convert_import_declaration(
     imp: ast::ImportDeclaration,
     fresher: &mut Fresher,
 ) -> Result<ImportDeclaration> {
     let alias = match imp.alias {
         None => None,
-        Some(id) => Some(analyze_identifier(id, fresher)?),
+        Some(id) => Some(convert_identifier(id, fresher)?),
     };
-    let path = analyze_string_literal(imp.path, fresher)?;
+    let path = convert_string_literal(imp.path, fresher)?;
     Ok(ImportDeclaration {
         loc: imp.base.location,
         alias,
@@ -91,25 +91,25 @@ fn analyze_import_declaration(
     })
 }
 
-fn analyze_statement(stmt: ast::Statement, fresher: &mut Fresher) -> Result<Statement> {
+fn convert_statement(stmt: ast::Statement, fresher: &mut Fresher) -> Result<Statement> {
     match stmt {
-        ast::Statement::Option(s) => Ok(Statement::Option(Box::new(analyze_option_statement(
+        ast::Statement::Option(s) => Ok(Statement::Option(Box::new(convert_option_statement(
             *s, fresher,
         )?))),
         ast::Statement::Builtin(s) => {
-            Ok(Statement::Builtin(analyze_builtin_statement(s, fresher)?))
+            Ok(Statement::Builtin(convert_builtin_statement(s, fresher)?))
         }
-        ast::Statement::Test(s) => Ok(Statement::Test(Box::new(analyze_test_statement(
+        ast::Statement::Test(s) => Ok(Statement::Test(Box::new(convert_test_statement(
             *s, fresher,
         )?))),
-        ast::Statement::Expr(s) => Ok(Statement::Expr(analyze_expression_statement(s, fresher)?)),
-        ast::Statement::Return(s) => Ok(Statement::Return(analyze_return_statement(s, fresher)?)),
+        ast::Statement::Expr(s) => Ok(Statement::Expr(convert_expression_statement(s, fresher)?)),
+        ast::Statement::Return(s) => Ok(Statement::Return(convert_return_statement(s, fresher)?)),
         // TODO(affo): we should fix this to include MemberAssignement.
         //  The error lies in AST: the Statement enum does not include that.
         //  This is not a problem when parsing, because we parse it only in the option assignment case,
         //  and we return an OptionStmt, which is a Statement.
         ast::Statement::Variable(s) => Ok(Statement::Variable(Box::new(
-            analyze_variable_assignment(*s, fresher)?,
+            convert_variable_assignment(*s, fresher)?,
         ))),
         ast::Statement::Bad(_) => {
             Err("BadStatement is not supported in semantic analysis".to_string())
@@ -117,106 +117,106 @@ fn analyze_statement(stmt: ast::Statement, fresher: &mut Fresher) -> Result<Stat
     }
 }
 
-fn analyze_assignment(assign: ast::Assignment, fresher: &mut Fresher) -> Result<Assignment> {
+fn convert_assignment(assign: ast::Assignment, fresher: &mut Fresher) -> Result<Assignment> {
     match assign {
-        ast::Assignment::Variable(a) => Ok(Assignment::Variable(analyze_variable_assignment(
+        ast::Assignment::Variable(a) => Ok(Assignment::Variable(convert_variable_assignment(
             *a, fresher,
         )?)),
         ast::Assignment::Member(a) => {
-            Ok(Assignment::Member(analyze_member_assignment(*a, fresher)?))
+            Ok(Assignment::Member(convert_member_assignment(*a, fresher)?))
         }
     }
 }
 
-fn analyze_option_statement(stmt: ast::OptionStmt, fresher: &mut Fresher) -> Result<OptionStmt> {
+fn convert_option_statement(stmt: ast::OptionStmt, fresher: &mut Fresher) -> Result<OptionStmt> {
     Ok(OptionStmt {
         loc: stmt.base.location,
-        assignment: analyze_assignment(stmt.assignment, fresher)?,
+        assignment: convert_assignment(stmt.assignment, fresher)?,
     })
 }
 
-fn analyze_builtin_statement(stmt: ast::BuiltinStmt, fresher: &mut Fresher) -> Result<BuiltinStmt> {
+fn convert_builtin_statement(stmt: ast::BuiltinStmt, fresher: &mut Fresher) -> Result<BuiltinStmt> {
     Ok(BuiltinStmt {
         loc: stmt.base.location,
-        id: analyze_identifier(stmt.id, fresher)?,
+        id: convert_identifier(stmt.id, fresher)?,
     })
 }
 
-fn analyze_test_statement(stmt: ast::TestStmt, fresher: &mut Fresher) -> Result<TestStmt> {
+fn convert_test_statement(stmt: ast::TestStmt, fresher: &mut Fresher) -> Result<TestStmt> {
     Ok(TestStmt {
         loc: stmt.base.location,
-        assignment: analyze_variable_assignment(stmt.assignment, fresher)?,
+        assignment: convert_variable_assignment(stmt.assignment, fresher)?,
     })
 }
 
-fn analyze_expression_statement(stmt: ast::ExprStmt, fresher: &mut Fresher) -> Result<ExprStmt> {
+fn convert_expression_statement(stmt: ast::ExprStmt, fresher: &mut Fresher) -> Result<ExprStmt> {
     Ok(ExprStmt {
         loc: stmt.base.location,
-        expression: analyze_expression(stmt.expression, fresher)?,
+        expression: convert_expression(stmt.expression, fresher)?,
     })
 }
 
-fn analyze_return_statement(stmt: ast::ReturnStmt, fresher: &mut Fresher) -> Result<ReturnStmt> {
+fn convert_return_statement(stmt: ast::ReturnStmt, fresher: &mut Fresher) -> Result<ReturnStmt> {
     Ok(ReturnStmt {
         loc: stmt.base.location,
-        argument: analyze_expression(stmt.argument, fresher)?,
+        argument: convert_expression(stmt.argument, fresher)?,
     })
 }
 
-fn analyze_variable_assignment(
+fn convert_variable_assignment(
     stmt: ast::VariableAssgn,
     fresher: &mut Fresher,
 ) -> Result<VariableAssgn> {
     Ok(VariableAssgn::new(
-        analyze_identifier(stmt.id, fresher)?,
-        analyze_expression(stmt.init, fresher)?,
+        convert_identifier(stmt.id, fresher)?,
+        convert_expression(stmt.init, fresher)?,
         stmt.base.location,
     ))
 }
 
-fn analyze_member_assignment(stmt: ast::MemberAssgn, fresher: &mut Fresher) -> Result<MemberAssgn> {
+fn convert_member_assignment(stmt: ast::MemberAssgn, fresher: &mut Fresher) -> Result<MemberAssgn> {
     Ok(MemberAssgn {
         loc: stmt.base.location,
-        member: analyze_member_expression(stmt.member, fresher)?,
-        init: analyze_expression(stmt.init, fresher)?,
+        member: convert_member_expression(stmt.member, fresher)?,
+        init: convert_expression(stmt.init, fresher)?,
     })
 }
 
-fn analyze_expression(expr: ast::Expression, fresher: &mut Fresher) -> Result<Expression> {
+fn convert_expression(expr: ast::Expression, fresher: &mut Fresher) -> Result<Expression> {
     match expr {
-        ast::Expression::Function(expr) => Ok(Expression::Function(Box::new(analyze_function_expression(*expr, fresher)?))),
-        ast::Expression::Call(expr) => Ok(Expression::Call(Box::new(analyze_call_expression(*expr, fresher)?))),
-        ast::Expression::Member(expr) => Ok(Expression::Member(Box::new(analyze_member_expression(*expr, fresher)?))),
-        ast::Expression::Index(expr) => Ok(Expression::Index(Box::new(analyze_index_expression(*expr, fresher)?))),
-        ast::Expression::PipeExpr(expr) => Ok(Expression::Call(Box::new(analyze_pipe_expression(*expr, fresher)?))),
-        ast::Expression::Binary(expr) => Ok(Expression::Binary(Box::new(analyze_binary_expression(*expr, fresher)?))),
-        ast::Expression::Unary(expr) => Ok(Expression::Unary(Box::new(analyze_unary_expression(*expr, fresher)?))),
-        ast::Expression::Logical(expr) => Ok(Expression::Logical(Box::new(analyze_logical_expression(*expr, fresher)?))),
-        ast::Expression::Conditional(expr) => Ok(Expression::Conditional(Box::new(analyze_conditional_expression(*expr, fresher)?))),
-        ast::Expression::Object(expr) => Ok(Expression::Object(Box::new(analyze_object_expression(*expr, fresher)?))),
-        ast::Expression::Array(expr) => Ok(Expression::Array(Box::new(analyze_array_expression(*expr, fresher)?))),
-        ast::Expression::Identifier(expr) => Ok(Expression::Identifier(analyze_identifier_expression(expr, fresher)?)),
-        ast::Expression::StringExpr(expr) => Ok(Expression::StringExpr(Box::new(analyze_string_expression(*expr, fresher)?))),
-        ast::Expression::Paren(expr) => analyze_expression(expr.expression, fresher),
-        ast::Expression::StringLit(lit) => Ok(Expression::StringLit(analyze_string_literal(lit, fresher)?)),
-        ast::Expression::Boolean(lit) => Ok(Expression::Boolean(analyze_boolean_literal(lit, fresher)?)),
-        ast::Expression::Float(lit) => Ok(Expression::Float(analyze_float_literal(lit, fresher)?)),
-        ast::Expression::Integer(lit) => Ok(Expression::Integer(analyze_integer_literal(lit, fresher)?)),
-        ast::Expression::Uint(lit) => Ok(Expression::Uint(analyze_unsigned_integer_literal(lit, fresher)?)),
-        ast::Expression::Regexp(lit) => Ok(Expression::Regexp(analyze_regexp_literal(lit, fresher)?)),
-        ast::Expression::Duration(lit) => Ok(Expression::Duration(analyze_duration_literal(lit, fresher)?)),
-        ast::Expression::DateTime(lit) => Ok(Expression::DateTime(analyze_date_time_literal(lit, fresher)?)),
+        ast::Expression::Function(expr) => Ok(Expression::Function(Box::new(convert_function_expression(*expr, fresher)?))),
+        ast::Expression::Call(expr) => Ok(Expression::Call(Box::new(convert_call_expression(*expr, fresher)?))),
+        ast::Expression::Member(expr) => Ok(Expression::Member(Box::new(convert_member_expression(*expr, fresher)?))),
+        ast::Expression::Index(expr) => Ok(Expression::Index(Box::new(convert_index_expression(*expr, fresher)?))),
+        ast::Expression::PipeExpr(expr) => Ok(Expression::Call(Box::new(convert_pipe_expression(*expr, fresher)?))),
+        ast::Expression::Binary(expr) => Ok(Expression::Binary(Box::new(convert_binary_expression(*expr, fresher)?))),
+        ast::Expression::Unary(expr) => Ok(Expression::Unary(Box::new(convert_unary_expression(*expr, fresher)?))),
+        ast::Expression::Logical(expr) => Ok(Expression::Logical(Box::new(convert_logical_expression(*expr, fresher)?))),
+        ast::Expression::Conditional(expr) => Ok(Expression::Conditional(Box::new(convert_conditional_expression(*expr, fresher)?))),
+        ast::Expression::Object(expr) => Ok(Expression::Object(Box::new(convert_object_expression(*expr, fresher)?))),
+        ast::Expression::Array(expr) => Ok(Expression::Array(Box::new(convert_array_expression(*expr, fresher)?))),
+        ast::Expression::Identifier(expr) => Ok(Expression::Identifier(convert_identifier_expression(expr, fresher)?)),
+        ast::Expression::StringExpr(expr) => Ok(Expression::StringExpr(Box::new(convert_string_expression(*expr, fresher)?))),
+        ast::Expression::Paren(expr) => convert_expression(expr.expression, fresher),
+        ast::Expression::StringLit(lit) => Ok(Expression::StringLit(convert_string_literal(lit, fresher)?)),
+        ast::Expression::Boolean(lit) => Ok(Expression::Boolean(convert_boolean_literal(lit, fresher)?)),
+        ast::Expression::Float(lit) => Ok(Expression::Float(convert_float_literal(lit, fresher)?)),
+        ast::Expression::Integer(lit) => Ok(Expression::Integer(convert_integer_literal(lit, fresher)?)),
+        ast::Expression::Uint(lit) => Ok(Expression::Uint(convert_unsigned_integer_literal(lit, fresher)?)),
+        ast::Expression::Regexp(lit) => Ok(Expression::Regexp(convert_regexp_literal(lit, fresher)?)),
+        ast::Expression::Duration(lit) => Ok(Expression::Duration(convert_duration_literal(lit, fresher)?)),
+        ast::Expression::DateTime(lit) => Ok(Expression::DateTime(convert_date_time_literal(lit, fresher)?)),
         ast::Expression::PipeLit(_) => Err("a pipe literal may only be used as a default value for an argument in a function definition".to_string()),
         ast::Expression::Bad(_) => Err("BadExpression is not supported in semantic analysis".to_string())
     }
 }
 
-fn analyze_function_expression(
+fn convert_function_expression(
     expr: ast::FunctionExpr,
     fresher: &mut Fresher,
 ) -> Result<FunctionExpr> {
-    let params = analyze_function_params(expr.params, fresher)?;
-    let body = analyze_function_body(expr.body, fresher)?;
+    let params = convert_function_params(expr.params, fresher)?;
+    let body = convert_function_body(expr.body, fresher)?;
     Ok(FunctionExpr {
         loc: expr.base.location,
         typ: MonoType::Var(fresher.fresh()),
@@ -225,7 +225,7 @@ fn analyze_function_expression(
     })
 }
 
-fn analyze_function_params(
+fn convert_function_params(
     props: Vec<ast::Property>,
     fresher: &mut Fresher,
 ) -> Result<Vec<FunctionParameter>> {
@@ -237,7 +237,7 @@ fn analyze_function_params(
             ast::PropertyKey::Identifier(id) => Ok(id),
             _ => Err("function params must be identifiers".to_string()),
         }?;
-        let key = analyze_identifier(id, fresher)?;
+        let key = convert_identifier(id, fresher)?;
         let mut default: Option<Expression> = None;
         let mut is_pipe = false;
         if let Some(expr) = prop.value {
@@ -250,7 +250,7 @@ fn analyze_function_params(
                         is_pipe = true;
                     };
                 }
-                e => default = Some(analyze_expression(e, fresher)?),
+                e => default = Some(convert_expression(e, fresher)?),
             }
         };
         params.push(FunctionParameter {
@@ -263,24 +263,24 @@ fn analyze_function_params(
     Ok(params)
 }
 
-fn analyze_function_body(body: ast::FunctionBody, fresher: &mut Fresher) -> Result<Block> {
+fn convert_function_body(body: ast::FunctionBody, fresher: &mut Fresher) -> Result<Block> {
     match body {
         ast::FunctionBody::Expr(expr) => {
-            let argument = analyze_expression(expr, fresher)?;
+            let argument = convert_expression(expr, fresher)?;
             Ok(Block::Return(ReturnStmt {
                 loc: argument.loc().clone(),
                 argument,
             }))
         }
-        ast::FunctionBody::Block(block) => Ok(analyze_block(block, fresher)?),
+        ast::FunctionBody::Block(block) => Ok(convert_block(block, fresher)?),
     }
 }
 
-fn analyze_block(block: ast::Block, fresher: &mut Fresher) -> Result<Block> {
+fn convert_block(block: ast::Block, fresher: &mut Fresher) -> Result<Block> {
     let mut body = block.body.into_iter().rev();
 
     let block = if let Some(ast::Statement::Return(stmt)) = body.next() {
-        let argument = analyze_expression(stmt.argument, fresher)?;
+        let argument = convert_expression(stmt.argument, fresher)?;
         Block::Return(ReturnStmt {
             loc: argument.loc().clone(),
             argument,
@@ -291,19 +291,19 @@ fn analyze_block(block: ast::Block, fresher: &mut Fresher) -> Result<Block> {
 
     body.try_fold(block, |acc, s| match s {
         ast::Statement::Variable(dec) => Ok(Block::Variable(
-            Box::new(analyze_variable_assignment(*dec, fresher)?),
+            Box::new(convert_variable_assignment(*dec, fresher)?),
             Box::new(acc),
         )),
         ast::Statement::Expr(stmt) => Ok(Block::Expr(
-            analyze_expression_statement(stmt, fresher)?,
+            convert_expression_statement(stmt, fresher)?,
             Box::new(acc),
         )),
         _ => Err(format!("invalid statement in function block {:#?}", s)),
     })
 }
 
-fn analyze_call_expression(expr: ast::CallExpr, fresher: &mut Fresher) -> Result<CallExpr> {
-    let callee = analyze_expression(expr.callee, fresher)?;
+fn convert_call_expression(expr: ast::CallExpr, fresher: &mut Fresher) -> Result<CallExpr> {
+    let callee = convert_expression(expr.callee, fresher)?;
     // TODO(affo): I'd prefer these checks to be in ast.Check().
     if expr.arguments.len() > 1 {
         return Err("arguments are more than one object expression".to_string());
@@ -312,7 +312,7 @@ fn analyze_call_expression(expr: ast::CallExpr, fresher: &mut Fresher) -> Result
         .arguments
         .into_iter()
         .map(|a| match a {
-            ast::Expression::Object(obj) => analyze_object_expression(*obj, fresher),
+            ast::Expression::Object(obj) => convert_object_expression(*obj, fresher),
             _ => Err("arguments not an object expression".to_string()),
         })
         .collect::<Result<Vec<ObjectExpr>>>()?;
@@ -330,8 +330,8 @@ fn analyze_call_expression(expr: ast::CallExpr, fresher: &mut Fresher) -> Result
     })
 }
 
-fn analyze_member_expression(expr: ast::MemberExpr, fresher: &mut Fresher) -> Result<MemberExpr> {
-    let object = analyze_expression(expr.object, fresher)?;
+fn convert_member_expression(expr: ast::MemberExpr, fresher: &mut Fresher) -> Result<MemberExpr> {
+    let object = convert_expression(expr.object, fresher)?;
     let property = match expr.property {
         ast::PropertyKey::Identifier(id) => id.name,
         ast::PropertyKey::StringLit(lit) => lit.value,
@@ -344,9 +344,9 @@ fn analyze_member_expression(expr: ast::MemberExpr, fresher: &mut Fresher) -> Re
     })
 }
 
-fn analyze_index_expression(expr: ast::IndexExpr, fresher: &mut Fresher) -> Result<IndexExpr> {
-    let array = analyze_expression(expr.array, fresher)?;
-    let index = analyze_expression(expr.index, fresher)?;
+fn convert_index_expression(expr: ast::IndexExpr, fresher: &mut Fresher) -> Result<IndexExpr> {
+    let array = convert_expression(expr.array, fresher)?;
+    let index = convert_expression(expr.index, fresher)?;
     Ok(IndexExpr {
         loc: expr.base.location,
         typ: MonoType::Var(fresher.fresh()),
@@ -355,16 +355,16 @@ fn analyze_index_expression(expr: ast::IndexExpr, fresher: &mut Fresher) -> Resu
     })
 }
 
-fn analyze_pipe_expression(expr: ast::PipeExpr, fresher: &mut Fresher) -> Result<CallExpr> {
-    let mut call = analyze_call_expression(expr.call, fresher)?;
-    let pipe = analyze_expression(expr.argument, fresher)?;
+fn convert_pipe_expression(expr: ast::PipeExpr, fresher: &mut Fresher) -> Result<CallExpr> {
+    let mut call = convert_call_expression(expr.call, fresher)?;
+    let pipe = convert_expression(expr.argument, fresher)?;
     call.pipe = Some(pipe);
     Ok(call)
 }
 
-fn analyze_binary_expression(expr: ast::BinaryExpr, fresher: &mut Fresher) -> Result<BinaryExpr> {
-    let left = analyze_expression(expr.left, fresher)?;
-    let right = analyze_expression(expr.right, fresher)?;
+fn convert_binary_expression(expr: ast::BinaryExpr, fresher: &mut Fresher) -> Result<BinaryExpr> {
+    let left = convert_expression(expr.left, fresher)?;
+    let right = convert_expression(expr.right, fresher)?;
     Ok(BinaryExpr {
         loc: expr.base.location,
         typ: MonoType::Var(fresher.fresh()),
@@ -374,8 +374,8 @@ fn analyze_binary_expression(expr: ast::BinaryExpr, fresher: &mut Fresher) -> Re
     })
 }
 
-fn analyze_unary_expression(expr: ast::UnaryExpr, fresher: &mut Fresher) -> Result<UnaryExpr> {
-    let argument = analyze_expression(expr.argument, fresher)?;
+fn convert_unary_expression(expr: ast::UnaryExpr, fresher: &mut Fresher) -> Result<UnaryExpr> {
+    let argument = convert_expression(expr.argument, fresher)?;
     Ok(UnaryExpr {
         loc: expr.base.location,
         typ: MonoType::Var(fresher.fresh()),
@@ -384,12 +384,12 @@ fn analyze_unary_expression(expr: ast::UnaryExpr, fresher: &mut Fresher) -> Resu
     })
 }
 
-fn analyze_logical_expression(
+fn convert_logical_expression(
     expr: ast::LogicalExpr,
     fresher: &mut Fresher,
 ) -> Result<LogicalExpr> {
-    let left = analyze_expression(expr.left, fresher)?;
-    let right = analyze_expression(expr.right, fresher)?;
+    let left = convert_expression(expr.left, fresher)?;
+    let right = convert_expression(expr.right, fresher)?;
     Ok(LogicalExpr {
         loc: expr.base.location,
         typ: MonoType::Var(fresher.fresh()),
@@ -399,13 +399,13 @@ fn analyze_logical_expression(
     })
 }
 
-fn analyze_conditional_expression(
+fn convert_conditional_expression(
     expr: ast::ConditionalExpr,
     fresher: &mut Fresher,
 ) -> Result<ConditionalExpr> {
-    let test = analyze_expression(expr.test, fresher)?;
-    let consequent = analyze_expression(expr.consequent, fresher)?;
-    let alternate = analyze_expression(expr.alternate, fresher)?;
+    let test = convert_expression(expr.test, fresher)?;
+    let consequent = convert_expression(expr.consequent, fresher)?;
+    let alternate = convert_expression(expr.alternate, fresher)?;
     Ok(ConditionalExpr {
         loc: expr.base.location,
         typ: MonoType::Var(fresher.fresh()),
@@ -415,14 +415,14 @@ fn analyze_conditional_expression(
     })
 }
 
-fn analyze_object_expression(expr: ast::ObjectExpr, fresher: &mut Fresher) -> Result<ObjectExpr> {
+fn convert_object_expression(expr: ast::ObjectExpr, fresher: &mut Fresher) -> Result<ObjectExpr> {
     let properties = expr
         .properties
         .into_iter()
-        .map(|p| analyze_property(p, fresher))
+        .map(|p| convert_property(p, fresher))
         .collect::<Result<Vec<Property>>>()?;
     let with = match expr.with {
-        Some(id) => Some(analyze_identifier_expression(id, fresher)?),
+        Some(id) => Some(convert_identifier_expression(id, fresher)?),
         None => None,
     };
     Ok(ObjectExpr {
@@ -433,16 +433,16 @@ fn analyze_object_expression(expr: ast::ObjectExpr, fresher: &mut Fresher) -> Re
     })
 }
 
-fn analyze_property(prop: ast::Property, fresher: &mut Fresher) -> Result<Property> {
+fn convert_property(prop: ast::Property, fresher: &mut Fresher) -> Result<Property> {
     let key = match prop.key {
-        ast::PropertyKey::Identifier(id) => analyze_identifier(id, fresher)?,
+        ast::PropertyKey::Identifier(id) => convert_identifier(id, fresher)?,
         ast::PropertyKey::StringLit(lit) => Identifier {
             loc: lit.base.location.clone(),
-            name: analyze_string_literal(lit, fresher)?.value,
+            name: convert_string_literal(lit, fresher)?.value,
         },
     };
     let value = match prop.value {
-        Some(expr) => analyze_expression(expr, fresher)?,
+        Some(expr) => convert_expression(expr, fresher)?,
         None => Expression::Identifier(IdentifierExpr {
             loc: key.loc.clone(),
             typ: MonoType::Var(fresher.fresh()),
@@ -456,11 +456,11 @@ fn analyze_property(prop: ast::Property, fresher: &mut Fresher) -> Result<Proper
     })
 }
 
-fn analyze_array_expression(expr: ast::ArrayExpr, fresher: &mut Fresher) -> Result<ArrayExpr> {
+fn convert_array_expression(expr: ast::ArrayExpr, fresher: &mut Fresher) -> Result<ArrayExpr> {
     let elements = expr
         .elements
         .into_iter()
-        .map(|e| analyze_expression(e, fresher))
+        .map(|e| convert_expression(e, fresher))
         .collect::<Result<Vec<Expression>>>()?;
     Ok(ArrayExpr {
         loc: expr.base.location,
@@ -469,14 +469,14 @@ fn analyze_array_expression(expr: ast::ArrayExpr, fresher: &mut Fresher) -> Resu
     })
 }
 
-fn analyze_identifier(id: ast::Identifier, _fresher: &mut Fresher) -> Result<Identifier> {
+fn convert_identifier(id: ast::Identifier, _fresher: &mut Fresher) -> Result<Identifier> {
     Ok(Identifier {
         loc: id.base.location,
         name: id.name,
     })
 }
 
-fn analyze_identifier_expression(
+fn convert_identifier_expression(
     id: ast::Identifier,
     fresher: &mut Fresher,
 ) -> Result<IdentifierExpr> {
@@ -487,11 +487,11 @@ fn analyze_identifier_expression(
     })
 }
 
-fn analyze_string_expression(expr: ast::StringExpr, fresher: &mut Fresher) -> Result<StringExpr> {
+fn convert_string_expression(expr: ast::StringExpr, fresher: &mut Fresher) -> Result<StringExpr> {
     let parts = expr
         .parts
         .into_iter()
-        .map(|p| analyze_string_expression_part(p, fresher))
+        .map(|p| convert_string_expression_part(p, fresher))
         .collect::<Result<Vec<StringExprPart>>>()?;
     Ok(StringExpr {
         loc: expr.base.location,
@@ -500,7 +500,7 @@ fn analyze_string_expression(expr: ast::StringExpr, fresher: &mut Fresher) -> Re
     })
 }
 
-fn analyze_string_expression_part(
+fn convert_string_expression_part(
     expr: ast::StringExprPart,
     fresher: &mut Fresher,
 ) -> Result<StringExprPart> {
@@ -512,13 +512,13 @@ fn analyze_string_expression_part(
         ast::StringExprPart::Interpolated(itp) => {
             Ok(StringExprPart::Interpolated(InterpolatedPart {
                 loc: itp.base.location,
-                expression: analyze_expression(itp.expression, fresher)?,
+                expression: convert_expression(itp.expression, fresher)?,
             }))
         }
     }
 }
 
-fn analyze_string_literal(lit: ast::StringLit, fresher: &mut Fresher) -> Result<StringLit> {
+fn convert_string_literal(lit: ast::StringLit, fresher: &mut Fresher) -> Result<StringLit> {
     Ok(StringLit {
         loc: lit.base.location,
         typ: MonoType::Var(fresher.fresh()),
@@ -526,7 +526,7 @@ fn analyze_string_literal(lit: ast::StringLit, fresher: &mut Fresher) -> Result<
     })
 }
 
-fn analyze_boolean_literal(lit: ast::BooleanLit, fresher: &mut Fresher) -> Result<BooleanLit> {
+fn convert_boolean_literal(lit: ast::BooleanLit, fresher: &mut Fresher) -> Result<BooleanLit> {
     Ok(BooleanLit {
         loc: lit.base.location,
         typ: MonoType::Var(fresher.fresh()),
@@ -534,7 +534,7 @@ fn analyze_boolean_literal(lit: ast::BooleanLit, fresher: &mut Fresher) -> Resul
     })
 }
 
-fn analyze_float_literal(lit: ast::FloatLit, fresher: &mut Fresher) -> Result<FloatLit> {
+fn convert_float_literal(lit: ast::FloatLit, fresher: &mut Fresher) -> Result<FloatLit> {
     Ok(FloatLit {
         loc: lit.base.location,
         typ: MonoType::Var(fresher.fresh()),
@@ -542,7 +542,7 @@ fn analyze_float_literal(lit: ast::FloatLit, fresher: &mut Fresher) -> Result<Fl
     })
 }
 
-fn analyze_integer_literal(lit: ast::IntegerLit, fresher: &mut Fresher) -> Result<IntegerLit> {
+fn convert_integer_literal(lit: ast::IntegerLit, fresher: &mut Fresher) -> Result<IntegerLit> {
     Ok(IntegerLit {
         loc: lit.base.location,
         typ: MonoType::Var(fresher.fresh()),
@@ -550,7 +550,7 @@ fn analyze_integer_literal(lit: ast::IntegerLit, fresher: &mut Fresher) -> Resul
     })
 }
 
-fn analyze_unsigned_integer_literal(lit: ast::UintLit, fresher: &mut Fresher) -> Result<UintLit> {
+fn convert_unsigned_integer_literal(lit: ast::UintLit, fresher: &mut Fresher) -> Result<UintLit> {
     Ok(UintLit {
         loc: lit.base.location,
         typ: MonoType::Var(fresher.fresh()),
@@ -558,7 +558,7 @@ fn analyze_unsigned_integer_literal(lit: ast::UintLit, fresher: &mut Fresher) ->
     })
 }
 
-fn analyze_regexp_literal(lit: ast::RegexpLit, fresher: &mut Fresher) -> Result<RegexpLit> {
+fn convert_regexp_literal(lit: ast::RegexpLit, fresher: &mut Fresher) -> Result<RegexpLit> {
     Ok(RegexpLit {
         loc: lit.base.location,
         typ: MonoType::Var(fresher.fresh()),
@@ -566,7 +566,7 @@ fn analyze_regexp_literal(lit: ast::RegexpLit, fresher: &mut Fresher) -> Result<
     })
 }
 
-fn analyze_duration_literal(lit: ast::DurationLit, fresher: &mut Fresher) -> Result<DurationLit> {
+fn convert_duration_literal(lit: ast::DurationLit, fresher: &mut Fresher) -> Result<DurationLit> {
     Ok(DurationLit {
         loc: lit.base.location,
         typ: MonoType::Var(fresher.fresh()),
@@ -574,7 +574,7 @@ fn analyze_duration_literal(lit: ast::DurationLit, fresher: &mut Fresher) -> Res
     })
 }
 
-fn analyze_date_time_literal(lit: ast::DateTimeLit, fresher: &mut Fresher) -> Result<DateTimeLit> {
+fn convert_date_time_literal(lit: ast::DateTimeLit, fresher: &mut Fresher) -> Result<DateTimeLit> {
     Ok(DateTimeLit {
         loc: lit.base.location,
         typ: MonoType::Var(fresher.fresh()),
@@ -597,12 +597,12 @@ mod tests {
         MonoType::Var(Tvar(0))
     }
 
-    fn test_analyze(pkg: ast::Package) -> Result<Package> {
-        analyze(pkg)
+    fn test_convert(pkg: ast::Package) -> Result<Package> {
+        convert(pkg)
     }
 
     #[test]
-    fn test_analyze_empty() {
+    fn test_convert_empty() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -615,12 +615,12 @@ mod tests {
             package: "main".to_string(),
             files: Vec::new(),
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_package() {
+    fn test_convert_package() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -657,12 +657,12 @@ mod tests {
                 body: Vec::new(),
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_imports() {
+    fn test_convert_imports() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -741,12 +741,12 @@ mod tests {
                 body: Vec::new(),
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_var_assignment() {
+    fn test_convert_var_assignment() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -811,12 +811,12 @@ mod tests {
                 ],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_object() {
+    fn test_convert_object() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -877,12 +877,12 @@ mod tests {
                 })],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_object_with_string_key() {
+    fn test_convert_object_with_string_key() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -943,12 +943,12 @@ mod tests {
                 })],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_object_with_mixed_keys() {
+    fn test_convert_object_with_mixed_keys() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -1036,12 +1036,12 @@ mod tests {
                 })],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_object_with_implicit_keys() {
+    fn test_convert_object_with_implicit_keys() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -1123,12 +1123,12 @@ mod tests {
                 })],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_options_declaration() {
+    fn test_convert_options_declaration() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -1313,12 +1313,12 @@ mod tests {
                 }))],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_qualified_option_statement() {
+    fn test_convert_qualified_option_statement() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -1383,12 +1383,12 @@ mod tests {
                 }))],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_function() {
+    fn test_convert_function() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -1583,12 +1583,12 @@ mod tests {
                 ],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_function_with_defaults() {
+    fn test_convert_function_with_defaults() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -1805,12 +1805,12 @@ mod tests {
                 ],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_function_multiple_pipes() {
+    fn test_convert_function_multiple_pipes() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -1870,12 +1870,12 @@ mod tests {
                 }))],
             }],
         };
-        let got = test_analyze(pkg).err().unwrap().to_string();
+        let got = test_convert(pkg).err().unwrap().to_string();
         assert_eq!("only a single argument may be piped".to_string(), got);
     }
 
     #[test]
-    fn test_analyze_call_multiple_object_arguments() {
+    fn test_convert_call_multiple_object_arguments() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -1931,7 +1931,7 @@ mod tests {
                 })],
             }],
         };
-        let got = test_analyze(pkg).err().unwrap().to_string();
+        let got = test_convert(pkg).err().unwrap().to_string();
         assert_eq!(
             "arguments are more than one object expression".to_string(),
             got
@@ -1939,7 +1939,7 @@ mod tests {
     }
 
     #[test]
-    fn test_analyze_pipe_expression() {
+    fn test_convert_pipe_expression() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -2124,7 +2124,7 @@ mod tests {
                 ],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
@@ -2262,7 +2262,7 @@ mod tests {
     }
 
     #[test]
-    fn test_analyze_index_expression() {
+    fn test_convert_index_expression() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -2316,12 +2316,12 @@ mod tests {
                 })],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_nested_index_expression() {
+    fn test_convert_nested_index_expression() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -2391,12 +2391,12 @@ mod tests {
                 })],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_access_idexed_object_returned_from_function_call() {
+    fn test_convert_access_idexed_object_returned_from_function_call() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -2460,12 +2460,12 @@ mod tests {
                 })],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_nested_member_expression() {
+    fn test_convert_nested_member_expression() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -2527,12 +2527,12 @@ mod tests {
                 })],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 
     #[test]
-    fn test_analyze_member_with_call_expression() {
+    fn test_convert_member_with_call_expression() {
         let b = ast::BaseNode::default();
         let pkg = ast::Package {
             base: b.clone(),
@@ -2604,7 +2604,7 @@ mod tests {
                 })],
             }],
         };
-        let got = test_analyze(pkg).unwrap();
+        let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
 }

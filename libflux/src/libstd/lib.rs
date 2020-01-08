@@ -47,7 +47,7 @@ pub unsafe extern "C" fn flux_analyze(
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
 pub fn analyze(ast_pkg: ast::Package) -> Result<flux::semantic::nodes::Package, flux::Error> {
-    let mut sem_pkg = flux::semantic::analyze::analyze(ast_pkg)?;
+    let mut sem_pkg = flux::semantic::convert::convert(ast_pkg)?;
 
     let mut f = fresher();
     let prelude = match prelude() {
@@ -66,7 +66,7 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<flux::semantic::nodes::Package, 
 #[cfg(test)]
 mod tests {
     use flux::semantic;
-    use flux::semantic::analyze::analyze_file;
+    use flux::semantic::convert::convert_file;
     use flux::semantic::env::Environment;
     use flux::semantic::nodes::infer_file;
 
@@ -84,7 +84,7 @@ mod tests {
         let ast = flux::parser::parse_string("main.flux", src);
         let mut f = super::fresher();
 
-        let mut file = analyze_file(ast, &mut f).unwrap();
+        let mut file = convert_file(ast, &mut f).unwrap();
         let (got, _) = infer_file(&mut file, prelude, &mut f, &imports, &None).unwrap();
 
         let want = semantic::parser::parse(
