@@ -121,7 +121,9 @@ func SetNowOption(now time.Time) ScopeMutator {
 
 func generateNowFunc(now time.Time) values.Function {
 	timeVal := values.NewTime(values.ConvertTime(now))
-	ftype := semantic.NewFunctionType()
+	// TODO(jsternberg): Replace with proper function type.
+	// ftype := semantic.NewFunctionType()
+	var ftype semantic.PolyType
 	call := func(ctx context.Context, args values.Object) (values.Value, error) {
 		return timeVal, nil
 	}
@@ -586,7 +588,7 @@ func newAdministration() *Administration {
 	return &Administration{
 		// TODO(nathanielc): Once we can support recursive types change this to,
 		// interpreter.NewArray(TableObjectType)
-		parents: values.NewArray(semantic.NewObjectType()),
+		parents: values.NewArray(semantic.NewObjectType(nil)),
 	}
 }
 
