@@ -4,9 +4,9 @@ package libflux_test
 
 import (
 	"errors"
-	"github.com/google/go-cmp/cmp"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/libflux/go/libflux"
 )
 

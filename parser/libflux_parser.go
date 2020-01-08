@@ -3,8 +3,6 @@
 package parser
 
 import (
-	"encoding/json"
-
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/internal/parser"
 	"github.com/influxdata/flux/internal/token"
@@ -24,10 +22,7 @@ func parseFile(f *token.File, src []byte) (*ast.File, error) {
 		return nil, err
 	}
 
-	var pkg ast.Package
-	if err := json.Unmarshal(data, &pkg); err != nil {
-		return nil, err
-	}
+	pkg := ast.DeserializeFromFlatBuffer(data)
 	file := pkg.Files[0]
 	file.Name = f.Name()
 

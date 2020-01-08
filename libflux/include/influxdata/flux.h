@@ -52,8 +52,10 @@ struct flux_error_t *flux_ast_marshal_fb(struct flux_ast_pkg_t *, struct flux_bu
 struct flux_semantic_pkg_t;
 
 // flux_analyze analyzes the given AST and will populate the second pointer argument with
-// a pointer to the resulting semantic graph. It is the caller's responsibility to free the
-// resulting semantic graph with a call to flux_free().
+// a pointer to the resulting semantic graph.
+// It is the caller's responsibility to free the resulting semantic graph with a call to flux_free().
+// Note that the caller should free the pointer to the semantic graph, not the pointer to the pointer
+// to the semantic graph.  It is the former that references memory allocated by Rust.
 // If analysis fails, the second pointer argument wil be pointed at 0, and an error will be returned.
 // Any non-null error must be freed by calling flux_free.
 // Regardless of whether an error is returned, this function will consume and free its
