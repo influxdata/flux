@@ -11,6 +11,9 @@ import (
 func AnalyzeSource(fluxSrc string) (*Package, error) {
 	ast := libflux.Parse(fluxSrc)
 	sem, err := libflux.Analyze(ast)
+	if err != nil {
+		return nil, err
+	}
 	fb, err := sem.MarshalFB()
 
 	if err != nil {
