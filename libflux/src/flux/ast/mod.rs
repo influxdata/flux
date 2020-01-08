@@ -292,9 +292,9 @@ pub struct Package {
 
 impl From<File> for Package {
     fn from(file: File) -> Self {
-        Package{
-            base: BaseNode{
-              ..BaseNode::default()
+        Package {
+            base: BaseNode {
+                ..BaseNode::default()
             },
             path: String::from(""),
             package: String::from(file.get_package()),

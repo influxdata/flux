@@ -23,8 +23,8 @@
 //!
 use std::collections::HashMap;
 
-use crate::semantic::convert::convert_with;
 use crate::semantic::bootstrap::build_polytype;
+use crate::semantic::convert::convert_with;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;

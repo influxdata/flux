@@ -27,7 +27,7 @@ pub fn fresher() -> Fresher {
 #[no_mangle]
 pub unsafe extern "C" fn flux_analyze(
     ast_pkg: *mut flux_ast_pkg_t,
-    out_sem_pkg: *mut*const flux_semantic_pkg_t,
+    out_sem_pkg: *mut *const flux_semantic_pkg_t,
 ) -> *mut flux_error_t {
     let ast_pkg = *Box::from_raw(ast_pkg as *mut ast::Package);
     match analyze(ast_pkg) {
@@ -35,7 +35,7 @@ pub unsafe extern "C" fn flux_analyze(
             let sem_pkg = Box::into_raw(Box::new(sem_pkg)) as *const flux_semantic_pkg_t;
             *out_sem_pkg = sem_pkg;
             std::ptr::null_mut()
-        },
+        }
         Err(err) => {
             let errh = flux::ErrorHandle { err: Box::new(err) };
             Box::into_raw(Box::new(errh)) as *mut flux_error_t

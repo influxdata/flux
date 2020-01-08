@@ -5,8 +5,8 @@ use std::path::PathBuf;
 
 use crate::ast;
 use crate::parser;
-use crate::semantic::convert::convert_file;
 use crate::semantic::builtins::builtins;
+use crate::semantic::convert::convert_file;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;

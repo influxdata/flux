@@ -55,7 +55,9 @@ impl From<String> for Error {
 
 impl From<&str> for Error {
     fn from(msg: &str) -> Self {
-        Error { msg: String::from(msg) }
+        Error {
+            msg: String::from(msg),
+        }
     }
 }
 
