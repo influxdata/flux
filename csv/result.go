@@ -306,8 +306,7 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 			if err != nil {
 				if err == io.EOF {
 					if datatypes == nil && groups == nil && defaults == nil {
-						// No, just pass the EOF up
-						return tableMetadata{}, err
+						return tableMetadata{}, fmt.Errorf("missing expected annotations datatype, group, and default")
 					}
 					switch {
 					case datatypes == nil:
