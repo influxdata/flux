@@ -47,9 +47,9 @@ pub unsafe extern "C" fn flux_analyze(
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
 pub fn analyze(ast_pkg: ast::Package) -> Result<flux::semantic::nodes::Package, flux::Error> {
-    let mut sem_pkg = flux::semantic::convert::convert(ast_pkg)?;
-
     let mut f = fresher();
+    let mut sem_pkg = flux::semantic::convert::convert_with(ast_pkg, &mut f)?;
+
     let prelude = match prelude() {
         Some(prelude) => Environment::new(prelude),
         None => return Err(flux::Error::from("missing prelude")),
