@@ -7,7 +7,8 @@ use std::result;
 pub type SemanticError = String;
 pub type Result<T> = result::Result<T, SemanticError>;
 
-/// convert converts an AST package node to its semantic representation.
+/// convert_with converts an AST package node to its semantic representation using
+/// the provided fresher.
 ///
 /// Note: most external callers of this function will want to use the analyze()
 /// function in the libstd crate instead, which is aware of everything in the Flux stdlib and prelude.
@@ -17,11 +18,6 @@ pub type Result<T> = result::Result<T, SemanticError>;
 /// to the previous one. In other terms, once one converts an AST he should not use it anymore.
 /// If one wants to do so, he should explicitly pkg.clone() and incur consciously in the memory
 /// overhead involved.
-pub fn convert(pkg: ast::Package) -> Result<Package> {
-    convert_with(pkg, &mut Fresher::default())
-}
-
-// convert_with runs convert using the provided Fresher.
 pub fn convert_with(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> {
     convert_package(pkg, fresher)
     // TODO(affo): run checks on the semantic graph.
@@ -588,6 +584,7 @@ fn convert_date_time_literal(lit: ast::DateTimeLit, fresher: &mut Fresher) -> Re
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::semantic::fresh;
     use crate::semantic::types::{MonoType, Tvar};
     use pretty_assertions::assert_eq;
 
@@ -598,7 +595,7 @@ mod tests {
     }
 
     fn test_convert(pkg: ast::Package) -> Result<Package> {
-        convert(pkg)
+        convert_with(pkg, &mut fresh::Fresher::default())
     }
 
     #[test]
