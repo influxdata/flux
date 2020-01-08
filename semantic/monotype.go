@@ -103,33 +103,16 @@ func (mt MonoType) Kind() Kind {
 }
 
 var (
-	BasicBool     MonoType
-	BasicInt      MonoType
-	BasicUint     MonoType
-	BasicFloat    MonoType
-	BasicString   MonoType
-	BasicDuration MonoType
-	BasicTime     MonoType
-	BasicRegexp   MonoType
-	BasicBytes    MonoType
+	BasicBool     = newBasicType(fbsemantic.TypeBool)
+	BasicInt      = newBasicType(fbsemantic.TypeInt)
+	BasicUint     = newBasicType(fbsemantic.TypeUint)
+	BasicFloat    = newBasicType(fbsemantic.TypeFloat)
+	BasicString   = newBasicType(fbsemantic.TypeString)
+	BasicDuration = newBasicType(fbsemantic.TypeDuration)
+	BasicTime     = newBasicType(fbsemantic.TypeTime)
+	BasicRegexp   = newBasicType(fbsemantic.TypeRegexp)
+	BasicBytes    = newBasicType(fbsemantic.TypeBytes)
 )
-
-func init() {
-	builder := flatbuffers.NewBuilder(1024)
-	fbsemantic.BasicStart(builder)
-	fbsemantic.BasicAddT(builder, fbsemantic.TypeBool)
-	basicBool := fbsemantic.BasicEnd(builder)
-
-	// TODO (algow): initial all basic values
-
-	// TODO (algow): this probably doesn't work...
-	builder.Finish(basicBool)
-	basicTable := flatbuffers.Table{
-		Bytes: builder.FinishedBytes(),
-		Pos:   basicBool,
-	}
-	BasicBool, _ = NewMonoType(basicTable, fbsemantic.MonoTypeBasic)
-}
 
 func getBasic(tbl fbTabler) (*fbsemantic.Basic, error) {
 	b, ok := tbl.(*fbsemantic.Basic)
@@ -442,20 +425,247 @@ func (l MonoType) Equal(r MonoType) bool {
 	return false
 }
 
-func NewArrayType(elemType MonoType) MonoType {
-	//builder := flatbuffers.NewBuilder(1024)
-	//fbsemantic.ArrStart(builder)
-	//fbsemantic.AddTType(builder, elemType.Type())
-	//// TODO (algow): how do we inject the elemType?
-	//fbsemantic.AddT(builder, flatbuffer.UOffsetT)
+func newBasicType(t fbsemantic.Type) MonoType {
+	builder := flatbuffers.NewBuilder(16)
+	offset := buildBasicType(builder, t)
+	builder.Finish(offset)
 
-	return MonoType{}
+	buf := builder.FinishedBytes()
+	basic := fbsemantic.GetRootAsBasic(buf, 0)
+	mt, err := NewMonoType(basic.Table(), fbsemantic.MonoTypeBasic)
+	if err != nil {
+		panic(err)
+	}
+	return mt
 }
-func NewFunctionType() PolyType {
-	// TODO (algow): needs both a list of vars constraints and the monotype
-	return PolyType{}
+
+// NewArrayType will construct a new Array MonoType
+// where the inner element for the array is elemType.
+func NewArrayType(elemType MonoType) MonoType {
+	builder := flatbuffers.NewBuilder(32)
+	offset := buildArrayType(builder, elemType)
+	builder.Finish(offset)
+
+	buf := builder.FinishedBytes()
+	arr := fbsemantic.GetRootAsArr(buf, 0)
+	mt, err := NewMonoType(arr.Table(), fbsemantic.MonoTypeArr)
+	if err != nil {
+		panic(err)
+	}
+	return mt
 }
-func NewObjectType() MonoType {
-	// TODO (algow): needs both a list of vars constraints and the monotype
-	return MonoType{}
+
+type ArgumentType struct {
+	Name     []byte
+	Type     MonoType
+	Pipe     bool
+	Optional bool
+}
+
+// NewFunctionType will construct a new Function MonoType
+// that has a return value that matches retn and arguments
+// for each of the values in ArgumentType.
+func NewFunctionType(retn MonoType, args []ArgumentType) MonoType {
+	builder := flatbuffers.NewBuilder(64)
+	offset := buildFunctionType(builder, retn, args)
+	builder.Finish(offset)
+
+	buf := builder.FinishedBytes()
+	fun := fbsemantic.GetRootAsFun(buf, 0)
+	mt, err := NewMonoType(fun.Table(), fbsemantic.MonoTypeFun)
+	if err != nil {
+		panic(err)
+	}
+	return mt
+}
+
+type PropertyType struct {
+	Key   []byte
+	Value MonoType
+}
+
+// NewObjectType will construct a new Object MonoType with
+// the properties in properties.
+//
+// The MonoType will be constructed with the properties in the
+// same order as they appear in the array.
+func NewObjectType(properties []PropertyType) MonoType {
+	builder := flatbuffers.NewBuilder(64)
+	offset := buildObjectType(builder, properties, nil)
+	builder.Finish(offset)
+
+	buf := builder.FinishedBytes()
+	row := fbsemantic.GetRootAsRow(buf, 0)
+	mt, err := NewMonoType(row.Table(), fbsemantic.MonoTypeRow)
+	if err != nil {
+		panic(err)
+	}
+	return mt
+}
+
+// copyMonoType will reconstruct the type contained within the
+// MonoType for the new builder. When building a new buffer,
+// flatbuffers cannot reference data in another buffer and the
+// flatbuffers types contain references to offsets that are no
+// longer valid when copied to a new buffer.
+//
+// This method will access the existing types so it can correctly
+// rebuild an already constructed MonoType inside of another buffer.
+func copyMonoType(builder *flatbuffers.Builder, t MonoType) flatbuffers.UOffsetT {
+	table := t.tbl.Table()
+	switch t.mt {
+	case fbsemantic.MonoTypeNONE:
+		panic("monotype type not set")
+	case fbsemantic.MonoTypeBasic:
+		var basic fbsemantic.Basic
+		basic.Init(table.Bytes, table.Pos)
+		return buildBasicType(builder, basic.T())
+	case fbsemantic.MonoTypeVar:
+		var tv fbsemantic.Var
+		tv.Init(table.Bytes, table.Pos)
+		return buildVarType(builder, tv.I())
+	case fbsemantic.MonoTypeArr:
+		var arr fbsemantic.Arr
+		arr.Init(table.Bytes, table.Pos)
+
+		elem := monoTypeFromFunc(arr.T, arr.TType())
+		return buildArrayType(builder, elem)
+	case fbsemantic.MonoTypeRow:
+		var row fbsemantic.Row
+		row.Init(table.Bytes, table.Pos)
+
+		properties := make([]PropertyType, row.PropsLength())
+		for i := 0; i < len(properties); i++ {
+			var prop fbsemantic.Prop
+			row.Props(&prop, i)
+			properties[i] = PropertyType{
+				Key:   prop.K(),
+				Value: monoTypeFromFunc(prop.V, prop.VType()),
+			}
+		}
+		extends := row.Extends(nil)
+		return buildObjectType(builder, properties, extends)
+	case fbsemantic.MonoTypeFun:
+		var fun fbsemantic.Fun
+		fun.Init(table.Bytes, table.Pos)
+
+		args := make([]ArgumentType, fun.ArgsLength())
+		for i := 0; i < len(args); i++ {
+			var arg fbsemantic.Argument
+			fun.Args(&arg, i)
+			args[i] = ArgumentType{
+				Name:     arg.Name(),
+				Type:     monoTypeFromFunc(arg.T, arg.TType()),
+				Pipe:     arg.Pipe(),
+				Optional: arg.Optional(),
+			}
+		}
+		retn := monoTypeFromFunc(fun.Retn, fun.RetnType())
+		return buildFunctionType(builder, retn, args)
+	default:
+		panic(fmt.Sprintf("unknown monotype (%v)", t.mt))
+	}
+}
+
+// monoTypeFromFunc will initialize a MonoType using the table
+// initialized from the function. If the property does not exist,
+// this will panic.
+func monoTypeFromFunc(fn func(obj *flatbuffers.Table) bool, t fbsemantic.MonoType) MonoType {
+	var table flatbuffers.Table
+	if !fn(&table) {
+		panic("table property missing")
+	}
+	mt, err := NewMonoType(table, t)
+	if err != nil {
+		panic(err)
+	}
+	return mt
+}
+
+// buildBasicType will construct a basic type in the builder
+// and return the offset for the type.
+func buildBasicType(builder *flatbuffers.Builder, t fbsemantic.Type) flatbuffers.UOffsetT {
+	fbsemantic.BasicStart(builder)
+	fbsemantic.BasicAddT(builder, t)
+	return fbsemantic.BasicEnd(builder)
+}
+
+// buildVarType will construct a var type in the builder
+// and return the offset for the type.
+func buildVarType(builder *flatbuffers.Builder, i uint64) flatbuffers.UOffsetT {
+	fbsemantic.VarStart(builder)
+	fbsemantic.VarAddI(builder, i)
+	return fbsemantic.VarEnd(builder)
+}
+
+// buildArrayType will construct an arr type in the builder
+// and return the offset for the type.
+func buildArrayType(builder *flatbuffers.Builder, elemType MonoType) flatbuffers.UOffsetT {
+	offset := copyMonoType(builder, elemType)
+	fbsemantic.ArrStart(builder)
+	fbsemantic.ArrAddTType(builder, elemType.mt)
+	fbsemantic.ArrAddT(builder, offset)
+	return fbsemantic.ArrEnd(builder)
+}
+
+// buildFunctionType will construct a fun type in the builder
+// and return the offset for the type.
+func buildFunctionType(builder *flatbuffers.Builder, retn MonoType, args []ArgumentType) flatbuffers.UOffsetT {
+	retnOffset := copyMonoType(builder, retn)
+	argsOffsets := make([]flatbuffers.UOffsetT, len(args))
+	for i, arg := range args {
+		nOffset := builder.CreateByteString(arg.Name)
+		tOffset := copyMonoType(builder, arg.Type)
+		fbsemantic.ArgumentStart(builder)
+		fbsemantic.ArgumentAddName(builder, nOffset)
+		fbsemantic.ArgumentAddTType(builder, arg.Type.mt)
+		fbsemantic.ArgumentAddT(builder, tOffset)
+		argsOffsets[i] = fbsemantic.ArgumentEnd(builder)
+	}
+
+	fbsemantic.FunStartArgsVector(builder, len(argsOffsets))
+	for i := len(argsOffsets) - 1; i >= 0; i-- {
+		builder.PrependUOffsetT(argsOffsets[i])
+	}
+	argsOffset := builder.EndVector(len(argsOffsets))
+
+	fbsemantic.FunStart(builder)
+	fbsemantic.FunAddRetnType(builder, retn.mt)
+	fbsemantic.FunAddRetn(builder, retnOffset)
+	fbsemantic.FunAddArgs(builder, argsOffset)
+	return fbsemantic.FunEnd(builder)
+}
+
+// buildObjectType will construct a row type in the builder
+// and return the offset for the type.
+func buildObjectType(builder *flatbuffers.Builder, properties []PropertyType, extends *fbsemantic.Var) flatbuffers.UOffsetT {
+	propOffsets := make([]flatbuffers.UOffsetT, len(properties))
+	for i, p := range properties {
+		kOffset := builder.CreateByteString(p.Key)
+		vOffset := copyMonoType(builder, p.Value)
+		fbsemantic.PropStart(builder)
+		fbsemantic.PropAddK(builder, kOffset)
+		fbsemantic.PropAddVType(builder, p.Value.mt)
+		fbsemantic.PropAddV(builder, vOffset)
+		propOffsets[i] = fbsemantic.PropEnd(builder)
+	}
+
+	var extendsOffset flatbuffers.UOffsetT
+	if extends != nil {
+		fbsemantic.VarStart(builder)
+		fbsemantic.VarAddI(builder, extends.I())
+		extendsOffset = fbsemantic.VarEnd(builder)
+	}
+
+	fbsemantic.RowStartPropsVector(builder, len(propOffsets))
+	for i := len(propOffsets) - 1; i >= 0; i-- {
+		builder.PrependUOffsetT(propOffsets[i])
+	}
+	props := builder.EndVector(len(propOffsets))
+	fbsemantic.RowStart(builder)
+	fbsemantic.RowAddProps(builder, props)
+	if extends != nil {
+		fbsemantic.RowAddExtends(builder, extendsOffset)
+	}
+	return fbsemantic.RowEnd(builder)
 }
