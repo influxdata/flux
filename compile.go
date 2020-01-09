@@ -786,16 +786,12 @@ func (imp *importer) Copy() *importer {
 	}
 }
 
-func (imp *importer) Import(path string) (semantic.PackageType, bool) {
+func (imp *importer) Import(path string) (semantic.MonoType, bool) {
 	p, ok := imp.pkgs[path]
 	if !ok {
-		return semantic.PackageType{}, false
+		return semantic.MonoType{}, false
 	}
-	return semantic.PackageType{
-		Name: p.Name(),
-		// TODO (algow): how do we want to represent Packages?
-		//Type: p.Type(),
-	}, true
+	return p.Type(), true
 }
 
 func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, bool) {

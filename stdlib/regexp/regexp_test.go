@@ -66,7 +66,7 @@ func TestFindStringIndex(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !values.NewArrayWithBacking(semantic.Int, []values.Value{values.NewInt(int64(want[0])), values.NewInt(int64(want[1]))}).Equal(got.Array()) {
+	if !values.NewArrayWithBacking(semantic.BasicInt, []values.Value{values.NewInt(int64(want[0])), values.NewInt(int64(want[1]))}).Equal(got.Array()) {
 		t.Errorf("expected %v, got %v", want, got.Array())
 	}
 }
@@ -116,7 +116,7 @@ func TestSplitRegexp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	arr := values.NewArray(semantic.String)
+	arr := values.NewArray(semantic.BasicString)
 	for _, z := range want {
 		arr.Append(values.NewString(z))
 	}

@@ -41,10 +41,7 @@ func addValue(name string, v values.Value) {
 func init() {
 	addFunc(&function{
 		name: "fortyTwo",
-		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Required: nil,
-			Return:   semantic.Float,
-		}),
+		t:    semantic.NewFunctionType(semantic.BasicFloat, nil),
 		call: func(ctx context.Context, args values.Object) (values.Value, error) {
 			return values.NewFloat(42.0), nil
 		},
@@ -52,10 +49,7 @@ func init() {
 	})
 	addFunc(&function{
 		name: "six",
-		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Required: nil,
-			Return:   semantic.Float,
-		}),
+		t:    semantic.NewFunctionType(semantic.BasicFloat, nil),
 		call: func(ctx context.Context, args values.Object) (values.Value, error) {
 			return values.NewFloat(6.0), nil
 		},
@@ -63,10 +57,7 @@ func init() {
 	})
 	addFunc(&function{
 		name: "nine",
-		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Required: nil,
-			Return:   semantic.Float,
-		}),
+		t:    semantic.NewFunctionType(semantic.BasicFloat, nil),
 		call: func(ctx context.Context, args values.Object) (values.Value, error) {
 			return values.NewFloat(9.0), nil
 		},
@@ -74,10 +65,7 @@ func init() {
 	})
 	addFunc(&function{
 		name: "fail",
-		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Required: nil,
-			Return:   semantic.Bool,
-		}),
+		t:    semantic.NewFunctionType(semantic.BasicBool, nil),
 		call: func(ctx context.Context, args values.Object) (values.Value, error) {
 			return nil, errors.New("fail")
 		},
@@ -85,12 +73,11 @@ func init() {
 	})
 	addFunc(&function{
 		name: "plusOne",
-		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters:   map[string]semantic.PolyType{"x": semantic.Float},
-			Required:     []string{"x"},
-			Return:       semantic.Float,
-			PipeArgument: "x",
-		}),
+		t: semantic.NewFunctionType(semantic.BasicFloat, []semantic.ArgumentType{{
+			Name: []byte("x"),
+			Type: semantic.BasicFloat,
+			Pipe: true,
+		}}),
 		call: func(ctx context.Context, args values.Object) (values.Value, error) {
 			v, ok := args.Get("x")
 			if !ok {
@@ -102,10 +89,7 @@ func init() {
 	})
 	addFunc(&function{
 		name: "sideEffect",
-		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Required: nil,
-			Return:   semantic.Int,
-		}),
+		t:    semantic.NewFunctionType(semantic.BasicInt, nil),
 		call: func(ctx context.Context, args values.Object) (values.Value, error) {
 			return values.NewInt(0), nil
 		},
@@ -116,7 +100,7 @@ func init() {
 	optionsObject.Set("repeat", values.NewInt(100))
 
 	addOption("task", optionsObject)
-	addValue("NULL", values.NewNull(semantic.Int))
+	addValue("NULL", values.NewNull(semantic.BasicInt))
 }
 
 // TestEval tests whether a program can run to completion or not
@@ -926,17 +910,13 @@ func TestResolver(t *testing.T) {
 	var got semantic.Expression
 	f := &function{
 		name: "resolver",
-		t: semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				"f": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-					Parameters: map[string]semantic.PolyType{"r": semantic.Int},
-					Required:   []string{"r"},
-					Return:     semantic.Int,
-				}),
-			},
-			Required: []string{"f"},
-			Return:   semantic.Int,
-		}),
+		t: semantic.NewFunctionType(semantic.BasicInt, []semantic.ArgumentType{{
+			Name: []byte("f"),
+			Type: semantic.NewFunctionType(semantic.BasicInt, []semantic.ArgumentType{{
+				Name: []byte("r"),
+				Type: semantic.BasicInt,
+			}}),
+		}}),
 		call: func(ctx context.Context, args values.Object) (values.Value, error) {
 			f, ok := args.Get("f")
 			if !ok {
@@ -1007,19 +987,14 @@ func getSideEffectsValues(ses []interpreter.SideEffect) []values.Value {
 
 type function struct {
 	name          string
-	t             semantic.PolyType
+	t             semantic.MonoType
 	call          func(ctx context.Context, args values.Object) (values.Value, error)
 	hasSideEffect bool
 }
 
-func (f *function) Type() semantic.Type {
-	t, _ := f.t.MonoType()
-	return t
-}
-func (f *function) PolyType() semantic.PolyType {
+func (f *function) Type() semantic.MonoType {
 	return f.t
 }
-
 func (f *function) IsNull() bool {
 	return false
 }
