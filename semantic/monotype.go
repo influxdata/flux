@@ -421,8 +421,11 @@ func (mt MonoType) String() string {
 }
 
 func (l MonoType) Equal(r MonoType) bool {
-	// TODO (algow): Remove this method, we will not support comparing types for equality.
-	return false
+	if l.mt != r.mt {
+		return false
+	}
+	// TODO(algow): We might need this we might not.
+	return true
 }
 
 func newBasicType(t fbsemantic.Type) MonoType {

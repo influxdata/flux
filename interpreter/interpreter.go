@@ -487,27 +487,51 @@ func (itrp *Interpreter) doArray(ctx context.Context, a *semantic.ArrayExpressio
 }
 
 func (itrp *Interpreter) doObject(ctx context.Context, m *semantic.ObjectExpression, scope values.Scope) (values.Value, error) {
-	obj := values.NewObject()
-	if m.With != nil {
-		with, err := itrp.doExpression(ctx, m.With, scope)
-		if err != nil {
-			return nil, err
-		}
-		with.Object().Range(func(k string, v values.Value) {
-			obj.Set(k, v)
-		})
+	if label, nok := itrp.checkForDuplicates(m.Properties); nok {
+		return nil, errors.Newf(codes.Invalid, "duplicate key in object: %q", label)
 	}
-	for _, p := range m.Properties {
-		v, err := itrp.doExpression(ctx, p.Value, scope)
-		if err != nil {
-			return nil, err
+
+	return values.BuildObject(func(set values.ObjectSetter) error {
+		// Evaluate the expression from the with statement and add
+		// each of the key/value pairs to the object in the order
+		// they are encountered.
+		if m.With != nil {
+			with, err := itrp.doExpression(ctx, m.With, scope)
+			if err != nil {
+				return err
+			}
+			with.Object().Range(func(name string, v values.Value) {
+				set(name, v)
+			})
 		}
-		if _, ok := obj.Get(p.Key.Key()); ok {
-			return nil, errors.Newf(codes.Invalid, "duplicate key in object: %q", p.Key.Key())
+
+		// Evaluate each of the properties overwriting the value
+		// from the with if it is present. New properties are appended
+		// to the end of the list.
+		for _, p := range m.Properties {
+			v, err := itrp.doExpression(ctx, p.Value, scope)
+			if err != nil {
+				return err
+			}
+			set(p.Key.Key(), v)
 		}
-		obj.Set(p.Key.Key(), v)
+		return nil
+	})
+}
+
+func (itrp *Interpreter) checkForDuplicates(properties []*semantic.Property) (string, bool) {
+	for i := 1; i < len(properties); i++ {
+		label := properties[i].Key.Key()
+		// Check all of the previous keys to see if any of them
+		// match the existing key. This avoids allocating a new
+		// structure to check for duplicates.
+		for _, p := range properties[:i] {
+			if p.Key.Key() == label {
+				return label, true
+			}
+		}
 	}
-	return obj, nil
+	return "", false
 }
 
 func (itrp *Interpreter) doLiteral(lit semantic.Literal) (values.Value, error) {
@@ -613,57 +637,70 @@ func (itrp *Interpreter) doCall(ctx context.Context, call *semantic.CallExpressi
 }
 
 func (itrp *Interpreter) doArguments(ctx context.Context, args *semantic.ObjectExpression, scope values.Scope, funcType semantic.MonoType, pipe semantic.Expression) (values.Object, error) {
-	obj := values.NewObject()
-	if pipe == nil && (args == nil || len(args.Properties) == 0) {
-		return obj, nil
+	if label, nok := itrp.checkForDuplicates(args.Properties); nok {
+		return nil, errors.Newf(codes.Invalid, "duplicate keyword parameter specified: %q", label)
 	}
-	for _, p := range args.Properties {
-		value, err := itrp.doExpression(ctx, p.Value, scope)
+
+	if pipe == nil && (args == nil || len(args.Properties) == 0) {
+		typ := semantic.NewObjectType(nil)
+		return values.NewObject(typ), nil
+	}
+
+	// Determine which argument matches the pipe argument.
+	var pipeArgument string
+	if pipe != nil {
+		n, err := funcType.NumArguments()
 		if err != nil {
 			return nil, err
 		}
-		// This is a bit of a hack, but we know that functions cannot escape the iterpreter
-		// except as arguments to functions.
-		// As such we ensure the function passed out is aware of all option mutations.
-		if f, ok := value.(function); ok {
-			f, err := itrp.mutateFunctionScope(f)
+
+		for i := 0; i < n; i++ {
+			arg, err := funcType.Argument(i)
 			if err != nil {
 				return nil, err
 			}
-			value = f
-		}
-		if _, ok := obj.Get(p.Key.Key()); ok {
-			return nil, errors.Newf(codes.Invalid, "duplicate keyword parameter specified: %q", p.Key.Key())
+			if arg.Pipe() {
+				pipeArgument = string(arg.Name())
+				break
+			}
 		}
 
-		obj.Set(p.Key.Key(), value)
-	}
-	n, err := funcType.NumArguments()
-	if err != nil {
-		return nil, err
+		if pipeArgument == "" {
+			return nil, errors.New(codes.Invalid, "pipe parameter value provided to function with no pipe parameter defined")
+		}
 	}
 
-	var pipeArgument string
-	for i := 0; i < n; i++ {
-		arg, err := funcType.Argument(i)
-		if err != nil {
-			return nil, err
+	return values.BuildObject(func(set values.ObjectSetter) error {
+		for _, p := range args.Properties {
+			if pipe != nil && p.Key.Key() == pipeArgument {
+				return errors.Newf(codes.Invalid, "pipe argument also specified as a keyword parameter: %q", p.Key.Key())
+			}
+			value, err := itrp.doExpression(ctx, p.Value, scope)
+			if err != nil {
+				return err
+			}
+			// This is a bit of a hack, but we know that functions cannot escape the iterpreter
+			// except as arguments to functions.
+			// As such we ensure the function passed out is aware of all option mutations.
+			if f, ok := value.(function); ok {
+				f, err := itrp.mutateFunctionScope(f)
+				if err != nil {
+					return err
+				}
+				value = f
+			}
+			set(p.Key.Key(), value)
 		}
-		if arg.Pipe() {
-			pipeArgument = string(arg.Name())
+
+		if pipe != nil {
+			value, err := itrp.doExpression(ctx, pipe, scope)
+			if err != nil {
+				return err
+			}
+			set(pipeArgument, value)
 		}
-	}
-	if pipe != nil && pipeArgument == "" {
-		return nil, errors.New(codes.Invalid, "pipe parameter value provided to function with no pipe parameter defined")
-	}
-	if pipe != nil {
-		value, err := itrp.doExpression(ctx, pipe, scope)
-		if err != nil {
-			return nil, err
-		}
-		obj.Set(pipeArgument, value)
-	}
-	return obj, nil
+		return nil
+	})
 }
 
 // Value represents any value that can be the result of evaluating any expression.

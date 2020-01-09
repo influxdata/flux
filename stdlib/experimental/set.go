@@ -67,7 +67,7 @@ func (s *SetProcedureSpec) Kind() plan.ProcedureKind {
 }
 func (s *SetProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(SetProcedureSpec)
-	ns.Object = values.NewObjectWithBacking(s.Object.Len())
+	ns.Object = values.NewObject(s.Object.Type())
 	s.Object.Range(func(k string, v values.Value) {
 		ns.Object.Set(k, v)
 	})
