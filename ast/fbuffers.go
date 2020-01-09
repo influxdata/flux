@@ -9,6 +9,13 @@ import (
 	"github.com/influxdata/flux/ast/internal/fbast"
 )
 
+// DeserializeFromFlatBuffer takes the given byte slice
+// that is an AST flatbuffer and deserializes it to an AST package.
+func DeserializeFromFlatBuffer(buf []byte) *Package {
+	pkg := Package{}
+	return pkg.FromBuf(buf)
+}
+
 func (p *Position) FromBuf(buf *fbast.Position) {
 	p.Line = int(buf.Line())
 	p.Column = int(buf.Column())

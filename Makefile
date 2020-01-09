@@ -70,7 +70,7 @@ internal/scanner/unicode.rl: internal/scanner/unicode2ragel.rb
 internal/scanner/scanner.gen.go: internal/scanner/gen.go internal/scanner/scanner.rl internal/scanner/unicode.rl
 	$(GO_GENERATE) ./internal/scanner
 
-libflux: libflux/target/debug/libflux.a
+libflux: libflux/target/debug/libflux.a libflux/target/debug/liblibstd.a
 
 # Build the rust static library. Afterwards, fix the .d file that
 # rust generates so it references the correct targets.
@@ -78,6 +78,9 @@ libflux: libflux/target/debug/libflux.a
 # command line interface than the gnu equivalent.
 libflux/target/debug/libflux.a:
 	cd libflux && $(CARGO) build -p flux $(CARGO_ARGS)
+
+libflux/target/debug/liblibstd.a:
+	cd libflux && $(CARGO) build -p libstd $(CARGO_ARGS)
 
 libflux/go/libflux/flux.h: libflux/include/influxdata/flux.h
 	$(GO_GENERATE) ./libflux/go/libflux

@@ -165,14 +165,22 @@ func downloadSources(srcdir string, mod *Module) error {
 			relpath = relpath[slash+1:]
 		}
 
-		if !strings.HasPrefix(relpath, "libflux/") {
+		if strings.HasPrefix(relpath, "libflux/") {
+			relpath = relpath[strings.Index(relpath, "/")+1:]
+			// Do not extract the symlink for the standard library.
+			if relpath == "stdlib" {
+				continue
+			}
+		} else if relpath != "stdlib" && !strings.HasPrefix(relpath, "stdlib/") {
+			// Allow extracting the standard library.
 			continue
 		}
-		relpath = relpath[strings.Index(relpath, "/")+1:]
 
 		fpath := filepath.Join(srcdir, relpath)
 		if file.Mode().IsDir() {
-			if err := os.Mkdir(fpath, 0755); err != nil {
+			// stdlib is a special exception. It is a symlink in the package,
+			// but we are going to use it as a directory.
+			if err := os.Mkdir(fpath, 0755); err != nil && !os.IsExist(err) {
 				return err
 			}
 			continue

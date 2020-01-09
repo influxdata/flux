@@ -1,3 +1,5 @@
+// +build libflux
+
 package semantic
 
 import (
@@ -11,9 +13,6 @@ import (
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic/internal/fbsemantic"
 )
-
-// TODO(cwolff): There needs to be more testing here.  Once we can serialize an arbitrary semantic graph
-//   in Rust, we can get more complete coverage without having to create FlatBuffers by hand.
 
 var cmpOpts = []cmp.Option{
 	cmp.AllowUnexported(
@@ -67,8 +66,8 @@ func TestDeserializeFromFlatBuffer(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			src, fb := tc.fbFn()
-			ast := parser.ParseSource(src)
-			want, err := New(ast)
+			astPkg := parser.ParseSource(src)
+			want, err := New(astPkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -425,4 +424,80 @@ func source(src string, loc *ast.SourceLocation) string {
 		return "<invalid offsets>"
 	}
 	return src[soffset:eoffset]
+}
+
+// MyAssignment is a special struct used only
+// for comparing NativeVariableAssignments with
+// PolyTypes provided by a test case.
+type MyAssignement struct {
+	loc
+
+	Identifier *Identifier
+	Init       Expression
+
+	Typ string
+}
+
+func TestRoundTrip(t *testing.T) {
+	tcs := []struct {
+		name    string
+		fluxSrc string
+		// For each variable assignment, the expected inferred type of the variable
+		types map[string]string
+	}{
+		// TODO(cwolff): more testing to come
+		{
+			name:    "simple assignment",
+			fluxSrc: `x = 42`,
+			types: map[string]string{
+				"x": "forall [] int",
+			},
+		},
+	}
+	for _, tc := range tcs {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := AnalyzeSource(tc.fluxSrc)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			astPkg := parser.ParseSource(tc.fluxSrc)
+			want, err := New(astPkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// Create a special comparison option to compare the types
+			// of NativeVariableAssignments using the expected types in the map
+			// provided by the test case.
+			assignCmp := cmp.Transformer("assign", func(nva *NativeVariableAssignment) *MyAssignement {
+				var typStr string
+				if nva.Typ == nil {
+					// This is the assignment from Go.
+					var ok bool
+					typStr, ok = tc.types[nva.Identifier.Name]
+					if !ok {
+						typStr = "*** missing type ***"
+					}
+				} else {
+					// This is the assignment from Rust.
+					typStr = nva.Typ.String()
+				}
+				return &MyAssignement{
+					loc:        nva.loc,
+					Identifier: nva.Identifier,
+					Init:       nva.Init,
+					Typ:        typStr,
+				}
+			})
+
+			opts := make(cmp.Options, len(cmpOpts), len(cmpOpts)+2)
+			copy(opts, cmpOpts)
+			opts = append(opts, assignCmp, cmp.AllowUnexported(MyAssignement{}))
+			if diff := cmp.Diff(want, got, opts...); diff != "" {
+				t.Fatalf("differences in semantic graph: -want/+got:\n%v", diff)
+			}
+		})
+	}
 }

@@ -1,11 +1,15 @@
 package universe
 
 import (
+	"context"
+
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/plan"
 )
 
@@ -93,26 +97,23 @@ func createLimitTransformation(id execute.DatasetID, mode execute.AccumulationMo
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-	cache := execute.NewTableBuilderCache(a.Allocator())
-	d := execute.NewDataset(id, mode, cache)
-	t := NewLimitTransformation(d, cache, s)
+	t, d := NewLimitTransformation(s, id)
 	return t, d, nil
 }
 
 type limitTransformation struct {
-	d     execute.Dataset
-	cache execute.TableBuilderCache
-
+	d         *execute.PassthroughDataset
 	n, offset int
 }
 
-func NewLimitTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *LimitProcedureSpec) *limitTransformation {
-	return &limitTransformation{
+func NewLimitTransformation(spec *LimitProcedureSpec, id execute.DatasetID) (execute.Transformation, execute.Dataset) {
+	d := execute.NewPassthroughDataset(id)
+	t := &limitTransformation{
 		d:      d,
-		cache:  cache,
 		n:      int(spec.N),
 		offset: int(spec.Offset),
 	}
+	return t, d
 }
 
 func (t *limitTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
@@ -120,22 +121,20 @@ func (t *limitTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 }
 
 func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	builder, created := t.cache.TableBuilder(tbl.Key())
-	if !created {
-		return errors.Newf(codes.FailedPrecondition, "limit found duplicate table with key: %v", tbl.Key())
-	}
-	if err := execute.AddTableCols(tbl, builder); err != nil {
+	tbl, err := table.Stream(tbl.Key(), tbl.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
+		return t.limitTable(ctx, w, tbl)
+	})
+	if err != nil {
 		return err
 	}
-	// AppendTable with limit
-	n := t.n
-	offset := t.offset
-	var finished bool
-	err := tbl.Do(func(cr flux.ColReader) error {
+	return t.d.Process(tbl)
+}
+
+func (t *limitTransformation) limitTable(ctx context.Context, w *table.StreamWriter, tbl flux.Table) error {
+	n, offset := t.n, t.offset
+	return tbl.Do(func(cr flux.ColReader) error {
 		if n <= 0 {
-			// Returning an error terminates iteration
-			finished = true
-			return errors.New(codes.Canceled)
+			return nil
 		}
 		l := cr.Len()
 		if l <= offset {
@@ -152,18 +151,18 @@ func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		}
 		n -= count
 
-		err := appendSlicedCols(cr, builder, start, stop)
-		if err != nil {
-			return err
+		vs := make([]array.Interface, len(cr.Cols()))
+		for j := range vs {
+			arr := table.Values(cr, j)
+			if arr.Len() == count {
+				arr.Retain()
+			} else {
+				arr = arrow.Slice(arr, int64(start), int64(stop))
+			}
+			vs[j] = arr
 		}
-
-		return nil
+		return w.Write(vs)
 	})
-
-	if err != nil && !finished {
-		return err
-	}
-	return nil
 }
 
 func appendSlicedCols(reader flux.ColReader, builder execute.TableBuilder, start, stop int) error {

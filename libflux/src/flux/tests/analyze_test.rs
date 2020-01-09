@@ -1,5 +1,5 @@
 use flux::ast;
-use flux::semantic::analyze_source;
+use flux::semantic::convert_source;
 use flux::semantic::nodes::*;
 use flux::semantic::types::{Function, MonoType, Tvar};
 use flux::semantic::walk::{walk_mut, NodeMut};
@@ -10,7 +10,7 @@ use pretty_assertions::assert_eq;
 
 #[test]
 fn analyze_end_to_end() {
-    let mut got = analyze_source(
+    let mut got = convert_source(
         r#"
 n = 1
 s = "string"

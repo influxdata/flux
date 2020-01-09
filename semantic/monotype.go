@@ -2,6 +2,7 @@ package semantic
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	flatbuffers "github.com/google/flatbuffers/go"
@@ -193,6 +194,27 @@ func (mt MonoType) Argument(i int) (*Argument, error) {
 	return newArgument(a)
 }
 
+// SortedArguments returns a slice of function arguments,
+// sorted by argument name, if this monotype is a function.
+func (mt MonoType) SortedArguments() ([]*Argument, error) {
+	nargs, err := mt.NumArguments()
+	if err != nil {
+		return nil, err
+	}
+	args := make([]*Argument, nargs)
+	for i := 0; i < nargs; i++ {
+		arg, err := mt.Argument(i)
+		if err != nil {
+			return nil, err
+		}
+		args[i] = arg
+	}
+	sort.Slice(args, func(i, j int) bool {
+		return string(args[i].Name()) < string(args[j].Name())
+	})
+	return args, nil
+}
+
 func (mt MonoType) ReturnType() (MonoType, error) {
 	f, ok := mt.tbl.(*fbsemantic.Fun)
 	if !ok {
@@ -258,6 +280,30 @@ func (mt MonoType) RowProperty(i int) (*RowProperty, error) {
 		return nil, errors.New(codes.Internal, "missing property")
 	}
 	return &RowProperty{fb: p}, nil
+}
+
+// SortedProperties returns the properties for a Row monotype, sorted by
+// key.  It's possible that there are duplicate keys with different types,
+// in this case, this function preserves their order.
+func (mt MonoType) SortedProperties() ([]*RowProperty, error) {
+	nps, err := mt.NumProperties()
+	if err != nil {
+		return nil, err
+	}
+	ps := make([]*RowProperty, nps)
+	for i := 0; i < nps; i++ {
+		ps[i], err = mt.RowProperty(i)
+		if err != nil {
+			return nil, err
+		}
+	}
+	sort.Slice(ps, func(i, j int) bool {
+		if ps[i].Name() == ps[j].Name() {
+			return i < j
+		}
+		return ps[i].Name() < ps[j].Name()
+	})
+	return ps, nil
 }
 
 // Extends returns the extending type variable if this monotype is a row, and an error otherwise.
@@ -344,20 +390,16 @@ func (mt MonoType) String() string {
 	case Row:
 		var sb strings.Builder
 		sb.WriteString("{")
-		nprops, err := mt.NumProperties()
+		sprops, err := mt.SortedProperties()
 		if err != nil {
 			return "<" + err.Error() + ">"
 		}
 		needBar := false
-		for i := 0; i < nprops; i++ {
+		for _, prop := range sprops {
 			if needBar {
 				sb.WriteString(" | ")
 			} else {
 				needBar = true
-			}
-			prop, err := mt.RowProperty(i)
-			if err != nil {
-				return "<" + err.Error() + ">"
 			}
 			sb.WriteString(prop.Name() + ": ")
 			ty, err := prop.TypeOf()
@@ -382,15 +424,11 @@ func (mt MonoType) String() string {
 		var sb strings.Builder
 		sb.WriteString("(")
 		needComma := false
-		nargs, err := mt.NumArguments()
+		sargs, err := mt.SortedArguments()
 		if err != nil {
 			return "<" + err.Error() + ">"
 		}
-		for i := 0; i < nargs; i++ {
-			arg, err := mt.Argument(i)
-			if err != nil {
-				return "<" + err.Error() + ">"
-			}
+		for _, arg := range sargs {
 			if needComma {
 				sb.WriteString(", ")
 			} else {
