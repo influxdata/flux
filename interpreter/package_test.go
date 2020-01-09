@@ -17,15 +17,12 @@ type importer struct {
 	packages map[string]*interpreter.Package
 }
 
-func (imp *importer) Import(path string) (semantic.PackageType, bool) {
+func (imp *importer) Import(path string) (semantic.MonoType, bool) {
 	pkg, ok := imp.packages[path]
 	if !ok {
-		return semantic.PackageType{}, false
+		return semantic.MonoType{}, false
 	}
-	return semantic.PackageType{
-		Name: pkg.Name(),
-		Type: pkg.PolyType(),
-	}, true
+	return pkg.Type(), true
 }
 
 func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, bool) {
