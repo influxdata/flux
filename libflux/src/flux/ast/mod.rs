@@ -16,6 +16,8 @@ use serde::de::{Deserialize, Deserializer, Error, Visitor};
 use serde::ser::{Serialize, SerializeSeq, Serializer};
 use serde_aux::prelude::*;
 
+pub const DEFAULT_PACKAGE_NAME: &str = "main";
+
 // Position is the AST counterpart of Scanner's Position.
 // It adds serde capabilities.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -288,6 +290,19 @@ pub struct Package {
     pub files: Vec<File>,
 }
 
+impl From<File> for Package {
+    fn from(file: File) -> Self {
+        Package {
+            base: BaseNode {
+                ..BaseNode::default()
+            },
+            path: String::from(""),
+            package: String::from(file.get_package()),
+            files: vec![file],
+        }
+    }
+}
+
 // File represents a source from a single file
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
@@ -306,6 +321,15 @@ pub struct File {
     #[serde(deserialize_with = "deserialize_default_from_null")]
     pub imports: Vec<ImportDeclaration>,
     pub body: Vec<Statement>,
+}
+
+impl File {
+    fn get_package(self: &File) -> &str {
+        match &self.package {
+            Some(pkg_clause) => pkg_clause.name.name.as_str(),
+            None => DEFAULT_PACKAGE_NAME,
+        }
+    }
 }
 
 // PackageClause defines the current package identifier.

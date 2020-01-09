@@ -12,8 +12,6 @@ import (
 	"errors"
 	"runtime"
 	"unsafe"
-
-	"github.com/influxdata/flux/ast"
 )
 
 //go:generate cp ../../include/influxdata/flux.h flux.h
@@ -30,14 +28,15 @@ func free(f freeable) {
 	f.Free()
 }
 
-// ASTFile is a parsed AST.
-type ASTFile struct {
-	ptr *C.struct_flux_ast_t
+// ASTPkg is a parsed AST.
+type ASTPkg struct {
+	ptr *C.struct_flux_ast_pkg_t
 }
 
-func (f *ASTFile) MarshalJSON() ([]byte, error) {
+func (p *ASTPkg) MarshalJSON() ([]byte, error) {
 	var buf C.struct_flux_buffer_t
-	if err := C.flux_ast_marshal_json(f.ptr, &buf); err != nil {
+	if err := C.flux_ast_marshal_json(p.ptr, &buf); err != nil {
+		defer C.flux_free(unsafe.Pointer(err))
 		cstr := C.flux_error_str(err)
 		defer C.flux_free(unsafe.Pointer(cstr))
 
@@ -50,31 +49,36 @@ func (f *ASTFile) MarshalJSON() ([]byte, error) {
 	return data, nil
 }
 
-func (f *ASTFile) Free() {
-	if f.ptr != nil {
-		C.flux_free(unsafe.Pointer(f.ptr))
+func (p *ASTPkg) MarshalFB() ([]byte, error) {
+	var buf C.struct_flux_buffer_t
+	if err := C.flux_ast_marshal_fb(p.ptr, &buf); err != nil {
+		defer C.flux_free(unsafe.Pointer(err))
+		cstr := C.flux_error_str(err)
+		defer C.flux_free(unsafe.Pointer(cstr))
+
+		str := C.GoString(cstr)
+		return nil, errors.New(str)
 	}
-	f.ptr = nil
+	defer C.flux_free(buf.data)
+
+	data := C.GoBytes(buf.data, C.int(buf.len))
+	return data, nil
+}
+
+func (p *ASTPkg) Free() {
+	if p.ptr != nil {
+		C.flux_free(unsafe.Pointer(p.ptr))
+	}
+	p.ptr = nil
 }
 
 // Parse will take a string and return a parsed source file.
-func Parse(s string) *ASTFile {
+func Parse(s string) *ASTPkg {
 	cstr := C.CString(s)
 	defer C.free(unsafe.Pointer(cstr))
 
 	ptr := C.flux_parse(cstr)
-	f := &ASTFile{ptr: ptr}
-	runtime.SetFinalizer(f, free)
-	return f
-}
-
-func ParseIntoFbs(s string) *ast.Package {
-	cstr := C.CString(s)
-	defer C.free(unsafe.Pointer(cstr))
-
-	ptr := C.flux_parse_fb(cstr)
-	defer C.free(unsafe.Pointer(ptr))
-
-	data := C.GoBytes(ptr.data, C.int(ptr.len))
-	return ast.Package{}.FromBuf(data)
+	p := &ASTPkg{ptr: ptr}
+	runtime.SetFinalizer(p, free)
+	return p
 }
