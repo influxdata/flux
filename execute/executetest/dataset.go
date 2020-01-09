@@ -1,11 +1,13 @@
 package executetest
 
 import (
+	"runtime/debug"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	uuid "github.com/satori/go.uuid"
 )
@@ -60,6 +62,32 @@ func (d *Dataset) SetTriggerSpec(t plan.TriggerSpec) {
 	panic("not implemented")
 }
 
+type datasetTransformation struct {
+	d Dataset
+}
+
+func newDatasetTransformation(id execute.DatasetID) *datasetTransformation {
+	return &datasetTransformation{
+		d: Dataset{ID: id},
+	}
+}
+func (d *datasetTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
+	return d.d.RetractTable(key)
+}
+func (d *datasetTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
+	tbl.Done()
+	return nil
+}
+func (d *datasetTransformation) UpdateWatermark(id execute.DatasetID, t execute.Time) error {
+	return d.d.UpdateWatermark(t)
+}
+func (d *datasetTransformation) UpdateProcessingTime(id execute.DatasetID, t execute.Time) error {
+	return d.d.UpdateProcessingTime(t)
+}
+func (d *datasetTransformation) Finish(id execute.DatasetID, err error) {
+	d.d.Finish(err)
+}
+
 type NewTransformation func(execute.Dataset, execute.TableBuilderCache) execute.Transformation
 
 func TransformationPassThroughTestHelper(t *testing.T, newTr NewTransformation) {
@@ -89,5 +117,47 @@ func TransformationPassThroughTestHelper(t *testing.T, newTr NewTransformation) 
 	}
 	if !cmp.Equal(d, exp) {
 		t.Errorf("unexpected dataset -want/+got\n%s", cmp.Diff(exp, d))
+	}
+}
+
+func TransformationPassThroughTestHelper2(
+	t *testing.T,
+	create func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset),
+) {
+	t.Helper()
+
+	defer func() {
+		if err := recover(); err != nil {
+			debug.PrintStack()
+			t.Fatalf("caught panic: %v", err)
+		}
+	}()
+
+	now := execute.Now()
+	exp := &Dataset{
+		ID:                    RandomDatasetID(),
+		ProcessingTimeUpdates: []execute.Time{now},
+		WatermarkUpdates:      []execute.Time{now},
+		Finished:              true,
+		FinishedErr:           nil,
+	}
+
+	alloc := &memory.Allocator{}
+	gotT := newDatasetTransformation(exp.ID)
+	tx, d := create(RandomDatasetID(), alloc)
+	d.SetTriggerSpec(plan.DefaultTriggerSpec)
+	d.AddTransformation(gotT)
+
+	parentID := RandomDatasetID()
+	if err := tx.UpdateWatermark(parentID, now); err != nil {
+		t.Fatal(err)
+	}
+	if err := tx.UpdateProcessingTime(parentID, now); err != nil {
+		t.Fatal(err)
+	}
+	tx.Finish(parentID, nil)
+
+	if !cmp.Equal(&gotT.d, exp) {
+		t.Errorf("unexpected dataset -want/+got\n%s", cmp.Diff(exp, &gotT.d))
 	}
 }
