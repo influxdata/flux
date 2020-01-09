@@ -51,41 +51,46 @@ type Scope interface {
 
 type scope struct {
 	parent      Scope
-	values      Object
+	values      map[string]Value
 	returnValue Value
 }
 
 // NewScope creates a new empty scope with no parent.
 func NewScope() Scope {
 	return &scope{
-		values: NewObject(),
+		values: make(map[string]Value),
 	}
 }
 
-//NewNestedScope creates a new scope with bindings from obj and a parent.
+// NewNestedScope creates a new scope with bindings from obj and a parent.
 func NewNestedScope(parent Scope, obj Object) Scope {
-	if obj == nil {
-		obj = NewObject()
+	var values map[string]Value
+	if obj != nil {
+		values = make(map[string]Value, obj.Len())
+		obj.Range(func(name string, v Value) {
+			values[name] = v
+		})
 	}
 	return &scope{
 		parent: parent,
-		values: obj,
+		values: values,
 	}
 }
 
 func (s *scope) Lookup(name string) (Value, bool) {
-	v, ok := s.values.Get(name)
+	v, ok := s.values[name]
 	if !ok && s.parent != nil {
 		return s.parent.Lookup(name)
 	}
 	return v, ok
 }
 func (s *scope) LocalLookup(name string) (Value, bool) {
-	return s.values.Get(name)
+	v, ok := s.values[name]
+	return v, ok
 }
 
 func (s *scope) Set(name string, v Value) {
-	s.values.Set(name, v)
+	s.values[name] = v
 }
 
 func (s *scope) SetOption(pkg, name string, v Value) (bool, error) {
@@ -115,20 +120,22 @@ func (s *scope) Pop() Scope {
 
 func (s *scope) Size() int {
 	if s.parent == nil {
-		return s.values.Len()
+		return len(s.values)
 	}
-	return s.values.Len() + s.parent.Size()
+	return len(s.values) + s.parent.Size()
 }
 
 func (s *scope) Range(f func(k string, v Value)) {
-	s.values.Range(f)
+	s.LocalRange(f)
 	if s.parent != nil {
 		s.parent.Range(f)
 	}
 }
 
 func (s *scope) LocalRange(f func(k string, v Value)) {
-	s.values.Range(f)
+	for k, v := range s.values {
+		f(k, v)
+	}
 }
 
 func (s *scope) SetReturn(v Value) {
@@ -140,18 +147,11 @@ func (s *scope) Return() Value {
 }
 
 func (s *scope) Copy() Scope {
-	obj := NewObjectWithBacking(s.values.Len())
-	s.values.Range(func(k string, v Value) {
-		obj.Set(k, v)
+	ns := NewNestedScope(s.parent.Copy(), nil)
+	s.LocalRange(func(k string, v Value) {
+		ns.Set(k, v)
 	})
-	var parent Scope
-	if s.parent != nil {
-		parent = s.parent.Copy()
-	}
-	return &scope{
-		values: obj,
-		parent: parent,
-	}
+	return ns
 }
 
 // FormattedScope produces a fmt.Formatter for pretty printing a scope.

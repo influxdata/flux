@@ -18,11 +18,11 @@ type Package struct {
 
 func NewPackageWithValues(name string, obj values.Object) *Package {
 	if obj == nil {
-		obj = values.NewObject()
+		obj = values.NewObjectWithValues(nil)
 	}
 	return &Package{
 		name:    name,
-		options: values.NewObject(),
+		options: values.NewObjectWithValues(nil),
 		object:  obj,
 	}
 }
@@ -32,11 +32,11 @@ func NewPackage(name string) *Package {
 }
 
 func (p *Package) Copy() *Package {
-	object := values.NewObjectWithBacking(p.object.Len())
+	object := values.NewObject(p.object.Type())
 	p.object.Range(func(k string, v values.Value) {
 		object.Set(k, v)
 	})
-	options := values.NewObjectWithBacking(p.options.Len())
+	options := values.NewObject(p.options.Type())
 	p.options.Range(func(k string, v values.Value) {
 		options.Set(k, v)
 	})
