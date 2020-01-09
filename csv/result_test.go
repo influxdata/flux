@@ -684,6 +684,14 @@ func TestResultDecoder(t *testing.T) {
 				Err: errors.New("failed to create physical plan: query must specify explicit yields when there is more than one result."),
 			},
 		},
+		{
+			name:          "csv with no metadata",
+			encoderConfig: csv.DefaultEncoderConfig(),
+			encoded:       toCRLF(`1,2`),
+			result: &executetest.Result{
+				Err: errors.New("failed to read metadata: missing expected annotations datatype, group, and default"),
+			},
+		},
 	}
 	testCases = append(testCases, symmetricalTestCases...)
 	for _, tc := range testCases {
