@@ -1,7 +1,7 @@
 package universe_test
 
 import (
-	"sort"
+	"math"
 	"strconv"
 	"testing"
 	"time"
@@ -10,6 +10,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/gen"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
@@ -73,10 +75,9 @@ func TestWindowOperation_Marshaling(t *testing.T) {
 }
 
 func TestFixedWindow_PassThrough(t *testing.T) {
-	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-		fw := universe.NewFixedWindowTransformation(
-			d,
-			c,
+	executetest.TransformationPassThroughTestHelper2(t, func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+		return universe.NewFixedWindowTransformation(
+			id,
 			execute.Bounds{},
 			execute.Window{
 				Every:  values.ConvertDuration(time.Minute),
@@ -86,8 +87,8 @@ func TestFixedWindow_PassThrough(t *testing.T) {
 			execute.DefaultStartColLabel,
 			execute.DefaultStopColLabel,
 			false,
+			alloc,
 		)
-		return fw
 	})
 }
 
@@ -831,25 +832,6 @@ func TestFixedWindow_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			d := executetest.NewDataset(executetest.RandomDatasetID())
-			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
-			c.SetTriggerSpec(plan.DefaultTriggerSpec)
-
-			w, err := execute.NewWindow(tc.every, tc.period, tc.offset)
-			if err != nil {
-				t.Fatalf("unexpected error: %s", err)
-			}
-			fw := universe.NewFixedWindowTransformation(
-				d,
-				c,
-				tc.bounds,
-				w,
-				execute.DefaultTimeColLabel,
-				execute.DefaultStartColLabel,
-				execute.DefaultStopColLabel,
-				tc.createEmpty,
-			)
-
 			table0 := &executetest.Table{
 				ColMeta: []flux.ColMeta{
 					{Label: "_start", Type: flux.TTime},
@@ -880,28 +862,24 @@ func TestFixedWindow_Process(t *testing.T) {
 					v,
 				})
 			}
-
-			parentID := executetest.RandomDatasetID()
-			if err := fw.Process(parentID, table0); err != nil {
-				t.Fatal(err)
-			}
-
-			got, err := executetest.TablesFromCache(c)
-			if err != nil {
-				t.Fatal(err)
-			}
-
+			data := []flux.Table{table0}
 			want := tc.want(tc.bounds.Start)
-
-			executetest.NormalizeTables(got)
-			executetest.NormalizeTables(want)
-
-			sort.Sort(executetest.SortedTables(got))
-			sort.Sort(executetest.SortedTables(want))
-
-			if !cmp.Equal(want, got) {
-				t.Errorf("unexpected tables -want/+got\n%s", cmp.Diff(want, got))
-			}
+			executetest.ProcessTestHelper2(t, data, want, nil, func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				w, err := execute.NewWindow(tc.every, tc.period, tc.offset)
+				if err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+				return universe.NewFixedWindowTransformation(
+					id,
+					tc.bounds,
+					w,
+					execute.DefaultTimeColLabel,
+					execute.DefaultStartColLabel,
+					execute.DefaultStopColLabel,
+					tc.createEmpty,
+					executetest.UnlimitedAllocator,
+				)
+			})
 		})
 	}
 }
@@ -1181,4 +1159,78 @@ func TestWindowRewriteRule(t *testing.T) {
 			}
 		})
 	}
+}
+
+func BenchmarkWindow_Infinity_1000(b *testing.B) {
+	benchmarkWindowInfinity(b, 1000)
+}
+
+func benchmarkWindowInfinity(b *testing.B, n int) {
+	infinity := values.ConvertDuration(math.MaxInt64)
+	spec := &universe.WindowProcedureSpec{
+		Window: plan.WindowSpec{
+			Every:  infinity,
+			Period: infinity,
+		},
+		TimeColumn:  execute.DefaultTimeColLabel,
+		StartColumn: execute.DefaultStartColLabel,
+		StopColumn:  execute.DefaultStopColLabel,
+	}
+	benchmarkWindow(b, n, spec)
+}
+
+func BenchmarkWindow_ByMinute_100(b *testing.B) {
+	benchmarkWindowByMinute(b, 100)
+}
+
+func benchmarkWindowByMinute(b *testing.B, n int) {
+	minute := values.ConvertDuration(time.Minute)
+	spec := &universe.WindowProcedureSpec{
+		Window: plan.WindowSpec{
+			Every:  minute,
+			Period: minute,
+		},
+		TimeColumn:  execute.DefaultTimeColLabel,
+		StartColumn: execute.DefaultStartColLabel,
+		StopColumn:  execute.DefaultStopColLabel,
+	}
+	benchmarkWindow(b, n, spec)
+}
+
+func benchmarkWindow(b *testing.B, n int, spec *universe.WindowProcedureSpec) {
+	executetest.ProcessBenchmarkHelper(b,
+		func(alloc *memory.Allocator) (flux.TableIterator, error) {
+			schema := gen.Schema{
+				NumPoints: n,
+				Alloc:     alloc,
+				Tags: []gen.Tag{
+					{Name: "_measurement", Cardinality: 1},
+					{Name: "_field", Cardinality: 6},
+					{Name: "t0", Cardinality: 100},
+					{Name: "t1", Cardinality: 50},
+				},
+			}
+			return gen.Input(schema)
+		},
+		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+			window, _ := execute.NewWindow(
+				spec.Window.Every,
+				spec.Window.Period,
+				spec.Window.Offset,
+			)
+			return universe.NewFixedWindowTransformation(
+				id,
+				execute.Bounds{
+					Start: execute.MinTime,
+					Stop:  execute.MaxTime,
+				},
+				window,
+				spec.TimeColumn,
+				spec.StartColumn,
+				spec.StopColumn,
+				spec.CreateEmpty,
+				alloc,
+			)
+		},
+	)
 }
