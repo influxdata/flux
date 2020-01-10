@@ -366,6 +366,9 @@ func (p *RowProperty) TypeOf() (MonoType, error) {
 
 // String returns a string representation of this monotype.
 func (mt MonoType) String() string {
+	if mt.tbl == nil {
+		return "<monotype: nil>"
+	}
 	switch tk := mt.Kind(); tk {
 	case Unknown:
 		return "<" + fbsemantic.EnumNamesMonoType[fbsemantic.MonoType(tk)] + ">"

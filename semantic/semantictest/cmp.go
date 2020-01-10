@@ -13,7 +13,12 @@ import (
 var CmpOptions = []cmp.Option{
 	cmp.Comparer(func(x, y *regexp.Regexp) bool { return x.String() == y.String() }),
 	cmp.Transformer("Value", TransformValue),
-
+	cmp.Transformer("MonoType", func(mt semantic.MonoType) string {
+		return mt.String()
+	}),
+	cmp.Transformer("PolyType", func(pt semantic.PolyType) string {
+		return pt.String()
+	}),
 	cmpopts.IgnoreUnexported(semantic.ArrayExpression{}),
 	cmpopts.IgnoreUnexported(semantic.Package{}),
 	cmpopts.IgnoreUnexported(semantic.File{}),
