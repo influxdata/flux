@@ -598,6 +598,33 @@ func canonicalizeError(errMsg string) string {
 	})
 }
 
+type exprTypeChecker struct {
+	errs []error
+}
+
+func (e *exprTypeChecker) Visit(node Node) Visitor {
+	return e
+}
+
+func (e *exprTypeChecker) Done(node Node) {
+	nva, ok := node.(*NativeVariableAssignment)
+	if !ok {
+		return
+	}
+	pty := nva.Typ.String()
+	initTy := nva.Init.TypeOf().String()
+	if !strings.Contains(pty, initTy) {
+		err := errors.New(fmt.Sprintf("expected RHS of assignment for %q to have a type contained by %q, but it had %q", nva.Identifier.Name, pty, initTy))
+		e.errs = append(e.errs, err)
+	}
+}
+
+func checkExprTypes(pkg *Package) []error {
+	v := new(exprTypeChecker)
+	Walk(v, pkg)
+	return v.errs
+}
+
 func TestFlatBuffersRoundTrip(t *testing.T) {
 	tcs := []struct {
 		name    string
@@ -922,6 +949,36 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 				"d": "forall [] duration",
 			},
 		},
+		{
+			name:    "regexp literal",
+			fluxSrc: `re = /foo/`,
+			types: map[string]string{
+				"re": "forall [] regexp",
+			},
+		},
+		{
+			name:    "float literal",
+			fluxSrc: `f = 3.0`,
+			types: map[string]string{
+				"f": "forall [] float",
+			},
+		},
+		{
+			name: "typical query",
+			fluxSrc: `
+				v = {
+					bucket: "telegraf",
+					windowPeriod: 15s,
+					timeRangeStart: -5m
+				}
+				q = from(bucket: v.bucket)
+					|> filter(fn: (r) => r._measurement == "disk")
+					|> filter(fn: (r) => r._field == "used_percent")`,
+			types: map[string]string{
+				"v": "forall [] {bucket: string | timeRangeStart: duration | windowPeriod: duration}",
+				"q": "forall [t0, t1] [{_field: string | _measurement: string | _time: time | _value: t0 | t1}]",
+			},
+		},
 	}
 	for _, tc := range tcs {
 		tc := tc
@@ -948,6 +1005,14 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 			}
 			if tc.err != nil {
 				t.Fatalf("expected error %q, but got nothing", tc.err)
+			}
+
+			errs := checkExprTypes(got)
+			if len(errs) > 0 {
+				for _, e := range errs {
+					t.Error(e)
+				}
+				t.Fatal("found errors in expression types")
 			}
 
 			// Create a special comparison option to compare the types
