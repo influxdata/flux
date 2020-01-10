@@ -561,6 +561,11 @@ func (e *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
 		}
 	}
 
+	var err error
+	if e.typ, err = getMonoType(fb); err != nil {
+		return err
+	}
+
 	return nil
 }
 
