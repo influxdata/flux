@@ -138,7 +138,7 @@ func (rcv *CallExpression) FromBuf(fb *fbsemantic.CallExpression) error {
 	if rcv.Arguments, err = objectExprFromProperties(fb); err != nil {
 		return errors.Wrap(err, codes.Inherit, "CallExpression.Arguments")
 	}
-	if rcv.Pipe, err = fromExpressionTable(fb.Pipe, fb.PipeType()); err != nil {
+	if rcv.Pipe, err = fromExpressionTableOptional(fb.Pipe, fb.PipeType()); err != nil {
 		return errors.Wrap(err, codes.Inherit, "CallExpression.Pipe")
 	}
 	if rcv.typ, err = getMonoType(fb); err != nil {

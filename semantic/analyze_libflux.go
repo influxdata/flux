@@ -10,12 +10,13 @@ import (
 // using libflux.
 func AnalyzeSource(fluxSrc string) (*Package, error) {
 	ast := libflux.Parse(fluxSrc)
+	defer ast.Free()
 	sem, err := libflux.Analyze(ast)
 	if err != nil {
 		return nil, err
 	}
+	defer sem.Free()
 	fb, err := sem.MarshalFB()
-
 	if err != nil {
 		return nil, err
 	}

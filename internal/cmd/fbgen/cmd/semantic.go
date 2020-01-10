@@ -208,6 +208,9 @@ func doNamed(o types.Object, field *types.Var) ([]jen.Code, error) {
 		)
 	case "Expression", "Assignment":
 		helperFn := "from" + fieldType + "Table"
+		if isOptionalExpr(o.Name(), field.Name()) {
+			helperFn += "Optional"
+		}
 		fbField := toFBName(o.Name(), field.Name())
 		codes = append(codes,
 			ifErrorPropagate(
@@ -309,6 +312,18 @@ func fbConcat(s1, s2 string) string {
 
 	}
 	return s1 + s2
+}
+
+var optionalExprs map[[2]string]struct{} = map[[2]string]struct{}{
+	{"CallExpression", "Pipe"}: struct{}{},
+}
+
+// isOptionalExpr returns true if the given struct field (with type Expression)
+// is optional.
+func isOptionalExpr(structName, fieldName string) bool {
+	key := [2]string{structName, fieldName}
+	_, ok := optionalExprs[key]
+	return ok
 }
 
 // doBasic returns a slice of Go code that populates a field in a Go semantic graph struct,
