@@ -145,19 +145,15 @@ var (
 	// InvalidValue is a non nil value who's type is semantic.Invalid
 	// TODO (algow): create a invalid monotype
 	InvalidValue = value{t: semantic.BasicBool}
-
-	// Null is an untyped nil value.
-	// TODO (algow): create a null monotype
-	Null = value{t: semantic.BasicBool}
 )
 
-// New constructs a new Value by inferring the type from the interface. If the interface
+// New constructs a new Value by inferring the type from the interface.
+// Note this method will panic if passed a nil value. If the interface
 // does not translate to a valid Value type, then InvalidValue is returned.
 func New(v interface{}) Value {
 	if v == nil {
-		return Null
+		panic("untyped null value")
 	}
-
 	switch v := v.(type) {
 	case string:
 		return NewString(v)
@@ -287,34 +283,7 @@ func UnexpectedKind(got, exp semantic.Nature) error {
 
 // CheckKind panics if got != exp.
 func CheckKind(got, exp semantic.Nature) {
-	if got == exp {
-		return
-	}
-
-	// Try to see if the two natures are functionally
-	// equivalent to see if we are allowed to assign
-	// this type to the other type.
-	equiv := func(l, r semantic.Nature) bool {
-		switch l {
-		case semantic.Nil:
-			switch r {
-			case semantic.Int,
-				semantic.UInt,
-				semantic.Float,
-				semantic.String,
-				semantic.Bool,
-				semantic.Time,
-				semantic.Duration:
-				return true
-			}
-		}
-		return false
-	}
-
-	// If got and exp are not equivalent in either
-	// direction, then panic because we got the wrong
-	// kind.
-	if !equiv(got, exp) && !equiv(exp, got) {
+	if got != exp {
 		panic(UnexpectedKind(got, exp))
 	}
 }

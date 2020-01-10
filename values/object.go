@@ -160,7 +160,7 @@ func (o *object) Get(name string) (Value, bool) {
 			return o.values[i], true
 		}
 	}
-	return Null, false
+	return nil, false
 }
 func (o *object) Len() int {
 	return len(o.values)

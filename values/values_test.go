@@ -22,15 +22,9 @@ func TestNew(t *testing.T) {
 		{v: values.Time(1000), want: values.NewTime(values.Time(1000))},
 		{v: values.ConvertDuration(1), want: values.NewDuration(values.ConvertDuration(1))},
 		{v: regexp.MustCompile(`.+`), want: values.NewRegexp(regexp.MustCompile(`.+`))},
-		{v: values.NewArray(semantic.NewArrayType(semantic.BasicString)), want: values.InvalidValue},
 	} {
 		t.Run(fmt.Sprint(tt.want.Type()), func(t *testing.T) {
 			if want, got := tt.want, values.New(tt.v); !want.Equal(got) {
-				if want.Type().Nature() == semantic.Invalid && got.Type().Nature() == semantic.Invalid {
-					// If the wanted type is invalid and the gotten type is invalid, these
-					// are the same even though they do not equal each other.
-					return
-				}
 				t.Fatalf("unexpected value -want/+got\n\t- %s\n\t+ %s", want, got)
 			}
 		})

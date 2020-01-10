@@ -131,7 +131,7 @@ func (a *array) Function() Function {
 	panic(UnexpectedKind(semantic.Array, semantic.Function))
 }
 func (a *array) Equal(rhs Value) bool {
-	if a.Type() != rhs.Type() {
+	if !a.Type().Equal(rhs.Type()) {
 		return false
 	}
 	r := rhs.Array()

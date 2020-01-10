@@ -24,7 +24,16 @@ var testScope = values.NewNestedScope(nil, values.NewObjectWithValues(
 		"false": values.NewBool(false),
 	}))
 
-var optionsObject = values.NewObject()
+var optionsObject = values.NewObject(semantic.NewObjectType([]semantic.PropertyType{
+	{
+		Key:   []byte("name"),
+		Value: semantic.BasicString,
+	},
+	{
+		Key:   []byte("repeat"),
+		Value: semantic.BasicInt,
+	},
+}))
 
 func addFunc(f *function) {
 	testScope.Set(f.name, f)
@@ -39,6 +48,12 @@ func addValue(name string, v values.Value) {
 }
 
 func init() {
+	optionsObject.Set("name", values.NewString("foo"))
+	optionsObject.Set("repeat", values.NewInt(100))
+
+	addOption("task", optionsObject)
+	addValue("NULL", values.NewNull(semantic.BasicInt))
+
 	addFunc(&function{
 		name: "fortyTwo",
 		t:    semantic.NewFunctionType(semantic.BasicFloat, nil),
@@ -95,12 +110,6 @@ func init() {
 		},
 		hasSideEffect: true,
 	})
-
-	optionsObject.Set("name", values.NewString("foo"))
-	optionsObject.Set("repeat", values.NewInt(100))
-
-	addOption("task", optionsObject)
-	addValue("NULL", values.NewNull(semantic.BasicInt))
 }
 
 // TestEval tests whether a program can run to completion or not

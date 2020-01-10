@@ -462,11 +462,7 @@ func (mt MonoType) String() string {
 }
 
 func (l MonoType) Equal(r MonoType) bool {
-	if l.mt != r.mt {
-		return false
-	}
-	// TODO(algow): We might need this we might not.
-	return true
+	return l.String() == r.String()
 }
 
 func newBasicType(t fbsemantic.Type) MonoType {

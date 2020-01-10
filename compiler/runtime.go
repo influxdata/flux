@@ -210,7 +210,7 @@ func (e *objEvaluator) Type() semantic.MonoType {
 }
 
 func (e *objEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
-	obj := values.NewObject()
+	obj := values.NewObject(e.t)
 	if e.with != nil {
 		with, err := e.with.Eval(ctx, scope)
 		if err != nil {
@@ -684,15 +684,4 @@ func (f *functionValue) Equal(rhs values.Value) bool {
 	}
 	v, ok := rhs.(*functionValue)
 	return ok && (f == v)
-}
-
-type noopEvaluator struct{}
-
-func (noopEvaluator) Type() semantic.MonoType {
-	// TODO (algow): this is supposed to be semantic.Nil
-	return semantic.BasicBool
-}
-
-func (noopEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
-	return values.Null, nil
 }
