@@ -23,21 +23,7 @@ func LookupBinaryFunction(sig BinaryFuncSignature) (BinaryFunction, error) {
 	if !ok {
 		return nil, errors.Newf(codes.Invalid, "unsupported binary expression %v %v %v", sig.Left, sig.Operator, sig.Right)
 	}
-	return binaryFuncNullCheck(f), nil
-}
-
-// binaryFuncNullCheck will wrap any BinaryFunction and
-// check that both of the arguments are non-nil.
-//
-// If either value is null, then it will return null.
-// Otherwise, it will invoke the function to retrieve the result.
-func binaryFuncNullCheck(fn BinaryFunction) BinaryFunction {
-	return func(lv, rv Value) (Value, error) {
-		if lv.IsNull() || rv.IsNull() {
-			return Null, nil
-		}
-		return fn(lv, rv)
-	}
+	return f, nil
 }
 
 // binaryFuncLookup contains a mapping of BinaryFuncSignature's to
@@ -55,71 +41,107 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	// Math Operators
 	//---------------
 	{Operator: ast.AdditionOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicInt), nil
+		}
 		l := lv.Int()
 		r := rv.Int()
 		return NewInt(l + r), nil
 	},
 	{Operator: ast.AdditionOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicUint), nil
+		}
 		l := lv.UInt()
 		r := rv.UInt()
 		return NewUInt(l + r), nil
 	},
 	{Operator: ast.AdditionOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicFloat), nil
+		}
 		l := lv.Float()
 		r := rv.Float()
 		return NewFloat(l + r), nil
 	},
 	{Operator: ast.AdditionOperator, Left: semantic.String, Right: semantic.String}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicString), nil
+		}
 		l := lv.Str()
 		r := rv.Str()
 		return NewString(l + r), nil
 	},
 	{Operator: ast.AdditionOperator, Left: semantic.Duration, Right: semantic.Duration}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicDuration), nil
+		}
 		l := lv.Duration()
 		r := rv.Duration()
 		d := ConvertDuration(l.Duration() + r.Duration())
 		return NewDuration(d), nil
 	},
-	{Operator: ast.AdditionOperator, Left: semantic.Nil, Right: semantic.Nil}: nil,
 	{Operator: ast.SubtractionOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicInt), nil
+		}
 		l := lv.Int()
 		r := rv.Int()
 		return NewInt(l - r), nil
 	},
 	{Operator: ast.SubtractionOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicUint), nil
+		}
 		l := lv.UInt()
 		r := rv.UInt()
 		return NewUInt(l - r), nil
 	},
 	{Operator: ast.SubtractionOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicFloat), nil
+		}
 		l := lv.Float()
 		r := rv.Float()
 		return NewFloat(l - r), nil
 	},
 	{Operator: ast.SubtractionOperator, Left: semantic.Duration, Right: semantic.Duration}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicDuration), nil
+		}
 		l := lv.Duration()
 		r := rv.Duration()
 		d := ConvertDuration(l.Duration() - r.Duration())
 		return NewDuration(d), nil
 	},
-	{Operator: ast.SubtractionOperator, Left: semantic.Nil, Right: semantic.Nil}: nil,
 	{Operator: ast.MultiplicationOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicInt), nil
+		}
 		l := lv.Int()
 		r := rv.Int()
 		return NewInt(l * r), nil
 	},
 	{Operator: ast.MultiplicationOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicUint), nil
+		}
 		l := lv.UInt()
 		r := rv.UInt()
 		return NewUInt(l * r), nil
 	},
 	{Operator: ast.MultiplicationOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicFloat), nil
+		}
 		l := lv.Float()
 		r := rv.Float()
 		return NewFloat(l * r), nil
 	},
-	{Operator: ast.MultiplicationOperator, Left: semantic.Nil, Right: semantic.Nil}: nil,
 	{Operator: ast.DivisionOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicInt), nil
+		}
 		l := lv.Int()
 		r := rv.Int()
 		if r == 0 {
@@ -128,6 +150,9 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewInt(l / r), nil
 	},
 	{Operator: ast.DivisionOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicUint), nil
+		}
 		l := lv.UInt()
 		r := rv.UInt()
 		if r == 0 {
@@ -136,6 +161,9 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewUInt(l / r), nil
 	},
 	{Operator: ast.DivisionOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicFloat), nil
+		}
 		l := lv.Float()
 		r := rv.Float()
 		if r == 0 {
@@ -143,8 +171,10 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		}
 		return NewFloat(l / r), nil
 	},
-	{Operator: ast.DivisionOperator, Left: semantic.Nil, Right: semantic.Nil}: nil,
 	{Operator: ast.ModuloOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicInt), nil
+		}
 		l := lv.Int()
 		r := rv.Int()
 		if r == 0 {
@@ -153,6 +183,9 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewInt(l % r), nil
 	},
 	{Operator: ast.ModuloOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicUint), nil
+		}
 		l := lv.UInt()
 		r := rv.UInt()
 		if r == 0 {
@@ -161,6 +194,9 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewUInt(l % r), nil
 	},
 	{Operator: ast.ModuloOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicFloat), nil
+		}
 		l := lv.Float()
 		r := rv.Float()
 		if r == 0 {
@@ -168,23 +204,30 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		}
 		return NewFloat(math.Mod(l, r)), nil
 	},
-	{Operator: ast.ModuloOperator, Left: semantic.Nil, Right: semantic.Nil}: nil,
 	{Operator: ast.PowerOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicFloat), nil
+		}
 		l := lv.Int()
 		r := rv.Int()
 		return NewFloat(math.Pow(float64(l), float64(r))), nil
 	},
 	{Operator: ast.PowerOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicFloat), nil
+		}
 		l := lv.UInt()
 		r := rv.UInt()
 		return NewFloat(math.Pow(float64(l), float64(r))), nil
 	},
 	{Operator: ast.PowerOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicFloat), nil
+		}
 		l := lv.Float()
 		r := rv.Float()
 		return NewFloat(math.Pow(float64(l), float64(r))), nil
 	},
-	{Operator: ast.PowerOperator, Left: semantic.Nil, Right: semantic.Nil}: nil,
 	//---------------------
 	// Comparison Operators
 	//---------------------
@@ -192,11 +235,17 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	// LessThanEqualOperator
 
 	{Operator: ast.LessThanEqualOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.Int()
 		return NewBool(l <= r), nil
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.Int, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
@@ -205,12 +254,17 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewBool(uint64(l) <= r), nil
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.Float()
 		return NewBool(float64(l) <= r), nil
 	},
-	{Operator: ast.LessThanEqualOperator, Left: semantic.Int, Right: semantic.Nil}: nil,
 	{Operator: ast.LessThanEqualOperator, Left: semantic.UInt, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
@@ -219,59 +273,76 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewBool(l <= uint64(r)), nil
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.UInt()
 		return NewBool(l <= r), nil
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.UInt, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.Float()
 		return NewBool(float64(l) <= r), nil
 	},
-	{Operator: ast.LessThanEqualOperator, Left: semantic.UInt, Right: semantic.Nil}: nil,
 	{Operator: ast.LessThanEqualOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.Int()
 		return NewBool(l <= float64(r)), nil
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.Float, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.UInt()
 		return NewBool(l <= float64(r)), nil
 	},
 	{Operator: ast.LessThanEqualOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.Float()
 		return NewBool(l <= r), nil
 	},
-	{Operator: ast.LessThanEqualOperator, Left: semantic.Float, Right: semantic.Nil}: nil,
 	{Operator: ast.LessThanEqualOperator, Left: semantic.String, Right: semantic.String}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Str()
 		r := rv.Str()
 		return NewBool(l <= r), nil
 	},
-	{Operator: ast.LessThanEqualOperator, Left: semantic.String, Right: semantic.Nil}: nil,
 	{Operator: ast.LessThanEqualOperator, Left: semantic.Time, Right: semantic.Time}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Time().Time()
 		r := rv.Time().Time()
 		return NewBool(!l.After(r)), nil
 	},
-	{Operator: ast.LessThanEqualOperator, Left: semantic.Time, Right: semantic.Nil}:   nil,
-	{Operator: ast.LessThanEqualOperator, Left: semantic.Nil, Right: semantic.Int}:    nil,
-	{Operator: ast.LessThanEqualOperator, Left: semantic.Nil, Right: semantic.UInt}:   nil,
-	{Operator: ast.LessThanEqualOperator, Left: semantic.Nil, Right: semantic.Float}:  nil,
-	{Operator: ast.LessThanEqualOperator, Left: semantic.Nil, Right: semantic.String}: nil,
-	{Operator: ast.LessThanEqualOperator, Left: semantic.Nil, Right: semantic.Time}:   nil,
-	{Operator: ast.LessThanEqualOperator, Left: semantic.Nil, Right: semantic.Nil}:    nil,
 
 	// LessThanOperator
 
 	{Operator: ast.LessThanOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.Int()
 		return NewBool(l < r), nil
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.Int, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
@@ -280,12 +351,17 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewBool(uint64(l) < r), nil
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.Float()
 		return NewBool(float64(l) < r), nil
 	},
-	{Operator: ast.LessThanOperator, Left: semantic.Int, Right: semantic.Nil}: nil,
 	{Operator: ast.LessThanOperator, Left: semantic.UInt, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
@@ -294,59 +370,76 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewBool(l < uint64(r)), nil
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.UInt()
 		return NewBool(l < r), nil
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.UInt, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.Float()
 		return NewBool(float64(l) < r), nil
 	},
-	{Operator: ast.LessThanOperator, Left: semantic.UInt, Right: semantic.Nil}: nil,
 	{Operator: ast.LessThanOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.Int()
 		return NewBool(l < float64(r)), nil
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.Float, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.UInt()
 		return NewBool(l < float64(r)), nil
 	},
 	{Operator: ast.LessThanOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.Float()
 		return NewBool(l < r), nil
 	},
-	{Operator: ast.LessThanOperator, Left: semantic.Float, Right: semantic.Nil}: nil,
 	{Operator: ast.LessThanOperator, Left: semantic.String, Right: semantic.String}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Str()
 		r := rv.Str()
 		return NewBool(l < r), nil
 	},
-	{Operator: ast.LessThanOperator, Left: semantic.String, Right: semantic.Nil}: nil,
 	{Operator: ast.LessThanOperator, Left: semantic.Time, Right: semantic.Time}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Time().Time()
 		r := rv.Time().Time()
 		return NewBool(l.Before(r)), nil
 	},
-	{Operator: ast.LessThanOperator, Left: semantic.Time, Right: semantic.Nil}:   nil,
-	{Operator: ast.LessThanOperator, Left: semantic.Nil, Right: semantic.Int}:    nil,
-	{Operator: ast.LessThanOperator, Left: semantic.Nil, Right: semantic.UInt}:   nil,
-	{Operator: ast.LessThanOperator, Left: semantic.Nil, Right: semantic.Float}:  nil,
-	{Operator: ast.LessThanOperator, Left: semantic.Nil, Right: semantic.String}: nil,
-	{Operator: ast.LessThanOperator, Left: semantic.Nil, Right: semantic.Time}:   nil,
-	{Operator: ast.LessThanOperator, Left: semantic.Nil, Right: semantic.Nil}:    nil,
 
 	// GreaterThanEqualOperator
 
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.Int()
 		return NewBool(l >= r), nil
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Int, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
@@ -355,12 +448,17 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewBool(uint64(l) >= r), nil
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.Float()
 		return NewBool(float64(l) >= r), nil
 	},
-	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Int, Right: semantic.Nil}: nil,
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.UInt, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
@@ -369,59 +467,76 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewBool(l >= uint64(r)), nil
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.UInt()
 		return NewBool(l >= r), nil
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.UInt, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.Float()
 		return NewBool(float64(l) >= r), nil
 	},
-	{Operator: ast.GreaterThanEqualOperator, Left: semantic.UInt, Right: semantic.Nil}: nil,
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.Int()
 		return NewBool(l >= float64(r)), nil
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Float, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.UInt()
 		return NewBool(l >= float64(r)), nil
 	},
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.Float()
 		return NewBool(l >= r), nil
 	},
-	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Float, Right: semantic.Nil}: nil,
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.String, Right: semantic.String}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Str()
 		r := rv.Str()
 		return NewBool(l >= r), nil
 	},
-	{Operator: ast.GreaterThanEqualOperator, Left: semantic.String, Right: semantic.Nil}: nil,
 	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Time, Right: semantic.Time}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Time().Time()
 		r := rv.Time().Time()
 		return NewBool(!r.After(l)), nil
 	},
-	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Time, Right: semantic.Nil}:   nil,
-	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Nil, Right: semantic.Int}:    nil,
-	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Nil, Right: semantic.UInt}:   nil,
-	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Nil, Right: semantic.Float}:  nil,
-	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Nil, Right: semantic.String}: nil,
-	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Nil, Right: semantic.Time}:   nil,
-	{Operator: ast.GreaterThanEqualOperator, Left: semantic.Nil, Right: semantic.Nil}:    nil,
 
 	// GreaterThanOperator
 
 	{Operator: ast.GreaterThanOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.Int()
 		return NewBool(l > r), nil
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.Int, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
@@ -430,12 +545,17 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewBool(uint64(l) > r), nil
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.Float()
 		return NewBool(float64(l) > r), nil
 	},
-	{Operator: ast.GreaterThanOperator, Left: semantic.Int, Right: semantic.Nil}: nil,
 	{Operator: ast.GreaterThanOperator, Left: semantic.UInt, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
@@ -444,65 +564,84 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewBool(l > uint64(r)), nil
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.UInt()
 		return NewBool(l > r), nil
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.UInt, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.Float()
 		return NewBool(float64(l) > r), nil
 	},
-	{Operator: ast.GreaterThanOperator, Left: semantic.UInt, Right: semantic.Nil}: nil,
 	{Operator: ast.GreaterThanOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.Int()
 		return NewBool(l > float64(r)), nil
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.Float, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.UInt()
 		return NewBool(l > float64(r)), nil
 	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.Float()
 		return NewBool(l > r), nil
 	},
-	{Operator: ast.GreaterThanOperator, Left: semantic.Float, Right: semantic.Nil}: nil,
 	{Operator: ast.GreaterThanOperator, Left: semantic.String, Right: semantic.String}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Str()
 		r := rv.Str()
 		return NewBool(l > r), nil
 	},
-	{Operator: ast.GreaterThanOperator, Left: semantic.String, Right: semantic.Nil}: nil,
 	{Operator: ast.GreaterThanOperator, Left: semantic.Time, Right: semantic.Time}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Time().Time()
 		r := rv.Time().Time()
 		return NewBool(l.After(r)), nil
 	},
-	{Operator: ast.GreaterThanOperator, Left: semantic.Time, Right: semantic.Nil}:   nil,
-	{Operator: ast.GreaterThanOperator, Left: semantic.Nil, Right: semantic.Int}:    nil,
-	{Operator: ast.GreaterThanOperator, Left: semantic.Nil, Right: semantic.UInt}:   nil,
-	{Operator: ast.GreaterThanOperator, Left: semantic.Nil, Right: semantic.Float}:  nil,
-	{Operator: ast.GreaterThanOperator, Left: semantic.Nil, Right: semantic.String}: nil,
-	{Operator: ast.GreaterThanOperator, Left: semantic.Nil, Right: semantic.Time}:   nil,
-	{Operator: ast.GreaterThanOperator, Left: semantic.Nil, Right: semantic.Nil}:    nil,
 
 	// EqualOperator
 
 	{Operator: ast.EqualOperator, Left: semantic.Bool, Right: semantic.Bool}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Bool()
 		r := rv.Bool()
 		return NewBool(l == r), nil
 	},
-	{Operator: ast.EqualOperator, Left: semantic.Bool, Right: semantic.Nil}: nil,
 	{Operator: ast.EqualOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.Int()
 		return NewBool(l == r), nil
 	},
 	{Operator: ast.EqualOperator, Left: semantic.Int, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
@@ -511,12 +650,17 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewBool(uint64(l) == r), nil
 	},
 	{Operator: ast.EqualOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.Float()
 		return NewBool(float64(l) == r), nil
 	},
-	{Operator: ast.EqualOperator, Left: semantic.Int, Right: semantic.Nil}: nil,
 	{Operator: ast.EqualOperator, Left: semantic.UInt, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
@@ -525,51 +669,61 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewBool(l == uint64(r)), nil
 	},
 	{Operator: ast.EqualOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.UInt()
 		return NewBool(l == r), nil
 	},
 	{Operator: ast.EqualOperator, Left: semantic.UInt, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.Float()
 		return NewBool(float64(l) == r), nil
 	},
-	{Operator: ast.EqualOperator, Left: semantic.UInt, Right: semantic.Nil}: nil,
 	{Operator: ast.EqualOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.Int()
 		return NewBool(l == float64(r)), nil
 	},
 	{Operator: ast.EqualOperator, Left: semantic.Float, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.UInt()
 		return NewBool(l == float64(r)), nil
 	},
 	{Operator: ast.EqualOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.Float()
 		return NewBool(l == r), nil
 	},
-	{Operator: ast.EqualOperator, Left: semantic.Float, Right: semantic.Nil}: nil,
 	{Operator: ast.EqualOperator, Left: semantic.String, Right: semantic.String}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Str()
 		r := rv.Str()
 		return NewBool(l == r), nil
 	},
-	{Operator: ast.EqualOperator, Left: semantic.String, Right: semantic.Nil}: nil,
 	{Operator: ast.EqualOperator, Left: semantic.Time, Right: semantic.Time}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Time().Time()
 		r := rv.Time().Time()
 		return NewBool(l.Equal(r)), nil
 	},
-	{Operator: ast.EqualOperator, Left: semantic.Time, Right: semantic.Nil}:   nil,
-	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Bool}:   nil,
-	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Int}:    nil,
-	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.UInt}:   nil,
-	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Float}:  nil,
-	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.String}: nil,
-	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Time}:   nil,
-	{Operator: ast.EqualOperator, Left: semantic.Nil, Right: semantic.Nil}:    nil,
 	{Operator: ast.EqualOperator, Left: semantic.Array, Right: semantic.Array}: func(lv, rv Value) (Value, error) {
 		return NewBool(lv.Equal(rv)), nil
 	},
@@ -583,17 +737,25 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	// NotEqualOperator
 
 	{Operator: ast.NotEqualOperator, Left: semantic.Bool, Right: semantic.Bool}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Bool()
 		r := rv.Bool()
 		return NewBool(l != r), nil
 	},
-	{Operator: ast.NotEqualOperator, Left: semantic.Bool, Right: semantic.Nil}: nil,
 	{Operator: ast.NotEqualOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.Int()
 		return NewBool(l != r), nil
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.Int, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.UInt()
 		if l < 0 {
@@ -602,12 +764,17 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewBool(uint64(l) != r), nil
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Int()
 		r := rv.Float()
 		return NewBool(float64(l) != r), nil
 	},
-	{Operator: ast.NotEqualOperator, Left: semantic.Int, Right: semantic.Nil}: nil,
 	{Operator: ast.NotEqualOperator, Left: semantic.UInt, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.Int()
 		if r < 0 {
@@ -616,58 +783,74 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		return NewBool(l != uint64(r)), nil
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.UInt, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.UInt()
 		return NewBool(l != r), nil
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.UInt, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.UInt()
 		r := rv.Float()
 		return NewBool(float64(l) != r), nil
 	},
-	{Operator: ast.NotEqualOperator, Left: semantic.UInt, Right: semantic.Nil}: nil,
 	{Operator: ast.NotEqualOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.Int()
 		return NewBool(l != float64(r)), nil
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.Float, Right: semantic.UInt}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.UInt()
 		return NewBool(l != float64(r)), nil
 	},
 	{Operator: ast.NotEqualOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Float()
 		r := rv.Float()
 		return NewBool(l != r), nil
 	},
-	{Operator: ast.NotEqualOperator, Left: semantic.Float, Right: semantic.Nil}: nil,
 	{Operator: ast.NotEqualOperator, Left: semantic.String, Right: semantic.String}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Str()
 		r := rv.Str()
 		return NewBool(l != r), nil
 	},
-	{Operator: ast.NotEqualOperator, Left: semantic.String, Right: semantic.Nil}: nil,
 	{Operator: ast.NotEqualOperator, Left: semantic.Time, Right: semantic.Time}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() || rv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Time().Time()
 		r := rv.Time().Time()
 		return NewBool(!l.Equal(r)), nil
 	},
-	{Operator: ast.NotEqualOperator, Left: semantic.Time, Right: semantic.Nil}:   nil,
-	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.Bool}:   nil,
-	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.Int}:    nil,
-	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.UInt}:   nil,
-	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.Float}:  nil,
-	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.String}: nil,
-	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.Time}:   nil,
-	{Operator: ast.NotEqualOperator, Left: semantic.Nil, Right: semantic.Nil}:    nil,
 
 	{Operator: ast.RegexpMatchOperator, Left: semantic.String, Right: semantic.Regexp}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Str()
 		r := rv.Regexp()
 		return NewBool(r.MatchString(l)), nil
 	},
 	{Operator: ast.NotRegexpMatchOperator, Left: semantic.String, Right: semantic.Regexp}: func(lv, rv Value) (Value, error) {
+		if lv.IsNull() {
+			return NewNull(semantic.BasicBool), nil
+		}
 		l := lv.Str()
 		r := rv.Regexp()
 		return NewBool(!r.MatchString(l)), nil

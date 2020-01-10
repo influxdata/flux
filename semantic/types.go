@@ -9,7 +9,6 @@ type Nature int
 
 const (
 	Invalid Nature = iota
-	Nil
 	String
 	Bytes
 	Int
@@ -26,7 +25,6 @@ const (
 
 var natureNames = []string{
 	Invalid:  "invalid",
-	Nil:      "nil",
 	String:   "string",
 	Bytes:    "bytes",
 	Int:      "int",
