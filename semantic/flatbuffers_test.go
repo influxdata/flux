@@ -39,7 +39,7 @@ var cmpOpts = []cmp.Option{
 	cmp.Transformer("", func(ty MonoType) int {
 		return 0
 	}),
-	cmp.Transformer("", func(ty *PolyType) int {
+	cmp.Transformer("", func(ty PolyType) int {
 		return 0
 	}),
 }
@@ -473,7 +473,7 @@ func TestRoundTrip(t *testing.T) {
 			// provided by the test case.
 			assignCmp := cmp.Transformer("assign", func(nva *NativeVariableAssignment) *MyAssignement {
 				var typStr string
-				if nva.Typ == nil {
+				if nva.Typ.fb == nil {
 					// This is the assignment from Go.
 					var ok bool
 					typStr, ok = tc.types[nva.Identifier.Name]

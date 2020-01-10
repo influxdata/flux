@@ -109,6 +109,9 @@ func (pt PolyType) SortedVars() ([]*fbsemantic.Var, error) {
 
 // String returns a string representation for this polytype.
 func (pt PolyType) String() string {
+	if pt.fb == nil {
+		return "<polytype: nil>"
+	}
 	var sb strings.Builder
 
 	sb.WriteString("forall [")
