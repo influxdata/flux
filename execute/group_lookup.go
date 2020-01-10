@@ -1,8 +1,10 @@
 package execute
 
 import (
+	"bytes"
 	"sort"
 
+	"github.com/apache/arrow/go/arrow"
 	"github.com/influxdata/flux"
 )
 
@@ -293,5 +295,155 @@ func (l *GroupLookup) Range(f func(key flux.GroupKey, value interface{})) {
 		if i < len(l.groups) && l.groups[i].id == kg.id {
 			i++
 		}
+	}
+}
+
+// RandomAccessGroupLookup is a GroupLookup container that is optimized
+// for random access.
+type RandomAccessGroupLookup struct {
+	elements []*groupLookupElement
+	index    map[string]*groupLookupElement
+}
+
+type groupLookupElement struct {
+	Key     flux.GroupKey
+	Value   interface{}
+	Deleted bool
+}
+
+// NewRandomAccessGroupLookup constructs a RandomAccessGroupLookup.
+func NewRandomAccessGroupLookup() *RandomAccessGroupLookup {
+	return &RandomAccessGroupLookup{
+		index: make(map[string]*groupLookupElement),
+	}
+}
+
+func (l *RandomAccessGroupLookup) idForKey(key flux.GroupKey) []byte {
+	var data [8]byte
+	k, ok := key.(*groupKey)
+	if !ok {
+		k = newGroupKey(key.Cols(), key.Values())
+	}
+
+	var b bytes.Buffer
+	for _, i := range k.sorted {
+		c := k.cols[i]
+		vsz := 8
+		if k.values[i].IsNull() {
+			vsz = 1
+		} else if c.Type == flux.TBool {
+			vsz = 1
+		} else if c.Type == flux.TString {
+			vsz = len(k.values[i].Str())
+		}
+		// Extra 3 bytes for the two delimeters and the type.
+		b.Grow(len(c.Label) + vsz + 3)
+
+		b.WriteString(c.Label)
+		b.WriteByte(0)
+		b.WriteByte(byte(c.Type))
+
+		v := k.values[i]
+		if !v.IsNull() {
+			switch c.Type {
+			case flux.TInt:
+				arrow.Int64Traits.PutValue(data[:], v.Int())
+				b.Write(data[:arrow.Int64SizeBytes])
+			case flux.TUInt:
+				arrow.Uint64Traits.PutValue(data[:], v.UInt())
+				b.Write(data[:arrow.Uint64SizeBytes])
+			case flux.TFloat:
+				arrow.Float64Traits.PutValue(data[:], v.Float())
+				b.Write(data[:arrow.Float64SizeBytes])
+			case flux.TString:
+				b.WriteString(v.Str())
+			case flux.TBool:
+				if v.Bool() {
+					b.WriteByte(1)
+				} else {
+					b.WriteByte(0)
+				}
+			case flux.TTime:
+				arrow.Int64Traits.PutValue(data[:], int64(v.Time()))
+				b.Write(data[:arrow.Int64SizeBytes])
+			}
+		} else {
+			// Write an invalid byte if there is a null value
+			// so that we differentiate between an empty string
+			// and a null value.
+			b.WriteByte(^byte(0))
+		}
+		b.WriteByte(0)
+	}
+	return b.Bytes()
+}
+
+// Lookup will retrieve the value associated with the given key if it exists.
+func (l *RandomAccessGroupLookup) Lookup(key flux.GroupKey) (interface{}, bool) {
+	id := l.idForKey(key)
+	e, ok := l.index[string(id)]
+	if !ok || e.Deleted {
+		return nil, false
+	}
+	return e.Value, true
+}
+
+// LookupOrCreate will retrieve the value associated with the given key or,
+// if it does not exist, will invoke the function to create one and set
+// it in the group lookup.
+func (l *RandomAccessGroupLookup) LookupOrCreate(key flux.GroupKey, fn func() interface{}) interface{} {
+	value, ok := l.Lookup(key)
+	if !ok {
+		value = fn()
+		l.Set(key, value)
+	}
+	return value
+}
+
+// Set will set the value for the given key. It will overwrite an existing value.
+func (l *RandomAccessGroupLookup) Set(key flux.GroupKey, value interface{}) {
+	id := l.idForKey(key)
+	e, ok := l.index[string(id)]
+	if !ok {
+		e = &groupLookupElement{
+			Key: key,
+		}
+		l.index[string(id)] = e
+		l.elements = append(l.elements, e)
+	}
+	e.Value = value
+}
+
+// Clear will clear the group lookup and reset it to contain nothing.
+func (l *RandomAccessGroupLookup) Clear() {
+	l.elements = nil
+	l.index = make(map[string]*groupLookupElement)
+}
+
+// Delete will remove the key from this GroupLookup. It will return the same
+// thing as a call to Lookup.
+func (l *RandomAccessGroupLookup) Delete(key flux.GroupKey) (v interface{}, found bool) {
+	if key == nil {
+		return
+	}
+
+	id := l.idForKey(key)
+	e, ok := l.index[string(id)]
+	if !ok || e.Deleted {
+		return nil, false
+	}
+	e.Deleted = true
+	return e.Value, true
+}
+
+// Range will iterate over all groups keys in a stable ordering.
+// Range must not be called within another call to Range.
+// It is safe to call Set/Delete while ranging.
+func (l *RandomAccessGroupLookup) Range(f func(key flux.GroupKey, value interface{})) {
+	for _, e := range l.elements {
+		if e.Deleted {
+			continue
+		}
+		f(e.Key, e.Value)
 	}
 }

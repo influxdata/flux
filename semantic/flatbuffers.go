@@ -112,6 +112,13 @@ func fromExpressionTable(getTable getTableFn, exprType fbsemantic.Expression) (E
 			return nil, errors.Newf(codes.Internal, "missing unknown expr type %v", exprType)
 		}
 	}
+	return fromExpressionTableOptional(getTable, exprType)
+}
+func fromExpressionTableOptional(getTable getTableFn, exprType fbsemantic.Expression) (Expression, error) {
+	tbl := new(flatbuffers.Table)
+	if !getTable(tbl) {
+		return nil, nil
+	}
 	switch exprType {
 	case fbsemantic.ExpressionStringExpression:
 		fbExpr := new(fbsemantic.StringExpression)
@@ -402,21 +409,23 @@ func fromFBDurationVector(fbDurLit *fbsemantic.DurationLiteral) ([]ast.Duration,
 		return nil, errors.New(codes.Internal, "missing duration vector")
 	}
 
-	durs := make([]ast.Duration, fbDurLit.ValueLength())
+	// Durations are represented as an array, but this seems
+	// unnecessary?
+	durs := make([]ast.Duration, 0, 2)
 	for i := 0; i < fbDurLit.ValueLength(); i++ {
 		fbDur := new(fbsemantic.Duration)
 		if !fbDurLit.Value(fbDur, i) {
 			return nil, errors.Newf(codes.Internal, "missing duration at position %v", i)
 		}
-		nano := ast.Duration{
-			Magnitude: fbDur.Nanoseconds(),
-			Unit:      "ns",
-		}
 		month := ast.Duration{
 			Magnitude: fbDur.Months(),
 			Unit:      "mo",
 		}
-		durs = append(durs, nano, month)
+		nano := ast.Duration{
+			Magnitude: fbDur.Nanoseconds(),
+			Unit:      "ns",
+		}
+		durs = append(durs, month, nano)
 	}
 	return durs, nil
 }
@@ -467,7 +476,7 @@ func fromFBStringExpressionPartVector(fbExpr *fbsemantic.StringExpression) ([]St
 			return nil, errors.New(codes.Internal, "expected to find either text or interpolated expression")
 		}
 
-		parts = append(parts, part)
+		parts[i] = part
 	}
 	return parts, nil
 }
@@ -529,7 +538,9 @@ func (e *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
 				}
 			}
 		}
-		bl.Parameters = ps
+		if len(ps.List) > 0 {
+			bl.Parameters = ps
+		}
 
 		fbBlock := fb.Body(nil)
 		if fbBlock == nil {
@@ -543,9 +554,11 @@ func (e *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
 	}
 	e.Block = bl
 
-	e.Defaults = &ObjectExpression{
-		loc:        e.loc,
-		Properties: defaults,
+	if len(defaults) > 0 {
+		e.Defaults = &ObjectExpression{
+			loc:        e.loc,
+			Properties: defaults,
+		}
 	}
 
 	return nil
@@ -602,10 +615,17 @@ func objectExprFromProperties(fb *fbsemantic.CallExpression) (*ObjectExpression,
 		if err := prop.FromBuf(fbProp); err != nil {
 			return nil, err
 		}
-		props = append(props, prop)
+		props[i] = prop
 	}
 
+	l := loc{}
+	if len(props) > 0 {
+		l = props[0].loc
+		l.End = props[len(props)-1].loc.End
+		l.Source = ""
+	}
 	obj := &ObjectExpression{
+		loc:        l,
 		Properties: props,
 	}
 	return obj, nil

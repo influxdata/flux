@@ -143,7 +143,6 @@ func (pt PolyType) String() string {
 
 		if needWhere {
 			sb.WriteString("where ")
-		} else {
 			needWhere = false
 		}
 		mtv := monoTypeFromVar(tv)
@@ -165,4 +164,31 @@ func (pt PolyType) String() string {
 	sb.WriteString(mt.String())
 
 	return sb.String()
+}
+
+// GetCanonicalMapping returns a map of type variable numbers to
+// canonicalized numbers that start from 0.
+// Tests that do type inference will have type variables that are sensitive
+// to changes in the standard library, this helps to solve that problem.
+func (pt *PolyType) GetCanonicalMapping() (map[uint64]int, error) {
+	tvm := make(map[uint64]int)
+	counter := 0
+
+	svars, err := pt.SortedVars()
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range svars {
+		updateTVarMap(&counter, tvm, v.I())
+	}
+
+	mt, err := pt.Expr()
+	if err != nil {
+		return nil, err
+	}
+	if err := mt.getCanonicalMapping(&counter, tvm); err != nil {
+		return nil, err
+	}
+
+	return tvm, nil
 }

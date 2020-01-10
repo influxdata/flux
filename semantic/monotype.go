@@ -713,3 +713,83 @@ func buildObjectType(builder *flatbuffers.Builder, properties []PropertyType, ex
 	}
 	return fbsemantic.RowEnd(builder)
 }
+
+func updateTVarMap(counter *int, m map[uint64]int, tv uint64) {
+	if _, ok := m[tv]; ok {
+		return
+	}
+	m[tv] = *counter
+	*counter++
+}
+
+func (mt MonoType) getCanonicalMapping(counter *int, tvm map[uint64]int) error {
+	switch tk := mt.Kind(); tk {
+	case Var:
+		tv, err := mt.VarNum()
+		if err != nil {
+			return err
+		}
+		updateTVarMap(counter, tvm, tv)
+	case Arr:
+		et, err := mt.ElemType()
+		if err != nil {
+			return err
+		}
+		if err := et.getCanonicalMapping(counter, tvm); err != nil {
+			return err
+		}
+	case Row:
+		n_props, err := mt.NumProperties()
+		if err != nil {
+			return err
+		}
+		for i := 0; i < n_props; i++ {
+			p, err := mt.RowProperty(i)
+			if err != nil {
+				return err
+			}
+			pt, err := p.TypeOf()
+			if err != nil {
+				return err
+			}
+			if err := pt.getCanonicalMapping(counter, tvm); err != nil {
+				return err
+			}
+		}
+		evar, ok, err := mt.Extends()
+		if err != nil {
+			return err
+		} else if ok {
+			if err := evar.getCanonicalMapping(counter, tvm); err != nil {
+				return err
+			}
+		}
+	case Fun:
+		nargs, err := mt.NumArguments()
+		if err != nil {
+			return err
+		}
+		for i := 0; i < nargs; i++ {
+			arg, err := mt.Argument(i)
+			if err != nil {
+				return err
+			}
+			at, err := arg.TypeOf()
+			if err != nil {
+				return err
+			}
+			if err := at.getCanonicalMapping(counter, tvm); err != nil {
+				return err
+			}
+		}
+		rt, err := mt.ReturnType()
+		if err != nil {
+			return err
+		}
+		if err := rt.getCanonicalMapping(counter, tvm); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
