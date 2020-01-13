@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -39,16 +40,21 @@ func Parse(flux string) (*ast.Package, error) {
 
 // Eval accepts a Flux script and evaluates it to produce a set of side effects (as a slice of values) and a scope.
 func Eval(ctx context.Context, flux string, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
-	astPkg, err := Parse(flux)
-	if err != nil {
-		return nil, nil, err
-	}
-	return EvalAST(ctx, astPkg, opts...)
+	h := parser.ParseToHandle([]byte(flux))
+	return evalHandle(ctx, h, opts...)
 }
 
 // EvalAST accepts a Flux AST and evaluates it to produce a set of side effects (as a slice of values) and a scope.
 func EvalAST(ctx context.Context, astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
-	semPkg, err := semantic.New(astPkg)
+	h, err := parser.ToHandle(astPkg)
+	if err != nil {
+		return nil, nil, err
+	}
+	return evalHandle(ctx, h, opts...)
+}
+
+func evalHandle(ctx context.Context, h *libflux.ASTPkg, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+	semPkg, err := semantic.AnalyzePackage(h)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -370,25 +376,26 @@ func evalBuiltInPackages() error {
 			err := ast.GetError(astPkg)
 			return errors.Wrapf(err, codes.Inherit, "failed to parse builtin package %q", astPkg.Path)
 		}
-		semPkg, err := semantic.New(astPkg)
-		if err != nil {
-			return errors.Wrapf(err, codes.Inherit, "failed to create semantic graph for builtin package %q", astPkg.Path)
-		}
-
-		pkg := stdlib.pkgs[astPkg.Path]
-		if pkg == nil {
-			return errors.Wrapf(err, codes.Inherit, "package does not exist %q", astPkg.Path)
-		}
-
-		// Validate packages before evaluating them
-		if err := validatePackageBuiltins(pkg, astPkg); err != nil {
-			return errors.Wrapf(err, codes.Inherit, "package has invalid builtins %q", astPkg.Path)
-		}
-
-		itrp := interpreter.NewInterpreter(pkg)
-		if _, err := itrp.Eval(context.Background(), semPkg, preludeScope.Nest(pkg), stdlib); err != nil {
-			return errors.Wrapf(err, codes.Inherit, "failed to evaluate builtin package %q", astPkg.Path)
-		}
+		// TODO(algow): https://github.com/influxdata/flux/issues/2404
+		//semPkg, err := semantic.New(astPkg)
+		//if err != nil {
+		//	return errors.Wrapf(err, codes.Inherit, "failed to create semantic graph for builtin package %q", astPkg.Path)
+		//}
+		//
+		//pkg := stdlib.pkgs[astPkg.Path]
+		//if pkg == nil {
+		//	return errors.Wrapf(err, codes.Inherit, "package does not exist %q", astPkg.Path)
+		//}
+		//
+		//// Validate packages before evaluating them
+		//if err := validatePackageBuiltins(pkg, astPkg); err != nil {
+		//	return errors.Wrapf(err, codes.Inherit, "package has invalid builtins %q", astPkg.Path)
+		//}
+		//
+		//itrp := interpreter.NewInterpreter(pkg)
+		//if _, err := itrp.Eval(context.Background(), semPkg, preludeScope.Nest(pkg), stdlib); err != nil {
+		//	return errors.Wrapf(err, codes.Inherit, "failed to evaluate builtin package %q", astPkg.Path)
+		//}
 	}
 	return nil
 }

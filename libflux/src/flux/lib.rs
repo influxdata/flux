@@ -89,6 +89,31 @@ pub unsafe extern "C" fn flux_parse(cstr: *mut c_char) -> *mut flux_ast_pkg_t {
 
 /// # Safety
 ///
+/// This function is unsafe because it dereferences a raw pointer passed
+/// in as a parameter. For example, if that pointer is NULL, undefined behavior
+/// could occur.
+#[no_mangle]
+pub unsafe extern "C" fn flux_parse_json(
+    cstr: *mut c_char,
+    out_pkg: *mut *const flux_ast_pkg_t,
+) -> *mut flux_error_t {
+    let buf = CStr::from_ptr(cstr).to_bytes(); // Unsafe
+    let res: Result<ast::Package, serde_json::error::Error> = serde_json::from_slice(buf);
+    match res {
+        Ok(pkg) => {
+            let pkg = Box::into_raw(Box::new(pkg)) as *const flux_ast_pkg_t;
+            *out_pkg = pkg;
+            std::ptr::null_mut()
+        }
+        Err(err) => {
+            let errh = ErrorHandle { err: Box::new(err) };
+            return Box::into_raw(Box::new(errh)) as *mut flux_error_t;
+        }
+    }
+}
+
+/// # Safety
+///
 /// This function is unsafe because it dereferences raw pointers passed
 /// in as parameters. For example, if that pointer is NULL, undefined behavior
 /// could occur.

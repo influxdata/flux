@@ -2594,6 +2594,77 @@ fn identity_function() {
         ],
     }
 }
+
+#[test]
+fn call_expr() {
+    // missing parameter
+    test_infer_err! {
+        src: r#"
+            plusOne = (x) => x + 1.0
+            plusOne()
+        "#,
+    }
+    // missing pipe
+    test_infer_err! {
+        src: r#"
+            add = (a=<-,b) => a + b
+            add(b:2)
+        "#,
+    }
+    // function does not take a pipe argument
+    test_infer_err! {
+        src: r#"
+            f = () => 0
+            g = () => 1 |> f()
+        "#,
+    }
+    // function requires a pipe argument
+    test_infer_err! {
+        src: r#"
+            f = (x=<-) => x
+            g = () => f()
+        "#,
+    }
+    test_infer! {
+        src: r#"
+            f = (x) => 0 |> x()
+            f(x: (v=<-) => v)
+            f(x: (w=<-) => w)
+        "#,
+        exp: map![
+            "f" => "forall [t2] (x:(<-:int) -> t2) -> t2",
+        ]
+    }
+    // pipe args have different names
+    test_infer_err! {
+        src: r#"
+            f = (arg=(x=<-) => x, w) => w |> arg()
+            f(arg: (v=<-) => v, w: 0)
+        "#,
+    }
+    // Seems like it might fail because of pipe arg mismatch,
+    // but it's okay.
+    test_infer! {
+        src: r#"
+            f = (x, y) => x(arg: y)
+            f(x: (arg=<-) => arg, y: 0)
+        "#,
+        exp: map![
+            "f" => "forall [t2, t4] (x:(arg:t2) -> t4, y:t2) -> t4",
+        ]
+    }
+    test_infer! {
+        src: r#"
+            f = (arg=(x=<-) => x) => 0 |> arg()
+            g = () => f(arg: (x) => 5 + x)
+        "#,
+        exp: map![
+            "f" => "forall [] (?arg:(<-x:int) -> int) -> int",
+            "g" => "forall [] () -> int",
+        ]
+    }
+}
+
 #[test]
 fn polymorphic_instantiation() {
     test_infer! {

@@ -33,6 +33,15 @@ struct flux_ast_pkg_t;
 // of the query.
 struct flux_ast_pkg_t *flux_parse(const char *);
 
+// flux_parse_json will take in a JSON string for an AST package
+// and populate its second pointer argument with a pointer to an
+// AST package.
+// Note that the caller should free the pointer to the AST, not the pointer to the pointer
+// to the AST.  It is the former that references memory allocated by Rust.
+// If an error happens it will be returned. The error must be freed
+// using flux_free if it is non-null.
+struct flux_error_t *flux_parse_json(const char *, struct flux_ast_pkg_t **);
+
 // flux_ast_marshal_json will marshal json and fill in the given buffer
 // with the data. If successful, memory will be allocated for the data
 // within the buffer and it is the caller's responsibility to free this

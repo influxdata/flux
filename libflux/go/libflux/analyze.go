@@ -7,9 +7,11 @@ package libflux
 import "C"
 
 import (
-	"errors"
 	"runtime"
 	"unsafe"
+
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // SemanticPkg is a Rust pointer to a semantic package.
@@ -26,7 +28,7 @@ func (p *SemanticPkg) MarshalFB() ([]byte, error) {
 		defer C.flux_free(unsafe.Pointer(cstr))
 
 		str := C.GoString(cstr)
-		return nil, errors.New(str)
+		return nil, errors.Newf(codes.Internal, "could not marshal semantic graph to FlatBuffer: %v", str)
 	}
 	defer C.flux_free(buf.data)
 
@@ -60,12 +62,13 @@ func Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 		defer C.flux_free(unsafe.Pointer(cstr))
 
 		str := C.GoString(cstr)
-		return nil, errors.New(str)
+		return nil, errors.New(codes.Invalid, str)
 	}
 	p := &SemanticPkg{ptr: semPkg}
 	runtime.SetFinalizer(p, free)
 	return p, nil
 }
+
 // EnvStdlib takes care of creating a flux_buffer_t, passes the buffer to
 // the Flatbuffers TypeEnvironment and then takes care of freeing the data
 func EnvStdlib() []byte {

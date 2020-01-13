@@ -150,7 +150,11 @@ func (s *scope) Return() Value {
 }
 
 func (s *scope) Copy() Scope {
-	ns := NewNestedScope(s.parent.Copy(), nil)
+	var pc Scope
+	if s.parent != nil {
+		pc = s.parent.Copy()
+	}
+	ns := NewNestedScope(pc, nil)
 	s.LocalRange(func(k string, v Value) {
 		ns.Set(k, v)
 	})
