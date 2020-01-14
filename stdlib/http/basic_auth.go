@@ -21,7 +21,7 @@ const (
 
 var basicAuthFunc = values.NewFunction(
 	"basicAuth",
-	flux.LookupBuiltInType("http", "basicAuth"),
+	semantic.LookupBuiltInType("http", "basicAuth"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		return interpreter.DoFunctionCall(BasicAuth, args)
 	},

@@ -24,7 +24,7 @@ type HistogramQuantileOpSpec struct {
 }
 
 func init() {
-	histogramQuantileSignature := flux.LookupBuiltInType("universe", "histogramQuantile")
+	histogramQuantileSignature := semantic.LookupBuiltInType("universe", "histogramQuantile")
 
 	flux.RegisterPackageValue("universe", HistogramQuantileKind, flux.MustValue(flux.FunctionValue(HistogramQuantileKind, createHistogramQuantileOpSpec, histogramQuantileSignature)))
 	flux.RegisterOpSpec(HistogramQuantileKind, newHistogramQuantileOp)

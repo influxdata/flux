@@ -23,7 +23,7 @@ type FromBigtableOpSpec struct {
 }
 
 func init() {
-	fromBigtableSignature := flux.LookupBuiltInType("experimental/bigtable", "from")
+	fromBigtableSignature := semantic.LookupBuiltInType("experimental/bigtable", "from")
 	flux.RegisterPackageValue("experimental/bigtable", "from", flux.MustValue(flux.FunctionValue(FromBigtableKind, createFromBigtableOpSpec, fromBigtableSignature)))
 	flux.RegisterOpSpec(FromBigtableKind, newFromBigtableOp)
 	plan.RegisterProcedureSpec(FromBigtableKind, newFromBigtableProcedure, FromBigtableKind)

@@ -724,7 +724,7 @@ func updateTVarMap(counter *int, m map[uint64]int, tv uint64) {
 	*counter++
 }
 
-func (mt MonoType) getCanonicalMapping(counter *int, tvm map[uint64]int) error {
+func (mt MonoType) GetCanonicalMapping(counter *int, tvm map[uint64]int) error {
 	switch tk := mt.Kind(); tk {
 	case Var:
 		tv, err := mt.VarNum()
@@ -737,7 +737,7 @@ func (mt MonoType) getCanonicalMapping(counter *int, tvm map[uint64]int) error {
 		if err != nil {
 			return err
 		}
-		if err := et.getCanonicalMapping(counter, tvm); err != nil {
+		if err := et.GetCanonicalMapping(counter, tvm); err != nil {
 			return err
 		}
 	case Row:
@@ -754,7 +754,7 @@ func (mt MonoType) getCanonicalMapping(counter *int, tvm map[uint64]int) error {
 			if err != nil {
 				return err
 			}
-			if err := pt.getCanonicalMapping(counter, tvm); err != nil {
+			if err := pt.GetCanonicalMapping(counter, tvm); err != nil {
 				return err
 			}
 		}
@@ -762,7 +762,7 @@ func (mt MonoType) getCanonicalMapping(counter *int, tvm map[uint64]int) error {
 		if err != nil {
 			return err
 		} else if ok {
-			if err := evar.getCanonicalMapping(counter, tvm); err != nil {
+			if err := evar.GetCanonicalMapping(counter, tvm); err != nil {
 				return err
 			}
 		}
@@ -780,7 +780,7 @@ func (mt MonoType) getCanonicalMapping(counter *int, tvm map[uint64]int) error {
 			if err != nil {
 				return err
 			}
-			if err := at.getCanonicalMapping(counter, tvm); err != nil {
+			if err := at.GetCanonicalMapping(counter, tvm); err != nil {
 				return err
 			}
 		}
@@ -788,7 +788,7 @@ func (mt MonoType) getCanonicalMapping(counter *int, tvm map[uint64]int) error {
 		if err != nil {
 			return err
 		}
-		if err := rt.getCanonicalMapping(counter, tvm); err != nil {
+		if err := rt.GetCanonicalMapping(counter, tvm); err != nil {
 			return err
 		}
 	}

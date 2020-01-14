@@ -31,7 +31,7 @@ const (
 func generateSingleArgStringFunction(name string, stringFn func(string) string) values.Function {
 	return values.NewFunction(
 		name,
-		flux.LookupBuiltInType("strings", name),
+		semantic.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var str string
 
@@ -59,7 +59,7 @@ func generateDualArgStringFunction(name string, argNames []string, stringFn func
 
 	return values.NewFunction(
 		name,
-		flux.LookupBuiltInType("strings", name),
+		semantic.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
@@ -89,7 +89,7 @@ func generateDualArgStringFunctionReturnBool(name string, argNames []string, str
 
 	return values.NewFunction(
 		name,
-		flux.LookupBuiltInType("strings", name),
+		semantic.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
@@ -119,7 +119,7 @@ func generateDualArgStringFunctionReturnInt(name string, argNames []string, stri
 
 	return values.NewFunction(
 		name,
-		flux.LookupBuiltInType("strings", name),
+		semantic.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
@@ -145,7 +145,7 @@ func generateDualArgStringFunctionReturnInt(name string, argNames []string, stri
 func generateSplit(name string, argNames []string, fn func(string, string) []string) values.Function {
 	return values.NewFunction(
 		name,
-		flux.LookupBuiltInType("string", name),
+		semantic.LookupBuiltInType("string", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
@@ -176,7 +176,7 @@ func generateSplit(name string, argNames []string, fn func(string, string) []str
 func generateSplitN(name string, argNames []string, fn func(string, string, int) []string) values.Function {
 	return values.NewFunction(
 		name,
-		flux.LookupBuiltInType("strings", name),
+		semantic.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 3)
 			var argTypes = []semantic.Nature{semantic.String, semantic.String, semantic.Int}
@@ -208,7 +208,7 @@ func generateSplitN(name string, argNames []string, fn func(string, string, int)
 func generateRepeat(name string, argNames []string, fn func(string, int) string) values.Function {
 	return values.NewFunction(
 		name,
-		flux.LookupBuiltInType("strings", name),
+		semantic.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 			var argType = []semantic.Nature{semantic.String, semantic.Int}
@@ -235,7 +235,7 @@ func generateRepeat(name string, argNames []string, fn func(string, int) string)
 func generateReplace(name string, argNames []string, fn func(string, string, string, int) string) values.Function {
 	return values.NewFunction(
 		name,
-		flux.LookupBuiltInType("strings", name),
+		semantic.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 4)
 			var argType = []semantic.Nature{semantic.String, semantic.String, semantic.String, semantic.Int}
@@ -262,7 +262,7 @@ func generateReplace(name string, argNames []string, fn func(string, string, str
 func generateReplaceAll(name string, argNames []string, fn func(string, string, string) string) values.Function {
 	return values.NewFunction(
 		name,
-		flux.LookupBuiltInType("strings", name),
+		semantic.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 3)
 
@@ -288,7 +288,7 @@ func generateReplaceAll(name string, argNames []string, fn func(string, string, 
 func generateUnicodeIsFunction(name string, Fn func(rune) bool) values.Function {
 	return values.NewFunction(
 		name,
-		flux.LookupBuiltInType("strings", name),
+		semantic.LookupBuiltInType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var str string
 
@@ -320,7 +320,7 @@ func generateUnicodeIsFunction(name string, Fn func(rune) bool) values.Function 
 
 var strlen = values.NewFunction(
 	"strlen",
-	flux.LookupBuiltInType("strings", "strlen"),
+	semantic.LookupBuiltInType("strings", "strlen"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		v, ok := args.Get(stringArgV)
 		if !ok {
@@ -337,7 +337,7 @@ var strlen = values.NewFunction(
 
 var substring = values.NewFunction(
 	"substring",
-	flux.LookupBuiltInType("strings", "substring"),
+	semantic.LookupBuiltInType("strings", "substring"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		v, vOk := args.Get(stringArgV)
 		a, aOk := args.Get(start)
@@ -446,7 +446,7 @@ func init() {
 	SpecialFns = map[string]values.Function{
 		"joinStr": values.NewFunction(
 			"joinStr",
-			flux.LookupBuiltInType("strings", "joinStr"),
+			semantic.LookupBuiltInType("strings", "joinStr"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				var argVals = make([]values.Value, 2)
 

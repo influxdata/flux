@@ -16,7 +16,7 @@ import (
 func MakeContainsFunc() values.Function {
 	return values.NewFunction(
 		"contains",
-		flux.LookupBuiltInType("universe", "contains"),
+		semantic.LookupBuiltInType("universe", "contains"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
 			v, err := a.GetRequired("value")

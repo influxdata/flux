@@ -18,7 +18,7 @@ type KamaOpSpec struct {
 }
 
 func init() {
-	kamaSignature := flux.LookupBuiltInType("universe", "kaufmansAMA")
+	kamaSignature := semantic.LookupBuiltInType("universe", "kaufmansAMA")
 
 	flux.RegisterPackageValue("universe", kamaKind, flux.MustValue(flux.FunctionValue(kamaKind, createkamaOpSpec, kamaSignature)))
 	flux.RegisterOpSpec(kamaKind, newkamaOp)

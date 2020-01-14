@@ -186,7 +186,7 @@ func (pt *PolyType) GetCanonicalMapping() (map[uint64]int, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := mt.getCanonicalMapping(&counter, tvm); err != nil {
+	if err := mt.GetCanonicalMapping(&counter, tvm); err != nil {
 		return nil, err
 	}
 

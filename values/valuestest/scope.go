@@ -51,7 +51,7 @@ func NowScope() values.Scope {
 	scope := flux.Prelude()
 	scope.SetOption("universe", "now", values.NewFunction(
 		"now",
-		flux.LookupBuiltInType("universe", "now"),
+		semantic.LookupBuiltInType("universe", "now"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			//Functions are only compared by type so the function body here is not important
 			return nil, errors.New("NowScope was called")

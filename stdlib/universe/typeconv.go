@@ -670,7 +670,7 @@ func (c *durationConv) Call(ctx context.Context, args values.Object) (values.Val
 
 var bytes = values.NewFunction(
 	"bytes",
-	flux.LookupBuiltInType("universe", "bytes"),
+	semantic.LookupBuiltInType("universe", "bytes"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		v, ok := args.Get(conversionArg)
 		if !ok {

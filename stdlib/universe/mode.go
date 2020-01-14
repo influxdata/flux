@@ -18,7 +18,7 @@ type ModeOpSpec struct {
 }
 
 func init() {
-	modeSignature := flux.LookupBuiltInType("universe", "mode")
+	modeSignature := semantic.LookupBuiltInType("universe", "mode")
 
 	flux.RegisterPackageValue("universe", ModeKind, flux.MustValue(flux.FunctionValue(ModeKind, createModeOpSpec, modeSignature)))
 	flux.RegisterOpSpec(ModeKind, newModeOp)

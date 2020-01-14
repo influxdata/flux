@@ -17,7 +17,7 @@ import (
 func MakeLengthFunc() values.Function {
 	return values.NewFunction(
 		"length",
-		flux.LookupBuiltInType("universe", "length"),
+		semantic.LookupBuiltInType("universe", "length"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
 			v, err := a.GetRequired("arr")

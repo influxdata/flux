@@ -22,7 +22,7 @@ type ExtrapolatedRateOpSpec struct {
 }
 
 func init() {
-	extrapolatedRateSignature := flux.LookupBuiltInType("internal/promql", ExtrapolatedRateKind)
+	extrapolatedRateSignature := semantic.LookupBuiltInType("internal/promql", ExtrapolatedRateKind)
 
 	flux.RegisterPackageValue("internal/promql", ExtrapolatedRateKind, flux.MustValue(flux.FunctionValue(ExtrapolatedRateKind, createExtrapolatedRateOpSpec, extrapolatedRateSignature)))
 	flux.RegisterOpSpec(ExtrapolatedRateKind, newExtrapolatedRateOp)

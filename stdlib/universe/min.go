@@ -16,7 +16,7 @@ type MinOpSpec struct {
 }
 
 func init() {
-	minSignature := flux.LookupBuiltInType("universe", "min")
+	minSignature := semantic.LookupBuiltInType("universe", "min")
 
 	flux.RegisterPackageValue("universe", MinKind, flux.MustValue(flux.FunctionValue(MinKind, createMinOpSpec, minSignature)))
 	flux.RegisterOpSpec(MinKind, newMinOp)

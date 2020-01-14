@@ -31,7 +31,7 @@ type WindowOpSpec struct {
 var infinityVar = values.NewDuration(values.ConvertDuration(math.MaxInt64))
 
 func init() {
-	windowSignature := flux.LookupBuiltInType("universe", "window")
+	windowSignature := semantic.LookupBuiltInType("universe", "window")
 
 	flux.RegisterPackageValue("universe", WindowKind, flux.MustValue(flux.FunctionValue(WindowKind, createWindowOpSpec, windowSignature)))
 	flux.RegisterOpSpec(WindowKind, newWindowOp)

@@ -22,7 +22,7 @@ type FromCSVOpSpec struct {
 }
 
 func init() {
-	fromCSVSignature := flux.LookupBuiltInType("csv", "from")
+	fromCSVSignature := semantic.LookupBuiltInType("csv", "from")
 	flux.RegisterPackageValue("csv", "from", flux.MustValue(flux.FunctionValue(FromCSVKind, createFromCSVOpSpec, fromCSVSignature)))
 	flux.RegisterOpSpec(FromCSVKind, newFromCSVOp)
 	plan.RegisterProcedureSpec(FromCSVKind, newFromCSVProcedure, FromCSVKind)

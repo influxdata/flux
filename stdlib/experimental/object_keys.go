@@ -14,7 +14,7 @@ import (
 func init() {
 	flux.RegisterPackageValue("experimental", "objectKeys", values.NewFunction(
 		"objectKeys",
-		flux.LookupBuiltInType("experimental", "objectKeys"),
+		semantic.LookupBuiltInType("experimental", "objectKeys"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			o, ok := args.Get("o")
 			if !ok {

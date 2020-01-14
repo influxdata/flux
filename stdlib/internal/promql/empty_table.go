@@ -19,7 +19,7 @@ const EmptyTableKind = "emptyTable"
 type EmptyTableOpSpec struct{}
 
 func init() {
-	emptyTableSignature := flux.LookupBuiltInType("internal/promql", "emptyTable")
+	emptyTableSignature := semantic.LookupBuiltInType("internal/promql", "emptyTable")
 	flux.RegisterPackageValue("internal/promql", "emptyTable", flux.MustValue(flux.FunctionValue(EmptyTableKind, createEmptyTableOpSpec, emptyTableSignature)))
 	flux.RegisterOpSpec(EmptyTableKind, newEmptyTableOp)
 	plan.RegisterProcedureSpec(EmptyTableKind, newEmptyTableProcedure, EmptyTableKind)

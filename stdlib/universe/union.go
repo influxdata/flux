@@ -23,7 +23,7 @@ func (s *UnionOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-	unionSignature := flux.LookupBuiltInType("universe", "union")
+	unionSignature := semantic.LookupBuiltInType("universe", "union")
 
 	flux.RegisterPackageValue("universe", UnionKind, flux.MustValue(flux.FunctionValue(UnionKind, createUnionOpSpec, unionSignature)))
 	flux.RegisterOpSpec(UnionKind, newUnionOp)

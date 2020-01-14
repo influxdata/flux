@@ -16,7 +16,7 @@ type ColumnsOpSpec struct {
 }
 
 func init() {
-	columnsSignature := flux.LookupBuiltInType("universe", "columns")
+	columnsSignature := semantic.LookupBuiltInType("universe", "columns")
 	flux.RegisterPackageValue("universe", ColumnsKind, flux.MustValue(flux.FunctionValue(ColumnsKind, createColumnsOpSpec, columnsSignature)))
 	flux.RegisterOpSpec(ColumnsKind, newColumnsOp)
 	plan.RegisterProcedureSpec(ColumnsKind, newColumnsProcedure, ColumnsKind)

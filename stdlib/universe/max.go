@@ -16,7 +16,7 @@ type MaxOpSpec struct {
 }
 
 func init() {
-	maxSignature := flux.LookupBuiltInType("universe", "max")
+	maxSignature := semantic.LookupBuiltInType("universe", "max")
 
 	flux.RegisterPackageValue("universe", MaxKind, flux.MustValue(flux.FunctionValue(MaxKind, createMaxOpSpec, maxSignature)))
 	flux.RegisterOpSpec(MaxKind, newMaxOp)

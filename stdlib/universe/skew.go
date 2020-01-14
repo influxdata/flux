@@ -18,7 +18,7 @@ type SkewOpSpec struct {
 }
 
 func init() {
-	skewSignature := flux.LookupBuiltInType("universe", "skew")
+	skewSignature := semantic.LookupBuiltInType("universe", "skew")
 
 	flux.RegisterPackageValue("universe", SkewKind, flux.MustValue(flux.FunctionValue(SkewKind, createSkewOpSpec, skewSignature)))
 	flux.RegisterOpSpec(SkewKind, newSkewOp)

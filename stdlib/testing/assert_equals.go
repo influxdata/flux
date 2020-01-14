@@ -23,7 +23,7 @@ func (s *AssertEqualsOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-	assertEqualsSignature := flux.LookupBuiltInType("testing", "assertEquals")
+	assertEqualsSignature := semantic.LookupBuiltInType("testing", "assertEquals")
 
 	flux.RegisterPackageValue("testing", "assertEquals", flux.MustValue(flux.FunctionValue(AssertEqualsKind, createAssertEqualsOpSpec, assertEqualsSignature)))
 	flux.RegisterOpSpec(AssertEqualsKind, newAssertEqualsOp)

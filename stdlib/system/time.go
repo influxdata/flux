@@ -13,7 +13,7 @@ var systemTimeFuncName = "time"
 func init() {
 	flux.RegisterPackageValue("system", systemTimeFuncName, values.NewFunction(
 		systemTimeFuncName,
-		flux.LookupBuiltInType("system", systemTimeFuncName),
+		semantic.LookupBuiltInType("system", systemTimeFuncName),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			return values.NewTime(values.ConvertTime(time.Now().UTC())), nil
 		},

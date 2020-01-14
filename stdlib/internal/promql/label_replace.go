@@ -24,7 +24,7 @@ type LabelReplaceOpSpec struct {
 }
 
 func init() {
-	labelReplaceSignature := flux.LookupBuiltInType("internal/promql", "labelReplace")
+	labelReplaceSignature := semantic.LookupBuiltInType("internal/promql", "labelReplace")
 	flux.RegisterPackageValue("internal/promql", "labelReplace", flux.MustValue(flux.FunctionValue(LabelReplaceKind, createLabelReplaceOpSpec, labelReplaceSignature)))
 	flux.RegisterOpSpec(LabelReplaceKind, func() flux.OperationSpec { return &LabelReplaceOpSpec{} })
 	plan.RegisterProcedureSpec(LabelReplaceKind, newLabelReplaceProcedure, LabelReplaceKind)

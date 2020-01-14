@@ -16,7 +16,7 @@ type DistinctOpSpec struct {
 }
 
 func init() {
-	distinctSignature := flux.LookupBuiltInType("universe", "distinct")
+	distinctSignature := semantic.LookupBuiltInType("universe", "distinct")
 
 	flux.RegisterPackageValue("universe", DistinctKind, flux.MustValue(flux.FunctionValue(DistinctKind, createDistinctOpSpec, distinctSignature)))
 	flux.RegisterOpSpec(DistinctKind, newDistinctOp)

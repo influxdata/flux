@@ -19,7 +19,7 @@ func init() {
 }
 
 func addDuration(name string) values.Value {
-	tp := flux.LookupBuiltInType("experimental", "addDuration")
+	tp := semantic.LookupBuiltInType("experimental", "addDuration")
 	fn := func(ctx context.Context, args values.Object) (values.Value, error) {
 		d, ok := args.Get("d")
 		if !ok {
@@ -35,7 +35,7 @@ func addDuration(name string) values.Value {
 }
 
 func subDuration(name string) values.Value {
-	tp := flux.LookupBuiltInType("experimental", "subDuration")
+	tp := semantic.LookupBuiltInType("experimental", "subDuration")
 	fn := func(ctx context.Context, args values.Object) (values.Value, error) {
 		d, ok := args.Get("d")
 		if !ok {

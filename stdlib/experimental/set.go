@@ -16,7 +16,7 @@ type SetOpSpec struct {
 }
 
 func init() {
-	setSignature := flux.LookupBuiltInType("experimental", "set")
+	setSignature := semantic.LookupBuiltInType("experimental", "set")
 
 	flux.RegisterPackageValue("experimental", "set", flux.MustValue(flux.FunctionValue(SetKind, createSetOpSpec, setSignature)))
 	flux.RegisterOpSpec(SetKind, newSetOp)

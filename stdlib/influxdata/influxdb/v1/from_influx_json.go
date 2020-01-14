@@ -22,7 +22,7 @@ const FromInfluxJSONKind = "fromInfluxJSON"
 const bufferSize = 8192
 
 func init() {
-	fromInfluxJSONSignature := flux.LookupBuiltInType("influxdata/influxdb/v1", "json")
+	fromInfluxJSONSignature := semantic.LookupBuiltInType("influxdata/influxdb/v1", "json")
 	flux.RegisterPackageValue("influxdata/influxdb/v1", "json", flux.MustValue(flux.FunctionValue(FromInfluxJSONKind, createFromInfluxJSONOpSpec, fromInfluxJSONSignature)))
 	flux.RegisterOpSpec(FromInfluxJSONKind, newFromInfluxJSONOp)
 	plan.RegisterProcedureSpec(FromInfluxJSONKind, newFromInfluxJSONProcedure, FromInfluxJSONKind)

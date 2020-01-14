@@ -18,7 +18,7 @@ func init() {
 	SpecialFns = map[string]values.Function{
 		"compile": values.NewFunction(
 			"compile",
-			flux.LookupBuiltInType("regexp", "compile"),
+			semantic.LookupBuiltInType("regexp", "compile"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				if !ok {
@@ -38,7 +38,7 @@ func init() {
 		),
 		"quoteMeta": values.NewFunction(
 			"quoteMeta",
-			flux.LookupBuiltInType("regexp", "quoteMeta"),
+			semantic.LookupBuiltInType("regexp", "quoteMeta"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				if !ok {
@@ -55,7 +55,7 @@ func init() {
 		),
 		"findString": values.NewFunction(
 			"findString",
-			flux.LookupBuiltInType("regexp", "findString"),
+			semantic.LookupBuiltInType("regexp", "findString"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
@@ -73,7 +73,7 @@ func init() {
 		),
 		"findStringIndex": values.NewFunction(
 			"findStringIndex",
-			flux.LookupBuiltInType("regexp", "findStringIndex"),
+			semantic.LookupBuiltInType("regexp", "findStringIndex"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
@@ -95,7 +95,7 @@ func init() {
 		),
 		"matchRegexpString": values.NewFunction(
 			"matchRegexpString",
-			flux.LookupBuiltInType("regexp", "matchRegexpString"),
+			semantic.LookupBuiltInType("regexp", "matchRegexpString"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
@@ -113,7 +113,7 @@ func init() {
 		),
 		"replaceAllString": values.NewFunction(
 			"replaceAllString",
-			flux.LookupBuiltInType("regexp", "replaceAllString"),
+			semantic.LookupBuiltInType("regexp", "replaceAllString"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				r, ok := args.Get("r")
 				v, okk := args.Get("v")
@@ -132,7 +132,7 @@ func init() {
 		),
 		"splitRegexp": values.NewFunction(
 			"splitRegexp",
-			flux.LookupBuiltInType("regexp", "splitRegexp"),
+			semantic.LookupBuiltInType("regexp", "splitRegexp"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				r, ok := args.Get("r")
 				v, okk := args.Get("v")
@@ -155,7 +155,7 @@ func init() {
 		),
 		"getString": values.NewFunction(
 			"getString",
-			flux.LookupBuiltInType("regexp", "getString"),
+			semantic.LookupBuiltInType("regexp", "getString"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				r, ok := args.Get("r")
 				if !ok {

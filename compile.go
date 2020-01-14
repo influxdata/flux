@@ -123,7 +123,7 @@ func generateNowFunc(now time.Time) values.Function {
 	timeVal := values.NewTime(values.ConvertTime(now))
 	// TODO(jsternberg): Replace with proper function type.
 	// ftype := semantic.NewFunctionType()
-	var ftype semantic.PolyType
+	var ftype semantic.MonoType
 	call := func(ctx context.Context, args values.Object) (values.Value, error) {
 		return timeVal, nil
 	}

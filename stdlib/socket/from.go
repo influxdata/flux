@@ -29,7 +29,7 @@ type FromSocketOpSpec struct {
 }
 
 func init() {
-	fromSocketSignature := flux.LookupBuiltInType("socket", "from")
+	fromSocketSignature := semantic.LookupBuiltInType("socket", "from")
 
 	flux.RegisterPackageValue("socket", "from", flux.MustValue(flux.FunctionValue(FromSocketKind, createFromSocketOpSpec, fromSocketSignature)))
 	flux.RegisterOpSpec(FromSocketKind, newFromSocketOp)

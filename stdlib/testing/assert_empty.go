@@ -17,7 +17,7 @@ func (s *AssertEmptyOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-	assertEmptySignature := flux.LookupBuiltInType("testing", "assertEmpty")
+	assertEmptySignature := semantic.LookupBuiltInType("testing", "assertEmpty")
 
 	flux.RegisterPackageValue("testing", "assertEmpty", flux.MustValue(flux.FunctionValue(AssertEmptyKind, createAssertEmptyOpSpec, assertEmptySignature)))
 	flux.RegisterOpSpec(AssertEmptyKind, newAssertEmptyOp)

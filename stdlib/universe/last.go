@@ -16,7 +16,7 @@ type LastOpSpec struct {
 }
 
 func init() {
-	lastSignature := flux.LookupBuiltInType("universe", "last")
+	lastSignature := semantic.LookupBuiltInType("universe", "last")
 
 	flux.RegisterPackageValue("universe", LastKind, flux.MustValue(flux.FunctionValue(LastKind, createLastOpSpec, lastSignature)))
 	flux.RegisterOpSpec(LastKind, newLastOp)

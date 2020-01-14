@@ -14,7 +14,7 @@ const ChangesKind = "changes"
 type ChangesOpSpec struct{}
 
 func init() {
-	changesSignature := flux.LookupBuiltInType("internal/promql", "changes")
+	changesSignature := semantic.LookupBuiltInType("internal/promql", "changes")
 
 	flux.RegisterPackageValue("internal/promql", ChangesKind, flux.MustValue(flux.FunctionValue(ChangesKind, createChangesOpSpec, changesSignature)))
 	flux.RegisterOpSpec(ChangesKind, newChangesOp)

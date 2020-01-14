@@ -28,7 +28,7 @@ type HistogramOpSpec struct {
 }
 
 func init() {
-	histogramSignature := flux.LookupBuiltInType("universe", "histogram")
+	histogramSignature := semantic.LookupBuiltInType("universe", "histogram")
 
 	flux.RegisterPackageValue("universe", HistogramKind, flux.MustValue(flux.FunctionValue(HistogramKind, createHistogramOpSpec, histogramSignature)))
 	flux.RegisterPackageValue("universe", "linearBins", linearBins{})
@@ -243,7 +243,7 @@ func (t *histogramTransformation) Finish(id execute.DatasetID, err error) {
 // linearBins is a helper function for creating bins spaced linearly
 type linearBins struct{}
 
-var linearBinsType = flux.LookupBuiltInType("universe", "linearBins")
+var linearBinsType = semantic.LookupBuiltInType("universe", "linearBins")
 
 func (b linearBins) Type() semantic.MonoType {
 	t, _ := linearBinsType.Expr()
@@ -366,7 +366,7 @@ func (b linearBins) Call(ctx context.Context, args values.Object) (values.Value,
 // logarithmicBins is a helper function for creating bins spaced by an logarithmic factor.
 type logarithmicBins struct{}
 
-var logarithmicBinsType = flux.LookupBuiltInType("universe", "logarithmicBins")
+var logarithmicBinsType = semantic.LookupBuiltInType("universe", "logarithmicBins")
 
 func (b logarithmicBins) Type() semantic.MonoType {
 	t, _ := logarithmicBinsType.Expr()
