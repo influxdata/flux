@@ -623,6 +623,17 @@ func objectExprFromProperties(fb *fbsemantic.CallExpression) (*ObjectExpression,
 		props[i] = prop
 	}
 
+	typ := func() MonoType {
+		properties := make([]PropertyType, len(props))
+		for i := range properties {
+			properties[i] = PropertyType{
+				Key:   []byte(props[i].Key.Key()),
+				Value: props[i].Value.TypeOf(),
+			}
+		}
+		return NewObjectType(properties)
+	}()
+
 	l := loc{}
 	if len(props) > 0 {
 		l = props[0].loc
@@ -632,6 +643,7 @@ func objectExprFromProperties(fb *fbsemantic.CallExpression) (*ObjectExpression,
 	obj := &ObjectExpression{
 		loc:        l,
 		Properties: props,
+		typ:        typ,
 	}
 	return obj, nil
 }

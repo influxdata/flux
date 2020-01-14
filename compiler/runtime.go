@@ -74,11 +74,11 @@ type Scope interface {
 	Get(name string) values.Value
 }
 
-type compilerScope struct {
+type runtimeScope struct {
 	values.Scope
 }
 
-func (s compilerScope) Get(name string) values.Value {
+func (s runtimeScope) Get(name string) values.Value {
 	v, ok := s.Scope.Lookup(name)
 	if !ok {
 		log.Println("Scope", values.FormattedScope(s.Scope))
@@ -91,11 +91,11 @@ func NewScope() Scope {
 	return ToScope(values.NewScope())
 }
 func ToScope(s values.Scope) Scope {
-	return compilerScope{s}
+	return runtimeScope{s}
 }
 
 func nestScope(scope Scope) Scope {
-	return compilerScope{scope.Nest(nil)}
+	return runtimeScope{scope.Nest(nil)}
 }
 
 func eval(ctx context.Context, e Evaluator, scope Scope) (values.Value, error) {
@@ -210,26 +210,26 @@ func (e *objEvaluator) Type() semantic.MonoType {
 }
 
 func (e *objEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
-	obj := values.NewObject(e.t)
-	if e.with != nil {
-		with, err := e.with.Eval(ctx, scope)
-		if err != nil {
-			return nil, err
+	return values.BuildObject(func(set values.ObjectSetter) error {
+		if e.with != nil {
+			with, err := e.with.Eval(ctx, scope)
+			if err != nil {
+				return err
+			}
+			with.Object().Range(func(name string, v values.Value) {
+				set(name, v)
+			})
 		}
-		with.Object().Range(func(name string, v values.Value) {
-			obj.Set(name, v)
-		})
-	}
 
-	for k, node := range e.properties {
-		v, err := eval(ctx, node, scope)
-		if err != nil {
-			return nil, err
+		for k, node := range e.properties {
+			v, err := eval(ctx, node, scope)
+			if err != nil {
+				return err
+			}
+			set(k, v)
 		}
-		obj.Set(k, v)
-	}
-
-	return obj, nil
+		return nil
+	})
 }
 
 type arrayEvaluator struct {
@@ -520,7 +520,7 @@ func (e *identifierEvaluator) Eval(ctx context.Context, scope Scope) (values.Val
 	// value's **polytype** as this value will return an
 	// invalid monotype.
 	//
-	values.CheckKind(v.Type().Nature(), e.t.Nature())
+	// values.CheckKind(v.Type().Nature(), e.t.Nature())
 	return v, nil
 }
 
@@ -590,7 +590,7 @@ func (e *callEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, er
 
 type functionEvaluator struct {
 	t      semantic.MonoType
-	body   Evaluator
+	fn     *semantic.FunctionExpression
 	params []functionParam
 }
 
@@ -601,7 +601,7 @@ func (e *functionEvaluator) Type() semantic.MonoType {
 func (e *functionEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
 	return &functionValue{
 		t:      e.t,
-		body:   e.body,
+		fn:     e.fn,
 		params: e.params,
 		scope:  scope,
 	}, nil
@@ -609,7 +609,7 @@ func (e *functionEvaluator) Eval(ctx context.Context, scope Scope) (values.Value
 
 type functionValue struct {
 	t      semantic.MonoType
-	body   Evaluator
+	fn     *semantic.FunctionExpression
 	params []functionParam
 	scope  Scope
 }
@@ -637,7 +637,12 @@ func (f *functionValue) Call(ctx context.Context, args values.Object) (values.Va
 		}
 		scope.Set(p.Key, a)
 	}
-	return eval(ctx, f.body, scope)
+
+	fn, err := Compile(scope, f.fn, args.Type())
+	if err != nil {
+		return nil, err
+	}
+	return fn.Eval(ctx, args)
 }
 
 func (f *functionValue) Type() semantic.MonoType { return f.t }

@@ -90,6 +90,9 @@ func (s *scope) LocalLookup(name string) (Value, bool) {
 }
 
 func (s *scope) Set(name string, v Value) {
+	if s.values == nil {
+		s.values = make(map[string]Value)
+	}
 	s.values[name] = v
 }
 

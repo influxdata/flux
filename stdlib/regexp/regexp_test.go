@@ -116,7 +116,7 @@ func TestSplitRegexp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	arr := values.NewArray(semantic.BasicString)
+	arr := values.NewArray(semantic.NewArrayType(semantic.BasicString))
 	for _, z := range want {
 		arr.Append(values.NewString(z))
 	}
