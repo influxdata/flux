@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 12,
 					Line:   5,
 				},
-				File:   "http.flux",
+				File:   "",
 				Source: "package http\n\n// Get submits an HTTP get request to the specified URL with headers\n// Returns HTTP status code and body as a byte array\nbuiltin get",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   5,
 					},
-					File:   "http.flux",
+					File:   "",
 					Source: "builtin get",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   5,
 						},
-						File:   "http.flux",
+						File:   "",
 						Source: "get",
 						Start: ast.Position{
 							Column: 9,
@@ -68,7 +68,7 @@ var pkgAST = &ast.Package{
 			},
 		}},
 		Imports:  nil,
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "http.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -78,7 +78,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   1,
 					},
-					File:   "http.flux",
+					File:   "",
 					Source: "package http",
 					Start: ast.Position{
 						Column: 1,
@@ -94,7 +94,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   1,
 						},
-						File:   "http.flux",
+						File:   "",
 						Source: "http",
 						Start: ast.Position{
 							Column: 9,

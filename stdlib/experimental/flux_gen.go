@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 11,
 					Line:   20,
 				},
-				File:   "experimental.flux",
+				File:   "",
 				Source: "package experimental\n\nbuiltin addDuration\nbuiltin subDuration\n\n// An experimental version of group that has mode: \"extend\"\nbuiltin group\n\n// objectKeys produces a list of the keys existing on the object\nbuiltin objectKeys\n\n// set adds the values from the object onto each row of a table\nbuiltin set\n\n// An experimental version of \"to\" that:\n// - Expects pivoted data\n// - Any column in the group key is made a tag in storage\n// - All other columns are fields\n// - An error will be thrown for incompatible data types\nbuiltin to",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 20,
 						Line:   3,
 					},
-					File:   "experimental.flux",
+					File:   "",
 					Source: "builtin addDuration",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 20,
 							Line:   3,
 						},
-						File:   "experimental.flux",
+						File:   "",
 						Source: "addDuration",
 						Start: ast.Position{
 							Column: 9,
@@ -74,7 +74,7 @@ var pkgAST = &ast.Package{
 						Column: 20,
 						Line:   4,
 					},
-					File:   "experimental.flux",
+					File:   "",
 					Source: "builtin subDuration",
 					Start: ast.Position{
 						Column: 1,
@@ -90,7 +90,7 @@ var pkgAST = &ast.Package{
 							Column: 20,
 							Line:   4,
 						},
-						File:   "experimental.flux",
+						File:   "",
 						Source: "subDuration",
 						Start: ast.Position{
 							Column: 9,
@@ -108,7 +108,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   7,
 					},
-					File:   "experimental.flux",
+					File:   "",
 					Source: "builtin group",
 					Start: ast.Position{
 						Column: 1,
@@ -124,7 +124,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   7,
 						},
-						File:   "experimental.flux",
+						File:   "",
 						Source: "group",
 						Start: ast.Position{
 							Column: 9,
@@ -142,7 +142,7 @@ var pkgAST = &ast.Package{
 						Column: 19,
 						Line:   10,
 					},
-					File:   "experimental.flux",
+					File:   "",
 					Source: "builtin objectKeys",
 					Start: ast.Position{
 						Column: 1,
@@ -158,7 +158,7 @@ var pkgAST = &ast.Package{
 							Column: 19,
 							Line:   10,
 						},
-						File:   "experimental.flux",
+						File:   "",
 						Source: "objectKeys",
 						Start: ast.Position{
 							Column: 9,
@@ -176,7 +176,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   13,
 					},
-					File:   "experimental.flux",
+					File:   "",
 					Source: "builtin set",
 					Start: ast.Position{
 						Column: 1,
@@ -192,7 +192,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   13,
 						},
-						File:   "experimental.flux",
+						File:   "",
 						Source: "set",
 						Start: ast.Position{
 							Column: 9,
@@ -210,7 +210,7 @@ var pkgAST = &ast.Package{
 						Column: 11,
 						Line:   20,
 					},
-					File:   "experimental.flux",
+					File:   "",
 					Source: "builtin to",
 					Start: ast.Position{
 						Column: 1,
@@ -226,7 +226,7 @@ var pkgAST = &ast.Package{
 							Column: 11,
 							Line:   20,
 						},
-						File:   "experimental.flux",
+						File:   "",
 						Source: "to",
 						Start: ast.Position{
 							Column: 9,
@@ -238,7 +238,7 @@ var pkgAST = &ast.Package{
 			},
 		}},
 		Imports:  nil,
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "experimental.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -248,7 +248,7 @@ var pkgAST = &ast.Package{
 						Column: 21,
 						Line:   1,
 					},
-					File:   "experimental.flux",
+					File:   "",
 					Source: "package experimental",
 					Start: ast.Position{
 						Column: 1,
@@ -264,7 +264,7 @@ var pkgAST = &ast.Package{
 							Column: 21,
 							Line:   1,
 						},
-						File:   "experimental.flux",
+						File:   "",
 						Source: "experimental",
 						Start: ast.Position{
 							Column: 9,

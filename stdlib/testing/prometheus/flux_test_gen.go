@@ -20,7 +20,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 106,
 					Line:   54,
 				},
-				File:   "histogramQuantile_test.flux",
+				File:   "",
 				Source: "package prometheus_test\n\nimport \"experimental/prometheus\" \nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,0,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,100,1\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,1,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,150,2\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,2,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,200,25\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,3,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,250,27\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,4,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,300,27\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,_field,url,_value\n,,0,2018-05-22T13:00:00Z,2030-01-01T00:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,175\n\"\n\nt_histogramQuantile = (table=<-) =>\n    (table\n        |> range(start: 2018-05-22T13:00:00Z))\n        |> prometheus.histogramQuantile(quantile: 0.5)\n\ntest _histogramQuantile = () => \n({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogramQuantile})",
 				Start: ast.Position{
 					Column: 1,
@@ -37,7 +37,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   6,
 						},
-						File:   "histogramQuantile_test.flux",
+						File:   "",
 						Source: "now = () => (2030-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 8,
@@ -53,7 +53,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   6,
 							},
-							File:   "histogramQuantile_test.flux",
+							File:   "",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
@@ -71,7 +71,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   6,
 							},
-							File:   "histogramQuantile_test.flux",
+							File:   "",
 							Source: "() => (2030-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 14,
@@ -87,7 +87,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   6,
 								},
-								File:   "histogramQuantile_test.flux",
+								File:   "",
 								Source: "(2030-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 20,
@@ -103,7 +103,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   6,
 									},
-									File:   "histogramQuantile_test.flux",
+									File:   "",
 									Source: "2030-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 21,
@@ -124,7 +124,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   6,
 					},
-					File:   "histogramQuantile_test.flux",
+					File:   "",
 					Source: "option now = () => (2030-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
@@ -140,7 +140,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   38,
 					},
-					File:   "histogramQuantile_test.flux",
+					File:   "",
 					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,0,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,100,1\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,1,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,150,2\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,2,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,200,25\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,3,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,250,27\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,4,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,300,27\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -156,7 +156,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "histogramQuantile_test.flux",
+						File:   "",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
@@ -174,7 +174,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   38,
 						},
-						File:   "histogramQuantile_test.flux",
+						File:   "",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,0,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,100,1\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,1,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,150,2\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,2,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,200,25\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,3,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,250,27\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,false,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,url,le,_value\n,,4,2018-05-22T13:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,300,27\n\"",
 						Start: ast.Position{
 							Column: 10,
@@ -192,7 +192,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   46,
 					},
-					File:   "histogramQuantile_test.flux",
+					File:   "",
 					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,_field,url,_value\n,,0,2018-05-22T13:00:00Z,2030-01-01T00:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,175\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -208,7 +208,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   40,
 						},
-						File:   "histogramQuantile_test.flux",
+						File:   "",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
@@ -226,7 +226,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   46,
 						},
-						File:   "histogramQuantile_test.flux",
+						File:   "",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,_field,url,_value\n,,0,2018-05-22T13:00:00Z,2030-01-01T00:00:00Z,prometheus,prometheus_test_metric,http://prometheus.test,175\n\"",
 						Start: ast.Position{
 							Column: 11,
@@ -244,7 +244,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 55,
 						Line:   51,
 					},
-					File:   "histogramQuantile_test.flux",
+					File:   "",
 					Source: "t_histogramQuantile = (table=<-) =>\n    (table\n        |> range(start: 2018-05-22T13:00:00Z))\n        |> prometheus.histogramQuantile(quantile: 0.5)",
 					Start: ast.Position{
 						Column: 1,
@@ -260,7 +260,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 20,
 							Line:   48,
 						},
-						File:   "histogramQuantile_test.flux",
+						File:   "",
 						Source: "t_histogramQuantile",
 						Start: ast.Position{
 							Column: 1,
@@ -278,7 +278,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 55,
 							Line:   51,
 						},
-						File:   "histogramQuantile_test.flux",
+						File:   "",
 						Source: "(table=<-) =>\n    (table\n        |> range(start: 2018-05-22T13:00:00Z))\n        |> prometheus.histogramQuantile(quantile: 0.5)",
 						Start: ast.Position{
 							Column: 23,
@@ -295,7 +295,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 47,
 									Line:   50,
 								},
-								File:   "histogramQuantile_test.flux",
+								File:   "",
 								Source: "(table\n        |> range(start: 2018-05-22T13:00:00Z))",
 								Start: ast.Position{
 									Column: 5,
@@ -312,7 +312,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 11,
 											Line:   49,
 										},
-										File:   "histogramQuantile_test.flux",
+										File:   "",
 										Source: "table",
 										Start: ast.Position{
 											Column: 6,
@@ -329,7 +329,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 46,
 										Line:   50,
 									},
-									File:   "histogramQuantile_test.flux",
+									File:   "",
 									Source: "table\n        |> range(start: 2018-05-22T13:00:00Z)",
 									Start: ast.Position{
 										Column: 6,
@@ -346,7 +346,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   50,
 											},
-											File:   "histogramQuantile_test.flux",
+											File:   "",
 											Source: "start: 2018-05-22T13:00:00Z",
 											Start: ast.Position{
 												Column: 18,
@@ -362,7 +362,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 45,
 													Line:   50,
 												},
-												File:   "histogramQuantile_test.flux",
+												File:   "",
 												Source: "start: 2018-05-22T13:00:00Z",
 												Start: ast.Position{
 													Column: 18,
@@ -378,7 +378,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 23,
 														Line:   50,
 													},
-													File:   "histogramQuantile_test.flux",
+													File:   "",
 													Source: "start",
 													Start: ast.Position{
 														Column: 18,
@@ -396,7 +396,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 45,
 														Line:   50,
 													},
-													File:   "histogramQuantile_test.flux",
+													File:   "",
 													Source: "2018-05-22T13:00:00Z",
 													Start: ast.Position{
 														Column: 25,
@@ -416,7 +416,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 46,
 											Line:   50,
 										},
-										File:   "histogramQuantile_test.flux",
+										File:   "",
 										Source: "range(start: 2018-05-22T13:00:00Z)",
 										Start: ast.Position{
 											Column: 12,
@@ -432,7 +432,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 17,
 												Line:   50,
 											},
-											File:   "histogramQuantile_test.flux",
+											File:   "",
 											Source: "range",
 											Start: ast.Position{
 												Column: 12,
@@ -452,7 +452,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 55,
 								Line:   51,
 							},
-							File:   "histogramQuantile_test.flux",
+							File:   "",
 							Source: "(table\n        |> range(start: 2018-05-22T13:00:00Z))\n        |> prometheus.histogramQuantile(quantile: 0.5)",
 							Start: ast.Position{
 								Column: 5,
@@ -469,7 +469,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 54,
 										Line:   51,
 									},
-									File:   "histogramQuantile_test.flux",
+									File:   "",
 									Source: "quantile: 0.5",
 									Start: ast.Position{
 										Column: 41,
@@ -485,7 +485,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 54,
 											Line:   51,
 										},
-										File:   "histogramQuantile_test.flux",
+										File:   "",
 										Source: "quantile: 0.5",
 										Start: ast.Position{
 											Column: 41,
@@ -501,7 +501,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 49,
 												Line:   51,
 											},
-											File:   "histogramQuantile_test.flux",
+											File:   "",
 											Source: "quantile",
 											Start: ast.Position{
 												Column: 41,
@@ -519,7 +519,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 54,
 												Line:   51,
 											},
-											File:   "histogramQuantile_test.flux",
+											File:   "",
 											Source: "0.5",
 											Start: ast.Position{
 												Column: 51,
@@ -539,7 +539,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 55,
 									Line:   51,
 								},
-								File:   "histogramQuantile_test.flux",
+								File:   "",
 								Source: "prometheus.histogramQuantile(quantile: 0.5)",
 								Start: ast.Position{
 									Column: 12,
@@ -555,7 +555,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 40,
 										Line:   51,
 									},
-									File:   "histogramQuantile_test.flux",
+									File:   "",
 									Source: "prometheus.histogramQuantile",
 									Start: ast.Position{
 										Column: 12,
@@ -571,7 +571,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 22,
 											Line:   51,
 										},
-										File:   "histogramQuantile_test.flux",
+										File:   "",
 										Source: "prometheus",
 										Start: ast.Position{
 											Column: 12,
@@ -589,7 +589,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 40,
 											Line:   51,
 										},
-										File:   "histogramQuantile_test.flux",
+										File:   "",
 										Source: "histogramQuantile",
 										Start: ast.Position{
 											Column: 23,
@@ -610,7 +610,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 32,
 								Line:   48,
 							},
-							File:   "histogramQuantile_test.flux",
+							File:   "",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 24,
@@ -626,7 +626,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 29,
 									Line:   48,
 								},
-								File:   "histogramQuantile_test.flux",
+								File:   "",
 								Source: "table",
 								Start: ast.Position{
 									Column: 24,
@@ -643,7 +643,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 32,
 								Line:   48,
 							},
-							File:   "histogramQuantile_test.flux",
+							File:   "",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 30,
@@ -662,7 +662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 106,
 							Line:   54,
 						},
-						File:   "histogramQuantile_test.flux",
+						File:   "",
 						Source: "_histogramQuantile = () => \n({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogramQuantile})",
 						Start: ast.Position{
 							Column: 6,
@@ -678,7 +678,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 24,
 								Line:   53,
 							},
-							File:   "histogramQuantile_test.flux",
+							File:   "",
 							Source: "_histogramQuantile",
 							Start: ast.Position{
 								Column: 6,
@@ -696,7 +696,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 106,
 								Line:   54,
 							},
-							File:   "histogramQuantile_test.flux",
+							File:   "",
 							Source: "() => \n({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogramQuantile})",
 							Start: ast.Position{
 								Column: 27,
@@ -712,7 +712,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 106,
 									Line:   54,
 								},
-								File:   "histogramQuantile_test.flux",
+								File:   "",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogramQuantile})",
 								Start: ast.Position{
 									Column: 1,
@@ -728,7 +728,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 105,
 										Line:   54,
 									},
-									File:   "histogramQuantile_test.flux",
+									File:   "",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogramQuantile}",
 									Start: ast.Position{
 										Column: 2,
@@ -744,7 +744,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 42,
 											Line:   54,
 										},
-										File:   "histogramQuantile_test.flux",
+										File:   "",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 3,
@@ -760,7 +760,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 8,
 												Line:   54,
 											},
-											File:   "histogramQuantile_test.flux",
+											File:   "",
 											Source: "input",
 											Start: ast.Position{
 												Column: 3,
@@ -779,7 +779,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 41,
 													Line:   54,
 												},
-												File:   "histogramQuantile_test.flux",
+												File:   "",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 30,
@@ -795,7 +795,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 41,
 														Line:   54,
 													},
-													File:   "histogramQuantile_test.flux",
+													File:   "",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 30,
@@ -811,7 +811,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 33,
 															Line:   54,
 														},
-														File:   "histogramQuantile_test.flux",
+														File:   "",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 30,
@@ -829,7 +829,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 41,
 															Line:   54,
 														},
-														File:   "histogramQuantile_test.flux",
+														File:   "",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 35,
@@ -849,7 +849,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 42,
 												Line:   54,
 											},
-											File:   "histogramQuantile_test.flux",
+											File:   "",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 10,
@@ -865,7 +865,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 29,
 													Line:   54,
 												},
-												File:   "histogramQuantile_test.flux",
+												File:   "",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 10,
@@ -881,7 +881,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 17,
 														Line:   54,
 													},
-													File:   "histogramQuantile_test.flux",
+													File:   "",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 10,
@@ -899,7 +899,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 29,
 														Line:   54,
 													},
-													File:   "histogramQuantile_test.flux",
+													File:   "",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 18,
@@ -919,7 +919,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 79,
 											Line:   54,
 										},
-										File:   "histogramQuantile_test.flux",
+										File:   "",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 44,
@@ -935,7 +935,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 48,
 												Line:   54,
 											},
-											File:   "histogramQuantile_test.flux",
+											File:   "",
 											Source: "want",
 											Start: ast.Position{
 												Column: 44,
@@ -954,7 +954,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 78,
 													Line:   54,
 												},
-												File:   "histogramQuantile_test.flux",
+												File:   "",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 66,
@@ -970,7 +970,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 78,
 														Line:   54,
 													},
-													File:   "histogramQuantile_test.flux",
+													File:   "",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 66,
@@ -986,7 +986,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 69,
 															Line:   54,
 														},
-														File:   "histogramQuantile_test.flux",
+														File:   "",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 66,
@@ -1004,7 +1004,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 78,
 															Line:   54,
 														},
-														File:   "histogramQuantile_test.flux",
+														File:   "",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 71,
@@ -1024,7 +1024,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 79,
 												Line:   54,
 											},
-											File:   "histogramQuantile_test.flux",
+											File:   "",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 50,
@@ -1040,7 +1040,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 65,
 													Line:   54,
 												},
-												File:   "histogramQuantile_test.flux",
+												File:   "",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 50,
@@ -1056,7 +1056,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 57,
 														Line:   54,
 													},
-													File:   "histogramQuantile_test.flux",
+													File:   "",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 50,
@@ -1074,7 +1074,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 65,
 														Line:   54,
 													},
-													File:   "histogramQuantile_test.flux",
+													File:   "",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 58,
@@ -1094,7 +1094,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 104,
 											Line:   54,
 										},
-										File:   "histogramQuantile_test.flux",
+										File:   "",
 										Source: "fn: t_histogramQuantile",
 										Start: ast.Position{
 											Column: 81,
@@ -1110,7 +1110,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 83,
 												Line:   54,
 											},
-											File:   "histogramQuantile_test.flux",
+											File:   "",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 81,
@@ -1128,7 +1128,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 104,
 												Line:   54,
 											},
-											File:   "histogramQuantile_test.flux",
+											File:   "",
 											Source: "t_histogramQuantile",
 											Start: ast.Position{
 												Column: 85,
@@ -1152,7 +1152,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 106,
 						Line:   54,
 					},
-					File:   "histogramQuantile_test.flux",
+					File:   "",
 					Source: "test _histogramQuantile = () => \n({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogramQuantile})",
 					Start: ast.Position{
 						Column: 1,
@@ -1170,7 +1170,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 33,
 						Line:   3,
 					},
-					File:   "histogramQuantile_test.flux",
+					File:   "",
 					Source: "import \"experimental/prometheus\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1186,7 +1186,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 33,
 							Line:   3,
 						},
-						File:   "histogramQuantile_test.flux",
+						File:   "",
 						Source: "\"experimental/prometheus\"",
 						Start: ast.Position{
 							Column: 8,
@@ -1205,7 +1205,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "histogramQuantile_test.flux",
+					File:   "",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1221,7 +1221,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "histogramQuantile_test.flux",
+						File:   "",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -1232,7 +1232,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "histogramQuantile_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -1242,7 +1242,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 24,
 						Line:   1,
 					},
-					File:   "histogramQuantile_test.flux",
+					File:   "",
 					Source: "package prometheus_test",
 					Start: ast.Position{
 						Column: 1,
@@ -1258,7 +1258,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 24,
 							Line:   1,
 						},
-						File:   "histogramQuantile_test.flux",
+						File:   "",
 						Source: "prometheus_test",
 						Start: ast.Position{
 							Column: 9,

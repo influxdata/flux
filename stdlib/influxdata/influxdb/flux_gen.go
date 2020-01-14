@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 16,
 					Line:   5,
 				},
-				File:   "influxdb.flux",
+				File:   "",
 				Source: "package influxdb\n\nbuiltin from\nbuiltin to\nbuiltin buckets",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   3,
 					},
-					File:   "influxdb.flux",
+					File:   "",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   3,
 						},
-						File:   "influxdb.flux",
+						File:   "",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
@@ -74,7 +74,7 @@ var pkgAST = &ast.Package{
 						Column: 11,
 						Line:   4,
 					},
-					File:   "influxdb.flux",
+					File:   "",
 					Source: "builtin to",
 					Start: ast.Position{
 						Column: 1,
@@ -90,7 +90,7 @@ var pkgAST = &ast.Package{
 							Column: 11,
 							Line:   4,
 						},
-						File:   "influxdb.flux",
+						File:   "",
 						Source: "to",
 						Start: ast.Position{
 							Column: 9,
@@ -108,7 +108,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   5,
 					},
-					File:   "influxdb.flux",
+					File:   "",
 					Source: "builtin buckets",
 					Start: ast.Position{
 						Column: 1,
@@ -124,7 +124,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   5,
 						},
-						File:   "influxdb.flux",
+						File:   "",
 						Source: "buckets",
 						Start: ast.Position{
 							Column: 9,
@@ -136,7 +136,7 @@ var pkgAST = &ast.Package{
 			},
 		}},
 		Imports:  nil,
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "influxdb.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -146,7 +146,7 @@ var pkgAST = &ast.Package{
 						Column: 17,
 						Line:   1,
 					},
-					File:   "influxdb.flux",
+					File:   "",
 					Source: "package influxdb",
 					Start: ast.Position{
 						Column: 1,
@@ -162,7 +162,7 @@ var pkgAST = &ast.Package{
 							Column: 17,
 							Line:   1,
 						},
-						File:   "influxdb.flux",
+						File:   "",
 						Source: "influxdb",
 						Start: ast.Position{
 							Column: 9,

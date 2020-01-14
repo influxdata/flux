@@ -1,5 +1,3 @@
-// +build libflux
-
 package libflux
 
 // #cgo CFLAGS: -I.

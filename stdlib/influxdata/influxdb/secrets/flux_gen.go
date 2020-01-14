@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 12,
 					Line:   3,
 				},
-				File:   "secrets.flux",
+				File:   "",
 				Source: "package secrets\n\nbuiltin get",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   3,
 					},
-					File:   "secrets.flux",
+					File:   "",
 					Source: "builtin get",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   3,
 						},
-						File:   "secrets.flux",
+						File:   "",
 						Source: "get",
 						Start: ast.Position{
 							Column: 9,
@@ -68,7 +68,7 @@ var pkgAST = &ast.Package{
 			},
 		}},
 		Imports:  nil,
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "secrets.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -78,7 +78,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   1,
 					},
-					File:   "secrets.flux",
+					File:   "",
 					Source: "package secrets",
 					Start: ast.Position{
 						Column: 1,
@@ -94,7 +94,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   1,
 						},
-						File:   "secrets.flux",
+						File:   "",
 						Source: "secrets",
 						Start: ast.Position{
 							Column: 9,

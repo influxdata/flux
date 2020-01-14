@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 58,
 					Line:   17,
 				},
-				File:   "prometheus.flux",
+				File:   "",
 				Source: "package prometheus\nimport \"universe\" \n\n// scrape enables scraping of a prometheus metrics endpoint and converts \n// that input into flux tables. Each metric is put into an individual flux \n// table, including each histogram and summary value.  \nbuiltin scrape\n\n// histogramQuantile enables the user to calculate quantiles on a set of given values\n// This function assumes that the given histogram data is being scraped or read from a \n// Prometheus source. \nhistogramQuantile = (tables=<-, quantile) => \n    tables\n        |> filter(fn: (r) => r._measurement == \"prometheus\")\n        |> group(mode: \"except\", columns: [\"le\", \"_value\", \"_time\"]) \n        |> map(fn:(r) => ({r with le: float(v:r.le)})) \n        |> universe.histogramQuantile(quantile: quantile)",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   7,
 					},
-					File:   "prometheus.flux",
+					File:   "",
 					Source: "builtin scrape",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   7,
 						},
-						File:   "prometheus.flux",
+						File:   "",
 						Source: "scrape",
 						Start: ast.Position{
 							Column: 9,
@@ -74,7 +74,7 @@ var pkgAST = &ast.Package{
 						Column: 58,
 						Line:   17,
 					},
-					File:   "prometheus.flux",
+					File:   "",
 					Source: "histogramQuantile = (tables=<-, quantile) => \n    tables\n        |> filter(fn: (r) => r._measurement == \"prometheus\")\n        |> group(mode: \"except\", columns: [\"le\", \"_value\", \"_time\"]) \n        |> map(fn:(r) => ({r with le: float(v:r.le)})) \n        |> universe.histogramQuantile(quantile: quantile)",
 					Start: ast.Position{
 						Column: 1,
@@ -90,7 +90,7 @@ var pkgAST = &ast.Package{
 							Column: 18,
 							Line:   12,
 						},
-						File:   "prometheus.flux",
+						File:   "",
 						Source: "histogramQuantile",
 						Start: ast.Position{
 							Column: 1,
@@ -108,7 +108,7 @@ var pkgAST = &ast.Package{
 							Column: 58,
 							Line:   17,
 						},
-						File:   "prometheus.flux",
+						File:   "",
 						Source: "(tables=<-, quantile) => \n    tables\n        |> filter(fn: (r) => r._measurement == \"prometheus\")\n        |> group(mode: \"except\", columns: [\"le\", \"_value\", \"_time\"]) \n        |> map(fn:(r) => ({r with le: float(v:r.le)})) \n        |> universe.histogramQuantile(quantile: quantile)",
 						Start: ast.Position{
 							Column: 21,
@@ -128,7 +128,7 @@ var pkgAST = &ast.Package{
 												Column: 11,
 												Line:   13,
 											},
-											File:   "prometheus.flux",
+											File:   "",
 											Source: "tables",
 											Start: ast.Position{
 												Column: 5,
@@ -145,7 +145,7 @@ var pkgAST = &ast.Package{
 											Column: 61,
 											Line:   14,
 										},
-										File:   "prometheus.flux",
+										File:   "",
 										Source: "tables\n        |> filter(fn: (r) => r._measurement == \"prometheus\")",
 										Start: ast.Position{
 											Column: 5,
@@ -162,7 +162,7 @@ var pkgAST = &ast.Package{
 													Column: 60,
 													Line:   14,
 												},
-												File:   "prometheus.flux",
+												File:   "",
 												Source: "fn: (r) => r._measurement == \"prometheus\"",
 												Start: ast.Position{
 													Column: 19,
@@ -178,7 +178,7 @@ var pkgAST = &ast.Package{
 														Column: 60,
 														Line:   14,
 													},
-													File:   "prometheus.flux",
+													File:   "",
 													Source: "fn: (r) => r._measurement == \"prometheus\"",
 													Start: ast.Position{
 														Column: 19,
@@ -194,7 +194,7 @@ var pkgAST = &ast.Package{
 															Column: 21,
 															Line:   14,
 														},
-														File:   "prometheus.flux",
+														File:   "",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 19,
@@ -212,7 +212,7 @@ var pkgAST = &ast.Package{
 															Column: 60,
 															Line:   14,
 														},
-														File:   "prometheus.flux",
+														File:   "",
 														Source: "(r) => r._measurement == \"prometheus\"",
 														Start: ast.Position{
 															Column: 23,
@@ -228,7 +228,7 @@ var pkgAST = &ast.Package{
 																Column: 60,
 																Line:   14,
 															},
-															File:   "prometheus.flux",
+															File:   "",
 															Source: "r._measurement == \"prometheus\"",
 															Start: ast.Position{
 																Column: 30,
@@ -244,7 +244,7 @@ var pkgAST = &ast.Package{
 																	Column: 44,
 																	Line:   14,
 																},
-																File:   "prometheus.flux",
+																File:   "",
 																Source: "r._measurement",
 																Start: ast.Position{
 																	Column: 30,
@@ -260,7 +260,7 @@ var pkgAST = &ast.Package{
 																		Column: 31,
 																		Line:   14,
 																	},
-																	File:   "prometheus.flux",
+																	File:   "",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 30,
@@ -278,7 +278,7 @@ var pkgAST = &ast.Package{
 																		Column: 44,
 																		Line:   14,
 																	},
-																	File:   "prometheus.flux",
+																	File:   "",
 																	Source: "_measurement",
 																	Start: ast.Position{
 																		Column: 32,
@@ -298,7 +298,7 @@ var pkgAST = &ast.Package{
 																	Column: 60,
 																	Line:   14,
 																},
-																File:   "prometheus.flux",
+																File:   "",
 																Source: "\"prometheus\"",
 																Start: ast.Position{
 																	Column: 48,
@@ -317,7 +317,7 @@ var pkgAST = &ast.Package{
 																Column: 25,
 																Line:   14,
 															},
-															File:   "prometheus.flux",
+															File:   "",
 															Source: "r",
 															Start: ast.Position{
 																Column: 24,
@@ -333,7 +333,7 @@ var pkgAST = &ast.Package{
 																	Column: 25,
 																	Line:   14,
 																},
-																File:   "prometheus.flux",
+																File:   "",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 24,
@@ -356,7 +356,7 @@ var pkgAST = &ast.Package{
 												Column: 61,
 												Line:   14,
 											},
-											File:   "prometheus.flux",
+											File:   "",
 											Source: "filter(fn: (r) => r._measurement == \"prometheus\")",
 											Start: ast.Position{
 												Column: 12,
@@ -372,7 +372,7 @@ var pkgAST = &ast.Package{
 													Column: 18,
 													Line:   14,
 												},
-												File:   "prometheus.flux",
+												File:   "",
 												Source: "filter",
 												Start: ast.Position{
 													Column: 12,
@@ -391,7 +391,7 @@ var pkgAST = &ast.Package{
 										Column: 69,
 										Line:   15,
 									},
-									File:   "prometheus.flux",
+									File:   "",
 									Source: "tables\n        |> filter(fn: (r) => r._measurement == \"prometheus\")\n        |> group(mode: \"except\", columns: [\"le\", \"_value\", \"_time\"])",
 									Start: ast.Position{
 										Column: 5,
@@ -408,7 +408,7 @@ var pkgAST = &ast.Package{
 												Column: 68,
 												Line:   15,
 											},
-											File:   "prometheus.flux",
+											File:   "",
 											Source: "mode: \"except\", columns: [\"le\", \"_value\", \"_time\"]",
 											Start: ast.Position{
 												Column: 18,
@@ -424,7 +424,7 @@ var pkgAST = &ast.Package{
 													Column: 32,
 													Line:   15,
 												},
-												File:   "prometheus.flux",
+												File:   "",
 												Source: "mode: \"except\"",
 												Start: ast.Position{
 													Column: 18,
@@ -440,7 +440,7 @@ var pkgAST = &ast.Package{
 														Column: 22,
 														Line:   15,
 													},
-													File:   "prometheus.flux",
+													File:   "",
 													Source: "mode",
 													Start: ast.Position{
 														Column: 18,
@@ -458,7 +458,7 @@ var pkgAST = &ast.Package{
 														Column: 32,
 														Line:   15,
 													},
-													File:   "prometheus.flux",
+													File:   "",
 													Source: "\"except\"",
 													Start: ast.Position{
 														Column: 24,
@@ -476,7 +476,7 @@ var pkgAST = &ast.Package{
 													Column: 68,
 													Line:   15,
 												},
-												File:   "prometheus.flux",
+												File:   "",
 												Source: "columns: [\"le\", \"_value\", \"_time\"]",
 												Start: ast.Position{
 													Column: 34,
@@ -492,7 +492,7 @@ var pkgAST = &ast.Package{
 														Column: 41,
 														Line:   15,
 													},
-													File:   "prometheus.flux",
+													File:   "",
 													Source: "columns",
 													Start: ast.Position{
 														Column: 34,
@@ -510,7 +510,7 @@ var pkgAST = &ast.Package{
 														Column: 68,
 														Line:   15,
 													},
-													File:   "prometheus.flux",
+													File:   "",
 													Source: "[\"le\", \"_value\", \"_time\"]",
 													Start: ast.Position{
 														Column: 43,
@@ -526,7 +526,7 @@ var pkgAST = &ast.Package{
 															Column: 48,
 															Line:   15,
 														},
-														File:   "prometheus.flux",
+														File:   "",
 														Source: "\"le\"",
 														Start: ast.Position{
 															Column: 44,
@@ -543,7 +543,7 @@ var pkgAST = &ast.Package{
 															Column: 58,
 															Line:   15,
 														},
-														File:   "prometheus.flux",
+														File:   "",
 														Source: "\"_value\"",
 														Start: ast.Position{
 															Column: 50,
@@ -560,7 +560,7 @@ var pkgAST = &ast.Package{
 															Column: 67,
 															Line:   15,
 														},
-														File:   "prometheus.flux",
+														File:   "",
 														Source: "\"_time\"",
 														Start: ast.Position{
 															Column: 60,
@@ -581,7 +581,7 @@ var pkgAST = &ast.Package{
 											Column: 69,
 											Line:   15,
 										},
-										File:   "prometheus.flux",
+										File:   "",
 										Source: "group(mode: \"except\", columns: [\"le\", \"_value\", \"_time\"])",
 										Start: ast.Position{
 											Column: 12,
@@ -597,7 +597,7 @@ var pkgAST = &ast.Package{
 												Column: 17,
 												Line:   15,
 											},
-											File:   "prometheus.flux",
+											File:   "",
 											Source: "group",
 											Start: ast.Position{
 												Column: 12,
@@ -616,7 +616,7 @@ var pkgAST = &ast.Package{
 									Column: 55,
 									Line:   16,
 								},
-								File:   "prometheus.flux",
+								File:   "",
 								Source: "tables\n        |> filter(fn: (r) => r._measurement == \"prometheus\")\n        |> group(mode: \"except\", columns: [\"le\", \"_value\", \"_time\"]) \n        |> map(fn:(r) => ({r with le: float(v:r.le)}))",
 								Start: ast.Position{
 									Column: 5,
@@ -633,7 +633,7 @@ var pkgAST = &ast.Package{
 											Column: 54,
 											Line:   16,
 										},
-										File:   "prometheus.flux",
+										File:   "",
 										Source: "fn:(r) => ({r with le: float(v:r.le)})",
 										Start: ast.Position{
 											Column: 16,
@@ -649,7 +649,7 @@ var pkgAST = &ast.Package{
 												Column: 54,
 												Line:   16,
 											},
-											File:   "prometheus.flux",
+											File:   "",
 											Source: "fn:(r) => ({r with le: float(v:r.le)})",
 											Start: ast.Position{
 												Column: 16,
@@ -665,7 +665,7 @@ var pkgAST = &ast.Package{
 													Column: 18,
 													Line:   16,
 												},
-												File:   "prometheus.flux",
+												File:   "",
 												Source: "fn",
 												Start: ast.Position{
 													Column: 16,
@@ -683,7 +683,7 @@ var pkgAST = &ast.Package{
 													Column: 54,
 													Line:   16,
 												},
-												File:   "prometheus.flux",
+												File:   "",
 												Source: "(r) => ({r with le: float(v:r.le)})",
 												Start: ast.Position{
 													Column: 19,
@@ -699,7 +699,7 @@ var pkgAST = &ast.Package{
 														Column: 54,
 														Line:   16,
 													},
-													File:   "prometheus.flux",
+													File:   "",
 													Source: "({r with le: float(v:r.le)})",
 													Start: ast.Position{
 														Column: 26,
@@ -715,7 +715,7 @@ var pkgAST = &ast.Package{
 															Column: 53,
 															Line:   16,
 														},
-														File:   "prometheus.flux",
+														File:   "",
 														Source: "{r with le: float(v:r.le)}",
 														Start: ast.Position{
 															Column: 27,
@@ -731,7 +731,7 @@ var pkgAST = &ast.Package{
 																Column: 52,
 																Line:   16,
 															},
-															File:   "prometheus.flux",
+															File:   "",
 															Source: "le: float(v:r.le)",
 															Start: ast.Position{
 																Column: 35,
@@ -747,7 +747,7 @@ var pkgAST = &ast.Package{
 																	Column: 37,
 																	Line:   16,
 																},
-																File:   "prometheus.flux",
+																File:   "",
 																Source: "le",
 																Start: ast.Position{
 																	Column: 35,
@@ -766,7 +766,7 @@ var pkgAST = &ast.Package{
 																		Column: 51,
 																		Line:   16,
 																	},
-																	File:   "prometheus.flux",
+																	File:   "",
 																	Source: "v:r.le",
 																	Start: ast.Position{
 																		Column: 45,
@@ -782,7 +782,7 @@ var pkgAST = &ast.Package{
 																			Column: 51,
 																			Line:   16,
 																		},
-																		File:   "prometheus.flux",
+																		File:   "",
 																		Source: "v:r.le",
 																		Start: ast.Position{
 																			Column: 45,
@@ -798,7 +798,7 @@ var pkgAST = &ast.Package{
 																				Column: 46,
 																				Line:   16,
 																			},
-																			File:   "prometheus.flux",
+																			File:   "",
 																			Source: "v",
 																			Start: ast.Position{
 																				Column: 45,
@@ -816,7 +816,7 @@ var pkgAST = &ast.Package{
 																				Column: 51,
 																				Line:   16,
 																			},
-																			File:   "prometheus.flux",
+																			File:   "",
 																			Source: "r.le",
 																			Start: ast.Position{
 																				Column: 47,
@@ -832,7 +832,7 @@ var pkgAST = &ast.Package{
 																					Column: 48,
 																					Line:   16,
 																				},
-																				File:   "prometheus.flux",
+																				File:   "",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 47,
@@ -850,7 +850,7 @@ var pkgAST = &ast.Package{
 																					Column: 51,
 																					Line:   16,
 																				},
-																				File:   "prometheus.flux",
+																				File:   "",
 																				Source: "le",
 																				Start: ast.Position{
 																					Column: 49,
@@ -871,7 +871,7 @@ var pkgAST = &ast.Package{
 																	Column: 52,
 																	Line:   16,
 																},
-																File:   "prometheus.flux",
+																File:   "",
 																Source: "float(v:r.le)",
 																Start: ast.Position{
 																	Column: 39,
@@ -887,7 +887,7 @@ var pkgAST = &ast.Package{
 																		Column: 44,
 																		Line:   16,
 																	},
-																	File:   "prometheus.flux",
+																	File:   "",
 																	Source: "float",
 																	Start: ast.Position{
 																		Column: 39,
@@ -907,7 +907,7 @@ var pkgAST = &ast.Package{
 																Column: 29,
 																Line:   16,
 															},
-															File:   "prometheus.flux",
+															File:   "",
 															Source: "r",
 															Start: ast.Position{
 																Column: 28,
@@ -927,7 +927,7 @@ var pkgAST = &ast.Package{
 														Column: 21,
 														Line:   16,
 													},
-													File:   "prometheus.flux",
+													File:   "",
 													Source: "r",
 													Start: ast.Position{
 														Column: 20,
@@ -943,7 +943,7 @@ var pkgAST = &ast.Package{
 															Column: 21,
 															Line:   16,
 														},
-														File:   "prometheus.flux",
+														File:   "",
 														Source: "r",
 														Start: ast.Position{
 															Column: 20,
@@ -966,7 +966,7 @@ var pkgAST = &ast.Package{
 										Column: 55,
 										Line:   16,
 									},
-									File:   "prometheus.flux",
+									File:   "",
 									Source: "map(fn:(r) => ({r with le: float(v:r.le)}))",
 									Start: ast.Position{
 										Column: 12,
@@ -982,7 +982,7 @@ var pkgAST = &ast.Package{
 											Column: 15,
 											Line:   16,
 										},
-										File:   "prometheus.flux",
+										File:   "",
 										Source: "map",
 										Start: ast.Position{
 											Column: 12,
@@ -1001,7 +1001,7 @@ var pkgAST = &ast.Package{
 								Column: 58,
 								Line:   17,
 							},
-							File:   "prometheus.flux",
+							File:   "",
 							Source: "tables\n        |> filter(fn: (r) => r._measurement == \"prometheus\")\n        |> group(mode: \"except\", columns: [\"le\", \"_value\", \"_time\"]) \n        |> map(fn:(r) => ({r with le: float(v:r.le)})) \n        |> universe.histogramQuantile(quantile: quantile)",
 							Start: ast.Position{
 								Column: 5,
@@ -1018,7 +1018,7 @@ var pkgAST = &ast.Package{
 										Column: 57,
 										Line:   17,
 									},
-									File:   "prometheus.flux",
+									File:   "",
 									Source: "quantile: quantile",
 									Start: ast.Position{
 										Column: 39,
@@ -1034,7 +1034,7 @@ var pkgAST = &ast.Package{
 											Column: 57,
 											Line:   17,
 										},
-										File:   "prometheus.flux",
+										File:   "",
 										Source: "quantile: quantile",
 										Start: ast.Position{
 											Column: 39,
@@ -1050,7 +1050,7 @@ var pkgAST = &ast.Package{
 												Column: 47,
 												Line:   17,
 											},
-											File:   "prometheus.flux",
+											File:   "",
 											Source: "quantile",
 											Start: ast.Position{
 												Column: 39,
@@ -1068,7 +1068,7 @@ var pkgAST = &ast.Package{
 												Column: 57,
 												Line:   17,
 											},
-											File:   "prometheus.flux",
+											File:   "",
 											Source: "quantile",
 											Start: ast.Position{
 												Column: 49,
@@ -1088,7 +1088,7 @@ var pkgAST = &ast.Package{
 									Column: 58,
 									Line:   17,
 								},
-								File:   "prometheus.flux",
+								File:   "",
 								Source: "universe.histogramQuantile(quantile: quantile)",
 								Start: ast.Position{
 									Column: 12,
@@ -1104,7 +1104,7 @@ var pkgAST = &ast.Package{
 										Column: 38,
 										Line:   17,
 									},
-									File:   "prometheus.flux",
+									File:   "",
 									Source: "universe.histogramQuantile",
 									Start: ast.Position{
 										Column: 12,
@@ -1120,7 +1120,7 @@ var pkgAST = &ast.Package{
 											Column: 20,
 											Line:   17,
 										},
-										File:   "prometheus.flux",
+										File:   "",
 										Source: "universe",
 										Start: ast.Position{
 											Column: 12,
@@ -1138,7 +1138,7 @@ var pkgAST = &ast.Package{
 											Column: 38,
 											Line:   17,
 										},
-										File:   "prometheus.flux",
+										File:   "",
 										Source: "histogramQuantile",
 										Start: ast.Position{
 											Column: 21,
@@ -1159,7 +1159,7 @@ var pkgAST = &ast.Package{
 								Column: 31,
 								Line:   12,
 							},
-							File:   "prometheus.flux",
+							File:   "",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 22,
@@ -1175,7 +1175,7 @@ var pkgAST = &ast.Package{
 									Column: 28,
 									Line:   12,
 								},
-								File:   "prometheus.flux",
+								File:   "",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 22,
@@ -1192,7 +1192,7 @@ var pkgAST = &ast.Package{
 								Column: 31,
 								Line:   12,
 							},
-							File:   "prometheus.flux",
+							File:   "",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 29,
@@ -1208,7 +1208,7 @@ var pkgAST = &ast.Package{
 								Column: 41,
 								Line:   12,
 							},
-							File:   "prometheus.flux",
+							File:   "",
 							Source: "quantile",
 							Start: ast.Position{
 								Column: 33,
@@ -1224,7 +1224,7 @@ var pkgAST = &ast.Package{
 									Column: 41,
 									Line:   12,
 								},
-								File:   "prometheus.flux",
+								File:   "",
 								Source: "quantile",
 								Start: ast.Position{
 									Column: 33,
@@ -1247,7 +1247,7 @@ var pkgAST = &ast.Package{
 						Column: 18,
 						Line:   2,
 					},
-					File:   "prometheus.flux",
+					File:   "",
 					Source: "import \"universe\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1263,7 +1263,7 @@ var pkgAST = &ast.Package{
 							Column: 18,
 							Line:   2,
 						},
-						File:   "prometheus.flux",
+						File:   "",
 						Source: "\"universe\"",
 						Start: ast.Position{
 							Column: 8,
@@ -1274,7 +1274,7 @@ var pkgAST = &ast.Package{
 				Value: "universe",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "prometheus.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -1284,7 +1284,7 @@ var pkgAST = &ast.Package{
 						Column: 19,
 						Line:   1,
 					},
-					File:   "prometheus.flux",
+					File:   "",
 					Source: "package prometheus",
 					Start: ast.Position{
 						Column: 1,
@@ -1300,7 +1300,7 @@ var pkgAST = &ast.Package{
 							Column: 19,
 							Line:   1,
 						},
-						File:   "prometheus.flux",
+						File:   "",
 						Source: "prometheus",
 						Start: ast.Position{
 							Column: 9,
