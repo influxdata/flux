@@ -99,7 +99,7 @@ func (v value) Function() Function {
 	return v.v.(Function)
 }
 func (v value) Equal(r Value) bool {
-	if v.Type() != r.Type() {
+	if v.Type().Nature() != r.Type().Nature() {
 		return false
 	}
 
@@ -145,6 +145,9 @@ var (
 	// InvalidValue is a non nil value who's type is semantic.Invalid
 	// TODO (algow): create a invalid monotype
 	InvalidValue = value{t: semantic.BasicBool}
+
+	// Null is an untyped nil value.
+	Null = null{}
 )
 
 // New constructs a new Value by inferring the type from the interface.
@@ -152,7 +155,7 @@ var (
 // does not translate to a valid Value type, then InvalidValue is returned.
 func New(v interface{}) Value {
 	if v == nil {
-		panic("untyped null value")
+		return Null
 	}
 	switch v := v.(type) {
 	case string:
@@ -287,3 +290,21 @@ func CheckKind(got, exp semantic.Nature) {
 		panic(UnexpectedKind(got, exp))
 	}
 }
+
+type null struct{}
+
+func (n null) Type() semantic.MonoType { return semantic.MonoType{} }
+func (n null) IsNull() bool            { return true }
+func (n null) Str() string             { panic(UnexpectedKind(semantic.Invalid, semantic.String)) }
+func (n null) Bytes() []byte           { panic(UnexpectedKind(semantic.Invalid, semantic.Bytes)) }
+func (n null) Int() int64              { panic(UnexpectedKind(semantic.Invalid, semantic.Int)) }
+func (n null) UInt() uint64            { panic(UnexpectedKind(semantic.Invalid, semantic.UInt)) }
+func (n null) Float() float64          { panic(UnexpectedKind(semantic.Invalid, semantic.Float)) }
+func (n null) Bool() bool              { panic(UnexpectedKind(semantic.Invalid, semantic.Bool)) }
+func (n null) Time() Time              { panic(UnexpectedKind(semantic.Invalid, semantic.Time)) }
+func (n null) Duration() Duration      { panic(UnexpectedKind(semantic.Invalid, semantic.Duration)) }
+func (n null) Regexp() *regexp.Regexp  { panic(UnexpectedKind(semantic.Invalid, semantic.Regexp)) }
+func (n null) Array() Array            { panic(UnexpectedKind(semantic.Invalid, semantic.Array)) }
+func (n null) Object() Object          { panic(UnexpectedKind(semantic.Invalid, semantic.Object)) }
+func (n null) Function() Function      { panic(UnexpectedKind(semantic.Invalid, semantic.Function)) }
+func (n null) Equal(Value) bool        { return false }

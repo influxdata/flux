@@ -28,7 +28,7 @@ func NewMonoType(tbl flatbuffers.Table, t fbsemantic.MonoType) (MonoType, error)
 	var tbler fbTabler
 	switch t {
 	case fbsemantic.MonoTypeNONE:
-		return MonoType{}, errors.Newf(codes.Internal, "missing type, got type: %v", fbsemantic.EnumNamesMonoType[t])
+		return MonoType{}, nil
 	case fbsemantic.MonoTypeBasic:
 		tbler = new(fbsemantic.Basic)
 	case fbsemantic.MonoTypeVar:
@@ -359,7 +359,7 @@ func (p *RowProperty) Name() string {
 func (p *RowProperty) TypeOf() (MonoType, error) {
 	var tbl flatbuffers.Table
 	if !p.fb.V(&tbl) {
-		return MonoType{}, errors.Newf(codes.Internal, "missing property type")
+		return MonoType{}, nil
 	}
 	return NewMonoType(tbl, p.fb.VType())
 }
@@ -367,7 +367,7 @@ func (p *RowProperty) TypeOf() (MonoType, error) {
 // String returns a string representation of this monotype.
 func (mt MonoType) String() string {
 	if mt.tbl == nil {
-		return "<monotype: nil>"
+		return "null"
 	}
 	switch tk := mt.Kind(); tk {
 	case Unknown:
@@ -552,6 +552,10 @@ func NewObjectType(properties []PropertyType) MonoType {
 // This method will access the existing types so it can correctly
 // rebuild an already constructed MonoType inside of another buffer.
 func copyMonoType(builder *flatbuffers.Builder, t MonoType) flatbuffers.UOffsetT {
+	if t.mt == fbsemantic.MonoTypeNONE {
+		return 0
+	}
+
 	table := t.tbl.Table()
 	switch t.mt {
 	case fbsemantic.MonoTypeNONE:
@@ -613,7 +617,7 @@ func copyMonoType(builder *flatbuffers.Builder, t MonoType) flatbuffers.UOffsetT
 func monoTypeFromFunc(fn func(obj *flatbuffers.Table) bool, t fbsemantic.MonoType) MonoType {
 	var table flatbuffers.Table
 	if !fn(&table) {
-		panic("table property missing")
+		return MonoType{}
 	}
 	mt, err := NewMonoType(table, t)
 	if err != nil {
@@ -685,8 +689,10 @@ func buildObjectType(builder *flatbuffers.Builder, properties []PropertyType, ex
 		vOffset := copyMonoType(builder, p.Value)
 		fbsemantic.PropStart(builder)
 		fbsemantic.PropAddK(builder, kOffset)
-		fbsemantic.PropAddVType(builder, p.Value.mt)
-		fbsemantic.PropAddV(builder, vOffset)
+		if p.Value.mt != fbsemantic.MonoTypeNONE {
+			fbsemantic.PropAddVType(builder, p.Value.mt)
+			fbsemantic.PropAddV(builder, vOffset)
+		}
 		propOffsets[i] = fbsemantic.PropEnd(builder)
 	}
 

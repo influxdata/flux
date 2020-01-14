@@ -17,71 +17,44 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 	// TODO (algow): how do externs work now?
 	//extern := values.BuildExternAssignments(f, scope)
 
-	// The function expression may be polymorphic,
-	// we can only compile and execute it if it is monomorphic.
-	// Steps to convert from polymorphic to monomorphic function type:
-	// 1. Create substituion for each of the free vars in the poly type
-	//    Substituion should be based on the input type
-	// 2. Apply substitution to poly type
-	// 3. Compile monomorphic function
-	//
-	// forall [t0,t1] where t0 is Rowable (r: { bar: t1 | t0}) -> {foo: t1 | bar: t1 | t0}
-	// (r) => ({r with foo: r.bar + 1})
-
-	// TODO (algow): f needs to have a poly type
-	ft := f.TypeOf()
-	r, err := ft.Argument(0)
-	if err != nil {
-		return nil, err
-	}
-	rt, err := r.TypeOf()
+	// Retrieve the function argument types and create an object type from them.
+	fnType := f.TypeOf()
+	argN, err := fnType.NumArguments()
 	if err != nil {
 		return nil, err
 	}
 
-	n, err := rt.NumProperties()
-	if err != nil {
-		return nil, err
-	}
-	// TODO (algow): allocate space for the number of poly type vars
+	// Iterate over every argument and find the equivalent
+	// property inside of the input.
+	// The function expression has a monotype that may have
+	// tvars contained within it. We have a realized input type
+	// so we can use that to construct the tvar substitutions.
+	// Iterate over every argument and find the equivalent
+	// property inside of the input and then generate the substitutions.
 	subst := make(map[uint64]semantic.MonoType)
-	for i := 0; i < n; i++ {
-		p, err := rt.RowProperty(i)
+	for i := 0; i < argN; i++ {
+		arg, err := fnType.Argument(i)
 		if err != nil {
 			return nil, err
-		}
-		pt, err := p.TypeOf()
-		if err != nil {
-			return nil, err
-		}
-		inp, err := findProperty(p.Name(), in)
-		if err != nil {
-			return nil, err
-		}
-		inpt, err := inp.TypeOf()
-		if err != nil {
-			return nil, err
-		}
-		inb, err := inpt.Basic()
-		if err != nil {
-			return nil, err // TODO (algow): error message about requiring basic types to compiled functions
-		}
-		b, err := pt.Basic()
-		if err != nil {
-			return nil, err // TODO (algow): error message about requiring basic types to compiled functions
-		}
-		if b != inb {
-			return nil, errors.New(codes.Invalid, "TODO (algow): something about mismatched input types")
 		}
 
-		if pt.Kind() == semantic.Var {
-			vn, err := pt.VarNum()
+		name := arg.Name()
+		argT, err := arg.TypeOf()
+		if err != nil {
+			return nil, err
+		}
+
+		prop, ok, err := findProperty(string(name), in)
+		if err != nil {
+			return nil, err
+		} else if ok {
+			mtyp, err := prop.TypeOf()
 			if err != nil {
 				return nil, err
 			}
-			subst[vn] = inpt
-			// TODO (algow): check kind constraints
-			// against the input type
+			if err := substituteTypes(subst, argT, mtyp); err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -91,27 +64,145 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 	}
 	return compiledFn{
 		root:       root,
-		fnType:     ft,
+		fnType:     fnType,
 		inputScope: nestScope(scope),
 	}, nil
 }
 
-func findProperty(name string, t semantic.MonoType) (*semantic.RowProperty, error) {
+// substituteTypes will generate a substitution map by recursing through
+// inType and mapping any variables to the value in the other record.
+// If the input type is not a type variable, it will check to ensure
+// that the type in the input matches or it will return an error.
+func substituteTypes(subst map[uint64]semantic.MonoType, inType, in semantic.MonoType) error {
+	// If the input isn't a valid type, then don't consider it as
+	// part of substituting types. We will trust type inference has
+	// the correct type and that we are just handling a null value
+	// which isn't represented in type inference.
+	if in.Nature() == semantic.Invalid {
+		return nil
+	} else if inType.Kind() == semantic.Var {
+		vn, err := inType.VarNum()
+		if err != nil {
+			return err
+		}
+		// If this substitution variable already exists,
+		// we need to verify that it maps to the same type
+		// in the input record.
+		// We can do this by calling substituteTypes with the same
+		// input parameter and the substituted monotype since
+		// substituteTypes will verify the types.
+		if t, ok := subst[vn]; ok {
+			return substituteTypes(subst, t, in)
+		}
+
+		// If the input type is not invalid, mark it down
+		// as the real type.
+		if in.Nature() != semantic.Invalid {
+			subst[vn] = in
+		}
+		return nil
+	}
+
+	if inType.Kind() != in.Kind() {
+		return errors.Newf(codes.FailedPrecondition, "type conflict: %s != %s", inType, in)
+	}
+
+	switch inType.Kind() {
+	case semantic.Basic:
+		at, err := inType.Basic()
+		if err != nil {
+			return err
+		}
+
+		// Otherwise we have a valid type and need to ensure they match.
+		bt, err := in.Basic()
+		if err != nil {
+			return err
+		}
+
+		if at != bt {
+			return errors.Newf(codes.FailedPrecondition, "type conflict: %s != %s", inType, in)
+		}
+		return nil
+	case semantic.Arr:
+		lt, err := inType.ElemType()
+		if err != nil {
+			return err
+		}
+
+		rt, err := inType.ElemType()
+		if err != nil {
+			return err
+		}
+		return substituteTypes(subst, lt, rt)
+	case semantic.Row:
+		// We need to compare the row type that was inferred
+		// and the reality. It is ok for row properties to exist
+		// in the real type that aren't in the inferred type and
+		// it is ok for inferred types to be missing from the actual
+		// input type in the case of null values.
+		// What isn't ok is that the two types conflict so we are
+		// going to iterate over all of the properties in the inferred
+		// type and perform substitutions on them.
+		nproperties, err := inType.NumProperties()
+		if err != nil {
+			return err
+		}
+
+		for i := 0; i < nproperties; i++ {
+			lprop, err := inType.RowProperty(i)
+			if err != nil {
+				return err
+			}
+
+			// Find the property in the real type if it
+			// exists. If it doesn't exist, then no problem!
+			name := lprop.Name()
+			rprop, ok, err := findProperty(name, in)
+			if err != nil {
+				return err
+			} else if !ok {
+				// It is ok if this property doesn't exist
+				// in the input type.
+				continue
+			}
+
+			ltyp, err := lprop.TypeOf()
+			if err != nil {
+				return err
+			}
+			rtyp, err := rprop.TypeOf()
+			if err != nil {
+				return err
+			}
+			if err := substituteTypes(subst, ltyp, rtyp); err != nil {
+				return err
+			}
+		}
+		return nil
+	case semantic.Fun:
+		// TODO(algow): Support passing functions to compiled functions.
+		return errors.New(codes.Unimplemented)
+	default:
+		return errors.Newf(codes.Internal, "unknown semantic kind: %s", inType)
+	}
+}
+
+func findProperty(name string, t semantic.MonoType) (*semantic.RowProperty, bool, error) {
 	n, err := t.NumProperties()
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	for i := 0; i < n; i++ {
 		p, err := t.RowProperty(i)
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
 		if p.Name() == name {
-			return p, nil
+			return p, true, nil
 		}
 	}
-	// TODO (algow): use correct error here
-	return nil, errors.New(codes.Internal, "not found")
+	return nil, false, nil
 }
 
 // monoType ignores any errors when reading the type of a node.
@@ -121,7 +212,6 @@ func monoType(subst map[uint64]semantic.MonoType, t semantic.MonoType) semantic.
 	if err != nil {
 		return t
 	}
-	// TODO (algow): do we care about the case when the tvar is not in the substitution?
 	return subst[tv]
 }
 
@@ -211,28 +301,6 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			array: elements,
 		}, nil
 	case *semantic.IdentifierExpression:
-		// TODO (algow): do we need this anymore?
-		// Create type instance of the function
-		//if fe, ok := funcExprs[n.Name]; ok {
-		//	it, err := subst.PolyTypeOf(n)
-		//	if err != nil {
-		//		return nil, err
-		//	}
-		//	ft, err := subst.PolyTypeOf(fe)
-		//	if err != nil {
-		//		return nil, err
-		//	}
-
-		//	subst := subst.FreshSolution()
-		//	// Add constraint on the identifier type and the function type.
-		//	// This way all type variables in the body of the function will know their monotype.
-		//	err = subst.AddConstraint(it, ft)
-		//	if err != nil {
-		//		return nil, err
-		//	}
-
-		//	return compile(fe, subst, scope, )
-		//}
 		return &identifierEvaluator{
 			t:    monoType(subst, n.TypeOf()),
 			name: n.Name,
@@ -379,16 +447,21 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 		if err != nil {
 			return nil, err
 		}
-		lt := l.Type()
+		lt := l.Type().Nature()
 		r, err := compile(n.Right, subst, scope)
 		if err != nil {
 			return nil, err
 		}
-		rt := r.Type()
+		rt := r.Type().Nature()
+		if lt == semantic.Invalid {
+			lt = rt
+		} else if rt == semantic.Invalid {
+			rt = lt
+		}
 		f, err := values.LookupBinaryFunction(values.BinaryFuncSignature{
 			Operator: n.Operator,
-			Left:     lt.Nature(),
-			Right:    rt.Nature(),
+			Left:     lt,
+			Right:    rt,
 		})
 		if err != nil {
 			return nil, err
@@ -415,10 +488,6 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 		}, nil
 	case *semantic.FunctionExpression:
 		fnType := monoType(subst, n.TypeOf())
-		body, err := compile(n.Block.Body, subst, scope)
-		if err != nil {
-			return nil, err
-		}
 		num, err := fnType.NumArguments()
 		if err != nil {
 			return nil, err
@@ -456,7 +525,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 		return &functionEvaluator{
 			t:      fnType,
 			params: params,
-			body:   body,
+			fn:     n,
 		}, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "unknown semantic node of type %T", n)

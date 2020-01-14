@@ -29,11 +29,12 @@ type array struct {
 }
 
 func NewArray(arrType semantic.MonoType) Array {
-	return &array{
-		t: arrType,
-	}
+	return NewArrayWithBacking(arrType, nil)
 }
 func NewArrayWithBacking(arrType semantic.MonoType, elements []Value) Array {
+	if arrType.Nature() != semantic.Array {
+		panic(UnexpectedKind(arrType.Nature(), semantic.Array))
+	}
 	return &array{
 		t:        arrType,
 		elements: elements,
