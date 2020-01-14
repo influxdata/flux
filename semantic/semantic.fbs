@@ -88,7 +88,7 @@ enum Kind : ubyte {
   Equatable,
   Nullable,
   Row,
-  Signed,
+  Negatable,
 }
 
 table Constraint {

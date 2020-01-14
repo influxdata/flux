@@ -1338,7 +1338,7 @@ impl UnaryExpr {
             ast::Operator::AdditionOperator | ast::Operator::SubtractionOperator => {
                 Constraints::from(vec![
                     Constraint::Equal(self.argument.type_of().clone(), self.typ.clone()),
-                    Constraint::Kind(self.argument.type_of().clone(), Kind::Signed),
+                    Constraint::Kind(self.argument.type_of().clone(), Kind::Negatable),
                 ])
             }
             _ => return Err(Error::unsupported_unary_operator(&self.operator)),
