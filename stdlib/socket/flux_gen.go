@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 13,
 					Line:   3,
 				},
-				File:   "socket.flux",
+				File:   "",
 				Source: "package socket\n\nbuiltin from",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   3,
 					},
-					File:   "socket.flux",
+					File:   "",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   3,
 						},
-						File:   "socket.flux",
+						File:   "",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
@@ -68,7 +68,7 @@ var pkgAST = &ast.Package{
 			},
 		}},
 		Imports:  nil,
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "socket.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -78,7 +78,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   1,
 					},
-					File:   "socket.flux",
+					File:   "",
 					Source: "package socket",
 					Start: ast.Position{
 						Column: 1,
@@ -94,7 +94,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   1,
 						},
-						File:   "socket.flux",
+						File:   "",
 						Source: "socket",
 						Start: ast.Position{
 							Column: 9,

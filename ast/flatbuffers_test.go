@@ -1,5 +1,3 @@
-// +build libflux
-
 package ast_test
 
 import (

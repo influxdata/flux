@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 11,
 					Line:   4,
 				},
-				File:   "sql.flux",
+				File:   "",
 				Source: "package sql\n\nbuiltin from\nbuiltin to",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   3,
 					},
-					File:   "sql.flux",
+					File:   "",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   3,
 						},
-						File:   "sql.flux",
+						File:   "",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
@@ -74,7 +74,7 @@ var pkgAST = &ast.Package{
 						Column: 11,
 						Line:   4,
 					},
-					File:   "sql.flux",
+					File:   "",
 					Source: "builtin to",
 					Start: ast.Position{
 						Column: 1,
@@ -90,7 +90,7 @@ var pkgAST = &ast.Package{
 							Column: 11,
 							Line:   4,
 						},
-						File:   "sql.flux",
+						File:   "",
 						Source: "to",
 						Start: ast.Position{
 							Column: 9,
@@ -102,7 +102,7 @@ var pkgAST = &ast.Package{
 			},
 		}},
 		Imports:  nil,
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "sql.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -112,7 +112,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   1,
 					},
-					File:   "sql.flux",
+					File:   "",
 					Source: "package sql",
 					Start: ast.Position{
 						Column: 1,
@@ -128,7 +128,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   1,
 						},
-						File:   "sql.flux",
+						File:   "",
 						Source: "sql",
 						Start: ast.Position{
 							Column: 9,

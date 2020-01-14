@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 15,
 					Line:   3,
 				},
-				File:   "gen.flux",
+				File:   "",
 				Source: "package gen\n\nbuiltin tables",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   3,
 					},
-					File:   "gen.flux",
+					File:   "",
 					Source: "builtin tables",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   3,
 						},
-						File:   "gen.flux",
+						File:   "",
 						Source: "tables",
 						Start: ast.Position{
 							Column: 9,
@@ -68,7 +68,7 @@ var pkgAST = &ast.Package{
 			},
 		}},
 		Imports:  nil,
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "gen.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -78,7 +78,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   1,
 					},
-					File:   "gen.flux",
+					File:   "",
 					Source: "package gen",
 					Start: ast.Position{
 						Column: 1,
@@ -94,7 +94,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   1,
 						},
-						File:   "gen.flux",
+						File:   "",
 						Source: "gen",
 						Start: ast.Position{
 							Column: 9,

@@ -1,5 +1,3 @@
-// +build libflux
-
 package semantic_test
 
 import (

@@ -11,7 +11,7 @@
 
 SHELL := /bin/bash
 
-GO_TAGS=libflux
+GO_TAGS=
 GO_ARGS=-tags '$(GO_TAGS)'
 
 # Test vars can be used by all recursive Makefiles
@@ -34,12 +34,12 @@ default: build
 STDLIB_SOURCES = $(shell find . -name '*.flux')
 
 GENERATED_TARGETS = \
-	ast/internal/fbast \
+	ast/internal/fbast/ast_generated.go \
 	ast/asttest/cmpopts.go \
 	internal/scanner/scanner.gen.go \
 	stdlib/packages.go \
 	semantic/flatbuffers_gen.go \
-	semantic/internal/fbsemantic \
+	semantic/internal/fbsemantic/semantic_generated.go \
 	libflux/src/flux/ast/flatbuffers/ast_generated.rs \
 	libflux/src/flux/semantic/flatbuffers/semantic_generated.rs \
 	libflux/scanner.c \
@@ -47,12 +47,12 @@ GENERATED_TARGETS = \
 
 generate: $(GENERATED_TARGETS)
 
-ast/internal/fbast: ast/ast.fbs
+ast/internal/fbast/ast_generated.go: ast/ast.fbs
 	$(GO_GENERATE) ./ast
 libflux/src/flux/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
 	flatc --rust -o libflux/src/flux/ast/flatbuffers ast/ast.fbs && rustfmt $@
 
-semantic/internal/fbsemantic semantic/flatbuffers_gen.go: semantic/semantic.fbs semantic/graph.go internal/cmd/fbgen/cmd/semantic.go
+semantic/internal/fbsemantic/semantic_generated.go semantic/flatbuffers_gen.go: semantic/semantic.fbs semantic/graph.go internal/cmd/fbgen/cmd/semantic.go
 	$(GO_GENERATE) ./semantic
 libflux/src/flux/semantic/flatbuffers/semantic_generated.rs: semantic/semantic.fbs
 	flatc --rust -o libflux/src/flux/semantic/flatbuffers semantic/semantic.fbs && rustfmt $@
@@ -62,7 +62,7 @@ libflux/src/flux/semantic/flatbuffers/semantic_generated.rs: semantic/semantic.f
 ast/asttest/cmpopts.go: ast/ast.go ast/asttest/gen.go $$(call go_deps,./internal/cmd/cmpgen)
 	$(GO_GENERATE) ./ast/asttest
 
-stdlib/packages.go: $(STDLIB_SOURCES)
+stdlib/packages.go: libflux-go $(STDLIB_SOURCES)
 	$(GO_GENERATE) ./stdlib
 
 internal/scanner/unicode.rl: internal/scanner/unicode2ragel.rb
@@ -72,11 +72,13 @@ internal/scanner/scanner.gen.go: internal/scanner/gen.go internal/scanner/scanne
 
 libflux: libflux/target/debug/libflux.a libflux/target/debug/liblibstd.a
 
+libflux-go: libflux libflux/go/libflux/flux.h
+
 # Build the rust static library. Afterwards, fix the .d file that
 # rust generates so it references the correct targets.
 # The unix sed, which is on darwin machines, has a different
 # command line interface than the gnu equivalent.
-libflux/target/debug/libflux.a:
+libflux/target/debug/libflux.a: libflux/scanner.c libflux/src/flux/ast/flatbuffers/ast_generated.rs libflux/src/flux/semantic/flatbuffers/semantic_generated.rs
 	cd libflux && $(CARGO) build -p flux $(CARGO_ARGS)
 
 libflux/target/debug/liblibstd.a:
@@ -111,6 +113,19 @@ libflux/target/debug/libflux.deps: libflux/target/debug/libflux.d
 # source files are modified, they are considered when deciding
 # whether to rebuild the library.
 -include libflux/target/debug/libflux.deps
+
+# Handle dependencies for liblibstd similar to how we handle them
+# for libflux, above.
+libflux/target/debug/liblibstd.d:
+
+libflux/target/debug/liblibstd.deps: libflux/target/debug/liblibstd.d
+	@if [ -e "$<" ]; then \
+		sed -e "s@${CURDIR}/@@g" -e "s@debug/debug@debug@g" -e "s@\\.dylib@.a@g" -e "s@\\.so@.a@g" $< > $@; \
+	fi
+# Conditionally include the liblibstd.deps file so if any of the
+# source files are modified, they are considered when deciding
+# whether to rebuild the library.
+-include libflux/target/debug/liblibstd.deps
 
 build: libflux
 	$(GO_BUILD) ./...
@@ -177,6 +192,7 @@ libflux-wasm:
 	build \
 	default \
 	libflux \
+	libflux-go \
 	libflux-wasm \
 	fmt \
 	checkfmt \

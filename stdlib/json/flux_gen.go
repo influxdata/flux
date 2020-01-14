@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 15,
 					Line:   9,
 				},
-				File:   "json.flux",
+				File:   "",
 				Source: "package json\n\n// encode converts a value into JSON bytes\n// Time values are encoded using RFC3339.\n// Duration values are encoded in number of milleseconds since the epoch.\n// Regexp values are encoded as their string representation.\n// Bytes values are encodes as base64-encoded strings.\n// Function values cannot be encoded and will produce an error.\nbuiltin encode",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   9,
 					},
-					File:   "json.flux",
+					File:   "",
 					Source: "builtin encode",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   9,
 						},
-						File:   "json.flux",
+						File:   "",
 						Source: "encode",
 						Start: ast.Position{
 							Column: 9,
@@ -68,7 +68,7 @@ var pkgAST = &ast.Package{
 			},
 		}},
 		Imports:  nil,
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "json.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -78,7 +78,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   1,
 					},
-					File:   "json.flux",
+					File:   "",
 					Source: "package json",
 					Start: ast.Position{
 						Column: 1,
@@ -94,7 +94,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   1,
 						},
-						File:   "json.flux",
+						File:   "",
 						Source: "json",
 						Start: ast.Position{
 							Column: 9,

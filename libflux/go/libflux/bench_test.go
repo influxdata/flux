@@ -1,5 +1,3 @@
-// +build libflux
-
 package libflux_test
 
 import (
@@ -73,8 +71,8 @@ func BenchmarkRustParse(b *testing.B) {
 }
 
 func ParseReturnHandle(fluxFile string) error {
-	 p := libflux.Parse(fluxFile)
-	 p.Free()
+	p := libflux.Parse(fluxFile)
+	p.Free()
 	return nil
 }
 

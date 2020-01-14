@@ -260,6 +260,22 @@ func doNamed(o types.Object, field *types.Var) ([]jen.Code, error) {
 				jen.Id("rcv").Dot(field.Name()).Op("=").Id("fromFBTime").Params(fbVar),
 			),
 		)
+	case "MonoType":
+		codes = append(codes,
+			ifErrorPropagate(
+				jen.Id("getMonoType").Params(jen.Id("fb")),
+				fieldForError,
+				jen.Id("rcv").Dot(field.Name()),
+			),
+		)
+	case "PolyType":
+		codes = append(codes,
+			ifErrorPropagate(
+				jen.Id("getPolyType").Params(jen.Id("fb")),
+				fieldForError,
+				jen.Id("rcv").Dot(field.Name()),
+			),
+		)
 	case "Node":
 		codes = append(codes,
 			ifErrorPropagate(
@@ -520,22 +536,6 @@ func doPointer(o types.Object, field *types.Var) ([]jen.Code, error) {
 			cs = append(cs,
 				ifErrorPropagate(
 					jen.Id("fromFBRegexpLiteral").Params(jen.Id("fb").Dot(field.Name()).Params()),
-					fieldForError,
-					jen.Id("rcv").Dot(field.Name()),
-				),
-			)
-		case "MonoType":
-			cs = append(cs,
-				ifErrorPropagate(
-					jen.Id("getMonoType").Params(jen.Id("fb")),
-					fieldForError,
-					jen.Id("rcv").Dot(field.Name()),
-				),
-			)
-		case "PolyType":
-			cs = append(cs,
-				ifErrorPropagate(
-					jen.Id("getPolyType").Params(jen.Id("fb")),
 					fieldForError,
 					jen.Id("rcv").Dot(field.Name()),
 				),
