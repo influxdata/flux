@@ -11,6 +11,10 @@ import (
 	"github.com/mmcloughlin/geohash"
 )
 
+var Functions = map[string]values.Function {
+	"getGrid": generateGetGridFunc(),
+}
+
 func generateGetGridFunc() values.Function {
 	return values.NewFunction(
 		"getGrid",
@@ -27,6 +31,7 @@ func generateGetGridFunc() values.Function {
 				"minSize": semantic.Int,
 				"maxSize": semantic.Int,
 			},
+			Required: semantic.LabelSet{"box"},
 			Return: semantic.NewObjectPolyType(map[string]semantic.PolyType{"precision": semantic.Int, "set": semantic.NewArrayPolyType(semantic.String)}, semantic.LabelSet{"precision", "set"}, nil), // { level: int, array: []string }
 		}),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
@@ -79,7 +84,7 @@ func generateGetGridFunc() values.Function {
 				return nil, fmt.Errorf("code %d: invalid box specification - it must have minLat, minLon, maxLat, maxLon items", codes.Invalid)
 			}
 
-			grid, err := getGrid(&rectangle{
+			grid, err := getGrid(&latLonBox{
 				minLat: minLat.Float(),
 				minLon: minLon.Float(),
 				maxLat: maxLat.Float(),
@@ -110,10 +115,10 @@ func init() {
 // Implementation
 //
 
-const MaxSize = 100
-const MaxPrecision = 9
+const MaxSize = 64
+const MaxPrecision = 12
 
-type rectangle struct {
+type latLonBox struct {
 	minLat float64
 	maxLat float64
 	minLon float64
@@ -167,7 +172,7 @@ func getSpecGridLine(latSrc, lonSrc float64, direction geohash.Direction, latDis
 	return result
 }
 
-func getSpecGrid(rect *rectangle, precision int) grid {
+func getSpecGrid(rect *latLonBox, precision int) grid {
 	var result grid
 
 	gridLineX0 := getSpecGridLine(rect.maxLat, rect.minLon, geohash.South, rect.minLat, rect.minLon, precision)
@@ -205,7 +210,7 @@ func printGridLine(orientation geohash.Direction, gridLine []string) {
 	}
 }
 
-func getGrid(rect *rectangle, reqPrecision, maxPrecision, minSize, maxSize int) (*grid, error) {
+func getGrid(rect *latLonBox, reqPrecision, maxPrecision, minSize, maxSize int) (*grid, error) {
 	var result grid
 
 	if reqPrecision > -1 {
