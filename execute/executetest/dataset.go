@@ -13,7 +13,7 @@ import (
 )
 
 func RandomDatasetID() execute.DatasetID {
-	return execute.DatasetID(uuid.NewV4())
+	return execute.DatasetID(uuid.Must(uuid.NewV4()))
 }
 
 type Dataset struct {

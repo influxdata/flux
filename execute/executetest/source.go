@@ -51,7 +51,7 @@ func (src *FromProcedureSpec) AddTransformation(t execute.Transformation) {
 }
 
 func (src *FromProcedureSpec) Run(ctx context.Context) {
-	id := execute.DatasetID(uuid.NewV4())
+	id := execute.DatasetID(uuid.Must(uuid.NewV4()))
 
 	if len(src.ts) == 0 {
 		return
