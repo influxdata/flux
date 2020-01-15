@@ -51,6 +51,8 @@ func (src *FromProcedureSpec) AddTransformation(t execute.Transformation) {
 }
 
 func (src *FromProcedureSpec) Run(ctx context.Context) {
+	// uuid.NewV4 can return an error because of enthropy. We will stick with the previous
+	// behavior of panicing on errors when creating new uuid's
 	id := execute.DatasetID(uuid.Must(uuid.NewV4()))
 
 	if len(src.ts) == 0 {

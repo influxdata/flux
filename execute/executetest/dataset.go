@@ -13,6 +13,8 @@ import (
 )
 
 func RandomDatasetID() execute.DatasetID {
+	// uuid.NewV4 can return an error because of enthropy. We will stick with the previous
+	// behavior of panicing on errors when creating new uuid's
 	return execute.DatasetID(uuid.Must(uuid.NewV4()))
 }
 
