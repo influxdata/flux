@@ -39,6 +39,10 @@ func TestPrivateIPValidator(t *testing.T) {
 			valid: false,
 		},
 		{
+			url:   "http://169.254.0.0",
+			valid: false,
+		},
+		{
 			url:   "http://1.1.1.1",
 			valid: true,
 		},
