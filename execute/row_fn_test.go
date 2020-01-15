@@ -8,9 +8,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/compiler"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/semantic"
@@ -21,82 +19,40 @@ import (
 var CmpOptions = semantictest.CmpOptions
 
 func prelude() compiler.Scope {
-	return compiler.ToScope(flux.Prelude())
+	// todo(algow): readd the prelude.
+	return compiler.NewScope()
+	// return compiler.ToScope(flux.Prelude())
 }
 
-func createRecord(row []interface{}) (*execute.Record, error) {
-	if len(row) == 0 {
-		// TODO(algow): determine correct type for this case
-		return execute.NewRecord(semantic.BasicBool), nil
-	}
-
-	if len(row)%2 != 0 {
-		return nil, errors.New("row must contain couples")
-	}
-
-	// TODO(algow): determine correct type
-	r := execute.NewRecord(semantic.BasicBool)
-	for i := 0; i < len(row); i += 2 {
-		if key, ok := row[i].(string); !ok {
-			return nil, fmt.Errorf("keys must be strings: %v", row[i])
-		} else {
-			val := values.New(row[i+1])
-			r.Set(key, val)
+func createRecord(row []interface{}) (values.Object, error) {
+	return values.BuildObjectWithSize(len(row)/2, func(set values.ObjectSetter) error {
+		if len(row)%2 != 0 {
+			return errors.New("row must contain couples")
 		}
-	}
 
-	return r, nil
+		for i := 0; i < len(row); i += 2 {
+			if key, ok := row[i].(string); !ok {
+				return fmt.Errorf("keys must be strings: %v", row[i])
+			} else {
+				val := values.New(row[i+1])
+				set(key, val)
+			}
+		}
+		return nil
+	})
 }
 
 func TestRowMapFn_Eval(t *testing.T) {
 	testCases := []struct {
 		name       string
-		f          func() (*execute.RowMapFn, error)
+		f          string
 		data       *executetest.Table
 		want       [][]interface{}
 		prepareErr error
 	}{
 		{
 			name: "_value + 1.0, tag + 'b'",
-			f: func() (*execute.RowMapFn, error) {
-				return execute.NewRowMapFn(&semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-						},
-						Body: &semantic.ObjectExpression{
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.StringLiteral{Value: "_value"},
-									Value: &semantic.BinaryExpression{
-										Operator: ast.AdditionOperator,
-										Left: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_value",
-										},
-										Right: &semantic.FloatLiteral{Value: 1.0},
-									},
-								},
-								{
-									Key: &semantic.StringLiteral{Value: "tag"},
-									Value: &semantic.BinaryExpression{
-										Operator: ast.AdditionOperator,
-										Left: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "tag",
-										},
-										Right: &semantic.StringLiteral{Value: "b"},
-									},
-								},
-							},
-						},
-					},
-				}, prelude())
-			},
+			f:    `(r) => ({_value: r._value + 1.0, tag: r.tag + "b"})`,
 			data: &executetest.Table{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -123,32 +79,7 @@ func TestRowMapFn_Eval(t *testing.T) {
 		},
 		{
 			name: "_value - 3.0 with nulls",
-			f: func() (*execute.RowMapFn, error) {
-				return execute.NewRowMapFn(&semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-						},
-						Body: &semantic.ObjectExpression{
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.StringLiteral{Value: "_value"},
-									Value: &semantic.BinaryExpression{
-										Operator: ast.SubtractionOperator,
-										Left: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_value",
-										},
-										Right: &semantic.FloatLiteral{Value: 3.0},
-									},
-								},
-							},
-						},
-					},
-				}, prelude())
-			},
+			f:    `(r) => ({_value: r._value - 3.0})`,
 			data: &executetest.Table{
 				ColMeta: []flux.ColMeta{
 					{Label: "_time", Type: flux.TTime},
@@ -175,25 +106,7 @@ func TestRowMapFn_Eval(t *testing.T) {
 		},
 		{
 			name: "error not returning object",
-			f: func() (*execute.RowMapFn, error) {
-				return execute.NewRowMapFn(&semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-						},
-						Body: &semantic.BinaryExpression{
-							Operator: ast.SubtractionOperator,
-							Left: &semantic.MemberExpression{
-								Object: &semantic.IdentifierExpression{
-									Name: "r",
-								},
-								Property: "_value",
-							},
-							Right: &semantic.FloatLiteral{Value: 3.0},
-						},
-					},
-				}, prelude())
-			},
+			f:    `(r) => r._value - 3.0`,
 			data: &executetest.Table{
 				ColMeta: []flux.ColMeta{
 					// This is needed because the function accesses `_value` on `r`.
@@ -210,12 +123,19 @@ func TestRowMapFn_Eval(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			f, err := tc.f()
+			pkg, err := semantic.AnalyzeSource(tc.f)
 			if err != nil {
-				t.Fatal(err)
+				t.Fatalf("unexpected error: %s", err)
 			}
-			err = f.Prepare(tc.data.ColMeta)
+
+			stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
+			fn := stmt.Expression.(*semantic.FunctionExpression)
+			f, err := execute.NewRowMapFn(fn, nil)
 			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			if err := f.Prepare(tc.data.ColMeta); err != nil {
 				if tc.prepareErr != nil {
 					if !cmp.Equal(tc.prepareErr.Error(), err.Error()) {
 						t.Fatalf("unexpected prepare error -want/+got\n%s", cmp.Diff(tc.prepareErr.Error(), err.Error()))
@@ -227,31 +147,26 @@ func TestRowMapFn_Eval(t *testing.T) {
 				t.Fatal("expected prepare error, got none")
 			}
 
-			// convert tc.want
-			want := make([]*execute.Record, len(tc.want))
-			for i := 0; i < len(tc.want); i++ {
-				r, err := createRecord(tc.want[i])
+			want := make([]values.Object, 0, len(tc.want))
+			for _, row := range tc.want {
+				obj, err := createRecord(row)
 				if err != nil {
 					t.Fatal(err)
 				}
-				want[i] = r
+				want = append(want, obj)
 			}
 
-			ctx := dependenciestest.Default().Inject(context.Background())
-			got := make([]*execute.Record, 0, len(tc.data.Data))
+			// ctx := dependenciestest.Default().Inject(context.Background())
+			ctx := context.TODO()
+			got := make([]values.Object, 0, len(tc.data.Data))
 			if err := tc.data.Do(func(cr flux.ColReader) error {
 				for i := 0; i < cr.Len(); i++ {
 					obj, err := f.Eval(ctx, i, cr)
 					if err != nil {
 						// TODO(algow): determine correct type
-						got = append(got, execute.NewRecord(semantic.BasicBool))
+						got = append(got, nil)
 					} else {
-						// TODO(algow): determine correct type
-						r := execute.NewRecord(semantic.BasicBool)
-						obj.Range(func(k string, v values.Value) {
-							r.Set(k, v)
-						})
-						got = append(got, r)
+						got = append(got, obj)
 					}
 				}
 
@@ -269,21 +184,14 @@ func TestRowMapFn_Eval(t *testing.T) {
 
 func TestRowPredicateFn_EvalRow(t *testing.T) {
 	gt2F := func() (*execute.RowPredicateFn, error) {
-		return execute.NewRowPredicateFn(&semantic.FunctionExpression{
-			Block: &semantic.FunctionBlock{
-				Parameters: &semantic.FunctionParameters{
-					List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-				},
-				Body: &semantic.BinaryExpression{
-					Operator: ast.GreaterThanOperator,
-					Left: &semantic.MemberExpression{
-						Object:   &semantic.IdentifierExpression{Name: "r"},
-						Property: "_value",
-					},
-					Right: &semantic.FloatLiteral{Value: 2.0},
-				},
-			},
-		}, prelude())
+		pkg, err := semantic.AnalyzeSource(`(r) => r._value > 2.0`)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
+		fn := stmt.Expression.(*semantic.FunctionExpression)
+		return execute.NewRowPredicateFn(fn, nil)
 	}
 
 	testCases := []struct {
@@ -356,7 +264,8 @@ func TestRowPredicateFn_EvalRow(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			ctx := dependenciestest.Default().Inject(context.Background())
+			// ctx := dependenciestest.Default().Inject(context.Background())
+			ctx := context.TODO()
 			got := make([]bool, 0, len(tc.data.Data))
 			tc.data.Do(func(cr flux.ColReader) error {
 				for i := 0; i < cr.Len(); i++ {
