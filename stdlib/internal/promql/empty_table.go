@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/values"
+	"github.com/influxdata/flux/semantic"
 	"github.com/pkg/errors"
 )
 
@@ -19,7 +20,7 @@ const EmptyTableKind = "emptyTable"
 type EmptyTableOpSpec struct{}
 
 func init() {
-	emptyTableSignature := semantic.LookupBuiltInType("internal/promql", "emptyTable")
+	emptyTableSignature := semantic.MustLookupBuiltinType("internal/promql", "emptyTable")
 	flux.RegisterPackageValue("internal/promql", "emptyTable", flux.MustValue(flux.FunctionValue(EmptyTableKind, createEmptyTableOpSpec, emptyTableSignature)))
 	flux.RegisterOpSpec(EmptyTableKind, newEmptyTableOp)
 	plan.RegisterProcedureSpec(EmptyTableKind, newEmptyTableProcedure, EmptyTableKind)

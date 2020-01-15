@@ -7,13 +7,14 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 // SpreadKind is the registration name for Flux, query, plan, and execution.
 const SpreadKind = "spread"
 
 func init() {
-	spreadSignature := semantic.LookupBuiltInType("universe", "spread")
+	spreadSignature := semantic.MustLookupBuiltinType("universe", "spread")
 
 	flux.RegisterPackageValue("universe", SpreadKind, flux.MustValue(flux.FunctionValue(SpreadKind, createSpreadOpSpec, spreadSignature)))
 	flux.RegisterOpSpec(SpreadKind, newSpreadOp)

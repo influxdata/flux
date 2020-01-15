@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -18,7 +19,7 @@ type ModeOpSpec struct {
 }
 
 func init() {
-	modeSignature := semantic.LookupBuiltInType("universe", "mode")
+	modeSignature := semantic.MustLookupBuiltinType("universe", "mode")
 
 	flux.RegisterPackageValue("universe", ModeKind, flux.MustValue(flux.FunctionValue(ModeKind, createModeOpSpec, modeSignature)))
 	flux.RegisterOpSpec(ModeKind, newModeOp)

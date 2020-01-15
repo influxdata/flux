@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -31,7 +32,7 @@ type WindowOpSpec struct {
 var infinityVar = values.NewDuration(values.ConvertDuration(math.MaxInt64))
 
 func init() {
-	windowSignature := semantic.LookupBuiltInType("universe", "window")
+	windowSignature := semantic.MustLookupBuiltinType("universe", "window")
 
 	flux.RegisterPackageValue("universe", WindowKind, flux.MustValue(flux.FunctionValue(WindowKind, createWindowOpSpec, windowSignature)))
 	flux.RegisterOpSpec(WindowKind, newWindowOp)

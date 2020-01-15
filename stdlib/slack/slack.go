@@ -40,7 +40,7 @@ func validateColorString(color string) error {
 
 var validateColorStringFluxFn = values.NewFunction(
 	"validateColorString",
-	semantic.LookupBuiltInType("slack", "validateColorString"),
+	semantic.MustLookupBuiltinType("slack", "validateColorString"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		v, ok := args.Get("color")
 

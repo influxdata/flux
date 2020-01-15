@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const FirstKind = "first"
@@ -16,7 +17,7 @@ type FirstOpSpec struct {
 }
 
 func init() {
-	firstSignature := semantic.LookupBuiltInType("universe", "first")
+	firstSignature := semantic.MustLookupBuiltinType("universe", "first")
 
 	flux.RegisterPackageValue("universe", FirstKind, flux.MustValue(flux.FunctionValue(FirstKind, createFirstOpSpec, firstSignature)))
 	flux.RegisterOpSpec(FirstKind, newFirstOp)

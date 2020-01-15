@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/values"
+	"github.com/influxdata/flux/semantic"
 )
 
 const InstantRateKind = "instantRate"
@@ -20,7 +21,7 @@ type InstantRateOpSpec struct {
 }
 
 func init() {
-	instantRateSignature := semantic.LookupBuiltInType("internal/promql", InstantRateKind)
+	instantRateSignature := semantic.MustLookupBuiltinType("internal/promql", InstantRateKind)
 
 	flux.RegisterPackageValue("internal/promql", InstantRateKind, flux.MustValue(flux.FunctionValue(InstantRateKind, createInstantRateOpSpec, instantRateSignature)))
 	flux.RegisterOpSpec(InstantRateKind, newInstantRateOp)

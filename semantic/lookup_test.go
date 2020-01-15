@@ -20,7 +20,7 @@ func TestLookupSimpleTypes(t *testing.T) {
 		{path: "math", id: "maxint", name: "lookup math.maxint", want: "int"},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
-			got, _ := semantic.LookupBuiltInType(testCase.path, testCase.id)
+			got, _ := semantic.LookupBuiltinType(testCase.path, testCase.id)
 			if want, got := testCase.want, got.String(); want != got {
 				t.Fatalf("unexpected result -want/+got\n\t- %s\n\t+ %s", want, got)
 			}
@@ -138,7 +138,7 @@ func TestLookupComplexTypes(t *testing.T) {
 	} {
 
 		t.Run(testCase.name, func(t *testing.T) {
-			got, _ := semantic.LookupBuiltInType(testCase.path, testCase.id)
+			got, _ := semantic.LookupBuiltinType(testCase.path, testCase.id)
 			if want, got := testCase.want, canonicalizeType(got); want != got {
 				t.Fatalf("unexpected result -want/+got\n\t- %s\n\t+ %s", want, got)
 			}

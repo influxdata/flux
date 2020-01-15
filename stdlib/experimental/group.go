@@ -30,7 +30,7 @@ type GroupOpSpec struct {
 }
 
 func init() {
-	groupSignature := semantic.LookupBuiltInType("experimental", "group")
+	groupSignature := semantic.MustLookupBuiltinType("experimental", "group")
 	flux.RegisterPackageValue("experimental", "group", flux.MustValue(flux.FunctionValue("group", createGroupOpSpec, groupSignature)))
 	flux.RegisterOpSpec(ExperimentalGroupKind, newGroupOp)
 	plan.RegisterProcedureSpec(ExperimentalGroupKind, newGroupProcedure, ExperimentalGroupKind)

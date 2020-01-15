@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -20,7 +21,7 @@ type IntegralOpSpec struct {
 }
 
 func init() {
-	integralSignature := semantic.LookupBuiltInType("universe", "integral")
+	integralSignature := semantic.MustLookupBuiltinType("universe", "integral")
 
 	flux.RegisterPackageValue("universe", IntegralKind, flux.MustValue(flux.FunctionValue(IntegralKind, createIntegralOpSpec, integralSignature)))
 	flux.RegisterOpSpec(IntegralKind, newIntegralOp)

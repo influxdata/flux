@@ -17,7 +17,7 @@ import (
 func MakeLengthFunc() values.Function {
 	return values.NewFunction(
 		"length",
-		semantic.LookupBuiltInType("universe", "length"),
+		semantic.MustLookupBuiltinType("universe", "length"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
 			v, err := a.GetRequired("arr")

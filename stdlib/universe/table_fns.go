@@ -34,7 +34,7 @@ func init() {
 
 func NewTableFindFunction() values.Value {
 	return values.NewFunction("tableFind",
-		semantic.LookupBuiltInType("universe", "tableFind"),
+		semantic.MustLookupBuiltinType("universe", "tableFind"),
 		tableFindCall,
 		false)
 }
@@ -127,7 +127,7 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 
 func NewGetColumnFunction() values.Value {
 	return values.NewFunction("getColumn",
-		semantic.LookupBuiltInType("universe", "getColumn"),
+		semantic.MustLookupBuiltinType("universe", "getColumn"),
 		getColumnCall,
 		false)
 }
@@ -212,7 +212,7 @@ func arrayFromColumn(idx int, cr flux.ColReader) values.Array {
 
 func NewGetRecordFunction() values.Value {
 	return values.NewFunction("getRecord",
-		semantic.LookupBuiltInType("universe", "getRecord"),
+		semantic.MustLookupBuiltinType("universe", "getRecord"),
 		getRecordCall,
 		false)
 }

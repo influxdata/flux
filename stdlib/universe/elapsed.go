@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -20,7 +21,7 @@ type ElapsedOpSpec struct {
 }
 
 func init() {
-	elapsedSignature := semantic.LookupBuiltInType("universe", "elapsed")
+	elapsedSignature := semantic.MustLookupBuiltinType("universe", "elapsed")
 
 	flux.RegisterPackageValue("universe", ElapsedKind, flux.MustValue(flux.FunctionValue(ElapsedKind, createElapsedOpSpec, elapsedSignature)))
 	flux.RegisterOpSpec(ElapsedKind, newElapsedOp)

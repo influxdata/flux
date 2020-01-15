@@ -21,7 +21,7 @@ type ShiftOpSpec struct {
 }
 
 func init() {
-	shiftSignature := semantic.LookupBuiltInType("universe", "timeShift")
+	shiftSignature := semantic.MustLookupBuiltinType("universe", "timeShift")
 
 	flux.RegisterPackageValue("universe", ShiftKind, flux.MustValue(flux.FunctionValue(ShiftKind, createShiftOpSpec, shiftSignature)))
 	flux.RegisterOpSpec(ShiftKind, newShiftOp)

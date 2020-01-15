@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/moving_average"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const ExponentialMovingAverageKind = "exponentialMovingAverage"
@@ -16,7 +17,7 @@ type ExponentialMovingAverageOpSpec struct {
 }
 
 func init() {
-	exponentialMovingAverageSignature := semantic.LookupBuiltInType("universe", "exponentialMovingAverage")
+	exponentialMovingAverageSignature := semantic.MustLookupBuiltinType("universe", "exponentialMovingAverage")
 
 	flux.RegisterPackageValue("universe", ExponentialMovingAverageKind, flux.MustValue(flux.FunctionValue(ExponentialMovingAverageKind, createExponentialMovingAverageOpSpec, exponentialMovingAverageSignature)))
 	flux.RegisterOpSpec(ExponentialMovingAverageKind, newExponentialMovingAverageOp)

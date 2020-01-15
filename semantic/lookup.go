@@ -11,12 +11,23 @@ import (
 
 var stdlibTypeEnvironment = TypeEnvMap(fbsemantic.GetRootAsTypeEnvironment(libflux.EnvStdlib(), 0))
 
-// LookupBuiltInType returns the type of the builtin value for a given
-// Flux stdlib package. Returns an error if lookup fails.
-func LookupBuiltInType(pkg, name string) (MonoType, error) {
-	var table flatbuffers.Table
-	prop := stdlibTypeEnvironment[pkg][name] // query environment map for prop
+type envKey struct {
+	Package string
+	Prop    string
+}
 
+// LookupBuiltinType returns the type of the builtin value for a given
+// Flux stdlib package. Returns an error if lookup fails.
+func LookupBuiltinType(pkg, name string) (MonoType, error) {
+	key := envKey{
+		Package: pkg,
+		Prop:    name,
+	}
+	prop, ok := stdlibTypeEnvironment[key]
+	if !ok {
+		return MonoType{}, errors.Newf(codes.Internal, "Expected to find Prop for %v %v, but Prop was missing.", pkg, name)
+	}
+	var table flatbuffers.Table
 	if !prop.V(&table) {
 		return MonoType{}, errors.Newf(codes.Internal, "Prop value is not valid: pkg %v name %v", pkg, name)
 	}
@@ -28,8 +39,19 @@ func LookupBuiltInType(pkg, name string) (MonoType, error) {
 	return monotype, nil
 }
 
-func TypeEnvMap(env *fbsemantic.TypeEnvironment) map[string]map[string]*fbsemantic.Prop {
-	envMap := make(map[string]map[string]*fbsemantic.Prop)
+// MustLookupBuiltinType validates that call to LookupBuiltInType was
+// successful. If there is an error with lookup, then panic.
+func MustLookupBuiltinType(pkg, name string) MonoType {
+	mt, err := LookupBuiltinType(pkg, name)
+	if err != nil {
+		panic(err)
+	}
+	return mt
+}
+
+// TypeEnvMap creates a global map of the TypeEnvironment
+func TypeEnvMap(env *fbsemantic.TypeEnvironment) map[envKey]*fbsemantic.Prop {
+	envMap := make(map[envKey]*fbsemantic.Prop)
 	var table flatbuffers.Table
 	l := env.AssignmentsLength()
 
@@ -46,22 +68,29 @@ func TypeEnvMap(env *fbsemantic.TypeEnvironment) map[string]map[string]*fbsemant
 			))
 		}
 		if !polytype.Expr(&table) {
-			panic(fmt.Errorf("PolyType does not have a MonoType; something went wrong %v", string(polytype.ExprType())))
+			panic(fmt.Errorf(
+				"PolyType does not have a MonoType; something went wrong. Assignment: %v MonoType: %v",
+				assignId,
+				fbsemantic.EnumNamesMonoType[polytype.ExprType()],
+			))
 		}
 
 		// initialize table before use in row
 		row := new(fbsemantic.Row)
 		row.Init(table.Bytes, table.Pos)
 		propLen := row.PropsLength()
-		propMap := make(map[string]*fbsemantic.Prop)
 
 		for j := 0; j < propLen; j++ {
 			newProp := new(fbsemantic.Prop)
 			_ = row.Props(newProp, j) // this call assigns value to newProp
 			propKey := string(newProp.K())
-			propMap[propKey] = newProp
+			key := envKey{
+				Package: assignId,
+				Prop:    propKey,
+			}
+			envMap[key] = newProp
 		}
-		envMap[assignId] = propMap
+
 	}
 	return envMap
 }
