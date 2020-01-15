@@ -2,9 +2,6 @@ use super::*;
 use crate::ast;
 
 use chrono;
-
-// This gives us a colorful diff.
-#[cfg(test)]
 use pretty_assertions::assert_eq;
 
 struct Locator<'a> {
@@ -10964,4 +10961,28 @@ fn integer_literal_overflow() {
             })]
         },
     )
+}
+
+#[test]
+fn parse_string_literal() {
+    let errors: Vec<String> = vec![];
+
+    let mut p = Parser::new(r#""Hello world""#);
+    let result = p.parse_string_literal();
+    assert_eq!("Hello world".to_string(), result.value);
+    assert_eq!(errors, result.base.errors);
+}
+
+#[test]
+fn parse_string_literal_invalid_string() {
+    let errors = vec![
+        "expected STRING, got QUOTE (\") at 1:1",
+        "expected STRING, got EOF",
+        "invalid string literal",
+    ];
+
+    let mut p = Parser::new(r#"""#);
+    let result = p.parse_string_literal();
+    assert_eq!("".to_string(), result.value);
+    assert_eq!(errors, result.base.errors);
 }
