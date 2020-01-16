@@ -49,55 +49,55 @@ func TestLookupComplexTypes(t *testing.T) {
 			path: "date",
 			id:   "nanosecond",
 			name: "lookup date.nanosecond",
-			want: "(t: time) -> int", 
-		}, 
+			want: "(t: time) -> int",
+		},
 		{
 			path: "date",
 			id:   "truncate",
 			name: "lookup date.truncate",
-			want: "(t: time, unit: duration) -> time", 
+			want: "(t: time, unit: duration) -> time",
 		},
 		{
 			path: "experimental/bigtable",
 			id:   "from",
 			name: "lookup experimental/bigtable.from",
-			want: "(instance: string, project: string, table: string, token: string) -> [t0]", 
+			want: "(instance: string, project: string, table: string, token: string) -> [t0]",
 		},
 		{
 			path: "experimental",
 			id:   "to",
 			name: "lookup experimental.to",
-			want: "(?bucket: string, ?bucketID: string, ?host: string, ?org: string, ?orgID: string, <-tables: [t0], ?token: string) -> [t0]", 
+			want: "(?bucket: string, ?bucketID: string, ?host: string, ?org: string, ?orgID: string, <-tables: [t0], ?token: string) -> [t0]",
 		},
 		{
 			path: "http",
 			id:   "post",
 			name: "lookup http.post",
-			want: "(?data: bytes, ?headers: t0, url: string) -> int", 
+			want: "(?data: bytes, ?headers: t0, url: string) -> int",
 		},
 		{
 			path: "influxdata/influxdb/secrets",
 			id:   "get",
 			name: "lookup influxdata/influxdb/secrets.get",
-			want: "(key: string) -> string", 
+			want: "(key: string) -> string",
 		},
 		{
 			path: "json",
 			id:   "encode",
 			name: "lookup json.encode",
-			want: "(v: t0) -> bytes", 
+			want: "(v: t0) -> bytes",
 		},
 		{
 			path: "strings",
 			id:   "title",
 			name: "lookup strings.title",
-			want: "(v: string) -> string", 
+			want: "(v: string) -> string",
 		},
 		{
 			path: "system",
 			id:   "time",
 			name: "lookup system.time",
-			want: "() -> time", 
+			want: "() -> time",
 		},
 		{
 			path: "universe",
@@ -109,7 +109,7 @@ func TestLookupComplexTypes(t *testing.T) {
 			path: "internal/promql",
 			id:   "changes",
 			name: "lookup internal/promql.changes",
-			want: "(<-tables: [{_value: float | t0}]) -> [{_value: float | t1}]", 
+			want: "(<-tables: [{_value: float | t0}]) -> [{_value: float | t1}]",
 		},
 		{
 			path: "sql",
@@ -152,7 +152,7 @@ var tvarRegexp *regexp.Regexp = regexp.MustCompile("t[0-9]+")
 // that reindexes in the numbers in type variables starting from zero.
 func canonicalizeType(mt semantic.MonoType) string {
 	counter := 0
-	tvm := make(map[uint64]int) 
+	tvm := make(map[uint64]int)
 	err := mt.GetCanonicalMapping(&counter, tvm)
 
 	if err != nil {
