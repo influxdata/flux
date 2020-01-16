@@ -104,37 +104,69 @@ func copySources(srcdir string, mod *Module) error {
 	return downloadSources(srcdir, mod)
 }
 
+func copyDir(src, dst string) error {
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		} else if info.IsDir() && info.Name() == "target" {
+			return filepath.SkipDir
+		} else if info.Name() == "stdlib" && info.Mode()&os.ModeSymlink != 0 {
+			return nil
+		}
+
+		// Resolve the relative path based on the root
+		// so we can create the equivalent file structure.
+		relpath, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
+		}
+
+		// Determine the target file/directory name.
+		target := filepath.Join(dst, relpath)
+
+		// If the path is a directory, create the directory in
+		// the source directory.
+		if info.IsDir() {
+			if err := os.Mkdir(target, 0755); err != nil && !os.IsExist(err) {
+				return err
+			}
+			return nil
+		}
+
+		// Copy the file.
+		src, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer func() { _ = src.Close() }()
+
+		dst, err := os.Create(target)
+		if err != nil {
+			return err
+		}
+		defer func() { _ = dst.Close() }()
+
+		_, err = io.Copy(dst, src)
+		return err
+	})
+}
+
 func copySourcesFromDir(srcdir string, mod *Module, dir string) error {
 	// Retrieve the sources from the module.
 	root := filepath.Join(dir, "libflux")
 	if _, err := os.Stat(root); err != nil {
 		return fmt.Errorf("libflux sources not present: %s", err)
 	}
-	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if path == root || err != nil {
-			return nil
-		} else if info.IsDir() && info.Name() == "target" {
-			return filepath.SkipDir
-		}
-
-		relpath, err := filepath.Rel(root, path)
-		if err != nil {
-			return err
-		}
-
-		target := filepath.Join(srcdir, relpath)
-		if _, err := os.Lstat(target); err == nil {
-			_ = os.Remove(target)
-		}
-		if err := os.Symlink(path, target); err != nil {
-			return err
-		}
-
-		if info.IsDir() {
-			return filepath.SkipDir
-		}
-		return nil
-	})
+	if err := copyDir(root, srcdir); err != nil {
+		return err
+	}
+	if err := copyDir(
+		filepath.Join(dir, "stdlib"),
+		filepath.Join(srcdir, "stdlib"),
+	); err != nil {
+		return err
+	}
+	return nil
 }
 
 func downloadSources(srcdir string, mod *Module) error {
