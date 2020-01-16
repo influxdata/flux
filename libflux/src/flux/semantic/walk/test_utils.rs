@@ -1,6 +1,7 @@
 use crate::ast;
 use crate::parser::parse_string;
 use crate::semantic::convert;
+use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes;
 
 pub fn compile(source: &str) -> nodes::Package {
@@ -15,5 +16,5 @@ pub fn compile(source: &str) -> nodes::Package {
         package: "main".to_string(),
         files: vec![file],
     };
-    convert::convert(ast_pkg).unwrap()
+    convert::convert_with(ast_pkg, &mut Fresher::default()).unwrap()
 }

@@ -328,13 +328,15 @@ func (e *CallExpression) UnmarshalJSON(data []byte) error {
 	}
 	e.Callee = callee
 
-	e.Arguments = make([]Expression, len(raw.Arguments))
-	for i, r := range raw.Arguments {
-		expr, err := unmarshalExpression(r)
-		if err != nil {
-			return err
+	if len(raw.Arguments) > 0 {
+		e.Arguments = make([]Expression, len(raw.Arguments))
+		for i, r := range raw.Arguments {
+			expr, err := unmarshalExpression(r)
+			if err != nil {
+				return err
+			}
+			e.Arguments[i] = expr
 		}
-		e.Arguments[i] = expr
 	}
 	return nil
 }
@@ -1051,6 +1053,10 @@ func unmarshalExpression(msg json.RawMessage) (Expression, error) {
 	if err != nil {
 		return nil, err
 	}
+	if n == nil {
+		// If both n and err are nil, then this is a BadExpression, just return nil.
+		return nil, nil
+	}
 	e, ok := n.(Expression)
 	if !ok {
 		return nil, fmt.Errorf("node %q is not an expression", n.Type())
@@ -1193,6 +1199,11 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(FunctionExpression)
 	case "Property":
 		node = new(Property)
+	case "BadExpression":
+		// Rust does not support plain nil if not using Options.
+		// The places where we use BadExpressions in the Rust parser
+		// are all just nil nodes in the Go parser.
+		return nil, nil
 	default:
 		return nil, fmt.Errorf("unknown type %q", typ.Type)
 	}
