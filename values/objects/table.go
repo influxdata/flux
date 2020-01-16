@@ -17,27 +17,24 @@ import (
 // one must use the provided functions (getRecord/getColumn).
 // TODO(affo): we decided not to expose the schema, for now.
 var (
-	TableType = semantic.NewObjectType(
-	// TODO (algow): determine the correct type here
-	//map[string]semantic.PolyType{
-	//	"schema": semantic.NewArrayPolyType(SchemaType),
-	//},
-	//semantic.LabelSet{"schema"},
-	//semantic.LabelSet{"schema"},
-	)
-	TableMonoType semantic.MonoType //, _ = TableType.MonoType()
-	SchemaType    = semantic.NewObjectType(
-	// TODO (algow): determine the correct type here
-	//map[string]semantic.PolyType{
-	//	"label":   semantic.String,
-	//	"grouped": semantic.Bool,
-	//	// TODO(affo): we cannot express types as values in Flux, by now, so we use strings.
-	//	"type": semantic.String,
-	//},
-	//semantic.LabelSet{"label", "type", "grouped"},
-	//semantic.LabelSet{"label", "type", "grouped"},
-	)
-	SchemaMonoType semantic.MonoType //, _ = SchemaType.MonoType()
+	SchemaMonoType = semantic.NewObjectType([]semantic.PropertyType{
+		{
+			Key:   []byte("label"),
+			Value: semantic.BasicString,
+		},
+		{
+			Key:   []byte("grouped"),
+			Value: semantic.BasicBool,
+		},
+		{
+			Key:   []byte("type"),
+			Value: semantic.BasicString,
+		},
+	})
+	TableMonoType = semantic.NewObjectType([]semantic.PropertyType{{
+		Key:   []byte("schema"),
+		Value: semantic.NewArrayType(SchemaMonoType),
+	}})
 )
 
 // Table is a values.Value that represents a table in Flux.
