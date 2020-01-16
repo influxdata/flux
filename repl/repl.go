@@ -150,8 +150,7 @@ func (r *REPL) executeLine(t string) error {
 
 	for _, se := range ses {
 		if _, ok := se.Node.(*semantic.ExpressionStatement); ok {
-			if se.Value.Type() == flux.TableObjectMonoType {
-				t := se.Value.(*flux.TableObject)
+			if t, ok := se.Value.(*flux.TableObject); ok {
 				now, ok := r.scope.Lookup("now")
 				if !ok {
 					return fmt.Errorf("now option not set")
