@@ -275,8 +275,21 @@ func build() (string, error) {
 	}
 	srcdir := filepath.Join(gocache, "libflux", "@"+version)
 	libDir := filepath.Join(srcdir, "lib")
-	target := filepath.Join(libDir, "liblibstd.a")
-	if _, err := os.Stat(target); version != "dev" && err == nil {
+
+	targets := []string{"libflux.a", "liblibstd.a"}
+	if alreadyBuilt := func() bool {
+		if version == "dev" {
+			return false
+		}
+
+		for _, name := range targets {
+			target := filepath.Join(libDir, name)
+			if _, err := os.Stat(target); err != nil {
+				return false
+			}
+		}
+		return true
+	}(); alreadyBuilt {
 		return libDir, nil
 	}
 
@@ -296,14 +309,18 @@ func build() (string, error) {
 	if err := os.MkdirAll(libDir, 0755); err != nil {
 		return "", err
 	}
-	if _, err := os.Stat(target); err == nil {
-		_ = os.Remove(target)
-	}
-	if err := os.Link(
-		filepath.Join(srcdir, "target/release/liblibstd.a"),
-		target,
-	); err != nil {
-		return "", err
+
+	for _, name := range targets {
+		target := filepath.Join(libDir, name)
+		if _, err := os.Stat(target); err == nil {
+			_ = os.Remove(target)
+		}
+		if err := os.Link(
+			filepath.Join(srcdir, "target/release", name),
+			target,
+		); err != nil {
+			return "", err
+		}
 	}
 	return libDir, nil
 }
