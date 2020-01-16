@@ -310,7 +310,7 @@ func MustValue(v values.Value, err error) values.Value {
 // Name is the name of the function as it would be called.
 // c is a function reference of type CreateOperationSpec
 // sig is a function signature type that specifies the names and types of each argument for the function.
-func FunctionValue(name string, c CreateOperationSpec, ft semantic.PolyType) (values.Value, error) {
+func FunctionValue(name string, c CreateOperationSpec, ft semantic.MonoType) (values.Value, error) {
 	return functionValue(name, c, ft, false)
 }
 
@@ -318,21 +318,17 @@ func FunctionValue(name string, c CreateOperationSpec, ft semantic.PolyType) (va
 // Name is the name of the function as it would be called.
 // c is a function reference of type CreateOperationSpec
 // sig is a function signature type that specifies the names and types of each argument for the function.
-func FunctionValueWithSideEffect(name string, c CreateOperationSpec, ft semantic.PolyType) (values.Value, error) {
+func FunctionValueWithSideEffect(name string, c CreateOperationSpec, ft semantic.MonoType) (values.Value, error) {
 	return functionValue(name, c, ft, true)
 }
 
-func functionValue(name string, c CreateOperationSpec, ft semantic.PolyType, sideEffects bool) (values.Value, error) {
+func functionValue(name string, c CreateOperationSpec, ft semantic.MonoType, sideEffects bool) (values.Value, error) {
 	if c == nil {
 		c = func(args Arguments, a *Administration) (OperationSpec, error) {
 			return nil, errors.Newf(codes.Unimplemented, "function %q is not implemented", name)
 		}
 	}
-	mt, err := ft.Expr()
-	if err != nil {
-		return nil, err
-	}
-	if mt.Nature() != semantic.Function {
+	if ft.Nature() != semantic.Function {
 		return nil, errors.Newf(codes.Invalid, "cannot implement function %q with value of type %v", name, ft)
 	}
 	return &function{
@@ -623,14 +619,13 @@ func (a *Administration) AddParent(np *TableObject) {
 
 type function struct {
 	name          string
-	t             semantic.PolyType
+	t             semantic.MonoType
 	createOpSpec  CreateOperationSpec
 	hasSideEffect bool
 }
 
 func (f *function) Type() semantic.MonoType {
-	t, _ := f.t.Expr()
-	return t
+	return f.t
 }
 func (f *function) IsNull() bool {
 	return false
