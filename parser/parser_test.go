@@ -14,13 +14,7 @@ import (
 	"github.com/influxdata/flux/parser"
 )
 
-func wantMetadata() string {
-	if os.Getenv("FLUX_PARSER_TYPE") == "rust" {
-		return "parser-type=rust"
-	} else {
-		return "parser-type=go"
-	}
-}
+var parserType = "parser-type=rust"
 
 func TestParseDir(t *testing.T) {
 	tmpDir, err := ioutil.TempDir("", "TestParseDir")
@@ -64,14 +58,13 @@ c = 3
 	if err != nil {
 		t.Fatal(err)
 	}
-	wantMeta := wantMetadata()
 	want := map[string]*ast.Package{
 		"foo": &ast.Package{
 			Package: "foo",
 			Files: []*ast.File{
 				{
 					Name:     "a.flux",
-					Metadata: wantMeta,
+					Metadata: parserType,
 					Package: &ast.PackageClause{
 						Name: &ast.Identifier{Name: "foo"},
 					},
@@ -84,7 +77,7 @@ c = 3
 				},
 				{
 					Name:     "b.flux",
-					Metadata: wantMeta,
+					Metadata: parserType,
 					Package: &ast.PackageClause{
 						Name: &ast.Identifier{Name: "foo"},
 					},
@@ -101,7 +94,7 @@ c = 3
 			Package: "main",
 			Files: []*ast.File{{
 				Name:     "c.flux",
-				Metadata: wantMeta,
+				Metadata: parserType,
 				Body: []ast.Statement{
 					&ast.VariableAssignment{
 						ID:   &ast.Identifier{Name: "c"},
@@ -148,7 +141,7 @@ a = 1
 	}
 	want := &ast.File{
 		Name:     "a.flux",
-		Metadata: wantMetadata(),
+		Metadata: parserType,
 		Package: &ast.PackageClause{
 			Name: &ast.Identifier{Name: "foo"},
 		},
@@ -176,7 +169,7 @@ a = 1
 		Package: "foo",
 		Files: []*ast.File{{
 			Name:     "",
-			Metadata: wantMetadata(),
+			Metadata: parserType,
 			Package: &ast.PackageClause{
 				Name: &ast.Identifier{Name: "foo"},
 			},
