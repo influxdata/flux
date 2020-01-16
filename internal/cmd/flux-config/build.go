@@ -275,7 +275,7 @@ func build() (string, error) {
 	}
 	srcdir := filepath.Join(gocache, "libflux", "@"+version)
 	libDir := filepath.Join(srcdir, "lib")
-	target := filepath.Join(libDir, "libflux.a")
+	target := filepath.Join(libDir, "liblibstd.a")
 	if _, err := os.Stat(target); version != "dev" && err == nil {
 		return libDir, nil
 	}
@@ -300,7 +300,7 @@ func build() (string, error) {
 		_ = os.Remove(target)
 	}
 	if err := os.Link(
-		filepath.Join(srcdir, "target/release/libflux.a"),
+		filepath.Join(srcdir, "target/release/liblibstd.a"),
 		target,
 	); err != nil {
 		return "", err
