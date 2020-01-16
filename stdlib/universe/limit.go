@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const LimitKind = "limit"
@@ -22,7 +23,7 @@ type LimitOpSpec struct {
 }
 
 func init() {
-	limitSignature := semantic.LookupBuiltInType("universe", "limit")
+	limitSignature := semantic.MustLookupBuiltinType("universe", "limit")
 
 	flux.RegisterPackageValue("universe", LimitKind, flux.MustValue(flux.FunctionValue(LimitKind, createLimitOpSpec, limitSignature)))
 	flux.RegisterOpSpec(LimitKind, newLimitOp)

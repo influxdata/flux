@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const DiffKind = "diff"
@@ -26,7 +27,7 @@ func (s *DiffOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-	diffSignature := semantic.LookupBuiltInType("testing", "diff")
+	diffSignature := semantic.MustLookupBuiltinType("testing", "diff")
 
 	flux.RegisterPackageValue("testing", "diff", flux.MustValue(flux.FunctionValue(DiffKind, createDiffOpSpec, diffSignature)))
 	flux.RegisterOpSpec(DiffKind, newDiffOp)

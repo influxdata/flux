@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const SumKind = "sum"
@@ -17,7 +18,7 @@ type SumOpSpec struct {
 }
 
 func init() {
-	sumSignature := semantic.LookupBuiltInType("universe", "sum")
+	sumSignature := semantic.MustLookupBuiltinType("universe", "sum")
 
 	flux.RegisterPackageValue("universe", SumKind, flux.MustValue(flux.FunctionValue(SumKind, createSumOpSpec, sumSignature)))
 	flux.RegisterOpSpec(SumKind, newSumOp)

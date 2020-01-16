@@ -20,7 +20,7 @@ func init() {
 	SpecialFns = map[string]values.Function{
 		"second": values.NewFunction(
 			"second",
-			semantic.LookupBuiltInType("date", "second"),
+			semantic.MustLookupBuiltinType("date", "second"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -35,7 +35,7 @@ func init() {
 		),
 		"minute": values.NewFunction(
 			"minute",
-			semantic.LookupBuiltInType("date", "minute"),
+			semantic.MustLookupBuiltinType("date", "minute"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -50,7 +50,7 @@ func init() {
 		),
 		"hour": values.NewFunction(
 			"hour",
-			semantic.LookupBuiltInType("date", "hour"),
+			semantic.MustLookupBuiltinType("date", "hour"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -65,7 +65,7 @@ func init() {
 		),
 		"weekDay": values.NewFunction(
 			"weekDay",
-			semantic.LookupBuiltInType("date", "weekDay"),
+			semantic.MustLookupBuiltinType("date", "weekDay"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -80,7 +80,7 @@ func init() {
 		),
 		"monthDay": values.NewFunction(
 			"monthDay",
-			semantic.LookupBuiltInType("date", "monthDay"),
+			semantic.MustLookupBuiltinType("date", "monthDay"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -95,7 +95,7 @@ func init() {
 		),
 		"yearDay": values.NewFunction(
 			"yearDay",
-			semantic.LookupBuiltInType("date", "yearDay"),
+			semantic.MustLookupBuiltinType("date", "yearDay"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -110,7 +110,7 @@ func init() {
 		),
 		"month": values.NewFunction(
 			"month",
-			semantic.LookupBuiltInType("date", "month"),
+			semantic.MustLookupBuiltinType("date", "month"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -125,7 +125,7 @@ func init() {
 		),
 		"year": values.NewFunction(
 			"year",
-			semantic.LookupBuiltInType("date", "year"),
+			semantic.MustLookupBuiltinType("date", "year"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -140,7 +140,7 @@ func init() {
 		),
 		"week": values.NewFunction(
 			"week",
-			semantic.LookupBuiltInType("date", "week"),
+			semantic.MustLookupBuiltinType("date", "week"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -156,7 +156,7 @@ func init() {
 		),
 		"quarter": values.NewFunction(
 			"quarter",
-			semantic.LookupBuiltInType("date", "quarter"),
+			semantic.MustLookupBuiltinType("date", "quarter"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -172,7 +172,7 @@ func init() {
 		),
 		"millisecond": values.NewFunction(
 			"millisecond",
-			semantic.LookupBuiltInType("date", "millisecond"),
+			semantic.MustLookupBuiltinType("date", "millisecond"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -188,7 +188,7 @@ func init() {
 		),
 		"microsecond": values.NewFunction(
 			"microsecond",
-			semantic.LookupBuiltInType("date", "microsecond"),
+			semantic.MustLookupBuiltinType("date", "microsecond"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -204,7 +204,7 @@ func init() {
 		),
 		"nanosecond": values.NewFunction(
 			"nanosecond",
-			semantic.LookupBuiltInType("date", "nanosecond"),
+			semantic.MustLookupBuiltinType("date", "nanosecond"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -219,7 +219,7 @@ func init() {
 		),
 		"truncate": values.NewFunction(
 			"truncate",
-			semantic.LookupBuiltInType("date", "truncate"),
+			semantic.MustLookupBuiltinType("date", "truncate"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("t")
 				if !ok {

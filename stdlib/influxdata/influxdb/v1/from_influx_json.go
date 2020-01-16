@@ -16,13 +16,14 @@ import (
 	"github.com/influxdata/flux/influxql"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 )
 
 const FromInfluxJSONKind = "fromInfluxJSON"
 const bufferSize = 8192
 
 func init() {
-	fromInfluxJSONSignature := semantic.LookupBuiltInType("influxdata/influxdb/v1", "json")
+	fromInfluxJSONSignature := semantic.MustLookupBuiltinType("influxdata/influxdb/v1", "json")
 	flux.RegisterPackageValue("influxdata/influxdb/v1", "json", flux.MustValue(flux.FunctionValue(FromInfluxJSONKind, createFromInfluxJSONOpSpec, fromInfluxJSONSignature)))
 	flux.RegisterOpSpec(FromInfluxJSONKind, newFromInfluxJSONOp)
 	plan.RegisterProcedureSpec(FromInfluxJSONKind, newFromInfluxJSONProcedure, FromInfluxJSONKind)

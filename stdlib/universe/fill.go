@@ -22,7 +22,7 @@ type FillOpSpec struct {
 }
 
 func init() {
-	fillSignature := semantic.LookupBuiltInType("universe", "fill")
+	fillSignature := semantic.MustLookupBuiltinType("universe", "fill")
 
 	flux.RegisterPackageValue("universe", FillKind, flux.MustValue(flux.FunctionValue(FillKind, createFillOpSpec, fillSignature)))
 	flux.RegisterOpSpec(FillKind, newFillOp)

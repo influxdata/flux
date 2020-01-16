@@ -22,7 +22,7 @@ type RelativeStrengthIndexOpSpec struct {
 }
 
 func init() {
-	relativeStrengthIndexSignature := semantic.LookupBuiltInType("universe", "relativeStrenthIndex")
+	relativeStrengthIndexSignature := semantic.MustLookupBuiltinType("universe", "relativeStrenthIndex")
 	flux.RegisterPackageValue("universe", RelativeStrengthIndexKind, flux.MustValue(flux.FunctionValue(RelativeStrengthIndexKind, createRelativeStrengthIndexOpSpec, relativeStrengthIndexSignature)))
 	flux.RegisterOpSpec(RelativeStrengthIndexKind, newRelativeStrengthIndexOp)
 	plan.RegisterProcedureSpec(RelativeStrengthIndexKind, newRelativeStrengthIndexProcedure, RelativeStrengthIndexKind)

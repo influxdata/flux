@@ -22,7 +22,7 @@ type DifferenceOpSpec struct {
 }
 
 func init() {
-	differenceSignature := semantic.LookupBuiltInType("universe", "difference")
+	differenceSignature := semantic.MustLookupBuiltinType("universe", "difference")
 
 	flux.RegisterPackageValue("universe", DifferenceKind, flux.MustValue(flux.FunctionValue(DifferenceKind, createDifferenceOpSpec, differenceSignature)))
 	flux.RegisterOpSpec(DifferenceKind, newDifferenceOp)

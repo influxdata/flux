@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -19,7 +20,7 @@ func init() {
 }
 
 func addDuration(name string) values.Value {
-	tp := semantic.LookupBuiltInType("experimental", "addDuration")
+	tp := semantic.MustLookupBuiltinType("experimental", "addDuration")
 	fn := func(ctx context.Context, args values.Object) (values.Value, error) {
 		d, ok := args.Get("d")
 		if !ok {
@@ -35,7 +36,7 @@ func addDuration(name string) values.Value {
 }
 
 func subDuration(name string) values.Value {
-	tp := semantic.LookupBuiltInType("experimental", "subDuration")
+	tp := semantic.MustLookupBuiltinType("experimental", "subDuration")
 	fn := func(ctx context.Context, args values.Object) (values.Value, error) {
 		d, ok := args.Get("d")
 		if !ok {

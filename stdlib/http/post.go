@@ -25,7 +25,7 @@ const maxResponseBody = 512 * 1024 // 512 KB
 func init() {
 	flux.RegisterPackageValue("http", "post", values.NewFunction(
 		"post",
-		semantic.LookupBuiltInType("http", "post"),
+		semantic.MustLookupBuiltinType("http", "post"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			// Get and validate URL
 			uV, ok := args.Get("url")

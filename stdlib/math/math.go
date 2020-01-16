@@ -17,7 +17,7 @@ var SpecialFns map[string]values.Function
 func generateMathFunctionX(name string, mathFn func(float64) float64) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.LookupBuiltInType("math", name),
+		semantic.MustLookupBuiltinType("math", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			v, ok := args.Get("x")
 			if !ok {
@@ -39,7 +39,7 @@ func generateMathFunctionXY(name string, mathFn func(float64, float64) float64, 
 	}
 	return values.NewFunction(
 		name,
-		semantic.LookupBuiltInType("math", name),
+		semantic.MustLookupBuiltinType("math", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			v1, ok := args.Get(argNames[0])
 			if !ok {
@@ -135,7 +135,7 @@ func init() {
 		// float --> uint
 		"float64bits": values.NewFunction(
 			"float64bits",
-			semantic.LookupBuiltInType("math", "float64bits"),
+			semantic.MustLookupBuiltinType("math", "float64bits"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -150,7 +150,7 @@ func init() {
 		),
 		"float64frombits": values.NewFunction(
 			"float64frombits",
-			semantic.LookupBuiltInType("math", "float64frombits"),
+			semantic.MustLookupBuiltinType("math", "float64frombits"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("b")
 				if !ok {
@@ -166,7 +166,7 @@ func init() {
 		// float --> int
 		"ilogb": values.NewFunction(
 			"ilogb",
-			semantic.LookupBuiltInType("math", "ilogb"),
+			semantic.MustLookupBuiltinType("math", "ilogb"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
@@ -182,7 +182,7 @@ func init() {
 		// float --> {frac: float, exp: int}
 		"frexp": values.NewFunction(
 			"frexp",
-			semantic.LookupBuiltInType("math", "frexp"),
+			semantic.MustLookupBuiltinType("math", "frexp"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -199,7 +199,7 @@ func init() {
 		// float --> {lgamma: float, sign: int}
 		"lgamma": values.NewFunction(
 			"lgamma",
-			semantic.LookupBuiltInType("math", "lgamma"),
+			semantic.MustLookupBuiltinType("math", "lgamma"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
@@ -216,7 +216,7 @@ func init() {
 		// float --> {int: float, frac: float}
 		"modf": values.NewFunction(
 			"modf",
-			semantic.LookupBuiltInType("math", "modf"),
+			semantic.MustLookupBuiltinType("math", "modf"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -233,7 +233,7 @@ func init() {
 		// float --> {sin: float, cos: float}
 		"sincos": values.NewFunction(
 			"sincos",
-			semantic.LookupBuiltInType("math", "sincos"),
+			semantic.MustLookupBuiltinType("math", "sincos"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
@@ -250,7 +250,7 @@ func init() {
 		// float, int --> bool
 		"isInf": values.NewFunction(
 			"isInf",
-			semantic.LookupBuiltInType("math", "isInf"),
+			semantic.MustLookupBuiltinType("math", "isInf"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -274,7 +274,7 @@ func init() {
 		// float --> bool
 		"isNaN": values.NewFunction(
 			"isNaN",
-			semantic.LookupBuiltInType("math", "isNaN"),
+			semantic.MustLookupBuiltinType("math", "isNaN"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("f")
 				if !ok {
@@ -290,7 +290,7 @@ func init() {
 		// float --> bool
 		"signbit": values.NewFunction(
 			"signbit",
-			semantic.LookupBuiltInType("math", "signbit"),
+			semantic.MustLookupBuiltinType("math", "signbit"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("x")
 				if !ok {
@@ -306,7 +306,7 @@ func init() {
 		// () --> float
 		"NaN": values.NewFunction(
 			"NaN",
-			semantic.LookupBuiltInType("math", "NaN"),
+			semantic.MustLookupBuiltinType("math", "NaN"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				return values.NewFloat(math.NaN()), nil
 			}, false,
@@ -314,7 +314,7 @@ func init() {
 		// (int) --> float
 		"mInf": values.NewFunction(
 			"inf",
-			semantic.LookupBuiltInType("math", "inf"),
+			semantic.MustLookupBuiltinType("math", "inf"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 
 				v1, ok := args.Get("sign")
@@ -331,7 +331,7 @@ func init() {
 		// (int, float) --> float
 		"jn": values.NewFunction(
 			"jn",
-			semantic.LookupBuiltInType("math", "jn"),
+			semantic.MustLookupBuiltinType("math", "jn"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("n")
 				if !ok {
@@ -355,7 +355,7 @@ func init() {
 		// (int, float) --> float
 		"yn": values.NewFunction(
 			"yn",
-			semantic.LookupBuiltInType("math", "yn"),
+			semantic.MustLookupBuiltinType("math", "yn"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("n")
 				if !ok {
@@ -379,7 +379,7 @@ func init() {
 		// (float, int) --> float
 		"ldexp": values.NewFunction(
 			"ldexp",
-			semantic.LookupBuiltInType("math", "ldexp"),
+			semantic.MustLookupBuiltinType("math", "ldexp"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("frac")
 				if !ok {
@@ -403,7 +403,7 @@ func init() {
 		// int --> float
 		"pow10": values.NewFunction(
 			"pow10",
-			semantic.LookupBuiltInType("math", "pow10"),
+			semantic.MustLookupBuiltinType("math", "pow10"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("n")
 				if !ok {

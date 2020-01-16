@@ -20,7 +20,7 @@ import (
 const joinKind = "internal/promql.join"
 
 func init() {
-	signature := semantic.LookupBuiltInType("internal/promql", "join")
+	signature := semantic.MustLookupBuiltinType("internal/promql", "join")
 	flux.RegisterPackageValue("internal/promql", "join", flux.MustValue(flux.FunctionValue("join", createJoinOpSpec, signature)))
 	flux.RegisterOpSpec(joinKind, newJoinOp)
 	plan.RegisterProcedureSpec(joinKind, newMergeJoinProcedure, joinKind)

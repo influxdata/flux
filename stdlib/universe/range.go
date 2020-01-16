@@ -6,6 +6,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -20,7 +21,7 @@ type RangeOpSpec struct {
 }
 
 func init() {
-	rangeSignature := semantic.LookupBuiltInType("universe", "range")
+	rangeSignature := semantic.MustLookupBuiltinType("universe", "range")
 
 	flux.RegisterPackageValue("universe", RangeKind, flux.MustValue(flux.FunctionValue(RangeKind, createRangeOpSpec, rangeSignature)))
 	flux.RegisterOpSpec(RangeKind, newRangeOp)

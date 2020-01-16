@@ -7,6 +7,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -21,7 +22,7 @@ const (
 
 var basicAuthFunc = values.NewFunction(
 	"basicAuth",
-	semantic.LookupBuiltInType("http", "basicAuth"),
+	semantic.MustLookupBuiltinType("http", "basicAuth"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		return interpreter.DoFunctionCall(BasicAuth, args)
 	},
