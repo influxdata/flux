@@ -16,7 +16,7 @@ fi
 
 # remove any excess brackets, space/tab characters and 'origin' branch and sort the tags
 git_remote_tags () { git ls-remote --tags origin | grep -v '{}' | sort | tr -d [[:blank:]] ; }
-git_local_tags () { git show-ref --tags | grep -v '{}' | grep -v 'origin'| sort | tr -d [[:blank:]] ; }
+git_local_tags () { git show-ref --tags | grep -v '{}' | grep -v 'origin'| grep -v 'list'| sort | tr -d [[:blank:]] ; }
 
 # check if local tags are different from remote tags
 if ! diff -q <(git_remote_tags) <(git_local_tags) &>/dev/null; then
