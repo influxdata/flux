@@ -7,6 +7,7 @@ extern crate serde_derive;
 extern crate serde_aux;
 
 pub mod ast;
+pub mod formatter;
 pub mod parser;
 pub mod scanner;
 pub mod semantic;

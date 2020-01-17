@@ -188,6 +188,19 @@ impl Statement {
             Statement::Builtin(wrapped) => &wrapped.base,
         }
     }
+
+    // returns a integer based type value.
+    pub fn typ(&self) -> i8 {
+        match self {
+            Statement::Expr(_) => 0,
+            Statement::Variable(_) => 1,
+            Statement::Option(_) => 2,
+            Statement::Return(_) => 3,
+            Statement::Bad(_) => 4,
+            Statement::Test(_) => 5,
+            Statement::Builtin(_) => 6,
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
