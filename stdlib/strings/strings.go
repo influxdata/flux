@@ -145,7 +145,7 @@ func generateDualArgStringFunctionReturnInt(name string, argNames []string, stri
 func generateSplit(name string, argNames []string, fn func(string, string) []string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.MustLookupBuiltinType("string", name),
+		semantic.MustLookupBuiltinType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 

@@ -28,7 +28,7 @@ type HoltWintersOpSpec struct {
 }
 
 func init() {
-	hwSignature := semantic.MustLookupBuiltinType("univser", "holtWinter")
+	hwSignature := semantic.MustLookupBuiltinType("universe", "holtWinters")
 	flux.RegisterPackageValue("universe", HoltWintersKind, flux.MustValue(flux.FunctionValue(HoltWintersKind, createHoltWintersOpSpec, hwSignature)))
 	flux.RegisterOpSpec(HoltWintersKind, newHoltWintersOp)
 	plan.RegisterProcedureSpec(HoltWintersKind, newHoltWintersProcedure, HoltWintersKind)

@@ -42,7 +42,7 @@ func TestValidatePackageBuiltins(t *testing.T) {
 		},
 		{
 			name: "missing values",
-			pkg:  interpreter.NewPackageWithValues("test", values.NewObject()),
+			pkg:  interpreter.NewPackageWithValues("test", values.NewObjectWithValues(map[string]values.Value{})),
 			astPkg: &ast.Package{
 				Files: []*ast.File{{
 					Body: []ast.Statement{

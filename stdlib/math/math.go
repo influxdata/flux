@@ -114,8 +114,8 @@ func init() {
 	flux.RegisterPackageValue("math", "log2", generateMathFunctionX("log2", math.Log2))
 	flux.RegisterPackageValue("math", "logb", generateMathFunctionX("logb", math.Logb))
 	// TODO: change to max and min when we eliminate namespace collisions
-	flux.RegisterPackageValue("math", "mMax", generateMathFunctionXY("max", math.Max))
-	flux.RegisterPackageValue("math", "mMin", generateMathFunctionXY("min", math.Min))
+	flux.RegisterPackageValue("math", "mMax", generateMathFunctionXY("mMax", math.Max))
+	flux.RegisterPackageValue("math", "mMin", generateMathFunctionXY("mMin", math.Min))
 	flux.RegisterPackageValue("math", "mod", generateMathFunctionXY("mod", math.Mod))
 	flux.RegisterPackageValue("math", "nextafter", generateMathFunctionXY("nextafter", math.Nextafter))
 	flux.RegisterPackageValue("math", "pow", generateMathFunctionXY("pow", math.Pow))
@@ -314,7 +314,7 @@ func init() {
 		// (int) --> float
 		"mInf": values.NewFunction(
 			"inf",
-			semantic.MustLookupBuiltinType("math", "inf"),
+			semantic.MustLookupBuiltinType("math", "mInf"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 
 				v1, ok := args.Get("sign")
