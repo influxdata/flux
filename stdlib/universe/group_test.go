@@ -739,7 +739,7 @@ func TestGroup_Process(t *testing.T) {
 					KeyValues: []interface{}{nil},
 					GroupKey: execute.NewGroupKey(
 						[]flux.ColMeta{{Label: "t1", Type: flux.TString}},
-						[]values.Value{values.NewNull(semantic.String)},
+						[]values.Value{values.NewNull(semantic.BasicString)},
 					),
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
