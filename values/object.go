@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -152,6 +154,7 @@ func (o *object) Set(k string, v Value) {
 			return
 		}
 	}
+	panic(errors.Newf(codes.Internal, "key %q not defined in object", k))
 }
 
 func (o *object) Get(name string) (Value, bool) {
