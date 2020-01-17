@@ -8,15 +8,19 @@ import (
 // using libflux.
 func AnalyzeSource(fluxSrc string) (*Package, error) {
 	ast := libflux.Parse(fluxSrc)
-	defer ast.Free()
-	sem, err := libflux.Analyze(ast)
+	return AnalyzePackage(ast)
+}
+
+func AnalyzePackage(astPkg *libflux.ASTPkg) (*Package, error) {
+	defer astPkg.Free()
+	sem, err := libflux.Analyze(astPkg)
 	if err != nil {
 		return nil, err
 	}
 	defer sem.Free()
-	fb, err := sem.MarshalFB()
+	bs, err := sem.MarshalFB()
 	if err != nil {
 		return nil, err
 	}
-	return DeserializeFromFlatBuffer(fb)
+	return DeserializeFromFlatBuffer(bs)
 }

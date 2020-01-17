@@ -325,7 +325,12 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		if err != nil {
 			return nil, err
 		}
-		return arr.Array().Get(int(idx.Int())), nil
+		ix := int(idx.Int())
+		l := arr.Array().Len()
+		if ix < 0 || ix >= l {
+			return nil, errors.Newf(codes.Invalid, "cannot access element %v of array of length %v", ix, l)
+		}
+		return arr.Array().Get(ix), nil
 	case *semantic.ObjectExpression:
 		return itrp.doObject(ctx, e, scope)
 	case *semantic.UnaryExpression:
@@ -379,8 +384,8 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		//}
 		bf, err := values.LookupBinaryFunction(values.BinaryFuncSignature{
 			Operator: e.Operator,
-			Left:     e.Left.TypeOf().Nature(),
-			Right:    e.Right.TypeOf().Nature(),
+			Left:     l.Type().Nature(),
+			Right:    r.Type().Nature(),
 		})
 		if err != nil {
 			return nil, err
@@ -471,11 +476,6 @@ func (itrp *Interpreter) doStringPart(ctx context.Context, part semantic.StringE
 func (itrp *Interpreter) doArray(ctx context.Context, a *semantic.ArrayExpression, scope values.Scope) (values.Value, error) {
 	elements := make([]values.Value, len(a.Elements))
 
-	arrayType := a.TypeOf()
-	elementType, err := arrayType.ElemType()
-	if err != nil {
-		return nil, err
-	}
 	for i, el := range a.Elements {
 		v, err := itrp.doExpression(ctx, el, scope)
 		if err != nil {
@@ -483,7 +483,7 @@ func (itrp *Interpreter) doArray(ctx context.Context, a *semantic.ArrayExpressio
 		}
 		elements[i] = v
 	}
-	return values.NewArrayWithBacking(elementType, elements), nil
+	return values.NewArrayWithBacking(a.TypeOf(), elements), nil
 }
 
 func (itrp *Interpreter) doObject(ctx context.Context, m *semantic.ObjectExpression, scope values.Scope) (values.Value, error) {

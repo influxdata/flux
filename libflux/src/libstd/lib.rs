@@ -4,9 +4,9 @@ use flux::ctypes::*;
 use flux::flux_buffer_t;
 use flux::semantic::env::Environment;
 use flux::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
+use flux::semantic::flatbuffers::types::build_env;
 use flux::semantic::fresh::Fresher;
 use flux::semantic::nodes::{infer_pkg_types, inject_pkg_types};
-use flux::semantic::flatbuffers::types::build_env; 
 
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
@@ -14,7 +14,7 @@ pub fn prelude() -> Option<Environment> {
 }
 
 pub fn imports() -> Option<Environment> {
-    let buf = include_bytes!(concat!(env!("OUT_DIR"), "/stdlib.data")); 
+    let buf = include_bytes!(concat!(env!("OUT_DIR"), "/stdlib.data"));
     flatbuffers::get_root::<fb::TypeEnvironment>(buf).into()
 }
 
@@ -49,6 +49,12 @@ pub unsafe extern "C" fn flux_analyze(
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
 pub fn analyze(ast_pkg: ast::Package) -> Result<flux::semantic::nodes::Package, flux::Error> {
+    // First check to see if there are any errors in the AST.
+    let errs = ast::check::check(ast::walk::Node::Package(&ast_pkg));
+    if !errs.is_empty() {
+        return Err(flux::Error::from(format!("{}", &errs[0])));
+    }
+
     let mut f = fresher();
     let mut sem_pkg = flux::semantic::convert::convert_with(ast_pkg, &mut f)?;
 
@@ -67,11 +73,11 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<flux::semantic::nodes::Package, 
 
 #[no_mangle]
 pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
-    let env = imports().unwrap(); 
-    let mut builder = flatbuffers::FlatBufferBuilder::new(); 
-    let fb_type_env = build_env(&mut builder, env); 
+    let env = imports().unwrap();
+    let mut builder = flatbuffers::FlatBufferBuilder::new();
+    let fb_type_env = build_env(&mut builder, env);
 
-    builder.finish(fb_type_env, None); 
+    builder.finish(fb_type_env, None);
     let (mut vec, offset) = builder.collapse();
 
     // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
@@ -83,6 +89,8 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 
 #[cfg(test)]
 mod tests {
+    use crate::analyze;
+    use flux::ast;
     use flux::semantic;
     use flux::semantic::convert::convert_file;
     use flux::semantic::env::Environment;
@@ -120,5 +128,20 @@ mod tests {
         .unwrap();
 
         assert_eq!(want, got.lookup("x").expect("'x' not found").clone());
+    }
+
+    #[test]
+    fn analyze_error() {
+        let ast: ast::Package = flux::parser::parse_string("", "x = ()").into();
+        match analyze(ast) {
+            Ok(_) => panic!("expected an error, got none"),
+            Err(e) => {
+                let want = "error at @1:5-1:7: expected ARROW, got EOF";
+                let got = format!("{}", e);
+                if want != got {
+                    panic!(r#"expected error "{}", got "{}""#, want, got)
+                }
+            }
+        }
     }
 }

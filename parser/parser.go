@@ -1,12 +1,16 @@
 package parser
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/token"
+	"github.com/influxdata/flux/libflux/go/libflux"
 )
 
 const defaultPackageName = "main"
@@ -80,6 +84,18 @@ func ParseSource(source string) *ast.Package {
 		Files:   []*ast.File{file},
 	}
 	return pkg
+}
+
+func ToHandle(astPkg *ast.Package) (*libflux.ASTPkg, error) {
+	data, err := json.Marshal(astPkg)
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Internal, "could not marshal AST to JSON")
+	}
+	return libflux.ParseJSON(data)
+}
+
+func ParseToHandle(src []byte) *libflux.ASTPkg {
+	return libflux.Parse(string(src))
 }
 
 func packageName(f *ast.File) string {

@@ -72,22 +72,22 @@ func (m MutationRegistrar) Register() {
 // To register a new mutation, add an entry to this list.
 var Registrars = []MutationRegistrar{
 	{
-		Kind: RenameKind,
+		Kind:   RenameKind,
 		Create: createRenameOpSpec,
 		New:    newRenameOp,
 	},
 	{
-		Kind: DropKind,
+		Kind:   DropKind,
 		Create: createDropOpSpec,
 		New:    newDropOp,
 	},
 	{
-		Kind: KeepKind,
+		Kind:   KeepKind,
 		Create: createKeepOpSpec,
 		New:    newKeepOp,
 	},
 	{
-		Kind: DuplicateKind,
+		Kind:   DuplicateKind,
 		Create: createDuplicateOpSpec,
 		New:    newDuplicateOp,
 	},

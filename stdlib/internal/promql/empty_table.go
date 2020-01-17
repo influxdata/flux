@@ -10,8 +10,8 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 

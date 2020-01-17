@@ -7,9 +7,11 @@ package libflux
 import "C"
 
 import (
-	"errors"
 	"runtime"
 	"unsafe"
+
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 //go:generate cp ../../include/influxdata/flux.h flux.h
@@ -39,7 +41,7 @@ func (p *ASTPkg) MarshalJSON() ([]byte, error) {
 		defer C.flux_free(unsafe.Pointer(cstr))
 
 		str := C.GoString(cstr)
-		return nil, errors.New(str)
+		return nil, errors.Newf(codes.Internal, "could not marshal AST to JSON: %v", str)
 	}
 	defer C.flux_free(buf.data)
 
@@ -55,7 +57,7 @@ func (p *ASTPkg) MarshalFB() ([]byte, error) {
 		defer C.flux_free(unsafe.Pointer(cstr))
 
 		str := C.GoString(cstr)
-		return nil, errors.New(str)
+		return nil, errors.Newf(codes.Internal, "could not marshal AST to FlatBuffer: %v", str)
 	}
 	defer C.flux_free(buf.data)
 
@@ -79,4 +81,25 @@ func Parse(s string) *ASTPkg {
 	p := &ASTPkg{ptr: ptr}
 	runtime.SetFinalizer(p, free)
 	return p
+}
+
+// ParseJSON will take an AST formatted as JSON and return a
+// handle the Rust AST package.
+func ParseJSON(bs []byte) (*ASTPkg, error) {
+	cstr := C.CString(string(bs))
+	defer C.free(unsafe.Pointer(cstr))
+
+	var ptr *C.struct_flux_ast_pkg_t
+	err := C.flux_parse_json(cstr, &ptr)
+	if err != nil {
+		defer C.flux_free(unsafe.Pointer(err))
+		cstr := C.flux_error_str(err)
+		defer C.flux_free(unsafe.Pointer(cstr))
+
+		str := C.GoString(cstr)
+		return nil, errors.Newf(codes.Internal, "could not get handle from JSON AST: %v", str)
+	}
+	p := &ASTPkg{ptr: ptr}
+	runtime.SetFinalizer(p, free)
+	return p, nil
 }

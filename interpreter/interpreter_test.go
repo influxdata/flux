@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -112,6 +111,32 @@ func init() {
 	})
 }
 
+// TODO(algow): This is only here because we cannot
+//   yet pass scopes to type inference
+//   https://github.com/influxdata/flux/issues/2402
+var builtinSrc = `
+name = "foo"
+repeat = 100
+fortyTwo = () => 42.0
+six = () => 6.0
+nine = () => 9.0
+// This will produce an error
+fail = () => {
+    [0][1]
+    return true
+}
+plusOne = (x=<-) => x + 1.0
+`
+
+// TODO(algow): Unskip when we have #2402
+var testEvalSkip = map[string]string{
+	// Cannot produce side effects with pure flux, we need to tell inference about
+	// a special builtin
+	"query with side effects": "need type env parameter https://github.com/influxdata/flux/issues/2402",
+	// Cannot produce a NULL value with pure flux
+	"exists null": "need type env parameter https://github.com/influxdata/flux/issues/2402",
+}
+
 // TestEval tests whether a program can run to completion or not
 func TestEval(t *testing.T) {
 	testCases := []struct {
@@ -131,14 +156,6 @@ func TestEval(t *testing.T) {
 			},
 		},
 		{
-			name: "string interpolation error",
-			query: `
-				a = 1
-				b = 2
-				"a + b = ${a + b}"`,
-			wantErr: true,
-		},
-		{
 			name:  "call builtin function",
 			query: "six()",
 			want: []values.Value{
@@ -153,11 +170,6 @@ func TestEval(t *testing.T) {
 		{
 			name:    "call function with duplicate args",
 			query:   "plusOne(x:1.0, x:2.0)",
-			wantErr: true,
-		},
-		{
-			name:    "call function with missing args",
-			query:   "plusOne()",
 			wantErr: true,
 		},
 		{
@@ -271,14 +283,6 @@ func TestEval(t *testing.T) {
 			`,
 		},
 		{
-			name: "missing pipe",
-			query: `
-			add = (a=<-,b) => a + b
-			add(b:2) == 3 or fail()
-			`,
-			wantErr: true,
-		},
-		{
 			name: "pipe expression function",
 			query: `
 			add = (a=<-,b) => a + b
@@ -375,23 +379,6 @@ func TestEval(t *testing.T) {
 			`,
 		},
 		{
-			name: "invalid array index expression 1",
-			query: `
-				a = [1, 2, 3]
-				a["b"]
-			`,
-			wantErr: true,
-		},
-		{
-			name: "invalid array index expression 2",
-			query: `
-				a = [1, 2, 3]
-				f = () => "1"
-				a[f()]
-			`,
-			wantErr: true,
-		},
-		{
 			name: "short circuit logical and",
 			query: `
                 false and fail()
@@ -458,12 +445,17 @@ func TestEval(t *testing.T) {
 			},
 		},
 		{
-			name: "exists",
-			query: `
-				exists 1
-				exists NULL`,
+			name:  "exists",
+			query: `exists 1`,
 			want: []values.Value{
 				values.NewBool(true),
+			},
+		},
+		{
+			name: "exists null",
+			query: `
+				exists NULL`,
+			want: []values.Value{
 				values.NewBool(false),
 			},
 		},
@@ -472,13 +464,13 @@ func TestEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			pkg := parser.ParseSource(tc.query)
-			if ast.Check(pkg) > 0 {
-				t.Fatal(ast.GetError(pkg))
+			if msg, ok := testEvalSkip[tc.name]; ok {
+				t.Skip(msg)
 			}
-			graph, err := semantic.New(pkg)
+			src := builtinSrc + tc.query
+			graph, err := semantic.AnalyzeSource(src)
 			if err != nil {
-				t.Fatal(err)
+				t.Fatalf("type inference error: %v", err)
 			}
 
 			// Create new interpreter for each test case
@@ -501,6 +493,8 @@ func TestEval(t *testing.T) {
 
 // TestEval_Parallel ensures that function values returned from the interpreter can be used in parallel in multiple Eval calls.
 func TestEval_Parallel(t *testing.T) {
+	// TODO(algow): unskip when issue is complete
+	t.Skip("need to be able to pass type environment to type inference https://github.com/influxdata/flux/issues/2402")
 	var scope = values.NewScope()
 
 	{
@@ -550,6 +544,8 @@ func TestEval_Parallel(t *testing.T) {
 }
 
 func TestNestedExternBlocks(t *testing.T) {
+	// TODO(algow): unskip when issue is complete
+	t.Skip("need to be able to pass type environment to type inference https://github.com/influxdata/flux/issues/2402")
 	testcases := []struct {
 		packageNode *semantic.Package
 		externScope values.Scope
@@ -644,99 +640,9 @@ func TestNestedExternBlocks(t *testing.T) {
 	}
 }
 
-func TestInterpreter_TypeErrors(t *testing.T) {
-	testCases := []struct {
-		name    string
-		program string
-		err     string
-	}{
-		{
-			name: "no pipe arg",
-			program: `
-				f = () => 0
-				g = () => 1 |> f()
-				`,
-			err: `function does not take a pipe argument`,
-		},
-		{
-			name: "called without pipe args",
-			program: `
-				f = (x=<-) => x
-				g = () => f()
-			`,
-			err: `function requires a pipe argument`,
-		},
-		{
-			name: "unify with different pipe args 1",
-			program: `
-				f = (x) => 0 |> x()
-				f(x: (v=<-) => v)
-				f(x: (w=<-) => w)
-			`,
-		},
-		{
-			// This program should type check.
-			// arg is any function that takes a pipe argument.
-			// arg's pipe parameter can be named anything.
-			name: "unify with different pipe args 2",
-			program: `
-				f = (arg=(x=<-) => x, w) => w |> arg()
-				f(arg: (v=<-) => v, w: 0)
-			`,
-		},
-		{
-			// This program should not type check.
-			// A function that requires a parameter named "arg" cannot unify
-			// with a function whose "arg" parameter is also a pipe parameter.
-			name: "unify pipe and non-pipe args with same name",
-			program: `
-				f = (x, y) => x(arg: y)
-				f(x: (arg=<-) => arg, y: 0)
-			`,
-			err: "function does not take a pipe argument",
-		},
-		{
-			// This program should not type check.
-			// arg is a function that must take a pipe argument. Even
-			// though arg defaults to a function that takes an input
-			// param x, if x is not a pipe param then it cannot type check.
-			name: "pipe and non-pipe parameters with the same name",
-			program: `
-				f = (arg=(x=<-) => x) => 0 |> arg()
-				g = () => f(arg: (x) => 5 + x)
-			`,
-			err: `function does not take a parameter "x"`,
-		},
-	}
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			pkg := parser.ParseSource(tc.program)
-			if ast.Check(pkg) > 0 {
-				t.Fatal(ast.GetError(pkg))
-			}
-			graph, err := semantic.New(pkg)
-			if err != nil {
-				t.Fatal(err)
-			}
-			itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
-			if _, err := itrp.Eval(dependenciestest.Default().Inject(context.Background()), graph, values.NewScope(), nil); err == nil {
-				if tc.err != "" {
-					t.Error("expected type error, but program executed successfully")
-				}
-			} else {
-				if tc.err == "" {
-					t.Errorf("expected zero errors, but got %v", err)
-				} else if !strings.Contains(err.Error(), "type error") {
-					t.Errorf("expected type error, but got the following: %v", err)
-				} else if !strings.Contains(err.Error(), tc.err) {
-					t.Errorf("wrong error message\n expected error message to contain: %q\n actual error message: %q\n", tc.err, err.Error())
-				}
-			}
-		})
-	}
-}
-
 func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
+	// TODO(algow): unskip when issue is complete
+	t.Skip("need to be able to pass type environment to type inference https://github.com/influxdata/flux/issues/2402")
 	testCases := []struct {
 		name     string
 		builtins []string
@@ -898,6 +804,11 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.name == "more expression statements" {
+				// inference won't know about the sideEffects()
+				// TODO(algow): unskip when issue is complete
+				t.Skip("need to be able to pass type environent to inference https://github.com/influxdata/flux/issues/2402")
+			}
 			ctx := dependenciestest.Default().Inject(context.Background())
 			itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 			scope := testScope.Copy()
@@ -916,6 +827,8 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 }
 
 func TestResolver(t *testing.T) {
+	// TODO(algow): unskip when issue is complete
+	t.Skip("need to be able to pass type environment to type inference https://github.com/influxdata/flux/issues/2402")
 	var got semantic.Expression
 	f := &function{
 		name: "resolver",
