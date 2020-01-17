@@ -164,7 +164,7 @@ pub mod fbsemantic {
         Equatable = 5,
         Nullable = 6,
         Row = 7,
-        Signed = 8,
+        Negatable = 8,
     }
 
     const ENUM_MIN_KIND: u8 = 0;
@@ -211,7 +211,7 @@ pub mod fbsemantic {
         Kind::Equatable,
         Kind::Nullable,
         Kind::Row,
-        Kind::Signed,
+        Kind::Negatable,
     ];
 
     #[allow(non_camel_case_types)]
@@ -224,7 +224,7 @@ pub mod fbsemantic {
         "Equatable",
         "Nullable",
         "Row",
-        "Signed",
+        "Negatable",
     ];
 
     pub fn enum_name_kind(e: Kind) -> &'static str {
