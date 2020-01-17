@@ -73,21 +73,25 @@ func (m MutationRegistrar) Register() {
 var Registrars = []MutationRegistrar{
 	{
 		Kind:   RenameKind,
+		Type:   semantic.MustLookupBuiltinType("universe", "rename"),
 		Create: createRenameOpSpec,
 		New:    newRenameOp,
 	},
 	{
 		Kind:   DropKind,
+		Type:   semantic.MustLookupBuiltinType("universe", "drop"),
 		Create: createDropOpSpec,
 		New:    newDropOp,
 	},
 	{
 		Kind:   KeepKind,
+		Type:   semantic.MustLookupBuiltinType("universe", "keep"),
 		Create: createKeepOpSpec,
 		New:    newKeepOp,
 	},
 	{
 		Kind:   DuplicateKind,
+		Type:   semantic.MustLookupBuiltinType("universe", "duplicate"),
 		Create: createDuplicateOpSpec,
 		New:    newDuplicateOp,
 	},

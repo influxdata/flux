@@ -191,11 +191,12 @@ func (s *GeneratorSource) Decode(ctx context.Context) (flux.Table, error) {
 	deltaT := s.Stop.Sub(s.Start) / time.Duration(s.Count)
 	timeIdx := execute.ColIdx("_time", cols)
 	valueIdx := execute.ColIdx("_value", cols)
+	in := values.NewObject(semantic.NewObjectType([]semantic.PropertyType{
+		{Key: []byte("n"), Value: semantic.BasicInt},
+	}))
 	for i := 0; i < int(s.Count); i++ {
 		b.AppendTime(timeIdx, values.ConvertTime(s.Start.Add(time.Duration(i)*deltaT)))
-		in := values.NewObjectWithValues(map[string]values.Value{
-			"n": values.NewInt(int64(i)),
-		})
+		in.Set("n", values.NewInt(int64(i)))
 		v, err := s.Fn.Eval(ctx, in)
 		if err != nil {
 			return nil, err

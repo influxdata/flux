@@ -495,7 +495,6 @@ func (iter *RowIterator) record(idx int) map[string]values.Value {
 type rowJoinFn struct {
 	fn         *semantic.FunctionExpression
 	scope      compiler.Scope
-	cache      *compiler.CompilationCache
 	preparedFn compiler.Func
 }
 
@@ -503,29 +502,31 @@ func newRowJoinFn(fn *semantic.FunctionExpression, scope compiler.Scope) *rowJoi
 	return &rowJoinFn{
 		fn:    fn,
 		scope: scope,
-		cache: compiler.NewCompilationCache(fn, scope),
 	}
 }
 
 func (fn *rowJoinFn) Prepare(left, right []flux.ColMeta) error {
-	l := make(map[string]semantic.Nature, len(left))
-	for _, col := range left {
-		l[col.Label] = execute.ConvertToKind(col.Type)
+	l := make([]semantic.PropertyType, len(left))
+	for j, col := range left {
+		l[j] = semantic.PropertyType{
+			Key:   []byte(col.Label),
+			Value: flux.SemanticType(col.Type),
+		}
 	}
 
-	r := make(map[string]semantic.Nature, len(right))
-	for _, col := range right {
-		r[col.Label] = execute.ConvertToKind(col.Type)
+	r := make([]semantic.PropertyType, len(left))
+	for j, col := range right {
+		r[j] = semantic.PropertyType{
+			Key:   []byte(col.Label),
+			Value: flux.SemanticType(col.Type),
+		}
 	}
 
-	f, err := fn.cache.Compile(semantic.NewObjectType(
-		// TODO (algow): determine the correct type
-		nil,
-	//map[string]semantic.MonoType{
-	//	"left":  semantic.NewObjectType(l),
-	//	"right": semantic.NewObjectType(r),
-	//},
-	))
+	in := semantic.NewObjectType([]semantic.PropertyType{
+		{Key: []byte("left"), Value: semantic.NewObjectType(l)},
+		{Key: []byte("right"), Value: semantic.NewObjectType(r)},
+	})
+	f, err := compiler.Compile(fn.scope, fn.fn, in)
 	if err != nil {
 		return err
 	}
@@ -534,6 +535,7 @@ func (fn *rowJoinFn) Prepare(left, right []flux.ColMeta) error {
 }
 
 func (fn *rowJoinFn) Eval(ctx context.Context, left, right map[string]values.Value) (values.Object, error) {
+	// TODO(jsternberg): This is not memory performant and should be updated.
 	obj, err := fn.preparedFn.Eval(ctx, values.NewObjectWithValues(map[string]values.Value{
 		"left":  values.NewObjectWithValues(left),
 		"right": values.NewObjectWithValues(right),
