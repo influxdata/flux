@@ -26,8 +26,11 @@ func TestReduce_Process(t *testing.T) {
 		{
 			name: `sum _value`,
 			spec: &universe.ReduceProcedureSpec{
-				Identity:    map[string]string{"sum": "0.0"},
-				ReducerType: semantic.NewObjectType(map[string]semantic.Type{"sum": semantic.Float}),
+				Identity: map[string]string{"sum": "0.0"},
+				ReducerType: semantic.NewObjectType([]semantic.PropertyType{{
+					Key:   []byte("sum"),
+					Value: semantic.BasicFloat,
+				}}),
 				Fn: interpreter.ResolvedFunction{
 					Fn: &semantic.FunctionExpression{
 						Block: &semantic.FunctionBlock{
@@ -83,8 +86,17 @@ func TestReduce_Process(t *testing.T) {
 		{
 			name: `sum+prod _value`,
 			spec: &universe.ReduceProcedureSpec{
-				Identity:    map[string]string{"sum": "0.0", "prod": "1.0"},
-				ReducerType: semantic.NewObjectType(map[string]semantic.Type{"sum": semantic.Float, "prod": semantic.Float}),
+				Identity: map[string]string{"sum": "0.0", "prod": "1.0"},
+				ReducerType: semantic.NewObjectType([]semantic.PropertyType{
+					{
+						Key:   []byte("sum"),
+						Value: semantic.BasicFloat,
+					},
+					{
+						Key:   []byte("prod"),
+						Value: semantic.BasicFloat,
+					},
+				}),
 				Fn: interpreter.ResolvedFunction{
 					Fn: &semantic.FunctionExpression{
 						Block: &semantic.FunctionBlock{

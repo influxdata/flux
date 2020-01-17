@@ -234,7 +234,7 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 	}
 
 	got := res.(values.Array)
-	want := values.NewArrayWithBacking(semantic.String, []values.Value{values.New("user1"), values.New("user1")})
+	want := values.NewArrayWithBacking(semantic.BasicString, []values.Value{values.New("user1"), values.New("user1")})
 
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("unexpected result -want/+got:\n%s\n", diff)

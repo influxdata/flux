@@ -16,9 +16,7 @@ import (
 func addFail(scope values.Scope) {
 	scope.Set("fail", values.NewFunction(
 		"fail",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Return: semantic.Bool,
-		}),
+		semantic.NewFunctionType(semantic.BasicBool, nil),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			return nil, errors.New(codes.Aborted, "fail")
 		},
