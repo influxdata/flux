@@ -358,7 +358,7 @@ func Example_overrideDefaultOptionInternally() {
 	timeValue := time.Date(2018, 7, 13, 0, 0, 0, 0, time.UTC)
 	functionName := "newTime"
 	// TODO (algow): determine correct type
-	functionType := semantic.NewFunctionType()
+	functionType := semantic.NewFunctionType(semantic.MonoType{}, nil)
 	functionCall := func(ctx context.Context, args values.Object) (values.Value, error) {
 		return values.NewTime(values.ConvertTime(timeValue)), nil
 	}

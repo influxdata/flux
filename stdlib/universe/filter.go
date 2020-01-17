@@ -186,7 +186,8 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 
 	// Iterate through the properties and prefill a record
 	// with the values from the group key.
-	record := values.NewObject()
+	// TODO(algow): construct record properly
+	record := values.NewObject(semantic.MonoType{})
 	for name := range properties {
 		if idx := execute.ColIdx(name, tbl.Key().Cols()); idx >= 0 {
 			record.Set(name, tbl.Key().Value(idx))

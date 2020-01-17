@@ -27,7 +27,7 @@ type ToSQLOpSpec struct {
 }
 
 func init() {
-	toSQLSignature := semantic.MustLookupBuiltinType("sql", "ro")
+	toSQLSignature := semantic.MustLookupBuiltinType("sql", "to")
 	flux.RegisterPackageValue("sql", "to", flux.MustValue(flux.FunctionValueWithSideEffect(ToSQLKind, createToSQLOpSpec, toSQLSignature)))
 	flux.RegisterOpSpec(ToSQLKind, func() flux.OperationSpec { return &ToSQLOpSpec{} })
 	plan.RegisterProcedureSpecWithSideEffect(ToSQLKind, newToSQLProcedure, ToSQLKind)

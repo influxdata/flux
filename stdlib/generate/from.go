@@ -193,8 +193,9 @@ func (s *GeneratorSource) Decode(ctx context.Context) (flux.Table, error) {
 	valueIdx := execute.ColIdx("_value", cols)
 	for i := 0; i < int(s.Count); i++ {
 		b.AppendTime(timeIdx, values.ConvertTime(s.Start.Add(time.Duration(i)*deltaT)))
-		in := values.NewObject()
-		in.Set("n", values.NewInt(int64(i)))
+		in := values.NewObjectWithValues(map[string]values.Value{
+			"n": values.NewInt(int64(i)),
+		})
 		v, err := s.Fn.Eval(ctx, in)
 		if err != nil {
 			return nil, err

@@ -520,6 +520,7 @@ func (fn *rowJoinFn) Prepare(left, right []flux.ColMeta) error {
 
 	f, err := fn.cache.Compile(semantic.NewObjectType(
 	// TODO (algow): determine the correct type
+	nil,
 	//map[string]semantic.MonoType{
 	//	"left":  semantic.NewObjectType(l),
 	//	"right": semantic.NewObjectType(r),

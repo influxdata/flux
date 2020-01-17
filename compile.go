@@ -322,17 +322,17 @@ func FunctionValueWithSideEffect(name string, c CreateOperationSpec, ft semantic
 	return functionValue(name, c, ft, true)
 }
 
-func functionValue(name string, c CreateOperationSpec, ft semantic.MonoType, sideEffects bool) (values.Value, error) {
+func functionValue(name string, c CreateOperationSpec, mt semantic.MonoType, sideEffects bool) (values.Value, error) {
 	if c == nil {
 		c = func(args Arguments, a *Administration) (OperationSpec, error) {
 			return nil, errors.Newf(codes.Unimplemented, "function %q is not implemented", name)
 		}
 	}
-	if ft.Nature() != semantic.Function {
-		return nil, errors.Newf(codes.Invalid, "cannot implement function %q with value of type %v", name, ft)
+	if mt.Nature() != semantic.Function {
+		return nil, errors.Newf(codes.Invalid, "cannot implement function %q with value of type %v", name, mt)
 	}
 	return &function{
-		t:             ft,
+		t:             mt,
 		name:          name,
 		createOpSpec:  c,
 		hasSideEffect: sideEffects,

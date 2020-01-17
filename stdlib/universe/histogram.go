@@ -246,8 +246,7 @@ type linearBins struct{}
 var linearBinsType = semantic.MustLookupBuiltinType("universe", "linearBins")
 
 func (b linearBins) Type() semantic.MonoType {
-	t, _ := linearBinsType.Expr()
-	return t
+	return linearBinsType
 }
 
 func (b linearBins) IsNull() bool {
@@ -369,8 +368,7 @@ type logarithmicBins struct{}
 var logarithmicBinsType = semantic.MustLookupBuiltinType("universe", "logarithmicBins")
 
 func (b logarithmicBins) Type() semantic.MonoType {
-	t, _ := logarithmicBinsType.Expr()
-	return t
+	return logarithmicBinsType
 }
 
 func (b logarithmicBins) IsNull() bool {

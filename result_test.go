@@ -33,6 +33,7 @@ func TestColumnType(t *testing.T) {
 		{typ: semantic.NewArrayType(semantic.BasicString), want: flux.TInvalid},
 		{typ: semantic.NewObjectType(
 		// TODO(algow): determine how to create correct type
+		nil,
 		//	map[string]semantic.MonoType{
 		//	"foo": semantic.String,
 		//},

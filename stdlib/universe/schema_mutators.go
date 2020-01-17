@@ -98,7 +98,8 @@ func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
 
 		m.Fn = compiledFn
 		m.ParamName = param
-		m.Input = values.NewObject()
+		// TODO(algow): initialize this properly
+		m.Input = values.NewObject(semantic.MonoType{})
 	}
 	return m, nil
 }
@@ -182,7 +183,8 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 			}
 			m.Predicate = compiledFn
 			m.ParamName = param
-			m.Input = values.NewObject()
+			// TODO(algow): initialize this properly
+			m.Input = values.NewObject(semantic.MonoType{})
 		}
 	case *KeepOpSpec:
 		if s.Columns != nil {
@@ -197,7 +199,8 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 			m.FlipPredicate = true
 
 			m.ParamName = param
-			m.Input = values.NewObject()
+			// TODO(algow): initialize this properly
+			m.Input = values.NewObject(semantic.MonoType{})
 		}
 	default:
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
