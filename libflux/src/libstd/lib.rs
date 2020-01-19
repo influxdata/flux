@@ -2,6 +2,7 @@ use flatbuffers;
 use flux::ast;
 use flux::ctypes::*;
 use flux::semantic::builtins::builtins;
+use flux::semantic::check;
 use flux::semantic::env::Environment;
 use flux::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 use flux::semantic::fresh::Fresher;
@@ -51,6 +52,8 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<flux::semantic::nodes::Package, 
     let pkgpath = ast_pkg.path.clone();
     let mut f = fresher();
     let mut sem_pkg = flux::semantic::convert::convert_with(ast_pkg, &mut f)?;
+
+    check::check(&sem_pkg)?;
 
     let prelude = match prelude() {
         Some(prelude) => Environment::new(prelude),
