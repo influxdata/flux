@@ -81,8 +81,6 @@ func Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 func EnvStdlib() []byte {
 	var buf C.struct_flux_buffer_t
 	C.flux_get_env_stdlib(&buf)
-
 	defer C.flux_free(buf.data)
-
 	return C.GoBytes(buf.data, C.int(buf.len))
 }
