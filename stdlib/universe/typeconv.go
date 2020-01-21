@@ -27,6 +27,17 @@ func init() {
 	flux.RegisterPackageValue("universe", "bytes", bytes)
 }
 
+var (
+	convBoolType     = semantic.MustLookupBuiltinType("universe", "bool")
+	convIntType      = semantic.MustLookupBuiltinType("universe", "int")
+	convUintType     = semantic.MustLookupBuiltinType("universe", "uint")
+	convFloatType    = semantic.MustLookupBuiltinType("universe", "float")
+	convStringType   = semantic.MustLookupBuiltinType("universe", "string")
+	convTimeType     = semantic.MustLookupBuiltinType("universe", "time")
+	convDurationType = semantic.MustLookupBuiltinType("universe", "duration")
+	convBytesType    = semantic.MustLookupBuiltinType("universe", "bytes")
+)
+
 const (
 	conversionArg = "v"
 )
@@ -38,8 +49,7 @@ type stringConv struct{}
 var required = semantic.LabelSet{conversionArg}
 
 func (c *stringConv) Type() semantic.MonoType {
-	// TODO(algow): return a correct type
-	return semantic.BasicBool
+	return convStringType
 }
 func (c *stringConv) IsNull() bool {
 	return false
@@ -133,8 +143,7 @@ func (c *stringConv) Call(ctx context.Context, args values.Object) (values.Value
 type intConv struct{}
 
 func (c *intConv) Type() semantic.MonoType {
-	// TODO(algow): return a correct type
-	return semantic.BasicBool
+	return convIntType
 }
 
 func (c *intConv) IsNull() bool {
@@ -224,8 +233,7 @@ func (c *intConv) Call(ctx context.Context, args values.Object) (values.Value, e
 type uintConv struct{}
 
 func (c *uintConv) Type() semantic.MonoType {
-	// TODO(algow): return a correct type
-	return semantic.BasicBool
+	return convUintType
 }
 
 func (c *uintConv) IsNull() bool {
@@ -315,8 +323,7 @@ func (c *uintConv) Call(ctx context.Context, args values.Object) (values.Value, 
 type floatConv struct{}
 
 func (c *floatConv) Type() semantic.MonoType {
-	// TODO(algow): return a correct type
-	return semantic.BasicBool
+	return convFloatType
 }
 
 func (c *floatConv) IsNull() bool {
@@ -402,8 +409,7 @@ func (c *floatConv) Call(ctx context.Context, args values.Object) (values.Value,
 type boolConv struct{}
 
 func (c *boolConv) Type() semantic.MonoType {
-	// TODO(algow): return a correct type
-	return semantic.BasicBool
+	return convBoolType
 }
 
 func (c *boolConv) IsNull() bool {
@@ -509,8 +515,7 @@ func (c *boolConv) Call(ctx context.Context, args values.Object) (values.Value, 
 type timeConv struct{}
 
 func (c *timeConv) Type() semantic.MonoType {
-	// TODO(algow): return a correct type
-	return semantic.BasicBool
+	return convTimeType
 }
 
 func (c *timeConv) IsNull() bool {
@@ -590,8 +595,7 @@ func (c *timeConv) Call(ctx context.Context, args values.Object) (values.Value, 
 type durationConv struct{}
 
 func (c *durationConv) Type() semantic.MonoType {
-	// TODO(algow): return a correct type
-	return semantic.BasicBool
+	return convDurationType
 }
 
 func (c *durationConv) IsNull() bool {
@@ -670,7 +674,7 @@ func (c *durationConv) Call(ctx context.Context, args values.Object) (values.Val
 
 var bytes = values.NewFunction(
 	"bytes",
-	semantic.MustLookupBuiltinType("universe", "bytes"),
+	convBytesType,
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		v, ok := args.Get(conversionArg)
 		if !ok {
