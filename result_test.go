@@ -31,15 +31,8 @@ func TestColumnType(t *testing.T) {
 		{typ: semantic.BasicDuration, want: flux.TInvalid},
 		{typ: semantic.BasicRegexp, want: flux.TInvalid},
 		{typ: semantic.NewArrayType(semantic.BasicString), want: flux.TInvalid},
-		{typ: semantic.NewObjectType(
-			// TODO(algow): determine how to create correct type
-			nil,
-		//	map[string]semantic.MonoType{
-		//	"foo": semantic.String,
-		//},
-		), want: flux.TInvalid},
-		// TODO(algow): determine how to create correct type
-		//{typ: semantic.NewFunctionType(), want: flux.TInvalid},
+		{typ: semantic.NewObjectType([]semantic.PropertyType{{Key: []byte("a"), Value: semantic.BasicInt}}), want: flux.TInvalid},
+		{typ: semantic.NewFunctionType(semantic.BasicInt, []semantic.ArgumentType{{Name: []byte("a"), Type: semantic.BasicInt}}), want: flux.TInvalid},
 	} {
 		t.Run(fmt.Sprint(tt.typ), func(t *testing.T) {
 			if want, got := tt.want, flux.ColumnType(tt.typ); want != got {

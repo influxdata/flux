@@ -41,14 +41,13 @@ func NewTableFindFunction() values.Value {
 
 func tableFindCall(ctx context.Context, args values.Object) (values.Value, error) {
 	arguments := interpreter.NewArguments(args)
-	var to *flux.TableObject
-	if v, err := arguments.GetRequired(tableFindStreamArg); err != nil {
+	v, err := arguments.GetRequired(tableFindStreamArg)
+	if err != nil {
 		return nil, err
-		// TODO(algow): how to check for table object types?
-		//} else if v.Type().Nature() != flux.TableObjectMonoType {
-		//return nil, errors.Newf(codes.Invalid, "unexpected type for %v: want %v, got %v", tableFindStreamArg, "table stream", v.Type())
-	} else {
-		to = v.(*flux.TableObject)
+	}
+	to, ok := v.(*flux.TableObject)
+	if !ok {
+		return nil, errors.Newf(codes.Invalid, "expected TableObject but instead got %T", v)
 	}
 
 	var fn *execute.TablePredicateFn

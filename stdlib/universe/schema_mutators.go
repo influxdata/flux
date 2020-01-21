@@ -98,8 +98,10 @@ func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
 
 		m.Fn = compiledFn
 		m.ParamName = param
-		// TODO(algow): initialize this properly
-		m.Input = values.NewObject(semantic.MonoType{})
+		m.Input = values.NewObject(semantic.NewObjectType([]semantic.PropertyType{{
+			Key:   []byte(param),
+			Value: semantic.BasicString,
+		}}))
 	}
 	return m, nil
 }
@@ -183,8 +185,10 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 			}
 			m.Predicate = compiledFn
 			m.ParamName = param
-			// TODO(algow): initialize this properly
-			m.Input = values.NewObject(semantic.MonoType{})
+			m.Input = values.NewObject(semantic.NewObjectType([]semantic.PropertyType{{
+				Key:   []byte(param),
+				Value: semantic.BasicString,
+			}}))
 		}
 	case *KeepOpSpec:
 		if s.Columns != nil {
@@ -199,8 +203,10 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 			m.FlipPredicate = true
 
 			m.ParamName = param
-			// TODO(algow): initialize this properly
-			m.Input = values.NewObject(semantic.MonoType{})
+			m.Input = values.NewObject(semantic.NewObjectType([]semantic.PropertyType{{
+				Key:   []byte(param),
+				Value: semantic.BasicString,
+			}}))
 		}
 	default:
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
