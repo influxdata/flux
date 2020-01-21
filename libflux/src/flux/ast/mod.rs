@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 pub mod check;
 
 pub mod flatbuffers;

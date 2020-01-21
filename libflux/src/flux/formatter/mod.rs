@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use crate::ast::{self, walk::Node};
 use crate::Error;
 
