@@ -1,0 +1,392 @@
+lex
+	literal
+		`+ `- `* `/ `% `^
+		`== `< `> `<= `>=
+		`!= `=~ `!~ `=
+		`=> `<-
+		`( `) `[ `] `{ `}
+		`: `|> `, `.
+
+	literal
+		`and `or `not
+		`empty `in
+		`import `package
+		`return `option `builtin
+		`test `if `then `else `exists
+
+	ignore / '//' [^\n]* '\n' /
+	ignore / [ \t\n\r]+ /
+
+	# Documented, but not in the scanner.
+	literal `with `type `any `... `->
+	literal `; `'
+
+	rl decimal_lit
+		/ ( digit - "0" ) digit* /
+
+	# missing: "µs"
+	rl duration_unit
+		/ "y" | "mo" | "w" | "d" | "h" | "m" | "s" | "ms" | "us" | "ns" /
+
+	rl date          / digit{4} "-" digit{2} "-" digit{2} /
+	rl time_offset   / "Z" | ( ("+" | "-" ) digit{2} ":" digit{2} ) /
+	rl time          / digit{2} ":" digit{2} ":" digit{2} ( "." digit* )? time_offset? /
+
+	rl escaped_char
+		/ "\\" ( "n" | "r" | "t" | "\\" | '"' | "${" ) /
+	rl unicode_value
+		/ ( any - [\\$] ) | escaped_char /
+	rl byte_value
+		/ "\\x" xdigit{2} /
+	rl dollar_value
+		/ "$" ( any - "{" ) /
+	rl string_lit_char
+		/ ( unicode_value | byte_value | dollar_value ) /
+
+	token identifier
+		/ ( alpha | "_" ) ( alnum | "_" )* /
+
+	token int_lit
+		/ "0" | decimal_lit /
+
+	token float_lit
+		/ ( digit+ "." digit* ) | ("." digit+) /
+
+	token duration_lit
+		/ ( int_lit duration_unit )+ /
+
+	token date_time_lit
+		/ date ( "T" time )? /
+
+	token string_lit
+		/ '"' string_lit_char* "$"? :> '"' /
+end
+
+lex
+	rl regex_escaped_char / "\\" ( "/" | "\\") /
+	rl regex_unicode_value / ( any - "/" ) | regex_escaped_char /
+
+	token regex_lit
+		/ ( regex_unicode_value | byte_value )+ "/" /
+end
+
+#
+# Assignment and scope
+#
+
+def variable_assignment
+	[identifier `= expression]
+|	[`test identifier `= expression]
+
+def opt_qual
+	[identifier `.]
+|	[]
+
+def option_assignment
+	[`option opt_qual identifier `= expression]
+
+#
+# Blocks
+#
+
+def block
+	[`{ statement_list  `,`? `}]
+
+def statement_list
+	[statement*]
+
+#
+# Expressions
+#
+
+#
+# Object Literals
+#
+def object_literal
+	[`{ object_body `,`? `} ]
+
+def object_body
+	[with_properties]
+|	[property_list]
+
+def with_properties
+	[identifier `with property_list]
+
+def comma_property
+	[`, property]
+
+def property_list
+	[ property comma_property*]
+|	[]
+
+def colon_expr
+	[`: expression]
+
+def property
+	[identifier colon_expr?]
+|	[string_lit `: expression]
+
+#
+# Array Literals
+#
+
+def array_literal
+	[`[ expression_list `]]
+
+def comma_expression
+	[`, expression]
+
+def expression_list
+	[expression comma_expression*]
+|	[]
+
+#
+# Function Literals
+#
+
+def function_literal
+	[function_parameters `=> function_body]
+
+def opt_paramter_list
+	[parameter_list `,`?]
+|	[]
+
+def function_parameters
+	[`( opt_paramter_list `)]
+
+def comma_parameter
+	[`, parameter]
+
+def parameter_list
+	[parameter comma_parameter*]
+
+def equals_expression
+	[`= expression]
+
+def parameter
+	[identifier equals_expression?]
+
+def function_body
+	[expression]
+|	[block]
+
+
+#
+# Call Expressions
+#
+def call_expression
+	[`( property_list `,`? `)]
+
+
+#
+# Pipe Expressions
+#
+def pipe_receive_lit
+	[`<-]
+
+#
+# Index Expressions
+#
+
+def index_expression
+	[`[ expression `]]
+
+#
+# Member Expressions
+#
+
+def member_expression
+	[dot_expression]
+|	[member_bracket_expression]
+
+def dot_expression
+	[`. identifier]
+
+def member_bracket_expression
+	[`[ string_lit `]]
+
+#
+# Operations
+#
+
+def expression
+	[conditional_expression]
+
+def conditional_expression
+	[`if expression `then expression `else expression]
+|	[logical_expression]
+
+def logical_expression
+	[logical_expression logical_operator unary_logical_expression]
+|	[unary_logical_expression]
+
+def logical_operator
+	[`and] | [`or]
+
+def unary_logical_expression
+	[unary_logical_operator unary_logical_expression]
+|	[comparison_expression]
+
+def unary_logical_operator
+	[`not] | [`exists]
+
+def comparison_expression
+	[comparison_expression comparison_operator additive_expression]
+|	[additive_expression]
+
+def comparison_operator
+	[`==] | [`!=] | [`<] | [`<=] | [`>] | [`>=] | [`=~] | [`!~]
+
+def additive_expression
+	[additive_expression additive_operator multiplicative_expression]
+|	[multiplicative_expression]
+
+def additive_operator
+	[`+] | [`-]
+
+def multiplicative_expression
+	[multiplicative_expression multiplicative_operator pipe_expression]
+|	[pipe_expression]
+
+def multiplicative_operator
+	[`*] | [`/] | [`%] | [`^]
+
+def pipe_expression
+	[pipe_expression pipe_operator unary_expression]
+|	[unary_expression]
+
+def pipe_operator
+	[`|>]
+
+def unary_expression
+	[prefix_operator unary_expression]
+|	[postfix_expression]
+
+def prefix_operator
+	[`+] | [`-]
+
+def postfix_expression
+	[postfix_expression postfix_operator]
+|	[primary_expression]
+
+def postfix_operator
+	[member_expression]
+|	[call_expression]
+|	[index_expression]
+
+def primary_expression
+	[identifier]
+|	[_literal]
+|	[`( expression `)]
+
+def _literal
+	[int_lit]
+|	[float_lit]
+|	[string_lit]
+|	[`/ regex_lit]
+|	[date_time_lit]
+|	[duration_lit]
+|	[pipe_receive_lit]
+|	[object_literal]
+|	[array_literal]
+|	[function_literal]
+
+#
+# System built-ins
+#
+def builtin_statement
+	[`builtin identifier `: type_expression]
+|	[`builtin identifier]
+
+#
+# Packages
+#
+def file
+	[package_clause? import_list? statement_list]
+
+def import_list
+	[import_declaration*]
+
+def	package_clause
+	[`package identifier]
+
+#
+# Statements
+#
+
+def statement
+	[option_assignment] commit
+|	[builtin_statement] commit
+|	[variable_assignment] commit
+|	[return_statement] commit
+|	[expression_statement] commit
+
+def import_declaration
+	[`import identifier? string_lit]
+
+def return_statement
+	[`return expression]
+
+def expression_statement
+	[expression]
+
+def semi_object_upper_bound
+	[`; object_upper_bound]
+
+#
+# Named Types
+#
+def type_assignment
+	[`type identifier `= type_expression]
+
+def type_expression
+	[identifier]
+|	[type_parameter]
+|	[object_type]
+|	[array_type]
+|	[generator_type]
+|	[function_type]
+
+def type_parameter
+	[ `' identifier ]
+
+def object_type
+	[ `{ property_type_list semi_object_upper_bound? `,`? `}]
+
+def object_upper_bound
+	[`any] | [property_type_list]
+
+def comma_property_type
+	[`, property_type]
+
+def property_type_list
+	[property_type comma_property_type?]
+
+def property_type
+	[identifier `: type_expression]
+|	[string_lit `: type_expression]
+
+def array_type
+	[`[ `] type_expression]
+
+def generator_type
+	[`[ `... `] type_expression]
+
+def function_type
+	[parameter_type_list `-> type_expression]
+
+def comma_parameter_type
+	[`, parameter_type]
+
+def opt_paramter_type_list
+	[parameter_type comma_parameter_type*]
+|	[]
+
+def parameter_type_list
+	[`( opt_paramter_type_list `) ]
+
+def parameter_type
+	[identifier `: pipe_receive_lit? type_expression]
+
+def flux
+	[file]
