@@ -22,13 +22,13 @@ func generateGetGridFunc() values.Function {
 					"maxLat": semantic.Float,
 					"maxLon": semantic.Float,
 				}, semantic.LabelSet{"minLat", "minLon", "maxLat", "maxLon"}, nil),
-				"precision": semantic.Int,
+				"precision":    semantic.Int,
 				"maxPrecision": semantic.Int,
-				"minSize": semantic.Int,
-				"maxSize": semantic.Int,
+				"minSize":      semantic.Int,
+				"maxSize":      semantic.Int,
 			},
 			Required: semantic.LabelSet{"box"},
-			Return: semantic.NewObjectPolyType(map[string]semantic.PolyType{"precision": semantic.Int, "set": semantic.NewArrayPolyType(semantic.String)}, semantic.LabelSet{"precision", "set"}, nil), // { level: int, array: []string }
+			Return:   semantic.NewObjectPolyType(map[string]semantic.PolyType{"precision": semantic.Int, "set": semantic.NewArrayPolyType(semantic.String)}, semantic.LabelSet{"precision", "set"}, nil), // { level: int, array: []string }
 		}),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
@@ -103,7 +103,7 @@ func generateGetGridFunc() values.Function {
 
 			return values.NewObjectWithValues(map[string]values.Value{
 				"precision": precisionVal,
-				"set": setVal,
+				"set":       setVal,
 			}), nil
 		}, false,
 	)
@@ -192,7 +192,7 @@ func getGrid(rect *latLonBox, reqPrecision, maxPrecision, minSize, maxSize int) 
 	var result *grid
 
 	if reqPrecision > -1 {
-		if maxPrecision > -1 || minSize > -1 || maxSize > -1  {
+		if maxPrecision > -1 || minSize > -1 || maxSize > -1 {
 			return nil, fmt.Errorf("code %d: precision is mutually exclusive with other parameters", codes.Invalid)
 		}
 		g := getSpecGrid(rect, reqPrecision)

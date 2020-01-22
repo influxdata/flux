@@ -15,12 +15,12 @@ func generateFunc() values.Function {
 		"containsTag",
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 			Parameters: map[string]semantic.PolyType{
-				"row": semantic.Tvar(1),
+				"row":    semantic.Tvar(1),
 				"tagKey": semantic.String,
-				"set":   semantic.NewArrayPolyType(semantic.String),
+				"set":    semantic.NewArrayPolyType(semantic.String),
 			},
 			Required: semantic.LabelSet{"row", "tagKey", "set"},
-			Return: semantic.Bool,
+			Return:   semantic.Bool,
 		}),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)

@@ -45,44 +45,44 @@ func TestGetGrid_Process(t *testing.T) {
 		maxLon float64
 	}
 	testCases := []struct {
-		name string
-		box box
+		name      string
+		box       box
 		precision int
-		minsize int
-		maxsize int
-		want values.Object
+		minsize   int
+		maxsize   int
+		want      values.Object
 	}{
 		{
-			name: "minSize #1",
-			box: box{minLat: 40.49958463695424, maxLat: 40.91598930547667, minLon: -74.4267501831055, maxLon: -73.6027755737305},
-			minsize: 9,
-			maxsize: -1,
+			name:      "minSize #1",
+			box:       box{minLat: 40.49958463695424, maxLat: 40.91598930547667, minLon: -74.4267501831055, maxLon: -73.6027755737305},
+			minsize:   9,
+			maxsize:   -1,
 			precision: -1,
-			want: gridValue(4, []string{"dr70", "dr72", "dr78", "dr5p", "dr5r", "dr5x", "dr5n", "dr5q", "dr5w"}),
-		},
-	{
-			name: "maxSize #1",
-			box: box{minLat: 40.49958463695424, maxLat: 40.91598930547667, minLon: -74.4267501831055, maxLon: -73.6027755737305},
-			minsize: -1,
-			maxsize: 20,
-			precision: -1,
-			want: gridValue(4, []string{"dr70", "dr72", "dr78", "dr5p", "dr5r", "dr5x", "dr5n", "dr5q", "dr5w"}),
+			want:      gridValue(4, []string{"dr70", "dr72", "dr78", "dr5p", "dr5r", "dr5x", "dr5n", "dr5q", "dr5w"}),
 		},
 		{
-			name: "maxSize #2",
-			box: box{minLat: 39.49958463695424, maxLat: 41.91598930547667, minLon: -75.4267501831055, maxLon: -72.6027755737305},
-			minsize: -1,
-			maxsize: 9,
+			name:      "maxSize #1",
+			box:       box{minLat: 40.49958463695424, maxLat: 40.91598930547667, minLon: -74.4267501831055, maxLon: -73.6027755737305},
+			minsize:   -1,
+			maxsize:   20,
 			precision: -1,
-			want: gridValue(3, []string{"dr6", "dr7", "drk", "dr4", "dr5", "drh"}),
+			want:      gridValue(4, []string{"dr70", "dr72", "dr78", "dr5p", "dr5r", "dr5x", "dr5n", "dr5q", "dr5w"}),
 		},
 		{
-			name: "precision #1",
-			box: box{minLat: 40.49958463695424, maxLat: 40.91598930547667, minLon: -74.4267501831055, maxLon: -73.6027755737305},
-			minsize: -1,
-			maxsize: -1,
+			name:      "maxSize #2",
+			box:       box{minLat: 39.49958463695424, maxLat: 41.91598930547667, minLon: -75.4267501831055, maxLon: -72.6027755737305},
+			minsize:   -1,
+			maxsize:   9,
+			precision: -1,
+			want:      gridValue(3, []string{"dr6", "dr7", "drk", "dr4", "dr5", "drh"}),
+		},
+		{
+			name:      "precision #1",
+			box:       box{minLat: 40.49958463695424, maxLat: 40.91598930547667, minLon: -74.4267501831055, maxLon: -73.6027755737305},
+			minsize:   -1,
+			maxsize:   -1,
 			precision: 2,
-			want: gridValue(2, []string{"dr"}),
+			want:      gridValue(2, []string{"dr"}),
 		},
 	}
 
@@ -97,8 +97,8 @@ func TestGetGrid_Process(t *testing.T) {
 					"maxLat": values.NewFloat(tc.box.maxLat),
 					"maxLon": values.NewFloat(tc.box.maxLon),
 				}),
-				"minSize": values.NewInt(int64(tc.minsize)),
-				"maxSize": values.NewInt(int64(tc.maxsize)),
+				"minSize":   values.NewInt(int64(tc.minsize)),
+				"maxSize":   values.NewInt(int64(tc.maxsize)),
 				"precision": values.NewInt(int64(tc.precision)),
 			}),
 		)
