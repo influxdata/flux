@@ -17,11 +17,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 93,
-					Line:   340,
+					Column: 98,
+					Line:   248,
 				},
-				File:   "geo_test.flux",
-				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,0,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,1,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,2,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,4,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,5,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,5,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,10,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,10,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,12,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,13,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,14,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,15,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,15,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,16,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,16,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,20,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,20,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,21,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,23,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\"\n\noutData = \"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,1,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,2,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,7,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\"\n\nt_geo = (table=<-) =>\n\ttable\n\t\t|> range(start: -1y)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.boxFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})\n\ntest _geo = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_geo})",
+				File:   "asTracks_test.flux",
+				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"\n\noutData_gridFilter = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"\n\noutData = \"\n#group,false,false,false,false,false,false,false,false,false,false,true,false,true,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,double,long,string,double\n#default,_result,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,lat,tid,geohash,lon\n,,0,2019-11-20T10:17:17Z,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA,40.700344,1574245037000000000,dr5ze3q2xypb,-73.324814\n,,0,2019-11-20T10:17:18Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700348,1574245037000000000,dr5ze3q88qg0,-73.324799\n,,0,2019-11-20T10:17:24Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700397,1574245037000000000,dr5ze3q8fxvt,-73.324699\n,,0,2019-11-20T10:17:26Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700413,1574245037000000000,dr5ze3q9h4gh,-73.324638\n,,0,2019-11-20T10:17:32Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700474,1574245037000000000,dr5ze3q9ryr8,-73.324471\n,,0,2019-11-20T10:17:35Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700481,1574245037000000000,dr5ze3qc6rd4,-73.324371\n,,0,2019-11-20T10:17:42Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700459,1574245037000000000,dr5ze3qcqery,-73.324181\n,,0,2019-11-20T10:17:47Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700455,1574245037000000000,dr5ze3r176sr,-73.323982\n,,0,2019-11-20T10:17:54Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700542,1574245037000000000,dr5ze3r3b6gn,-73.323769\n,,0,2019-11-20T10:18:00Z,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA,40.700684,1574245037000000000,dr5ze3r6djkt,-73.323692\n\n#group,false,false,false,false,false,false,false,false,false,false,true,false,false,false,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,double,double,string,long\n#default,_result,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,lon,lat,geohash,tid\n,,1,2019-11-10T11:07:12Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,-73.967104,40.762096,dr5ruudb3t3t,1573384032000000000\n,,1,2019-11-10T11:07:35Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967081,40.762225,dr5ruudc4j6z,1573384032000000000\n,,1,2019-11-10T11:07:38Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967129,40.762247,dr5ruudc2cx4,1573384032000000000\n,,1,2019-11-10T11:07:43Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967261,40.762331,dr5ruud9vchz,1573384032000000000\n,,1,2019-11-10T11:07:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967422,40.762408,dr5ruudd4pse,1573384032000000000\n,,1,2019-11-10T11:07:52Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967542,40.762484,dr5ruud6xmg0,1573384032000000000\n,,1,2019-11-10T11:08:01Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967718,40.762597,dr5ruud774zf,1573384032000000000\n,,1,2019-11-10T11:08:16Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967803,40.762574,dr5ruud71q89,1573384032000000000\n,,1,2019-11-10T11:08:34Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,-73.967971,40.762662,dr5ruud5tqgq,1573384032000000000\n,,2,2019-11-10T21:16:00Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,-73.966333,40.763126,dr5ruueq7t2w,1573420560000000000\n,,2,2019-11-10T21:16:06Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.966254,40.76309,dr5ruueqjqex,1573420560000000000\n,,2,2019-11-10T21:16:18Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.966091,40.763036,dr5ruuetchtj,1573420560000000000\n,,2,2019-11-10T21:16:31Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965889,40.763006,dr5ruuettz5d,1573420560000000000\n,,2,2019-11-10T21:16:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.96573,40.762904,dr5ruuev1s43,1573420560000000000\n,,2,2019-11-10T21:17:08Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965721,40.762836,dr5ruueu9z2u,1573420560000000000\n,,2,2019-11-10T21:17:23Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965801,40.762736,dr5ruuesputr,1573420560000000000\n,,2,2019-11-10T21:17:36Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.96559,40.762469,dr5ruuefsffw,1573420560000000000\n,,2,2019-11-10T21:17:46Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965579,40.762418,dr5ruuefm16y,1573420560000000000\n,,2,2019-11-10T21:17:47Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,-73.965583,40.762424,dr5ruuefkfxf,1573420560000000000\n\"\n\nt_asTracks = (table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows(correlationKey: [\"_time\", \"id\"])\n\t\t|> geo.asTracks()\n\t\t|> drop(columns: [\"_start\",\"_stop\"])\n\ntest _asTracks = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -37,7 +37,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   6,
 						},
-						File:   "geo_test.flux",
+						File:   "asTracks_test.flux",
 						Source: "now = () => (2030-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 8,
@@ -53,7 +53,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   6,
 							},
-							File:   "geo_test.flux",
+							File:   "asTracks_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
@@ -71,7 +71,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   6,
 							},
-							File:   "geo_test.flux",
+							File:   "asTracks_test.flux",
 							Source: "() => (2030-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 14,
@@ -87,7 +87,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   6,
 								},
-								File:   "geo_test.flux",
+								File:   "asTracks_test.flux",
 								Source: "(2030-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 20,
@@ -103,7 +103,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   6,
 									},
-									File:   "geo_test.flux",
+									File:   "asTracks_test.flux",
 									Source: "2030-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 21,
@@ -124,7 +124,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   6,
 					},
-					File:   "geo_test.flux",
+					File:   "asTracks_test.flux",
 					Source: "option now = () => (2030-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
@@ -138,10 +138,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   244,
+						Line:   139,
 					},
-					File:   "geo_test.flux",
-					Source: "inData = \"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,0,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,1,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,2,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,4,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,5,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,5,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,10,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,10,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,12,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,13,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,14,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,15,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,15,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,16,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,16,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,20,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,20,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,21,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,23,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\"",
+					File:   "asTracks_test.flux",
+					Source: "inData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   8,
@@ -156,7 +156,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "geo_test.flux",
+						File:   "asTracks_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
@@ -172,17 +172,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   244,
+							Line:   139,
 						},
-						File:   "geo_test.flux",
-						Source: "\"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,0,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,1,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,2,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,4,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,5,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,5,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,10,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,10,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,12,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,13,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,14,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,15,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,15,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,16,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,16,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,20,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,20,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,21,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,23,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\"",
+						File:   "asTracks_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
 						Start: ast.Position{
 							Column: 10,
 							Line:   8,
 						},
 					},
 				},
-				Value: "\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,0,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,1,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,2,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,4,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,5,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,5,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,7,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,10,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,10,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,12,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,13,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,14,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,15,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,15,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,16,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,16,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,17,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,18,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,19,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,20,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,20,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,21,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,22,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,23,2019-01-17T09:55:57.830851798Z,2020-01-17T15:55:57.830851798Z,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n",
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -190,13 +190,65 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   331,
+						Line:   196,
 					},
-					File:   "geo_test.flux",
-					Source: "outData = \"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,1,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,2,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,7,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\"",
+					File:   "asTracks_test.flux",
+					Source: "outData_gridFilter = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   246,
+						Line:   141,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 19,
+							Line:   141,
+						},
+						File:   "asTracks_test.flux",
+						Source: "outData_gridFilter",
+						Start: ast.Position{
+							Column: 1,
+							Line:   141,
+						},
+					},
+				},
+				Name: "outData_gridFilter",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   196,
+						},
+						File:   "asTracks_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+						Start: ast.Position{
+							Column: 22,
+							Line:   141,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   237,
+					},
+					File:   "asTracks_test.flux",
+					Source: "outData = \"\n#group,false,false,false,false,false,false,false,false,false,false,true,false,true,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,double,long,string,double\n#default,_result,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,lat,tid,geohash,lon\n,,0,2019-11-20T10:17:17Z,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA,40.700344,1574245037000000000,dr5ze3q2xypb,-73.324814\n,,0,2019-11-20T10:17:18Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700348,1574245037000000000,dr5ze3q88qg0,-73.324799\n,,0,2019-11-20T10:17:24Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700397,1574245037000000000,dr5ze3q8fxvt,-73.324699\n,,0,2019-11-20T10:17:26Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700413,1574245037000000000,dr5ze3q9h4gh,-73.324638\n,,0,2019-11-20T10:17:32Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700474,1574245037000000000,dr5ze3q9ryr8,-73.324471\n,,0,2019-11-20T10:17:35Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700481,1574245037000000000,dr5ze3qc6rd4,-73.324371\n,,0,2019-11-20T10:17:42Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700459,1574245037000000000,dr5ze3qcqery,-73.324181\n,,0,2019-11-20T10:17:47Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700455,1574245037000000000,dr5ze3r176sr,-73.323982\n,,0,2019-11-20T10:17:54Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700542,1574245037000000000,dr5ze3r3b6gn,-73.323769\n,,0,2019-11-20T10:18:00Z,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA,40.700684,1574245037000000000,dr5ze3r6djkt,-73.323692\n\n#group,false,false,false,false,false,false,false,false,false,false,true,false,false,false,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,double,double,string,long\n#default,_result,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,lon,lat,geohash,tid\n,,1,2019-11-10T11:07:12Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,-73.967104,40.762096,dr5ruudb3t3t,1573384032000000000\n,,1,2019-11-10T11:07:35Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967081,40.762225,dr5ruudc4j6z,1573384032000000000\n,,1,2019-11-10T11:07:38Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967129,40.762247,dr5ruudc2cx4,1573384032000000000\n,,1,2019-11-10T11:07:43Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967261,40.762331,dr5ruud9vchz,1573384032000000000\n,,1,2019-11-10T11:07:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967422,40.762408,dr5ruudd4pse,1573384032000000000\n,,1,2019-11-10T11:07:52Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967542,40.762484,dr5ruud6xmg0,1573384032000000000\n,,1,2019-11-10T11:08:01Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967718,40.762597,dr5ruud774zf,1573384032000000000\n,,1,2019-11-10T11:08:16Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967803,40.762574,dr5ruud71q89,1573384032000000000\n,,1,2019-11-10T11:08:34Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,-73.967971,40.762662,dr5ruud5tqgq,1573384032000000000\n,,2,2019-11-10T21:16:00Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,-73.966333,40.763126,dr5ruueq7t2w,1573420560000000000\n,,2,2019-11-10T21:16:06Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.966254,40.76309,dr5ruueqjqex,1573420560000000000\n,,2,2019-11-10T21:16:18Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.966091,40.763036,dr5ruuetchtj,1573420560000000000\n,,2,2019-11-10T21:16:31Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965889,40.763006,dr5ruuettz5d,1573420560000000000\n,,2,2019-11-10T21:16:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.96573,40.762904,dr5ruuev1s43,1573420560000000000\n,,2,2019-11-10T21:17:08Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965721,40.762836,dr5ruueu9z2u,1573420560000000000\n,,2,2019-11-10T21:17:23Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965801,40.762736,dr5ruuesputr,1573420560000000000\n,,2,2019-11-10T21:17:36Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.96559,40.762469,dr5ruuefsffw,1573420560000000000\n,,2,2019-11-10T21:17:46Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965579,40.762418,dr5ruuefm16y,1573420560000000000\n,,2,2019-11-10T21:17:47Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,-73.965583,40.762424,dr5ruuefkfxf,1573420560000000000\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   198,
 					},
 				},
 			},
@@ -206,13 +258,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   246,
+							Line:   198,
 						},
-						File:   "geo_test.flux",
+						File:   "asTracks_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   246,
+							Line:   198,
 						},
 					},
 				},
@@ -224,31 +276,31 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   331,
+							Line:   237,
 						},
-						File:   "geo_test.flux",
-						Source: "\"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,1,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,2,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,7,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\"",
+						File:   "asTracks_test.flux",
+						Source: "\"\n#group,false,false,false,false,false,false,false,false,false,false,true,false,true,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,double,long,string,double\n#default,_result,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,lat,tid,geohash,lon\n,,0,2019-11-20T10:17:17Z,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA,40.700344,1574245037000000000,dr5ze3q2xypb,-73.324814\n,,0,2019-11-20T10:17:18Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700348,1574245037000000000,dr5ze3q88qg0,-73.324799\n,,0,2019-11-20T10:17:24Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700397,1574245037000000000,dr5ze3q8fxvt,-73.324699\n,,0,2019-11-20T10:17:26Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700413,1574245037000000000,dr5ze3q9h4gh,-73.324638\n,,0,2019-11-20T10:17:32Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700474,1574245037000000000,dr5ze3q9ryr8,-73.324471\n,,0,2019-11-20T10:17:35Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700481,1574245037000000000,dr5ze3qc6rd4,-73.324371\n,,0,2019-11-20T10:17:42Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700459,1574245037000000000,dr5ze3qcqery,-73.324181\n,,0,2019-11-20T10:17:47Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700455,1574245037000000000,dr5ze3r176sr,-73.323982\n,,0,2019-11-20T10:17:54Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700542,1574245037000000000,dr5ze3r3b6gn,-73.323769\n,,0,2019-11-20T10:18:00Z,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA,40.700684,1574245037000000000,dr5ze3r6djkt,-73.323692\n\n#group,false,false,false,false,false,false,false,false,false,false,true,false,false,false,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,double,double,string,long\n#default,_result,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,lon,lat,geohash,tid\n,,1,2019-11-10T11:07:12Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,-73.967104,40.762096,dr5ruudb3t3t,1573384032000000000\n,,1,2019-11-10T11:07:35Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967081,40.762225,dr5ruudc4j6z,1573384032000000000\n,,1,2019-11-10T11:07:38Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967129,40.762247,dr5ruudc2cx4,1573384032000000000\n,,1,2019-11-10T11:07:43Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967261,40.762331,dr5ruud9vchz,1573384032000000000\n,,1,2019-11-10T11:07:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967422,40.762408,dr5ruudd4pse,1573384032000000000\n,,1,2019-11-10T11:07:52Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967542,40.762484,dr5ruud6xmg0,1573384032000000000\n,,1,2019-11-10T11:08:01Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967718,40.762597,dr5ruud774zf,1573384032000000000\n,,1,2019-11-10T11:08:16Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967803,40.762574,dr5ruud71q89,1573384032000000000\n,,1,2019-11-10T11:08:34Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,-73.967971,40.762662,dr5ruud5tqgq,1573384032000000000\n,,2,2019-11-10T21:16:00Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,-73.966333,40.763126,dr5ruueq7t2w,1573420560000000000\n,,2,2019-11-10T21:16:06Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.966254,40.76309,dr5ruueqjqex,1573420560000000000\n,,2,2019-11-10T21:16:18Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.966091,40.763036,dr5ruuetchtj,1573420560000000000\n,,2,2019-11-10T21:16:31Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965889,40.763006,dr5ruuettz5d,1573420560000000000\n,,2,2019-11-10T21:16:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.96573,40.762904,dr5ruuev1s43,1573420560000000000\n,,2,2019-11-10T21:17:08Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965721,40.762836,dr5ruueu9z2u,1573420560000000000\n,,2,2019-11-10T21:17:23Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965801,40.762736,dr5ruuesputr,1573420560000000000\n,,2,2019-11-10T21:17:36Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.96559,40.762469,dr5ruuefsffw,1573420560000000000\n,,2,2019-11-10T21:17:46Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965579,40.762418,dr5ruuefm16y,1573420560000000000\n,,2,2019-11-10T21:17:47Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,-73.965583,40.762424,dr5ruuefkfxf,1573420560000000000\n\"",
 						Start: ast.Position{
 							Column: 11,
-							Line:   246,
+							Line:   198,
 						},
 					},
 				},
-				Value: "\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,1,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,2,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,4,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,7,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,10,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-01-17T10:00:17.752702182Z,2020-01-17T16:00:17.752702182Z,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n",
+				Value: "\n#group,false,false,false,false,false,false,false,false,false,false,true,false,true,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,double,long,string,double\n#default,_result,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,lat,tid,geohash,lon\n,,0,2019-11-20T10:17:17Z,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA,40.700344,1574245037000000000,dr5ze3q2xypb,-73.324814\n,,0,2019-11-20T10:17:18Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700348,1574245037000000000,dr5ze3q88qg0,-73.324799\n,,0,2019-11-20T10:17:24Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700397,1574245037000000000,dr5ze3q8fxvt,-73.324699\n,,0,2019-11-20T10:17:26Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700413,1574245037000000000,dr5ze3q9h4gh,-73.324638\n,,0,2019-11-20T10:17:32Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700474,1574245037000000000,dr5ze3q9ryr8,-73.324471\n,,0,2019-11-20T10:17:35Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700481,1574245037000000000,dr5ze3qc6rd4,-73.324371\n,,0,2019-11-20T10:17:42Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700459,1574245037000000000,dr5ze3qcqery,-73.324181\n,,0,2019-11-20T10:17:47Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700455,1574245037000000000,dr5ze3r176sr,-73.323982\n,,0,2019-11-20T10:17:54Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,40.700542,1574245037000000000,dr5ze3r3b6gn,-73.323769\n,,0,2019-11-20T10:18:00Z,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA,40.700684,1574245037000000000,dr5ze3r6djkt,-73.323692\n\n#group,false,false,false,false,false,false,false,false,false,false,true,false,false,false,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,double,double,string,long\n#default,_result,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,lon,lat,geohash,tid\n,,1,2019-11-10T11:07:12Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,-73.967104,40.762096,dr5ruudb3t3t,1573384032000000000\n,,1,2019-11-10T11:07:35Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967081,40.762225,dr5ruudc4j6z,1573384032000000000\n,,1,2019-11-10T11:07:38Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967129,40.762247,dr5ruudc2cx4,1573384032000000000\n,,1,2019-11-10T11:07:43Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967261,40.762331,dr5ruud9vchz,1573384032000000000\n,,1,2019-11-10T11:07:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967422,40.762408,dr5ruudd4pse,1573384032000000000\n,,1,2019-11-10T11:07:52Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967542,40.762484,dr5ruud6xmg0,1573384032000000000\n,,1,2019-11-10T11:08:01Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967718,40.762597,dr5ruud774zf,1573384032000000000\n,,1,2019-11-10T11:08:16Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.967803,40.762574,dr5ruud71q89,1573384032000000000\n,,1,2019-11-10T11:08:34Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,-73.967971,40.762662,dr5ruud5tqgq,1573384032000000000\n,,2,2019-11-10T21:16:00Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,-73.966333,40.763126,dr5ruueq7t2w,1573420560000000000\n,,2,2019-11-10T21:16:06Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.966254,40.76309,dr5ruueqjqex,1573420560000000000\n,,2,2019-11-10T21:16:18Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.966091,40.763036,dr5ruuetchtj,1573420560000000000\n,,2,2019-11-10T21:16:31Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965889,40.763006,dr5ruuettz5d,1573420560000000000\n,,2,2019-11-10T21:16:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.96573,40.762904,dr5ruuev1s43,1573420560000000000\n,,2,2019-11-10T21:17:08Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965721,40.762836,dr5ruueu9z2u,1573420560000000000\n,,2,2019-11-10T21:17:23Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965801,40.762736,dr5ruuesputr,1573420560000000000\n,,2,2019-11-10T21:17:36Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.96559,40.762469,dr5ruuefsffw,1573420560000000000\n,,2,2019-11-10T21:17:46Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,-73.965579,40.762418,dr5ruuefm16y,1573420560000000000\n,,2,2019-11-10T21:17:47Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,-73.965583,40.762424,dr5ruuefkfxf,1573420560000000000\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 112,
-						Line:   337,
+						Column: 39,
+						Line:   245,
 					},
-					File:   "geo_test.flux",
-					Source: "t_geo = (table=<-) =>\n\ttable\n\t\t|> range(start: -1y)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.boxFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})",
+					File:   "asTracks_test.flux",
+					Source: "t_asTracks = (table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows(correlationKey: [\"_time\", \"id\"])\n\t\t|> geo.asTracks()\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
 					Start: ast.Position{
 						Column: 1,
-						Line:   333,
+						Line:   239,
 					},
 				},
 			},
@@ -257,68 +309,438 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 6,
-							Line:   333,
+							Column: 11,
+							Line:   239,
 						},
-						File:   "geo_test.flux",
-						Source: "t_geo",
+						File:   "asTracks_test.flux",
+						Source: "t_asTracks",
 						Start: ast.Position{
 							Column: 1,
-							Line:   333,
+							Line:   239,
 						},
 					},
 				},
-				Name: "t_geo",
+				Name: "t_asTracks",
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 112,
-							Line:   337,
+							Column: 39,
+							Line:   245,
 						},
-						File:   "geo_test.flux",
-						Source: "(table=<-) =>\n\ttable\n\t\t|> range(start: -1y)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.boxFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})",
+						File:   "asTracks_test.flux",
+						Source: "(table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows(correlationKey: [\"_time\", \"id\"])\n\t\t|> geo.asTracks()\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
 						Start: ast.Position{
-							Column: 9,
-							Line:   333,
+							Column: 14,
+							Line:   239,
 						},
 					},
 				},
 				Body: &ast.PipeExpression{
 					Argument: &ast.PipeExpression{
 						Argument: &ast.PipeExpression{
-							Argument: &ast.Identifier{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 7,
+													Line:   240,
+												},
+												File:   "asTracks_test.flux",
+												Source: "table",
+												Start: ast.Position{
+													Column: 2,
+													Line:   240,
+												},
+											},
+										},
+										Name: "table",
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 40,
+												Line:   241,
+											},
+											File:   "asTracks_test.flux",
+											Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)",
+											Start: ast.Position{
+												Column: 2,
+												Line:   240,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   241,
+													},
+													File:   "asTracks_test.flux",
+													Source: "start: 2019-11-01T00:00:00Z",
+													Start: ast.Position{
+														Column: 12,
+														Line:   241,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 39,
+															Line:   241,
+														},
+														File:   "asTracks_test.flux",
+														Source: "start: 2019-11-01T00:00:00Z",
+														Start: ast.Position{
+															Column: 12,
+															Line:   241,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 17,
+																Line:   241,
+															},
+															File:   "asTracks_test.flux",
+															Source: "start",
+															Start: ast.Position{
+																Column: 12,
+																Line:   241,
+															},
+														},
+													},
+													Name: "start",
+												},
+												Value: &ast.DateTimeLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 39,
+																Line:   241,
+															},
+															File:   "asTracks_test.flux",
+															Source: "2019-11-01T00:00:00Z",
+															Start: ast.Position{
+																Column: 19,
+																Line:   241,
+															},
+														},
+													},
+													Value: parser.MustParseTime("2019-11-01T00:00:00Z"),
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 40,
+													Line:   241,
+												},
+												File:   "asTracks_test.flux",
+												Source: "range(start: 2019-11-01T00:00:00Z)",
+												Start: ast.Position{
+													Column: 6,
+													Line:   241,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 11,
+														Line:   241,
+													},
+													File:   "asTracks_test.flux",
+													Source: "range",
+													Start: ast.Position{
+														Column: 6,
+														Line:   241,
+													},
+												},
+											},
+											Name: "range",
+										},
+									},
+								},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 7,
-											Line:   334,
+											Column: 49,
+											Line:   242,
 										},
-										File:   "geo_test.flux",
-										Source: "table",
+										File:   "asTracks_test.flux",
+										Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")",
 										Start: ast.Position{
 											Column: 2,
-											Line:   334,
+											Line:   240,
 										},
 									},
 								},
-								Name: "table",
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 48,
+													Line:   242,
+												},
+												File:   "asTracks_test.flux",
+												Source: "fn: (r) => r._measurement == \"bike\"",
+												Start: ast.Position{
+													Column: 13,
+													Line:   242,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 48,
+														Line:   242,
+													},
+													File:   "asTracks_test.flux",
+													Source: "fn: (r) => r._measurement == \"bike\"",
+													Start: ast.Position{
+														Column: 13,
+														Line:   242,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 15,
+															Line:   242,
+														},
+														File:   "asTracks_test.flux",
+														Source: "fn",
+														Start: ast.Position{
+															Column: 13,
+															Line:   242,
+														},
+													},
+												},
+												Name: "fn",
+											},
+											Value: &ast.FunctionExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 48,
+															Line:   242,
+														},
+														File:   "asTracks_test.flux",
+														Source: "(r) => r._measurement == \"bike\"",
+														Start: ast.Position{
+															Column: 17,
+															Line:   242,
+														},
+													},
+												},
+												Body: &ast.BinaryExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 48,
+																Line:   242,
+															},
+															File:   "asTracks_test.flux",
+															Source: "r._measurement == \"bike\"",
+															Start: ast.Position{
+																Column: 24,
+																Line:   242,
+															},
+														},
+													},
+													Left: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 38,
+																	Line:   242,
+																},
+																File:   "asTracks_test.flux",
+																Source: "r._measurement",
+																Start: ast.Position{
+																	Column: 24,
+																	Line:   242,
+																},
+															},
+														},
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 25,
+																		Line:   242,
+																	},
+																	File:   "asTracks_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 24,
+																		Line:   242,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 38,
+																		Line:   242,
+																	},
+																	File:   "asTracks_test.flux",
+																	Source: "_measurement",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   242,
+																	},
+																},
+															},
+															Name: "_measurement",
+														},
+													},
+													Operator: 17,
+													Right: &ast.StringLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 48,
+																	Line:   242,
+																},
+																File:   "asTracks_test.flux",
+																Source: "\"bike\"",
+																Start: ast.Position{
+																	Column: 42,
+																	Line:   242,
+																},
+															},
+														},
+														Value: "bike",
+													},
+												},
+												Params: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 19,
+																Line:   242,
+															},
+															File:   "asTracks_test.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 18,
+																Line:   242,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 19,
+																	Line:   242,
+																},
+																File:   "asTracks_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 18,
+																	Line:   242,
+																},
+															},
+														},
+														Name: "r",
+													},
+													Value: nil,
+												}},
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   242,
+											},
+											File:   "asTracks_test.flux",
+											Source: "filter(fn: (r) => r._measurement == \"bike\")",
+											Start: ast.Position{
+												Column: 6,
+												Line:   242,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 12,
+													Line:   242,
+												},
+												File:   "asTracks_test.flux",
+												Source: "filter",
+												Start: ast.Position{
+													Column: 6,
+													Line:   242,
+												},
+											},
+										},
+										Name: "filter",
+									},
+								},
 							},
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 23,
-										Line:   335,
+										Column: 49,
+										Line:   243,
 									},
-									File:   "geo_test.flux",
-									Source: "table\n\t\t|> range(start: -1y)",
+									File:   "asTracks_test.flux",
+									Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows(correlationKey: [\"_time\", \"id\"])",
 									Start: ast.Position{
 										Column: 2,
-										Line:   334,
+										Line:   240,
 									},
 								},
 							},
@@ -328,14 +750,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 22,
-												Line:   335,
+												Column: 48,
+												Line:   243,
 											},
-											File:   "geo_test.flux",
-											Source: "start: -1y",
+											File:   "asTracks_test.flux",
+											Source: "correlationKey: [\"_time\", \"id\"]",
 											Start: ast.Position{
-												Column: 12,
-												Line:   335,
+												Column: 17,
+												Line:   243,
 											},
 										},
 									},
@@ -344,14 +766,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 22,
-													Line:   335,
+													Column: 48,
+													Line:   243,
 												},
-												File:   "geo_test.flux",
-												Source: "start: -1y",
+												File:   "asTracks_test.flux",
+												Source: "correlationKey: [\"_time\", \"id\"]",
 												Start: ast.Position{
-													Column: 12,
-													Line:   335,
+													Column: 17,
+													Line:   243,
 												},
 											},
 										},
@@ -360,57 +782,70 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 17,
-														Line:   335,
+														Column: 31,
+														Line:   243,
 													},
-													File:   "geo_test.flux",
-													Source: "start",
+													File:   "asTracks_test.flux",
+													Source: "correlationKey",
 													Start: ast.Position{
-														Column: 12,
-														Line:   335,
+														Column: 17,
+														Line:   243,
 													},
 												},
 											},
-											Name: "start",
+											Name: "correlationKey",
 										},
-										Value: &ast.UnaryExpression{
-											Argument: &ast.DurationLiteral{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 22,
-															Line:   335,
-														},
-														File:   "geo_test.flux",
-														Source: "1y",
-														Start: ast.Position{
-															Column: 20,
-															Line:   335,
-														},
-													},
-												},
-												Values: []ast.Duration{ast.Duration{
-													Magnitude: int64(1),
-													Unit:      "y",
-												}},
-											},
+										Value: &ast.ArrayExpression{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 22,
-														Line:   335,
+														Column: 48,
+														Line:   243,
 													},
-													File:   "geo_test.flux",
-													Source: "-1y",
+													File:   "asTracks_test.flux",
+													Source: "[\"_time\", \"id\"]",
 													Start: ast.Position{
-														Column: 19,
-														Line:   335,
+														Column: 33,
+														Line:   243,
 													},
 												},
 											},
-											Operator: 6,
+											Elements: []ast.Expression{&ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   243,
+														},
+														File:   "asTracks_test.flux",
+														Source: "\"_time\"",
+														Start: ast.Position{
+															Column: 34,
+															Line:   243,
+														},
+													},
+												},
+												Value: "_time",
+											}, &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 47,
+															Line:   243,
+														},
+														File:   "asTracks_test.flux",
+														Source: "\"id\"",
+														Start: ast.Position{
+															Column: 43,
+															Line:   243,
+														},
+													},
+												},
+												Value: "id",
+											}},
 										},
 									}},
 									With: nil,
@@ -419,34 +854,69 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 23,
-											Line:   335,
+											Column: 49,
+											Line:   243,
 										},
-										File:   "geo_test.flux",
-										Source: "range(start: -1y)",
+										File:   "asTracks_test.flux",
+										Source: "geo.toRows(correlationKey: [\"_time\", \"id\"])",
 										Start: ast.Position{
 											Column: 6,
-											Line:   335,
+											Line:   243,
 										},
 									},
 								},
-								Callee: &ast.Identifier{
+								Callee: &ast.MemberExpression{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 11,
-												Line:   335,
+												Column: 16,
+												Line:   243,
 											},
-											File:   "geo_test.flux",
-											Source: "range",
+											File:   "asTracks_test.flux",
+											Source: "geo.toRows",
 											Start: ast.Position{
 												Column: 6,
-												Line:   335,
+												Line:   243,
 											},
 										},
 									},
-									Name: "range",
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 9,
+													Line:   243,
+												},
+												File:   "asTracks_test.flux",
+												Source: "geo",
+												Start: ast.Position{
+													Column: 6,
+													Line:   243,
+												},
+											},
+										},
+										Name: "geo",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   243,
+												},
+												File:   "asTracks_test.flux",
+												Source: "toRows",
+												Start: ast.Position{
+													Column: 10,
+													Line:   243,
+												},
+											},
+										},
+										Name: "toRows",
+									},
 								},
 							},
 						},
@@ -454,245 +924,86 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 49,
-									Line:   336,
+									Column: 20,
+									Line:   244,
 								},
-								File:   "geo_test.flux",
-								Source: "table\n\t\t|> range(start: -1y)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")",
+								File:   "asTracks_test.flux",
+								Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows(correlationKey: [\"_time\", \"id\"])\n\t\t|> geo.asTracks()",
 								Start: ast.Position{
 									Column: 2,
-									Line:   334,
+									Line:   240,
 								},
 							},
 						},
 						Call: &ast.CallExpression{
-							Arguments: []ast.Expression{&ast.ObjectExpression{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 48,
-											Line:   336,
-										},
-										File:   "geo_test.flux",
-										Source: "fn: (r) => r._measurement == \"bike\"",
-										Start: ast.Position{
-											Column: 13,
-											Line:   336,
-										},
-									},
-								},
-								Properties: []*ast.Property{&ast.Property{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 48,
-												Line:   336,
-											},
-											File:   "geo_test.flux",
-											Source: "fn: (r) => r._measurement == \"bike\"",
-											Start: ast.Position{
-												Column: 13,
-												Line:   336,
-											},
-										},
-									},
-									Key: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 15,
-													Line:   336,
-												},
-												File:   "geo_test.flux",
-												Source: "fn",
-												Start: ast.Position{
-													Column: 13,
-													Line:   336,
-												},
-											},
-										},
-										Name: "fn",
-									},
-									Value: &ast.FunctionExpression{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 48,
-													Line:   336,
-												},
-												File:   "geo_test.flux",
-												Source: "(r) => r._measurement == \"bike\"",
-												Start: ast.Position{
-													Column: 17,
-													Line:   336,
-												},
-											},
-										},
-										Body: &ast.BinaryExpression{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 48,
-														Line:   336,
-													},
-													File:   "geo_test.flux",
-													Source: "r._measurement == \"bike\"",
-													Start: ast.Position{
-														Column: 24,
-														Line:   336,
-													},
-												},
-											},
-											Left: &ast.MemberExpression{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 38,
-															Line:   336,
-														},
-														File:   "geo_test.flux",
-														Source: "r._measurement",
-														Start: ast.Position{
-															Column: 24,
-															Line:   336,
-														},
-													},
-												},
-												Object: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 25,
-																Line:   336,
-															},
-															File:   "geo_test.flux",
-															Source: "r",
-															Start: ast.Position{
-																Column: 24,
-																Line:   336,
-															},
-														},
-													},
-													Name: "r",
-												},
-												Property: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 38,
-																Line:   336,
-															},
-															File:   "geo_test.flux",
-															Source: "_measurement",
-															Start: ast.Position{
-																Column: 26,
-																Line:   336,
-															},
-														},
-													},
-													Name: "_measurement",
-												},
-											},
-											Operator: 17,
-											Right: &ast.StringLiteral{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 48,
-															Line:   336,
-														},
-														File:   "geo_test.flux",
-														Source: "\"bike\"",
-														Start: ast.Position{
-															Column: 42,
-															Line:   336,
-														},
-													},
-												},
-												Value: "bike",
-											},
-										},
-										Params: []*ast.Property{&ast.Property{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 19,
-														Line:   336,
-													},
-													File:   "geo_test.flux",
-													Source: "r",
-													Start: ast.Position{
-														Column: 18,
-														Line:   336,
-													},
-												},
-											},
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 19,
-															Line:   336,
-														},
-														File:   "geo_test.flux",
-														Source: "r",
-														Start: ast.Position{
-															Column: 18,
-															Line:   336,
-														},
-													},
-												},
-												Name: "r",
-											},
-											Value: nil,
-										}},
-									},
-								}},
-								With: nil,
-							}},
+							Arguments: nil,
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 49,
-										Line:   336,
+										Column: 20,
+										Line:   244,
 									},
-									File:   "geo_test.flux",
-									Source: "filter(fn: (r) => r._measurement == \"bike\")",
+									File:   "asTracks_test.flux",
+									Source: "geo.asTracks()",
 									Start: ast.Position{
 										Column: 6,
-										Line:   336,
+										Line:   244,
 									},
 								},
 							},
-							Callee: &ast.Identifier{
+							Callee: &ast.MemberExpression{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 12,
-											Line:   336,
+											Column: 18,
+											Line:   244,
 										},
-										File:   "geo_test.flux",
-										Source: "filter",
+										File:   "asTracks_test.flux",
+										Source: "geo.asTracks",
 										Start: ast.Position{
 											Column: 6,
-											Line:   336,
+											Line:   244,
 										},
 									},
 								},
-								Name: "filter",
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   244,
+											},
+											File:   "asTracks_test.flux",
+											Source: "geo",
+											Start: ast.Position{
+												Column: 6,
+												Line:   244,
+											},
+										},
+									},
+									Name: "geo",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   244,
+											},
+											File:   "asTracks_test.flux",
+											Source: "asTracks",
+											Start: ast.Position{
+												Column: 10,
+												Line:   244,
+											},
+										},
+									},
+									Name: "asTracks",
+								},
 							},
 						},
 					},
@@ -700,14 +1011,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 112,
-								Line:   337,
+								Column: 39,
+								Line:   245,
 							},
-							File:   "geo_test.flux",
-							Source: "table\n\t\t|> range(start: -1y)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.boxFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})",
+							File:   "asTracks_test.flux",
+							Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows(correlationKey: [\"_time\", \"id\"])\n\t\t|> geo.asTracks()\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
 							Start: ast.Position{
 								Column: 2,
-								Line:   334,
+								Line:   240,
 							},
 						},
 					},
@@ -717,14 +1028,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 111,
-										Line:   337,
+										Column: 38,
+										Line:   245,
 									},
-									File:   "geo_test.flux",
-									Source: "box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}",
+									File:   "asTracks_test.flux",
+									Source: "columns: [\"_start\",\"_stop\"]",
 									Start: ast.Position{
-										Column: 20,
-										Line:   337,
+										Column: 11,
+										Line:   245,
 									},
 								},
 							},
@@ -733,14 +1044,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 111,
-											Line:   337,
+											Column: 38,
+											Line:   245,
 										},
-										File:   "geo_test.flux",
-										Source: "box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}",
+										File:   "asTracks_test.flux",
+										Source: "columns: [\"_start\",\"_stop\"]",
 										Start: ast.Position{
-											Column: 20,
-											Line:   337,
+											Column: 11,
+											Line:   245,
 										},
 									},
 								},
@@ -749,281 +1060,70 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 23,
-												Line:   337,
+												Column: 18,
+												Line:   245,
 											},
-											File:   "geo_test.flux",
-											Source: "box",
+											File:   "asTracks_test.flux",
+											Source: "columns",
 											Start: ast.Position{
-												Column: 20,
-												Line:   337,
+												Column: 11,
+												Line:   245,
 											},
 										},
 									},
-									Name: "box",
+									Name: "columns",
 								},
-								Value: &ast.ObjectExpression{
+								Value: &ast.ArrayExpression{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 111,
-												Line:   337,
+												Column: 38,
+												Line:   245,
 											},
-											File:   "geo_test.flux",
-											Source: "{minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}",
+											File:   "asTracks_test.flux",
+											Source: "[\"_start\",\"_stop\"]",
 											Start: ast.Position{
-												Column: 25,
-												Line:   337,
+												Column: 20,
+												Line:   245,
 											},
 										},
 									},
-									Properties: []*ast.Property{&ast.Property{
+									Elements: []ast.Expression{&ast.StringLiteral{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 45,
-													Line:   337,
+													Column: 29,
+													Line:   245,
 												},
-												File:   "geo_test.flux",
-												Source: "minLat: 40.51757813",
+												File:   "asTracks_test.flux",
+												Source: "\"_start\"",
 												Start: ast.Position{
-													Column: 26,
-													Line:   337,
+													Column: 21,
+													Line:   245,
 												},
 											},
 										},
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 32,
-														Line:   337,
-													},
-													File:   "geo_test.flux",
-													Source: "minLat",
-													Start: ast.Position{
-														Column: 26,
-														Line:   337,
-													},
-												},
-											},
-											Name: "minLat",
-										},
-										Value: &ast.FloatLiteral{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 45,
-														Line:   337,
-													},
-													File:   "geo_test.flux",
-													Source: "40.51757813",
-													Start: ast.Position{
-														Column: 34,
-														Line:   337,
-													},
-												},
-											},
-											Value: 40.51757813,
-										},
-									}, &ast.Property{
+										Value: "_start",
+									}, &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 66,
-													Line:   337,
+													Column: 37,
+													Line:   245,
 												},
-												File:   "geo_test.flux",
-												Source: "maxLat: 40.86914063",
+												File:   "asTracks_test.flux",
+												Source: "\"_stop\"",
 												Start: ast.Position{
-													Column: 47,
-													Line:   337,
+													Column: 30,
+													Line:   245,
 												},
 											},
 										},
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 53,
-														Line:   337,
-													},
-													File:   "geo_test.flux",
-													Source: "maxLat",
-													Start: ast.Position{
-														Column: 47,
-														Line:   337,
-													},
-												},
-											},
-											Name: "maxLat",
-										},
-										Value: &ast.FloatLiteral{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 66,
-														Line:   337,
-													},
-													File:   "geo_test.flux",
-													Source: "40.86914063",
-													Start: ast.Position{
-														Column: 55,
-														Line:   337,
-													},
-												},
-											},
-											Value: 40.86914063,
-										},
-									}, &ast.Property{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 88,
-													Line:   337,
-												},
-												File:   "geo_test.flux",
-												Source: "minLon: -73.65234375",
-												Start: ast.Position{
-													Column: 68,
-													Line:   337,
-												},
-											},
-										},
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 74,
-														Line:   337,
-													},
-													File:   "geo_test.flux",
-													Source: "minLon",
-													Start: ast.Position{
-														Column: 68,
-														Line:   337,
-													},
-												},
-											},
-											Name: "minLon",
-										},
-										Value: &ast.UnaryExpression{
-											Argument: &ast.FloatLiteral{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 88,
-															Line:   337,
-														},
-														File:   "geo_test.flux",
-														Source: "73.65234375",
-														Start: ast.Position{
-															Column: 77,
-															Line:   337,
-														},
-													},
-												},
-												Value: 73.65234375,
-											},
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 88,
-														Line:   337,
-													},
-													File:   "geo_test.flux",
-													Source: "-73.65234375",
-													Start: ast.Position{
-														Column: 76,
-														Line:   337,
-													},
-												},
-											},
-											Operator: 6,
-										},
-									}, &ast.Property{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 110,
-													Line:   337,
-												},
-												File:   "geo_test.flux",
-												Source: "maxLon: -72.94921875",
-												Start: ast.Position{
-													Column: 90,
-													Line:   337,
-												},
-											},
-										},
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 96,
-														Line:   337,
-													},
-													File:   "geo_test.flux",
-													Source: "maxLon",
-													Start: ast.Position{
-														Column: 90,
-														Line:   337,
-													},
-												},
-											},
-											Name: "maxLon",
-										},
-										Value: &ast.UnaryExpression{
-											Argument: &ast.FloatLiteral{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 110,
-															Line:   337,
-														},
-														File:   "geo_test.flux",
-														Source: "72.94921875",
-														Start: ast.Position{
-															Column: 99,
-															Line:   337,
-														},
-													},
-												},
-												Value: 72.94921875,
-											},
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 110,
-														Line:   337,
-													},
-													File:   "geo_test.flux",
-													Source: "-72.94921875",
-													Start: ast.Position{
-														Column: 98,
-														Line:   337,
-													},
-												},
-											},
-											Operator: 6,
-										},
+										Value: "_stop",
 									}},
-									With: nil,
 								},
 							}},
 							With: nil,
@@ -1032,69 +1132,34 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 112,
-									Line:   337,
+									Column: 39,
+									Line:   245,
 								},
-								File:   "geo_test.flux",
-								Source: "geo.boxFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})",
+								File:   "asTracks_test.flux",
+								Source: "drop(columns: [\"_start\",\"_stop\"])",
 								Start: ast.Position{
 									Column: 6,
-									Line:   337,
+									Line:   245,
 								},
 							},
 						},
-						Callee: &ast.MemberExpression{
+						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 19,
-										Line:   337,
+										Column: 10,
+										Line:   245,
 									},
-									File:   "geo_test.flux",
-									Source: "geo.boxFilter",
+									File:   "asTracks_test.flux",
+									Source: "drop",
 									Start: ast.Position{
 										Column: 6,
-										Line:   337,
+										Line:   245,
 									},
 								},
 							},
-							Object: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 9,
-											Line:   337,
-										},
-										File:   "geo_test.flux",
-										Source: "geo",
-										Start: ast.Position{
-											Column: 6,
-											Line:   337,
-										},
-									},
-								},
-								Name: "geo",
-							},
-							Property: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 19,
-											Line:   337,
-										},
-										File:   "geo_test.flux",
-										Source: "boxFilter",
-										Start: ast.Position{
-											Column: 10,
-											Line:   337,
-										},
-									},
-								},
-								Name: "boxFilter",
-							},
+							Name: "drop",
 						},
 					},
 				},
@@ -1103,14 +1168,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 18,
-								Line:   333,
+								Column: 23,
+								Line:   239,
 							},
-							File:   "geo_test.flux",
+							File:   "asTracks_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
-								Column: 10,
-								Line:   333,
+								Column: 15,
+								Line:   239,
 							},
 						},
 					},
@@ -1119,14 +1184,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 15,
-									Line:   333,
+									Column: 20,
+									Line:   239,
 								},
-								File:   "geo_test.flux",
+								File:   "asTracks_test.flux",
 								Source: "table",
 								Start: ast.Position{
-									Column: 10,
-									Line:   333,
+									Column: 15,
+									Line:   239,
 								},
 							},
 						},
@@ -1136,14 +1201,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 18,
-								Line:   333,
+								Column: 23,
+								Line:   239,
 							},
-							File:   "geo_test.flux",
+							File:   "asTracks_test.flux",
 							Source: "<-",
 							Start: ast.Position{
-								Column: 16,
-								Line:   333,
+								Column: 21,
+								Line:   239,
 							},
 						},
 					}},
@@ -1155,14 +1220,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 93,
-							Line:   340,
+							Column: 98,
+							Line:   248,
 						},
-						File:   "geo_test.flux",
-						Source: "_geo = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_geo})",
+						File:   "asTracks_test.flux",
+						Source: "_asTracks = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   339,
+							Line:   247,
 						},
 					},
 				},
@@ -1171,32 +1236,32 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
-								Line:   339,
+								Column: 15,
+								Line:   247,
 							},
-							File:   "geo_test.flux",
-							Source: "_geo",
+							File:   "asTracks_test.flux",
+							Source: "_asTracks",
 							Start: ast.Position{
 								Column: 6,
-								Line:   339,
+								Line:   247,
 							},
 						},
 					},
-					Name: "_geo",
+					Name: "_asTracks",
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 93,
-								Line:   340,
+								Column: 98,
+								Line:   248,
 							},
-							File:   "geo_test.flux",
-							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_geo})",
+							File:   "asTracks_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
 							Start: ast.Position{
-								Column: 13,
-								Line:   339,
+								Column: 18,
+								Line:   247,
 							},
 						},
 					},
@@ -1205,14 +1270,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 93,
-									Line:   340,
+									Column: 98,
+									Line:   248,
 								},
-								File:   "geo_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_geo})",
+								File:   "asTracks_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
 								Start: ast.Position{
 									Column: 2,
-									Line:   340,
+									Line:   248,
 								},
 							},
 						},
@@ -1221,14 +1286,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 92,
-										Line:   340,
+										Column: 97,
+										Line:   248,
 									},
-									File:   "geo_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_geo}",
+									File:   "asTracks_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks}",
 									Start: ast.Position{
 										Column: 3,
-										Line:   340,
+										Line:   248,
 									},
 								},
 							},
@@ -1238,13 +1303,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   340,
+											Line:   248,
 										},
-										File:   "geo_test.flux",
+										File:   "asTracks_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
-											Line:   340,
+											Line:   248,
 										},
 									},
 								},
@@ -1254,13 +1319,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 9,
-												Line:   340,
+												Line:   248,
 											},
-											File:   "geo_test.flux",
+											File:   "asTracks_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 4,
-												Line:   340,
+												Line:   248,
 											},
 										},
 									},
@@ -1273,13 +1338,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
-													Line:   340,
+													Line:   248,
 												},
-												File:   "geo_test.flux",
+												File:   "asTracks_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 31,
-													Line:   340,
+													Line:   248,
 												},
 											},
 										},
@@ -1289,13 +1354,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
-														Line:   340,
+														Line:   248,
 													},
-													File:   "geo_test.flux",
+													File:   "asTracks_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 31,
-														Line:   340,
+														Line:   248,
 													},
 												},
 											},
@@ -1305,13 +1370,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 34,
-															Line:   340,
+															Line:   248,
 														},
-														File:   "geo_test.flux",
+														File:   "asTracks_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 31,
-															Line:   340,
+															Line:   248,
 														},
 													},
 												},
@@ -1323,13 +1388,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 42,
-															Line:   340,
+															Line:   248,
 														},
-														File:   "geo_test.flux",
+														File:   "asTracks_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 36,
-															Line:   340,
+															Line:   248,
 														},
 													},
 												},
@@ -1343,13 +1408,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   340,
+												Line:   248,
 											},
-											File:   "geo_test.flux",
+											File:   "asTracks_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
-												Line:   340,
+												Line:   248,
 											},
 										},
 									},
@@ -1359,13 +1424,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   340,
+													Line:   248,
 												},
-												File:   "geo_test.flux",
+												File:   "asTracks_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 11,
-													Line:   340,
+													Line:   248,
 												},
 											},
 										},
@@ -1375,13 +1440,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   340,
+														Line:   248,
 													},
-													File:   "geo_test.flux",
+													File:   "asTracks_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
-														Line:   340,
+														Line:   248,
 													},
 												},
 											},
@@ -1393,13 +1458,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
-														Line:   340,
+														Line:   248,
 													},
-													File:   "geo_test.flux",
+													File:   "asTracks_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 19,
-														Line:   340,
+														Line:   248,
 													},
 												},
 											},
@@ -1413,13 +1478,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 80,
-											Line:   340,
+											Line:   248,
 										},
-										File:   "geo_test.flux",
+										File:   "asTracks_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
-											Line:   340,
+											Line:   248,
 										},
 									},
 								},
@@ -1429,13 +1494,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 49,
-												Line:   340,
+												Line:   248,
 											},
-											File:   "geo_test.flux",
+											File:   "asTracks_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 45,
-												Line:   340,
+												Line:   248,
 											},
 										},
 									},
@@ -1448,13 +1513,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 79,
-													Line:   340,
+													Line:   248,
 												},
-												File:   "geo_test.flux",
+												File:   "asTracks_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 67,
-													Line:   340,
+													Line:   248,
 												},
 											},
 										},
@@ -1464,13 +1529,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 79,
-														Line:   340,
+														Line:   248,
 													},
-													File:   "geo_test.flux",
+													File:   "asTracks_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 67,
-														Line:   340,
+														Line:   248,
 													},
 												},
 											},
@@ -1480,13 +1545,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 70,
-															Line:   340,
+															Line:   248,
 														},
-														File:   "geo_test.flux",
+														File:   "asTracks_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 67,
-															Line:   340,
+															Line:   248,
 														},
 													},
 												},
@@ -1498,13 +1563,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 79,
-															Line:   340,
+															Line:   248,
 														},
-														File:   "geo_test.flux",
+														File:   "asTracks_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 72,
-															Line:   340,
+															Line:   248,
 														},
 													},
 												},
@@ -1518,13 +1583,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 80,
-												Line:   340,
+												Line:   248,
 											},
-											File:   "geo_test.flux",
+											File:   "asTracks_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
-												Line:   340,
+												Line:   248,
 											},
 										},
 									},
@@ -1534,13 +1599,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 66,
-													Line:   340,
+													Line:   248,
 												},
-												File:   "geo_test.flux",
+												File:   "asTracks_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 51,
-													Line:   340,
+													Line:   248,
 												},
 											},
 										},
@@ -1550,13 +1615,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 58,
-														Line:   340,
+														Line:   248,
 													},
-													File:   "geo_test.flux",
+													File:   "asTracks_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 51,
-														Line:   340,
+														Line:   248,
 													},
 												},
 											},
@@ -1568,13 +1633,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 66,
-														Line:   340,
+														Line:   248,
 													},
-													File:   "geo_test.flux",
+													File:   "asTracks_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 59,
-														Line:   340,
+														Line:   248,
 													},
 												},
 											},
@@ -1587,14 +1652,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 91,
-											Line:   340,
+											Column: 96,
+											Line:   248,
 										},
-										File:   "geo_test.flux",
-										Source: "fn: t_geo",
+										File:   "asTracks_test.flux",
+										Source: "fn: t_asTracks",
 										Start: ast.Position{
 											Column: 82,
-											Line:   340,
+											Line:   248,
 										},
 									},
 								},
@@ -1604,13 +1669,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 84,
-												Line:   340,
+												Line:   248,
 											},
-											File:   "geo_test.flux",
+											File:   "asTracks_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 82,
-												Line:   340,
+												Line:   248,
 											},
 										},
 									},
@@ -1621,18 +1686,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 91,
-												Line:   340,
+												Column: 96,
+												Line:   248,
 											},
-											File:   "geo_test.flux",
-											Source: "t_geo",
+											File:   "asTracks_test.flux",
+											Source: "t_asTracks",
 											Start: ast.Position{
 												Column: 86,
-												Line:   340,
+												Line:   248,
 											},
 										},
 									},
-									Name: "t_geo",
+									Name: "t_asTracks",
 								},
 							}},
 							With: nil,
@@ -1645,14 +1710,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 93,
-						Line:   340,
+						Column: 98,
+						Line:   248,
 					},
-					File:   "geo_test.flux",
-					Source: "test _geo = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_geo})",
+					File:   "asTracks_test.flux",
+					Source: "test _asTracks = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   339,
+						Line:   247,
 					},
 				},
 			},
@@ -1666,7 +1731,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 26,
 						Line:   3,
 					},
-					File:   "geo_test.flux",
+					File:   "asTracks_test.flux",
 					Source: "import \"experimental/geo\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1682,7 +1747,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 26,
 							Line:   3,
 						},
-						File:   "geo_test.flux",
+						File:   "asTracks_test.flux",
 						Source: "\"experimental/geo\"",
 						Start: ast.Position{
 							Column: 8,
@@ -1701,7 +1766,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "geo_test.flux",
+					File:   "asTracks_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1717,7 +1782,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "geo_test.flux",
+						File:   "asTracks_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -1729,7 +1794,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}},
 		Metadata: "parser-type=go",
-		Name:     "geo_test.flux",
+		Name:     "asTracks_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1738,7 +1803,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   1,
 					},
-					File:   "geo_test.flux",
+					File:   "asTracks_test.flux",
 					Source: "package geo_test",
 					Start: ast.Position{
 						Column: 1,
@@ -1754,7 +1819,11688 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   1,
 						},
-						File:   "geo_test.flux",
+						File:   "asTracks_test.flux",
+						Source: "geo_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "geo_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 99,
+					Line:   167,
+				},
+				File:   "boxFilter_test.flux",
+				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"\n\noutData = \"\n#group,false,false,false,true,true,true,true,true,true,true,true,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,double,double,long\n#default,_result,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,geohash,lat,lon,tid\n,,0,2019-11-20T10:18:00Z,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA,dr5ze3r6djkt,40.700684,-73.323692,1574245037000000000\n,,1,2019-11-20T10:17:17Z,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA,dr5ze3q2xypb,40.700344,-73.324814,1574245037000000000\n,,2,2019-11-20T10:17:18Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q88qg0,40.700348,-73.324799,1574245037000000000\n,,2,2019-11-20T10:17:24Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q8fxvt,40.700397,-73.324699,1574245037000000000\n,,2,2019-11-20T10:17:26Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9h4gh,40.700413,-73.324638,1574245037000000000\n,,2,2019-11-20T10:17:32Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9ryr8,40.700474,-73.324471,1574245037000000000\n,,2,2019-11-20T10:17:35Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qc6rd4,40.700481,-73.324371,1574245037000000000\n,,2,2019-11-20T10:17:42Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qcqery,40.700459,-73.324181,1574245037000000000\n,,2,2019-11-20T10:17:47Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r176sr,40.700455,-73.323982,1574245037000000000\n,,2,2019-11-20T10:17:54Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r3b6gn,40.700542,-73.323769,1574245037000000000\n\"\n\nt_boxFilter = (table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.boxFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})\n\t\t|> drop(columns: [\"_start\",\"_stop\"])\n\ntest _boxFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_boxFilter})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "boxFilter_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "boxFilter_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "boxFilter_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "boxFilter_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "boxFilter_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "boxFilter_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   139,
+					},
+					File:   "boxFilter_test.flux",
+					Source: "inData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "boxFilter_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   139,
+						},
+						File:   "boxFilter_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   156,
+					},
+					File:   "boxFilter_test.flux",
+					Source: "outData = \"\n#group,false,false,false,true,true,true,true,true,true,true,true,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,double,double,long\n#default,_result,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,geohash,lat,lon,tid\n,,0,2019-11-20T10:18:00Z,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA,dr5ze3r6djkt,40.700684,-73.323692,1574245037000000000\n,,1,2019-11-20T10:17:17Z,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA,dr5ze3q2xypb,40.700344,-73.324814,1574245037000000000\n,,2,2019-11-20T10:17:18Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q88qg0,40.700348,-73.324799,1574245037000000000\n,,2,2019-11-20T10:17:24Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q8fxvt,40.700397,-73.324699,1574245037000000000\n,,2,2019-11-20T10:17:26Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9h4gh,40.700413,-73.324638,1574245037000000000\n,,2,2019-11-20T10:17:32Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9ryr8,40.700474,-73.324471,1574245037000000000\n,,2,2019-11-20T10:17:35Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qc6rd4,40.700481,-73.324371,1574245037000000000\n,,2,2019-11-20T10:17:42Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qcqery,40.700459,-73.324181,1574245037000000000\n,,2,2019-11-20T10:17:47Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r176sr,40.700455,-73.323982,1574245037000000000\n,,2,2019-11-20T10:17:54Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r3b6gn,40.700542,-73.323769,1574245037000000000\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   141,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   141,
+						},
+						File:   "boxFilter_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   141,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   156,
+						},
+						File:   "boxFilter_test.flux",
+						Source: "\"\n#group,false,false,false,true,true,true,true,true,true,true,true,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,double,double,long\n#default,_result,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,geohash,lat,lon,tid\n,,0,2019-11-20T10:18:00Z,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA,dr5ze3r6djkt,40.700684,-73.323692,1574245037000000000\n,,1,2019-11-20T10:17:17Z,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA,dr5ze3q2xypb,40.700344,-73.324814,1574245037000000000\n,,2,2019-11-20T10:17:18Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q88qg0,40.700348,-73.324799,1574245037000000000\n,,2,2019-11-20T10:17:24Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q8fxvt,40.700397,-73.324699,1574245037000000000\n,,2,2019-11-20T10:17:26Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9h4gh,40.700413,-73.324638,1574245037000000000\n,,2,2019-11-20T10:17:32Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9ryr8,40.700474,-73.324471,1574245037000000000\n,,2,2019-11-20T10:17:35Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qc6rd4,40.700481,-73.324371,1574245037000000000\n,,2,2019-11-20T10:17:42Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qcqery,40.700459,-73.324181,1574245037000000000\n,,2,2019-11-20T10:17:47Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r176sr,40.700455,-73.323982,1574245037000000000\n,,2,2019-11-20T10:17:54Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r3b6gn,40.700542,-73.323769,1574245037000000000\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   141,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,true,true,true,true,true,true,true,true,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,double,double,long\n#default,_result,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,geohash,lat,lon,tid\n,,0,2019-11-20T10:18:00Z,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA,dr5ze3r6djkt,40.700684,-73.323692,1574245037000000000\n,,1,2019-11-20T10:17:17Z,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA,dr5ze3q2xypb,40.700344,-73.324814,1574245037000000000\n,,2,2019-11-20T10:17:18Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q88qg0,40.700348,-73.324799,1574245037000000000\n,,2,2019-11-20T10:17:24Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q8fxvt,40.700397,-73.324699,1574245037000000000\n,,2,2019-11-20T10:17:26Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9h4gh,40.700413,-73.324638,1574245037000000000\n,,2,2019-11-20T10:17:32Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9ryr8,40.700474,-73.324471,1574245037000000000\n,,2,2019-11-20T10:17:35Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qc6rd4,40.700481,-73.324371,1574245037000000000\n,,2,2019-11-20T10:17:42Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qcqery,40.700459,-73.324181,1574245037000000000\n,,2,2019-11-20T10:17:47Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r176sr,40.700455,-73.323982,1574245037000000000\n,,2,2019-11-20T10:17:54Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r3b6gn,40.700542,-73.323769,1574245037000000000\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 39,
+						Line:   164,
+					},
+					File:   "boxFilter_test.flux",
+					Source: "t_boxFilter = (table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.boxFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   158,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 12,
+							Line:   158,
+						},
+						File:   "boxFilter_test.flux",
+						Source: "t_boxFilter",
+						Start: ast.Position{
+							Column: 1,
+							Line:   158,
+						},
+					},
+				},
+				Name: "t_boxFilter",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 39,
+							Line:   164,
+						},
+						File:   "boxFilter_test.flux",
+						Source: "(table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.boxFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+						Start: ast.Position{
+							Column: 15,
+							Line:   158,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 7,
+													Line:   159,
+												},
+												File:   "boxFilter_test.flux",
+												Source: "table",
+												Start: ast.Position{
+													Column: 2,
+													Line:   159,
+												},
+											},
+										},
+										Name: "table",
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 40,
+												Line:   160,
+											},
+											File:   "boxFilter_test.flux",
+											Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)",
+											Start: ast.Position{
+												Column: 2,
+												Line:   159,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   160,
+													},
+													File:   "boxFilter_test.flux",
+													Source: "start: 2019-11-01T00:00:00Z",
+													Start: ast.Position{
+														Column: 12,
+														Line:   160,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 39,
+															Line:   160,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "start: 2019-11-01T00:00:00Z",
+														Start: ast.Position{
+															Column: 12,
+															Line:   160,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 17,
+																Line:   160,
+															},
+															File:   "boxFilter_test.flux",
+															Source: "start",
+															Start: ast.Position{
+																Column: 12,
+																Line:   160,
+															},
+														},
+													},
+													Name: "start",
+												},
+												Value: &ast.DateTimeLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 39,
+																Line:   160,
+															},
+															File:   "boxFilter_test.flux",
+															Source: "2019-11-01T00:00:00Z",
+															Start: ast.Position{
+																Column: 19,
+																Line:   160,
+															},
+														},
+													},
+													Value: parser.MustParseTime("2019-11-01T00:00:00Z"),
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 40,
+													Line:   160,
+												},
+												File:   "boxFilter_test.flux",
+												Source: "range(start: 2019-11-01T00:00:00Z)",
+												Start: ast.Position{
+													Column: 6,
+													Line:   160,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 11,
+														Line:   160,
+													},
+													File:   "boxFilter_test.flux",
+													Source: "range",
+													Start: ast.Position{
+														Column: 6,
+														Line:   160,
+													},
+												},
+											},
+											Name: "range",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 49,
+											Line:   161,
+										},
+										File:   "boxFilter_test.flux",
+										Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")",
+										Start: ast.Position{
+											Column: 2,
+											Line:   159,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 48,
+													Line:   161,
+												},
+												File:   "boxFilter_test.flux",
+												Source: "fn: (r) => r._measurement == \"bike\"",
+												Start: ast.Position{
+													Column: 13,
+													Line:   161,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 48,
+														Line:   161,
+													},
+													File:   "boxFilter_test.flux",
+													Source: "fn: (r) => r._measurement == \"bike\"",
+													Start: ast.Position{
+														Column: 13,
+														Line:   161,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 15,
+															Line:   161,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "fn",
+														Start: ast.Position{
+															Column: 13,
+															Line:   161,
+														},
+													},
+												},
+												Name: "fn",
+											},
+											Value: &ast.FunctionExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 48,
+															Line:   161,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "(r) => r._measurement == \"bike\"",
+														Start: ast.Position{
+															Column: 17,
+															Line:   161,
+														},
+													},
+												},
+												Body: &ast.BinaryExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 48,
+																Line:   161,
+															},
+															File:   "boxFilter_test.flux",
+															Source: "r._measurement == \"bike\"",
+															Start: ast.Position{
+																Column: 24,
+																Line:   161,
+															},
+														},
+													},
+													Left: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 38,
+																	Line:   161,
+																},
+																File:   "boxFilter_test.flux",
+																Source: "r._measurement",
+																Start: ast.Position{
+																	Column: 24,
+																	Line:   161,
+																},
+															},
+														},
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 25,
+																		Line:   161,
+																	},
+																	File:   "boxFilter_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 24,
+																		Line:   161,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 38,
+																		Line:   161,
+																	},
+																	File:   "boxFilter_test.flux",
+																	Source: "_measurement",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   161,
+																	},
+																},
+															},
+															Name: "_measurement",
+														},
+													},
+													Operator: 17,
+													Right: &ast.StringLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 48,
+																	Line:   161,
+																},
+																File:   "boxFilter_test.flux",
+																Source: "\"bike\"",
+																Start: ast.Position{
+																	Column: 42,
+																	Line:   161,
+																},
+															},
+														},
+														Value: "bike",
+													},
+												},
+												Params: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 19,
+																Line:   161,
+															},
+															File:   "boxFilter_test.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 18,
+																Line:   161,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 19,
+																	Line:   161,
+																},
+																File:   "boxFilter_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 18,
+																	Line:   161,
+																},
+															},
+														},
+														Name: "r",
+													},
+													Value: nil,
+												}},
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   161,
+											},
+											File:   "boxFilter_test.flux",
+											Source: "filter(fn: (r) => r._measurement == \"bike\")",
+											Start: ast.Position{
+												Column: 6,
+												Line:   161,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 12,
+													Line:   161,
+												},
+												File:   "boxFilter_test.flux",
+												Source: "filter",
+												Start: ast.Position{
+													Column: 6,
+													Line:   161,
+												},
+											},
+										},
+										Name: "filter",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 18,
+										Line:   162,
+									},
+									File:   "boxFilter_test.flux",
+									Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()",
+									Start: ast.Position{
+										Column: 2,
+										Line:   159,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 18,
+											Line:   162,
+										},
+										File:   "boxFilter_test.flux",
+										Source: "geo.toRows()",
+										Start: ast.Position{
+											Column: 6,
+											Line:   162,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   162,
+											},
+											File:   "boxFilter_test.flux",
+											Source: "geo.toRows",
+											Start: ast.Position{
+												Column: 6,
+												Line:   162,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 9,
+													Line:   162,
+												},
+												File:   "boxFilter_test.flux",
+												Source: "geo",
+												Start: ast.Position{
+													Column: 6,
+													Line:   162,
+												},
+											},
+										},
+										Name: "geo",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   162,
+												},
+												File:   "boxFilter_test.flux",
+												Source: "toRows",
+												Start: ast.Position{
+													Column: 10,
+													Line:   162,
+												},
+											},
+										},
+										Name: "toRows",
+									},
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 112,
+									Line:   163,
+								},
+								File:   "boxFilter_test.flux",
+								Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.boxFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   159,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 111,
+											Line:   163,
+										},
+										File:   "boxFilter_test.flux",
+										Source: "box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}",
+										Start: ast.Position{
+											Column: 20,
+											Line:   163,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 111,
+												Line:   163,
+											},
+											File:   "boxFilter_test.flux",
+											Source: "box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}",
+											Start: ast.Position{
+												Column: 20,
+												Line:   163,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   163,
+												},
+												File:   "boxFilter_test.flux",
+												Source: "box",
+												Start: ast.Position{
+													Column: 20,
+													Line:   163,
+												},
+											},
+										},
+										Name: "box",
+									},
+									Value: &ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 111,
+													Line:   163,
+												},
+												File:   "boxFilter_test.flux",
+												Source: "{minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}",
+												Start: ast.Position{
+													Column: 25,
+													Line:   163,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   163,
+													},
+													File:   "boxFilter_test.flux",
+													Source: "minLat: 40.51757813",
+													Start: ast.Position{
+														Column: 26,
+														Line:   163,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 32,
+															Line:   163,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "minLat",
+														Start: ast.Position{
+															Column: 26,
+															Line:   163,
+														},
+													},
+												},
+												Name: "minLat",
+											},
+											Value: &ast.FloatLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 45,
+															Line:   163,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "40.51757813",
+														Start: ast.Position{
+															Column: 34,
+															Line:   163,
+														},
+													},
+												},
+												Value: 40.51757813,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   163,
+													},
+													File:   "boxFilter_test.flux",
+													Source: "maxLat: 40.86914063",
+													Start: ast.Position{
+														Column: 47,
+														Line:   163,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 53,
+															Line:   163,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "maxLat",
+														Start: ast.Position{
+															Column: 47,
+															Line:   163,
+														},
+													},
+												},
+												Name: "maxLat",
+											},
+											Value: &ast.FloatLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 66,
+															Line:   163,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "40.86914063",
+														Start: ast.Position{
+															Column: 55,
+															Line:   163,
+														},
+													},
+												},
+												Value: 40.86914063,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 88,
+														Line:   163,
+													},
+													File:   "boxFilter_test.flux",
+													Source: "minLon: -73.65234375",
+													Start: ast.Position{
+														Column: 68,
+														Line:   163,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 74,
+															Line:   163,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "minLon",
+														Start: ast.Position{
+															Column: 68,
+															Line:   163,
+														},
+													},
+												},
+												Name: "minLon",
+											},
+											Value: &ast.UnaryExpression{
+												Argument: &ast.FloatLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 88,
+																Line:   163,
+															},
+															File:   "boxFilter_test.flux",
+															Source: "73.65234375",
+															Start: ast.Position{
+																Column: 77,
+																Line:   163,
+															},
+														},
+													},
+													Value: 73.65234375,
+												},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 88,
+															Line:   163,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "-73.65234375",
+														Start: ast.Position{
+															Column: 76,
+															Line:   163,
+														},
+													},
+												},
+												Operator: 6,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 110,
+														Line:   163,
+													},
+													File:   "boxFilter_test.flux",
+													Source: "maxLon: -72.94921875",
+													Start: ast.Position{
+														Column: 90,
+														Line:   163,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 96,
+															Line:   163,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "maxLon",
+														Start: ast.Position{
+															Column: 90,
+															Line:   163,
+														},
+													},
+												},
+												Name: "maxLon",
+											},
+											Value: &ast.UnaryExpression{
+												Argument: &ast.FloatLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 110,
+																Line:   163,
+															},
+															File:   "boxFilter_test.flux",
+															Source: "72.94921875",
+															Start: ast.Position{
+																Column: 99,
+																Line:   163,
+															},
+														},
+													},
+													Value: 72.94921875,
+												},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 110,
+															Line:   163,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "-72.94921875",
+														Start: ast.Position{
+															Column: 98,
+															Line:   163,
+														},
+													},
+												},
+												Operator: 6,
+											},
+										}},
+										With: nil,
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 112,
+										Line:   163,
+									},
+									File:   "boxFilter_test.flux",
+									Source: "geo.boxFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})",
+									Start: ast.Position{
+										Column: 6,
+										Line:   163,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   163,
+										},
+										File:   "boxFilter_test.flux",
+										Source: "geo.boxFilter",
+										Start: ast.Position{
+											Column: 6,
+											Line:   163,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   163,
+											},
+											File:   "boxFilter_test.flux",
+											Source: "geo",
+											Start: ast.Position{
+												Column: 6,
+												Line:   163,
+											},
+										},
+									},
+									Name: "geo",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   163,
+											},
+											File:   "boxFilter_test.flux",
+											Source: "boxFilter",
+											Start: ast.Position{
+												Column: 10,
+												Line:   163,
+											},
+										},
+									},
+									Name: "boxFilter",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 39,
+								Line:   164,
+							},
+							File:   "boxFilter_test.flux",
+							Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.boxFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+							Start: ast.Position{
+								Column: 2,
+								Line:   159,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 38,
+										Line:   164,
+									},
+									File:   "boxFilter_test.flux",
+									Source: "columns: [\"_start\",\"_stop\"]",
+									Start: ast.Position{
+										Column: 11,
+										Line:   164,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   164,
+										},
+										File:   "boxFilter_test.flux",
+										Source: "columns: [\"_start\",\"_stop\"]",
+										Start: ast.Position{
+											Column: 11,
+											Line:   164,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   164,
+											},
+											File:   "boxFilter_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 11,
+												Line:   164,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 38,
+												Line:   164,
+											},
+											File:   "boxFilter_test.flux",
+											Source: "[\"_start\",\"_stop\"]",
+											Start: ast.Position{
+												Column: 20,
+												Line:   164,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   164,
+												},
+												File:   "boxFilter_test.flux",
+												Source: "\"_start\"",
+												Start: ast.Position{
+													Column: 21,
+													Line:   164,
+												},
+											},
+										},
+										Value: "_start",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   164,
+												},
+												File:   "boxFilter_test.flux",
+												Source: "\"_stop\"",
+												Start: ast.Position{
+													Column: 30,
+													Line:   164,
+												},
+											},
+										},
+										Value: "_stop",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 39,
+									Line:   164,
+								},
+								File:   "boxFilter_test.flux",
+								Source: "drop(columns: [\"_start\",\"_stop\"])",
+								Start: ast.Position{
+									Column: 6,
+									Line:   164,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 10,
+										Line:   164,
+									},
+									File:   "boxFilter_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 6,
+										Line:   164,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   158,
+							},
+							File:   "boxFilter_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 16,
+								Line:   158,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 21,
+									Line:   158,
+								},
+								File:   "boxFilter_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 16,
+									Line:   158,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   158,
+							},
+							File:   "boxFilter_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 22,
+								Line:   158,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 99,
+							Line:   167,
+						},
+						File:   "boxFilter_test.flux",
+						Source: "_boxFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_boxFilter})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   166,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 16,
+								Line:   166,
+							},
+							File:   "boxFilter_test.flux",
+							Source: "_boxFilter",
+							Start: ast.Position{
+								Column: 6,
+								Line:   166,
+							},
+						},
+					},
+					Name: "_boxFilter",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 99,
+								Line:   167,
+							},
+							File:   "boxFilter_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_boxFilter})",
+							Start: ast.Position{
+								Column: 19,
+								Line:   166,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 99,
+									Line:   167,
+								},
+								File:   "boxFilter_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_boxFilter})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   167,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 98,
+										Line:   167,
+									},
+									File:   "boxFilter_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_boxFilter}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   167,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   167,
+										},
+										File:   "boxFilter_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   167,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   167,
+											},
+											File:   "boxFilter_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   167,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   167,
+												},
+												File:   "boxFilter_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   167,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   167,
+													},
+													File:   "boxFilter_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   167,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   167,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   167,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   167,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   167,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   167,
+											},
+											File:   "boxFilter_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   167,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   167,
+												},
+												File:   "boxFilter_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   167,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   167,
+													},
+													File:   "boxFilter_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   167,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   167,
+													},
+													File:   "boxFilter_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   167,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   167,
+										},
+										File:   "boxFilter_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   167,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   167,
+											},
+											File:   "boxFilter_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   167,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   167,
+												},
+												File:   "boxFilter_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   167,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   167,
+													},
+													File:   "boxFilter_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   167,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   167,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   167,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   167,
+														},
+														File:   "boxFilter_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   167,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   167,
+											},
+											File:   "boxFilter_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   167,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   167,
+												},
+												File:   "boxFilter_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   167,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   167,
+													},
+													File:   "boxFilter_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   167,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   167,
+													},
+													File:   "boxFilter_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   167,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 97,
+											Line:   167,
+										},
+										File:   "boxFilter_test.flux",
+										Source: "fn: t_boxFilter",
+										Start: ast.Position{
+											Column: 82,
+											Line:   167,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   167,
+											},
+											File:   "boxFilter_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   167,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 97,
+												Line:   167,
+											},
+											File:   "boxFilter_test.flux",
+											Source: "t_boxFilter",
+											Start: ast.Position{
+												Column: 86,
+												Line:   167,
+											},
+										},
+									},
+									Name: "t_boxFilter",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 99,
+						Line:   167,
+					},
+					File:   "boxFilter_test.flux",
+					Source: "test _boxFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_boxFilter})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   166,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   3,
+					},
+					File:   "boxFilter_test.flux",
+					Source: "import \"experimental/geo\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   3,
+						},
+						File:   "boxFilter_test.flux",
+						Source: "\"experimental/geo\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental/geo",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "boxFilter_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "boxFilter_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "boxFilter_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   1,
+					},
+					File:   "boxFilter_test.flux",
+					Source: "package geo_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   1,
+						},
+						File:   "boxFilter_test.flux",
+						Source: "geo_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "geo_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 100,
+					Line:   206,
+				},
+				File:   "gridFilterEx_test.flux",
+				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"\n\noutData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"\n\nt_gridFilter = (table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.gridFilter(fn: geo.geohashFilterEx, box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})\n\t\t|> drop(columns: [\"_start\",\"_stop\"])\n\ntest _gridFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "gridFilterEx_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "gridFilterEx_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "gridFilterEx_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "gridFilterEx_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "gridFilterEx_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "gridFilterEx_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   139,
+					},
+					File:   "gridFilterEx_test.flux",
+					Source: "inData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "gridFilterEx_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   139,
+						},
+						File:   "gridFilterEx_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   196,
+					},
+					File:   "gridFilterEx_test.flux",
+					Source: "outData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   141,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   141,
+						},
+						File:   "gridFilterEx_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   141,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   196,
+						},
+						File:   "gridFilterEx_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   141,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 39,
+						Line:   203,
+					},
+					File:   "gridFilterEx_test.flux",
+					Source: "t_gridFilter = (table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.gridFilter(fn: geo.geohashFilterEx, box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   198,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 13,
+							Line:   198,
+						},
+						File:   "gridFilterEx_test.flux",
+						Source: "t_gridFilter",
+						Start: ast.Position{
+							Column: 1,
+							Line:   198,
+						},
+					},
+				},
+				Name: "t_gridFilter",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 39,
+							Line:   203,
+						},
+						File:   "gridFilterEx_test.flux",
+						Source: "(table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.gridFilter(fn: geo.geohashFilterEx, box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+						Start: ast.Position{
+							Column: 16,
+							Line:   198,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 7,
+												Line:   199,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "table",
+											Start: ast.Position{
+												Column: 2,
+												Line:   199,
+											},
+										},
+									},
+									Name: "table",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   200,
+										},
+										File:   "gridFilterEx_test.flux",
+										Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)",
+										Start: ast.Position{
+											Column: 2,
+											Line:   199,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   200,
+												},
+												File:   "gridFilterEx_test.flux",
+												Source: "start: 2019-11-01T00:00:00Z",
+												Start: ast.Position{
+													Column: 12,
+													Line:   200,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   200,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "start: 2019-11-01T00:00:00Z",
+													Start: ast.Position{
+														Column: 12,
+														Line:   200,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 17,
+															Line:   200,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 12,
+															Line:   200,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Value: &ast.DateTimeLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 39,
+															Line:   200,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "2019-11-01T00:00:00Z",
+														Start: ast.Position{
+															Column: 19,
+															Line:   200,
+														},
+													},
+												},
+												Value: parser.MustParseTime("2019-11-01T00:00:00Z"),
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 40,
+												Line:   200,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "range(start: 2019-11-01T00:00:00Z)",
+											Start: ast.Position{
+												Column: 6,
+												Line:   200,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 11,
+													Line:   200,
+												},
+												File:   "gridFilterEx_test.flux",
+												Source: "range",
+												Start: ast.Position{
+													Column: 6,
+													Line:   200,
+												},
+											},
+										},
+										Name: "range",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 49,
+										Line:   201,
+									},
+									File:   "gridFilterEx_test.flux",
+									Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")",
+									Start: ast.Position{
+										Column: 2,
+										Line:   199,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 48,
+												Line:   201,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "fn: (r) => r._measurement == \"bike\"",
+											Start: ast.Position{
+												Column: 13,
+												Line:   201,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 48,
+													Line:   201,
+												},
+												File:   "gridFilterEx_test.flux",
+												Source: "fn: (r) => r._measurement == \"bike\"",
+												Start: ast.Position{
+													Column: 13,
+													Line:   201,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 15,
+														Line:   201,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "fn",
+													Start: ast.Position{
+														Column: 13,
+														Line:   201,
+													},
+												},
+											},
+											Name: "fn",
+										},
+										Value: &ast.FunctionExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 48,
+														Line:   201,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "(r) => r._measurement == \"bike\"",
+													Start: ast.Position{
+														Column: 17,
+														Line:   201,
+													},
+												},
+											},
+											Body: &ast.BinaryExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 48,
+															Line:   201,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "r._measurement == \"bike\"",
+														Start: ast.Position{
+															Column: 24,
+															Line:   201,
+														},
+													},
+												},
+												Left: &ast.MemberExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 38,
+																Line:   201,
+															},
+															File:   "gridFilterEx_test.flux",
+															Source: "r._measurement",
+															Start: ast.Position{
+																Column: 24,
+																Line:   201,
+															},
+														},
+													},
+													Object: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 25,
+																	Line:   201,
+																},
+																File:   "gridFilterEx_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 24,
+																	Line:   201,
+																},
+															},
+														},
+														Name: "r",
+													},
+													Property: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 38,
+																	Line:   201,
+																},
+																File:   "gridFilterEx_test.flux",
+																Source: "_measurement",
+																Start: ast.Position{
+																	Column: 26,
+																	Line:   201,
+																},
+															},
+														},
+														Name: "_measurement",
+													},
+												},
+												Operator: 17,
+												Right: &ast.StringLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 48,
+																Line:   201,
+															},
+															File:   "gridFilterEx_test.flux",
+															Source: "\"bike\"",
+															Start: ast.Position{
+																Column: 42,
+																Line:   201,
+															},
+														},
+													},
+													Value: "bike",
+												},
+											},
+											Params: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 19,
+															Line:   201,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "r",
+														Start: ast.Position{
+															Column: 18,
+															Line:   201,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 19,
+																Line:   201,
+															},
+															File:   "gridFilterEx_test.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 18,
+																Line:   201,
+															},
+														},
+													},
+													Name: "r",
+												},
+												Value: nil,
+											}},
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 49,
+											Line:   201,
+										},
+										File:   "gridFilterEx_test.flux",
+										Source: "filter(fn: (r) => r._measurement == \"bike\")",
+										Start: ast.Position{
+											Column: 6,
+											Line:   201,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   201,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "filter",
+											Start: ast.Position{
+												Column: 6,
+												Line:   201,
+											},
+										},
+									},
+									Name: "filter",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 138,
+									Line:   202,
+								},
+								File:   "gridFilterEx_test.flux",
+								Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.gridFilter(fn: geo.geohashFilterEx, box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   199,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 137,
+											Line:   202,
+										},
+										File:   "gridFilterEx_test.flux",
+										Source: "fn: geo.geohashFilterEx, box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}",
+										Start: ast.Position{
+											Column: 21,
+											Line:   202,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 44,
+												Line:   202,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "fn: geo.geohashFilterEx",
+											Start: ast.Position{
+												Column: 21,
+												Line:   202,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   202,
+												},
+												File:   "gridFilterEx_test.flux",
+												Source: "fn",
+												Start: ast.Position{
+													Column: 21,
+													Line:   202,
+												},
+											},
+										},
+										Name: "fn",
+									},
+									Value: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   202,
+												},
+												File:   "gridFilterEx_test.flux",
+												Source: "geo.geohashFilterEx",
+												Start: ast.Position{
+													Column: 25,
+													Line:   202,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 28,
+														Line:   202,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "geo",
+													Start: ast.Position{
+														Column: 25,
+														Line:   202,
+													},
+												},
+											},
+											Name: "geo",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   202,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "geohashFilterEx",
+													Start: ast.Position{
+														Column: 29,
+														Line:   202,
+													},
+												},
+											},
+											Name: "geohashFilterEx",
+										},
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 137,
+												Line:   202,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}",
+											Start: ast.Position{
+												Column: 46,
+												Line:   202,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 49,
+													Line:   202,
+												},
+												File:   "gridFilterEx_test.flux",
+												Source: "box",
+												Start: ast.Position{
+													Column: 46,
+													Line:   202,
+												},
+											},
+										},
+										Name: "box",
+									},
+									Value: &ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 137,
+													Line:   202,
+												},
+												File:   "gridFilterEx_test.flux",
+												Source: "{minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}",
+												Start: ast.Position{
+													Column: 51,
+													Line:   202,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 71,
+														Line:   202,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "minLat: 40.51757813",
+													Start: ast.Position{
+														Column: 52,
+														Line:   202,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 58,
+															Line:   202,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "minLat",
+														Start: ast.Position{
+															Column: 52,
+															Line:   202,
+														},
+													},
+												},
+												Name: "minLat",
+											},
+											Value: &ast.FloatLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 71,
+															Line:   202,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "40.51757813",
+														Start: ast.Position{
+															Column: 60,
+															Line:   202,
+														},
+													},
+												},
+												Value: 40.51757813,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 92,
+														Line:   202,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "maxLat: 40.86914063",
+													Start: ast.Position{
+														Column: 73,
+														Line:   202,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   202,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "maxLat",
+														Start: ast.Position{
+															Column: 73,
+															Line:   202,
+														},
+													},
+												},
+												Name: "maxLat",
+											},
+											Value: &ast.FloatLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 92,
+															Line:   202,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "40.86914063",
+														Start: ast.Position{
+															Column: 81,
+															Line:   202,
+														},
+													},
+												},
+												Value: 40.86914063,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 114,
+														Line:   202,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "minLon: -73.65234375",
+													Start: ast.Position{
+														Column: 94,
+														Line:   202,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 100,
+															Line:   202,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "minLon",
+														Start: ast.Position{
+															Column: 94,
+															Line:   202,
+														},
+													},
+												},
+												Name: "minLon",
+											},
+											Value: &ast.UnaryExpression{
+												Argument: &ast.FloatLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 114,
+																Line:   202,
+															},
+															File:   "gridFilterEx_test.flux",
+															Source: "73.65234375",
+															Start: ast.Position{
+																Column: 103,
+																Line:   202,
+															},
+														},
+													},
+													Value: 73.65234375,
+												},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 114,
+															Line:   202,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "-73.65234375",
+														Start: ast.Position{
+															Column: 102,
+															Line:   202,
+														},
+													},
+												},
+												Operator: 6,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 136,
+														Line:   202,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "maxLon: -72.94921875",
+													Start: ast.Position{
+														Column: 116,
+														Line:   202,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 122,
+															Line:   202,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "maxLon",
+														Start: ast.Position{
+															Column: 116,
+															Line:   202,
+														},
+													},
+												},
+												Name: "maxLon",
+											},
+											Value: &ast.UnaryExpression{
+												Argument: &ast.FloatLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 136,
+																Line:   202,
+															},
+															File:   "gridFilterEx_test.flux",
+															Source: "72.94921875",
+															Start: ast.Position{
+																Column: 125,
+																Line:   202,
+															},
+														},
+													},
+													Value: 72.94921875,
+												},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 136,
+															Line:   202,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "-72.94921875",
+														Start: ast.Position{
+															Column: 124,
+															Line:   202,
+														},
+													},
+												},
+												Operator: 6,
+											},
+										}},
+										With: nil,
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 138,
+										Line:   202,
+									},
+									File:   "gridFilterEx_test.flux",
+									Source: "geo.gridFilter(fn: geo.geohashFilterEx, box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})",
+									Start: ast.Position{
+										Column: 6,
+										Line:   202,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 20,
+											Line:   202,
+										},
+										File:   "gridFilterEx_test.flux",
+										Source: "geo.gridFilter",
+										Start: ast.Position{
+											Column: 6,
+											Line:   202,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   202,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "geo",
+											Start: ast.Position{
+												Column: 6,
+												Line:   202,
+											},
+										},
+									},
+									Name: "geo",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   202,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "gridFilter",
+											Start: ast.Position{
+												Column: 10,
+												Line:   202,
+											},
+										},
+									},
+									Name: "gridFilter",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 39,
+								Line:   203,
+							},
+							File:   "gridFilterEx_test.flux",
+							Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.gridFilter(fn: geo.geohashFilterEx, box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+							Start: ast.Position{
+								Column: 2,
+								Line:   199,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 38,
+										Line:   203,
+									},
+									File:   "gridFilterEx_test.flux",
+									Source: "columns: [\"_start\",\"_stop\"]",
+									Start: ast.Position{
+										Column: 11,
+										Line:   203,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   203,
+										},
+										File:   "gridFilterEx_test.flux",
+										Source: "columns: [\"_start\",\"_stop\"]",
+										Start: ast.Position{
+											Column: 11,
+											Line:   203,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   203,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 11,
+												Line:   203,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 38,
+												Line:   203,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "[\"_start\",\"_stop\"]",
+											Start: ast.Position{
+												Column: 20,
+												Line:   203,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   203,
+												},
+												File:   "gridFilterEx_test.flux",
+												Source: "\"_start\"",
+												Start: ast.Position{
+													Column: 21,
+													Line:   203,
+												},
+											},
+										},
+										Value: "_start",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   203,
+												},
+												File:   "gridFilterEx_test.flux",
+												Source: "\"_stop\"",
+												Start: ast.Position{
+													Column: 30,
+													Line:   203,
+												},
+											},
+										},
+										Value: "_stop",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 39,
+									Line:   203,
+								},
+								File:   "gridFilterEx_test.flux",
+								Source: "drop(columns: [\"_start\",\"_stop\"])",
+								Start: ast.Position{
+									Column: 6,
+									Line:   203,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 10,
+										Line:   203,
+									},
+									File:   "gridFilterEx_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 6,
+										Line:   203,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 25,
+								Line:   198,
+							},
+							File:   "gridFilterEx_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 17,
+								Line:   198,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   198,
+								},
+								File:   "gridFilterEx_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 17,
+									Line:   198,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 25,
+								Line:   198,
+							},
+							File:   "gridFilterEx_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 23,
+								Line:   198,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 100,
+							Line:   206,
+						},
+						File:   "gridFilterEx_test.flux",
+						Source: "_gridFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   205,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 17,
+								Line:   205,
+							},
+							File:   "gridFilterEx_test.flux",
+							Source: "_gridFilter",
+							Start: ast.Position{
+								Column: 6,
+								Line:   205,
+							},
+						},
+					},
+					Name: "_gridFilter",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 100,
+								Line:   206,
+							},
+							File:   "gridFilterEx_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
+							Start: ast.Position{
+								Column: 20,
+								Line:   205,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 100,
+									Line:   206,
+								},
+								File:   "gridFilterEx_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   206,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 99,
+										Line:   206,
+									},
+									File:   "gridFilterEx_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   206,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   206,
+										},
+										File:   "gridFilterEx_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   206,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   206,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   206,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   206,
+												},
+												File:   "gridFilterEx_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   206,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   206,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   206,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   206,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   206,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   206,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   206,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   206,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   206,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   206,
+												},
+												File:   "gridFilterEx_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   206,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   206,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   206,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   206,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   206,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   206,
+										},
+										File:   "gridFilterEx_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   206,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   206,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   206,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   206,
+												},
+												File:   "gridFilterEx_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   206,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   206,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   206,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   206,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   206,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   206,
+														},
+														File:   "gridFilterEx_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   206,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   206,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   206,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   206,
+												},
+												File:   "gridFilterEx_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   206,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   206,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   206,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   206,
+													},
+													File:   "gridFilterEx_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   206,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 98,
+											Line:   206,
+										},
+										File:   "gridFilterEx_test.flux",
+										Source: "fn: t_gridFilter",
+										Start: ast.Position{
+											Column: 82,
+											Line:   206,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   206,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   206,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 98,
+												Line:   206,
+											},
+											File:   "gridFilterEx_test.flux",
+											Source: "t_gridFilter",
+											Start: ast.Position{
+												Column: 86,
+												Line:   206,
+											},
+										},
+									},
+									Name: "t_gridFilter",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 100,
+						Line:   206,
+					},
+					File:   "gridFilterEx_test.flux",
+					Source: "test _gridFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   205,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   3,
+					},
+					File:   "gridFilterEx_test.flux",
+					Source: "import \"experimental/geo\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   3,
+						},
+						File:   "gridFilterEx_test.flux",
+						Source: "\"experimental/geo\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental/geo",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "gridFilterEx_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "gridFilterEx_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "gridFilterEx_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   1,
+					},
+					File:   "gridFilterEx_test.flux",
+					Source: "package geo_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   1,
+						},
+						File:   "gridFilterEx_test.flux",
+						Source: "geo_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "geo_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 100,
+					Line:   206,
+				},
+				File:   "gridFilter_test.flux",
+				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"\n\noutData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"\n\nt_gridFilter = (table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})\n\t\t|> drop(columns: [\"_start\",\"_stop\"])\n\ntest _gridFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "gridFilter_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "gridFilter_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "gridFilter_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "gridFilter_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "gridFilter_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "gridFilter_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   139,
+					},
+					File:   "gridFilter_test.flux",
+					Source: "inData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "gridFilter_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   139,
+						},
+						File:   "gridFilter_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   196,
+					},
+					File:   "gridFilter_test.flux",
+					Source: "outData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   141,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   141,
+						},
+						File:   "gridFilter_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   141,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   196,
+						},
+						File:   "gridFilter_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   141,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 39,
+						Line:   203,
+					},
+					File:   "gridFilter_test.flux",
+					Source: "t_gridFilter = (table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   198,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 13,
+							Line:   198,
+						},
+						File:   "gridFilter_test.flux",
+						Source: "t_gridFilter",
+						Start: ast.Position{
+							Column: 1,
+							Line:   198,
+						},
+					},
+				},
+				Name: "t_gridFilter",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 39,
+							Line:   203,
+						},
+						File:   "gridFilter_test.flux",
+						Source: "(table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+						Start: ast.Position{
+							Column: 16,
+							Line:   198,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 7,
+												Line:   199,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "table",
+											Start: ast.Position{
+												Column: 2,
+												Line:   199,
+											},
+										},
+									},
+									Name: "table",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   200,
+										},
+										File:   "gridFilter_test.flux",
+										Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)",
+										Start: ast.Position{
+											Column: 2,
+											Line:   199,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   200,
+												},
+												File:   "gridFilter_test.flux",
+												Source: "start: 2019-11-01T00:00:00Z",
+												Start: ast.Position{
+													Column: 12,
+													Line:   200,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   200,
+													},
+													File:   "gridFilter_test.flux",
+													Source: "start: 2019-11-01T00:00:00Z",
+													Start: ast.Position{
+														Column: 12,
+														Line:   200,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 17,
+															Line:   200,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 12,
+															Line:   200,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Value: &ast.DateTimeLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 39,
+															Line:   200,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "2019-11-01T00:00:00Z",
+														Start: ast.Position{
+															Column: 19,
+															Line:   200,
+														},
+													},
+												},
+												Value: parser.MustParseTime("2019-11-01T00:00:00Z"),
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 40,
+												Line:   200,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "range(start: 2019-11-01T00:00:00Z)",
+											Start: ast.Position{
+												Column: 6,
+												Line:   200,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 11,
+													Line:   200,
+												},
+												File:   "gridFilter_test.flux",
+												Source: "range",
+												Start: ast.Position{
+													Column: 6,
+													Line:   200,
+												},
+											},
+										},
+										Name: "range",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 49,
+										Line:   201,
+									},
+									File:   "gridFilter_test.flux",
+									Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")",
+									Start: ast.Position{
+										Column: 2,
+										Line:   199,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 48,
+												Line:   201,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "fn: (r) => r._measurement == \"bike\"",
+											Start: ast.Position{
+												Column: 13,
+												Line:   201,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 48,
+													Line:   201,
+												},
+												File:   "gridFilter_test.flux",
+												Source: "fn: (r) => r._measurement == \"bike\"",
+												Start: ast.Position{
+													Column: 13,
+													Line:   201,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 15,
+														Line:   201,
+													},
+													File:   "gridFilter_test.flux",
+													Source: "fn",
+													Start: ast.Position{
+														Column: 13,
+														Line:   201,
+													},
+												},
+											},
+											Name: "fn",
+										},
+										Value: &ast.FunctionExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 48,
+														Line:   201,
+													},
+													File:   "gridFilter_test.flux",
+													Source: "(r) => r._measurement == \"bike\"",
+													Start: ast.Position{
+														Column: 17,
+														Line:   201,
+													},
+												},
+											},
+											Body: &ast.BinaryExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 48,
+															Line:   201,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "r._measurement == \"bike\"",
+														Start: ast.Position{
+															Column: 24,
+															Line:   201,
+														},
+													},
+												},
+												Left: &ast.MemberExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 38,
+																Line:   201,
+															},
+															File:   "gridFilter_test.flux",
+															Source: "r._measurement",
+															Start: ast.Position{
+																Column: 24,
+																Line:   201,
+															},
+														},
+													},
+													Object: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 25,
+																	Line:   201,
+																},
+																File:   "gridFilter_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 24,
+																	Line:   201,
+																},
+															},
+														},
+														Name: "r",
+													},
+													Property: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 38,
+																	Line:   201,
+																},
+																File:   "gridFilter_test.flux",
+																Source: "_measurement",
+																Start: ast.Position{
+																	Column: 26,
+																	Line:   201,
+																},
+															},
+														},
+														Name: "_measurement",
+													},
+												},
+												Operator: 17,
+												Right: &ast.StringLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 48,
+																Line:   201,
+															},
+															File:   "gridFilter_test.flux",
+															Source: "\"bike\"",
+															Start: ast.Position{
+																Column: 42,
+																Line:   201,
+															},
+														},
+													},
+													Value: "bike",
+												},
+											},
+											Params: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 19,
+															Line:   201,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "r",
+														Start: ast.Position{
+															Column: 18,
+															Line:   201,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 19,
+																Line:   201,
+															},
+															File:   "gridFilter_test.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 18,
+																Line:   201,
+															},
+														},
+													},
+													Name: "r",
+												},
+												Value: nil,
+											}},
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 49,
+											Line:   201,
+										},
+										File:   "gridFilter_test.flux",
+										Source: "filter(fn: (r) => r._measurement == \"bike\")",
+										Start: ast.Position{
+											Column: 6,
+											Line:   201,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   201,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "filter",
+											Start: ast.Position{
+												Column: 6,
+												Line:   201,
+											},
+										},
+									},
+									Name: "filter",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 113,
+									Line:   202,
+								},
+								File:   "gridFilter_test.flux",
+								Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   199,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 112,
+											Line:   202,
+										},
+										File:   "gridFilter_test.flux",
+										Source: "box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}",
+										Start: ast.Position{
+											Column: 21,
+											Line:   202,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 112,
+												Line:   202,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}",
+											Start: ast.Position{
+												Column: 21,
+												Line:   202,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   202,
+												},
+												File:   "gridFilter_test.flux",
+												Source: "box",
+												Start: ast.Position{
+													Column: 21,
+													Line:   202,
+												},
+											},
+										},
+										Name: "box",
+									},
+									Value: &ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 112,
+													Line:   202,
+												},
+												File:   "gridFilter_test.flux",
+												Source: "{minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}",
+												Start: ast.Position{
+													Column: 26,
+													Line:   202,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 46,
+														Line:   202,
+													},
+													File:   "gridFilter_test.flux",
+													Source: "minLat: 40.51757813",
+													Start: ast.Position{
+														Column: 27,
+														Line:   202,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 33,
+															Line:   202,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "minLat",
+														Start: ast.Position{
+															Column: 27,
+															Line:   202,
+														},
+													},
+												},
+												Name: "minLat",
+											},
+											Value: &ast.FloatLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 46,
+															Line:   202,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "40.51757813",
+														Start: ast.Position{
+															Column: 35,
+															Line:   202,
+														},
+													},
+												},
+												Value: 40.51757813,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 67,
+														Line:   202,
+													},
+													File:   "gridFilter_test.flux",
+													Source: "maxLat: 40.86914063",
+													Start: ast.Position{
+														Column: 48,
+														Line:   202,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 54,
+															Line:   202,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "maxLat",
+														Start: ast.Position{
+															Column: 48,
+															Line:   202,
+														},
+													},
+												},
+												Name: "maxLat",
+											},
+											Value: &ast.FloatLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 67,
+															Line:   202,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "40.86914063",
+														Start: ast.Position{
+															Column: 56,
+															Line:   202,
+														},
+													},
+												},
+												Value: 40.86914063,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 89,
+														Line:   202,
+													},
+													File:   "gridFilter_test.flux",
+													Source: "minLon: -73.65234375",
+													Start: ast.Position{
+														Column: 69,
+														Line:   202,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 75,
+															Line:   202,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "minLon",
+														Start: ast.Position{
+															Column: 69,
+															Line:   202,
+														},
+													},
+												},
+												Name: "minLon",
+											},
+											Value: &ast.UnaryExpression{
+												Argument: &ast.FloatLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 89,
+																Line:   202,
+															},
+															File:   "gridFilter_test.flux",
+															Source: "73.65234375",
+															Start: ast.Position{
+																Column: 78,
+																Line:   202,
+															},
+														},
+													},
+													Value: 73.65234375,
+												},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 89,
+															Line:   202,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "-73.65234375",
+														Start: ast.Position{
+															Column: 77,
+															Line:   202,
+														},
+													},
+												},
+												Operator: 6,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 111,
+														Line:   202,
+													},
+													File:   "gridFilter_test.flux",
+													Source: "maxLon: -72.94921875",
+													Start: ast.Position{
+														Column: 91,
+														Line:   202,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 97,
+															Line:   202,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "maxLon",
+														Start: ast.Position{
+															Column: 91,
+															Line:   202,
+														},
+													},
+												},
+												Name: "maxLon",
+											},
+											Value: &ast.UnaryExpression{
+												Argument: &ast.FloatLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 111,
+																Line:   202,
+															},
+															File:   "gridFilter_test.flux",
+															Source: "72.94921875",
+															Start: ast.Position{
+																Column: 100,
+																Line:   202,
+															},
+														},
+													},
+													Value: 72.94921875,
+												},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 111,
+															Line:   202,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "-72.94921875",
+														Start: ast.Position{
+															Column: 99,
+															Line:   202,
+														},
+													},
+												},
+												Operator: 6,
+											},
+										}},
+										With: nil,
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 113,
+										Line:   202,
+									},
+									File:   "gridFilter_test.flux",
+									Source: "geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})",
+									Start: ast.Position{
+										Column: 6,
+										Line:   202,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 20,
+											Line:   202,
+										},
+										File:   "gridFilter_test.flux",
+										Source: "geo.gridFilter",
+										Start: ast.Position{
+											Column: 6,
+											Line:   202,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   202,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "geo",
+											Start: ast.Position{
+												Column: 6,
+												Line:   202,
+											},
+										},
+									},
+									Name: "geo",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   202,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "gridFilter",
+											Start: ast.Position{
+												Column: 10,
+												Line:   202,
+											},
+										},
+									},
+									Name: "gridFilter",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 39,
+								Line:   203,
+							},
+							File:   "gridFilter_test.flux",
+							Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+							Start: ast.Position{
+								Column: 2,
+								Line:   199,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 38,
+										Line:   203,
+									},
+									File:   "gridFilter_test.flux",
+									Source: "columns: [\"_start\",\"_stop\"]",
+									Start: ast.Position{
+										Column: 11,
+										Line:   203,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   203,
+										},
+										File:   "gridFilter_test.flux",
+										Source: "columns: [\"_start\",\"_stop\"]",
+										Start: ast.Position{
+											Column: 11,
+											Line:   203,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   203,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 11,
+												Line:   203,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 38,
+												Line:   203,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "[\"_start\",\"_stop\"]",
+											Start: ast.Position{
+												Column: 20,
+												Line:   203,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   203,
+												},
+												File:   "gridFilter_test.flux",
+												Source: "\"_start\"",
+												Start: ast.Position{
+													Column: 21,
+													Line:   203,
+												},
+											},
+										},
+										Value: "_start",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   203,
+												},
+												File:   "gridFilter_test.flux",
+												Source: "\"_stop\"",
+												Start: ast.Position{
+													Column: 30,
+													Line:   203,
+												},
+											},
+										},
+										Value: "_stop",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 39,
+									Line:   203,
+								},
+								File:   "gridFilter_test.flux",
+								Source: "drop(columns: [\"_start\",\"_stop\"])",
+								Start: ast.Position{
+									Column: 6,
+									Line:   203,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 10,
+										Line:   203,
+									},
+									File:   "gridFilter_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 6,
+										Line:   203,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 25,
+								Line:   198,
+							},
+							File:   "gridFilter_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 17,
+								Line:   198,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   198,
+								},
+								File:   "gridFilter_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 17,
+									Line:   198,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 25,
+								Line:   198,
+							},
+							File:   "gridFilter_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 23,
+								Line:   198,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 100,
+							Line:   206,
+						},
+						File:   "gridFilter_test.flux",
+						Source: "_gridFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   205,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 17,
+								Line:   205,
+							},
+							File:   "gridFilter_test.flux",
+							Source: "_gridFilter",
+							Start: ast.Position{
+								Column: 6,
+								Line:   205,
+							},
+						},
+					},
+					Name: "_gridFilter",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 100,
+								Line:   206,
+							},
+							File:   "gridFilter_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
+							Start: ast.Position{
+								Column: 20,
+								Line:   205,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 100,
+									Line:   206,
+								},
+								File:   "gridFilter_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   206,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 99,
+										Line:   206,
+									},
+									File:   "gridFilter_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   206,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   206,
+										},
+										File:   "gridFilter_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   206,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   206,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   206,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   206,
+												},
+												File:   "gridFilter_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   206,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   206,
+													},
+													File:   "gridFilter_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   206,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   206,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   206,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   206,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   206,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   206,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   206,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   206,
+												},
+												File:   "gridFilter_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   206,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   206,
+													},
+													File:   "gridFilter_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   206,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   206,
+													},
+													File:   "gridFilter_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   206,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   206,
+										},
+										File:   "gridFilter_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   206,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   206,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   206,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   206,
+												},
+												File:   "gridFilter_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   206,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   206,
+													},
+													File:   "gridFilter_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   206,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   206,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   206,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   206,
+														},
+														File:   "gridFilter_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   206,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   206,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   206,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   206,
+												},
+												File:   "gridFilter_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   206,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   206,
+													},
+													File:   "gridFilter_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   206,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   206,
+													},
+													File:   "gridFilter_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   206,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 98,
+											Line:   206,
+										},
+										File:   "gridFilter_test.flux",
+										Source: "fn: t_gridFilter",
+										Start: ast.Position{
+											Column: 82,
+											Line:   206,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   206,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   206,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 98,
+												Line:   206,
+											},
+											File:   "gridFilter_test.flux",
+											Source: "t_gridFilter",
+											Start: ast.Position{
+												Column: 86,
+												Line:   206,
+											},
+										},
+									},
+									Name: "t_gridFilter",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 100,
+						Line:   206,
+					},
+					File:   "gridFilter_test.flux",
+					Source: "test _gridFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   205,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   3,
+					},
+					File:   "gridFilter_test.flux",
+					Source: "import \"experimental/geo\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   3,
+						},
+						File:   "gridFilter_test.flux",
+						Source: "\"experimental/geo\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental/geo",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "gridFilter_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "gridFilter_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "gridFilter_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   1,
+					},
+					File:   "gridFilter_test.flux",
+					Source: "package geo_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   1,
+						},
+						File:   "gridFilter_test.flux",
+						Source: "geo_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "geo_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 107,
+					Line:   243,
+				},
+				File:   "groupByArea_index_test.flux",
+				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"\n\noutData_gridFilter = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"\n\noutData = \"\n#group,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,double,double,long,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,geohash,lat,lon,tid,gx\n,,0,2019-11-10T11:08:34Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,dr5ruud5tqgq,40.762662,-73.967971,1573384032000000000,dr5\n,,0,2019-11-10T21:17:47Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,dr5ruuefkfxf,40.762424,-73.965583,1573420560000000000,dr5\n,,0,2019-11-10T11:07:12Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,dr5ruudb3t3t,40.762096,-73.967104,1573384032000000000,dr5\n,,0,2019-11-10T21:16:00Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,dr5ruueq7t2w,40.763126,-73.966333,1573420560000000000,dr5\n,,0,2019-11-10T11:07:35Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruudc4j6z,40.762225,-73.967081,1573384032000000000,dr5\n,,0,2019-11-10T11:07:38Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruudc2cx4,40.762247,-73.967129,1573384032000000000,dr5\n,,0,2019-11-10T11:07:43Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud9vchz,40.762331,-73.967261,1573384032000000000,dr5\n,,0,2019-11-10T11:07:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruudd4pse,40.762408,-73.967422,1573384032000000000,dr5\n,,0,2019-11-10T11:07:52Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud6xmg0,40.762484,-73.967542,1573384032000000000,dr5\n,,0,2019-11-10T11:08:01Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud774zf,40.762597,-73.967718,1573384032000000000,dr5\n,,0,2019-11-10T11:08:16Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud71q89,40.762574,-73.967803,1573384032000000000,dr5\n,,0,2019-11-10T21:16:06Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruueqjqex,40.76309,-73.966254,1573420560000000000,dr5\n,,0,2019-11-10T21:16:18Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuetchtj,40.763036,-73.966091,1573420560000000000,dr5\n,,0,2019-11-10T21:16:31Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuettz5d,40.763006,-73.965889,1573420560000000000,dr5\n,,0,2019-11-10T21:16:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuev1s43,40.762904,-73.96573,1573420560000000000,dr5\n,,0,2019-11-10T21:17:08Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruueu9z2u,40.762836,-73.965721,1573420560000000000,dr5\n,,0,2019-11-10T21:17:23Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuesputr,40.762736,-73.965801,1573420560000000000,dr5\n,,0,2019-11-10T21:17:36Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuefsffw,40.762469,-73.96559,1573420560000000000,dr5\n,,0,2019-11-10T21:17:46Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuefm16y,40.762418,-73.965579,1573420560000000000,dr5\n,,0,2019-11-20T10:18:00Z,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA,dr5ze3r6djkt,40.700684,-73.323692,1574245037000000000,dr5\n,,0,2019-11-20T10:17:17Z,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA,dr5ze3q2xypb,40.700344,-73.324814,1574245037000000000,dr5\n,,0,2019-11-20T10:17:18Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q88qg0,40.700348,-73.324799,1574245037000000000,dr5\n,,0,2019-11-20T10:17:24Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q8fxvt,40.700397,-73.324699,1574245037000000000,dr5\n,,0,2019-11-20T10:17:26Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9h4gh,40.700413,-73.324638,1574245037000000000,dr5\n,,0,2019-11-20T10:17:32Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9ryr8,40.700474,-73.324471,1574245037000000000,dr5\n,,0,2019-11-20T10:17:35Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qc6rd4,40.700481,-73.324371,1574245037000000000,dr5\n,,0,2019-11-20T10:17:42Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qcqery,40.700459,-73.324181,1574245037000000000,dr5\n,,0,2019-11-20T10:17:47Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r176sr,40.700455,-73.323982,1574245037000000000,dr5\n,,0,2019-11-20T10:17:54Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r3b6gn,40.700542,-73.323769,1574245037000000000,dr5\n\"\n\nt_groupByArea_index = (table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 3, maxPrecisionIndex: 5)\n\t\t|> drop(columns: [\"_start\",\"_stop\"])\n\ntest _groupByArea_index = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea_index})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "groupByArea_index_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "groupByArea_index_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "groupByArea_index_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "groupByArea_index_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "groupByArea_index_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "groupByArea_index_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   139,
+					},
+					File:   "groupByArea_index_test.flux",
+					Source: "inData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "groupByArea_index_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   139,
+						},
+						File:   "groupByArea_index_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   196,
+					},
+					File:   "groupByArea_index_test.flux",
+					Source: "outData_gridFilter = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   141,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 19,
+							Line:   141,
+						},
+						File:   "groupByArea_index_test.flux",
+						Source: "outData_gridFilter",
+						Start: ast.Position{
+							Column: 1,
+							Line:   141,
+						},
+					},
+				},
+				Name: "outData_gridFilter",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   196,
+						},
+						File:   "groupByArea_index_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+						Start: ast.Position{
+							Column: 22,
+							Line:   141,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   232,
+					},
+					File:   "groupByArea_index_test.flux",
+					Source: "outData = \"\n#group,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,double,double,long,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,geohash,lat,lon,tid,gx\n,,0,2019-11-10T11:08:34Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,dr5ruud5tqgq,40.762662,-73.967971,1573384032000000000,dr5\n,,0,2019-11-10T21:17:47Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,dr5ruuefkfxf,40.762424,-73.965583,1573420560000000000,dr5\n,,0,2019-11-10T11:07:12Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,dr5ruudb3t3t,40.762096,-73.967104,1573384032000000000,dr5\n,,0,2019-11-10T21:16:00Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,dr5ruueq7t2w,40.763126,-73.966333,1573420560000000000,dr5\n,,0,2019-11-10T11:07:35Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruudc4j6z,40.762225,-73.967081,1573384032000000000,dr5\n,,0,2019-11-10T11:07:38Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruudc2cx4,40.762247,-73.967129,1573384032000000000,dr5\n,,0,2019-11-10T11:07:43Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud9vchz,40.762331,-73.967261,1573384032000000000,dr5\n,,0,2019-11-10T11:07:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruudd4pse,40.762408,-73.967422,1573384032000000000,dr5\n,,0,2019-11-10T11:07:52Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud6xmg0,40.762484,-73.967542,1573384032000000000,dr5\n,,0,2019-11-10T11:08:01Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud774zf,40.762597,-73.967718,1573384032000000000,dr5\n,,0,2019-11-10T11:08:16Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud71q89,40.762574,-73.967803,1573384032000000000,dr5\n,,0,2019-11-10T21:16:06Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruueqjqex,40.76309,-73.966254,1573420560000000000,dr5\n,,0,2019-11-10T21:16:18Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuetchtj,40.763036,-73.966091,1573420560000000000,dr5\n,,0,2019-11-10T21:16:31Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuettz5d,40.763006,-73.965889,1573420560000000000,dr5\n,,0,2019-11-10T21:16:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuev1s43,40.762904,-73.96573,1573420560000000000,dr5\n,,0,2019-11-10T21:17:08Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruueu9z2u,40.762836,-73.965721,1573420560000000000,dr5\n,,0,2019-11-10T21:17:23Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuesputr,40.762736,-73.965801,1573420560000000000,dr5\n,,0,2019-11-10T21:17:36Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuefsffw,40.762469,-73.96559,1573420560000000000,dr5\n,,0,2019-11-10T21:17:46Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuefm16y,40.762418,-73.965579,1573420560000000000,dr5\n,,0,2019-11-20T10:18:00Z,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA,dr5ze3r6djkt,40.700684,-73.323692,1574245037000000000,dr5\n,,0,2019-11-20T10:17:17Z,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA,dr5ze3q2xypb,40.700344,-73.324814,1574245037000000000,dr5\n,,0,2019-11-20T10:17:18Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q88qg0,40.700348,-73.324799,1574245037000000000,dr5\n,,0,2019-11-20T10:17:24Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q8fxvt,40.700397,-73.324699,1574245037000000000,dr5\n,,0,2019-11-20T10:17:26Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9h4gh,40.700413,-73.324638,1574245037000000000,dr5\n,,0,2019-11-20T10:17:32Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9ryr8,40.700474,-73.324471,1574245037000000000,dr5\n,,0,2019-11-20T10:17:35Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qc6rd4,40.700481,-73.324371,1574245037000000000,dr5\n,,0,2019-11-20T10:17:42Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qcqery,40.700459,-73.324181,1574245037000000000,dr5\n,,0,2019-11-20T10:17:47Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r176sr,40.700455,-73.323982,1574245037000000000,dr5\n,,0,2019-11-20T10:17:54Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r3b6gn,40.700542,-73.323769,1574245037000000000,dr5\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   198,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   198,
+						},
+						File:   "groupByArea_index_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   198,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   232,
+						},
+						File:   "groupByArea_index_test.flux",
+						Source: "\"\n#group,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,double,double,long,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,geohash,lat,lon,tid,gx\n,,0,2019-11-10T11:08:34Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,dr5ruud5tqgq,40.762662,-73.967971,1573384032000000000,dr5\n,,0,2019-11-10T21:17:47Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,dr5ruuefkfxf,40.762424,-73.965583,1573420560000000000,dr5\n,,0,2019-11-10T11:07:12Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,dr5ruudb3t3t,40.762096,-73.967104,1573384032000000000,dr5\n,,0,2019-11-10T21:16:00Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,dr5ruueq7t2w,40.763126,-73.966333,1573420560000000000,dr5\n,,0,2019-11-10T11:07:35Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruudc4j6z,40.762225,-73.967081,1573384032000000000,dr5\n,,0,2019-11-10T11:07:38Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruudc2cx4,40.762247,-73.967129,1573384032000000000,dr5\n,,0,2019-11-10T11:07:43Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud9vchz,40.762331,-73.967261,1573384032000000000,dr5\n,,0,2019-11-10T11:07:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruudd4pse,40.762408,-73.967422,1573384032000000000,dr5\n,,0,2019-11-10T11:07:52Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud6xmg0,40.762484,-73.967542,1573384032000000000,dr5\n,,0,2019-11-10T11:08:01Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud774zf,40.762597,-73.967718,1573384032000000000,dr5\n,,0,2019-11-10T11:08:16Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud71q89,40.762574,-73.967803,1573384032000000000,dr5\n,,0,2019-11-10T21:16:06Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruueqjqex,40.76309,-73.966254,1573420560000000000,dr5\n,,0,2019-11-10T21:16:18Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuetchtj,40.763036,-73.966091,1573420560000000000,dr5\n,,0,2019-11-10T21:16:31Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuettz5d,40.763006,-73.965889,1573420560000000000,dr5\n,,0,2019-11-10T21:16:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuev1s43,40.762904,-73.96573,1573420560000000000,dr5\n,,0,2019-11-10T21:17:08Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruueu9z2u,40.762836,-73.965721,1573420560000000000,dr5\n,,0,2019-11-10T21:17:23Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuesputr,40.762736,-73.965801,1573420560000000000,dr5\n,,0,2019-11-10T21:17:36Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuefsffw,40.762469,-73.96559,1573420560000000000,dr5\n,,0,2019-11-10T21:17:46Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuefm16y,40.762418,-73.965579,1573420560000000000,dr5\n,,0,2019-11-20T10:18:00Z,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA,dr5ze3r6djkt,40.700684,-73.323692,1574245037000000000,dr5\n,,0,2019-11-20T10:17:17Z,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA,dr5ze3q2xypb,40.700344,-73.324814,1574245037000000000,dr5\n,,0,2019-11-20T10:17:18Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q88qg0,40.700348,-73.324799,1574245037000000000,dr5\n,,0,2019-11-20T10:17:24Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q8fxvt,40.700397,-73.324699,1574245037000000000,dr5\n,,0,2019-11-20T10:17:26Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9h4gh,40.700413,-73.324638,1574245037000000000,dr5\n,,0,2019-11-20T10:17:32Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9ryr8,40.700474,-73.324471,1574245037000000000,dr5\n,,0,2019-11-20T10:17:35Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qc6rd4,40.700481,-73.324371,1574245037000000000,dr5\n,,0,2019-11-20T10:17:42Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qcqery,40.700459,-73.324181,1574245037000000000,dr5\n,,0,2019-11-20T10:17:47Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r176sr,40.700455,-73.323982,1574245037000000000,dr5\n,,0,2019-11-20T10:17:54Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r3b6gn,40.700542,-73.323769,1574245037000000000,dr5\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   198,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,double,double,long,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_time,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id,geohash,lat,lon,tid,gx\n,,0,2019-11-10T11:08:34Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,dr5ruud5tqgq,40.762662,-73.967971,1573384032000000000,dr5\n,,0,2019-11-10T21:17:47Z,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB,dr5ruuefkfxf,40.762424,-73.965583,1573420560000000000,dr5\n,,0,2019-11-10T11:07:12Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,dr5ruudb3t3t,40.762096,-73.967104,1573384032000000000,dr5\n,,0,2019-11-10T21:16:00Z,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB,dr5ruueq7t2w,40.763126,-73.966333,1573420560000000000,dr5\n,,0,2019-11-10T11:07:35Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruudc4j6z,40.762225,-73.967081,1573384032000000000,dr5\n,,0,2019-11-10T11:07:38Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruudc2cx4,40.762247,-73.967129,1573384032000000000,dr5\n,,0,2019-11-10T11:07:43Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud9vchz,40.762331,-73.967261,1573384032000000000,dr5\n,,0,2019-11-10T11:07:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruudd4pse,40.762408,-73.967422,1573384032000000000,dr5\n,,0,2019-11-10T11:07:52Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud6xmg0,40.762484,-73.967542,1573384032000000000,dr5\n,,0,2019-11-10T11:08:01Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud774zf,40.762597,-73.967718,1573384032000000000,dr5\n,,0,2019-11-10T11:08:16Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruud71q89,40.762574,-73.967803,1573384032000000000,dr5\n,,0,2019-11-10T21:16:06Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruueqjqex,40.76309,-73.966254,1573420560000000000,dr5\n,,0,2019-11-10T21:16:18Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuetchtj,40.763036,-73.966091,1573420560000000000,dr5\n,,0,2019-11-10T21:16:31Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuettz5d,40.763006,-73.965889,1573420560000000000,dr5\n,,0,2019-11-10T21:16:48Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuev1s43,40.762904,-73.96573,1573420560000000000,dr5\n,,0,2019-11-10T21:17:08Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruueu9z2u,40.762836,-73.965721,1573420560000000000,dr5\n,,0,2019-11-10T21:17:23Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuesputr,40.762736,-73.965801,1573420560000000000,dr5\n,,0,2019-11-10T21:17:36Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuefsffw,40.762469,-73.96559,1573420560000000000,dr5\n,,0,2019-11-10T21:17:46Z,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB,dr5ruuefm16y,40.762418,-73.965579,1573420560000000000,dr5\n,,0,2019-11-20T10:18:00Z,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA,dr5ze3r6djkt,40.700684,-73.323692,1574245037000000000,dr5\n,,0,2019-11-20T10:17:17Z,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA,dr5ze3q2xypb,40.700344,-73.324814,1574245037000000000,dr5\n,,0,2019-11-20T10:17:18Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q88qg0,40.700348,-73.324799,1574245037000000000,dr5\n,,0,2019-11-20T10:17:24Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q8fxvt,40.700397,-73.324699,1574245037000000000,dr5\n,,0,2019-11-20T10:17:26Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9h4gh,40.700413,-73.324638,1574245037000000000,dr5\n,,0,2019-11-20T10:17:32Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3q9ryr8,40.700474,-73.324471,1574245037000000000,dr5\n,,0,2019-11-20T10:17:35Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qc6rd4,40.700481,-73.324371,1574245037000000000,dr5\n,,0,2019-11-20T10:17:42Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3qcqery,40.700459,-73.324181,1574245037000000000,dr5\n,,0,2019-11-20T10:17:47Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r176sr,40.700455,-73.323982,1574245037000000000,dr5\n,,0,2019-11-20T10:17:54Z,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA,dr5ze3r3b6gn,40.700542,-73.323769,1574245037000000000,dr5\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 39,
+						Line:   240,
+					},
+					File:   "groupByArea_index_test.flux",
+					Source: "t_groupByArea_index = (table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 3, maxPrecisionIndex: 5)\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   234,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   234,
+						},
+						File:   "groupByArea_index_test.flux",
+						Source: "t_groupByArea_index",
+						Start: ast.Position{
+							Column: 1,
+							Line:   234,
+						},
+					},
+				},
+				Name: "t_groupByArea_index",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 39,
+							Line:   240,
+						},
+						File:   "groupByArea_index_test.flux",
+						Source: "(table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 3, maxPrecisionIndex: 5)\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+						Start: ast.Position{
+							Column: 23,
+							Line:   234,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 7,
+													Line:   235,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "table",
+												Start: ast.Position{
+													Column: 2,
+													Line:   235,
+												},
+											},
+										},
+										Name: "table",
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 40,
+												Line:   236,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)",
+											Start: ast.Position{
+												Column: 2,
+												Line:   235,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   236,
+													},
+													File:   "groupByArea_index_test.flux",
+													Source: "start: 2019-11-01T00:00:00Z",
+													Start: ast.Position{
+														Column: 12,
+														Line:   236,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 39,
+															Line:   236,
+														},
+														File:   "groupByArea_index_test.flux",
+														Source: "start: 2019-11-01T00:00:00Z",
+														Start: ast.Position{
+															Column: 12,
+															Line:   236,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 17,
+																Line:   236,
+															},
+															File:   "groupByArea_index_test.flux",
+															Source: "start",
+															Start: ast.Position{
+																Column: 12,
+																Line:   236,
+															},
+														},
+													},
+													Name: "start",
+												},
+												Value: &ast.DateTimeLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 39,
+																Line:   236,
+															},
+															File:   "groupByArea_index_test.flux",
+															Source: "2019-11-01T00:00:00Z",
+															Start: ast.Position{
+																Column: 19,
+																Line:   236,
+															},
+														},
+													},
+													Value: parser.MustParseTime("2019-11-01T00:00:00Z"),
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 40,
+													Line:   236,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "range(start: 2019-11-01T00:00:00Z)",
+												Start: ast.Position{
+													Column: 6,
+													Line:   236,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 11,
+														Line:   236,
+													},
+													File:   "groupByArea_index_test.flux",
+													Source: "range",
+													Start: ast.Position{
+														Column: 6,
+														Line:   236,
+													},
+												},
+											},
+											Name: "range",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 49,
+											Line:   237,
+										},
+										File:   "groupByArea_index_test.flux",
+										Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")",
+										Start: ast.Position{
+											Column: 2,
+											Line:   235,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 48,
+													Line:   237,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "fn: (r) => r._measurement == \"bike\"",
+												Start: ast.Position{
+													Column: 13,
+													Line:   237,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 48,
+														Line:   237,
+													},
+													File:   "groupByArea_index_test.flux",
+													Source: "fn: (r) => r._measurement == \"bike\"",
+													Start: ast.Position{
+														Column: 13,
+														Line:   237,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 15,
+															Line:   237,
+														},
+														File:   "groupByArea_index_test.flux",
+														Source: "fn",
+														Start: ast.Position{
+															Column: 13,
+															Line:   237,
+														},
+													},
+												},
+												Name: "fn",
+											},
+											Value: &ast.FunctionExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 48,
+															Line:   237,
+														},
+														File:   "groupByArea_index_test.flux",
+														Source: "(r) => r._measurement == \"bike\"",
+														Start: ast.Position{
+															Column: 17,
+															Line:   237,
+														},
+													},
+												},
+												Body: &ast.BinaryExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 48,
+																Line:   237,
+															},
+															File:   "groupByArea_index_test.flux",
+															Source: "r._measurement == \"bike\"",
+															Start: ast.Position{
+																Column: 24,
+																Line:   237,
+															},
+														},
+													},
+													Left: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 38,
+																	Line:   237,
+																},
+																File:   "groupByArea_index_test.flux",
+																Source: "r._measurement",
+																Start: ast.Position{
+																	Column: 24,
+																	Line:   237,
+																},
+															},
+														},
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 25,
+																		Line:   237,
+																	},
+																	File:   "groupByArea_index_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 24,
+																		Line:   237,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 38,
+																		Line:   237,
+																	},
+																	File:   "groupByArea_index_test.flux",
+																	Source: "_measurement",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   237,
+																	},
+																},
+															},
+															Name: "_measurement",
+														},
+													},
+													Operator: 17,
+													Right: &ast.StringLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 48,
+																	Line:   237,
+																},
+																File:   "groupByArea_index_test.flux",
+																Source: "\"bike\"",
+																Start: ast.Position{
+																	Column: 42,
+																	Line:   237,
+																},
+															},
+														},
+														Value: "bike",
+													},
+												},
+												Params: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 19,
+																Line:   237,
+															},
+															File:   "groupByArea_index_test.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 18,
+																Line:   237,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 19,
+																	Line:   237,
+																},
+																File:   "groupByArea_index_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 18,
+																	Line:   237,
+																},
+															},
+														},
+														Name: "r",
+													},
+													Value: nil,
+												}},
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   237,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "filter(fn: (r) => r._measurement == \"bike\")",
+											Start: ast.Position{
+												Column: 6,
+												Line:   237,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 12,
+													Line:   237,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "filter",
+												Start: ast.Position{
+													Column: 6,
+													Line:   237,
+												},
+											},
+										},
+										Name: "filter",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 18,
+										Line:   238,
+									},
+									File:   "groupByArea_index_test.flux",
+									Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()",
+									Start: ast.Position{
+										Column: 2,
+										Line:   235,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 18,
+											Line:   238,
+										},
+										File:   "groupByArea_index_test.flux",
+										Source: "geo.toRows()",
+										Start: ast.Position{
+											Column: 6,
+											Line:   238,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   238,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "geo.toRows",
+											Start: ast.Position{
+												Column: 6,
+												Line:   238,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 9,
+													Line:   238,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "geo",
+												Start: ast.Position{
+													Column: 6,
+													Line:   238,
+												},
+											},
+										},
+										Name: "geo",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   238,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "toRows",
+												Start: ast.Position{
+													Column: 10,
+													Line:   238,
+												},
+											},
+										},
+										Name: "toRows",
+									},
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 74,
+									Line:   239,
+								},
+								File:   "groupByArea_index_test.flux",
+								Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 3, maxPrecisionIndex: 5)",
+								Start: ast.Position{
+									Column: 2,
+									Line:   235,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 73,
+											Line:   239,
+										},
+										File:   "groupByArea_index_test.flux",
+										Source: "newColumn: \"gx\", precision: 3, maxPrecisionIndex: 5",
+										Start: ast.Position{
+											Column: 22,
+											Line:   239,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 37,
+												Line:   239,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "newColumn: \"gx\"",
+											Start: ast.Position{
+												Column: 22,
+												Line:   239,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   239,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "newColumn",
+												Start: ast.Position{
+													Column: 22,
+													Line:   239,
+												},
+											},
+										},
+										Name: "newColumn",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   239,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "\"gx\"",
+												Start: ast.Position{
+													Column: 33,
+													Line:   239,
+												},
+											},
+										},
+										Value: "gx",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   239,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "precision: 3",
+											Start: ast.Position{
+												Column: 39,
+												Line:   239,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 48,
+													Line:   239,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "precision",
+												Start: ast.Position{
+													Column: 39,
+													Line:   239,
+												},
+											},
+										},
+										Name: "precision",
+									},
+									Value: &ast.IntegerLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 51,
+													Line:   239,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "3",
+												Start: ast.Position{
+													Column: 50,
+													Line:   239,
+												},
+											},
+										},
+										Value: int64(3),
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 73,
+												Line:   239,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "maxPrecisionIndex: 5",
+											Start: ast.Position{
+												Column: 53,
+												Line:   239,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 70,
+													Line:   239,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "maxPrecisionIndex",
+												Start: ast.Position{
+													Column: 53,
+													Line:   239,
+												},
+											},
+										},
+										Name: "maxPrecisionIndex",
+									},
+									Value: &ast.IntegerLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 73,
+													Line:   239,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "5",
+												Start: ast.Position{
+													Column: 72,
+													Line:   239,
+												},
+											},
+										},
+										Value: int64(5),
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 74,
+										Line:   239,
+									},
+									File:   "groupByArea_index_test.flux",
+									Source: "geo.groupByArea(newColumn: \"gx\", precision: 3, maxPrecisionIndex: 5)",
+									Start: ast.Position{
+										Column: 6,
+										Line:   239,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   239,
+										},
+										File:   "groupByArea_index_test.flux",
+										Source: "geo.groupByArea",
+										Start: ast.Position{
+											Column: 6,
+											Line:   239,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   239,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "geo",
+											Start: ast.Position{
+												Column: 6,
+												Line:   239,
+											},
+										},
+									},
+									Name: "geo",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 21,
+												Line:   239,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "groupByArea",
+											Start: ast.Position{
+												Column: 10,
+												Line:   239,
+											},
+										},
+									},
+									Name: "groupByArea",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 39,
+								Line:   240,
+							},
+							File:   "groupByArea_index_test.flux",
+							Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 3, maxPrecisionIndex: 5)\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+							Start: ast.Position{
+								Column: 2,
+								Line:   235,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 38,
+										Line:   240,
+									},
+									File:   "groupByArea_index_test.flux",
+									Source: "columns: [\"_start\",\"_stop\"]",
+									Start: ast.Position{
+										Column: 11,
+										Line:   240,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   240,
+										},
+										File:   "groupByArea_index_test.flux",
+										Source: "columns: [\"_start\",\"_stop\"]",
+										Start: ast.Position{
+											Column: 11,
+											Line:   240,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   240,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 11,
+												Line:   240,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 38,
+												Line:   240,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "[\"_start\",\"_stop\"]",
+											Start: ast.Position{
+												Column: 20,
+												Line:   240,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   240,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "\"_start\"",
+												Start: ast.Position{
+													Column: 21,
+													Line:   240,
+												},
+											},
+										},
+										Value: "_start",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   240,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "\"_stop\"",
+												Start: ast.Position{
+													Column: 30,
+													Line:   240,
+												},
+											},
+										},
+										Value: "_stop",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 39,
+									Line:   240,
+								},
+								File:   "groupByArea_index_test.flux",
+								Source: "drop(columns: [\"_start\",\"_stop\"])",
+								Start: ast.Position{
+									Column: 6,
+									Line:   240,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 10,
+										Line:   240,
+									},
+									File:   "groupByArea_index_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 6,
+										Line:   240,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   234,
+							},
+							File:   "groupByArea_index_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 24,
+								Line:   234,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   234,
+								},
+								File:   "groupByArea_index_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 24,
+									Line:   234,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   234,
+							},
+							File:   "groupByArea_index_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 30,
+								Line:   234,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 107,
+							Line:   243,
+						},
+						File:   "groupByArea_index_test.flux",
+						Source: "_groupByArea_index = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea_index})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   242,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   242,
+							},
+							File:   "groupByArea_index_test.flux",
+							Source: "_groupByArea_index",
+							Start: ast.Position{
+								Column: 6,
+								Line:   242,
+							},
+						},
+					},
+					Name: "_groupByArea_index",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 107,
+								Line:   243,
+							},
+							File:   "groupByArea_index_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea_index})",
+							Start: ast.Position{
+								Column: 27,
+								Line:   242,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 107,
+									Line:   243,
+								},
+								File:   "groupByArea_index_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea_index})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   243,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 106,
+										Line:   243,
+									},
+									File:   "groupByArea_index_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea_index}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   243,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   243,
+										},
+										File:   "groupByArea_index_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   243,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   243,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   243,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   243,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   243,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   243,
+													},
+													File:   "groupByArea_index_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   243,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   243,
+														},
+														File:   "groupByArea_index_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   243,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   243,
+														},
+														File:   "groupByArea_index_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   243,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   243,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   243,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   243,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   243,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   243,
+													},
+													File:   "groupByArea_index_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   243,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   243,
+													},
+													File:   "groupByArea_index_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   243,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   243,
+										},
+										File:   "groupByArea_index_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   243,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   243,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   243,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   243,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   243,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   243,
+													},
+													File:   "groupByArea_index_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   243,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   243,
+														},
+														File:   "groupByArea_index_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   243,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   243,
+														},
+														File:   "groupByArea_index_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   243,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   243,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   243,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   243,
+												},
+												File:   "groupByArea_index_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   243,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   243,
+													},
+													File:   "groupByArea_index_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   243,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   243,
+													},
+													File:   "groupByArea_index_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   243,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 105,
+											Line:   243,
+										},
+										File:   "groupByArea_index_test.flux",
+										Source: "fn: t_groupByArea_index",
+										Start: ast.Position{
+											Column: 82,
+											Line:   243,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   243,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   243,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 105,
+												Line:   243,
+											},
+											File:   "groupByArea_index_test.flux",
+											Source: "t_groupByArea_index",
+											Start: ast.Position{
+												Column: 86,
+												Line:   243,
+											},
+										},
+									},
+									Name: "t_groupByArea_index",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 107,
+						Line:   243,
+					},
+					File:   "groupByArea_index_test.flux",
+					Source: "test _groupByArea_index = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea_index})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   242,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   3,
+					},
+					File:   "groupByArea_index_test.flux",
+					Source: "import \"experimental/geo\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   3,
+						},
+						File:   "groupByArea_index_test.flux",
+						Source: "\"experimental/geo\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental/geo",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "groupByArea_index_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "groupByArea_index_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "groupByArea_index_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   1,
+					},
+					File:   "groupByArea_index_test.flux",
+					Source: "package geo_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   1,
+						},
+						File:   "groupByArea_index_test.flux",
+						Source: "geo_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "geo_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 111,
+					Line:   243,
+				},
+				File:   "groupByArea_subtring_test.flux",
+				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"\n\noutData_gridFilter = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"\n\noutData = \"\n#group,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false\n#datatype,string,long,string,string,string,string,string,string,string,string,dateTime:RFC3339,string,string,double,double,long\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_g1,_g2,_g3,_g4,_g5,gx,_measurement,_pt,_time,geohash,id,lat,lon,tid\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,end,2019-11-10T11:08:34Z,dr5ruud5tqgq,vehicleB,40.762662,-73.967971,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,start,2019-11-10T11:07:12Z,dr5ruudb3t3t,vehicleB,40.762096,-73.967104,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:35Z,dr5ruudc4j6z,vehicleB,40.762225,-73.967081,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:38Z,dr5ruudc2cx4,vehicleB,40.762247,-73.967129,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:43Z,dr5ruud9vchz,vehicleB,40.762331,-73.967261,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:48Z,dr5ruudd4pse,vehicleB,40.762408,-73.967422,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:52Z,dr5ruud6xmg0,vehicleB,40.762484,-73.967542,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:08:01Z,dr5ruud774zf,vehicleB,40.762597,-73.967718,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:08:16Z,dr5ruud71q89,vehicleB,40.762574,-73.967803,1573384032000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,end,2019-11-10T21:17:47Z,dr5ruuefkfxf,vehicleB,40.762424,-73.965583,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,start,2019-11-10T21:16:00Z,dr5ruueq7t2w,vehicleB,40.763126,-73.966333,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:06Z,dr5ruueqjqex,vehicleB,40.76309,-73.966254,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:18Z,dr5ruuetchtj,vehicleB,40.763036,-73.966091,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:31Z,dr5ruuettz5d,vehicleB,40.763006,-73.965889,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:48Z,dr5ruuev1s43,vehicleB,40.762904,-73.96573,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:08Z,dr5ruueu9z2u,vehicleB,40.762836,-73.965721,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:23Z,dr5ruuesputr,vehicleB,40.762736,-73.965801,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:36Z,dr5ruuefsffw,vehicleB,40.762469,-73.96559,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:46Z,dr5ruuefm16y,vehicleB,40.762418,-73.965579,1573420560000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,start,2019-11-20T10:17:17Z,dr5ze3q2xypb,vehicleA,40.700344,-73.324814,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:18Z,dr5ze3q88qg0,vehicleA,40.700348,-73.324799,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:24Z,dr5ze3q8fxvt,vehicleA,40.700397,-73.324699,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:26Z,dr5ze3q9h4gh,vehicleA,40.700413,-73.324638,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:32Z,dr5ze3q9ryr8,vehicleA,40.700474,-73.324471,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:35Z,dr5ze3qc6rd4,vehicleA,40.700481,-73.324371,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:42Z,dr5ze3qcqery,vehicleA,40.700459,-73.324181,1574245037000000000\n,,3,d,dr,dr5,dr5z,dr5ze,dr5ze3r,bike,end,2019-11-20T10:18:00Z,dr5ze3r6djkt,vehicleA,40.700684,-73.323692,1574245037000000000\n,,3,d,dr,dr5,dr5z,dr5ze,dr5ze3r,bike,via,2019-11-20T10:17:47Z,dr5ze3r176sr,vehicleA,40.700455,-73.323982,1574245037000000000\n,,3,d,dr,dr5,dr5z,dr5ze,dr5ze3r,bike,via,2019-11-20T10:17:54Z,dr5ze3r3b6gn,vehicleA,40.700542,-73.323769,1574245037000000000\n\"\n\nt_groupByArea_substring = (table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 7, maxPrecisionIndex: 5)\n\t\t|> drop(columns: [\"_start\",\"_stop\"])\n\ntest _groupByArea_substring = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea_substring})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "groupByArea_subtring_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "groupByArea_subtring_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "groupByArea_subtring_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "groupByArea_subtring_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "groupByArea_subtring_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "groupByArea_subtring_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   139,
+					},
+					File:   "groupByArea_subtring_test.flux",
+					Source: "inData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "groupByArea_subtring_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   139,
+						},
+						File:   "groupByArea_subtring_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   196,
+					},
+					File:   "groupByArea_subtring_test.flux",
+					Source: "outData_gridFilter = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   141,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 19,
+							Line:   141,
+						},
+						File:   "groupByArea_subtring_test.flux",
+						Source: "outData_gridFilter",
+						Start: ast.Position{
+							Column: 1,
+							Line:   141,
+						},
+					},
+				},
+				Name: "outData_gridFilter",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   196,
+						},
+						File:   "groupByArea_subtring_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+						Start: ast.Position{
+							Column: 22,
+							Line:   141,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   232,
+					},
+					File:   "groupByArea_subtring_test.flux",
+					Source: "outData = \"\n#group,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false\n#datatype,string,long,string,string,string,string,string,string,string,string,dateTime:RFC3339,string,string,double,double,long\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_g1,_g2,_g3,_g4,_g5,gx,_measurement,_pt,_time,geohash,id,lat,lon,tid\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,end,2019-11-10T11:08:34Z,dr5ruud5tqgq,vehicleB,40.762662,-73.967971,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,start,2019-11-10T11:07:12Z,dr5ruudb3t3t,vehicleB,40.762096,-73.967104,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:35Z,dr5ruudc4j6z,vehicleB,40.762225,-73.967081,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:38Z,dr5ruudc2cx4,vehicleB,40.762247,-73.967129,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:43Z,dr5ruud9vchz,vehicleB,40.762331,-73.967261,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:48Z,dr5ruudd4pse,vehicleB,40.762408,-73.967422,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:52Z,dr5ruud6xmg0,vehicleB,40.762484,-73.967542,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:08:01Z,dr5ruud774zf,vehicleB,40.762597,-73.967718,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:08:16Z,dr5ruud71q89,vehicleB,40.762574,-73.967803,1573384032000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,end,2019-11-10T21:17:47Z,dr5ruuefkfxf,vehicleB,40.762424,-73.965583,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,start,2019-11-10T21:16:00Z,dr5ruueq7t2w,vehicleB,40.763126,-73.966333,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:06Z,dr5ruueqjqex,vehicleB,40.76309,-73.966254,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:18Z,dr5ruuetchtj,vehicleB,40.763036,-73.966091,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:31Z,dr5ruuettz5d,vehicleB,40.763006,-73.965889,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:48Z,dr5ruuev1s43,vehicleB,40.762904,-73.96573,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:08Z,dr5ruueu9z2u,vehicleB,40.762836,-73.965721,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:23Z,dr5ruuesputr,vehicleB,40.762736,-73.965801,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:36Z,dr5ruuefsffw,vehicleB,40.762469,-73.96559,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:46Z,dr5ruuefm16y,vehicleB,40.762418,-73.965579,1573420560000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,start,2019-11-20T10:17:17Z,dr5ze3q2xypb,vehicleA,40.700344,-73.324814,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:18Z,dr5ze3q88qg0,vehicleA,40.700348,-73.324799,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:24Z,dr5ze3q8fxvt,vehicleA,40.700397,-73.324699,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:26Z,dr5ze3q9h4gh,vehicleA,40.700413,-73.324638,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:32Z,dr5ze3q9ryr8,vehicleA,40.700474,-73.324471,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:35Z,dr5ze3qc6rd4,vehicleA,40.700481,-73.324371,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:42Z,dr5ze3qcqery,vehicleA,40.700459,-73.324181,1574245037000000000\n,,3,d,dr,dr5,dr5z,dr5ze,dr5ze3r,bike,end,2019-11-20T10:18:00Z,dr5ze3r6djkt,vehicleA,40.700684,-73.323692,1574245037000000000\n,,3,d,dr,dr5,dr5z,dr5ze,dr5ze3r,bike,via,2019-11-20T10:17:47Z,dr5ze3r176sr,vehicleA,40.700455,-73.323982,1574245037000000000\n,,3,d,dr,dr5,dr5z,dr5ze,dr5ze3r,bike,via,2019-11-20T10:17:54Z,dr5ze3r3b6gn,vehicleA,40.700542,-73.323769,1574245037000000000\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   198,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   198,
+						},
+						File:   "groupByArea_subtring_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   198,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   232,
+						},
+						File:   "groupByArea_subtring_test.flux",
+						Source: "\"\n#group,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false\n#datatype,string,long,string,string,string,string,string,string,string,string,dateTime:RFC3339,string,string,double,double,long\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_g1,_g2,_g3,_g4,_g5,gx,_measurement,_pt,_time,geohash,id,lat,lon,tid\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,end,2019-11-10T11:08:34Z,dr5ruud5tqgq,vehicleB,40.762662,-73.967971,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,start,2019-11-10T11:07:12Z,dr5ruudb3t3t,vehicleB,40.762096,-73.967104,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:35Z,dr5ruudc4j6z,vehicleB,40.762225,-73.967081,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:38Z,dr5ruudc2cx4,vehicleB,40.762247,-73.967129,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:43Z,dr5ruud9vchz,vehicleB,40.762331,-73.967261,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:48Z,dr5ruudd4pse,vehicleB,40.762408,-73.967422,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:52Z,dr5ruud6xmg0,vehicleB,40.762484,-73.967542,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:08:01Z,dr5ruud774zf,vehicleB,40.762597,-73.967718,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:08:16Z,dr5ruud71q89,vehicleB,40.762574,-73.967803,1573384032000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,end,2019-11-10T21:17:47Z,dr5ruuefkfxf,vehicleB,40.762424,-73.965583,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,start,2019-11-10T21:16:00Z,dr5ruueq7t2w,vehicleB,40.763126,-73.966333,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:06Z,dr5ruueqjqex,vehicleB,40.76309,-73.966254,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:18Z,dr5ruuetchtj,vehicleB,40.763036,-73.966091,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:31Z,dr5ruuettz5d,vehicleB,40.763006,-73.965889,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:48Z,dr5ruuev1s43,vehicleB,40.762904,-73.96573,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:08Z,dr5ruueu9z2u,vehicleB,40.762836,-73.965721,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:23Z,dr5ruuesputr,vehicleB,40.762736,-73.965801,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:36Z,dr5ruuefsffw,vehicleB,40.762469,-73.96559,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:46Z,dr5ruuefm16y,vehicleB,40.762418,-73.965579,1573420560000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,start,2019-11-20T10:17:17Z,dr5ze3q2xypb,vehicleA,40.700344,-73.324814,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:18Z,dr5ze3q88qg0,vehicleA,40.700348,-73.324799,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:24Z,dr5ze3q8fxvt,vehicleA,40.700397,-73.324699,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:26Z,dr5ze3q9h4gh,vehicleA,40.700413,-73.324638,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:32Z,dr5ze3q9ryr8,vehicleA,40.700474,-73.324471,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:35Z,dr5ze3qc6rd4,vehicleA,40.700481,-73.324371,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:42Z,dr5ze3qcqery,vehicleA,40.700459,-73.324181,1574245037000000000\n,,3,d,dr,dr5,dr5z,dr5ze,dr5ze3r,bike,end,2019-11-20T10:18:00Z,dr5ze3r6djkt,vehicleA,40.700684,-73.323692,1574245037000000000\n,,3,d,dr,dr5,dr5z,dr5ze,dr5ze3r,bike,via,2019-11-20T10:17:47Z,dr5ze3r176sr,vehicleA,40.700455,-73.323982,1574245037000000000\n,,3,d,dr,dr5,dr5z,dr5ze,dr5ze3r,bike,via,2019-11-20T10:17:54Z,dr5ze3r3b6gn,vehicleA,40.700542,-73.323769,1574245037000000000\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   198,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,false\n#datatype,string,long,string,string,string,string,string,string,string,string,dateTime:RFC3339,string,string,double,double,long\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_g1,_g2,_g3,_g4,_g5,gx,_measurement,_pt,_time,geohash,id,lat,lon,tid\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,end,2019-11-10T11:08:34Z,dr5ruud5tqgq,vehicleB,40.762662,-73.967971,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,start,2019-11-10T11:07:12Z,dr5ruudb3t3t,vehicleB,40.762096,-73.967104,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:35Z,dr5ruudc4j6z,vehicleB,40.762225,-73.967081,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:38Z,dr5ruudc2cx4,vehicleB,40.762247,-73.967129,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:43Z,dr5ruud9vchz,vehicleB,40.762331,-73.967261,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:48Z,dr5ruudd4pse,vehicleB,40.762408,-73.967422,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:07:52Z,dr5ruud6xmg0,vehicleB,40.762484,-73.967542,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:08:01Z,dr5ruud774zf,vehicleB,40.762597,-73.967718,1573384032000000000\n,,0,d,dr,dr5,dr5r,dr5ru,dr5ruud,bike,via,2019-11-10T11:08:16Z,dr5ruud71q89,vehicleB,40.762574,-73.967803,1573384032000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,end,2019-11-10T21:17:47Z,dr5ruuefkfxf,vehicleB,40.762424,-73.965583,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,start,2019-11-10T21:16:00Z,dr5ruueq7t2w,vehicleB,40.763126,-73.966333,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:06Z,dr5ruueqjqex,vehicleB,40.76309,-73.966254,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:18Z,dr5ruuetchtj,vehicleB,40.763036,-73.966091,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:31Z,dr5ruuettz5d,vehicleB,40.763006,-73.965889,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:16:48Z,dr5ruuev1s43,vehicleB,40.762904,-73.96573,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:08Z,dr5ruueu9z2u,vehicleB,40.762836,-73.965721,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:23Z,dr5ruuesputr,vehicleB,40.762736,-73.965801,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:36Z,dr5ruuefsffw,vehicleB,40.762469,-73.96559,1573420560000000000\n,,1,d,dr,dr5,dr5r,dr5ru,dr5ruue,bike,via,2019-11-10T21:17:46Z,dr5ruuefm16y,vehicleB,40.762418,-73.965579,1573420560000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,start,2019-11-20T10:17:17Z,dr5ze3q2xypb,vehicleA,40.700344,-73.324814,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:18Z,dr5ze3q88qg0,vehicleA,40.700348,-73.324799,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:24Z,dr5ze3q8fxvt,vehicleA,40.700397,-73.324699,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:26Z,dr5ze3q9h4gh,vehicleA,40.700413,-73.324638,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:32Z,dr5ze3q9ryr8,vehicleA,40.700474,-73.324471,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:35Z,dr5ze3qc6rd4,vehicleA,40.700481,-73.324371,1574245037000000000\n,,2,d,dr,dr5,dr5z,dr5ze,dr5ze3q,bike,via,2019-11-20T10:17:42Z,dr5ze3qcqery,vehicleA,40.700459,-73.324181,1574245037000000000\n,,3,d,dr,dr5,dr5z,dr5ze,dr5ze3r,bike,end,2019-11-20T10:18:00Z,dr5ze3r6djkt,vehicleA,40.700684,-73.323692,1574245037000000000\n,,3,d,dr,dr5,dr5z,dr5ze,dr5ze3r,bike,via,2019-11-20T10:17:47Z,dr5ze3r176sr,vehicleA,40.700455,-73.323982,1574245037000000000\n,,3,d,dr,dr5,dr5z,dr5ze,dr5ze3r,bike,via,2019-11-20T10:17:54Z,dr5ze3r3b6gn,vehicleA,40.700542,-73.323769,1574245037000000000\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 39,
+						Line:   240,
+					},
+					File:   "groupByArea_subtring_test.flux",
+					Source: "t_groupByArea_substring = (table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 7, maxPrecisionIndex: 5)\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   234,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 24,
+							Line:   234,
+						},
+						File:   "groupByArea_subtring_test.flux",
+						Source: "t_groupByArea_substring",
+						Start: ast.Position{
+							Column: 1,
+							Line:   234,
+						},
+					},
+				},
+				Name: "t_groupByArea_substring",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 39,
+							Line:   240,
+						},
+						File:   "groupByArea_subtring_test.flux",
+						Source: "(table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 7, maxPrecisionIndex: 5)\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+						Start: ast.Position{
+							Column: 27,
+							Line:   234,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 7,
+													Line:   235,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "table",
+												Start: ast.Position{
+													Column: 2,
+													Line:   235,
+												},
+											},
+										},
+										Name: "table",
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 40,
+												Line:   236,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)",
+											Start: ast.Position{
+												Column: 2,
+												Line:   235,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   236,
+													},
+													File:   "groupByArea_subtring_test.flux",
+													Source: "start: 2019-11-01T00:00:00Z",
+													Start: ast.Position{
+														Column: 12,
+														Line:   236,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 39,
+															Line:   236,
+														},
+														File:   "groupByArea_subtring_test.flux",
+														Source: "start: 2019-11-01T00:00:00Z",
+														Start: ast.Position{
+															Column: 12,
+															Line:   236,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 17,
+																Line:   236,
+															},
+															File:   "groupByArea_subtring_test.flux",
+															Source: "start",
+															Start: ast.Position{
+																Column: 12,
+																Line:   236,
+															},
+														},
+													},
+													Name: "start",
+												},
+												Value: &ast.DateTimeLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 39,
+																Line:   236,
+															},
+															File:   "groupByArea_subtring_test.flux",
+															Source: "2019-11-01T00:00:00Z",
+															Start: ast.Position{
+																Column: 19,
+																Line:   236,
+															},
+														},
+													},
+													Value: parser.MustParseTime("2019-11-01T00:00:00Z"),
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 40,
+													Line:   236,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "range(start: 2019-11-01T00:00:00Z)",
+												Start: ast.Position{
+													Column: 6,
+													Line:   236,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 11,
+														Line:   236,
+													},
+													File:   "groupByArea_subtring_test.flux",
+													Source: "range",
+													Start: ast.Position{
+														Column: 6,
+														Line:   236,
+													},
+												},
+											},
+											Name: "range",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 49,
+											Line:   237,
+										},
+										File:   "groupByArea_subtring_test.flux",
+										Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")",
+										Start: ast.Position{
+											Column: 2,
+											Line:   235,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 48,
+													Line:   237,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "fn: (r) => r._measurement == \"bike\"",
+												Start: ast.Position{
+													Column: 13,
+													Line:   237,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 48,
+														Line:   237,
+													},
+													File:   "groupByArea_subtring_test.flux",
+													Source: "fn: (r) => r._measurement == \"bike\"",
+													Start: ast.Position{
+														Column: 13,
+														Line:   237,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 15,
+															Line:   237,
+														},
+														File:   "groupByArea_subtring_test.flux",
+														Source: "fn",
+														Start: ast.Position{
+															Column: 13,
+															Line:   237,
+														},
+													},
+												},
+												Name: "fn",
+											},
+											Value: &ast.FunctionExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 48,
+															Line:   237,
+														},
+														File:   "groupByArea_subtring_test.flux",
+														Source: "(r) => r._measurement == \"bike\"",
+														Start: ast.Position{
+															Column: 17,
+															Line:   237,
+														},
+													},
+												},
+												Body: &ast.BinaryExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 48,
+																Line:   237,
+															},
+															File:   "groupByArea_subtring_test.flux",
+															Source: "r._measurement == \"bike\"",
+															Start: ast.Position{
+																Column: 24,
+																Line:   237,
+															},
+														},
+													},
+													Left: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 38,
+																	Line:   237,
+																},
+																File:   "groupByArea_subtring_test.flux",
+																Source: "r._measurement",
+																Start: ast.Position{
+																	Column: 24,
+																	Line:   237,
+																},
+															},
+														},
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 25,
+																		Line:   237,
+																	},
+																	File:   "groupByArea_subtring_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 24,
+																		Line:   237,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 38,
+																		Line:   237,
+																	},
+																	File:   "groupByArea_subtring_test.flux",
+																	Source: "_measurement",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   237,
+																	},
+																},
+															},
+															Name: "_measurement",
+														},
+													},
+													Operator: 17,
+													Right: &ast.StringLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 48,
+																	Line:   237,
+																},
+																File:   "groupByArea_subtring_test.flux",
+																Source: "\"bike\"",
+																Start: ast.Position{
+																	Column: 42,
+																	Line:   237,
+																},
+															},
+														},
+														Value: "bike",
+													},
+												},
+												Params: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 19,
+																Line:   237,
+															},
+															File:   "groupByArea_subtring_test.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 18,
+																Line:   237,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 19,
+																	Line:   237,
+																},
+																File:   "groupByArea_subtring_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 18,
+																	Line:   237,
+																},
+															},
+														},
+														Name: "r",
+													},
+													Value: nil,
+												}},
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   237,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "filter(fn: (r) => r._measurement == \"bike\")",
+											Start: ast.Position{
+												Column: 6,
+												Line:   237,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 12,
+													Line:   237,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "filter",
+												Start: ast.Position{
+													Column: 6,
+													Line:   237,
+												},
+											},
+										},
+										Name: "filter",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 18,
+										Line:   238,
+									},
+									File:   "groupByArea_subtring_test.flux",
+									Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()",
+									Start: ast.Position{
+										Column: 2,
+										Line:   235,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 18,
+											Line:   238,
+										},
+										File:   "groupByArea_subtring_test.flux",
+										Source: "geo.toRows()",
+										Start: ast.Position{
+											Column: 6,
+											Line:   238,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   238,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "geo.toRows",
+											Start: ast.Position{
+												Column: 6,
+												Line:   238,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 9,
+													Line:   238,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "geo",
+												Start: ast.Position{
+													Column: 6,
+													Line:   238,
+												},
+											},
+										},
+										Name: "geo",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   238,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "toRows",
+												Start: ast.Position{
+													Column: 10,
+													Line:   238,
+												},
+											},
+										},
+										Name: "toRows",
+									},
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 74,
+									Line:   239,
+								},
+								File:   "groupByArea_subtring_test.flux",
+								Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 7, maxPrecisionIndex: 5)",
+								Start: ast.Position{
+									Column: 2,
+									Line:   235,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 73,
+											Line:   239,
+										},
+										File:   "groupByArea_subtring_test.flux",
+										Source: "newColumn: \"gx\", precision: 7, maxPrecisionIndex: 5",
+										Start: ast.Position{
+											Column: 22,
+											Line:   239,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 37,
+												Line:   239,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "newColumn: \"gx\"",
+											Start: ast.Position{
+												Column: 22,
+												Line:   239,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   239,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "newColumn",
+												Start: ast.Position{
+													Column: 22,
+													Line:   239,
+												},
+											},
+										},
+										Name: "newColumn",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   239,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "\"gx\"",
+												Start: ast.Position{
+													Column: 33,
+													Line:   239,
+												},
+											},
+										},
+										Value: "gx",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   239,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "precision: 7",
+											Start: ast.Position{
+												Column: 39,
+												Line:   239,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 48,
+													Line:   239,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "precision",
+												Start: ast.Position{
+													Column: 39,
+													Line:   239,
+												},
+											},
+										},
+										Name: "precision",
+									},
+									Value: &ast.IntegerLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 51,
+													Line:   239,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "7",
+												Start: ast.Position{
+													Column: 50,
+													Line:   239,
+												},
+											},
+										},
+										Value: int64(7),
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 73,
+												Line:   239,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "maxPrecisionIndex: 5",
+											Start: ast.Position{
+												Column: 53,
+												Line:   239,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 70,
+													Line:   239,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "maxPrecisionIndex",
+												Start: ast.Position{
+													Column: 53,
+													Line:   239,
+												},
+											},
+										},
+										Name: "maxPrecisionIndex",
+									},
+									Value: &ast.IntegerLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 73,
+													Line:   239,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "5",
+												Start: ast.Position{
+													Column: 72,
+													Line:   239,
+												},
+											},
+										},
+										Value: int64(5),
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 74,
+										Line:   239,
+									},
+									File:   "groupByArea_subtring_test.flux",
+									Source: "geo.groupByArea(newColumn: \"gx\", precision: 7, maxPrecisionIndex: 5)",
+									Start: ast.Position{
+										Column: 6,
+										Line:   239,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   239,
+										},
+										File:   "groupByArea_subtring_test.flux",
+										Source: "geo.groupByArea",
+										Start: ast.Position{
+											Column: 6,
+											Line:   239,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   239,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "geo",
+											Start: ast.Position{
+												Column: 6,
+												Line:   239,
+											},
+										},
+									},
+									Name: "geo",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 21,
+												Line:   239,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "groupByArea",
+											Start: ast.Position{
+												Column: 10,
+												Line:   239,
+											},
+										},
+									},
+									Name: "groupByArea",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 39,
+								Line:   240,
+							},
+							File:   "groupByArea_subtring_test.flux",
+							Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 7, maxPrecisionIndex: 5)\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+							Start: ast.Position{
+								Column: 2,
+								Line:   235,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 38,
+										Line:   240,
+									},
+									File:   "groupByArea_subtring_test.flux",
+									Source: "columns: [\"_start\",\"_stop\"]",
+									Start: ast.Position{
+										Column: 11,
+										Line:   240,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   240,
+										},
+										File:   "groupByArea_subtring_test.flux",
+										Source: "columns: [\"_start\",\"_stop\"]",
+										Start: ast.Position{
+											Column: 11,
+											Line:   240,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   240,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 11,
+												Line:   240,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 38,
+												Line:   240,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "[\"_start\",\"_stop\"]",
+											Start: ast.Position{
+												Column: 20,
+												Line:   240,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   240,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "\"_start\"",
+												Start: ast.Position{
+													Column: 21,
+													Line:   240,
+												},
+											},
+										},
+										Value: "_start",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   240,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "\"_stop\"",
+												Start: ast.Position{
+													Column: 30,
+													Line:   240,
+												},
+											},
+										},
+										Value: "_stop",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 39,
+									Line:   240,
+								},
+								File:   "groupByArea_subtring_test.flux",
+								Source: "drop(columns: [\"_start\",\"_stop\"])",
+								Start: ast.Position{
+									Column: 6,
+									Line:   240,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 10,
+										Line:   240,
+									},
+									File:   "groupByArea_subtring_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 6,
+										Line:   240,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 36,
+								Line:   234,
+							},
+							File:   "groupByArea_subtring_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 28,
+								Line:   234,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 33,
+									Line:   234,
+								},
+								File:   "groupByArea_subtring_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 28,
+									Line:   234,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 36,
+								Line:   234,
+							},
+							File:   "groupByArea_subtring_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 34,
+								Line:   234,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 111,
+							Line:   243,
+						},
+						File:   "groupByArea_subtring_test.flux",
+						Source: "_groupByArea_substring = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea_substring})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   242,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 28,
+								Line:   242,
+							},
+							File:   "groupByArea_subtring_test.flux",
+							Source: "_groupByArea_substring",
+							Start: ast.Position{
+								Column: 6,
+								Line:   242,
+							},
+						},
+					},
+					Name: "_groupByArea_substring",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 111,
+								Line:   243,
+							},
+							File:   "groupByArea_subtring_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea_substring})",
+							Start: ast.Position{
+								Column: 31,
+								Line:   242,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 111,
+									Line:   243,
+								},
+								File:   "groupByArea_subtring_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea_substring})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   243,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 110,
+										Line:   243,
+									},
+									File:   "groupByArea_subtring_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea_substring}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   243,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   243,
+										},
+										File:   "groupByArea_subtring_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   243,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   243,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   243,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   243,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   243,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   243,
+													},
+													File:   "groupByArea_subtring_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   243,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   243,
+														},
+														File:   "groupByArea_subtring_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   243,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   243,
+														},
+														File:   "groupByArea_subtring_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   243,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   243,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   243,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   243,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   243,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   243,
+													},
+													File:   "groupByArea_subtring_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   243,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   243,
+													},
+													File:   "groupByArea_subtring_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   243,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   243,
+										},
+										File:   "groupByArea_subtring_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   243,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   243,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   243,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   243,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   243,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   243,
+													},
+													File:   "groupByArea_subtring_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   243,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   243,
+														},
+														File:   "groupByArea_subtring_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   243,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   243,
+														},
+														File:   "groupByArea_subtring_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   243,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   243,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   243,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   243,
+												},
+												File:   "groupByArea_subtring_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   243,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   243,
+													},
+													File:   "groupByArea_subtring_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   243,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   243,
+													},
+													File:   "groupByArea_subtring_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   243,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 109,
+											Line:   243,
+										},
+										File:   "groupByArea_subtring_test.flux",
+										Source: "fn: t_groupByArea_substring",
+										Start: ast.Position{
+											Column: 82,
+											Line:   243,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   243,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   243,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 109,
+												Line:   243,
+											},
+											File:   "groupByArea_subtring_test.flux",
+											Source: "t_groupByArea_substring",
+											Start: ast.Position{
+												Column: 86,
+												Line:   243,
+											},
+										},
+									},
+									Name: "t_groupByArea_substring",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 111,
+						Line:   243,
+					},
+					File:   "groupByArea_subtring_test.flux",
+					Source: "test _groupByArea_substring = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea_substring})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   242,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   3,
+					},
+					File:   "groupByArea_subtring_test.flux",
+					Source: "import \"experimental/geo\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   3,
+						},
+						File:   "groupByArea_subtring_test.flux",
+						Source: "\"experimental/geo\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental/geo",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "groupByArea_subtring_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "groupByArea_subtring_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "groupByArea_subtring_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   1,
+					},
+					File:   "groupByArea_subtring_test.flux",
+					Source: "package geo_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   1,
+						},
+						File:   "groupByArea_subtring_test.flux",
+						Source: "geo_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "geo_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 99,
+					Line:   244,
+				},
+				File:   "stripMeta_test.flux",
+				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"\n\noutData_gridFilter = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"\n\noutData = \"\n#group,false,false,false,false,false,false,false,false,false,false,false,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double,double,long,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_g5,_measurement,_pt,id,geohash,lat,lon,tid,gx\n,,0,2019-11-10T11:08:34Z,dr5ru,bike,end,vehicleB,dr5ruud5tqgq,40.762662,-73.967971,1573384032000000000,dr5ru\n,,0,2019-11-10T21:17:47Z,dr5ru,bike,end,vehicleB,dr5ruuefkfxf,40.762424,-73.965583,1573420560000000000,dr5ru\n,,0,2019-11-10T11:07:12Z,dr5ru,bike,start,vehicleB,dr5ruudb3t3t,40.762096,-73.967104,1573384032000000000,dr5ru\n,,0,2019-11-10T21:16:00Z,dr5ru,bike,start,vehicleB,dr5ruueq7t2w,40.763126,-73.966333,1573420560000000000,dr5ru\n,,0,2019-11-10T11:07:35Z,dr5ru,bike,via,vehicleB,dr5ruudc4j6z,40.762225,-73.967081,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:38Z,dr5ru,bike,via,vehicleB,dr5ruudc2cx4,40.762247,-73.967129,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:43Z,dr5ru,bike,via,vehicleB,dr5ruud9vchz,40.762331,-73.967261,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:48Z,dr5ru,bike,via,vehicleB,dr5ruudd4pse,40.762408,-73.967422,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:52Z,dr5ru,bike,via,vehicleB,dr5ruud6xmg0,40.762484,-73.967542,1573384032000000000,dr5ru\n,,0,2019-11-10T11:08:01Z,dr5ru,bike,via,vehicleB,dr5ruud774zf,40.762597,-73.967718,1573384032000000000,dr5ru\n,,0,2019-11-10T11:08:16Z,dr5ru,bike,via,vehicleB,dr5ruud71q89,40.762574,-73.967803,1573384032000000000,dr5ru\n,,0,2019-11-10T21:16:06Z,dr5ru,bike,via,vehicleB,dr5ruueqjqex,40.76309,-73.966254,1573420560000000000,dr5ru\n,,0,2019-11-10T21:16:18Z,dr5ru,bike,via,vehicleB,dr5ruuetchtj,40.763036,-73.966091,1573420560000000000,dr5ru\n,,0,2019-11-10T21:16:31Z,dr5ru,bike,via,vehicleB,dr5ruuettz5d,40.763006,-73.965889,1573420560000000000,dr5ru\n,,0,2019-11-10T21:16:48Z,dr5ru,bike,via,vehicleB,dr5ruuev1s43,40.762904,-73.96573,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:08Z,dr5ru,bike,via,vehicleB,dr5ruueu9z2u,40.762836,-73.965721,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:23Z,dr5ru,bike,via,vehicleB,dr5ruuesputr,40.762736,-73.965801,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:36Z,dr5ru,bike,via,vehicleB,dr5ruuefsffw,40.762469,-73.96559,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:46Z,dr5ru,bike,via,vehicleB,dr5ruuefm16y,40.762418,-73.965579,1573420560000000000,dr5ru\n,,1,2019-11-20T10:18:00Z,dr5ze,bike,end,vehicleA,dr5ze3r6djkt,40.700684,-73.323692,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:17Z,dr5ze,bike,start,vehicleA,dr5ze3q2xypb,40.700344,-73.324814,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:18Z,dr5ze,bike,via,vehicleA,dr5ze3q88qg0,40.700348,-73.324799,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:24Z,dr5ze,bike,via,vehicleA,dr5ze3q8fxvt,40.700397,-73.324699,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:26Z,dr5ze,bike,via,vehicleA,dr5ze3q9h4gh,40.700413,-73.324638,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:32Z,dr5ze,bike,via,vehicleA,dr5ze3q9ryr8,40.700474,-73.324471,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:35Z,dr5ze,bike,via,vehicleA,dr5ze3qc6rd4,40.700481,-73.324371,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:42Z,dr5ze,bike,via,vehicleA,dr5ze3qcqery,40.700459,-73.324181,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:47Z,dr5ze,bike,via,vehicleA,dr5ze3r176sr,40.700455,-73.323982,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:54Z,dr5ze,bike,via,vehicleA,dr5ze3r3b6gn,40.700542,-73.323769,1574245037000000000,dr5ze\n\"\n\nt_stripMeta = (table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 5, maxPrecisionIndex: 5)\n\t\t|> geo.stripMeta(except: [\"_g5\"])\n\t\t|> drop(columns: [\"_start\",\"_stop\"])\n\ntest _stripMeta = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stripMeta})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "stripMeta_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "stripMeta_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "stripMeta_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "stripMeta_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "stripMeta_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "stripMeta_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   139,
+					},
+					File:   "stripMeta_test.flux",
+					Source: "inData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "stripMeta_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   139,
+						},
+						File:   "stripMeta_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,dr5ruud5tqgq,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,0,2019-11-10T21:17:47Z,dr5ruuefkfxf,geohash,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,1,2019-11-10T11:07:12Z,dr5ruudb3t3t,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,1,2019-11-10T21:16:00Z,dr5ruueq7t2w,geohash,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,2,2019-11-10T11:07:35Z,dr5ruudc4j6z,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:38Z,dr5ruudc2cx4,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:43Z,dr5ruud9vchz,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:48Z,dr5ruudd4pse,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:07:52Z,dr5ruud6xmg0,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:01Z,dr5ruud774zf,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T11:08:16Z,dr5ruud71q89,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:06Z,dr5ruueqjqex,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:18Z,dr5ruuetchtj,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:31Z,dr5ruuettz5d,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:16:48Z,dr5ruuev1s43,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:08Z,dr5ruueu9z2u,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:23Z,dr5ruuesputr,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:36Z,dr5ruuefsffw,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,2,2019-11-10T21:17:46Z,dr5ruuefm16y,geohash,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,3,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,40.762662,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,6,2019-11-10T21:17:47Z,40.762424,lat,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,7,2019-11-10T11:07:12Z,40.762096,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,7,2019-11-10T21:16:00Z,40.763126,lat,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,8,2019-11-10T11:07:35Z,40.762225,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:38Z,40.762247,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:43Z,40.762331,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:48Z,40.762408,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:07:52Z,40.762484,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:01Z,40.762597,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T11:08:16Z,40.762574,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:06Z,40.76309,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:18Z,40.763036,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:31Z,40.763006,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:16:48Z,40.762904,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:08Z,40.762836,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:23Z,40.762736,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:36Z,40.762469,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,8,2019-11-10T21:17:46Z,40.762418,lat,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,9,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,12,2019-11-10T11:08:34Z,-73.967971,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,12,2019-11-10T21:17:47Z,-73.965583,lon,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,13,2019-11-10T11:07:12Z,-73.967104,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,13,2019-11-10T21:16:00Z,-73.966333,lon,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,14,2019-11-10T11:07:35Z,-73.967081,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:38Z,-73.967129,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:43Z,-73.967261,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:48Z,-73.967422,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:07:52Z,-73.967542,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:01Z,-73.967718,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T11:08:16Z,-73.967803,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:06Z,-73.966254,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:18Z,-73.966091,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:31Z,-73.965889,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:16:48Z,-73.96573,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:08Z,-73.965721,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:23Z,-73.965801,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:36Z,-73.96559,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,14,2019-11-10T21:17:46Z,-73.965579,lon,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,15,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,16,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,17,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,17,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,18,2019-11-10T11:08:34Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,18,2019-11-10T21:17:47Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,end,vehicleB\n,,19,2019-11-10T11:07:12Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,19,2019-11-10T21:16:00Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,start,vehicleB\n,,20,2019-11-10T11:07:35Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:38Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:43Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:48Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:07:52Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:01Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T11:08:16Z,1573384032000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:06Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:18Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:31Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:16:48Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:08Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:23Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:36Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,20,2019-11-10T21:17:46Z,1573420560000000000,tid,d,dr,dr5,dr5r,dr5ru,bike,via,vehicleB\n,,21,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,22,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,23,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,23,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   196,
+					},
+					File:   "stripMeta_test.flux",
+					Source: "outData_gridFilter = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   141,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 19,
+							Line:   141,
+						},
+						File:   "stripMeta_test.flux",
+						Source: "outData_gridFilter",
+						Start: ast.Position{
+							Column: 1,
+							Line:   141,
+						},
+					},
+				},
+				Name: "outData_gridFilter",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   196,
+						},
+						File:   "stripMeta_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\"",
+						Start: ast.Position{
+							Column: 22,
+							Line:   141,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,0,2019-11-20T10:18:00Z,dr5ze3r6djkt,geohash,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,1,2019-11-20T10:17:17Z,dr5ze3q2xypb,geohash,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,2,2019-11-20T10:17:18Z,dr5ze3q88qg0,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:24Z,dr5ze3q8fxvt,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:26Z,dr5ze3q9h4gh,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:32Z,dr5ze3q9ryr8,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:35Z,dr5ze3qc6rd4,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:42Z,dr5ze3qcqery,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:47Z,dr5ze3r176sr,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,2,2019-11-20T10:17:54Z,dr5ze3r3b6gn,geohash,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,3,2019-11-20T10:18:00Z,40.700684,lat,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,4,2019-11-20T10:17:17Z,40.700344,lat,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,5,2019-11-20T10:17:18Z,40.700348,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:24Z,40.700397,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:26Z,40.700413,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:32Z,40.700474,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:35Z,40.700481,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:42Z,40.700459,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:47Z,40.700455,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,5,2019-11-20T10:17:54Z,40.700542,lat,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,6,2019-11-20T10:18:00Z,-73.323692,lon,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,7,2019-11-20T10:17:17Z,-73.324814,lon,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,8,2019-11-20T10:17:18Z,-73.324799,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:24Z,-73.324699,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:26Z,-73.324638,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:32Z,-73.324471,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:35Z,-73.324371,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:42Z,-73.324181,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:47Z,-73.323982,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,8,2019-11-20T10:17:54Z,-73.323769,lon,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,\n,result,table,_time,_value,_field,_g1,_g2,_g3,_g4,_g5,_measurement,_pt,id\n,,9,2019-11-20T10:18:00Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,end,vehicleA\n,,10,2019-11-20T10:17:17Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,start,vehicleA\n,,11,2019-11-20T10:17:18Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:24Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:26Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:32Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:35Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:42Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:47Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n,,11,2019-11-20T10:17:54Z,1574245037000000000,tid,d,dr,dr5,dr5z,dr5ze,bike,via,vehicleA\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   232,
+					},
+					File:   "stripMeta_test.flux",
+					Source: "outData = \"\n#group,false,false,false,false,false,false,false,false,false,false,false,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double,double,long,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_g5,_measurement,_pt,id,geohash,lat,lon,tid,gx\n,,0,2019-11-10T11:08:34Z,dr5ru,bike,end,vehicleB,dr5ruud5tqgq,40.762662,-73.967971,1573384032000000000,dr5ru\n,,0,2019-11-10T21:17:47Z,dr5ru,bike,end,vehicleB,dr5ruuefkfxf,40.762424,-73.965583,1573420560000000000,dr5ru\n,,0,2019-11-10T11:07:12Z,dr5ru,bike,start,vehicleB,dr5ruudb3t3t,40.762096,-73.967104,1573384032000000000,dr5ru\n,,0,2019-11-10T21:16:00Z,dr5ru,bike,start,vehicleB,dr5ruueq7t2w,40.763126,-73.966333,1573420560000000000,dr5ru\n,,0,2019-11-10T11:07:35Z,dr5ru,bike,via,vehicleB,dr5ruudc4j6z,40.762225,-73.967081,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:38Z,dr5ru,bike,via,vehicleB,dr5ruudc2cx4,40.762247,-73.967129,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:43Z,dr5ru,bike,via,vehicleB,dr5ruud9vchz,40.762331,-73.967261,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:48Z,dr5ru,bike,via,vehicleB,dr5ruudd4pse,40.762408,-73.967422,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:52Z,dr5ru,bike,via,vehicleB,dr5ruud6xmg0,40.762484,-73.967542,1573384032000000000,dr5ru\n,,0,2019-11-10T11:08:01Z,dr5ru,bike,via,vehicleB,dr5ruud774zf,40.762597,-73.967718,1573384032000000000,dr5ru\n,,0,2019-11-10T11:08:16Z,dr5ru,bike,via,vehicleB,dr5ruud71q89,40.762574,-73.967803,1573384032000000000,dr5ru\n,,0,2019-11-10T21:16:06Z,dr5ru,bike,via,vehicleB,dr5ruueqjqex,40.76309,-73.966254,1573420560000000000,dr5ru\n,,0,2019-11-10T21:16:18Z,dr5ru,bike,via,vehicleB,dr5ruuetchtj,40.763036,-73.966091,1573420560000000000,dr5ru\n,,0,2019-11-10T21:16:31Z,dr5ru,bike,via,vehicleB,dr5ruuettz5d,40.763006,-73.965889,1573420560000000000,dr5ru\n,,0,2019-11-10T21:16:48Z,dr5ru,bike,via,vehicleB,dr5ruuev1s43,40.762904,-73.96573,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:08Z,dr5ru,bike,via,vehicleB,dr5ruueu9z2u,40.762836,-73.965721,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:23Z,dr5ru,bike,via,vehicleB,dr5ruuesputr,40.762736,-73.965801,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:36Z,dr5ru,bike,via,vehicleB,dr5ruuefsffw,40.762469,-73.96559,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:46Z,dr5ru,bike,via,vehicleB,dr5ruuefm16y,40.762418,-73.965579,1573420560000000000,dr5ru\n,,1,2019-11-20T10:18:00Z,dr5ze,bike,end,vehicleA,dr5ze3r6djkt,40.700684,-73.323692,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:17Z,dr5ze,bike,start,vehicleA,dr5ze3q2xypb,40.700344,-73.324814,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:18Z,dr5ze,bike,via,vehicleA,dr5ze3q88qg0,40.700348,-73.324799,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:24Z,dr5ze,bike,via,vehicleA,dr5ze3q8fxvt,40.700397,-73.324699,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:26Z,dr5ze,bike,via,vehicleA,dr5ze3q9h4gh,40.700413,-73.324638,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:32Z,dr5ze,bike,via,vehicleA,dr5ze3q9ryr8,40.700474,-73.324471,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:35Z,dr5ze,bike,via,vehicleA,dr5ze3qc6rd4,40.700481,-73.324371,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:42Z,dr5ze,bike,via,vehicleA,dr5ze3qcqery,40.700459,-73.324181,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:47Z,dr5ze,bike,via,vehicleA,dr5ze3r176sr,40.700455,-73.323982,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:54Z,dr5ze,bike,via,vehicleA,dr5ze3r3b6gn,40.700542,-73.323769,1574245037000000000,dr5ze\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   198,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   198,
+						},
+						File:   "stripMeta_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   198,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   232,
+						},
+						File:   "stripMeta_test.flux",
+						Source: "\"\n#group,false,false,false,false,false,false,false,false,false,false,false,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double,double,long,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_g5,_measurement,_pt,id,geohash,lat,lon,tid,gx\n,,0,2019-11-10T11:08:34Z,dr5ru,bike,end,vehicleB,dr5ruud5tqgq,40.762662,-73.967971,1573384032000000000,dr5ru\n,,0,2019-11-10T21:17:47Z,dr5ru,bike,end,vehicleB,dr5ruuefkfxf,40.762424,-73.965583,1573420560000000000,dr5ru\n,,0,2019-11-10T11:07:12Z,dr5ru,bike,start,vehicleB,dr5ruudb3t3t,40.762096,-73.967104,1573384032000000000,dr5ru\n,,0,2019-11-10T21:16:00Z,dr5ru,bike,start,vehicleB,dr5ruueq7t2w,40.763126,-73.966333,1573420560000000000,dr5ru\n,,0,2019-11-10T11:07:35Z,dr5ru,bike,via,vehicleB,dr5ruudc4j6z,40.762225,-73.967081,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:38Z,dr5ru,bike,via,vehicleB,dr5ruudc2cx4,40.762247,-73.967129,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:43Z,dr5ru,bike,via,vehicleB,dr5ruud9vchz,40.762331,-73.967261,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:48Z,dr5ru,bike,via,vehicleB,dr5ruudd4pse,40.762408,-73.967422,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:52Z,dr5ru,bike,via,vehicleB,dr5ruud6xmg0,40.762484,-73.967542,1573384032000000000,dr5ru\n,,0,2019-11-10T11:08:01Z,dr5ru,bike,via,vehicleB,dr5ruud774zf,40.762597,-73.967718,1573384032000000000,dr5ru\n,,0,2019-11-10T11:08:16Z,dr5ru,bike,via,vehicleB,dr5ruud71q89,40.762574,-73.967803,1573384032000000000,dr5ru\n,,0,2019-11-10T21:16:06Z,dr5ru,bike,via,vehicleB,dr5ruueqjqex,40.76309,-73.966254,1573420560000000000,dr5ru\n,,0,2019-11-10T21:16:18Z,dr5ru,bike,via,vehicleB,dr5ruuetchtj,40.763036,-73.966091,1573420560000000000,dr5ru\n,,0,2019-11-10T21:16:31Z,dr5ru,bike,via,vehicleB,dr5ruuettz5d,40.763006,-73.965889,1573420560000000000,dr5ru\n,,0,2019-11-10T21:16:48Z,dr5ru,bike,via,vehicleB,dr5ruuev1s43,40.762904,-73.96573,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:08Z,dr5ru,bike,via,vehicleB,dr5ruueu9z2u,40.762836,-73.965721,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:23Z,dr5ru,bike,via,vehicleB,dr5ruuesputr,40.762736,-73.965801,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:36Z,dr5ru,bike,via,vehicleB,dr5ruuefsffw,40.762469,-73.96559,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:46Z,dr5ru,bike,via,vehicleB,dr5ruuefm16y,40.762418,-73.965579,1573420560000000000,dr5ru\n,,1,2019-11-20T10:18:00Z,dr5ze,bike,end,vehicleA,dr5ze3r6djkt,40.700684,-73.323692,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:17Z,dr5ze,bike,start,vehicleA,dr5ze3q2xypb,40.700344,-73.324814,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:18Z,dr5ze,bike,via,vehicleA,dr5ze3q88qg0,40.700348,-73.324799,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:24Z,dr5ze,bike,via,vehicleA,dr5ze3q8fxvt,40.700397,-73.324699,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:26Z,dr5ze,bike,via,vehicleA,dr5ze3q9h4gh,40.700413,-73.324638,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:32Z,dr5ze,bike,via,vehicleA,dr5ze3q9ryr8,40.700474,-73.324471,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:35Z,dr5ze,bike,via,vehicleA,dr5ze3qc6rd4,40.700481,-73.324371,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:42Z,dr5ze,bike,via,vehicleA,dr5ze3qcqery,40.700459,-73.324181,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:47Z,dr5ze,bike,via,vehicleA,dr5ze3r176sr,40.700455,-73.323982,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:54Z,dr5ze,bike,via,vehicleA,dr5ze3r3b6gn,40.700542,-73.323769,1574245037000000000,dr5ze\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   198,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,false,false,false,false,false,false,false,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double,double,long,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_g5,_measurement,_pt,id,geohash,lat,lon,tid,gx\n,,0,2019-11-10T11:08:34Z,dr5ru,bike,end,vehicleB,dr5ruud5tqgq,40.762662,-73.967971,1573384032000000000,dr5ru\n,,0,2019-11-10T21:17:47Z,dr5ru,bike,end,vehicleB,dr5ruuefkfxf,40.762424,-73.965583,1573420560000000000,dr5ru\n,,0,2019-11-10T11:07:12Z,dr5ru,bike,start,vehicleB,dr5ruudb3t3t,40.762096,-73.967104,1573384032000000000,dr5ru\n,,0,2019-11-10T21:16:00Z,dr5ru,bike,start,vehicleB,dr5ruueq7t2w,40.763126,-73.966333,1573420560000000000,dr5ru\n,,0,2019-11-10T11:07:35Z,dr5ru,bike,via,vehicleB,dr5ruudc4j6z,40.762225,-73.967081,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:38Z,dr5ru,bike,via,vehicleB,dr5ruudc2cx4,40.762247,-73.967129,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:43Z,dr5ru,bike,via,vehicleB,dr5ruud9vchz,40.762331,-73.967261,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:48Z,dr5ru,bike,via,vehicleB,dr5ruudd4pse,40.762408,-73.967422,1573384032000000000,dr5ru\n,,0,2019-11-10T11:07:52Z,dr5ru,bike,via,vehicleB,dr5ruud6xmg0,40.762484,-73.967542,1573384032000000000,dr5ru\n,,0,2019-11-10T11:08:01Z,dr5ru,bike,via,vehicleB,dr5ruud774zf,40.762597,-73.967718,1573384032000000000,dr5ru\n,,0,2019-11-10T11:08:16Z,dr5ru,bike,via,vehicleB,dr5ruud71q89,40.762574,-73.967803,1573384032000000000,dr5ru\n,,0,2019-11-10T21:16:06Z,dr5ru,bike,via,vehicleB,dr5ruueqjqex,40.76309,-73.966254,1573420560000000000,dr5ru\n,,0,2019-11-10T21:16:18Z,dr5ru,bike,via,vehicleB,dr5ruuetchtj,40.763036,-73.966091,1573420560000000000,dr5ru\n,,0,2019-11-10T21:16:31Z,dr5ru,bike,via,vehicleB,dr5ruuettz5d,40.763006,-73.965889,1573420560000000000,dr5ru\n,,0,2019-11-10T21:16:48Z,dr5ru,bike,via,vehicleB,dr5ruuev1s43,40.762904,-73.96573,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:08Z,dr5ru,bike,via,vehicleB,dr5ruueu9z2u,40.762836,-73.965721,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:23Z,dr5ru,bike,via,vehicleB,dr5ruuesputr,40.762736,-73.965801,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:36Z,dr5ru,bike,via,vehicleB,dr5ruuefsffw,40.762469,-73.96559,1573420560000000000,dr5ru\n,,0,2019-11-10T21:17:46Z,dr5ru,bike,via,vehicleB,dr5ruuefm16y,40.762418,-73.965579,1573420560000000000,dr5ru\n,,1,2019-11-20T10:18:00Z,dr5ze,bike,end,vehicleA,dr5ze3r6djkt,40.700684,-73.323692,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:17Z,dr5ze,bike,start,vehicleA,dr5ze3q2xypb,40.700344,-73.324814,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:18Z,dr5ze,bike,via,vehicleA,dr5ze3q88qg0,40.700348,-73.324799,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:24Z,dr5ze,bike,via,vehicleA,dr5ze3q8fxvt,40.700397,-73.324699,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:26Z,dr5ze,bike,via,vehicleA,dr5ze3q9h4gh,40.700413,-73.324638,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:32Z,dr5ze,bike,via,vehicleA,dr5ze3q9ryr8,40.700474,-73.324471,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:35Z,dr5ze,bike,via,vehicleA,dr5ze3qc6rd4,40.700481,-73.324371,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:42Z,dr5ze,bike,via,vehicleA,dr5ze3qcqery,40.700459,-73.324181,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:47Z,dr5ze,bike,via,vehicleA,dr5ze3r176sr,40.700455,-73.323982,1574245037000000000,dr5ze\n,,1,2019-11-20T10:17:54Z,dr5ze,bike,via,vehicleA,dr5ze3r3b6gn,40.700542,-73.323769,1574245037000000000,dr5ze\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 39,
+						Line:   241,
+					},
+					File:   "stripMeta_test.flux",
+					Source: "t_stripMeta = (table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 5, maxPrecisionIndex: 5)\n\t\t|> geo.stripMeta(except: [\"_g5\"])\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   234,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 12,
+							Line:   234,
+						},
+						File:   "stripMeta_test.flux",
+						Source: "t_stripMeta",
+						Start: ast.Position{
+							Column: 1,
+							Line:   234,
+						},
+					},
+				},
+				Name: "t_stripMeta",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 39,
+							Line:   241,
+						},
+						File:   "stripMeta_test.flux",
+						Source: "(table=<-) =>\n\ttable\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 5, maxPrecisionIndex: 5)\n\t\t|> geo.stripMeta(except: [\"_g5\"])\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+						Start: ast.Position{
+							Column: 15,
+							Line:   234,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 7,
+														Line:   235,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "table",
+													Start: ast.Position{
+														Column: 2,
+														Line:   235,
+													},
+												},
+											},
+											Name: "table",
+										},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 40,
+													Line:   236,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)",
+												Start: ast.Position{
+													Column: 2,
+													Line:   235,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 39,
+															Line:   236,
+														},
+														File:   "stripMeta_test.flux",
+														Source: "start: 2019-11-01T00:00:00Z",
+														Start: ast.Position{
+															Column: 12,
+															Line:   236,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 39,
+																Line:   236,
+															},
+															File:   "stripMeta_test.flux",
+															Source: "start: 2019-11-01T00:00:00Z",
+															Start: ast.Position{
+																Column: 12,
+																Line:   236,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 17,
+																	Line:   236,
+																},
+																File:   "stripMeta_test.flux",
+																Source: "start",
+																Start: ast.Position{
+																	Column: 12,
+																	Line:   236,
+																},
+															},
+														},
+														Name: "start",
+													},
+													Value: &ast.DateTimeLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 39,
+																	Line:   236,
+																},
+																File:   "stripMeta_test.flux",
+																Source: "2019-11-01T00:00:00Z",
+																Start: ast.Position{
+																	Column: 19,
+																	Line:   236,
+																},
+															},
+														},
+														Value: parser.MustParseTime("2019-11-01T00:00:00Z"),
+													},
+												}},
+												With: nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 40,
+														Line:   236,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "range(start: 2019-11-01T00:00:00Z)",
+													Start: ast.Position{
+														Column: 6,
+														Line:   236,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 11,
+															Line:   236,
+														},
+														File:   "stripMeta_test.flux",
+														Source: "range",
+														Start: ast.Position{
+															Column: 6,
+															Line:   236,
+														},
+													},
+												},
+												Name: "range",
+											},
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   237,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")",
+											Start: ast.Position{
+												Column: 2,
+												Line:   235,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 48,
+														Line:   237,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "fn: (r) => r._measurement == \"bike\"",
+													Start: ast.Position{
+														Column: 13,
+														Line:   237,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 48,
+															Line:   237,
+														},
+														File:   "stripMeta_test.flux",
+														Source: "fn: (r) => r._measurement == \"bike\"",
+														Start: ast.Position{
+															Column: 13,
+															Line:   237,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 15,
+																Line:   237,
+															},
+															File:   "stripMeta_test.flux",
+															Source: "fn",
+															Start: ast.Position{
+																Column: 13,
+																Line:   237,
+															},
+														},
+													},
+													Name: "fn",
+												},
+												Value: &ast.FunctionExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 48,
+																Line:   237,
+															},
+															File:   "stripMeta_test.flux",
+															Source: "(r) => r._measurement == \"bike\"",
+															Start: ast.Position{
+																Column: 17,
+																Line:   237,
+															},
+														},
+													},
+													Body: &ast.BinaryExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 48,
+																	Line:   237,
+																},
+																File:   "stripMeta_test.flux",
+																Source: "r._measurement == \"bike\"",
+																Start: ast.Position{
+																	Column: 24,
+																	Line:   237,
+																},
+															},
+														},
+														Left: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 38,
+																		Line:   237,
+																	},
+																	File:   "stripMeta_test.flux",
+																	Source: "r._measurement",
+																	Start: ast.Position{
+																		Column: 24,
+																		Line:   237,
+																	},
+																},
+															},
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 25,
+																			Line:   237,
+																		},
+																		File:   "stripMeta_test.flux",
+																		Source: "r",
+																		Start: ast.Position{
+																			Column: 24,
+																			Line:   237,
+																		},
+																	},
+																},
+																Name: "r",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 38,
+																			Line:   237,
+																		},
+																		File:   "stripMeta_test.flux",
+																		Source: "_measurement",
+																		Start: ast.Position{
+																			Column: 26,
+																			Line:   237,
+																		},
+																	},
+																},
+																Name: "_measurement",
+															},
+														},
+														Operator: 17,
+														Right: &ast.StringLiteral{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 48,
+																		Line:   237,
+																	},
+																	File:   "stripMeta_test.flux",
+																	Source: "\"bike\"",
+																	Start: ast.Position{
+																		Column: 42,
+																		Line:   237,
+																	},
+																},
+															},
+															Value: "bike",
+														},
+													},
+													Params: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 19,
+																	Line:   237,
+																},
+																File:   "stripMeta_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 18,
+																	Line:   237,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 19,
+																		Line:   237,
+																	},
+																	File:   "stripMeta_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 18,
+																		Line:   237,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Value: nil,
+													}},
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 49,
+													Line:   237,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "filter(fn: (r) => r._measurement == \"bike\")",
+												Start: ast.Position{
+													Column: 6,
+													Line:   237,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 12,
+														Line:   237,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "filter",
+													Start: ast.Position{
+														Column: 6,
+														Line:   237,
+													},
+												},
+											},
+											Name: "filter",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 18,
+											Line:   238,
+										},
+										File:   "stripMeta_test.flux",
+										Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()",
+										Start: ast.Position{
+											Column: 2,
+											Line:   235,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: nil,
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   238,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "geo.toRows()",
+											Start: ast.Position{
+												Column: 6,
+												Line:   238,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   238,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "geo.toRows",
+												Start: ast.Position{
+													Column: 6,
+													Line:   238,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 9,
+														Line:   238,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "geo",
+													Start: ast.Position{
+														Column: 6,
+														Line:   238,
+													},
+												},
+											},
+											Name: "geo",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   238,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "toRows",
+													Start: ast.Position{
+														Column: 10,
+														Line:   238,
+													},
+												},
+											},
+											Name: "toRows",
+										},
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 74,
+										Line:   239,
+									},
+									File:   "stripMeta_test.flux",
+									Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 5, maxPrecisionIndex: 5)",
+									Start: ast.Position{
+										Column: 2,
+										Line:   235,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 73,
+												Line:   239,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "newColumn: \"gx\", precision: 5, maxPrecisionIndex: 5",
+											Start: ast.Position{
+												Column: 22,
+												Line:   239,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   239,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "newColumn: \"gx\"",
+												Start: ast.Position{
+													Column: 22,
+													Line:   239,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 31,
+														Line:   239,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "newColumn",
+													Start: ast.Position{
+														Column: 22,
+														Line:   239,
+													},
+												},
+											},
+											Name: "newColumn",
+										},
+										Value: &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 37,
+														Line:   239,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "\"gx\"",
+													Start: ast.Position{
+														Column: 33,
+														Line:   239,
+													},
+												},
+											},
+											Value: "gx",
+										},
+									}, &ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 51,
+													Line:   239,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "precision: 5",
+												Start: ast.Position{
+													Column: 39,
+													Line:   239,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 48,
+														Line:   239,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "precision",
+													Start: ast.Position{
+														Column: 39,
+														Line:   239,
+													},
+												},
+											},
+											Name: "precision",
+										},
+										Value: &ast.IntegerLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 51,
+														Line:   239,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "5",
+													Start: ast.Position{
+														Column: 50,
+														Line:   239,
+													},
+												},
+											},
+											Value: int64(5),
+										},
+									}, &ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 73,
+													Line:   239,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "maxPrecisionIndex: 5",
+												Start: ast.Position{
+													Column: 53,
+													Line:   239,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 70,
+														Line:   239,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "maxPrecisionIndex",
+													Start: ast.Position{
+														Column: 53,
+														Line:   239,
+													},
+												},
+											},
+											Name: "maxPrecisionIndex",
+										},
+										Value: &ast.IntegerLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 73,
+														Line:   239,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "5",
+													Start: ast.Position{
+														Column: 72,
+														Line:   239,
+													},
+												},
+											},
+											Value: int64(5),
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 74,
+											Line:   239,
+										},
+										File:   "stripMeta_test.flux",
+										Source: "geo.groupByArea(newColumn: \"gx\", precision: 5, maxPrecisionIndex: 5)",
+										Start: ast.Position{
+											Column: 6,
+											Line:   239,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 21,
+												Line:   239,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "geo.groupByArea",
+											Start: ast.Position{
+												Column: 6,
+												Line:   239,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 9,
+													Line:   239,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "geo",
+												Start: ast.Position{
+													Column: 6,
+													Line:   239,
+												},
+											},
+										},
+										Name: "geo",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 21,
+													Line:   239,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "groupByArea",
+												Start: ast.Position{
+													Column: 10,
+													Line:   239,
+												},
+											},
+										},
+										Name: "groupByArea",
+									},
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   240,
+								},
+								File:   "stripMeta_test.flux",
+								Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 5, maxPrecisionIndex: 5)\n\t\t|> geo.stripMeta(except: [\"_g5\"])",
+								Start: ast.Position{
+									Column: 2,
+									Line:   235,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 35,
+											Line:   240,
+										},
+										File:   "stripMeta_test.flux",
+										Source: "except: [\"_g5\"]",
+										Start: ast.Position{
+											Column: 20,
+											Line:   240,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 35,
+												Line:   240,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "except: [\"_g5\"]",
+											Start: ast.Position{
+												Column: 20,
+												Line:   240,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 26,
+													Line:   240,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "except",
+												Start: ast.Position{
+													Column: 20,
+													Line:   240,
+												},
+											},
+										},
+										Name: "except",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 35,
+													Line:   240,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "[\"_g5\"]",
+												Start: ast.Position{
+													Column: 28,
+													Line:   240,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 34,
+														Line:   240,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "\"_g5\"",
+													Start: ast.Position{
+														Column: 29,
+														Line:   240,
+													},
+												},
+											},
+											Value: "_g5",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 36,
+										Line:   240,
+									},
+									File:   "stripMeta_test.flux",
+									Source: "geo.stripMeta(except: [\"_g5\"])",
+									Start: ast.Position{
+										Column: 6,
+										Line:   240,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   240,
+										},
+										File:   "stripMeta_test.flux",
+										Source: "geo.stripMeta",
+										Start: ast.Position{
+											Column: 6,
+											Line:   240,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   240,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "geo",
+											Start: ast.Position{
+												Column: 6,
+												Line:   240,
+											},
+										},
+									},
+									Name: "geo",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   240,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "stripMeta",
+											Start: ast.Position{
+												Column: 10,
+												Line:   240,
+											},
+										},
+									},
+									Name: "stripMeta",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 39,
+								Line:   241,
+							},
+							File:   "stripMeta_test.flux",
+							Source: "table\n\t\t|> range(start: 2019-11-01T00:00:00Z)\n\t\t|> filter(fn: (r) => r._measurement == \"bike\")\n\t\t|> geo.toRows()\n\t\t|> geo.groupByArea(newColumn: \"gx\", precision: 5, maxPrecisionIndex: 5)\n\t\t|> geo.stripMeta(except: [\"_g5\"])\n\t\t|> drop(columns: [\"_start\",\"_stop\"])",
+							Start: ast.Position{
+								Column: 2,
+								Line:   235,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 38,
+										Line:   241,
+									},
+									File:   "stripMeta_test.flux",
+									Source: "columns: [\"_start\",\"_stop\"]",
+									Start: ast.Position{
+										Column: 11,
+										Line:   241,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   241,
+										},
+										File:   "stripMeta_test.flux",
+										Source: "columns: [\"_start\",\"_stop\"]",
+										Start: ast.Position{
+											Column: 11,
+											Line:   241,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   241,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 11,
+												Line:   241,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 38,
+												Line:   241,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "[\"_start\",\"_stop\"]",
+											Start: ast.Position{
+												Column: 20,
+												Line:   241,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   241,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "\"_start\"",
+												Start: ast.Position{
+													Column: 21,
+													Line:   241,
+												},
+											},
+										},
+										Value: "_start",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   241,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "\"_stop\"",
+												Start: ast.Position{
+													Column: 30,
+													Line:   241,
+												},
+											},
+										},
+										Value: "_stop",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 39,
+									Line:   241,
+								},
+								File:   "stripMeta_test.flux",
+								Source: "drop(columns: [\"_start\",\"_stop\"])",
+								Start: ast.Position{
+									Column: 6,
+									Line:   241,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 10,
+										Line:   241,
+									},
+									File:   "stripMeta_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 6,
+										Line:   241,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   234,
+							},
+							File:   "stripMeta_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 16,
+								Line:   234,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 21,
+									Line:   234,
+								},
+								File:   "stripMeta_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 16,
+									Line:   234,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   234,
+							},
+							File:   "stripMeta_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 22,
+								Line:   234,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 99,
+							Line:   244,
+						},
+						File:   "stripMeta_test.flux",
+						Source: "_stripMeta = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stripMeta})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   243,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 16,
+								Line:   243,
+							},
+							File:   "stripMeta_test.flux",
+							Source: "_stripMeta",
+							Start: ast.Position{
+								Column: 6,
+								Line:   243,
+							},
+						},
+					},
+					Name: "_stripMeta",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 99,
+								Line:   244,
+							},
+							File:   "stripMeta_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stripMeta})",
+							Start: ast.Position{
+								Column: 19,
+								Line:   243,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 99,
+									Line:   244,
+								},
+								File:   "stripMeta_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stripMeta})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   244,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 98,
+										Line:   244,
+									},
+									File:   "stripMeta_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stripMeta}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   244,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   244,
+										},
+										File:   "stripMeta_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   244,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   244,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   244,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   244,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   244,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   244,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   244,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   244,
+														},
+														File:   "stripMeta_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   244,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   244,
+														},
+														File:   "stripMeta_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   244,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   244,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   244,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   244,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   244,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   244,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   244,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   244,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   244,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   244,
+										},
+										File:   "stripMeta_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   244,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   244,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   244,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   244,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   244,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   244,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   244,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   244,
+														},
+														File:   "stripMeta_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   244,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   244,
+														},
+														File:   "stripMeta_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   244,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   244,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   244,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   244,
+												},
+												File:   "stripMeta_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   244,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   244,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   244,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   244,
+													},
+													File:   "stripMeta_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   244,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 97,
+											Line:   244,
+										},
+										File:   "stripMeta_test.flux",
+										Source: "fn: t_stripMeta",
+										Start: ast.Position{
+											Column: 82,
+											Line:   244,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   244,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   244,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 97,
+												Line:   244,
+											},
+											File:   "stripMeta_test.flux",
+											Source: "t_stripMeta",
+											Start: ast.Position{
+												Column: 86,
+												Line:   244,
+											},
+										},
+									},
+									Name: "t_stripMeta",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 99,
+						Line:   244,
+					},
+					File:   "stripMeta_test.flux",
+					Source: "test _stripMeta = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stripMeta})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   243,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   3,
+					},
+					File:   "stripMeta_test.flux",
+					Source: "import \"experimental/geo\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   3,
+						},
+						File:   "stripMeta_test.flux",
+						Source: "\"experimental/geo\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental/geo",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "stripMeta_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "stripMeta_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "stripMeta_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   1,
+					},
+					File:   "stripMeta_test.flux",
+					Source: "package geo_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   1,
+						},
+						File:   "stripMeta_test.flux",
 						Source: "geo_test",
 						Start: ast.Position{
 							Column: 9,
