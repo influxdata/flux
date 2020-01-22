@@ -225,11 +225,36 @@ func (f *RowPredicateFn) Prepare(cols []flux.ColMeta) error {
 	return nil
 }
 
-func (f *RowPredicateFn) InputType() semantic.MonoType {
+// InferredInputType will return the inferred input type. This type may
+// contain type variables and will only contain the properties that could be
+// inferred from type inference.
+func (f *RowPredicateFn) InferredInputType() semantic.MonoType {
 	t := f.preparedFn.Type()
-	arg, _ := t.Argument(0)
-	at, _ := arg.TypeOf()
-	return at
+	narg, err := t.NumProperties()
+	if err != nil {
+		panic(err)
+	}
+
+	for i := 0; i < narg; i++ {
+		arg, err := t.Argument(i)
+		if err != nil {
+			panic(err)
+		} else if string(arg.Name()) == f.recordName {
+			inpType, err := arg.TypeOf()
+			if err != nil {
+				panic(err)
+			}
+			return inpType
+		}
+	}
+	return semantic.MonoType{}
+}
+
+// InputType will return the prepared input type.
+// This will be a fully realized type that was created
+// after preparing the function with Prepare.
+func (f *RowPredicateFn) InputType() semantic.MonoType {
+	return f.arg0.Type()
 }
 
 func (f *RowPredicateFn) EvalRow(ctx context.Context, row int, cr flux.ColReader) (bool, error) {

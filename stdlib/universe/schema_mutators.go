@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -71,11 +72,39 @@ func checkCol(label string, cols []flux.ColMeta) error {
 	return nil
 }
 
+const schemaFnMutatorParamName = "column"
+
+type schemaFnMutator struct {
+	Fn    compiler.Func
+	Input values.Object
+}
+
+func (m *schemaFnMutator) compile(fn interpreter.ResolvedFunction) error {
+	in := semantic.NewObjectType([]semantic.PropertyType{
+		{Key: []byte(schemaFnMutatorParamName), Value: semantic.BasicString},
+	})
+	preparedFn, err := compiler.Compile(compiler.ToScope(fn.Scope), fn.Fn, in)
+	if err != nil {
+		return err
+	}
+
+	m.Fn = preparedFn
+	m.Input = values.NewObject(in)
+	return nil
+}
+
+func (m *schemaFnMutator) eval(ctx context.Context, column string) (values.Value, error) {
+	m.Input.Set(schemaFnMutatorParamName, values.NewString(column))
+	v, err := m.Fn.Eval(ctx, m.Input)
+	if err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
 type RenameMutator struct {
-	Columns   map[string]string
-	Fn        compiler.Func
-	Input     values.Object
-	ParamName string
+	schemaFnMutator
+	Columns map[string]string
 }
 
 func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
@@ -91,17 +120,9 @@ func NewRenameMutator(qs flux.OperationSpec) (*RenameMutator, error) {
 	}
 
 	if s.Fn.Fn != nil {
-		compiledFn, param, err := compiler.CompileFnParam(s.Fn.Fn, compiler.ToScope(s.Fn.Scope), semantic.BasicString, semantic.BasicString)
-		if err != nil {
+		if err := m.compile(s.Fn); err != nil {
 			return nil, err
 		}
-
-		m.Fn = compiledFn
-		m.ParamName = param
-		m.Input = values.NewObject(semantic.NewObjectType([]semantic.PropertyType{{
-			Key:   []byte(param),
-			Value: semantic.BasicString,
-		}}))
 	}
 	return m, nil
 }
@@ -115,8 +136,7 @@ func (m *RenameMutator) renameCol(ctx context.Context, col *flux.ColMeta) error 
 			col.Label = newName
 		}
 	} else if m.Fn != nil {
-		m.Input.Set(m.ParamName, values.NewString(col.Label))
-		newName, err := m.Fn.Eval(ctx, m.Input)
+		newName, err := m.eval(ctx, col.Label)
 		if err != nil {
 			return err
 		}
@@ -162,12 +182,10 @@ func (m *RenameMutator) Mutate(ctx context.Context, bctx *BuilderContext) error 
 }
 
 type DropKeepMutator struct {
+	schemaFnMutator
 	KeepCols      map[string]bool
 	DropCols      map[string]bool
-	Predicate     compiler.Func
 	FlipPredicate bool
-	ParamName     string
-	Input         values.Object
 }
 
 func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
@@ -179,34 +197,19 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 			m.DropCols = toStringSet(s.Columns)
 		}
 		if s.Predicate.Fn != nil {
-			compiledFn, param, err := compiler.CompileFnParam(s.Predicate.Fn, compiler.ToScope(s.Predicate.Scope), semantic.BasicString, semantic.BasicBool)
-			if err != nil {
+			if err := m.compile(s.Predicate); err != nil {
 				return nil, err
 			}
-			m.Predicate = compiledFn
-			m.ParamName = param
-			m.Input = values.NewObject(semantic.NewObjectType([]semantic.PropertyType{{
-				Key:   []byte(param),
-				Value: semantic.BasicString,
-			}}))
 		}
 	case *KeepOpSpec:
 		if s.Columns != nil {
 			m.KeepCols = toStringSet(s.Columns)
 		}
 		if s.Predicate.Fn != nil {
-			compiledFn, param, err := compiler.CompileFnParam(s.Predicate.Fn, compiler.ToScope(s.Predicate.Scope), semantic.BasicString, semantic.BasicBool)
-			if err != nil {
+			if err := m.compile(s.Predicate); err != nil {
 				return nil, err
 			}
-			m.Predicate = compiledFn
 			m.FlipPredicate = true
-
-			m.ParamName = param
-			m.Input = values.NewObject(semantic.NewObjectType([]semantic.PropertyType{{
-				Key:   []byte(param),
-				Value: semantic.BasicString,
-			}}))
 		}
 	default:
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
@@ -216,8 +219,7 @@ func NewDropKeepMutator(qs flux.OperationSpec) (*DropKeepMutator, error) {
 }
 
 func (m *DropKeepMutator) shouldDrop(ctx context.Context, col string) (bool, error) {
-	m.Input.Set(m.ParamName, values.NewString(col))
-	v, err := m.Predicate.Eval(ctx, m.Input)
+	v, err := m.eval(ctx, col)
 	if err != nil {
 		return false, err
 	}
@@ -233,7 +235,7 @@ func (m *DropKeepMutator) shouldDropCol(ctx context.Context, col string) (bool, 
 		if _, exists := m.DropCols[col]; exists {
 			return true, nil
 		}
-	} else if m.Predicate != nil {
+	} else if m.Fn != nil {
 		return m.shouldDrop(ctx, col)
 	}
 	return false, nil
