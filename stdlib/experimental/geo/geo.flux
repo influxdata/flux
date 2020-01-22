@@ -46,7 +46,7 @@ geohashFilter = (tables=<-, grid) =>
 	  else if grid.precision == 11 and exists r._g11 then contains(value: r._g11, set: grid.set)
 	  else if grid.precision == 12 and exists r._g12 then contains(value: r._g12, set: grid.set)
 	  else false
-	)
+    )
 
 // Filters records by geohash tag value using custom builtin function.
 // TODO(ales.pour@bonitoo.io): benchmark it, seems much faster than geohashFilter()
@@ -54,7 +54,7 @@ geohashFilterEx = (tables=<-, grid, prefix="_g") =>
   tables
     |> filter(fn: (r) =>
       containsTag(row: r, tagKey: prefix + string(v: grid.precision), set: grid.set)
-	)
+    )
 
 // Filters records by lat/lon box. The grid overlaps specified area and therefore result may contain
 // values outside the box. If precise filtering is needed, boxFilter() may be used later (after toRows()).
@@ -71,7 +71,7 @@ boxFilter = (tables=<-, box) =>
   tables
     |> filter(fn: (r) =>
       r.lat <= box.maxLat and r.lat >= box.minLat and r.lon <= box.maxLon and r.lon >= box.minLon
-	)
+    )
 
 // ----------------------------------------
 // Convenience functions
