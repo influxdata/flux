@@ -11,10 +11,6 @@ import (
 	"github.com/mmcloughlin/geohash"
 )
 
-var Functions = map[string]values.Function {
-	"getGrid": generateGetGridFunc(),
-}
-
 func generateGetGridFunc() values.Function {
 	return values.NewFunction(
 		"getGrid",
