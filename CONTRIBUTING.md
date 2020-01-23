@@ -78,6 +78,13 @@ $ go generate ./stdlib
 The Flux codebase follows the guidelines from [Effective Go](https://golang.org/doc/effective_go.html).
 Please familiarize yourself with these guidelines before submitting a pull request.
 
+## Security Vulnerability Reporting
+InfluxData takes security and our users' trust very seriously. If you believe you have found a security issue in any of our
+open source projects, please responsibly disclose it by contacting security@influxdata.com. More details about 
+security vulnerability reporting, 
+including our GPG key, [can be found here](https://www.influxdata.com/how-to-report-security-vulnerabilities/).
+
+
 ### Use of third-party packages
 A third-party package is defined as one that is not part of the standard Go distribution.
 Generally speaking, we prefer to minimize our use of third-party packages and avoid

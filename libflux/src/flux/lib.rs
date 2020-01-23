@@ -1,12 +1,14 @@
-#![cfg_attr(feature = "strict", deny(warnings))]
+#![cfg_attr(feature = "strict", deny(warnings, missing_docs))]
 #![allow(clippy::unknown_clippy_lints)]
-
+//! The flux crate handles the parsing and semantic analysis of flux source
+//! code.
 extern crate chrono;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_aux;
 
 pub mod ast;
+pub mod formatter;
 pub mod parser;
 pub mod scanner;
 pub mod semantic;
@@ -18,18 +20,23 @@ use std::os::raw::{c_char, c_void};
 
 use parser::Parser;
 
-pub const DEFAULT_PACKAGE_NAME: &str = "main";
+pub use ast::DEFAULT_PACKAGE_NAME;
 
-#[allow(non_camel_case_types)]
+#[allow(non_camel_case_types, missing_docs)]
 pub mod ctypes {
     include!(concat!(env!("OUT_DIR"), "/ctypes.rs"));
 }
 use ctypes::*;
 
+/// An error handle designed to allow passing `Error` instances to library
+/// consumers across language boundaries.
 pub struct ErrorHandle {
+    /// A heap-allocated `Error`
     pub err: Box<dyn error::Error>,
 }
 
+/// An error that can occur due to problems in ast generation or semantic
+/// analysis.
 #[derive(Debug)]
 pub struct Error {
     msg: String,
@@ -67,9 +74,12 @@ impl From<semantic::nodes::Error> for Error {
     }
 }
 
+/// A buffer of flux source.
 #[repr(C)]
 pub struct flux_buffer_t {
+    /// A pointer to a byte array.
     pub data: *const u8,
+    /// The length of the byte array.
     pub len: usize,
 }
 
@@ -193,9 +203,13 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
     std::ptr::null_mut()
 }
 
+/// # Safety
+///
+/// This function is unsafe because it dereferences a raw pointer passed as a
+/// parameter
 #[no_mangle]
-pub extern "C" fn flux_error_str(err: *mut flux_error_t) -> *mut c_char {
-    let e = unsafe { &*(err as *mut ErrorHandle) };
+pub unsafe extern "C" fn flux_error_str(err: *mut flux_error_t) -> *mut c_char {
+    let e = &*(err as *mut ErrorHandle); // Unsafe
     let s = CString::new(format!("{}", e.err)).unwrap();
     s.into_raw()
 }

@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 pub mod check;
 
 pub mod flatbuffers;
@@ -186,6 +187,19 @@ impl Statement {
             Statement::Bad(wrapped) => &wrapped.base,
             Statement::Test(wrapped) => &wrapped.base,
             Statement::Builtin(wrapped) => &wrapped.base,
+        }
+    }
+
+    // returns a integer based type value.
+    pub fn typ(&self) -> i8 {
+        match self {
+            Statement::Expr(_) => 0,
+            Statement::Variable(_) => 1,
+            Statement::Option(_) => 2,
+            Statement::Return(_) => 3,
+            Statement::Bad(_) => 4,
+            Statement::Test(_) => 5,
+            Statement::Builtin(_) => 6,
         }
     }
 }
@@ -520,6 +534,7 @@ pub struct CallExpr {
     pub base: BaseNode,
     pub callee: Expression,
     #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub arguments: Vec<Expression>,
 }
 

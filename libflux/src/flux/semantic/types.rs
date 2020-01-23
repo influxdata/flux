@@ -174,7 +174,7 @@ pub enum Kind {
     Equatable,
     Nullable,
     Row,
-    Signed,
+    Negatable,
 }
 
 impl fmt::Display for Kind {
@@ -188,7 +188,7 @@ impl fmt::Display for Kind {
             Kind::Equatable => f.write_str("Equatable"),
             Kind::Nullable => f.write_str("Nullable"),
             Kind::Row => f.write_str("Row"),
-            Kind::Signed => f.write_str("Signed"),
+            Kind::Negatable => f.write_str("Negatable"),
         }
     }
 }
@@ -351,16 +351,18 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
-                | Kind::Signed => Ok(Substitution::empty()),
+                | Kind::Negatable => Ok(Substitution::empty()),
                 _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Uint => match with {
                 Kind::Addable
+                | Kind::Subtractable
                 | Kind::Divisible
                 | Kind::Numeric
                 | Kind::Comparable
                 | Kind::Equatable
-                | Kind::Nullable => Ok(Substitution::empty()),
+                | Kind::Nullable
+                | Kind::Negatable => Ok(Substitution::empty()),
                 _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Float => match with {
@@ -371,7 +373,7 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
-                | Kind::Signed => Ok(Substitution::empty()),
+                | Kind::Negatable => Ok(Substitution::empty()),
                 _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::String => match with {
@@ -381,7 +383,7 @@ impl MonoType {
                 _ => Err(Error::cannot_constrain(&self, with)),
             },
             MonoType::Duration => match with {
-                Kind::Comparable | Kind::Equatable | Kind::Nullable | Kind::Signed => {
+                Kind::Comparable | Kind::Equatable | Kind::Nullable | Kind::Negatable => {
                     Ok(Substitution::empty())
                 }
                 _ => Err(Error::cannot_constrain(&self, with)),
