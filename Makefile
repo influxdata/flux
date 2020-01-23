@@ -116,10 +116,17 @@ libflux/target/debug/libflux.deps: libflux/target/debug/libflux.d
 	@if [ -e "$<" ]; then \
 		sed $(FIX_DEPS) $< | sed $(ADD_TARGS) > $@; \
 	fi
+
+libflux/target/debug/liblibstd.deps: libflux/target/debug/liblibstd.d
+	@if [ -e "$<" ]; then \
+		sed $(FIX_DEPS) $< | sed $(ADD_TARGS) > $@; \
+	fi
+
 # Conditionally include the libflux.deps file so if any of the
 # source files are modified, they are considered when deciding
 # whether to rebuild the library.
 -include libflux/target/debug/libflux.deps
+-include libflux/target/debug/liblibstd.deps
 
 build: libflux
 	$(GO_BUILD) ./...
