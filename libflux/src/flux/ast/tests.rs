@@ -631,6 +631,34 @@ fn test_json_call_expression() {
 }
 /*
 {
+    name: "call expression",
+    node: &ast.CallExpression{
+        Callee:    &ast.Identifier{Name: "a"},
+        Arguments: []ast.Expression{&ast.StringLiteral{Value: "hello"}},
+    },
+    want: `{"type":"CallExpression","callee":{"type":"Identifier","name":"a"},"arguments":[{"type":"StringLiteral","value":"hello"}]}`,
+},
+*/
+#[test]
+fn test_json_call_expression_empty_arguments() {
+    let n = CallExpr {
+        base: BaseNode::default(),
+        callee: Expression::Identifier(Identifier {
+            base: BaseNode::default(),
+            name: "a".to_string(),
+        }),
+        arguments: vec![],
+    };
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(
+        serialized,
+        r#"{"type":"CallExpression","callee":{"type":"Identifier","name":"a"}}"#
+    );
+    let deserialized: CallExpr = serde_json::from_str(serialized.as_str()).unwrap();
+    assert_eq!(deserialized, n)
+}
+/*
+{
     name: "pipe expression",
     node: &ast.PipeExpression{
         Argument: &ast.Identifier{Name: "a"},
