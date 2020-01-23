@@ -540,9 +540,8 @@ type Administration struct {
 
 func newAdministration() *Administration {
 	return &Administration{
-		// TODO(nathanielc): Once we can support recursive types change this to,
-		// interpreter.NewArray(TableObjectType)
-		parents: values.NewArray(semantic.NewObjectType(nil)),
+		// TODO(algow): Update this to use a real type for the TableObject
+		parents: values.NewArray(semantic.NewArrayType(semantic.MonoType{})),
 	}
 }
 
