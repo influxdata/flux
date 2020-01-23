@@ -1,9 +1,20 @@
 ## Package `geo`
 
-Provides functions for geographic location filtering and grouping.
+The package provides functions for geographic location filtering and grouping.
 It is designed to work on a schema with a set of tags by default named `_gX`,
 where X specifies geohash precision (corresponds to its number of characters),
 fields `lat`, `lon` and `geohash`.
+
+The maximum precision geohash tag is up to user to decide. It is unlikely though
+to use geohash tags more than 4-5 characters long due to sharply rising cardinality.
+
+| Geohash length | Area size | Cardinality |
+| --- | --- | --- |
+| 1 | 5000 x 5000 km | 32 |
+| 2 | 1250 x 625 km | 1024 |
+| 3 | 156 x 156 km | 32k |
+| 4 | 40 x 20 km | 1M |
+| 5 | 5 x 5 km | 33M |
 
 The `geohash` field holds full geohash precision location value (ie. 12-char string).
 The schema may/should further contain a tag which identifies data source (`id` by default),
@@ -17,7 +28,7 @@ bike,id=bike007,pt=via,_g1=d,_g2=dr,_g3=dr5,_g4=dr5r lat=40.753944,lon=-73.99203
 ```
 
 The grouping functions works on row-wise sets (as it very likely appears in line protocol),
-where all the geotemporal data (tags `_gX`, `id` and fields `lat`, `lon`, `geohash` and `tid`) are columns.
+with geotemporal values (tags `_gX`, `id` and fields `lat`, `lon`, `geohash` and `tid`) as columns.
 That is achieved by correlation by `_time" (and `id` if present) using `pivot()` or provided `geo.toRows()` function.
 Therefore it is advised to store time with nanoseconds precision to avoid false matches.
 

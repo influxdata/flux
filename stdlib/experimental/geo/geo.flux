@@ -1,19 +1,4 @@
-// Provides functions for geographic location filtering and grouping. It is designed to work on a schema
-// with a set of tags by default named "_gX", where X specifies geohash precision (corresponds to its
-// number of characters), fields "lat", "lon" and "geohash". The "geohash" field holds full geohash
-// precision location value (ie. 12-char string).
-// The schema may/should further contain a tag which identifies data source ("id" by default),
-// and field representing track ID ("tid" by default). For some use cases a tag denoting point
-// type (with values like "start"/"stop"/"via", for example) is also helpful.
-//
-// Examples of line protocol input that conforms to such schema:
-// taxi,pt=end,_g1=d,_g2=dr,_g3=dr5,_g4=dr5r dist=12.7,tip=3.43,lat=40.753944,lon=-73.992035,geohash="dr5ru708u223" 1572567115082153551
-// bike,id=bike007,pt=via,_g1=d,_g2=dr,_g3=dr5,_g4=dr5r lat=40.753944,lon=-73.992035,geohash="dr5ru708u223",tid=1572588115012345678i 1572567115082153551
-//
-// The grouping functions works on row-wise sets (as it very likely appears in line protocol), where all
-// the geotemporal data (tags "_gX", "id" and fields "lat", "lon", "geohash" and "tid") are columns.
-// That is achieved by correlation by "_time" (and "id" if present") using pivot() or provides toRows() function.
-// Therefore it is advised to store time with nanoseconds precision to avoid false matches.
+// Provides functions for geographic location filtering and grouping.
 package geo
 
 import "strings"
@@ -28,8 +13,8 @@ builtin containsTag
 // Filtering functions
 // ----------------------------------------
 
-// Filters records by geohash tag value (_g1 ... _g12) if exist
-// TODO(?): uses hardcoded schema tag keys and Flux does not provide dynamic access, therefore containsTag() is implemented.
+// Filters records by geohash tag value (`_g1` ... `_g12`) if exist
+// TODO(?): uses hardcoded schema tag keys and Flux does not provide dynamic access, therefore containsTag() is provided.
 geohashFilter = (tables=<-, grid) =>
   tables
     |> filter(fn: (r) =>
@@ -56,8 +41,8 @@ geohashFilterEx = (tables=<-, grid, prefix="_g") =>
       containsTag(row: r, tagKey: prefix + string(v: grid.precision), set: grid.set)
     )
 
-// Filters records by lat/lon box. The grid overlaps specified area and therefore result may contain
-// values outside the box. If precise filtering is needed, boxFilter() may be used later (after toRows()).
+// Filters records by lat/lon box. The grid always overlaps specified area and therefore result may contain
+// values outside the box. If precise filtering is needed, `boxFilter()` may be used later (after `toRows()`).
 gridFilter = (tables=<-, fn=geohashFilter, box, minGridSize=9, maxGridSize=-1, geohashPrecision=-1, maxGeohashPrecision=12) => {
   grid = getGrid(box: box, minSize: minGridSize, maxSize: maxGridSize, precision: geohashPrecision, maxPrecision: maxGeohashPrecision)
   return
@@ -65,8 +50,8 @@ gridFilter = (tables=<-, fn=geohashFilter, box, minGridSize=9, maxGridSize=-1, g
       |> fn(grid: grid)
 }
 
-// Filters records by lat/lon box. Unlike gridFilter(), this is a strict filter.
-// Must be used after toRows() because it requires "lat" and "lon" columns in input row set(s).
+// Filters records by lat/lon box. Unlike `gridFilter()`, this is a strict filter.
+// Must be used after `toRows()` because it requires `lat` and `lon` columns in input row set(s).
 boxFilter = (tables=<-, box) =>
   tables
     |> filter(fn: (r) =>
@@ -78,7 +63,6 @@ boxFilter = (tables=<-, box) =>
 // ----------------------------------------
 
 // Collects values to row-wise sets.
-// Equivalent to pivot(rowKey: correlationKey, columnKey: ["_field"], valueColumn: "_value").
 toRows = (tables=<-, correlationKey=["_time"]) =>
   tables
     |> pivot(
@@ -87,7 +71,7 @@ toRows = (tables=<-, correlationKey=["_time"]) =>
       valueColumn: "_value"
     )
 
-// Drops geohash indexes columns ("_gX") except those specified.
+// Drops geohash indexes columns except those specified.
 // It will fail if input tables are grouped by any of them.
 stripMeta = (tables=<-, pattern=/_g\d+/, except=[]) =>
   tables
@@ -96,7 +80,7 @@ stripMeta = (tables=<-, pattern=/_g\d+/, except=[]) =>
 // ----------------------------------------
 // Grouping functions
 // ----------------------------------------
-// intended to be used row-wise sets (i.e after toRows())
+// intended to be used row-wise sets (i.e after `toRows()`)
 
 // Grouping levels (based on geohash length/precision) - cell width x height
 //  1 - 5000 x 5000 km
@@ -112,8 +96,8 @@ stripMeta = (tables=<-, pattern=/_g\d+/, except=[]) =>
 // 11 - 149 x 149 mm
 // 12 - 37.2 x 18.6 mm
 
-// Groups rows by area of size specified by geohash precision. Result is grouped by newColumn.
-// Parameter maxPrecisionIndex specifies finest precision geohash tag available in the input table(s).
+// Groups rows by area of size specified by geohash precision. Result is grouped by `newColumn`.
+// Parameter `maxPrecisionIndex` specifies finest precision geohash tag available in the input tables.
 // TODO: can maxPrecisionIndex be discovered at Flux level?
 groupByArea = (tables=<-, newColumn, precision, maxPrecisionIndex, prefix="_g") => {
   prepared =
@@ -129,7 +113,7 @@ groupByArea = (tables=<-, newColumn, precision, maxPrecisionIndex, prefix="_g") 
 }
 
 // Organizes rows into tracks.
-// It groups input (by "id" and "tid" by default) and orders by time in ascending order.
+// It groups input source and track id and orders by time in ascending order.
 asTracks = (tables=<-, groupBy=["id","tid"], orderBy=["_time"]) =>
   tables
     |> group(columns: groupBy)
