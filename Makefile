@@ -78,9 +78,11 @@ libflux: libflux/target/debug/libflux.a libflux/target/debug/liblibstd.a
 # command line interface than the gnu equivalent.
 libflux/target/debug/libflux.a:
 	cd libflux && $(CARGO) build -p flux $(CARGO_ARGS)
+	echo "const char uniq_libflux[] = \"`cat $@ | md5sum | awk '{print $$1;}'`\";" > libflux/go/libflux/libflux.c
 
 libflux/target/debug/liblibstd.a:
 	cd libflux && $(CARGO) build -p libstd $(CARGO_ARGS)
+	echo "const char uniq_liblibstd[] = \"`cat $@ | md5sum | awk '{print $$1;}'`\";" > libflux/go/libflux/liblibstd.c
 
 libflux/go/libflux/flux.h: libflux/include/influxdata/flux.h
 	$(GO_GENERATE) ./libflux/go/libflux
