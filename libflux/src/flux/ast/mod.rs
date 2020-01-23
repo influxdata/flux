@@ -534,6 +534,7 @@ pub struct CallExpr {
     pub base: BaseNode,
     pub callee: Expression,
     #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub arguments: Vec<Expression>,
 }
 
