@@ -103,9 +103,18 @@ libflux/go/libflux/flux.h: libflux/include/influxdata/flux.h
 # post-processed .deps file.
 libflux/target/debug/libflux.d:
 
+# This first pass fixes the deps.
+FIX_DEPS = -e "s@${CURDIR}/@@g" -e "s@debug/debug@debug@g" -e "s@\\.dylib@.a@g" -e "s@\\.so@.a@g"
+
+# This second pass adds each file that is depended on as a target. This step
+# makes it so that if any file disappears from the build or is renamed, the
+# make does not fail. Rather, the .a target is re-run, which will then cause
+# the dependencies to be rebuilt on the following make invocation.
+ADD_TARGS = -e 'p' -e 's/^.*: *//' -e 's/ /:\n/g' -e 's/$$/:/'
+
 libflux/target/debug/libflux.deps: libflux/target/debug/libflux.d
 	@if [ -e "$<" ]; then \
-		sed -e "s@${CURDIR}/@@g" -e "s@debug/debug@debug@g" -e "s@\\.dylib@.a@g" -e "s@\\.so@.a@g" $< > $@; \
+		sed $(FIX_DEPS) $< | sed $(ADD_TARGS) > $@; \
 	fi
 # Conditionally include the libflux.deps file so if any of the
 # source files are modified, they are considered when deciding
