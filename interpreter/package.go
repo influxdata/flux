@@ -5,25 +5,36 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
+// Package is an importable package that can be used from another
+// section of code. The package itself cannot have its attributes
+// modified after creation, but the options may be changed.
 type Package struct {
-	name        string
-	object      values.Object
-	options     values.Object
+	// name is the name of the package.
+	name string
+
+	// object contains the object properties of this package.
+	object values.Object
+
+	// options contains the option overrides for this package.
+	// Values cannot exist in here unless they also exist in
+	// the underlying object.
+	options map[string]values.Value
+
+	// sideEffects contains the side effects caused by this package.
+	// This is currently unused.
 	sideEffects []SideEffect
 }
 
 func NewPackageWithValues(name string, obj values.Object) *Package {
-	if obj == nil {
-		obj = values.NewObjectWithValues(nil)
-	}
 	return &Package{
-		name:    name,
-		options: values.NewObjectWithValues(nil),
-		object:  obj,
+		name:   name,
+		object: obj,
 	}
 }
 
@@ -32,19 +43,21 @@ func NewPackage(name string) *Package {
 }
 
 func (p *Package) Copy() *Package {
-	object := values.NewObject(p.object.Type())
-	p.object.Range(func(k string, v values.Value) {
-		object.Set(k, v)
-	})
-	options := values.NewObject(p.options.Type())
-	p.options.Range(func(k string, v values.Value) {
-		options.Set(k, v)
-	})
-	sideEffects := make([]SideEffect, len(p.sideEffects))
-	copy(sideEffects, p.sideEffects)
+	var options map[string]values.Value
+	if len(p.options) > 0 {
+		options = make(map[string]values.Value, len(p.options))
+		for k, v := range p.options {
+			options[k] = v
+		}
+	}
+	var sideEffects []SideEffect
+	if len(p.sideEffects) > 0 {
+		sideEffects = make([]SideEffect, len(p.sideEffects))
+		copy(sideEffects, p.sideEffects)
+	}
 	return &Package{
 		name:        p.name,
-		object:      object,
+		object:      p.object,
 		options:     options,
 		sideEffects: sideEffects,
 	}
@@ -60,23 +73,40 @@ func (p *Package) Type() semantic.MonoType {
 }
 func (p *Package) Get(name string) (values.Value, bool) {
 	v, ok := p.object.Get(name)
-	if !ok {
-		return p.options.Get(name)
+	if ok && values.IsOption(v) {
+		// If this value is an option, the option may have
+		// been overriden. Check the override map.
+		if ov, ok := p.options[name]; ok {
+			v = ov
+		}
 	}
-	return v, true
+	return v, ok
 }
 func (p *Package) Set(name string, v values.Value) {
-	p.object.Set(name, v)
+	panic(errors.New(codes.Internal, "package members cannot be modified"))
 }
 func (p *Package) SetOption(name string, v values.Value) {
-	p.options.Set(name, v)
+	// TODO(jsternberg): Setting an invalid option on a package wasn't previously
+	// an error so it continues to not be an error. We should probably find a way
+	// to make it so setting an invalid option is an error.
+	if p.options == nil {
+		p.options = make(map[string]values.Value)
+	}
+	p.options[name] = v
 }
 func (p *Package) Len() int {
 	return p.object.Len()
 }
 func (p *Package) Range(f func(name string, v values.Value)) {
-	p.object.Range(f)
-	p.options.Range(f)
+	p.object.Range(func(name string, v values.Value) {
+		// Check if the value was overridden.
+		if values.IsOption(v) {
+			if ov, ok := p.options[name]; ok {
+				v = ov
+			}
+		}
+		f(name, v)
+	})
 }
 func (p *Package) IsNull() bool {
 	return false

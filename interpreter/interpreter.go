@@ -17,14 +17,22 @@ const PackageMain = "main"
 
 type Interpreter struct {
 	sideEffects     []SideEffect // a list of the side effects occurred during the last call to `Eval`.
-	pkg             *Package
+	pkgName         string
 	modifiedOptions []optionMutation
 }
 
 func NewInterpreter(pkg *Package) *Interpreter {
-	return &Interpreter{
-		pkg: pkg,
+	var pkgName string
+	if pkg != nil {
+		pkgName = pkg.Name()
 	}
+	return &Interpreter{
+		pkgName: pkgName,
+	}
+}
+
+func (itrp *Interpreter) PackageName() string {
+	return itrp.pkgName
 }
 
 // SideEffect contains its value, and the semantic node that generated it.
@@ -83,7 +91,7 @@ func (itrp *Interpreter) doFile(ctx context.Context, file *semantic.File, scope 
 		if es, ok := stmt.(*semantic.ExpressionStatement); ok {
 			// Only in the main package are all unassigned package
 			// level expressions coerced into producing side effects.
-			if itrp.pkg.Name() == PackageMain {
+			if itrp.pkgName == PackageMain {
 				itrp.sideEffects = append(itrp.sideEffects, SideEffect{Node: es, Value: val})
 			}
 		}
@@ -96,11 +104,10 @@ func (itrp *Interpreter) doPackageClause(pkg *semantic.PackageClause) error {
 	if pkg != nil {
 		name = pkg.Name.Name
 	}
-	if itrp.pkg.name == "" {
-		itrp.pkg.name = name
-	}
-	if itrp.pkg.name != name {
-		return errors.Newf(codes.Invalid, "package name mismatch %q != %q", itrp.pkg.name, name)
+	if itrp.pkgName == "" {
+		itrp.pkgName = name
+	} else if itrp.pkgName != name {
+		return errors.Newf(codes.Invalid, "package name mismatch %q != %q", itrp.pkgName, name)
 	}
 	return nil
 }
@@ -182,13 +189,15 @@ func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.Opti
 
 // setOption applies the option to an existing option or creates a new option on the current package if it doesn't already exist.
 func (itrp *Interpreter) setOption(scope values.Scope, pkg, name string, v values.Value) (values.Value, error) {
+	v = values.Option{Value: v}
 	set, err := scope.SetOption(pkg, name, v)
 	if err != nil {
 		return nil, err
 	}
 	if !set {
-		// Option does not belong to any existing package, just set it on the local package.
-		itrp.pkg.SetOption(name, v)
+		// Option does not belong to any existing package.
+		// Set it as a normal value on the current scope.
+		scope.Set(name, v)
 	}
 	itrp.modifiedOptions = append(itrp.modifiedOptions, optionMutation{
 		Package: pkg,
@@ -444,7 +453,8 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		return function{
 			e:     e,
 			scope: scope,
-			pkg:   itrp.pkg,
+			// TODO(algow): What should go here?
+			// pkg:   itrp.pkg,
 		}, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "unsupported expression %T", expr)

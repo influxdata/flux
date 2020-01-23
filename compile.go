@@ -3,7 +3,6 @@ package flux
 import (
 	"context"
 	"fmt"
-	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -59,11 +58,10 @@ func evalHandle(ctx context.Context, h *libflux.ASTPkg, opts ...ScopeMutator) ([
 		return nil, nil, err
 	}
 
-	pkg := interpreter.NewPackage("")
-	itrp := interpreter.NewInterpreter(pkg)
+	itrp := interpreter.NewInterpreter(nil)
 	// Create a scope for execution whose parent is a copy of the prelude and whose current scope is the package.
 	// A copy of the prelude must be used since options can be mutated.
-	scope := values.NewNestedScope(preludeScope.Copy(), pkg)
+	scope := defaultRuntime.prelude.Copy().Nest(nil)
 
 	for _, opt := range opts {
 		opt(scope)
@@ -141,20 +139,12 @@ type CreateOperationSpec func(args Arguments, a *Administration) (OperationSpec,
 
 // set of builtins
 var (
-	finalized bool
-
-	builtinPackages = make(map[string]*ast.Package)
-
 	// list of packages included in the prelude.
 	// Packages must be listed in import order
 	prelude = []string{
 		"universe",
 		"influxdata/influxdb",
 	}
-	preludeScope = &scopeSet{
-		packages: make([]*interpreter.Package, len(prelude)),
-	}
-	stdlib = &importer{make(map[string]*interpreter.Package)}
 )
 
 type scopeSet struct {
@@ -247,61 +237,33 @@ func (s *scopeSet) Copy() values.Scope {
 
 // StdLib returns an importer for the Flux standard library.
 func StdLib() interpreter.Importer {
-	return stdlib.Copy()
+	return defaultRuntime.Stdlib()
 }
 
 // Prelude returns a scope object representing the Flux universe block
 func Prelude() values.Scope {
-	if !finalized {
-		panic("builtins not finalized")
-	}
-	return preludeScope.Nest(nil)
+	return defaultRuntime.Prelude()
 }
 
 // RegisterPackage adds a builtin package
 func RegisterPackage(pkg *ast.Package) {
-	if finalized {
-		panic(errors.New(codes.Internal, "already finalized, cannot register builtin package"))
-	}
-	if _, ok := builtinPackages[pkg.Path]; ok {
-		panic(errors.Newf(codes.Internal, "duplicate builtin package %q", pkg.Path))
-	}
-	builtinPackages[pkg.Path] = pkg
-	_, ok := stdlib.pkgs[pkg.Path]
-	if !ok {
-		// Lazy creation of interpreter package
-		// registration order is not known so we must create it lazily
-		stdlib.pkgs[pkg.Path] = interpreter.NewPackage(path.Base(pkg.Path))
+	if err := defaultRuntime.RegisterPackage(pkg); err != nil {
+		panic(err)
 	}
 }
 
 // RegisterPackageValue adds a value for an identifier in a builtin package
 func RegisterPackageValue(pkgpath, name string, value values.Value) {
-	registerPackageValue(pkgpath, name, value, false)
+	if err := defaultRuntime.RegisterPackageValue(pkgpath, name, value); err != nil {
+		panic(err)
+	}
 }
 
 // ReplacePackageValue replaces a value for an identifier in a builtin package
 func ReplacePackageValue(pkgpath, name string, value values.Value) {
-	registerPackageValue(pkgpath, name, value, true)
-}
-
-func registerPackageValue(pkgpath, name string, value values.Value, replace bool) {
-	if finalized {
-		panic(errors.Newf(codes.Internal, "already finalized, cannot register builtin package value"))
+	if err := defaultRuntime.ReplacePackageValue(pkgpath, name, value); err != nil {
+		panic(err)
 	}
-	packg, ok := stdlib.pkgs[pkgpath]
-	if !ok {
-		// Lazy creation of interpreter package
-		// registration order is not known so we must create it lazily
-		packg = interpreter.NewPackage(path.Base(pkgpath))
-		stdlib.pkgs[pkgpath] = packg
-	}
-	if _, ok := packg.Get(name); ok && !replace {
-		panic(errors.Newf(codes.Internal, "duplicate builtin package value %q %q", pkgpath, name))
-	} else if !ok && replace {
-		panic(errors.Newf(codes.Internal, "missing builtin package value %q %q", pkgpath, name))
-	}
-	packg.Set(name, value)
 }
 
 // MustValue panics if err is not nil, otherwise value is returned.
@@ -348,58 +310,47 @@ func functionValue(name string, c CreateOperationSpec, mt semantic.MonoType, sid
 // FinalizeBuiltIns must be called to complete registration.
 // Future calls to RegisterFunction or RegisterPackageValue will panic.
 func FinalizeBuiltIns() {
-	if finalized {
-		panic("already finalized")
-	}
-	finalized = true
-
-	for i, path := range prelude {
-		pkg, ok := stdlib.ImportPackageObject(path)
-		if !ok {
-			panic(fmt.Sprintf("missing prelude package %q", path))
-		}
-		preludeScope.packages[i] = pkg
-	}
-
-	if err := evalBuiltInPackages(); err != nil {
+	if err := defaultRuntime.Finalize(); err != nil {
 		panic(err)
 	}
 }
 
-func evalBuiltInPackages() error {
-	order, err := packageOrder(prelude, builtinPackages)
-	if err != nil {
-		return err
-	}
-	for _, astPkg := range order {
-		if ast.Check(astPkg) > 0 {
-			err := ast.GetError(astPkg)
-			return errors.Wrapf(err, codes.Inherit, "failed to parse builtin package %q", astPkg.Path)
-		}
-		// TODO(algow): https://github.com/influxdata/flux/issues/2404
-		//semPkg, err := semantic.New(astPkg)
-		//if err != nil {
-		//	return errors.Wrapf(err, codes.Inherit, "failed to create semantic graph for builtin package %q", astPkg.Path)
-		//}
-		//
-		//pkg := stdlib.pkgs[astPkg.Path]
-		//if pkg == nil {
-		//	return errors.Wrapf(err, codes.Inherit, "package does not exist %q", astPkg.Path)
-		//}
-		//
-		//// Validate packages before evaluating them
-		//if err := validatePackageBuiltins(pkg, astPkg); err != nil {
-		//	return errors.Wrapf(err, codes.Inherit, "package has invalid builtins %q", astPkg.Path)
-		//}
-		//
-		//itrp := interpreter.NewInterpreter(pkg)
-		//if _, err := itrp.Eval(context.Background(), semPkg, preludeScope.Nest(pkg), stdlib); err != nil {
-		//	return errors.Wrapf(err, codes.Inherit, "failed to evaluate builtin package %q", astPkg.Path)
-		//}
-	}
-	return nil
-}
+// TODO(algow): Needs to be refactored into the runtime finalize.
+// func evalBuiltInPackages() error {
+// 	order, err := packageOrder(prelude, builtinPackages)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	for _, astPkg := range order {
+// 		if ast.Check(astPkg) > 0 {
+// 			err := ast.GetError(astPkg)
+// 			return errors.Wrapf(err, codes.Inherit, "failed to parse builtin package %q", astPkg.Path)
+// 		}
+// TODO(algow): https://github.com/influxdata/flux/issues/2404
+//semPkg, err := semantic.New(astPkg)
+//if err != nil {
+//	return errors.Wrapf(err, codes.Inherit, "failed to create semantic graph for builtin package %q", astPkg.Path)
+//}
+//
+//pkg := stdlib.pkgs[astPkg.Path]
+//if pkg == nil {
+//	return errors.Wrapf(err, codes.Inherit, "package does not exist %q", astPkg.Path)
+//}
+//
+//// Validate packages before evaluating them
+//if err := validatePackageBuiltins(pkg, astPkg); err != nil {
+//	return errors.Wrapf(err, codes.Inherit, "package has invalid builtins %q", astPkg.Path)
+//}
+//
+//itrp := interpreter.NewInterpreter(pkg)
+//if _, err := itrp.Eval(context.Background(), semPkg, preludeScope.Nest(pkg), stdlib); err != nil {
+//	return errors.Wrapf(err, codes.Inherit, "failed to evaluate builtin package %q", astPkg.Path)
+//}
+// }
+// return nil
+// }
 
+// TODO(algow): Needs to be refactored into the runtime finalize.
 // validatePackageBuiltins ensures that all package builtins have both an AST builtin statement and a registered value.
 func validatePackageBuiltins(pkg *interpreter.Package, astPkg *ast.Package) error {
 	builtinStmts := make(map[string]*ast.BuiltinStatement)
