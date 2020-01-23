@@ -91,18 +91,19 @@ pub fn infer_stdlib() -> Result<
 fn builtin_types() -> Result<(HashMap<String, HashMap<String, PolyType>>, Fresher), Error> {
     let mut tv = Tvar(0);
     let mut ty = HashMap::new();
-    for (mut path, expr) in builtins().iter() {
-        let name = path.pop().unwrap();
-        let expr = parse(expr)?;
+    for (path, values) in builtins().iter() {
+        for (name, expr) in values {
+            let expr = parse(expr)?;
 
-        let tvar = expr.max_tvar();
-        if tvar > tv {
-            tv = tvar;
+            let tvar = expr.max_tvar();
+            if tvar > tv {
+                tv = tvar;
+            }
+
+            ty.entry((*path).to_string())
+                .or_insert_with(HashMap::new)
+                .insert((*name).to_string(), expr);
         }
-
-        ty.entry(path.join("/"))
-            .or_insert_with(HashMap::new)
-            .insert(name.to_string(), expr);
     }
     Ok((ty, Fresher::from(tv.0 + 1)))
 }
