@@ -72,15 +72,21 @@ internal/scanner/scanner.gen.go: internal/scanner/gen.go internal/scanner/scanne
 
 libflux: libflux/target/debug/libflux.a libflux/target/debug/liblibstd.a
 
+# Creating unique C files to force CGO to consider the rust library changed.
+UNIQ_WARNING = "/* DO NOT EDIT OR CHECK IN. This file exists to force CGO to rebuild when rust code changes */"
+MAKE_UNIQ = '{ print $(UNIQ_WARNING); print "const char cgo_rebuild_" LIB "_shasum[] = \"" $$1 "\";"; }'
+
 # Build the rust static library. Afterwards, fix the .d file that
 # rust generates so it references the correct targets.
 # The unix sed, which is on darwin machines, has a different
 # command line interface than the gnu equivalent.
 libflux/target/debug/libflux.a:
 	cd libflux && $(CARGO) build -p flux $(CARGO_ARGS)
+	@shasum $@ | awk -v LIB=libflux $(MAKE_UNIQ) > libflux/go/libflux/libflux.c
 
 libflux/target/debug/liblibstd.a:
 	cd libflux && $(CARGO) build -p libstd $(CARGO_ARGS)
+	@shasum $@ | awk -v LIB=liblibstd $(MAKE_UNIQ) > libflux/go/libflux/liblibstd.c
 
 libflux/go/libflux/flux.h: libflux/include/influxdata/flux.h
 	$(GO_GENERATE) ./libflux/go/libflux
