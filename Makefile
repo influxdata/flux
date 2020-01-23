@@ -72,45 +72,39 @@ internal/scanner/scanner.gen.go: internal/scanner/gen.go internal/scanner/scanne
 
 libflux: libflux/target/debug/libflux.a libflux/target/debug/liblibstd.a
 
-# Build the rust static library. Afterwards, fix the .d file that
-# rust generates so it references the correct targets.
-# The unix sed, which is on darwin machines, has a different
-# command line interface than the gnu equivalent.
+# Build the rust static libraries. Afterwards, fix the .d file that rust
+# generates so it references the correct targets. The unix sed, which is on
+# darwin machines, has a different command line interface than the gnu
+# equivalent.
+
+# The dependency file produced by Rust appears to be wrong and uses absolute
+# paths while we use relative paths everywhere. So we need to do some post
+# processing of the file to ensure that the dependencies we load are correct.
+FIX_DEPS = -e "s@${CURDIR}/@@g" -e "s@debug/debug@debug@g" -e "s@\\.dylib@.a@g" -e "s@\\.so@.a@g"
+
+# This second pass over the dependency file addes each file that is depended on
+# as a target. This step makes it so that if any file disappears form the build
+# or is renamed, the make does not fail. Rather, the .a target is re-run,
+# re-creating a correct dependency file in the process.
+ADD_TARGS = -e 'p' -e 's/^.*: *//' -e 's/ /:\n/g' -e 's/$$/:/'
+
 libflux/target/debug/libflux.a:
 	cd libflux && $(CARGO) build -p flux $(CARGO_ARGS)
+	@sed $(FIX_DEPS) libflux/target/debug/libflux.d | \
+		sed $(ADD_TARGS) > libflux/target/debug/libflux.deps;
 
 libflux/target/debug/liblibstd.a:
 	cd libflux && $(CARGO) build -p libstd $(CARGO_ARGS)
+	@sed $(FIX_DEPS) libflux/target/debug/liblibstd.d | \
+		sed $(ADD_TARGS) > libflux/target/debug/liblibstd.deps; \
+
+# Conditionally include the libflux.deps file so if any of the source files are
+# modified, they are considered when deciding whether to rebuild the library.
+-include libflux/target/debug/libflux.deps
+-include libflux/target/debug/liblibstd.deps
 
 libflux/go/libflux/flux.h: libflux/include/influxdata/flux.h
 	$(GO_GENERATE) ./libflux/go/libflux
-
-# The dependency file produced by Rust appears to be wrong and uses
-# absolute paths while we use relative paths everywhere. So we need
-# to do some post processing of the file to ensure that the
-# dependencies we load are correct. But, we do not want to trigger
-# a rust build just to load the dependencies since we may not need
-# to build the static library to begin with.
-# It is good enough for us to include this target so that the makefile
-# doesn't error when the file doesn't exist. It does not actually
-# have to create the file, just promise that the file will be created.
-# If the .d file does not exist, then the .a file above also
-# does not exist so the dependencies don't matter. If the .d file
-# exists, this will never get called or, at a minimum, it won't modify
-# the files at all. This allows the target below to depend on this
-# file without the file necessarily existing and it will force
-# post-processing of the file if the .d file is newer than our
-# post-processed .deps file.
-libflux/target/debug/libflux.d:
-
-libflux/target/debug/libflux.deps: libflux/target/debug/libflux.d
-	@if [ -e "$<" ]; then \
-		sed -e "s@${CURDIR}/@@g" -e "s@debug/debug@debug@g" -e "s@\\.dylib@.a@g" -e "s@\\.so@.a@g" $< > $@; \
-	fi
-# Conditionally include the libflux.deps file so if any of the
-# source files are modified, they are considered when deciding
-# whether to rebuild the library.
--include libflux/target/debug/libflux.deps
 
 build: libflux
 	$(GO_BUILD) ./...
