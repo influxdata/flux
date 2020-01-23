@@ -76,8 +76,11 @@ fn parse_map(m: HashMap<&str, &str>) -> HashMap<String, PolyType> {
 }
 
 impl Importer for HashMap<&str, PolyType> {
-    fn import(&self, name: &str) -> Option<&PolyType> {
-        self.get(name)
+    fn import(&self, name: &str) -> Option<PolyType> {
+        match self.get(name) {
+            Some(pty) => Some(pty.clone()),
+            None => None,
+        }
     }
 }
 
