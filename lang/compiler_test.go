@@ -27,7 +27,6 @@ import (
 	"github.com/influxdata/flux/stdlib/csv"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
-	"github.com/influxdata/flux/values"
 )
 
 func init() {
@@ -867,19 +866,8 @@ func getTableObjects(vs []interpreter.SideEffect) []*flux.TableObject {
 	for _, v := range vs {
 		if to, ok := v.Value.(*flux.TableObject); ok {
 			tos = append(tos, to)
-			tos = append(tos, getTableObjectsFromArray(to.Parents)...)
+			tos = append(tos, to.Parents...)
 		}
 	}
-	return tos
-}
-
-func getTableObjectsFromArray(parents values.Array) []*flux.TableObject {
-	tos := make([]*flux.TableObject, 0)
-	parents.Range(func(i int, v values.Value) {
-		if to, ok := v.(*flux.TableObject); ok {
-			tos = append(tos, to)
-			tos = append(tos, getTableObjectsFromArray(to.Parents)...)
-		}
-	})
 	return tos
 }
