@@ -25,7 +25,7 @@ func TestEval(t *testing.T) {
 			"f": "(x: int) -> int",
 			"y": "42",
 		}
-		scope.Range(func(k string, v values.Value) {
+		scope.LocalRange(func(k string, v values.Value) {
 			wantV, ok := want[k]
 			if !ok {
 				t.Errorf("did not find %q in scope", k)
