@@ -1,10 +1,14 @@
 package flux
 
 import (
+	"context"
+
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -134,18 +138,16 @@ func (r *runtime) Finalize() error {
 		}
 		pkgpath := astPkg.Path
 
-		// TODO(algow): Need to semantically analyze the AST package to
-		// run it through the interpreter, but the AST gets deserialized
-		// incorrectly in Rust.
-		// ap, err := parser.ToHandle(astPkg)
-		// if err != nil {
-		// 	return err
-		// }
-		//
-		// root, err := semantic.AnalyzePackage(ap)
-		// if err != nil {
-		// 	return err
-		// }
+		// Analyze the package using the semantic analyzer.
+		ap, err := parser.ToHandle(astPkg)
+		if err != nil {
+			return err
+		}
+
+		root, err := semantic.AnalyzePackage(ap)
+		if err != nil {
+			return err
+		}
 
 		// Build an object with the initial set of identifiers
 		// from the known builtin values.
@@ -157,21 +159,19 @@ func (r *runtime) Finalize() error {
 		})
 		scope := r.prelude.Nest(object)
 
-		// TODO(algow): Need to run the interpreter on the package, but the
-		// Rust code doesn't perform type inference correctly on builtins at
-		// the moment.
-		// importer := importer{pkgs: r.pkgs}
-		// // Construct an initial package using the builtins.
-		// itrp := interpreter.NewInterpreter(nil)
-		// if _, err := itrp.Eval(context.Background(), root, scope, &importer); err != nil {
-		// 	return err
-		// }
-		packageName := astPkg.Path
+		// Run the interpreter on the package to construct the values
+		// created by the package. Pass in the previously initialized
+		// packages as importable packages as we evaluate these in order.
+		importer := importer{pkgs: r.pkgs}
+		itrp := interpreter.NewInterpreter(nil)
+		if _, err := itrp.Eval(context.Background(), root, scope, &importer); err != nil {
+			return err
+		}
 		obj, _ := values.BuildObject(func(set values.ObjectSetter) error {
 			scope.LocalRange(set)
 			return nil
 		})
-		r.pkgs[pkgpath] = interpreter.NewPackageWithValues(packageName, obj)
+		r.pkgs[pkgpath] = interpreter.NewPackageWithValues(itrp.PackageName(), obj)
 		for _, ppath := range prelude {
 			if ppath == pkgpath {
 				r.prelude.packages = append(r.prelude.packages, r.pkgs[pkgpath])
