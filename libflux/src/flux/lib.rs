@@ -74,6 +74,14 @@ impl From<semantic::nodes::Error> for Error {
     }
 }
 
+impl From<semantic::check::Error> for Error {
+    fn from(err: semantic::check::Error) -> Self {
+        Error {
+            msg: format!("{}", err),
+        }
+    }
+}
+
 /// A buffer of flux source.
 #[repr(C)]
 pub struct flux_buffer_t {

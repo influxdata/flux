@@ -10,7 +10,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -119,9 +118,8 @@ var (
 	)
 )
 
-func testGroupLookup(t *testing.T, l table.KeyLookup) {
-	t.Helper()
-
+func TestGroupLookup(t *testing.T) {
+	l := execute.NewGroupLookup()
 	l.Set(key0, 0)
 	if v, ok := l.Lookup(key0); !ok || v != 0 {
 		t.Error("failed to lookup key0")
@@ -181,17 +179,9 @@ func testGroupLookup(t *testing.T, l table.KeyLookup) {
 	}
 }
 
-func TestGroupLookup(t *testing.T) {
-	testGroupLookup(t, execute.NewGroupLookup())
-}
-func TestRandomAccessGroupLookup(t *testing.T) {
-	testGroupLookup(t, execute.NewRandomAccessGroupLookup())
-}
-
 // Test that the lookup supports Deletes while rangeing.
-func testGroupLookup_RangeWithDelete(t *testing.T, l table.KeyLookup) {
-	t.Helper()
-
+func TestGroupLookup_RangeWithDelete(t *testing.T) {
+	l := execute.NewGroupLookup()
 	l.Set(key0, 0)
 	if v, ok := l.Lookup(key0); !ok || v != 0 {
 		t.Error("failed to lookup key0")
@@ -224,13 +214,6 @@ func testGroupLookup_RangeWithDelete(t *testing.T, l table.KeyLookup) {
 	if !cmp.Equal(want, got) {
 		t.Fatalf("unexpected range: -want/+got:\n%s", cmp.Diff(want, got))
 	}
-}
-
-func TestGroupLookup_RangeWithDelete(t *testing.T) {
-	testGroupLookup_RangeWithDelete(t, execute.NewGroupLookup())
-}
-func TestRandomAccessGroupLookup_RangeWithDelete(t *testing.T) {
-	testGroupLookup_RangeWithDelete(t, execute.NewRandomAccessGroupLookup())
 }
 
 type entry struct {
@@ -340,11 +323,10 @@ func testGroupLookupHelper(tb testing.TB, run func(name string, keys []flux.Grou
 	}())
 }
 
-func testGroupLookup_LookupOrSet(t *testing.T, fn func() table.KeyLookup) {
-	t.Helper()
+func TestGroupLookup_LookupOrSet(t *testing.T) {
 	testGroupLookupHelper(t, func(name string, keys []flux.GroupKey) {
 		t.Run(name, func(t *testing.T) {
-			l := fn()
+			l := execute.NewGroupLookup()
 			for _, key := range keys {
 				if _, ok := l.Lookup(key); !ok {
 					l.Set(key, true)
@@ -363,26 +345,14 @@ func testGroupLookup_LookupOrSet(t *testing.T, fn func() table.KeyLookup) {
 	})
 }
 
-func TestGroupLookup_LookupOrSet(t *testing.T) {
-	testGroupLookup_LookupOrSet(t, func() table.KeyLookup {
-		return execute.NewGroupLookup()
-	})
-}
-func TestRandomAccessGroupLookup_LookupOrSet(t *testing.T) {
-	testGroupLookup_LookupOrSet(t, func() table.KeyLookup {
-		return execute.NewRandomAccessGroupLookup()
-	})
-}
-
-func benchmarkGroupLookup_LookupOrSet(b *testing.B, fn func() table.KeyLookup) {
-	b.Helper()
+func BenchmarkGroupLookup_LookupOrSet(b *testing.B) {
 	testGroupLookupHelper(b, func(name string, keys []flux.GroupKey) {
 		b.Run(name, func(b *testing.B) {
 			b.ResetTimer()
 			b.ReportAllocs()
 
 			for i := 0; i < b.N; i++ {
-				l := fn()
+				l := execute.NewGroupLookup()
 				for _, key := range keys {
 					if _, ok := l.Lookup(key); !ok {
 						l.Set(key, true)
@@ -393,22 +363,10 @@ func benchmarkGroupLookup_LookupOrSet(b *testing.B, fn func() table.KeyLookup) {
 	})
 }
 
-func BenchmarkGroupLookup_LookupOrSet(b *testing.B) {
-	benchmarkGroupLookup_LookupOrSet(b, func() table.KeyLookup {
-		return execute.NewGroupLookup()
-	})
-}
-func BenchmarkRandomAccessGroupLookup_LookupOrSet(b *testing.B) {
-	benchmarkGroupLookup_LookupOrSet(b, func() table.KeyLookup {
-		return execute.NewRandomAccessGroupLookup()
-	})
-}
-
-func testGroupLookup_LookupOrCreate(t *testing.T, fn func() table.KeyLookup) {
-	t.Helper()
+func TestGroupLookup_LookupOrCreate(t *testing.T) {
 	testGroupLookupHelper(t, func(name string, keys []flux.GroupKey) {
 		t.Run(name, func(t *testing.T) {
-			l := fn()
+			l := execute.NewGroupLookup()
 			for _, key := range keys {
 				want := &struct{}{}
 				if got := l.LookupOrCreate(key, func() interface{} {
@@ -445,22 +403,10 @@ func testGroupLookup_LookupOrCreate(t *testing.T, fn func() table.KeyLookup) {
 	})
 }
 
-func TestGroupLookup_LookupOrCreate(t *testing.T) {
-	testGroupLookup_LookupOrCreate(t, func() table.KeyLookup {
-		return execute.NewGroupLookup()
-	})
-}
-func TestRandomAccessGroupLookup_LookupOrCreate(t *testing.T) {
-	testGroupLookup_LookupOrCreate(t, func() table.KeyLookup {
-		return execute.NewRandomAccessGroupLookup()
-	})
-}
-
-func testGroupLookup_Clear(t *testing.T, fn func() table.KeyLookup) {
-	t.Helper()
+func TestGroupLookup_Clear(t *testing.T) {
 	testGroupLookupHelper(t, func(name string, keys []flux.GroupKey) {
 		t.Run(name, func(t *testing.T) {
-			l := fn()
+			l := execute.NewGroupLookup()
 			for _, key := range keys {
 				l.Set(key, true)
 			}
@@ -490,16 +436,5 @@ func testGroupLookup_Clear(t *testing.T, fn func() table.KeyLookup) {
 				}
 			}
 		})
-	})
-}
-
-func TestGroupLookup_Clear(t *testing.T) {
-	testGroupLookup_Clear(t, func() table.KeyLookup {
-		return execute.NewGroupLookup()
-	})
-}
-func TestRandomAccessGroupLookup_Clear(t *testing.T) {
-	testGroupLookup_Clear(t, func() table.KeyLookup {
-		return execute.NewRandomAccessGroupLookup()
 	})
 }
