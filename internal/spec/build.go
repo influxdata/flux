@@ -7,7 +7,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
 )
 
@@ -98,25 +97,23 @@ func buildSpecWithTrace(ctx context.Context, t *flux.TableObject, ider flux.IDer
 func buildSpec(t *flux.TableObject, ider flux.IDer, spec *flux.Spec, visited map[*flux.TableObject]bool) {
 	// Traverse graph upwards to first unvisited node.
 	// Note: parents are sorted based on parameter name, so the visit order is consistent.
-	t.Parents.Range(func(i int, v values.Value) {
-		p := v.(*flux.TableObject)
+	for _, p := range t.Parents {
 		if !visited[p] {
 			// recurse up parents
 			buildSpec(p, ider, spec, visited)
 		}
-	})
+	}
 
 	// Assign ID to table object after visiting all ancestors.
 	tableID := ider.ID(t)
 
 	// Link table object to all parents after assigning ID.
-	t.Parents.Range(func(i int, v values.Value) {
-		p := v.(*flux.TableObject)
+	for _, p := range t.Parents {
 		spec.Edges = append(spec.Edges, flux.Edge{
 			Parent: ider.ID(p),
 			Child:  tableID,
 		})
-	})
+	}
 
 	visited[t] = true
 	spec.Operations = append(spec.Operations, t.Operation(ider))

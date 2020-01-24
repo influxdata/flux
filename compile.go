@@ -402,10 +402,11 @@ type IDerOpSpec interface {
 type TableObject struct {
 	// TODO(Josh): Remove args once the
 	// OperationSpec interface has an Equal method.
+	t       semantic.MonoType
 	args    Arguments
 	Kind    OperationKind
 	Spec    OperationSpec
-	Parents values.Array
+	Parents []*TableObject
 }
 
 func (t *TableObject) Operation(ider IDer) *Operation {
@@ -427,17 +428,16 @@ func (t *TableObject) String() string {
 	return str.String()
 }
 func (t *TableObject) str(b *strings.Builder, arrow bool) {
-	multiParent := t.Parents.Len() > 1
+	multiParent := len(t.Parents) > 1
 	if multiParent {
 		b.WriteString("( ")
 	}
-	t.Parents.Range(func(i int, p values.Value) {
-		parent := p.Object().(*TableObject)
-		parent.str(b, !multiParent)
+	for _, v := range t.Parents {
+		v.str(b, !multiParent)
 		if multiParent {
 			b.WriteString("; ")
 		}
-	})
+	}
 	if multiParent {
 		b.WriteString(" ) -> ")
 	}
@@ -448,108 +448,84 @@ func (t *TableObject) str(b *strings.Builder, arrow bool) {
 }
 
 func (t *TableObject) Type() semantic.MonoType {
-	// TODO (algow): should this return the type of the function operations?
-	return semantic.MonoType{}
+	return t.t
 }
 
 func (t *TableObject) Str() string {
-	panic(values.UnexpectedKind(semantic.Object, semantic.String))
+	panic(values.UnexpectedKind(semantic.Array, semantic.String))
 }
 func (t *TableObject) Bytes() []byte {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Bytes))
+	panic(values.UnexpectedKind(semantic.Array, semantic.Bytes))
 }
 func (t *TableObject) Int() int64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Int))
+	panic(values.UnexpectedKind(semantic.Array, semantic.Int))
 }
 func (t *TableObject) UInt() uint64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.UInt))
+	panic(values.UnexpectedKind(semantic.Array, semantic.UInt))
 }
 func (t *TableObject) Float() float64 {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Float))
+	panic(values.UnexpectedKind(semantic.Array, semantic.Float))
 }
 func (t *TableObject) Bool() bool {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Bool))
+	panic(values.UnexpectedKind(semantic.Array, semantic.Bool))
 }
 func (t *TableObject) Time() values.Time {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Time))
+	panic(values.UnexpectedKind(semantic.Array, semantic.Time))
 }
 func (t *TableObject) Duration() values.Duration {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Duration))
+	panic(values.UnexpectedKind(semantic.Array, semantic.Duration))
 }
 func (t *TableObject) Regexp() *regexp.Regexp {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Regexp))
+	panic(values.UnexpectedKind(semantic.Array, semantic.Regexp))
 }
 func (t *TableObject) Array() values.Array {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Array))
-}
-func (t *TableObject) Object() values.Object {
 	return t
 }
+func (t *TableObject) Object() values.Object {
+	panic(values.UnexpectedKind(semantic.Array, semantic.Object))
+}
 func (t *TableObject) Equal(rhs values.Value) bool {
-	if t.Type() != rhs.Type() {
-		return false
-	}
-	r := rhs.Object()
-	if t.Len() != r.Len() {
-		return false
-	}
-	var isEqual = true
-	// Range over both TableObjects and
-	// compare their properties for equality
-	t.Range(func(k string, v values.Value) {
-		w, ok := r.Get(k)
-		isEqual = isEqual && ok && v.Equal(w)
-	})
-	return isEqual
+	v, ok := rhs.(*TableObject)
+	return ok && t == v
 }
 func (t *TableObject) Function() values.Function {
-	panic(values.UnexpectedKind(semantic.Object, semantic.Function))
+	panic(values.UnexpectedKind(semantic.Array, semantic.Function))
 }
 
-func (t *TableObject) Get(name string) (values.Value, bool) {
-	switch name {
-	case tableKindKey:
-		return values.NewString(string(t.Kind)), true
-	case tableParentsKey:
-		return t.Parents, true
-	default:
-		return t.args.Get(name)
-	}
+func (t *TableObject) Get(i int) values.Value {
+	panic("cannot index into stream")
 }
-
-func (t *TableObject) Set(name string, v values.Value) {
-	// immutable
+func (t *TableObject) Set(i int, v values.Value) {
+	panic("cannot index into stream")
 }
-
+func (t *TableObject) Append(v values.Value) {
+	panic("cannot append onto stream")
+}
 func (t *TableObject) Len() int {
-	return len(t.args.GetAll()) + 2
+	panic("length of stream not supported")
 }
-
-func (t *TableObject) Range(f func(name string, v values.Value)) {
-	for _, arg := range t.args.GetAll() {
-		val, _ := t.args.Get(arg)
-		f(arg, val)
-	}
-	f(tableKindKey, values.NewString(string(t.Kind)))
-	f(tableParentsKey, t.Parents)
+func (t *TableObject) Range(f func(i int, v values.Value)) {
+	panic("cannot range over values in stream")
+}
+func (t *TableObject) Sort(f func(i, j values.Value) bool) {
+	panic("cannot sort stream")
 }
 
 type Administration struct {
-	parents values.Array
+	parents []*TableObject
 }
 
 func newAdministration() *Administration {
 	return &Administration{
-		// TODO(algow): Update this to use a real type for the TableObject
-		parents: values.NewArray(semantic.NewArrayType(semantic.MonoType{})),
+		parents: make([]*TableObject, 0, 8),
 	}
 }
 
 // AddParentFromArgs reads the args for the `table` argument and adds the value as a parent.
 func (a *Administration) AddParentFromArgs(args Arguments) error {
-	parent, err := args.GetRequiredObject(TablesParameter)
-	if err != nil {
-		return err
+	parent, ok := args.Get(TablesParameter)
+	if !ok {
+		return errors.Newf(codes.Invalid, "could not find %s parameter", TablesParameter)
 	}
 	p, ok := parent.(*TableObject)
 	if !ok {
@@ -563,15 +539,12 @@ func (a *Administration) AddParentFromArgs(args Arguments) error {
 // Duplicate parents will be removed, so the caller need not concern itself with which parents have already been added.
 func (a *Administration) AddParent(np *TableObject) {
 	// Check for duplicates
-	found := false
-	a.parents.Range(func(i int, v values.Value) {
-		if p, ok := v.(*TableObject); ok && p == np {
-			found = true
+	for _, v := range a.parents {
+		if v == np {
+			return
 		}
-	})
-	if !found {
-		a.parents.Append(np)
 	}
+	a.parents = append(a.parents, np)
 }
 
 type function struct {
@@ -639,6 +612,11 @@ func (f *function) Call(ctx context.Context, args values.Object) (values.Value, 
 }
 
 func (f *function) call(args interpreter.Arguments) (values.Value, error) {
+	returnType, err := f.t.ReturnType()
+	if err != nil {
+		return nil, err
+	}
+
 	a := newAdministration()
 	arguments := Arguments{Arguments: args}
 	spec, err := f.createOpSpec(arguments, a)
@@ -647,6 +625,7 @@ func (f *function) call(args interpreter.Arguments) (values.Value, error) {
 	}
 
 	t := &TableObject{
+		t:       returnType,
 		args:    arguments,
 		Kind:    spec.Kind(),
 		Spec:    spec,
