@@ -21,34 +21,6 @@ type Builder interface {
 	Release()
 }
 
-// KeyLookup is an interface for storing and retrieving
-// items by their group key.
-type KeyLookup interface {
-	// Lookup will retrieve the value associated with the given key if it exists.
-	Lookup(key flux.GroupKey) (interface{}, bool)
-
-	// LookupOrCreate will retrieve the value associated with the given key or,
-	// if it does not exist, will invoke the function to create one and set
-	// it in the group lookup.
-	LookupOrCreate(key flux.GroupKey, fn func() interface{}) interface{}
-
-	// Set will set the value for the given key.
-	// It will overwrite an existing value.
-	Set(key flux.GroupKey, value interface{})
-
-	// Delete will remove the key from this KeyLookup.
-	// It will return the same thing as a call to Lookup.
-	Delete(key flux.GroupKey) (v interface{}, found bool)
-
-	// Range will iterate over all groups keys in a stable ordering.
-	// Range must not be called within another call to Range.
-	// It is safe to call Set/Delete while ranging.
-	Range(f func(key flux.GroupKey, value interface{}))
-
-	// Clear will clear the lookup and reset it to contain nothing.
-	Clear()
-}
-
 // BuilderCache hold a mapping of group keys to Builder.
 // When a Builder is requested for a specific group key,
 // the BuilderCache will return a Builder that is unique
@@ -59,12 +31,7 @@ type BuilderCache struct {
 	// requested. The returned Builder should be empty.
 	New func(key flux.GroupKey) Builder
 
-	// Tables contains the cached builders.
-	// This can be set before use to customize the
-	// method for storing data. If this is null,
-	// the default execute.GroupLookup is initialized
-	// when the cache is first used.
-	Tables KeyLookup
+	tables *execute.GroupLookup
 }
 
 // Get retrieves the Builder for this group key.
@@ -78,11 +45,11 @@ type BuilderCache struct {
 func (d *BuilderCache) Get(key flux.GroupKey, b interface{}) bool {
 	builder, ok := d.lookupState(key)
 	if !ok {
-		if d.Tables == nil {
-			d.Tables = execute.NewGroupLookup()
+		if d.tables == nil {
+			d.tables = execute.NewGroupLookup()
 		}
 		builder = d.New(key)
-		d.Tables.Set(key, builder)
+		d.tables.Set(key, builder)
 	}
 	r := reflect.ValueOf(b)
 	r.Elem().Set(reflect.ValueOf(builder))
@@ -100,11 +67,11 @@ func (d *BuilderCache) Table(key flux.GroupKey) (flux.Table, error) {
 }
 
 func (d *BuilderCache) ForEach(f func(key flux.GroupKey, builder Builder) error) error {
-	if d.Tables == nil {
+	if d.tables == nil {
 		return nil
 	}
 	var err error
-	d.Tables.Range(func(key flux.GroupKey, value interface{}) {
+	d.tables.Range(func(key flux.GroupKey, value interface{}) {
 		if err != nil {
 			return
 		}
@@ -115,10 +82,10 @@ func (d *BuilderCache) ForEach(f func(key flux.GroupKey, builder Builder) error)
 }
 
 func (d *BuilderCache) lookupState(key flux.GroupKey) (Builder, bool) {
-	if d.Tables == nil {
+	if d.tables == nil {
 		return nil, false
 	}
-	v, ok := d.Tables.Lookup(key)
+	v, ok := d.tables.Lookup(key)
 	if !ok {
 		return nil, false
 	}
@@ -126,7 +93,7 @@ func (d *BuilderCache) lookupState(key flux.GroupKey) (Builder, bool) {
 }
 
 func (d *BuilderCache) DiscardTable(key flux.GroupKey) {
-	if d.Tables == nil {
+	if d.tables == nil {
 		return
 	}
 
@@ -139,16 +106,16 @@ func (d *BuilderCache) DiscardTable(key flux.GroupKey) {
 		} else {
 			// Release the table and construct a new one.
 			b.Release()
-			d.Tables.Set(key, d.New(key))
+			d.tables.Set(key, d.New(key))
 		}
 	}
 }
 
 func (d *BuilderCache) ExpireTable(key flux.GroupKey) {
-	if d.Tables == nil {
+	if d.tables == nil {
 		return
 	}
-	ts, ok := d.Tables.Delete(key)
+	ts, ok := d.tables.Delete(key)
 	if ok {
 		ts.(Builder).Release()
 	}
