@@ -166,18 +166,18 @@ func (t *filterTransformation) RetractTable(id execute.DatasetID, key flux.Group
 }
 
 func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	// Retrieve the inferred input type for the function.
-	// If all of the inferred inputs are part of the group
-	// key, we can evaluate a record with only the group key.
-	if t.canFilterByKey(tbl) {
-		return t.filterByKey(tbl)
-	}
-
 	// Prepare the function for the column types.
 	cols := tbl.Cols()
 	if err := t.fn.Prepare(cols); err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
 		return err
+	}
+
+	// Retrieve the inferred input type for the function.
+	// If all of the inferred inputs are part of the group
+	// key, we can evaluate a record with only the group key.
+	if t.canFilterByKey(tbl) {
+		return t.filterByKey(tbl)
 	}
 
 	// Prefill the columns that can be inferred from the group key.
@@ -206,13 +206,13 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 
 func (t *filterTransformation) canFilterByKey(tbl flux.Table) bool {
 	inType := t.fn.InferredInputType()
-	nargs, err := inType.NumArguments()
+	nargs, err := inType.NumProperties()
 	if err != nil {
 		panic(err)
 	}
 
 	for i := 0; i < nargs; i++ {
-		arg, err := inType.Argument(i)
+		prop, err := inType.RowProperty(i)
 		if err != nil {
 			panic(err)
 		}
@@ -220,13 +220,13 @@ func (t *filterTransformation) canFilterByKey(tbl flux.Table) bool {
 		// Determine if this key is even valid. If it is not
 		// in the table at all, we don't care if it is missing
 		// since it will always be missing.
-		argName := string(arg.Name())
-		if execute.ColIdx(argName, tbl.Cols()) < 0 {
+		label := prop.Name()
+		if execute.ColIdx(label, tbl.Cols()) < 0 {
 			continue
 		}
 
 		// Look for a column with this name in the group key.
-		if execute.ColIdx(string(arg.Name()), tbl.Key().Cols()) < 0 {
+		if execute.ColIdx(label, tbl.Key().Cols()) < 0 {
 			// If we cannot find this referenced column in the group
 			// key, then it is provided by the table and we need to
 			// evaluate each row individually.

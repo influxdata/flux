@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -17,7 +16,6 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"go.uber.org/zap/zaptest"
 )
@@ -108,27 +106,7 @@ func TestExecutor_Execute(t *testing.T) {
 					)),
 					plan.CreatePhysicalNode("filter", &universe.FilterProcedureSpec{
 						Fn: interpreter.ResolvedFunction{
-							Fn: &semantic.FunctionExpression{
-								Block: &semantic.FunctionBlock{
-									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{
-											{
-												Key: &semantic.Identifier{Name: "r"},
-											},
-										},
-									},
-									Body: &semantic.BinaryExpression{
-										Operator: ast.LessThanOperator,
-										Left: &semantic.MemberExpression{
-											Property: "_value",
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-										},
-										Right: &semantic.FloatLiteral{Value: 2.5},
-									},
-								},
-							},
+							Fn:    executetest.FunctionExpression(t, "(r) => r._value < 2.5"),
 							Scope: flux.Prelude(),
 						},
 					}),
@@ -198,27 +176,7 @@ func TestExecutor_Execute(t *testing.T) {
 					plan.CreatePhysicalNode("filter", &universe.FilterProcedureSpec{
 						Fn: interpreter.ResolvedFunction{
 							Scope: flux.Prelude(),
-							Fn: &semantic.FunctionExpression{
-								Block: &semantic.FunctionBlock{
-									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{
-											{
-												Key: &semantic.Identifier{Name: "r"},
-											},
-										},
-									},
-									Body: &semantic.BinaryExpression{
-										Operator: ast.LessThanOperator,
-										Left: &semantic.MemberExpression{
-											Property: "_value",
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-										},
-										Right: &semantic.FloatLiteral{Value: 7.5},
-									},
-								},
-							},
+							Fn:    executetest.FunctionExpression(t, "(r) => r._value < 7.5"),
 						},
 					}),
 					plan.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),

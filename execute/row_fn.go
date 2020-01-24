@@ -229,25 +229,7 @@ func (f *RowPredicateFn) Prepare(cols []flux.ColMeta) error {
 // contain type variables and will only contain the properties that could be
 // inferred from type inference.
 func (f *RowPredicateFn) InferredInputType() semantic.MonoType {
-	t := f.preparedFn.Type()
-	narg, err := t.NumProperties()
-	if err != nil {
-		panic(err)
-	}
-
-	for i := 0; i < narg; i++ {
-		arg, err := t.Argument(i)
-		if err != nil {
-			panic(err)
-		} else if string(arg.Name()) == f.recordName {
-			inpType, err := arg.TypeOf()
-			if err != nil {
-				panic(err)
-			}
-			return inpType
-		}
-	}
-	return semantic.MonoType{}
+	return f.arg0.Type()
 }
 
 // InputType will return the prepared input type.
