@@ -135,6 +135,7 @@ pub fn builtins() -> Builtins<'static> {
                         ?bucketID: string,
                         ?org: string,
                         ?orgID: string,
+                        ?host: string,
                         ?token: string,
                         ?timeColumn: string,
                         ?measurementColumn: string,
