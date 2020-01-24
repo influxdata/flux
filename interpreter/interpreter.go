@@ -17,22 +17,18 @@ const PackageMain = "main"
 
 type Interpreter struct {
 	sideEffects     []SideEffect // a list of the side effects occurred during the last call to `Eval`.
-	pkgName         string
 	modifiedOptions []optionMutation
+	pkg             *Package
 }
 
 func NewInterpreter(pkg *Package) *Interpreter {
-	var pkgName string
-	if pkg != nil {
-		pkgName = pkg.Name()
-	}
 	return &Interpreter{
-		pkgName: pkgName,
+		pkg: pkg,
 	}
 }
 
 func (itrp *Interpreter) PackageName() string {
-	return itrp.pkgName
+	return itrp.pkg.Name()
 }
 
 // SideEffect contains its value, and the semantic node that generated it.
@@ -91,7 +87,7 @@ func (itrp *Interpreter) doFile(ctx context.Context, file *semantic.File, scope 
 		if es, ok := stmt.(*semantic.ExpressionStatement); ok {
 			// Only in the main package are all unassigned package
 			// level expressions coerced into producing side effects.
-			if itrp.pkgName == PackageMain {
+			if itrp.pkg.Name() == PackageMain {
 				itrp.sideEffects = append(itrp.sideEffects, SideEffect{Node: es, Value: val})
 			}
 		}
@@ -104,10 +100,10 @@ func (itrp *Interpreter) doPackageClause(pkg *semantic.PackageClause) error {
 	if pkg != nil {
 		name = pkg.Name.Name
 	}
-	if itrp.pkgName == "" {
-		itrp.pkgName = name
-	} else if itrp.pkgName != name {
-		return errors.Newf(codes.Invalid, "package name mismatch %q != %q", itrp.pkgName, name)
+	if itrp.pkg.name == "" {
+		itrp.pkg.name = name
+	} else if itrp.pkg.name != name {
+		return errors.Newf(codes.Invalid, "package name mismatch %q != %q", itrp.pkg.Name(), name)
 	}
 	return nil
 }
@@ -453,8 +449,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		return function{
 			e:     e,
 			scope: scope,
-			// TODO(algow): What should go here?
-			// pkg:   itrp.pkg,
+			pkg:   itrp.pkg,
 		}, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "unsupported expression %T", expr)

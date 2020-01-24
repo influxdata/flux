@@ -58,7 +58,7 @@ func evalHandle(ctx context.Context, h *libflux.ASTPkg, opts ...ScopeMutator) ([
 		return nil, nil, err
 	}
 
-	itrp := interpreter.NewInterpreter(nil)
+	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 	// Create a scope for execution whose parent is a copy of the prelude and whose current scope is the package.
 	// A copy of the prelude must be used since options can be mutated.
 	scope := defaultRuntime.prelude.Copy().Nest(nil)

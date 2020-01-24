@@ -163,7 +163,7 @@ func (r *runtime) Finalize() error {
 		// created by the package. Pass in the previously initialized
 		// packages as importable packages as we evaluate these in order.
 		importer := importer{pkgs: r.pkgs}
-		itrp := interpreter.NewInterpreter(nil)
+		itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
 		if _, err := itrp.Eval(context.Background(), root, scope, &importer); err != nil {
 			return err
 		}
