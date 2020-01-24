@@ -41,9 +41,9 @@ func (s *JoinOpSpec) IDer(ider flux.IDer) {
 }
 
 func createJoinOpSpec(args flux.Arguments, p *flux.Administration) (flux.OperationSpec, error) {
-	l, err := args.GetRequiredObject("left")
-	if err != nil {
-		return nil, err
+	l, ok := args.Get("left")
+	if !ok {
+		return nil, errors.New(codes.Invalid, "argument 'left' not present")
 	}
 
 	// TODO(josh): The type system should ensure that this
@@ -56,9 +56,9 @@ func createJoinOpSpec(args flux.Arguments, p *flux.Administration) (flux.Operati
 	}
 	p.AddParent(left)
 
-	r, err := args.GetRequiredObject("right")
-	if err != nil {
-		return nil, err
+	r, ok := args.Get("right")
+	if !ok {
+		return nil, errors.New(codes.Invalid, "argument 'right' not present")
 	}
 
 	// Same comment as above. The type system should ensure

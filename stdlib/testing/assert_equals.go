@@ -33,9 +33,9 @@ func init() {
 }
 
 func createAssertEqualsOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
-	t, err := args.GetRequiredObject("got")
-	if err != nil {
-		return nil, err
+	t, ok := args.Get("got")
+	if !ok {
+		return nil, errors.New(codes.Invalid, "argument 'got' not present")
 	}
 	p, ok := t.(*flux.TableObject)
 	if !ok {
@@ -43,9 +43,9 @@ func createAssertEqualsOpSpec(args flux.Arguments, a *flux.Administration) (flux
 	}
 	a.AddParent(p)
 
-	t, err = args.GetRequiredObject("want")
-	if err != nil {
-		return nil, err
+	t, ok = args.Get("want")
+	if !ok {
+		return nil, errors.New(codes.Invalid, "argument 'want' not present")
 	}
 	p, ok = t.(*flux.TableObject)
 	if !ok {
@@ -53,8 +53,8 @@ func createAssertEqualsOpSpec(args flux.Arguments, a *flux.Administration) (flux
 	}
 	a.AddParent(p)
 
-	var name string
-	if name, err = args.GetRequiredString("name"); err != nil {
+	name, err := args.GetRequiredString("name")
+	if err != nil {
 		return nil, err
 	}
 
