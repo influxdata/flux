@@ -64,9 +64,11 @@ impl Default for Position {
 // SourceLocation represents the location of a node in the AST
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 pub struct SourceLocation {
-    pub file: Option<String>,   // File is the optional file name.
-    pub start: Position,        // Start is the location in the source the node starts.
-    pub end: Position,          // End is the location in the source the node ends.
+    #[serde(default)]
+    pub file: Option<String>, // File is the optional file name.
+    pub start: Position, // Start is the location in the source the node starts.
+    pub end: Position,   // End is the location in the source the node ends.
+    #[serde(default)]
     pub source: Option<String>, // Source is optional raw source.
 }
 
@@ -301,6 +303,7 @@ pub struct Package {
     #[serde(default)]
     pub path: String,
     pub package: String,
+    #[serde(default)]
     pub files: Vec<File>,
 }
 
@@ -333,7 +336,9 @@ pub struct File {
     pub metadata: String,
     pub package: Option<PackageClause>,
     #[serde(deserialize_with = "deserialize_default_from_null")]
+    #[serde(default)]
     pub imports: Vec<ImportDeclaration>,
+    #[serde(default)]
     pub body: Vec<Statement>,
 }
 
@@ -480,6 +485,7 @@ pub struct StringExpr {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
+    #[serde(default)]
     pub parts: Vec<StringExprPart>,
 }
 
@@ -582,6 +588,7 @@ pub struct FunctionExpr {
     #[serde(flatten)]
     pub base: BaseNode,
     #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub params: Vec<Property>,
     pub body: FunctionBody,
 }
@@ -844,7 +851,9 @@ pub struct ObjectExpr {
     #[serde(flatten)]
     pub base: BaseNode,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub with: Option<Identifier>,
+    #[serde(default)]
     pub properties: Vec<Property>,
 }
 
@@ -1066,6 +1075,7 @@ pub struct DurationLit {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
+    #[serde(default)]
     pub values: Vec<Duration>,
 }
 
