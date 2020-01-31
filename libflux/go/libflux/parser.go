@@ -43,6 +43,11 @@ func (p *ASTPkg) MarshalJSON() ([]byte, error) {
 		str := C.GoString(cstr)
 		return nil, errors.Newf(codes.Internal, "could not marshal AST to JSON: %v", str)
 	}
+	// Ensure that we don't free the pointer during the call to
+	// marshal json. This is only needed on one path because
+	// the compiler recognizes the possibility that p might
+	// be used again and prevents it from being garbage collected.
+	runtime.KeepAlive(p)
 	defer C.flux_free(buf.data)
 
 	data := C.GoBytes(buf.data, C.int(buf.len))
@@ -59,6 +64,11 @@ func (p *ASTPkg) MarshalFB() ([]byte, error) {
 		str := C.GoString(cstr)
 		return nil, errors.Newf(codes.Internal, "could not marshal AST to FlatBuffer: %v", str)
 	}
+	// Ensure that we don't free the pointer during the call to
+	// marshal fb. This is only needed on one path because
+	// the compiler recognizes the possibility that p might
+	// be used again and prevents it from being garbage collected.
+	runtime.KeepAlive(p)
 	defer C.flux_free(buf.data)
 
 	data := C.GoBytes(buf.data, C.int(buf.len))
@@ -70,6 +80,13 @@ func (p *ASTPkg) Free() {
 		C.flux_free(unsafe.Pointer(p.ptr))
 	}
 	p.ptr = nil
+
+	// This is needed to ensure that the go runtime doesn't
+	// call this method at the same time as someone invoking
+	// this function. If the go runtime ran this from the
+	// finalizer thread and we manually do it ourselves, we
+	// risk a double free.
+	runtime.KeepAlive(p)
 }
 
 // Parse will take a string and return a parsed source file.
