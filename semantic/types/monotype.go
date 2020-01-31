@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	flatbuffers "github.com/google/flatbuffers/go"
@@ -156,6 +157,27 @@ func (mt *MonoType) Argument(i int) (*Argument, error) {
 	return newArgument(a)
 }
 
+// SortedArguments returns a slice of function arguments,
+// sorted by argument name, if this monotype is a function.
+func (mt MonoType) SortedArguments() ([]*Argument, error) {
+	nargs, err := mt.NumArguments()
+	if err != nil {
+		return nil, err
+	}
+	args := make([]*Argument, nargs)
+	for i := 0; i < nargs; i++ {
+		arg, err := mt.Argument(i)
+		if err != nil {
+			return nil, err
+		}
+		args[i] = arg
+	}
+	sort.Slice(args, func(i, j int) bool {
+		return string(args[i].Name()) < string(args[j].Name())
+	})
+	return args, nil
+}
+
 func (mt *MonoType) ReturnType() (*MonoType, error) {
 	f, ok := mt.tbl.(*fbsemantic.Fun)
 	if !ok {
@@ -221,6 +243,30 @@ func (mt *MonoType) Property(i int) (*Property, error) {
 		return nil, errors.New(codes.Internal, "missing property")
 	}
 	return &Property{fb: p}, nil
+}
+
+// SortedProperties returns the properties for a Row monotype, sorted by
+// key.  It's possible that there are duplicate keys with different types,
+// in this case, this function preserves their order.
+func (mt *MonoType) SortedProperties() ([]*Property, error) {
+	nps, err := mt.NumProperties()
+	if err != nil {
+		return nil, err
+	}
+	ps := make([]*Property, nps)
+	for i := 0; i < nps; i++ {
+		ps[i], err = mt.Property(i)
+		if err != nil {
+			return nil, err
+		}
+	}
+	sort.Slice(ps, func(i, j int) bool {
+		if ps[i].Name() == ps[j].Name() {
+			return i < j
+		}
+		return ps[i].Name() < ps[j].Name()
+	})
+	return ps, nil
 }
 
 // Extends returns the extending type variable if this monotype is a row, and an error otherwise.
@@ -306,21 +352,18 @@ func (mt *MonoType) String() string {
 	case Row:
 		var sb strings.Builder
 		sb.WriteString("{")
-		nprops, err := mt.NumProperties()
+		sprops, err := mt.SortedProperties()
 		if err != nil {
 			return "<" + err.Error() + ">"
 		}
 		needBar := false
-		for i := 0; i < nprops; i++ {
+		for i := 0; i < len(sprops); i++ {
 			if needBar {
 				sb.WriteString(" | ")
 			} else {
 				needBar = true
 			}
-			prop, err := mt.Property(i)
-			if err != nil {
-				return "<" + err.Error() + ">"
-			}
+			prop := sprops[i]
 			sb.WriteString(prop.Name() + ": ")
 			ty, err := prop.TypeOf()
 			if err != nil {
@@ -344,15 +387,11 @@ func (mt *MonoType) String() string {
 		var sb strings.Builder
 		sb.WriteString("(")
 		needComma := false
-		nargs, err := mt.NumArguments()
+		sargs, err := mt.SortedArguments()
 		if err != nil {
 			return "<" + err.Error() + ">"
 		}
-		for i := 0; i < nargs; i++ {
-			arg, err := mt.Argument(i)
-			if err != nil {
-				return "<" + err.Error() + ">"
-			}
+		for _, arg := range sargs {
 			if needComma {
 				sb.WriteString(", ")
 			} else {
@@ -380,4 +419,85 @@ func (mt *MonoType) String() string {
 	default:
 		return "<" + fmt.Sprintf("unknown monotype (%v)", tk) + ">"
 	}
+}
+
+func updateTVarMap(counter *int, m map[uint64]int, tv uint64) {
+	if _, ok := m[tv]; ok {
+		return
+	}
+	m[tv] = *counter
+	*counter++
+}
+
+func (mt *MonoType) getCanonicalMapping(counter *int, tvm map[uint64]int) error {
+	switch tk := mt.Kind(); tk {
+	case Var:
+		tv, err := mt.VarNum()
+		if err != nil {
+			return err
+		}
+		updateTVarMap(counter, tvm, tv)
+	case Arr:
+		et, err := mt.ElemType()
+		if err != nil {
+			return err
+		}
+		if err := et.getCanonicalMapping(counter, tvm); err != nil {
+			return err
+		}
+	case Row:
+		n_props, err := mt.NumProperties()
+		if err != nil {
+			return err
+		}
+		for i := 0; i < n_props; i++ {
+			p, err := mt.Property(i)
+			if err != nil {
+				return err
+			}
+			pt, err := p.TypeOf()
+			if err != nil {
+				return err
+			}
+			if err := pt.getCanonicalMapping(counter, tvm); err != nil {
+				return err
+			}
+		}
+		evar, err := mt.Extends()
+		if err != nil {
+			return err
+		}
+		if evar != nil {
+			if err := evar.getCanonicalMapping(counter, tvm); err != nil {
+				return err
+			}
+		}
+	case Fun:
+		nargs, err := mt.NumArguments()
+		if err != nil {
+			return err
+		}
+		for i := 0; i < nargs; i++ {
+			arg, err := mt.Argument(i)
+			if err != nil {
+				return err
+			}
+			at, err := arg.TypeOf()
+			if err != nil {
+				return err
+			}
+			if err := at.getCanonicalMapping(counter, tvm); err != nil {
+				return err
+			}
+		}
+		rt, err := mt.ReturnType()
+		if err != nil {
+			return err
+		}
+		if err := rt.getCanonicalMapping(counter, tvm); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

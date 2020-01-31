@@ -23,8 +23,8 @@
 //!
 use std::collections::HashMap;
 
-use crate::semantic::analyze::analyze_with;
 use crate::semantic::bootstrap::build_polytype;
+use crate::semantic::convert::convert_with;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
@@ -118,7 +118,7 @@ fn infer_types(
     let pkg = parse_program(src);
 
     let got = match nodes::infer_pkg_types(
-        &mut analyze_with(pkg, &mut f).expect("analysis failed"),
+        &mut convert_with(pkg, &mut f).expect("analysis failed"),
         Environment::new(env.into()),
         &mut f,
         &importer,

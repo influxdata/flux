@@ -11,8 +11,9 @@ pub mod parser;
 pub mod scanner;
 pub mod semantic;
 
-use std::error::Error;
+use std::error;
 use std::ffi::*;
+use std::fmt;
 use std::os::raw::{c_char, c_void};
 
 use parser::Parser;
@@ -25,8 +26,45 @@ pub mod ctypes {
 }
 use ctypes::*;
 
-struct ErrorHandle {
-    err: Box<dyn Error>,
+pub struct ErrorHandle {
+    pub err: Box<dyn error::Error>,
+}
+
+#[derive(Debug)]
+pub struct Error {
+    msg: String,
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&self.msg)
+    }
+}
+
+impl error::Error for Error {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        None
+    }
+}
+
+impl From<String> for Error {
+    fn from(msg: String) -> Self {
+        Error { msg }
+    }
+}
+
+impl From<&str> for Error {
+    fn from(msg: &str) -> Self {
+        Error {
+            msg: String::from(msg),
+        }
+    }
+}
+
+impl From<semantic::nodes::Error> for Error {
+    fn from(sn_err: semantic::nodes::Error) -> Self {
+        Error { msg: sn_err.msg }
+    }
 }
 
 #[repr(C)]
@@ -37,71 +75,30 @@ pub struct flux_buffer_t {
 
 /// # Safety
 ///
-/// This function is unsafe because it takes a dereferences a raw pointer passed
+/// This function is unsafe because it dereferences a raw pointer passed
 /// in as a parameter. For example, if that pointer is NULL, undefined behavior
 /// could occur.
 #[no_mangle]
-pub unsafe extern "C" fn flux_parse(cstr: *mut c_char) -> *mut flux_ast_t {
+pub unsafe extern "C" fn flux_parse(cstr: *mut c_char) -> *mut flux_ast_pkg_t {
     let buf = CStr::from_ptr(cstr).to_bytes(); // Unsafe
     let s = String::from_utf8(buf.to_vec()).unwrap();
     let mut p = Parser::new(&s);
-    let file = p.parse_file(String::from(""));
-    Box::into_raw(Box::new(file)) as *mut flux_ast_t
+    let pkg: ast::Package = p.parse_file(String::from("")).into();
+    Box::into_raw(Box::new(pkg)) as *mut flux_ast_pkg_t
 }
 
 /// # Safety
 ///
-/// This function is unsafe because it takes a dereferences a raw pointer passed
-/// in as a parameter. For example, if that pointer is NULL, undefined behavior
-/// could occur.
-#[no_mangle]
-pub unsafe extern "C" fn flux_parse_fb(src_ptr: *const c_char) -> *mut flux_buffer_t {
-    let src_bytes = CStr::from_ptr(src_ptr).to_bytes(); // Unsafe
-    let src = String::from_utf8(src_bytes.to_vec()).unwrap();
-    let mut p = Parser::new(&src);
-    let file = p.parse_file(String::from(""));
-    let package_name: String;
-    match &file.package {
-        Some(p) => {
-            package_name = p.name.name.clone();
-        }
-        _ => {
-            package_name = DEFAULT_PACKAGE_NAME.to_string();
-        }
-    }
-    let pkg = ast::Package {
-        base: ast::BaseNode {
-            ..ast::BaseNode::default()
-        },
-        path: String::from(""),
-        package: package_name,
-        files: vec![file],
-    };
-    let r = ast::flatbuffers::serialize(&pkg);
-    match r {
-        Ok((vec, offset)) => {
-            let data = &vec[offset..];
-            Box::into_raw(Box::new(flux_buffer_t {
-                data: data.as_ptr(),
-                len: data.len(),
-            }))
-        }
-        Err(_) => 1 as *mut flux_buffer_t,
-    }
-}
-
-/// # Safety
-///
-/// This function is unsafe because it takes a dereferences raw pointers passed
+/// This function is unsafe because it dereferences raw pointers passed
 /// in as parameters. For example, if that pointer is NULL, undefined behavior
 /// could occur.
 #[no_mangle]
 pub unsafe extern "C" fn flux_ast_marshal_json(
-    ast: *mut flux_ast_t,
+    ast_pkg: *mut flux_ast_pkg_t,
     buf: *mut flux_buffer_t,
 ) -> *mut flux_error_t {
-    let self_ = &*(ast as *mut ast::File) as &ast::File; // Unsafe
-    let data = match serde_json::to_vec(self_) {
+    let ast_pkg = &*(ast_pkg as *mut ast::Package) as &ast::Package; // Unsafe
+    let data = match serde_json::to_vec(ast_pkg) {
         Ok(v) => v,
         Err(err) => {
             let errh = ErrorHandle { err: Box::new(err) };
@@ -115,10 +112,66 @@ pub unsafe extern "C" fn flux_ast_marshal_json(
     std::ptr::null_mut()
 }
 
+/// # Safety
+///
+/// This function is unsafe because it takes a dereferences a raw pointer passed
+/// in as a parameter. For example, if that pointer is NULL, undefined behavior
+/// could occur.
+#[no_mangle]
+pub unsafe extern "C" fn flux_ast_marshal_fb(
+    ast: *mut flux_ast_pkg_t,
+    buf: *mut flux_buffer_t,
+) -> *mut flux_error_t {
+    let pkg = &*(ast as *mut ast::Package) as &ast::Package; // Unsafe
+    let (mut vec, offset) = match ast::flatbuffers::serialize(&pkg) {
+        Ok(vec_offset) => vec_offset,
+        Err(err) => {
+            let err: Error = err.into();
+            let errh = ErrorHandle { err: Box::new(err) };
+            return Box::into_raw(Box::new(errh)) as *mut flux_error_t;
+        }
+    };
+
+    // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
+    let data = vec.split_off(offset);
+    let buffer = &mut *buf; // Unsafe
+    buffer.len = data.len();
+    buffer.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
+    std::ptr::null_mut()
+}
+
+/// # Safety
+///
+/// This function is unsafe because it takes a dereferences a raw pointer passed
+/// in as a parameter. For example, if that pointer is NULL, undefined behavior
+/// could occur.
+#[no_mangle]
+pub unsafe extern "C" fn flux_semantic_marshal_fb(
+    ast: *mut flux_semantic_pkg_t,
+    buf: *mut flux_buffer_t,
+) -> *mut flux_error_t {
+    let pkg = &*(ast as *mut semantic::nodes::Package) as &semantic::nodes::Package; // Unsafe
+    let (mut vec, offset) = match semantic::flatbuffers::serialize(&pkg) {
+        Ok(vec_offset) => vec_offset,
+        Err(err) => {
+            let err: Error = err.into();
+            let errh = ErrorHandle { err: Box::new(err) };
+            return Box::into_raw(Box::new(errh)) as *mut flux_error_t;
+        }
+    };
+
+    // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
+    let data = vec.split_off(offset);
+    let buffer = &mut *buf; // Unsafe
+    buffer.len = data.len();
+    buffer.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
+    std::ptr::null_mut()
+}
+
 #[no_mangle]
 pub extern "C" fn flux_error_str(err: *mut flux_error_t) -> *mut c_char {
     let e = unsafe { &*(err as *mut ErrorHandle) };
-    let s = CString::new(e.err.description()).unwrap();
+    let s = CString::new(format!("{}", e.err)).unwrap();
     s.into_raw()
 }
 

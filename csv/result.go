@@ -306,7 +306,6 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 			if err != nil {
 				if err == io.EOF {
 					if datatypes == nil && groups == nil && defaults == nil {
-						// No, just pass the EOF up
 						return tableMetadata{}, err
 					}
 					switch {
@@ -341,7 +340,7 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 			}
 			defaults = copyLine(line[recordStartIdx:])
 		default:
-			if annotation == "" {
+			if !strings.HasPrefix(line[annotationIdx], commentPrefix) {
 				switch {
 				case datatypes == nil:
 					return tableMetadata{}, fmt.Errorf("missing expected annotation datatype")
@@ -351,7 +350,7 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 					return tableMetadata{}, fmt.Errorf("missing expected annotation default")
 				}
 			}
-			// Skip extra annotation
+			// Ignore unsupported/unknown annotations.
 		}
 	}
 

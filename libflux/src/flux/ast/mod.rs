@@ -16,6 +16,8 @@ use serde::de::{Deserialize, Deserializer, Error, Visitor};
 use serde::ser::{Serialize, SerializeSeq, Serializer};
 use serde_aux::prelude::*;
 
+pub const DEFAULT_PACKAGE_NAME: &str = "main";
+
 // Position is the AST counterpart of Scanner's Position.
 // It adds serde capabilities.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -288,6 +290,19 @@ pub struct Package {
     pub files: Vec<File>,
 }
 
+impl From<File> for Package {
+    fn from(file: File) -> Self {
+        Package {
+            base: BaseNode {
+                ..BaseNode::default()
+            },
+            path: String::from(""),
+            package: String::from(file.get_package()),
+            files: vec![file],
+        }
+    }
+}
+
 // File represents a source from a single file
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
@@ -306,6 +321,15 @@ pub struct File {
     #[serde(deserialize_with = "deserialize_default_from_null")]
     pub imports: Vec<ImportDeclaration>,
     pub body: Vec<Statement>,
+}
+
+impl File {
+    fn get_package(self: &File) -> &str {
+        match &self.package {
+            Some(pkg_clause) => pkg_clause.name.name.as_str(),
+            None => DEFAULT_PACKAGE_NAME,
+        }
+    }
 }
 
 // PackageClause defines the current package identifier.
@@ -440,6 +464,7 @@ pub struct MemberAssgn {
 pub struct StringExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub parts: Vec<StringExprPart>,
 }
@@ -458,6 +483,7 @@ pub enum StringExprPart {
 pub struct TextPart {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub value: String,
 }
@@ -468,6 +494,7 @@ pub struct TextPart {
 pub struct InterpolatedPart {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub expression: Expression,
 }
@@ -478,6 +505,7 @@ pub struct InterpolatedPart {
 pub struct ParenExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
+    #[serde(flatten)]
     pub base: BaseNode,
     pub expression: Expression,
 }
@@ -491,6 +519,7 @@ pub struct CallExpr {
     #[serde(flatten)]
     pub base: BaseNode,
     pub callee: Expression,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub arguments: Vec<Expression>,
 }
 
@@ -537,6 +566,7 @@ pub struct FunctionExpr {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub params: Vec<Property>,
     pub body: FunctionBody,
 }

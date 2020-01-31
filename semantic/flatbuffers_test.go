@@ -1,6 +1,11 @@
+// +build libflux
+
 package semantic
 
 import (
+	"errors"
+	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -13,12 +18,15 @@ import (
 	"github.com/influxdata/flux/semantic/types"
 )
 
-// TODO(cwolff): There needs to be more testing here.  Once we can serialize an arbitrary semantic graph
-//   in Rust, we can get more complete coverage without having to create FlatBuffers by hand.
-
 var cmpOpts = []cmp.Option{
 	cmp.AllowUnexported(
+		ArrayExpression{},
+		BinaryExpression{},
 		Block{},
+		CallExpression{},
+		ConditionalExpression{},
+		DateTimeLiteral{},
+		DurationLiteral{},
 		ExpressionStatement{},
 		File{},
 		FloatLiteral{},
@@ -28,14 +36,30 @@ var cmpOpts = []cmp.Option{
 		FunctionParameter{},
 		IdentifierExpression{},
 		Identifier{},
+		ImportDeclaration{},
+		IndexExpression{},
 		IntegerLiteral{},
+		InterpolatedPart{},
+		LogicalExpression{},
+		MemberAssignment{},
+		MemberExpression{},
 		NativeVariableAssignment{},
 		ObjectExpression{},
+		OptionStatement{},
 		Package{},
+		PackageClause{},
+		RegexpLiteral{},
 		Property{},
 		ReturnStatement{},
+		StringExpression{},
+		StringLiteral{},
+		TestStatement{},
+		TextPart{},
 		UnaryExpression{},
 	),
+	cmp.Transformer("regexp", func(re *regexp.Regexp) string {
+		return re.String()
+	}),
 	// Just ignore types when comparing against Go semantic graph, since
 	// Go does not annotate expressions nodes with types directly.
 	cmp.Transformer("", func(ty *types.MonoType) int {
@@ -68,8 +92,8 @@ func TestDeserializeFromFlatBuffer(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			src, fb := tc.fbFn()
-			ast := parser.ParseSource(src)
-			want, err := New(ast)
+			astPkg := parser.ParseSource(src)
+			want, err := New(astPkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -426,4 +450,537 @@ func source(src string, loc *ast.SourceLocation) string {
 		return "<invalid offsets>"
 	}
 	return src[soffset:eoffset]
+}
+
+// MyAssignment is a special struct used only
+// for comparing NativeVariableAssignments with
+// PolyTypes provided by a test case.
+type MyAssignement struct {
+	loc
+
+	Identifier *Identifier
+	Init       Expression
+
+	Typ string
+}
+
+// transformGraph takes a semantic graph produced by Go, and modifies it
+// so it looks like something produced by Rust.
+// The differences do not affect program behavior at runtime.
+func transformGraph(pkg *Package) error {
+	Walk(&transformingVisitor{}, pkg)
+	return nil
+}
+
+type transformingVisitor struct{}
+
+func (tv *transformingVisitor) Visit(node Node) Visitor {
+	return tv
+}
+
+// toMonthsAndNanos takes a slice of durations,
+// and represents them as months and nanoseconds,
+// which is how durations are represented in a flatbuffer.
+func toMonthsAndNanos(ds []ast.Duration) []ast.Duration {
+	var ns int64
+	var mos int64
+	for _, d := range ds {
+		switch d.Unit {
+		case ast.NanosecondUnit:
+			ns += d.Magnitude
+		case ast.MicrosecondUnit:
+			ns += 1000 * d.Magnitude
+		case ast.MillisecondUnit:
+			ns += 1000000 * d.Magnitude
+		case ast.SecondUnit:
+			ns += 1000000000 * d.Magnitude
+		case ast.MinuteUnit:
+			ns += 60 * 1000000000 * d.Magnitude
+		case ast.HourUnit:
+			ns += 60 * 60 * 1000000000 * d.Magnitude
+		case ast.DayUnit:
+			ns += 24 * 60 * 60 * 1000000000 * d.Magnitude
+		case ast.WeekUnit:
+			ns += 7 * 24 * 60 * 60 * 1000000000 * d.Magnitude
+		case ast.MonthUnit:
+			mos += d.Magnitude
+		case ast.YearUnit:
+			mos += 12 * d.Magnitude
+		default:
+		}
+	}
+	outDurs := make([]ast.Duration, 2)
+	outDurs[0] = ast.Duration{Magnitude: mos, Unit: ast.MonthUnit}
+	outDurs[1] = ast.Duration{Magnitude: ns, Unit: ast.NanosecondUnit}
+	return outDurs
+}
+
+func (tv *transformingVisitor) Done(node Node) {
+	switch n := node.(type) {
+	case *CallExpression:
+		// Rust call expr args are just an array, so there's no location info.
+		n.Arguments.Source = ""
+	case *DurationLiteral:
+		// Rust duration literals use the months + nanos representation,
+		// Go uses AST units.
+		n.Values = toMonthsAndNanos(n.Values)
+	case *File:
+		if len(n.Body) == 0 {
+			n.Body = nil
+		}
+	case *FunctionBlock:
+		if e, ok := n.Body.(Expression); ok {
+			// The Rust semantic graph has only block-style function bodies
+			l := e.Location()
+			l.Source = ""
+			n.Body = &Block{
+				loc: loc(l),
+				Body: []Statement{
+					&ReturnStatement{
+						loc:      loc(e.Location()),
+						Argument: e,
+					},
+				},
+			}
+		} else {
+			// Blocks in Rust models blocks as linked lists, so we don't have a location for the
+			// entire block including the curly braces.  It uses location of the statements instead.
+			bl := n.Body.(*Block)
+			nStmts := len(bl.Body)
+			bl.Start = bl.Body[0].Location().Start
+			bl.End = bl.Body[nStmts-1].Location().End
+			bl.Source = ""
+		}
+	}
+}
+
+var tvarRegexp *regexp.Regexp = regexp.MustCompile("t[0-9]+")
+
+// canonicalizeType returns a string representation of the given type
+// that reindexes in the numbers in type variables starting from zero.
+func canonicalizeType(pt *types.PolyType) string {
+	tvm, err := pt.GetCanonicalMapping()
+	if err != nil {
+		panic(err)
+	}
+	tstr := pt.String()
+	return tvarRegexp.ReplaceAllStringFunc(tstr, func(in string) string {
+		n, err := strconv.Atoi(in[1:])
+		if err != nil {
+			panic(err)
+		}
+		nn, ok := tvm[uint64(n)]
+		if !ok {
+			panic(fmt.Sprintf("could not find tvar mapping for %v", in))
+		}
+		return fmt.Sprintf("t%v", nn)
+	})
+}
+
+// canonicalizeError reindexes type variable numbers in error messages
+// starting from zero, so that tests don't fail when the stdlib is updated.
+func canonicalizeError(errMsg string) string {
+	count := 0
+	tvm := make(map[int]int)
+	return tvarRegexp.ReplaceAllStringFunc(errMsg, func(in string) string {
+		n, err := strconv.Atoi(in[1:])
+		if err != nil {
+			panic(err)
+		}
+		var nn int
+		var ok bool
+		if nn, ok = tvm[n]; !ok {
+			nn = count
+			count++
+			tvm[n] = nn
+		}
+		t := fmt.Sprintf("t%v", nn)
+		return t
+	})
+}
+
+func TestFlatBuffersRoundTrip(t *testing.T) {
+	tcs := []struct {
+		name    string
+		fluxSrc string
+		err     error
+		// For each variable assignment, the expected inferred type of the variable
+		types map[string]string
+	}{
+		{
+			name:    "package",
+			fluxSrc: `package foo`,
+		},
+		{
+			name: "import",
+			fluxSrc: `
+                import "math"
+                import c "csv"`,
+		},
+		{
+			name:    "option with assignment",
+			fluxSrc: `option o = "hello"`,
+			types: map[string]string{
+				"o": "forall [] string",
+			},
+		},
+		{
+			name:    "option with member assignment error",
+			fluxSrc: `option o.m = "hello"`,
+			err:     errors.New("undeclared variable o"),
+		},
+		{
+			name: "option with member assignment",
+			fluxSrc: `
+                import "influxdata/influxdb/monitor"
+                option monitor.log = (tables=<-) => tables`,
+		},
+		{
+			name:    "builtin statement",
+			fluxSrc: `builtin foo`,
+			err:     errors.New("builtin identifier foo not defined"),
+		},
+		{
+			name: "test statement",
+			fluxSrc: `
+                import "testing"
+                test t = () => ({input: testing.loadStorage(csv: ""), want: testing.loadMem(csv: ""), fn: (table=<-) => table})`,
+			types: map[string]string{
+				"t": "forall [t0, t1, t2] where t1: Row, t2: Row () -> {fn: (<-table: t0) -> t0 | input: [t2] | want: [t1]}",
+			},
+		},
+		{
+			name:    "expression statement",
+			fluxSrc: `42`,
+		},
+		{
+			name:    "native variable assignment",
+			fluxSrc: `x = 42`,
+			types: map[string]string{
+				"x": "forall [] int",
+			},
+		},
+		{
+			name: "string expression",
+			fluxSrc: `
+                str = "hello"
+                x = "${str} world"`,
+			types: map[string]string{
+				"str": "forall [] string",
+				"x":   "forall [] string",
+			},
+		},
+		{
+			name: "array expression/index expression",
+			fluxSrc: `
+                x = [1, 2, 3]
+                y = x[2]`,
+			types: map[string]string{
+				"x": "forall [] [int]",
+				"y": "forall [] int",
+			},
+		},
+		{
+			name:    "simple fn",
+			fluxSrc: `f = (x) => x`,
+			types: map[string]string{
+				"f": "forall [t0] (x: t0) -> t0",
+			},
+		},
+		{
+			name:    "simple fn with block (return statement)",
+			fluxSrc: `f = (x) => {return x}`,
+			types: map[string]string{
+				"f": "forall [t0] (x: t0) -> t0",
+			},
+		},
+		{
+			name: "simple fn with 2 stmts",
+			fluxSrc: `
+                f = (x) => {
+                    z = x + 1
+                    127 // expr statement
+                    return z
+                }`,
+			types: map[string]string{
+				"f": "forall [] (x: int) -> int",
+				"z": "forall [] int",
+			},
+		},
+		{
+			name:    "simple fn with 2 params",
+			fluxSrc: `f = (x, y) => x + y`,
+			types: map[string]string{
+				"f": "forall [t0] where t0: Addable (x: t0, y: t0) -> t0",
+			},
+		},
+		{
+			name:    "apply",
+			fluxSrc: `apply = (f, p) => f(param: p)`,
+			types: map[string]string{
+				"apply": "forall [t0, t1] (f: (param: t0) -> t1, p: t0) -> t1",
+			},
+		},
+		{
+			name:    "apply2",
+			fluxSrc: `apply2 = (f, p0, p1) => f(param0: p0, param1: p1)`,
+			types: map[string]string{
+				"apply2": "forall [t0, t1, t2] (f: (param0: t0, param1: t1) -> t2, p0: t0, p1: t1) -> t2",
+			},
+		},
+		{
+			name:    "default args",
+			fluxSrc: `f = (x=1, y) => x + y`,
+			types: map[string]string{
+				"f": "forall [] (?x: int, y: int) -> int",
+			},
+		},
+		{
+			name:    "two default args",
+			fluxSrc: `f = (x=1, y=10, z) => x + y + z`,
+			types: map[string]string{
+				"f": "forall [] (?x: int, ?y: int, z: int) -> int",
+			},
+		},
+		{
+			name:    "pipe args",
+			fluxSrc: `f = (x=<-, y) => x + y`,
+			types: map[string]string{
+				"f": "forall [t0] where t0: Addable (<-x: t0, y: t0) -> t0",
+			},
+		},
+		{
+			name: "binary expression",
+			fluxSrc: `
+                x = 1 * 2 / 3 - 1 + 7 % 8^9
+                lt = 1 < 3                
+                lte = 1 <= 3                
+                gt = 1 > 3                
+                gte = 1 >= 3                
+                eq = 1 == 3                
+                neq = 1 != 3
+                rem = "foo" =~ /foo/
+                renm = "food" !~ /foog/`,
+			types: map[string]string{
+				"x":    "forall [] int",
+				"lt":   "forall [] bool",
+				"lte":  "forall [] bool",
+				"gt":   "forall [] bool",
+				"gte":  "forall [] bool",
+				"eq":   "forall [] bool",
+				"neq":  "forall [] bool",
+				"rem":  "forall [] bool",
+				"renm": "forall [] bool",
+			},
+		},
+		{
+			name: "call expression",
+			fluxSrc: `
+                f = (x) => x + 1
+                y = f(x: 10)`,
+			types: map[string]string{
+				"f": "forall [] (x: int) -> int",
+				"y": "forall [] int",
+			},
+		},
+		{
+			name: "call expression two args",
+			fluxSrc: `
+                f = (x, y) => x + y
+                y = f(x: 10, y: 30)`,
+			types: map[string]string{
+				"f": "forall [t0] where t0: Addable (x: t0, y: t0) -> t0",
+				"y": "forall [] int",
+			},
+		},
+		{
+			name: "call expression two args with pipe",
+			fluxSrc: `
+                f = (x, y=<-) => x + y
+                y = 30 |> f(x: 10)`,
+			types: map[string]string{
+				"f": "forall [t0] where t0: Addable (x: t0, <-y: t0) -> t0",
+				"y": "forall [] int",
+			},
+		},
+		{
+			name: "conditional expression",
+			fluxSrc: `
+                ans = if 100 > 0 then "yes" else "no"`,
+			types: map[string]string{
+				"ans": "forall [] string",
+			},
+		},
+		{
+			name: "identifier expression",
+			fluxSrc: `
+                x = 34
+                y = x`,
+			types: map[string]string{
+				"x": "forall [] int",
+				"y": "forall [] int",
+			},
+		},
+		{
+			name:    "logical expression",
+			fluxSrc: `x = true and false or true`,
+			types: map[string]string{
+				"x": "forall [] bool",
+			},
+		},
+		{
+			name: "member expression/object expression",
+			fluxSrc: `
+                o = {temp: 30.0, loc: "FL"}
+                t = o.temp`,
+			types: map[string]string{
+				"o": "forall [] {loc: string | temp: float}",
+				"t": "forall [] float",
+			},
+		},
+		{
+			name: "object expression with",
+			fluxSrc: `
+                o = {temp: 30.0, loc: "FL"}
+                o2 = {o with city: "Tampa"}`,
+			types: map[string]string{
+				"o":  "forall [] {loc: string | temp: float}",
+				"o2": "forall [] {city: string | loc: string | temp: float}",
+			},
+		},
+		{
+			name: "object expression extends",
+			fluxSrc: `
+                f = (r) => ({r with val: 32})
+                o = f(r: {val: "thirty-two"})`,
+			types: map[string]string{
+				"f": "forall [t0] (r: t0) -> {val: int | t0}",
+				"o": "forall [] {val: int | val: string}",
+			},
+		},
+		{
+			name: "unary expression",
+			fluxSrc: `
+                x = -1
+                y = +1
+                b = not false`,
+			types: map[string]string{
+				"x": "forall [] int",
+				"y": "forall [] int",
+				"b": "forall [] bool",
+			},
+		},
+		{
+			name:    "exists operator",
+			fluxSrc: `e = exists {foo: 30}.bar`,
+			err:     errors.New("cannot unify {{}} with {bar:t0 | t1}"),
+		},
+		{
+			name:    "exists operator with tvar",
+			fluxSrc: `f = (r) => exists r.foo`,
+			types: map[string]string{
+				"f": "forall [t0, t1] (r: {foo: t0 | t1}) -> bool",
+			},
+		},
+		{
+			// This seems to be a bug: https://github.com/influxdata/flux/issues/2355
+			name: "exists operator with tvar and call",
+			fluxSrc: `
+                f = (r) => exists r.foo
+                ff = (r) => f(r: {r with bar: 1})`,
+			types: map[string]string{
+				"f": "forall [t0, t1] (r: {foo: t0 | t1}) -> bool",
+				// Note: t1 is unused in the monotype, and t2 is not quantified.
+				// Type of ff should be the same as f.
+				"ff": "forall [t0, t1] (r: {foo: t0 | t2}) -> bool",
+			},
+		},
+		{
+			name:    "datetime literal",
+			fluxSrc: `t = 2018-08-15T13:36:23-07:00`,
+			types: map[string]string{
+				"t": "forall [] time",
+			},
+		},
+		{
+			name:    "duration literal",
+			fluxSrc: `d = 1y1mo1w1d1h1m1s1ms1us1ns`,
+			types: map[string]string{
+				"d": "forall [] duration",
+			},
+		},
+		{
+			name:    "negative duration literal",
+			fluxSrc: `d = -1y1d`,
+			types: map[string]string{
+				"d": "forall [] duration",
+			},
+		},
+		{
+			name:    "zero duration literal",
+			fluxSrc: `d = 0d`,
+			types: map[string]string{
+				"d": "forall [] duration",
+			},
+		},
+	}
+	for _, tc := range tcs {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			astPkg := parser.ParseSource(tc.fluxSrc)
+			want, err := New(astPkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := transformGraph(want); err != nil {
+				t.Fatal(err)
+			}
+
+			got, err := AnalyzeSource(tc.fluxSrc)
+			if err != nil {
+				if tc.err == nil {
+					t.Fatal(err)
+				}
+				if want, got := tc.err.Error(), canonicalizeError(err.Error()); want != got {
+					t.Fatalf("expected error %q, but got %q", want, got)
+				}
+				return
+			}
+			if tc.err != nil {
+				t.Fatalf("expected error %q, but got nothing", tc.err)
+			}
+
+			// Create a special comparison option to compare the types
+			// of NativeVariableAssignments using the expected types in the map
+			// provided by the test case.
+			assignCmp := cmp.Transformer("assign", func(nva *NativeVariableAssignment) *MyAssignement {
+				var typStr string
+				if nva.Typ == nil {
+					// This is the assignment from Go.
+					var ok bool
+					typStr, ok = tc.types[nva.Identifier.Name]
+					if !ok {
+						typStr = "*** missing type ***"
+					}
+				} else {
+					// This is the assignment from Rust.
+					typStr = canonicalizeType(nva.Typ)
+				}
+				return &MyAssignement{
+					loc:        nva.loc,
+					Identifier: nva.Identifier,
+					Init:       nva.Init,
+					Typ:        typStr,
+				}
+			})
+
+			opts := make(cmp.Options, len(cmpOpts), len(cmpOpts)+2)
+			copy(opts, cmpOpts)
+			opts = append(opts, assignCmp, cmp.AllowUnexported(MyAssignement{}))
+			if diff := cmp.Diff(want, got, opts...); diff != "" {
+				t.Fatalf("differences in semantic graph: -want/+got:\n%v", diff)
+			}
+		})
+	}
 }

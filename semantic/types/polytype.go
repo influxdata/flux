@@ -1,6 +1,7 @@
 package types
 
 import (
+	"sort"
 	"strings"
 
 	flatbuffers "github.com/google/flatbuffers/go"
@@ -58,6 +59,27 @@ func (pt *PolyType) Constraint(i int) (*fbsemantic.Constraint, error) {
 
 }
 
+// SortedConstraints returns the constraints for this polytype sorted by type variable and constraint kind.
+func (pt *PolyType) SortedConstraints() ([]*fbsemantic.Constraint, error) {
+	ncs := pt.NumConstraints()
+	cs := make([]*fbsemantic.Constraint, ncs)
+	for i := 0; i < ncs; i++ {
+		c, err := pt.Constraint(i)
+		if err != nil {
+			return nil, err
+		}
+		cs[i] = c
+	}
+	sort.Slice(cs, func(i, j int) bool {
+		tvi, tvj := cs[i].Tvar(nil).I(), cs[j].Tvar(nil).I()
+		if tvi == tvj {
+			return cs[i].Kind() < cs[j].Kind()
+		}
+		return tvi < tvj
+	})
+	return cs, nil
+}
+
 // Expr returns the monotype expression for this polytype.
 func (pt *PolyType) Expr() (*MonoType, error) {
 	tbl := new(flatbuffers.Table)
@@ -68,17 +90,34 @@ func (pt *PolyType) Expr() (*MonoType, error) {
 	return NewMonoType(tbl, pt.fb.ExprType())
 }
 
+func (pt PolyType) SortedVars() ([]*fbsemantic.Var, error) {
+	nvars := pt.NumVars()
+	vars := make([]*fbsemantic.Var, nvars)
+	for i := 0; i < nvars; i++ {
+		arg, err := pt.Var(i)
+		if err != nil {
+			return nil, err
+		}
+		vars[i] = arg
+	}
+	sort.Slice(vars, func(i, j int) bool {
+		return vars[i].I() < vars[j].I()
+	})
+	return vars, nil
+
+}
+
 // String returns a string representation for this polytype.
 func (pt *PolyType) String() string {
 	var sb strings.Builder
 
 	sb.WriteString("forall [")
 	needComma := false
-	for i := 0; i < pt.NumVars(); i++ {
-		v, err := pt.Var(i)
-		if err != nil {
-			return "<" + err.Error() + ">"
-		}
+	svars, err := pt.SortedVars()
+	if err != nil {
+		return "<" + err.Error() + ">"
+	}
+	for _, v := range svars {
 		if needComma {
 			sb.WriteString(", ")
 		} else {
@@ -90,17 +129,17 @@ func (pt *PolyType) String() string {
 	sb.WriteString("] ")
 
 	needWhere := true
-	for i := 0; i < pt.NumConstraints(); i++ {
-		cons, err := pt.Constraint(i)
-		if err != nil {
-			return "<" + err.Error() + ">"
-		}
+	cs, err := pt.SortedConstraints()
+	if err != nil {
+		return "<" + err.Error() + ">"
+	}
+	for i := 0; i < len(cs); i++ {
+		cons := cs[i]
 		tv := cons.Tvar(nil)
 		k := cons.Kind()
 
 		if needWhere {
 			sb.WriteString("where ")
-		} else {
 			needWhere = false
 		}
 		mtv := monoTypeFromVar(tv)
@@ -122,4 +161,31 @@ func (pt *PolyType) String() string {
 	sb.WriteString(mt.String())
 
 	return sb.String()
+}
+
+// GetCanonicalMapping returns a map of type variable numbers to
+// canonicalized numbers that start from 0.
+// Tests that do type inference will have type variables that are sensitive
+// to changes in the standard library, this helps to solve that problem.
+func (pt *PolyType) GetCanonicalMapping() (map[uint64]int, error) {
+	tvm := make(map[uint64]int)
+	counter := 0
+
+	svars, err := pt.SortedVars()
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range svars {
+		updateTVarMap(&counter, tvm, v.I())
+	}
+
+	mt, err := pt.Expr()
+	if err != nil {
+		return nil, err
+	}
+	if err := mt.getCanonicalMapping(&counter, tvm); err != nil {
+		return nil, err
+	}
+
+	return tvm, nil
 }

@@ -1,5 +1,4 @@
-pub mod analyze;
-pub use analyze::analyze;
+pub mod convert;
 
 mod import;
 
@@ -24,8 +23,8 @@ pub mod builtins;
 
 use crate::ast;
 use crate::parser::parse_string;
-use crate::semantic::analyze::analyze_with;
-use crate::semantic::analyze::Result as AnalysisResult;
+use crate::semantic::convert::convert_with;
+use crate::semantic::convert::Result as ConversionResult;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
@@ -33,20 +32,15 @@ use crate::semantic::nodes::{infer_pkg_types, inject_pkg_types};
 
 impl Importer for Option<()> {}
 
-pub fn analyze_source(source: &str) -> AnalysisResult<nodes::Package> {
+pub fn convert_source(source: &str) -> ConversionResult<nodes::Package> {
     let file = parse_string("", source);
     let errs = ast::check::check(ast::walk::Node::File(&file));
     if !errs.is_empty() {
         return Err(format!("got errors on parsing: {:?}", errs));
     }
-    let ast_pkg = ast::Package {
-        base: file.base.clone(),
-        path: "".to_string(),
-        package: "main".to_string(),
-        files: vec![file],
-    };
+    let ast_pkg: ast::Package = file.into();
     let mut f = Fresher::default();
-    let mut sem_pkg = analyze_with(ast_pkg, &mut f)?;
+    let mut sem_pkg = convert_with(ast_pkg, &mut f)?;
     // TODO(affo): add a stdlib Importer.
     let (_, sub) = infer_pkg_types(&mut sem_pkg, Environment::empty(), &mut f, &None, &None)?;
     Ok(inject_pkg_types(sem_pkg, &sub))

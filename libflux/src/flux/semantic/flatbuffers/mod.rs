@@ -15,7 +15,7 @@ use semantic_generated::fbsemantic;
 extern crate chrono;
 use chrono::Duration as ChronoDuration;
 
-pub fn serialize(semantic_pkg: &mut semantic::nodes::Package) -> Result<(Vec<u8>, usize), String> {
+pub fn serialize(semantic_pkg: &semantic::nodes::Package) -> Result<(Vec<u8>, usize), String> {
     let mut v = new_serializing_visitor_with_capacity(1024);
     walk::walk(&mut v, Rc::new(walk::Node::Package(semantic_pkg)));
     v.finish()
@@ -512,8 +512,11 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
 
                 let mut block_len = 0;
                 let mut current = &func.body;
+                let body_start_pos = &current.loc().start;
+                let mut body_end_pos = &current.loc().end;
                 loop {
                     block_len += 1;
+                    body_end_pos = &current.loc().end;
                     match current {
                         semantic::nodes::Block::Expr(_, next) => {
                             current = next.as_ref();
@@ -526,6 +529,13 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                         }
                     }
                 }
+                let body_loc = ast::SourceLocation {
+                    file: func.loc.file.clone(),
+                    start: body_start_pos.clone(),
+                    end: body_end_pos.clone(),
+                    source: None,
+                };
+                let body_loc = v.create_loc(&body_loc);
                 let body_vec = {
                     let stmt_vec = v.create_stmt_vector(block_len);
                     Some(v.builder.create_vector(&stmt_vec.as_slice()))
@@ -533,7 +543,7 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 let body = Some(fbsemantic::Block::create(
                     &mut v.builder,
                     &fbsemantic::BlockArgs {
-                        loc,
+                        loc: body_loc,
                         body: body_vec,
                     },
                 ));
