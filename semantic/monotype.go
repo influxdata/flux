@@ -366,6 +366,85 @@ func (p *RowProperty) TypeOf() (MonoType, error) {
 
 // String returns a string representation of this monotype.
 func (mt MonoType) String() string {
+	return mt.string(nil)
+}
+
+// CanonicalString returns a string representation of this monotype
+// where the tvar numbers are contiguous and indexed starting at zero.
+func (mt MonoType) CanonicalString() string {
+	ctr := uint64(0)
+	m := make(map[uint64]uint64)
+	if err := mt.getCanonicalMapping(&ctr, m); err != nil {
+		return "<" + err.Error() + ">"
+	}
+	return mt.string(m)
+}
+
+func (mt MonoType) getCanonicalMapping(counter *uint64, tvm map[uint64]uint64) error {
+	switch tk := mt.Kind(); tk {
+	case Var:
+		tv, err := mt.VarNum()
+		if err != nil {
+			return err
+		}
+		updateTVarMap(counter, tvm, tv)
+	case Arr:
+		et, err := mt.ElemType()
+		if err != nil {
+			return err
+		}
+		if err := et.getCanonicalMapping(counter, tvm); err != nil {
+			return err
+		}
+	case Row:
+		props, err := mt.SortedProperties()
+		if err != nil {
+			return err
+		}
+		for _, p := range props {
+			pt, err := p.TypeOf()
+			if err != nil {
+				return err
+			}
+			if err := pt.getCanonicalMapping(counter, tvm); err != nil {
+				return err
+			}
+		}
+		evar, ok, err := mt.Extends()
+		if err != nil {
+			return err
+		} else if ok {
+			if err := evar.getCanonicalMapping(counter, tvm); err != nil {
+				return err
+			}
+		}
+	case Fun:
+		args, err := mt.SortedArguments()
+		if err != nil {
+			return err
+		}
+		for _, arg := range args {
+			at, err := arg.TypeOf()
+			if err != nil {
+				return err
+			}
+			if err := at.getCanonicalMapping(counter, tvm); err != nil {
+				return err
+			}
+		}
+		rt, err := mt.ReturnType()
+		if err != nil {
+			return err
+		}
+		if err := rt.getCanonicalMapping(counter, tvm); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (mt MonoType) string(m map[uint64]uint64) string {
 	if mt.tbl == nil {
 		return "null"
 	}
@@ -383,13 +462,19 @@ func (mt MonoType) String() string {
 		if err != nil {
 			return "<" + err.Error() + ">"
 		}
+		if m != nil {
+			var ok bool
+			if i, ok = m[i]; !ok {
+				return "<could not find var num in map>"
+			}
+		}
 		return fmt.Sprintf("t%d", i)
 	case Arr:
 		et, err := mt.ElemType()
 		if err != nil {
 			return "<" + err.Error() + ">"
 		}
-		return "[" + et.String() + "]"
+		return "[" + et.string(m) + "]"
 	case Row:
 		var sb strings.Builder
 		sb.WriteString("{")
@@ -409,7 +494,7 @@ func (mt MonoType) String() string {
 			if err != nil {
 				return "<" + err.Error() + ">"
 			}
-			sb.WriteString(ty.String())
+			sb.WriteString(ty.string(m))
 		}
 		extends, ok, err := mt.Extends()
 		if err != nil {
@@ -419,7 +504,7 @@ func (mt MonoType) String() string {
 			if needBar {
 				sb.WriteString(" | ")
 			}
-			sb.WriteString(extends.String())
+			sb.WriteString(extends.string(m))
 		}
 		sb.WriteString("}")
 		return sb.String()
@@ -447,14 +532,14 @@ func (mt MonoType) String() string {
 			if err != nil {
 				return "<" + err.Error() + ">"
 			}
-			sb.WriteString(argTyp.String())
+			sb.WriteString(argTyp.string(m))
 		}
 		sb.WriteString(") -> ")
 		rt, err := mt.ReturnType()
 		if err != nil {
 			return "<" + err.Error() + ">"
 		}
-		sb.WriteString(rt.String())
+		sb.WriteString(rt.string(m))
 		return sb.String()
 	default:
 		return "<" + fmt.Sprintf("unknown monotype (%v)", tk) + ">"
@@ -716,82 +801,10 @@ func buildObjectType(builder *flatbuffers.Builder, properties []PropertyType, ex
 	return fbsemantic.RowEnd(builder)
 }
 
-func updateTVarMap(counter *int, m map[uint64]int, tv uint64) {
+func updateTVarMap(counter *uint64, m map[uint64]uint64, tv uint64) {
 	if _, ok := m[tv]; ok {
 		return
 	}
 	m[tv] = *counter
 	*counter++
-}
-
-func (mt MonoType) GetCanonicalMapping(counter *int, tvm map[uint64]int) error {
-	switch tk := mt.Kind(); tk {
-	case Var:
-		tv, err := mt.VarNum()
-		if err != nil {
-			return err
-		}
-		updateTVarMap(counter, tvm, tv)
-	case Arr:
-		et, err := mt.ElemType()
-		if err != nil {
-			return err
-		}
-		if err := et.GetCanonicalMapping(counter, tvm); err != nil {
-			return err
-		}
-	case Row:
-		n_props, err := mt.NumProperties()
-		if err != nil {
-			return err
-		}
-		for i := 0; i < n_props; i++ {
-			p, err := mt.RowProperty(i)
-			if err != nil {
-				return err
-			}
-			pt, err := p.TypeOf()
-			if err != nil {
-				return err
-			}
-			if err := pt.GetCanonicalMapping(counter, tvm); err != nil {
-				return err
-			}
-		}
-		evar, ok, err := mt.Extends()
-		if err != nil {
-			return err
-		} else if ok {
-			if err := evar.GetCanonicalMapping(counter, tvm); err != nil {
-				return err
-			}
-		}
-	case Fun:
-		nargs, err := mt.NumArguments()
-		if err != nil {
-			return err
-		}
-		for i := 0; i < nargs; i++ {
-			arg, err := mt.Argument(i)
-			if err != nil {
-				return err
-			}
-			at, err := arg.TypeOf()
-			if err != nil {
-				return err
-			}
-			if err := at.GetCanonicalMapping(counter, tvm); err != nil {
-				return err
-			}
-		}
-		rt, err := mt.ReturnType()
-		if err != nil {
-			return err
-		}
-		if err := rt.GetCanonicalMapping(counter, tvm); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

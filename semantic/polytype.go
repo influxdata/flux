@@ -61,6 +61,10 @@ func (pt PolyType) Constraint(i int) (*fbsemantic.Constraint, error) {
 
 // SortedConstraints returns the constraints for this polytype sorted by type variable and constraint kind.
 func (pt *PolyType) SortedConstraints() ([]*fbsemantic.Constraint, error) {
+	return pt.sortedConstraints(nil)
+}
+
+func (pt *PolyType) sortedConstraints(m map[uint64]uint64) ([]*fbsemantic.Constraint, error) {
 	ncs := pt.NumConstraints()
 	cs := make([]*fbsemantic.Constraint, ncs)
 	for i := 0; i < ncs; i++ {
@@ -71,7 +75,20 @@ func (pt *PolyType) SortedConstraints() ([]*fbsemantic.Constraint, error) {
 		cs[i] = c
 	}
 	sort.Slice(cs, func(i, j int) bool {
-		tvi, tvj := cs[i].Tvar(nil).I(), cs[j].Tvar(nil).I()
+		var tvi, tvj uint64
+		if m != nil {
+			var ok bool
+			tvi, ok = m[cs[i].Tvar(nil).I()]
+			if !ok {
+				panic("could not find var mapping")
+			}
+			tvj, ok = m[cs[j].Tvar(nil).I()]
+			if !ok {
+				panic("could not find var mapping")
+			}
+		} else {
+			tvi, tvj = cs[i].Tvar(nil).I(), cs[j].Tvar(nil).I()
+		}
 		if tvi == tvj {
 			return cs[i].Kind() < cs[j].Kind()
 		}
@@ -91,6 +108,10 @@ func (pt PolyType) Expr() (MonoType, error) {
 }
 
 func (pt PolyType) SortedVars() ([]*fbsemantic.Var, error) {
+	return pt.sortedVars(nil)
+}
+
+func (pt PolyType) sortedVars(m map[uint64]uint64) ([]*fbsemantic.Var, error) {
 	nvars := pt.NumVars()
 	vars := make([]*fbsemantic.Var, nvars)
 	for i := 0; i < nvars; i++ {
@@ -101,7 +122,21 @@ func (pt PolyType) SortedVars() ([]*fbsemantic.Var, error) {
 		vars[i] = arg
 	}
 	sort.Slice(vars, func(i, j int) bool {
-		return vars[i].I() < vars[j].I()
+		var ii, jj uint64
+		if m != nil {
+			var ok bool
+			if ii, ok = m[vars[i].I()]; !ok {
+				panic("could not find var mapping")
+			}
+			if jj, ok = m[vars[j].I()]; !ok {
+				panic("could not find var mapping")
+			}
+		} else {
+			ii = vars[i].I()
+			jj = vars[j].I()
+		}
+
+		return ii < jj
 	})
 	return vars, nil
 
@@ -109,6 +144,21 @@ func (pt PolyType) SortedVars() ([]*fbsemantic.Var, error) {
 
 // String returns a string representation for this polytype.
 func (pt PolyType) String() string {
+	return pt.string(nil)
+}
+
+// CanonicalString returns a string representation for this polytype,
+// where the tvar numbers are contiguous and indexed starting at zero.
+// Tvar numbers are ordered by the order they appear in the monotype expression.
+func (pt PolyType) CanonicalString() string {
+	m, err := pt.getCanonicalMapping()
+	if err != nil {
+		return "<" + err.Error() + ">"
+	}
+	return pt.string(m)
+}
+
+func (pt PolyType) string(m map[uint64]uint64) string {
 	if pt.fb == nil {
 		return "<polytype: nil>"
 	}
@@ -116,7 +166,7 @@ func (pt PolyType) String() string {
 
 	sb.WriteString("forall [")
 	needComma := false
-	svars, err := pt.SortedVars()
+	svars, err := pt.sortedVars(m)
 	if err != nil {
 		return "<" + err.Error() + ">"
 	}
@@ -127,12 +177,12 @@ func (pt PolyType) String() string {
 			needComma = true
 		}
 		mt := monoTypeFromVar(v)
-		sb.WriteString(mt.String())
+		sb.WriteString(mt.string(m))
 	}
 	sb.WriteString("] ")
 
 	needWhere := true
-	cs, err := pt.SortedConstraints()
+	cs, err := pt.sortedConstraints(m)
 	if err != nil {
 		return "<" + err.Error() + ">"
 	}
@@ -146,7 +196,7 @@ func (pt PolyType) String() string {
 			needWhere = false
 		}
 		mtv := monoTypeFromVar(tv)
-		sb.WriteString(mtv.String())
+		sb.WriteString(mtv.string(m))
 		sb.WriteString(": ")
 		sb.WriteString(fbsemantic.EnumNamesKind[k])
 
@@ -161,7 +211,7 @@ func (pt PolyType) String() string {
 	if err != nil {
 		return "<" + err.Error() + ">"
 	}
-	sb.WriteString(mt.String())
+	sb.WriteString(mt.string(m))
 
 	return sb.String()
 }
@@ -170,25 +220,29 @@ func (pt PolyType) String() string {
 // canonicalized numbers that start from 0.
 // Tests that do type inference will have type variables that are sensitive
 // to changes in the standard library, this helps to solve that problem.
-func (pt *PolyType) GetCanonicalMapping() (map[uint64]int, error) {
-	tvm := make(map[uint64]int)
-	counter := 0
-
-	svars, err := pt.SortedVars()
-	if err != nil {
-		return nil, err
-	}
-	for _, v := range svars {
-		updateTVarMap(&counter, tvm, v.I())
-	}
-
+func (pt *PolyType) getCanonicalMapping() (map[uint64]uint64, error) {
+	tvm := make(map[uint64]uint64)
+	counter := uint64(0)
 	mt, err := pt.Expr()
 	if err != nil {
 		return nil, err
 	}
-	if err := mt.GetCanonicalMapping(&counter, tvm); err != nil {
+	if err := mt.getCanonicalMapping(&counter, tvm); err != nil {
 		return nil, err
 	}
 
+	nvars := pt.NumVars()
+	for i := 0; i < nvars; i++ {
+		// Normally all the tvars should already be in the mapping because we
+		// have already visited the monotype expression.
+		// However, for the sake of debugging issues like this one
+		//   https://github.com/influxdata/flux/issues/2355
+		// generate a mapping for the quantified vars just in case.
+		v, err := pt.Var(i)
+		if err != nil {
+			return nil, err
+		}
+		updateTVarMap(&counter, tvm, v.I())
+	}
 	return tvm, nil
 }

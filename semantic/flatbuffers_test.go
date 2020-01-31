@@ -249,11 +249,15 @@ func getFnExprFlatBuffer() (string, []byte) {
 	fbsemantic.BlockAddBody(b, stmts)
 	body := fbsemantic.BlockEnd(b)
 
+	funTy := getFnMonoType(b)
+
 	exprLoc := getFBLoc(b, "1:5", "1:36", src)
 	fbsemantic.FunctionExpressionStart(b)
 	fbsemantic.FunctionExpressionAddBody(b, body)
 	fbsemantic.FunctionExpressionAddParams(b, params)
 	fbsemantic.FunctionExpressionAddLoc(b, exprLoc)
+	fbsemantic.FunctionExpressionAddTyp(b, funTy)
+	fbsemantic.FunctionExpressionAddTypType(b, fbsemantic.MonoTypeFun)
 	fe := fbsemantic.FunctionExpressionEnd(b)
 
 	str := b.CreateString("f")
@@ -300,8 +304,6 @@ func getFnPolyType(b *flatbuffers.Builder) flatbuffers.UOffsetT {
 	// The type of `(a, b=<-, c=72) => { return c }`
 	// is `forall [t0, t1] (a: t0, <-b: t1, ?c: int) -> int`
 
-	intTy := getFBBasicType(b, fbsemantic.TypeInt)
-
 	fbsemantic.VarStart(b)
 	fbsemantic.VarAddI(b, 0)
 	t0 := fbsemantic.VarEnd(b)
@@ -315,6 +317,26 @@ func getFnPolyType(b *flatbuffers.Builder) flatbuffers.UOffsetT {
 	varsVec := b.EndVector(2)
 	fbsemantic.PolyTypeStartConsVector(b, 0)
 	consVec := b.EndVector(0)
+
+	fun := getFnMonoType(b)
+
+	fbsemantic.PolyTypeStart(b)
+	fbsemantic.PolyTypeAddVars(b, varsVec)
+	fbsemantic.PolyTypeAddCons(b, consVec)
+	fbsemantic.PolyTypeAddExprType(b, fbsemantic.MonoTypeFun)
+	fbsemantic.PolyTypeAddExpr(b, fun)
+	return fbsemantic.PolyTypeEnd(b)
+}
+
+func getFnMonoType(b *flatbuffers.Builder) flatbuffers.UOffsetT {
+	intTy := getFBBasicType(b, fbsemantic.TypeInt)
+
+	fbsemantic.VarStart(b)
+	fbsemantic.VarAddI(b, 0)
+	t0 := fbsemantic.VarEnd(b)
+	fbsemantic.VarStart(b)
+	fbsemantic.VarAddI(b, 1)
+	t1 := fbsemantic.VarEnd(b)
 
 	an := b.CreateString("a")
 	fbsemantic.ArgumentStart(b)
@@ -348,14 +370,7 @@ func getFnPolyType(b *flatbuffers.Builder) flatbuffers.UOffsetT {
 	fbsemantic.FunAddArgs(b, args)
 	fbsemantic.FunAddRetnType(b, fbsemantic.MonoTypeBasic)
 	fbsemantic.FunAddRetn(b, intTy)
-	fun := fbsemantic.FunEnd(b)
-
-	fbsemantic.PolyTypeStart(b)
-	fbsemantic.PolyTypeAddVars(b, varsVec)
-	fbsemantic.PolyTypeAddCons(b, consVec)
-	fbsemantic.PolyTypeAddExprType(b, fbsemantic.MonoTypeFun)
-	fbsemantic.PolyTypeAddExpr(b, fun)
-	return fbsemantic.PolyTypeEnd(b)
+	return fbsemantic.FunEnd(b)
 }
 
 func doStatementBoilerplate(builder *flatbuffers.Builder, stmtType fbsemantic.Statement, stmtOffset, locOffset flatbuffers.UOffsetT) []byte {
@@ -553,27 +568,6 @@ func (tv *transformingVisitor) Done(node Node) {
 
 var tvarRegexp *regexp.Regexp = regexp.MustCompile("t[0-9]+")
 
-// canonicalizeType returns a string representation of the given type
-// that reindexes in the numbers in type variables starting from zero.
-func canonicalizeType(pt PolyType) string {
-	tvm, err := pt.GetCanonicalMapping()
-	if err != nil {
-		panic(err)
-	}
-	tstr := pt.String()
-	return tvarRegexp.ReplaceAllStringFunc(tstr, func(in string) string {
-		n, err := strconv.Atoi(in[1:])
-		if err != nil {
-			panic(err)
-		}
-		nn, ok := tvm[uint64(n)]
-		if !ok {
-			panic(fmt.Sprintf("could not find tvar mapping for %v", in))
-		}
-		return fmt.Sprintf("t%v", nn)
-	})
-}
-
 // canonicalizeError reindexes type variable numbers in error messages
 // starting from zero, so that tests don't fail when the stdlib is updated.
 func canonicalizeError(errMsg string) string {
@@ -670,7 +664,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 import "testing"
                 test t = () => ({input: testing.loadStorage(csv: ""), want: testing.loadMem(csv: ""), fn: (table=<-) => table})`,
 			types: map[string]string{
-				"t": "forall [t0, t1, t2] where t1: Row, t2: Row () -> {fn: (<-table: t0) -> t0 | input: [t2] | want: [t1]}",
+				"t": "forall [t0, t1, t2] where t1: Row, t2: Row () -> {fn: (<-table: t0) -> t0 | input: [t1] | want: [t2]}",
 			},
 		},
 		{
@@ -916,7 +910,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 				"f": "forall [t0, t1] (r: {foo: t0 | t1}) -> bool",
 				// Note: t1 is unused in the monotype, and t2 is not quantified.
 				// Type of ff should be the same as f.
-				"ff": "forall [t0, t1] (r: {foo: t0 | t2}) -> bool",
+				"ff": "forall [t0, t2] (r: {foo: t0 | t1}) -> bool",
 			},
 		},
 		{
@@ -1027,7 +1021,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 					}
 				} else {
 					// This is the assignment from Rust.
-					typStr = canonicalizeType(nva.Typ)
+					typStr = nva.Typ.CanonicalString()
 				}
 				return &MyAssignement{
 					loc:        nva.loc,

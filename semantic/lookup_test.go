@@ -1,9 +1,6 @@
 package semantic_test
 
 import (
-	"fmt"
-	"regexp"
-	"strconv"
 	"testing"
 
 	semantic "github.com/influxdata/flux/semantic"
@@ -139,35 +136,9 @@ func TestLookupComplexTypes(t *testing.T) {
 
 		t.Run(testCase.name, func(t *testing.T) {
 			got, _ := semantic.LookupBuiltinType(testCase.path, testCase.id)
-			if want, got := testCase.want, canonicalizeType(got); want != got {
+			if want, got := testCase.want, got.CanonicalString(); want != got {
 				t.Fatalf("unexpected result -want/+got\n\t- %s\n\t+ %s", want, got)
 			}
 		})
 	}
-}
-
-var tvarRegexp *regexp.Regexp = regexp.MustCompile("t[0-9]+")
-
-// canonicalizeType returns a string representation of the given type
-// that reindexes in the numbers in type variables starting from zero.
-func canonicalizeType(mt semantic.MonoType) string {
-	counter := 0
-	tvm := make(map[uint64]int)
-	err := mt.GetCanonicalMapping(&counter, tvm)
-
-	if err != nil {
-		panic(err)
-	}
-	tstr := mt.String()
-	return tvarRegexp.ReplaceAllStringFunc(tstr, func(in string) string {
-		n, err := strconv.Atoi(in[1:])
-		if err != nil {
-			panic(err)
-		}
-		nn, ok := tvm[uint64(n)]
-		if !ok {
-			panic(fmt.Sprintf("could not find tvar mapping for %v", in))
-		}
-		return fmt.Sprintf("t%v", nn)
-	})
 }
