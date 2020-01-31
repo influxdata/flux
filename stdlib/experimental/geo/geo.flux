@@ -43,7 +43,7 @@ geohashFilterEx = (tables=<-, grid, prefix="_g") =>
 
 // Filters records by lat/lon box. The grid always overlaps specified area and therefore result may contain
 // values outside the box. If precise filtering is needed, `boxFilter()` may be used later (after `toRows()`).
-gridFilter = (tables=<-, fn=geohashFilter, box, minGridSize=9, maxGridSize=-1, geohashPrecision=-1, maxGeohashPrecision=12) => {
+gridFilter = (tables=<-, fn=geohashFilterEx, box, minGridSize=9, maxGridSize=-1, geohashPrecision=-1, maxGeohashPrecision=12) => {
   grid = getGrid(box: box, minSize: minGridSize, maxSize: maxGridSize, precision: geohashPrecision, maxPrecision: maxGeohashPrecision)
   return
     tables
