@@ -30,6 +30,8 @@ func (p *SemanticPkg) MarshalFB() ([]byte, error) {
 		str := C.GoString(cstr)
 		return nil, errors.Newf(codes.Internal, "could not marshal semantic graph to FlatBuffer: %v", str)
 	}
+	// See MarshalFB in ASTPkg for why this is needed.
+	runtime.KeepAlive(p)
 	defer C.flux_free(buf.data)
 
 	data := C.GoBytes(buf.data, C.int(buf.len))
@@ -42,6 +44,10 @@ func (p *SemanticPkg) Free() {
 		C.flux_free(unsafe.Pointer(p.ptr))
 	}
 	p.ptr = nil
+
+	// See the equivalent method in ASTPkg for why
+	// this is needed.
+	runtime.KeepAlive(p)
 }
 
 // Analyze parses the given Flux source, performs type inference
@@ -64,6 +70,7 @@ func Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 		str := C.GoString(cstr)
 		return nil, errors.New(codes.Invalid, str)
 	}
+	runtime.KeepAlive(astPkg)
 	p := &SemanticPkg{ptr: semPkg}
 	runtime.SetFinalizer(p, free)
 	return p, nil
