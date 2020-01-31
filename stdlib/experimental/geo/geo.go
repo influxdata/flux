@@ -192,9 +192,6 @@ func getGrid(rect *latLonBox, reqPrecision, maxPrecision, minSize, maxSize int) 
 	var result *grid
 
 	if reqPrecision > -1 {
-		if maxPrecision > -1 || minSize > -1 || maxSize > -1 {
-			return nil, fmt.Errorf("code %d: precision is mutually exclusive with other parameters", codes.Invalid)
-		}
 		g := getSpecGrid(rect, reqPrecision)
 		result = &g
 	} else if minSize > 0 || maxSize > 0 {
