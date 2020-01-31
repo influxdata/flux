@@ -1,3 +1,4 @@
+#![allow(missing_docs)]
 use std::collections::HashMap;
 use std::ffi::CString;
 use std::str;
@@ -1111,10 +1112,18 @@ impl Parser {
     }
     fn parse_string_literal(&mut self) -> StringLit {
         let t = self.expect(TOK_STRING);
-        let value = strconv::parse_string(t.lit.as_str()).unwrap();
-        StringLit {
-            base: self.base_node_from_token(&t),
-            value,
+        match strconv::parse_string(t.lit.as_str()) {
+            Ok(value) => StringLit {
+                base: self.base_node_from_token(&t),
+                value,
+            },
+            Err(err) => {
+                self.errs.push(err);
+                StringLit {
+                    base: self.base_node_from_token(&t),
+                    value: "".to_string(),
+                }
+            }
         }
     }
     fn parse_regexp_literal(&mut self) -> RegexpLit {

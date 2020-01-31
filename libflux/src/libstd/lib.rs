@@ -1,6 +1,8 @@
 use flatbuffers;
 use flux::ast;
 use flux::ctypes::*;
+use flux::semantic::builtins::builtins;
+use flux::semantic::check;
 use flux::semantic::env::Environment;
 use flux::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 use flux::semantic::fresh::Fresher;
@@ -47,8 +49,11 @@ pub unsafe extern "C" fn flux_analyze(
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
 pub fn analyze(ast_pkg: ast::Package) -> Result<flux::semantic::nodes::Package, flux::Error> {
+    let pkgpath = ast_pkg.path.clone();
     let mut f = fresher();
     let mut sem_pkg = flux::semantic::convert::convert_with(ast_pkg, &mut f)?;
+
+    check::check(&sem_pkg)?;
 
     let prelude = match prelude() {
         Some(prelude) => Environment::new(prelude),
@@ -58,7 +63,8 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<flux::semantic::nodes::Package, 
         Some(imports) => imports,
         None => return Err(flux::Error::from("missing stdlib imports")),
     };
-    let (_, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, &imports, &None)?;
+    let builtin_importer = builtins().importer_for(&pkgpath, &mut f);
+    let (_, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, &imports, &builtin_importer)?;
     sem_pkg = inject_pkg_types(sem_pkg, &sub);
     Ok(sem_pkg)
 }
