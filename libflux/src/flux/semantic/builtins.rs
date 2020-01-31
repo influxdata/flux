@@ -53,6 +53,10 @@ pub fn builtins() -> Builtins<'static> {
             "experimental/bigtable" => maplit::hashmap! {
                      "from" => "forall [t0] where t0: Row (token: string, project: string, instance: string, table: string) -> [t0]",
             },
+            "experimental/geo" => maplit::hashmap! {
+                     "getGrid" => "forall [] (?box: {minLat: float | minLon: float | maxLat: float | maxLon: float}, ?minSize: int, ?maxSize: int, ?precision: int, ?maxPrecision: int) -> {precision: int | set: [string]}",
+                     "containsTag" => "forall [t0] where t0: Row (row: t0, tagKey: string, set: [string]) -> bool",
+            },
             "experimental/http" => maplit::hashmap! {
                 "get" => r#"
                     forall [t0, t1] where t0: Row, t1: Row (
