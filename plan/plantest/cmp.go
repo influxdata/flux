@@ -23,7 +23,7 @@ var CmpOptions = append(
 	cmpopts.IgnoreUnexported(universe.JoinOpSpec{}),
 	cmp.AllowUnexported(kafka.ToKafkaProcedureSpec{}),
 	cmpopts.IgnoreUnexported(kafka.ToKafkaProcedureSpec{}),
-	valuestest.ScopeComparer,
+	valuestest.ScopeTransformer,
 )
 
 // ComparePlans compares two query plans using an arbitrary comparator function f

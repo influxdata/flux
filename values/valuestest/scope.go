@@ -10,40 +10,35 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-// ScopeComparer checks that two scopes are equal in both nesting and contents.
-// Functions cannot be compared for equality so only function types are checked.
-var ScopeComparer = cmp.Comparer(func(l, r values.Scope) bool {
-	for {
-		if l == nil && r == nil {
-			return true
-		}
-		if l == nil && r != nil || l != nil && r == nil {
-			return false
-		}
-		equal := true
-		l.LocalRange(func(k string, lv values.Value) {
-			rv, ok := r.LocalLookup(k)
-			if lv.Type().Nature() == semantic.Function {
-				// only compare functions by type
-				equal = equal && ok && lv.Type().Equal(rv.Type())
-			} else {
-				equal = equal && ok && lv.Equal(rv)
-			}
-		})
-		if !equal {
-			return false
-		}
-		r.LocalRange(func(k string, rv values.Value) {
-			_, ok := l.LocalLookup(k)
-			equal = equal && ok
-		})
-		if !equal {
-			return false
-		}
+// ComparableScope is a representation of a Scope
+// that is easily compared with the cmp package.
+type ComparableScope struct {
+	Values map[string]values.Value
+	Child  *ComparableScope
+}
 
-		l = l.Pop()
-		r = r.Pop()
+// ScopeTransformer converts a scope to a ComparableScope.
+var ScopeTransformer = cmp.Transformer("Scope", func(s values.Scope) *ComparableScope {
+	sc := &ComparableScope{
+		Values: make(map[string]values.Value),
+		Child:  nil,
 	}
+
+	for {
+		s.LocalRange(func(k string, v values.Value) {
+			sc.Values[k] = v
+		})
+		s = s.Pop()
+		if s != nil {
+			sc = &ComparableScope{
+				Values: make(map[string]values.Value),
+				Child:  sc,
+			}
+		} else {
+			break
+		}
+	}
+	return sc
 })
 
 // NowScope generates scope with the prelude + the now option.

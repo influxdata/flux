@@ -31,7 +31,7 @@ var opts = append(
 	cmp.AllowUnexported(universe.JoinOpSpec{}),
 	cmpopts.IgnoreUnexported(flux.Spec{}),
 	cmpopts.IgnoreUnexported(universe.JoinOpSpec{}),
-	valuestest.ScopeComparer,
+	valuestest.ScopeTransformer,
 )
 
 func NewQueryTestHelper(t *testing.T, tc NewQueryTestCase) {

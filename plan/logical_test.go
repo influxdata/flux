@@ -83,7 +83,13 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 								},
 							},
 						},
-						Body: &semantic.BooleanLiteral{Value: true},
+						Body: &semantic.Block{
+							Body: []semantic.Statement{
+								&semantic.ReturnStatement{
+									Argument: &semantic.BooleanLiteral{Value: true},
+								},
+							},
+						},
 					},
 				},
 			},
