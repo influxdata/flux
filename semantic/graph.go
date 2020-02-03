@@ -499,7 +499,7 @@ type ArrayExpression struct {
 
 	Elements []Expression
 
-	typ MonoType
+	Type MonoType
 }
 
 func (*ArrayExpression) NodeType() string { return "ArrayExpression" }
@@ -521,7 +521,7 @@ func (e *ArrayExpression) Copy() Node {
 	return ne
 }
 func (e *ArrayExpression) TypeOf() MonoType {
-	return e.typ
+	return e.Type
 }
 
 // FunctionExpression represents the definition of a function
@@ -934,7 +934,7 @@ func (l *BooleanLiteral) Copy() Node {
 	return nl
 }
 func (e *BooleanLiteral) TypeOf() MonoType {
-	return e.typ
+	return BasicBool
 }
 
 type DateTimeLiteral struct {
@@ -957,7 +957,7 @@ func (l *DateTimeLiteral) Copy() Node {
 	return nl
 }
 func (e *DateTimeLiteral) TypeOf() MonoType {
-	return e.typ
+	return BasicTime
 }
 
 type DurationLiteral struct {
@@ -980,7 +980,7 @@ func (l *DurationLiteral) Copy() Node {
 	return nl
 }
 func (e *DurationLiteral) TypeOf() MonoType {
-	return e.typ
+	return BasicDuration
 }
 
 type IntegerLiteral struct {
@@ -1003,7 +1003,7 @@ func (l *IntegerLiteral) Copy() Node {
 	return nl
 }
 func (e *IntegerLiteral) TypeOf() MonoType {
-	return e.typ
+	return BasicInt
 }
 
 type FloatLiteral struct {
@@ -1026,7 +1026,7 @@ func (l *FloatLiteral) Copy() Node {
 	return nl
 }
 func (e *FloatLiteral) TypeOf() MonoType {
-	return e.typ
+	return BasicFloat
 }
 
 type RegexpLiteral struct {
@@ -1051,7 +1051,7 @@ func (l *RegexpLiteral) Copy() Node {
 	return nl
 }
 func (e *RegexpLiteral) TypeOf() MonoType {
-	return e.typ
+	return BasicRegexp
 }
 
 type StringLiteral struct {
@@ -1074,7 +1074,7 @@ func (l *StringLiteral) Copy() Node {
 	return nl
 }
 func (e *StringLiteral) TypeOf() MonoType {
-	return e.typ
+	return BasicString
 }
 
 type UnsignedIntegerLiteral struct {
@@ -1097,5 +1097,5 @@ func (l *UnsignedIntegerLiteral) Copy() Node {
 	return nl
 }
 func (e *UnsignedIntegerLiteral) TypeOf() MonoType {
-	return e.typ
+	return BasicUint
 }

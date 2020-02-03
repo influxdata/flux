@@ -389,7 +389,7 @@ func (e *unaryEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, e
 	if err != nil {
 		return nil, err
 	}
-	values.CheckKind(ret.Type().Nature(), e.t.Nature())
+	// values.CheckKind(ret.Type().Nature(), e.t.Nature())
 	return ret, nil
 }
 

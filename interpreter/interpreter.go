@@ -1125,6 +1125,14 @@ func resolveValue(v values.Value) (semantic.Node, bool, error) {
 		if err != nil || !ok {
 			return nil, false, err
 		}
+		// Determine the element type by looking at the first
+		// element. If there are no elements, then we have an
+		// array type with an invalid element type.
+		elemType := semantic.MonoType{}
+		if len(node.Elements) > 0 {
+			elemType = node.Elements[0].TypeOf()
+		}
+		node.Type = semantic.NewArrayType(elemType)
 		return node, true, nil
 	case semantic.Object:
 		obj := v.Object()

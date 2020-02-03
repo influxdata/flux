@@ -976,36 +976,50 @@ impl BinaryExpr {
                 Constraint::Kind(self.typ.clone(), Kind::Divisible),
             ]),
             ast::Operator::GreaterThanOperator => Constraints::from(vec![
-                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                // https://github.com/influxdata/flux/issues/2393
+                // Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
                 Constraint::Equal(self.typ.clone(), MonoType::Bool),
                 Constraint::Kind(self.left.type_of().clone(), Kind::Comparable),
+                Constraint::Kind(self.right.type_of().clone(), Kind::Comparable),
             ]),
             ast::Operator::LessThanOperator => Constraints::from(vec![
-                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                // https://github.com/influxdata/flux/issues/2393
+                // Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
                 Constraint::Equal(self.typ.clone(), MonoType::Bool),
                 Constraint::Kind(self.left.type_of().clone(), Kind::Comparable),
+                Constraint::Kind(self.right.type_of().clone(), Kind::Comparable),
             ]),
             ast::Operator::EqualOperator => Constraints::from(vec![
-                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                // https://github.com/influxdata/flux/issues/2393
+                // Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
                 Constraint::Equal(self.typ.clone(), MonoType::Bool),
                 Constraint::Kind(self.left.type_of().clone(), Kind::Equatable),
+                Constraint::Kind(self.right.type_of().clone(), Kind::Equatable),
             ]),
             ast::Operator::NotEqualOperator => Constraints::from(vec![
-                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                // https://github.com/influxdata/flux/issues/2393
+                // Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
                 Constraint::Equal(self.typ.clone(), MonoType::Bool),
                 Constraint::Kind(self.left.type_of().clone(), Kind::Equatable),
+                Constraint::Kind(self.right.type_of().clone(), Kind::Equatable),
             ]),
             ast::Operator::GreaterThanEqualOperator => Constraints::from(vec![
-                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                // https://github.com/influxdata/flux/issues/2393
+                // Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
                 Constraint::Equal(self.typ.clone(), MonoType::Bool),
                 Constraint::Kind(self.left.type_of().clone(), Kind::Equatable),
                 Constraint::Kind(self.left.type_of().clone(), Kind::Comparable),
+                Constraint::Kind(self.right.type_of().clone(), Kind::Equatable),
+                Constraint::Kind(self.right.type_of().clone(), Kind::Comparable),
             ]),
             ast::Operator::LessThanEqualOperator => Constraints::from(vec![
-                Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
+                // https://github.com/influxdata/flux/issues/2393
+                // Constraint::Equal(self.left.type_of().clone(), self.right.type_of().clone()),
                 Constraint::Equal(self.typ.clone(), MonoType::Bool),
                 Constraint::Kind(self.left.type_of().clone(), Kind::Equatable),
                 Constraint::Kind(self.left.type_of().clone(), Kind::Comparable),
+                Constraint::Kind(self.right.type_of().clone(), Kind::Equatable),
+                Constraint::Kind(self.right.type_of().clone(), Kind::Comparable),
             ]),
             // Regular expression operators.
             ast::Operator::RegexpMatchOperator => Constraints::from(vec![

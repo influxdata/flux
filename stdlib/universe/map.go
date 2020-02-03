@@ -2,6 +2,7 @@ package universe
 
 import (
 	"context"
+	"sort"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -143,113 +144,134 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 		return err
 	}
 
-	// Determine the properties from type inference.
-	// TODO(jsternberg): Type inference doesn't currently get all of the properties
-	// when with is used, so this will likely return an incomplete set that we have
-	// to complete when we read the first column. This pass should get the columns
-	// that are directly referenced which are the ones capable of changing and the
-	// only ones that can be a null value.
-	// TODO (adam): these are a pointer to a property list that is definitely shared by the type checking code (semantic/types.go NewObjectType)
+	// TODO(jsternberg): Use type inference. The original algorithm
+	// didn't really use type inference at all so I removed its usage
+	// in favor of the real returned type.
 
-	// TODO(algow): rewrite this now that type inference is complete
-	//unsafeProperties := t.fn.Type().Properties()
-	//properties := make(map[string]semantic.MonoType)
+	var on map[string]bool
+	return tbl.Do(func(cr flux.ColReader) error {
+		l := cr.Len()
+		for i := 0; i < l; i++ {
+			m, err := t.fn.Eval(t.ctx, i, cr)
+			if err != nil {
+				return errors.Wrap(err, codes.Inherit, "failed to evaluate map function")
+			}
 
-	//var on map[string]bool
-	//return tbl.Do(func(cr flux.ColReader) error {
-	//	l := cr.Len()
-	//	for i := 0; i < l; i++ {
-	//		m, err := t.fn.Eval(t.ctx, i, cr)
-	//		if err != nil {
-	//			return errors.Wrap(err, codes.Inherit, "failed to evaluate map function")
-	//		}
+			// If we haven't determined the columns to group on, do that now.
+			if on == nil {
+				var err error
+				on, err = t.groupOn(tbl.Key(), m.Type())
+				if err != nil {
+					return err
+				}
+			}
 
-	//		// Merge in the types that we may have missed because type inference omitted them.
-	//		if i == 0 {
-	//			// Merge in the missing properties from the type.
-	//			// This will catch all of the non-referenced keys that are
-	//			// merged in from the merge key or with.
-	//			for k, typ := range m.Type().Properties() {
-	//				// TODO(jsternberg): Type inference can sometimes tell us something is nil
-	//				// when it actually has a value because of a bug in type inference.
-	//				// If the property is missing or null, then take whatever the first value
-	//				// is. This won't catch all situations, but we'll have to consider it good
-	//				// enough until type inference works in this scenario.
-	//				if t, ok := unsafeProperties[k]; !ok || t == semantic.Nil {
-	//					properties[k] = typ
-	//				} else {
-	//					properties[k] = unsafeProperties[k]
-	//				}
-	//			}
-	//		}
+			key := groupKeyForObject(i, cr, m, on)
+			builder, created := t.cache.TableBuilder(key)
+			if created {
+				if err := t.createSchema(builder, m); err != nil {
+					return err
+				}
+			}
 
-	//		// If we haven't determined the columns to group on, do that now.
-	//		if on == nil {
-	//			on = make(map[string]bool, len(tbl.Key().Cols()))
-	//			for _, c := range tbl.Key().Cols() {
-	//				if !t.mergeKey {
-	//					// If the label isn't included in the properties,
-	//					// then it wasn't returned by the eval.
-	//					if _, ok := properties[c.Label]; !ok {
-	//						continue
-	//					}
-	//				}
-	//				on[c.Label] = true
-	//			}
-	//		}
+			for j, c := range builder.Cols() {
+				v, ok := m.Get(c.Label)
+				if !ok {
+					if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); t.mergeKey && idx >= 0 {
+						v = tbl.Key().Value(idx)
+					} else {
+						// This should be unreachable
+						return errors.Newf(codes.Internal, "could not find value for column %q", c.Label)
+					}
+				}
+				if err := builder.AppendValue(j, v); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
+}
 
-	//		key := groupKeyForObject(i, cr, m, on)
-	//		builder, created := t.cache.TableBuilder(key)
-	//		if created {
-	//			if t.mergeKey {
-	//				if err := execute.AddTableKeyCols(tbl.Key(), builder); err != nil {
-	//					return err
-	//				}
-	//			}
+func (t *mapTransformation) groupOn(key flux.GroupKey, m semantic.MonoType) (map[string]bool, error) {
+	on := make(map[string]bool, len(key.Cols()))
+	for _, c := range key.Cols() {
+		if t.mergeKey {
+			on[c.Label] = true
+			continue
+		}
 
-	//			// Add columns from function in sorted order.
-	//			keys := make([]string, 0, len(properties))
-	//			for k := range properties {
-	//				keys = append(keys, k)
-	//			}
-	//			sort.Strings(keys)
+		// If the label isn't included in the properties,
+		// then it wasn't returned by the eval.
+		n, err := m.NumProperties()
+		if err != nil {
+			return nil, err
+		}
 
-	//			for _, k := range keys {
-	//				if t.mergeKey && tbl.Key().HasCol(k) {
-	//					continue
-	//				}
+		for i := 0; i < n; i++ {
+			row, err := m.RowProperty(i)
+			if err != nil {
+				return nil, err
+			}
 
-	//				n := properties[k].Nature()
-	//				if n == semantic.Nil {
-	//					// If the column is null, then do not add it as a column.
-	//					continue
-	//				}
+			if row.Name() == c.Label {
+				on[c.Label] = true
+				break
+			}
+		}
+	}
+	return on, nil
+}
 
-	//				if _, err := builder.AddCol(flux.ColMeta{
-	//					Label: k,
-	//					Type:  execute.ConvertFromKind(n),
-	//				}); err != nil {
-	//					return err
-	//				}
-	//			}
-	//		}
-	//		for j, c := range builder.Cols() {
-	//			v, ok := m.Get(c.Label)
-	//			if !ok {
-	//				if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); t.mergeKey && idx >= 0 {
-	//					v = tbl.Key().Value(idx)
-	//				} else {
-	//					// This should be unreachable
-	//					return errors.Newf(codes.Internal, "could not find value for column %q", c.Label)
-	//				}
-	//			}
-	//			if err := builder.AppendValue(j, v); err != nil {
-	//				return err
-	//			}
-	//		}
-	//	}
-	//	return nil
-	//})
+// createSchema will create the schema for a table based on the object.
+// This should only be called when a table is created anew.
+//
+// TODO(jsternberg): I am pretty sure this method and its usage don't
+// match with the spec, but it is a faithful reproduction of the current
+// map behavior. When we get around to rewriting portions of map, this
+// should be rewritten to use the inferred type from type inference
+// and it should be capable of consolidating schemas from non-uniform
+// tables.
+func (t *mapTransformation) createSchema(b execute.TableBuilder, m values.Object) error {
+	if t.mergeKey {
+		if err := execute.AddTableKeyCols(b.Key(), b); err != nil {
+			return err
+		}
+	}
+
+	// Add columns from function in sorted order.
+	n, err := m.Type().NumProperties()
+	if err != nil {
+		return err
+	}
+
+	keys := make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		row, err := m.Type().RowProperty(i)
+		if err != nil {
+			return err
+		}
+		keys = append(keys, row.Name())
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		if t.mergeKey && b.Key().HasCol(k) {
+			continue
+		}
+
+		n, ok := m.Get(k)
+		if !ok {
+			continue
+		}
+
+		if _, err := b.AddCol(flux.ColMeta{
+			Label: k,
+			Type:  execute.ConvertFromKind(n.Type().Nature()),
+		}); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
