@@ -43,3 +43,5 @@ require (
 	gopkg.in/src-d/go-git.v4 v4.8.1
 	honnef.co/go/tools v0.0.0-20181108184350-ae8f1f9103cc
 )
+
+go 1.13
