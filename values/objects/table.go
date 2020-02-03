@@ -50,7 +50,7 @@ func NewTable(tbl flux.Table) (*Table, error) {
 		return nil, err
 	}
 	t := &Table{BufferedTable: bt}
-	t.schema = values.NewArray(SchemaMonoType)
+	t.schema = values.NewArray(semantic.NewArrayType(SchemaMonoType))
 	for _, c := range tbl.Cols() {
 		t.schema.Append(values.NewObjectWithValues(map[string]values.Value{
 			"label":   values.New(c.Label),

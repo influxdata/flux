@@ -2,9 +2,6 @@ package values
 
 import (
 	"fmt"
-
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
 )
 
 type Scope interface {
@@ -16,11 +13,6 @@ type Scope interface {
 
 	// Set binds a variable in the current scope.
 	Set(name string, v Value)
-	// SetOption binds a variable in the package option scope.
-	// Setting an option must occur on the specific package value.
-	// If the package cannot be found no option is set, in which case the boolean return is false.
-	// An error is reported if the specified package is not a package value.
-	SetOption(pkg, name string, v Value) (bool, error)
 
 	// Nest creates a new scope by nesting the current scope.
 	// If the passed in object is not nil, its values will be added to the new nested scope.
@@ -94,23 +86,6 @@ func (s *scope) Set(name string, v Value) {
 		s.values = make(map[string]Value)
 	}
 	s.values[name] = v
-}
-
-func (s *scope) SetOption(pkg, name string, v Value) (bool, error) {
-	pv, ok := s.LocalLookup(pkg)
-	if !ok {
-		parent := s.Pop()
-		if parent != nil {
-			return parent.SetOption(pkg, name, v)
-		}
-		return false, nil
-	}
-	p, ok := pv.(Package)
-	if !ok {
-		return false, errors.Newf(codes.Invalid, "cannot set option %q is not a package", pkg)
-	}
-	p.SetOption(name, v)
-	return true, nil
 }
 
 func (s *scope) Nest(obj Object) Scope {

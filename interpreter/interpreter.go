@@ -16,9 +16,8 @@ import (
 const PackageMain = "main"
 
 type Interpreter struct {
-	sideEffects     []SideEffect // a list of the side effects occurred during the last call to `Eval`.
-	pkgName         string
-	modifiedOptions []optionMutation
+	sideEffects []SideEffect // a list of the side effects occurred during the last call to `Eval`.
+	pkgName     string
 }
 
 func NewInterpreter(pkg *Package) *Interpreter {
@@ -114,9 +113,9 @@ func (itrp *Interpreter) doPackageClause(pkg *semantic.PackageClause) error {
 
 func (itrp *Interpreter) doImport(dec *semantic.ImportDeclaration, scope values.Scope, importer Importer) error {
 	path := dec.Path.Value
-	pkg, ok := importer.ImportPackageObject(path)
-	if !ok {
-		return errors.Newf(codes.Invalid, "invalid import path %s", path)
+	pkg, err := importer.ImportPackageObject(path)
+	if err != nil {
+		return err
 	}
 	name := pkg.Name()
 	if dec.As != nil {
@@ -169,88 +168,41 @@ func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.Opti
 		if err != nil {
 			return nil, err
 		}
-		// Use an empty string as the package name as we don't know its name.
-		// This will have one of two behaviors:
-		//     1. The option key will be found in the prelude and applied there.
-		//     2. The option key will not be found in the prelude and the
-		//        interpreter will handle adding the new option to the current package.
-		return itrp.setOption(scope, "", a.Identifier.Name, init)
+
+		// Retrieve an option with the name from the scope.
+		// If it exists and is an option, then set the option
+		// as it is from the prelude.
+		if opt, ok := scope.Lookup(a.Identifier.Name); ok {
+			if opt, ok := opt.(*values.Option); ok {
+				opt.Value = init
+				return opt, nil
+			}
+		}
+
+		// Create a new option and set it within the current scope.
+		v := &values.Option{Value: init}
+		scope.Set(a.Identifier.Name, v)
+		return v, nil
 	case *semantic.MemberAssignment:
 		init, err := itrp.doExpression(ctx, a.Init, scope)
 		if err != nil {
 			return nil, err
 		}
-		pkgName := a.Member.Object.(*semantic.IdentifierExpression).Name
-		return itrp.setOption(scope, pkgName, a.Member.Property, init)
+
+		obj, err := itrp.doExpression(ctx, a.Member.Object, scope)
+		if err != nil {
+			return nil, err
+		}
+
+		pkg, ok := obj.(values.Package)
+		if !ok {
+			return nil, errors.Newf(codes.Invalid, "%s: cannot set option %q on non-package value", a.Location(), a.Member.Property)
+		}
+		v, _ := values.SetOption(pkg, a.Member.Property, init)
+		return v, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "unsupported assignment %T", a)
 	}
-}
-
-// setOption applies the option to an existing option or creates a new option on the current package if it doesn't already exist.
-func (itrp *Interpreter) setOption(scope values.Scope, pkg, name string, v values.Value) (values.Value, error) {
-	v = values.Option{Value: v}
-	set, err := scope.SetOption(pkg, name, v)
-	if err != nil {
-		return nil, err
-	}
-	if !set {
-		// Option does not belong to any existing package.
-		// Set it as a normal value on the current scope.
-		scope.Set(name, v)
-	}
-	itrp.modifiedOptions = append(itrp.modifiedOptions, optionMutation{
-		Package: pkg,
-		Name:    name,
-		Value:   v,
-	})
-	return v, nil
-}
-
-type optionMutation struct {
-	Package, Name string
-	Value         values.Value
-}
-
-func (itrp *Interpreter) mutateFunctionScope(f function) (function, error) {
-	// copy the scope so we can safely mutate it
-	f.scope = f.scope.Copy()
-	copyPackages(f.scope)
-	mutatedPkg := false
-	for _, mut := range itrp.modifiedOptions {
-		// Check if the function is defined in the scope of package that was mutated
-		if f.pkg.Name() == mut.Package {
-			if !mutatedPkg {
-				f.pkg = f.pkg.Copy()
-			}
-			mutatedPkg = true
-			f.pkg.SetOption(mut.Name, mut.Value)
-			continue
-		}
-		// Apply the option to the scope
-		_, err := f.scope.SetOption(mut.Package, mut.Name, mut.Value)
-		if err != nil {
-			return f, err
-		}
-	}
-	if mutatedPkg {
-		// Reapply the package values to the scope.
-		f.scope = values.NewNestedScope(f.scope.Pop(), f.pkg)
-	}
-	return f, nil
-}
-
-// copyPackages creates a copy of the scope and any packages in scope
-func copyPackages(scope values.Scope) {
-	if scope == nil {
-		return
-	}
-	scope.LocalRange(func(k string, v values.Value) {
-		if p, ok := v.(*Package); ok {
-			scope.Set(k, p.Copy())
-		}
-	})
-	copyPackages(scope.Pop())
 }
 
 func (itrp *Interpreter) doTestStatement(ctx context.Context, s *semantic.TestStatement, scope values.Scope) (values.Value, error) {
@@ -624,14 +576,14 @@ func (itrp *Interpreter) doCall(ctx context.Context, call *semantic.CallExpressi
 	f := callee.Function()
 
 	// Check if the function is an interpFunction and rebind it.
-	if af, ok := f.(function); ok {
-		af, err = itrp.mutateFunctionScope(af)
-		if err != nil {
-			return nil, err
-		}
-		af.itrp = itrp
-		f = af
-	}
+	// if af, ok := f.(function); ok {
+	// 	af, err = itrp.mutateFunctionScope(af)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	af.itrp = itrp
+	// 	f = af
+	// }
 
 	// Call the function
 	value, err := f.Call(ctx, argObj)
@@ -692,13 +644,13 @@ func (itrp *Interpreter) doArguments(ctx context.Context, args *semantic.ObjectE
 			// This is a bit of a hack, but we know that functions cannot escape the iterpreter
 			// except as arguments to functions.
 			// As such we ensure the function passed out is aware of all option mutations.
-			if f, ok := value.(function); ok {
-				f, err := itrp.mutateFunctionScope(f)
-				if err != nil {
-					return err
-				}
-				value = f
-			}
+			// if f, ok := value.(function); ok {
+			// 	f, err := itrp.mutateFunctionScope(f)
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// 	value = f
+			// }
 			set(p.Key.Key(), value)
 		}
 
