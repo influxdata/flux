@@ -30,7 +30,7 @@ func (rcv *ArrayExpression) FromBuf(fb *fbsemantic.ArrayExpression) error {
 			}
 		}
 	}
-	if rcv.typ, err = getMonoType(fb); err != nil {
+	if rcv.Type, err = getMonoType(fb); err != nil {
 		return errors.Wrap(err, codes.Inherit, "ArrayExpression.typ")
 	}
 	return nil

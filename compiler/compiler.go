@@ -294,7 +294,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			}
 		}
 		return &arrayEvaluator{
-			t:     semantic.NewArrayType(monoType(subst, n.TypeOf())),
+			t:     monoType(subst, n.TypeOf()),
 			array: elements,
 		}, nil
 	case *semantic.IdentifierExpression:

@@ -329,14 +329,14 @@ pub fn builtins() -> Builtins<'static> {
                 "isLetter" => "forall [] (v: string) -> bool",
                 "isLower" => "forall [] (v: string) -> bool",
                 "isUpper" => "forall [] (v: string) -> bool",
-                "repeat" => "forall [] (v: string, count: int) -> string",
-                "replace" => "forall [] (v: string, old: string, new: string, n: int) -> string",
-                "replaceAll" => "forall [] (v: string, old: string, new: string) -> string",
-                "split" => "forall [] (v: string, t: string) -> string",
-                "splitAfter" => "forall [] (v: string, t: string) -> string",
-                "splitN" => "forall [] (v: string, t: string, n: int) -> string",
-                "splitAfterN" => "forall [] (v: string, t: string, i: int) -> string",
-                "joinStr" => "forall [] (a: [string], v: string) -> {}",
+                "repeat" => "forall [] (v: string, i: int) -> string",
+                "replace" => "forall [] (v: string, t: string, u: string, i: int) -> string",
+                "replaceAll" => "forall [] (v: string, t: string, u: string) -> string",
+                "split" => "forall [] (v: string, t: string) -> [string]",
+                "splitAfter" => "forall [] (v: string, t: string) -> [string]",
+                "splitN" => "forall [] (v: string, t: string, n: int) -> [string]",
+                "splitAfterN" => "forall [] (v: string, t: string, i: int) -> [string]",
+                "joinStr" => "forall [] (arr: [string], v: string) -> {}",
                 "strlen" => "forall [] (v: string) -> int",
                 "substring" => "forall [] (v: string, start: int, end: int) -> string",
             },
@@ -361,7 +361,7 @@ pub fn builtins() -> Builtins<'static> {
                 "columns" => r#"
                     forall [t0, t1] where t0: Row, t1: Row (
                         <-tables: [t0],
-                        column: string
+                        ?column: string
                     ) -> [t1]
                 "#,
                 "contains" => r#"
@@ -447,8 +447,8 @@ pub fn builtins() -> Builtins<'static> {
                     forall [t0, t1, t2] where t0: Row, t2: Row (
                         <-tables: [t0],
                         ?column: string,
-                        value: t1,
-                        usePrevious: bool
+                        ?value: t1,
+                        ?usePrevious: bool
                     ) -> [t2]
                 "#,
                 "filter" => r#"
@@ -491,7 +491,7 @@ pub fn builtins() -> Builtins<'static> {
                         ?upperBoundColumn: string,
                         ?countColumn: string,
                         bins: [float],
-                        normalize: bool
+                        ?normalize: bool
                     ) -> [t1]
                 "#,
                 "histogramQuantile" => r#"
@@ -719,7 +719,7 @@ pub fn builtins() -> Builtins<'static> {
                     forall [t0, t1] where t0: Row, t1: Row (
                         <-tables: [t0],
                         ?column: string,
-                        mode: string
+                        ?mode: string
                     ) -> [t1]
                 "#,
                 "string" => "forall [t0] (v: t0) -> string",
