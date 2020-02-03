@@ -7,9 +7,3 @@ package values
 type Option struct {
 	Value
 }
-
-// IsOption checks if the current value is defined as an option.
-func IsOption(v Value) bool {
-	_, ok := v.(Option)
-	return ok
-}

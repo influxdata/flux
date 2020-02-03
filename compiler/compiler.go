@@ -282,22 +282,19 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 		return obj, nil
 
 	case *semantic.ArrayExpression:
-		elements := make([]Evaluator, len(n.Elements))
-		if len(n.Elements) == 0 {
-			return &arrayEvaluator{
-				t:     monoType(subst, n.TypeOf()),
-				array: nil,
-			}, nil
-		}
-		for i, e := range n.Elements {
-			node, err := compile(e, subst, scope)
-			if err != nil {
-				return nil, err
+		var elements []Evaluator
+		if len(n.Elements) > 0 {
+			elements = make([]Evaluator, len(n.Elements))
+			for i, e := range n.Elements {
+				node, err := compile(e, subst, scope)
+				if err != nil {
+					return nil, err
+				}
+				elements[i] = node
 			}
-			elements[i] = node
 		}
 		return &arrayEvaluator{
-			t:     monoType(subst, n.TypeOf()),
+			t:     semantic.NewArrayType(monoType(subst, n.TypeOf())),
 			array: elements,
 		}, nil
 	case *semantic.IdentifierExpression:

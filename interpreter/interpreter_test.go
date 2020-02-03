@@ -175,10 +175,10 @@ func TestEval(t *testing.T) {
 		{
 			name: "binary expressions",
 			query: `
-			six = six()
-			nine = nine()
+			six_value = six()
+			nine_value = nine()
 
-			fortyTwo() == six * nine
+			fortyTwo() == six_value * nine_value
 			`,
 			want: []values.Value{
 				values.NewBool(false),
@@ -187,10 +187,10 @@ func TestEval(t *testing.T) {
 		{
 			name: "logical expressions short circuit",
 			query: `
-            six = six()
-            nine = nine()
+            six_value = six()
+            nine_value = nine()
 
-            not (fortyTwo() == six * nine) or fail()
+            not (fortyTwo() == six_value * nine_value) or fail()
 			`,
 			want: []values.Value{
 				values.NewBool(true),

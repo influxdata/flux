@@ -21,11 +21,6 @@ type Package struct {
 	// object contains the object properties of this package.
 	object values.Object
 
-	// options contains the option overrides for this package.
-	// Values cannot exist in here unless they also exist in
-	// the underlying object.
-	options map[string]values.Value
-
 	// sideEffects contains the side effects caused by this package.
 	// This is currently unused.
 	sideEffects []SideEffect
@@ -39,17 +34,11 @@ func NewPackageWithValues(name string, obj values.Object) *Package {
 }
 
 func NewPackage(name string) *Package {
-	return NewPackageWithValues(name, nil)
+	obj := values.NewObject(semantic.NewObjectType(nil))
+	return NewPackageWithValues(name, obj)
 }
 
 func (p *Package) Copy() *Package {
-	var options map[string]values.Value
-	if len(p.options) > 0 {
-		options = make(map[string]values.Value, len(p.options))
-		for k, v := range p.options {
-			options[k] = v
-		}
-	}
 	var sideEffects []SideEffect
 	if len(p.sideEffects) > 0 {
 		sideEffects = make([]SideEffect, len(p.sideEffects))
@@ -58,7 +47,6 @@ func (p *Package) Copy() *Package {
 	return &Package{
 		name:        p.name,
 		object:      p.object,
-		options:     options,
 		sideEffects: sideEffects,
 	}
 }
@@ -72,41 +60,16 @@ func (p *Package) Type() semantic.MonoType {
 	return p.object.Type()
 }
 func (p *Package) Get(name string) (values.Value, bool) {
-	v, ok := p.object.Get(name)
-	if ok && values.IsOption(v) {
-		// If this value is an option, the option may have
-		// been overriden. Check the override map.
-		if ov, ok := p.options[name]; ok {
-			v = ov
-		}
-	}
-	return v, ok
+	return p.object.Get(name)
 }
 func (p *Package) Set(name string, v values.Value) {
 	panic(errors.New(codes.Internal, "package members cannot be modified"))
-}
-func (p *Package) SetOption(name string, v values.Value) {
-	// TODO(jsternberg): Setting an invalid option on a package wasn't previously
-	// an error so it continues to not be an error. We should probably find a way
-	// to make it so setting an invalid option is an error.
-	if p.options == nil {
-		p.options = make(map[string]values.Value)
-	}
-	p.options[name] = v
 }
 func (p *Package) Len() int {
 	return p.object.Len()
 }
 func (p *Package) Range(f func(name string, v values.Value)) {
-	p.object.Range(func(name string, v values.Value) {
-		// Check if the value was overridden.
-		if values.IsOption(v) {
-			if ov, ok := p.options[name]; ok {
-				v = ov
-			}
-		}
-		f(name, v)
-	})
+	p.object.Range(f)
 }
 func (p *Package) IsNull() bool {
 	return false

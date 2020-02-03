@@ -49,7 +49,8 @@ var ScopeComparer = cmp.Comparer(func(l, r values.Scope) bool {
 // NowScope generates scope with the prelude + the now option.
 func NowScope() values.Scope {
 	scope := flux.Prelude()
-	scope.SetOption("universe", "now", values.NewFunction(
+	universe, _ := scope.Lookup("universe")
+	values.SetOption(universe.(values.Package), "now", values.NewFunction(
 		"now",
 		semantic.MustLookupBuiltinType("universe", "now"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {

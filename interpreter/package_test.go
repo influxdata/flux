@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/interpreter/interptest"
 	"github.com/influxdata/flux/semantic"
@@ -25,9 +27,12 @@ func (imp *importer) Import(path string) (semantic.MonoType, bool) {
 	return pkg.Type(), true
 }
 
-func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, bool) {
+func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, error) {
 	pkg, ok := imp.packages[path]
-	return pkg, ok
+	if !ok {
+		return nil, errors.Newf(codes.NotFound, "package %q not found", path)
+	}
+	return pkg, nil
 }
 
 func TestAccessNestedImport(t *testing.T) {
@@ -388,7 +393,7 @@ func TestInterpreter_SetQualifiedOption(t *testing.T) {
 	// TODO(algow): unskip when issue is complete
 	t.Skip("Handle imports for user-defined packages https://github.com/influxdata/flux/issues/2343")
 	externalPackage := interpreter.NewPackage("alert")
-	externalPackage.SetOption("state", values.NewString("Warning"))
+	values.SetOption(externalPackage, "state", values.NewString("Warning"))
 	importer := &importer{
 		packages: map[string]*interpreter.Package{
 			"alert": externalPackage,
