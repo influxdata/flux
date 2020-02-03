@@ -183,7 +183,7 @@ pub fn builtins() -> Builtins<'static> {
                 "to" => r#"
                     forall [t0] where t0: Row (
                         <-tables: [t0],
-                        brokers: string,
+                        brokers: [string],
                         topic: string,
                         ?balancer: string,
                         ?name: string,

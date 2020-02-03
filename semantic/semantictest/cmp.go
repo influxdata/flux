@@ -128,6 +128,11 @@ func TransformValue(v values.Value) map[string]interface{} {
 			"type":     semantic.Object.String(),
 			"elements": elements,
 		}
+	case semantic.Function:
+		// Just use the function type when comparing functions
+		return map[string]interface{}{
+			"type": v.Type().String(),
+		}
 	default:
 		panic(fmt.Errorf("unexpected value type %v", v.Type()))
 	}
