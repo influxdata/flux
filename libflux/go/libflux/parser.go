@@ -7,6 +7,7 @@ package libflux
 import "C"
 
 import (
+	"fmt"
 	"runtime"
 	"unsafe"
 
@@ -89,6 +90,10 @@ func (p *ASTPkg) Free() {
 	runtime.KeepAlive(p)
 }
 
+func (p *ASTPkg) String() string {
+	return fmt.Sprintf("%p", p.ptr)
+}
+
 // Parse will take a string and return a parsed source file.
 func Parse(s string) *ASTPkg {
 	cstr := C.CString(s)
@@ -119,4 +124,24 @@ func ParseJSON(bs []byte) (*ASTPkg, error) {
 	p := &ASTPkg{ptr: ptr}
 	runtime.SetFinalizer(p, free)
 	return p, nil
+}
+
+// Merge packages merges the files of a given input package into a given output package.
+// This function borrows the input and output packages, but does not own them. Memory
+// must still be freed by the caller of this function.
+func MergePackages(outPkg *ASTPkg, inPkg *ASTPkg) error {
+	if inPkg == nil {
+		return nil
+	}
+	// This modifies outPkg in place
+	err := C.flux_merge_ast_pkgs(outPkg.ptr, inPkg.ptr)
+	if err != nil {
+		defer C.flux_free(unsafe.Pointer(err))
+		cstr := C.flux_error_str(err)
+		defer C.flux_free(unsafe.Pointer(cstr))
+
+		str := C.GoString(cstr)
+		return errors.Newf(codes.Internal, "failed to merge packages: %v", str)
+	}
+	return nil
 }

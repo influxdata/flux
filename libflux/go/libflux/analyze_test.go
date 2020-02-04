@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
 	"github.com/influxdata/flux/libflux/go/libflux"
 )
 
@@ -56,3 +57,4 @@ func TestAnalyze(t *testing.T) {
 		})
 	}
 }
+
