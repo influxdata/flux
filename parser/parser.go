@@ -104,3 +104,36 @@ func packageName(f *ast.File) string {
 	}
 	return defaultPackageName
 }
+
+// MergeExternToSemanticHandle takes an extern and a parsed query, creates a package with the extern,
+// converts both AST packages to libflux.ASTPkg types, merges those packages and analyzes them, returning
+// a libflux.SemanticPkg
+func MergeExternToSemanticHandle(extern *ast.File, sourcePkg *ast.Package) (*libflux.SemanticPkg, error) {
+	var externList []*ast.File
+	externList = append(externList, extern)
+	externPkg := &ast.Package{
+		Files: externList,
+	}
+
+	externHandle, err := ToHandle(externPkg)
+	if err != nil {
+		return nil, err
+	}
+
+	sourceHandle, err := ToHandle(sourcePkg)
+	if err != nil {
+		return nil, err
+	}
+
+	err = libflux.MergePackages(externHandle, sourceHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	semanticExtern, err := libflux.Analyze(externHandle)
+	if err != nil {
+		return nil, err
+	}
+
+	return semanticExtern, nil
+}

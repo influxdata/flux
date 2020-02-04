@@ -8,13 +8,18 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/asttest"
 	"github.com/influxdata/flux/internal/token"
 	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/semantic/semantictest"
 )
 
 var parserType = "parser-type=rust"
+var ignorePolyType = cmpopts.IgnoreFields(semantic.NativeVariableAssignment{}, "Typ")
 
 func TestParseDir(t *testing.T) {
 	tmpDir, err := ioutil.TempDir("", "TestParseDir")
@@ -195,5 +200,91 @@ func TestParseTimeLiteral(t *testing.T) {
 	want := time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC)
 	if !cmp.Equal(got.Value, want, asttest.IgnoreBaseNodeOptions...) {
 		t.Errorf("ParseTimeLiteral failed: %s", cmp.Diff(want, got, asttest.IgnoreBaseNodeOptions...))
+	}
+}
+
+func TestMergeExternToSemanticHandle(t *testing.T) {
+	extern := &ast.File{
+		Name:     "",
+		Metadata: "parser-type=rust",
+		Package: &ast.PackageClause{
+			Name: &ast.Identifier{Name: ""},
+		},
+		Body: []ast.Statement{
+			&ast.VariableAssignment{
+				ID:   &ast.Identifier{Name: "a"},
+				Init: &ast.IntegerLiteral{Value: 1},
+			},
+		},
+	}
+
+	source := &ast.Package{
+		BaseNode: ast.BaseNode{},
+		Path:     "",
+		Package:  "",
+		Files: []*ast.File{
+			{
+				Name:     "",
+				Metadata: "parser-type=rust",
+				Package: &ast.PackageClause{
+					Name: &ast.Identifier{Name: ""},
+				},
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						ID:   &ast.Identifier{Name: "b"},
+						Init: &ast.IntegerLiteral{Value: 1},
+					},
+				},
+			},
+		},
+	}
+
+	gotHandle, err := parser.MergeExternToSemanticHandle(extern, source) // semantic Handle; semanticPkg
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	gotFB, err := gotHandle.MarshalFB() // returns FB byte arr
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := semantic.DeserializeFromFlatBuffer(gotFB) // got is semantic.Package
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := &semantic.Package{
+		Package: "",
+		Files: []*semantic.File{
+			{
+				Package: &semantic.PackageClause{
+					Name: &semantic.Identifier{Name: ""},
+				},
+				Body: []semantic.Statement{
+					&semantic.NativeVariableAssignment{
+						Identifier: &semantic.Identifier{Name: "a"},
+						Init:       &semantic.IntegerLiteral{Value: 1},
+					},
+				},
+			},
+			{
+				Package: &semantic.PackageClause{
+					Name: &semantic.Identifier{Name: ""},
+				},
+				Body: []semantic.Statement{
+					&semantic.NativeVariableAssignment{
+						Identifier: &semantic.Identifier{Name: "b"},
+						Init:       &semantic.IntegerLiteral{Value: 1},
+					},
+				},
+			},
+		},
+	}
+
+	opts := append(semantictest.CmpOptions, ignorePolyType)
+
+	if !cmp.Equal(got, want, opts...) {
+		t.Errorf("ParseASTFileToHandle failed: %s", cmp.Diff(want, got, opts...))
 	}
 }
