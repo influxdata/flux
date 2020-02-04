@@ -42,6 +42,7 @@ builtin keyValues
 builtin keys
 builtin last
 builtin limit
+builtin mad
 builtin map
 builtin max
 builtin mean
