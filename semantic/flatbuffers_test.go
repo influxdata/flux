@@ -95,7 +95,7 @@ func TestDeserializeFromFlatBuffer(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			got, err := DeserializeFromFlatBuffer(fb)
+			got, err := DeserializeFromFlatBuffer(fb, 0)
 			if err != nil {
 				t.Fatal(err)
 			}

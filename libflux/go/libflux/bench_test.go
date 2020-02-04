@@ -82,7 +82,7 @@ func ParseReturnHandle(fluxFile string) error {
 func ParseReturnJSON(fluxFile string) error {
 	p := libflux.Parse(fluxFile)
 	defer p.Free()
-	if _, err := p.MarshalJSON(); err != nil {
+	if _, err := p.ToJSON(); err != nil {
 		return err
 	}
 	return nil
@@ -91,11 +91,11 @@ func ParseReturnJSON(fluxFile string) error {
 func ParseAndDeserializeJSON(fluxFile string) error {
 	p := libflux.Parse(fluxFile)
 	defer p.Free()
-	bs, err := p.MarshalJSON()
+	mbuf, err := p.ToJSON()
 	if err != nil {
 		return err
 	}
-	var bb = bytes.NewBuffer(bs)
+	var bb = bytes.NewBuffer(mbuf.Buffer)
 	d := json.NewDecoder(bb)
 	pkg := &ast.Package{}
 	if err := d.Decode(pkg); err != nil {
@@ -117,14 +117,13 @@ func ParseAndReturnFB(fluxFile string) error {
 func ParseAndDeserializeFB(fluxFile string) error {
 	p := libflux.Parse(fluxFile)
 	defer p.Free()
-	bs, err := p.MarshalFB()
+	mbuf, err := p.MarshalFB()
 	if err != nil {
 		return err
 	}
-	if _ = ast.DeserializeFromFlatBuffer(bs); err != nil {
+	if _ = ast.DeserializeFromFlatBuffer(mbuf.Buffer, mbuf.Offset); err != nil {
 		return err
 	}
-
 	return nil
 }
 

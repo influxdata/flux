@@ -14,6 +14,9 @@ struct flux_buffer_t {
 
 	// len is the length of the buffer.
 	size_t len;
+
+	// offset of the beginning of the data.
+	size_t offset;
 };
 
 // flux_error_t represents a flux error.

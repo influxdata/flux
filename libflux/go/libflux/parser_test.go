@@ -22,18 +22,19 @@ from(bucket: "telegraf")
 `
 	ast := libflux.Parse(text)
 
-	jsonBuf, err := ast.MarshalJSON()
+	jsonBuf, err := ast.ToJSON()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("json has %v bytes:\n%v\n", len(jsonBuf), string(jsonBuf))
+	fmt.Printf("json has %v bytes:\n%v\n", len(jsonBuf.Buffer), string(jsonBuf.Buffer))
+	jsonBuf.Free()
 
-	fbBuf, err := ast.MarshalFB()
+	mbuf, err := ast.MarshalFB()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("flatbuffer has %v bytes\n", len(fbBuf))
-
+	fmt.Printf("flatbuffer has %v bytes, offset %v.\n", len(mbuf.Buffer), mbuf.Offset)
+	mbuf.Free()
 	ast.Free()
 }
 
@@ -51,11 +52,12 @@ b = 1`)
 		t.Fatal(err)
 	}
 
-	gotFB, err := outPkg.MarshalFB()
+	mbuf, err := outPkg.MarshalFB()
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := ast.DeserializeFromFlatBuffer(gotFB)
+	got := ast.DeserializeFromFlatBuffer(mbuf.Buffer, mbuf.Offset)
+	mbuf.Free()
 
 	want := &ast.Package{
 		Package: "foo",

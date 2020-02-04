@@ -10,12 +10,13 @@ func parseFile(f *token.File, src []byte) (*ast.File, error) {
 	astFile := libflux.Parse(string(src))
 	defer astFile.Free()
 
-	data, err := astFile.MarshalFB()
+	mbuf, err := astFile.MarshalFB()
 	if err != nil {
 		return nil, err
 	}
 
-	pkg := ast.DeserializeFromFlatBuffer(data)
+	pkg := ast.DeserializeFromFlatBuffer(mbuf.Buffer, mbuf.Offset)
+	mbuf.Free()
 	file := pkg.Files[0]
 	file.Name = f.Name()
 

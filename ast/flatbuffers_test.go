@@ -101,11 +101,12 @@ bad_expr = 3 * + 1
 `}
 	for _, src := range srcs {
 		a := libflux.Parse(src)
-		bs, err := a.MarshalFB()
+		mbuf, err := a.MarshalFB()
 		if err != nil {
 			t.Fatal(err)
 		}
-		astFbs := ast.DeserializeFromFlatBuffer(bs)
+		astFbs := ast.DeserializeFromFlatBuffer(mbuf.Buffer, mbuf.Offset)
+		mbuf.Free()
 
 		srcb := []byte(src)
 		f := token.NewFile("", len(src))
