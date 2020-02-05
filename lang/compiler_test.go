@@ -55,7 +55,7 @@ func TestFluxCompiler(t *testing.T) {
 		{
 			name: "type error",
 			q:    `t=0 t.s`,
-			err:  "type error",
+			err:  "cannot unify",
 		},
 		{
 			name: "from with no streaming data",
@@ -97,7 +97,7 @@ func TestFluxCompiler(t *testing.T) {
 			q: `twentySeven = twentyFive + 2
 				twentySeven
 				from(bucket: "foo")`,
-			err: "undefined identifier",
+			err: "undeclared variable twentyFive",
 		},
 		{
 			name: "with now",
@@ -525,7 +525,7 @@ option planner.disableLogicalRules = "not an array"
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `'planner.disableLogicalRules' must be an array of string, got string`,
+			wantErr: `cannot unify [string] with string`,
 		},
 		{
 			name: "physical planner option must be an array",
@@ -536,7 +536,7 @@ option planner.disablePhysicalRules = "not an array"
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `'planner.disablePhysicalRules' must be an array of string, got string`,
+			wantErr: `cannot unify [string] with string`,
 		},
 		{
 			name: "logical planner option must be an array of strings",
@@ -547,7 +547,7 @@ option planner.disableLogicalRules = [1.0]
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `'planner.disableLogicalRules' must be an array of string, got an array of float`,
+			wantErr: `cannot unify string with float`,
 		},
 		{
 			name: "physical planner option must be an array of strings",
@@ -558,7 +558,7 @@ option planner.disablePhysicalRules = [1.0]
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `'planner.disablePhysicalRules' must be an array of string, got an array of float`,
+			wantErr: `cannot unify string with float`,
 		},
 		{
 			name: "planner is an object defined by the user",
