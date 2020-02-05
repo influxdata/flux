@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 16,
 					Line:   5,
 				},
-				File:   "",
+				File:   "influxdb.flux",
 				Source: "package influxdb\n\nbuiltin from\nbuiltin to\nbuiltin buckets",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   3,
 					},
-					File:   "",
+					File:   "influxdb.flux",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   3,
 						},
-						File:   "",
+						File:   "influxdb.flux",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
@@ -74,7 +74,7 @@ var pkgAST = &ast.Package{
 						Column: 11,
 						Line:   4,
 					},
-					File:   "",
+					File:   "influxdb.flux",
 					Source: "builtin to",
 					Start: ast.Position{
 						Column: 1,
@@ -90,7 +90,7 @@ var pkgAST = &ast.Package{
 							Column: 11,
 							Line:   4,
 						},
-						File:   "",
+						File:   "influxdb.flux",
 						Source: "to",
 						Start: ast.Position{
 							Column: 9,
@@ -108,7 +108,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   5,
 					},
-					File:   "",
+					File:   "influxdb.flux",
 					Source: "builtin buckets",
 					Start: ast.Position{
 						Column: 1,
@@ -124,7 +124,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   5,
 						},
-						File:   "",
+						File:   "influxdb.flux",
 						Source: "buckets",
 						Start: ast.Position{
 							Column: 9,
@@ -146,7 +146,7 @@ var pkgAST = &ast.Package{
 						Column: 17,
 						Line:   1,
 					},
-					File:   "",
+					File:   "influxdb.flux",
 					Source: "package influxdb",
 					Start: ast.Position{
 						Column: 1,
@@ -162,7 +162,7 @@ var pkgAST = &ast.Package{
 							Column: 17,
 							Line:   1,
 						},
-						File:   "",
+						File:   "influxdb.flux",
 						Source: "influxdb",
 						Start: ast.Position{
 							Column: 9,

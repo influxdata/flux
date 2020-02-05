@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 35,
 					Line:   4,
 				},
-				File:   "",
+				File:   "planner.flux",
 				Source: "package planner\n\noption disableLogicalRules = [\"\"]\noption disablePhysicalRules = [\"\"]",
 				Start: ast.Position{
 					Column: 1,
@@ -41,7 +41,7 @@ var pkgAST = &ast.Package{
 							Column: 34,
 							Line:   3,
 						},
-						File:   "",
+						File:   "planner.flux",
 						Source: "disableLogicalRules = [\"\"]",
 						Start: ast.Position{
 							Column: 8,
@@ -57,7 +57,7 @@ var pkgAST = &ast.Package{
 								Column: 27,
 								Line:   3,
 							},
-							File:   "",
+							File:   "planner.flux",
 							Source: "disableLogicalRules",
 							Start: ast.Position{
 								Column: 8,
@@ -75,7 +75,7 @@ var pkgAST = &ast.Package{
 								Column: 34,
 								Line:   3,
 							},
-							File:   "",
+							File:   "planner.flux",
 							Source: "[\"\"]",
 							Start: ast.Position{
 								Column: 30,
@@ -91,7 +91,7 @@ var pkgAST = &ast.Package{
 									Column: 33,
 									Line:   3,
 								},
-								File:   "",
+								File:   "planner.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 31,
@@ -110,7 +110,7 @@ var pkgAST = &ast.Package{
 						Column: 34,
 						Line:   3,
 					},
-					File:   "",
+					File:   "planner.flux",
 					Source: "option disableLogicalRules = [\"\"]",
 					Start: ast.Position{
 						Column: 1,
@@ -127,7 +127,7 @@ var pkgAST = &ast.Package{
 							Column: 35,
 							Line:   4,
 						},
-						File:   "",
+						File:   "planner.flux",
 						Source: "disablePhysicalRules = [\"\"]",
 						Start: ast.Position{
 							Column: 8,
@@ -143,7 +143,7 @@ var pkgAST = &ast.Package{
 								Column: 28,
 								Line:   4,
 							},
-							File:   "",
+							File:   "planner.flux",
 							Source: "disablePhysicalRules",
 							Start: ast.Position{
 								Column: 8,
@@ -161,7 +161,7 @@ var pkgAST = &ast.Package{
 								Column: 35,
 								Line:   4,
 							},
-							File:   "",
+							File:   "planner.flux",
 							Source: "[\"\"]",
 							Start: ast.Position{
 								Column: 31,
@@ -177,7 +177,7 @@ var pkgAST = &ast.Package{
 									Column: 34,
 									Line:   4,
 								},
-								File:   "",
+								File:   "planner.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 32,
@@ -196,7 +196,7 @@ var pkgAST = &ast.Package{
 						Column: 35,
 						Line:   4,
 					},
-					File:   "",
+					File:   "planner.flux",
 					Source: "option disablePhysicalRules = [\"\"]",
 					Start: ast.Position{
 						Column: 1,
@@ -216,7 +216,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   1,
 					},
-					File:   "",
+					File:   "planner.flux",
 					Source: "package planner",
 					Start: ast.Position{
 						Column: 1,
@@ -232,7 +232,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   1,
 						},
-						File:   "",
+						File:   "planner.flux",
 						Source: "planner",
 						Start: ast.Position{
 							Column: 9,

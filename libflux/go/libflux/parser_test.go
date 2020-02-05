@@ -20,7 +20,7 @@ from(bucket: "telegraf")
 	|> range(start: -5m)
 	|> mean()
 `
-	ast := libflux.Parse(text)
+	ast := libflux.ParseString(text)
 
 	jsonBuf, err := ast.MarshalJSON()
 	if err != nil {
@@ -38,11 +38,11 @@ from(bucket: "telegraf")
 }
 
 func TestMergePackages(t *testing.T) {
-	outPkg := libflux.Parse(`
+	outPkg := libflux.ParseString(`
 package foo
 
 a = 1`)
-	inPkg := libflux.Parse(`
+	inPkg := libflux.ParseString(`
 package foo
 
 b = 1`)
@@ -98,15 +98,15 @@ b = 1`)
 }
 
 func TestMergePackagesWithErrors(t *testing.T) {
-	fooPkg := libflux.Parse(`
+	fooPkg := libflux.ParseString(`
 package foo
 
 a = 1`)
-	barPkg := libflux.Parse(`
+	barPkg := libflux.ParseString(`
 package bar
 
 c = 3`)
-	noClausePkg := libflux.Parse(``)
+	noClausePkg := libflux.ParseString(``)
 
 	testCases := []struct {
 		name    string

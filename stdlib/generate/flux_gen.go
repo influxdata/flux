@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 13,
 					Line:   3,
 				},
-				File:   "",
+				File:   "generate.flux",
 				Source: "package generate\n\nbuiltin from",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   3,
 					},
-					File:   "",
+					File:   "generate.flux",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   3,
 						},
-						File:   "",
+						File:   "generate.flux",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
@@ -78,7 +78,7 @@ var pkgAST = &ast.Package{
 						Column: 17,
 						Line:   1,
 					},
-					File:   "",
+					File:   "generate.flux",
 					Source: "package generate",
 					Start: ast.Position{
 						Column: 1,
@@ -94,7 +94,7 @@ var pkgAST = &ast.Package{
 							Column: 17,
 							Line:   1,
 						},
-						File:   "",
+						File:   "generate.flux",
 						Source: "generate",
 						Start: ast.Position{
 							Column: 9,

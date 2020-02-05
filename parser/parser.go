@@ -95,7 +95,7 @@ func ToHandle(astPkg *ast.Package) (*libflux.ASTPkg, error) {
 }
 
 func ParseToHandle(src []byte) *libflux.ASTPkg {
-	return libflux.Parse(string(src))
+	return libflux.ParseString(string(src))
 }
 
 func packageName(f *ast.File) string {

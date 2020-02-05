@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 13,
 					Line:   119,
 				},
-				File:   "",
+				File:   "promql.flux",
 				Source: "package promql\n\nimport \"math\" \nimport \"universe\"\n\n// changes() implements functionality equivalent to PromQL's changes() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#changes\nbuiltin changes\n\n// promqlDayOfMonth() implements functionality equivalent to PromQL's day_of_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_month\nbuiltin promqlDayOfMonth\n\n// promqlDayOfWeek() implements functionality equivalent to PromQL's day_of_week() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_week\nbuiltin promqlDayOfWeek\n\n// promqlDaysInMonth() implements functionality equivalent to PromQL's days_in_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#days_in_month\nbuiltin promqlDaysInMonth\n\n// emptyTable() returns an empty table, which is used as a helper function to implement\n// PromQL's time() and vector() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#time\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#vector\nbuiltin emptyTable\n\n// extrapolatedRate() is a helper function that calculates extrapolated rates over\n// counters and is used to implement PromQL's rate(), delta(), and increase() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#rate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#increase\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#delta\nbuiltin extrapolatedRate\n\n// holtWinters() implements functionality equivalent to PromQL's holt_winters()\n// function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#holt_winters\nbuiltin holtWinters\n\n// promqlHour() implements functionality equivalent to PromQL's hour() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#hour\nbuiltin promqlHour\n\n// instantRate() is a helper function that calculates instant rates over\n// counters and is used to implement PromQL's irate() and idelta() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#irate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#idelta\nbuiltin instantRate\n\n// labelReplace implements functionality equivalent to PromQL's label_replace() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#label_replace\nbuiltin labelReplace\n\n// linearRegression implements linear regression functionality required to implement\n// PromQL's deriv() and predict_linear() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#deriv\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#predict_linear\nbuiltin linearRegression\n\n// promqlMinute() implements functionality equivalent to PromQL's minute() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#minute\nbuiltin promqlMinute\n\n// promqlMonth() implements functionality equivalent to PromQL's month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#month\nbuiltin promqlMonth\n\n// promHistogramQuantile() implements functionality equivalent to PromQL's\n// histogram_quantile() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile\nbuiltin promHistogramQuantile\n\n// resets() implements functionality equivalent to PromQL's resets() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#resets\nbuiltin resets\n\n// timestamp() implements functionality equivalent to PromQL's timestamp() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#timestamp\nbuiltin timestamp\n\n// promqlYear() implements functionality equivalent to PromQL's year() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#year\nbuiltin promqlYear\n\n// quantile() accounts checks for quantile values that are out of range, above 1.0 or \n// below 0.0, by either returning positive infinity or negative infinity in the `_value` \n// column respectively. q must be a float \n\nquantile = (q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then \n    (tables\n        |> universe.quantile(q: q, method: method))\n    else if q < 0.0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))\n\nbuiltin join",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   10,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin changes",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   10,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "changes",
 						Start: ast.Position{
 							Column: 9,
@@ -74,7 +74,7 @@ var pkgAST = &ast.Package{
 						Column: 25,
 						Line:   15,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin promqlDayOfMonth",
 					Start: ast.Position{
 						Column: 1,
@@ -90,7 +90,7 @@ var pkgAST = &ast.Package{
 							Column: 25,
 							Line:   15,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "promqlDayOfMonth",
 						Start: ast.Position{
 							Column: 9,
@@ -108,7 +108,7 @@ var pkgAST = &ast.Package{
 						Column: 24,
 						Line:   20,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin promqlDayOfWeek",
 					Start: ast.Position{
 						Column: 1,
@@ -124,7 +124,7 @@ var pkgAST = &ast.Package{
 							Column: 24,
 							Line:   20,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "promqlDayOfWeek",
 						Start: ast.Position{
 							Column: 9,
@@ -142,7 +142,7 @@ var pkgAST = &ast.Package{
 						Column: 26,
 						Line:   25,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin promqlDaysInMonth",
 					Start: ast.Position{
 						Column: 1,
@@ -158,7 +158,7 @@ var pkgAST = &ast.Package{
 							Column: 26,
 							Line:   25,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "promqlDaysInMonth",
 						Start: ast.Position{
 							Column: 9,
@@ -176,7 +176,7 @@ var pkgAST = &ast.Package{
 						Column: 19,
 						Line:   32,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin emptyTable",
 					Start: ast.Position{
 						Column: 1,
@@ -192,7 +192,7 @@ var pkgAST = &ast.Package{
 							Column: 19,
 							Line:   32,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "emptyTable",
 						Start: ast.Position{
 							Column: 9,
@@ -210,7 +210,7 @@ var pkgAST = &ast.Package{
 						Column: 25,
 						Line:   40,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin extrapolatedRate",
 					Start: ast.Position{
 						Column: 1,
@@ -226,7 +226,7 @@ var pkgAST = &ast.Package{
 							Column: 25,
 							Line:   40,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "extrapolatedRate",
 						Start: ast.Position{
 							Column: 9,
@@ -244,7 +244,7 @@ var pkgAST = &ast.Package{
 						Column: 20,
 						Line:   46,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin holtWinters",
 					Start: ast.Position{
 						Column: 1,
@@ -260,7 +260,7 @@ var pkgAST = &ast.Package{
 							Column: 20,
 							Line:   46,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "holtWinters",
 						Start: ast.Position{
 							Column: 9,
@@ -278,7 +278,7 @@ var pkgAST = &ast.Package{
 						Column: 19,
 						Line:   51,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin promqlHour",
 					Start: ast.Position{
 						Column: 1,
@@ -294,7 +294,7 @@ var pkgAST = &ast.Package{
 							Column: 19,
 							Line:   51,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "promqlHour",
 						Start: ast.Position{
 							Column: 9,
@@ -312,7 +312,7 @@ var pkgAST = &ast.Package{
 						Column: 20,
 						Line:   58,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin instantRate",
 					Start: ast.Position{
 						Column: 1,
@@ -328,7 +328,7 @@ var pkgAST = &ast.Package{
 							Column: 20,
 							Line:   58,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "instantRate",
 						Start: ast.Position{
 							Column: 9,
@@ -346,7 +346,7 @@ var pkgAST = &ast.Package{
 						Column: 21,
 						Line:   63,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin labelReplace",
 					Start: ast.Position{
 						Column: 1,
@@ -362,7 +362,7 @@ var pkgAST = &ast.Package{
 							Column: 21,
 							Line:   63,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "labelReplace",
 						Start: ast.Position{
 							Column: 9,
@@ -380,7 +380,7 @@ var pkgAST = &ast.Package{
 						Column: 25,
 						Line:   70,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin linearRegression",
 					Start: ast.Position{
 						Column: 1,
@@ -396,7 +396,7 @@ var pkgAST = &ast.Package{
 							Column: 25,
 							Line:   70,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "linearRegression",
 						Start: ast.Position{
 							Column: 9,
@@ -414,7 +414,7 @@ var pkgAST = &ast.Package{
 						Column: 21,
 						Line:   75,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin promqlMinute",
 					Start: ast.Position{
 						Column: 1,
@@ -430,7 +430,7 @@ var pkgAST = &ast.Package{
 							Column: 21,
 							Line:   75,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "promqlMinute",
 						Start: ast.Position{
 							Column: 9,
@@ -448,7 +448,7 @@ var pkgAST = &ast.Package{
 						Column: 20,
 						Line:   80,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin promqlMonth",
 					Start: ast.Position{
 						Column: 1,
@@ -464,7 +464,7 @@ var pkgAST = &ast.Package{
 							Column: 20,
 							Line:   80,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "promqlMonth",
 						Start: ast.Position{
 							Column: 9,
@@ -482,7 +482,7 @@ var pkgAST = &ast.Package{
 						Column: 30,
 						Line:   86,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin promHistogramQuantile",
 					Start: ast.Position{
 						Column: 1,
@@ -498,7 +498,7 @@ var pkgAST = &ast.Package{
 							Column: 30,
 							Line:   86,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "promHistogramQuantile",
 						Start: ast.Position{
 							Column: 9,
@@ -516,7 +516,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   91,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin resets",
 					Start: ast.Position{
 						Column: 1,
@@ -532,7 +532,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   91,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "resets",
 						Start: ast.Position{
 							Column: 9,
@@ -550,7 +550,7 @@ var pkgAST = &ast.Package{
 						Column: 18,
 						Line:   96,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin timestamp",
 					Start: ast.Position{
 						Column: 1,
@@ -566,7 +566,7 @@ var pkgAST = &ast.Package{
 							Column: 18,
 							Line:   96,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "timestamp",
 						Start: ast.Position{
 							Column: 9,
@@ -584,7 +584,7 @@ var pkgAST = &ast.Package{
 						Column: 19,
 						Line:   101,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin promqlYear",
 					Start: ast.Position{
 						Column: 1,
@@ -600,7 +600,7 @@ var pkgAST = &ast.Package{
 							Column: 19,
 							Line:   101,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "promqlYear",
 						Start: ast.Position{
 							Column: 9,
@@ -618,7 +618,7 @@ var pkgAST = &ast.Package{
 						Column: 96,
 						Line:   117,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "quantile = (q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then \n    (tables\n        |> universe.quantile(q: q, method: method))\n    else if q < 0.0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
 					Start: ast.Position{
 						Column: 1,
@@ -634,7 +634,7 @@ var pkgAST = &ast.Package{
 							Column: 9,
 							Line:   107,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "quantile",
 						Start: ast.Position{
 							Column: 1,
@@ -652,7 +652,7 @@ var pkgAST = &ast.Package{
 							Column: 96,
 							Line:   117,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "(q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then \n    (tables\n        |> universe.quantile(q: q, method: method))\n    else if q < 0.0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
 						Start: ast.Position{
 							Column: 12,
@@ -670,7 +670,7 @@ var pkgAST = &ast.Package{
 										Column: 96,
 										Line:   117,
 									},
-									File:   "",
+									File:   "promql.flux",
 									Source: "(tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
 									Start: ast.Position{
 										Column: 5,
@@ -687,7 +687,7 @@ var pkgAST = &ast.Package{
 												Column: 12,
 												Line:   116,
 											},
-											File:   "",
+											File:   "promql.flux",
 											Source: "tables",
 											Start: ast.Position{
 												Column: 6,
@@ -704,7 +704,7 @@ var pkgAST = &ast.Package{
 											Column: 95,
 											Line:   117,
 										},
-										File:   "",
+										File:   "promql.flux",
 										Source: "tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
 										Start: ast.Position{
 											Column: 6,
@@ -721,7 +721,7 @@ var pkgAST = &ast.Package{
 													Column: 94,
 													Line:   117,
 												},
-												File:   "",
+												File:   "promql.flux",
 												Source: "identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator",
 												Start: ast.Position{
 													Column: 19,
@@ -737,7 +737,7 @@ var pkgAST = &ast.Package{
 														Column: 57,
 														Line:   117,
 													},
-													File:   "",
+													File:   "promql.flux",
 													Source: "identity: {_value: math.mInf(sign: 1)}",
 													Start: ast.Position{
 														Column: 19,
@@ -753,7 +753,7 @@ var pkgAST = &ast.Package{
 															Column: 27,
 															Line:   117,
 														},
-														File:   "",
+														File:   "promql.flux",
 														Source: "identity",
 														Start: ast.Position{
 															Column: 19,
@@ -771,7 +771,7 @@ var pkgAST = &ast.Package{
 															Column: 57,
 															Line:   117,
 														},
-														File:   "",
+														File:   "promql.flux",
 														Source: "{_value: math.mInf(sign: 1)}",
 														Start: ast.Position{
 															Column: 29,
@@ -787,7 +787,7 @@ var pkgAST = &ast.Package{
 																Column: 56,
 																Line:   117,
 															},
-															File:   "",
+															File:   "promql.flux",
 															Source: "_value: math.mInf(sign: 1)",
 															Start: ast.Position{
 																Column: 30,
@@ -803,7 +803,7 @@ var pkgAST = &ast.Package{
 																	Column: 36,
 																	Line:   117,
 																},
-																File:   "",
+																File:   "promql.flux",
 																Source: "_value",
 																Start: ast.Position{
 																	Column: 30,
@@ -822,7 +822,7 @@ var pkgAST = &ast.Package{
 																		Column: 55,
 																		Line:   117,
 																	},
-																	File:   "",
+																	File:   "promql.flux",
 																	Source: "sign: 1",
 																	Start: ast.Position{
 																		Column: 48,
@@ -838,7 +838,7 @@ var pkgAST = &ast.Package{
 																			Column: 55,
 																			Line:   117,
 																		},
-																		File:   "",
+																		File:   "promql.flux",
 																		Source: "sign: 1",
 																		Start: ast.Position{
 																			Column: 48,
@@ -854,7 +854,7 @@ var pkgAST = &ast.Package{
 																				Column: 52,
 																				Line:   117,
 																			},
-																			File:   "",
+																			File:   "promql.flux",
 																			Source: "sign",
 																			Start: ast.Position{
 																				Column: 48,
@@ -872,7 +872,7 @@ var pkgAST = &ast.Package{
 																				Column: 55,
 																				Line:   117,
 																			},
-																			File:   "",
+																			File:   "promql.flux",
 																			Source: "1",
 																			Start: ast.Position{
 																				Column: 54,
@@ -892,7 +892,7 @@ var pkgAST = &ast.Package{
 																	Column: 56,
 																	Line:   117,
 																},
-																File:   "",
+																File:   "promql.flux",
 																Source: "math.mInf(sign: 1)",
 																Start: ast.Position{
 																	Column: 38,
@@ -908,7 +908,7 @@ var pkgAST = &ast.Package{
 																		Column: 47,
 																		Line:   117,
 																	},
-																	File:   "",
+																	File:   "promql.flux",
 																	Source: "math.mInf",
 																	Start: ast.Position{
 																		Column: 38,
@@ -924,7 +924,7 @@ var pkgAST = &ast.Package{
 																			Column: 42,
 																			Line:   117,
 																		},
-																		File:   "",
+																		File:   "promql.flux",
 																		Source: "math",
 																		Start: ast.Position{
 																			Column: 38,
@@ -942,7 +942,7 @@ var pkgAST = &ast.Package{
 																			Column: 47,
 																			Line:   117,
 																		},
-																		File:   "",
+																		File:   "promql.flux",
 																		Source: "mInf",
 																		Start: ast.Position{
 																			Column: 43,
@@ -965,7 +965,7 @@ var pkgAST = &ast.Package{
 														Column: 94,
 														Line:   117,
 													},
-													File:   "",
+													File:   "promql.flux",
 													Source: "fn: (r, accumulator) => accumulator",
 													Start: ast.Position{
 														Column: 59,
@@ -981,7 +981,7 @@ var pkgAST = &ast.Package{
 															Column: 61,
 															Line:   117,
 														},
-														File:   "",
+														File:   "promql.flux",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 59,
@@ -999,7 +999,7 @@ var pkgAST = &ast.Package{
 															Column: 94,
 															Line:   117,
 														},
-														File:   "",
+														File:   "promql.flux",
 														Source: "(r, accumulator) => accumulator",
 														Start: ast.Position{
 															Column: 63,
@@ -1015,7 +1015,7 @@ var pkgAST = &ast.Package{
 																Column: 94,
 																Line:   117,
 															},
-															File:   "",
+															File:   "promql.flux",
 															Source: "accumulator",
 															Start: ast.Position{
 																Column: 83,
@@ -1033,7 +1033,7 @@ var pkgAST = &ast.Package{
 																Column: 65,
 																Line:   117,
 															},
-															File:   "",
+															File:   "promql.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 64,
@@ -1049,7 +1049,7 @@ var pkgAST = &ast.Package{
 																	Column: 65,
 																	Line:   117,
 																},
-																File:   "",
+																File:   "promql.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 64,
@@ -1068,7 +1068,7 @@ var pkgAST = &ast.Package{
 																Column: 78,
 																Line:   117,
 															},
-															File:   "",
+															File:   "promql.flux",
 															Source: "accumulator",
 															Start: ast.Position{
 																Column: 67,
@@ -1084,7 +1084,7 @@ var pkgAST = &ast.Package{
 																	Column: 78,
 																	Line:   117,
 																},
-																File:   "",
+																File:   "promql.flux",
 																Source: "accumulator",
 																Start: ast.Position{
 																	Column: 67,
@@ -1107,7 +1107,7 @@ var pkgAST = &ast.Package{
 												Column: 95,
 												Line:   117,
 											},
-											File:   "",
+											File:   "promql.flux",
 											Source: "reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
 											Start: ast.Position{
 												Column: 12,
@@ -1123,7 +1123,7 @@ var pkgAST = &ast.Package{
 													Column: 18,
 													Line:   117,
 												},
-												File:   "",
+												File:   "promql.flux",
 												Source: "reduce",
 												Start: ast.Position{
 													Column: 12,
@@ -1143,7 +1143,7 @@ var pkgAST = &ast.Package{
 									Column: 96,
 									Line:   117,
 								},
-								File:   "",
+								File:   "promql.flux",
 								Source: "if q < 0.0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
 								Start: ast.Position{
 									Column: 10,
@@ -1159,7 +1159,7 @@ var pkgAST = &ast.Package{
 										Column: 97,
 										Line:   114,
 									},
-									File:   "",
+									File:   "promql.flux",
 									Source: "(tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))",
 									Start: ast.Position{
 										Column: 5,
@@ -1176,7 +1176,7 @@ var pkgAST = &ast.Package{
 												Column: 12,
 												Line:   113,
 											},
-											File:   "",
+											File:   "promql.flux",
 											Source: "tables",
 											Start: ast.Position{
 												Column: 6,
@@ -1193,7 +1193,7 @@ var pkgAST = &ast.Package{
 											Column: 96,
 											Line:   114,
 										},
-										File:   "",
+										File:   "promql.flux",
 										Source: "tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)",
 										Start: ast.Position{
 											Column: 6,
@@ -1210,7 +1210,7 @@ var pkgAST = &ast.Package{
 													Column: 95,
 													Line:   114,
 												},
-												File:   "",
+												File:   "promql.flux",
 												Source: "identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator",
 												Start: ast.Position{
 													Column: 19,
@@ -1226,7 +1226,7 @@ var pkgAST = &ast.Package{
 														Column: 58,
 														Line:   114,
 													},
-													File:   "",
+													File:   "promql.flux",
 													Source: "identity: {_value: math.mInf(sign: -1)}",
 													Start: ast.Position{
 														Column: 19,
@@ -1242,7 +1242,7 @@ var pkgAST = &ast.Package{
 															Column: 27,
 															Line:   114,
 														},
-														File:   "",
+														File:   "promql.flux",
 														Source: "identity",
 														Start: ast.Position{
 															Column: 19,
@@ -1260,7 +1260,7 @@ var pkgAST = &ast.Package{
 															Column: 58,
 															Line:   114,
 														},
-														File:   "",
+														File:   "promql.flux",
 														Source: "{_value: math.mInf(sign: -1)}",
 														Start: ast.Position{
 															Column: 29,
@@ -1276,7 +1276,7 @@ var pkgAST = &ast.Package{
 																Column: 57,
 																Line:   114,
 															},
-															File:   "",
+															File:   "promql.flux",
 															Source: "_value: math.mInf(sign: -1)",
 															Start: ast.Position{
 																Column: 30,
@@ -1292,7 +1292,7 @@ var pkgAST = &ast.Package{
 																	Column: 36,
 																	Line:   114,
 																},
-																File:   "",
+																File:   "promql.flux",
 																Source: "_value",
 																Start: ast.Position{
 																	Column: 30,
@@ -1311,7 +1311,7 @@ var pkgAST = &ast.Package{
 																		Column: 56,
 																		Line:   114,
 																	},
-																	File:   "",
+																	File:   "promql.flux",
 																	Source: "sign: -1",
 																	Start: ast.Position{
 																		Column: 48,
@@ -1327,7 +1327,7 @@ var pkgAST = &ast.Package{
 																			Column: 56,
 																			Line:   114,
 																		},
-																		File:   "",
+																		File:   "promql.flux",
 																		Source: "sign: -1",
 																		Start: ast.Position{
 																			Column: 48,
@@ -1343,7 +1343,7 @@ var pkgAST = &ast.Package{
 																				Column: 52,
 																				Line:   114,
 																			},
-																			File:   "",
+																			File:   "promql.flux",
 																			Source: "sign",
 																			Start: ast.Position{
 																				Column: 48,
@@ -1362,7 +1362,7 @@ var pkgAST = &ast.Package{
 																					Column: 56,
 																					Line:   114,
 																				},
-																				File:   "",
+																				File:   "promql.flux",
 																				Source: "1",
 																				Start: ast.Position{
 																					Column: 55,
@@ -1379,7 +1379,7 @@ var pkgAST = &ast.Package{
 																				Column: 56,
 																				Line:   114,
 																			},
-																			File:   "",
+																			File:   "promql.flux",
 																			Source: "-1",
 																			Start: ast.Position{
 																				Column: 54,
@@ -1399,7 +1399,7 @@ var pkgAST = &ast.Package{
 																	Column: 57,
 																	Line:   114,
 																},
-																File:   "",
+																File:   "promql.flux",
 																Source: "math.mInf(sign: -1)",
 																Start: ast.Position{
 																	Column: 38,
@@ -1415,7 +1415,7 @@ var pkgAST = &ast.Package{
 																		Column: 47,
 																		Line:   114,
 																	},
-																	File:   "",
+																	File:   "promql.flux",
 																	Source: "math.mInf",
 																	Start: ast.Position{
 																		Column: 38,
@@ -1431,7 +1431,7 @@ var pkgAST = &ast.Package{
 																			Column: 42,
 																			Line:   114,
 																		},
-																		File:   "",
+																		File:   "promql.flux",
 																		Source: "math",
 																		Start: ast.Position{
 																			Column: 38,
@@ -1449,7 +1449,7 @@ var pkgAST = &ast.Package{
 																			Column: 47,
 																			Line:   114,
 																		},
-																		File:   "",
+																		File:   "promql.flux",
 																		Source: "mInf",
 																		Start: ast.Position{
 																			Column: 43,
@@ -1472,7 +1472,7 @@ var pkgAST = &ast.Package{
 														Column: 95,
 														Line:   114,
 													},
-													File:   "",
+													File:   "promql.flux",
 													Source: "fn: (r, accumulator) => accumulator",
 													Start: ast.Position{
 														Column: 60,
@@ -1488,7 +1488,7 @@ var pkgAST = &ast.Package{
 															Column: 62,
 															Line:   114,
 														},
-														File:   "",
+														File:   "promql.flux",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 60,
@@ -1506,7 +1506,7 @@ var pkgAST = &ast.Package{
 															Column: 95,
 															Line:   114,
 														},
-														File:   "",
+														File:   "promql.flux",
 														Source: "(r, accumulator) => accumulator",
 														Start: ast.Position{
 															Column: 64,
@@ -1522,7 +1522,7 @@ var pkgAST = &ast.Package{
 																Column: 95,
 																Line:   114,
 															},
-															File:   "",
+															File:   "promql.flux",
 															Source: "accumulator",
 															Start: ast.Position{
 																Column: 84,
@@ -1540,7 +1540,7 @@ var pkgAST = &ast.Package{
 																Column: 66,
 																Line:   114,
 															},
-															File:   "",
+															File:   "promql.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 65,
@@ -1556,7 +1556,7 @@ var pkgAST = &ast.Package{
 																	Column: 66,
 																	Line:   114,
 																},
-																File:   "",
+																File:   "promql.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 65,
@@ -1575,7 +1575,7 @@ var pkgAST = &ast.Package{
 																Column: 79,
 																Line:   114,
 															},
-															File:   "",
+															File:   "promql.flux",
 															Source: "accumulator",
 															Start: ast.Position{
 																Column: 68,
@@ -1591,7 +1591,7 @@ var pkgAST = &ast.Package{
 																	Column: 79,
 																	Line:   114,
 																},
-																File:   "",
+																File:   "promql.flux",
 																Source: "accumulator",
 																Start: ast.Position{
 																	Column: 68,
@@ -1614,7 +1614,7 @@ var pkgAST = &ast.Package{
 												Column: 96,
 												Line:   114,
 											},
-											File:   "",
+											File:   "promql.flux",
 											Source: "reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)",
 											Start: ast.Position{
 												Column: 12,
@@ -1630,7 +1630,7 @@ var pkgAST = &ast.Package{
 													Column: 18,
 													Line:   114,
 												},
-												File:   "",
+												File:   "promql.flux",
 												Source: "reduce",
 												Start: ast.Position{
 													Column: 12,
@@ -1651,7 +1651,7 @@ var pkgAST = &ast.Package{
 										Column: 20,
 										Line:   112,
 									},
-									File:   "",
+									File:   "promql.flux",
 									Source: "q < 0.0",
 									Start: ast.Position{
 										Column: 13,
@@ -1667,7 +1667,7 @@ var pkgAST = &ast.Package{
 											Column: 14,
 											Line:   112,
 										},
-										File:   "",
+										File:   "promql.flux",
 										Source: "q",
 										Start: ast.Position{
 											Column: 13,
@@ -1686,7 +1686,7 @@ var pkgAST = &ast.Package{
 											Column: 20,
 											Line:   112,
 										},
-										File:   "",
+										File:   "promql.flux",
 										Source: "0.0",
 										Start: ast.Position{
 											Column: 17,
@@ -1705,7 +1705,7 @@ var pkgAST = &ast.Package{
 								Column: 96,
 								Line:   117,
 							},
-							File:   "",
+							File:   "promql.flux",
 							Source: "if q <= 1.0 and q >= 0.0 then \n    (tables\n        |> universe.quantile(q: q, method: method))\n    else if q < 0.0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
 							Start: ast.Position{
 								Column: 5,
@@ -1721,7 +1721,7 @@ var pkgAST = &ast.Package{
 									Column: 52,
 									Line:   111,
 								},
-								File:   "",
+								File:   "promql.flux",
 								Source: "(tables\n        |> universe.quantile(q: q, method: method))",
 								Start: ast.Position{
 									Column: 5,
@@ -1738,7 +1738,7 @@ var pkgAST = &ast.Package{
 											Column: 12,
 											Line:   110,
 										},
-										File:   "",
+										File:   "promql.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 6,
@@ -1755,7 +1755,7 @@ var pkgAST = &ast.Package{
 										Column: 51,
 										Line:   111,
 									},
-									File:   "",
+									File:   "promql.flux",
 									Source: "tables\n        |> universe.quantile(q: q, method: method)",
 									Start: ast.Position{
 										Column: 6,
@@ -1772,7 +1772,7 @@ var pkgAST = &ast.Package{
 												Column: 50,
 												Line:   111,
 											},
-											File:   "",
+											File:   "promql.flux",
 											Source: "q: q, method: method",
 											Start: ast.Position{
 												Column: 30,
@@ -1788,7 +1788,7 @@ var pkgAST = &ast.Package{
 													Column: 34,
 													Line:   111,
 												},
-												File:   "",
+												File:   "promql.flux",
 												Source: "q: q",
 												Start: ast.Position{
 													Column: 30,
@@ -1804,7 +1804,7 @@ var pkgAST = &ast.Package{
 														Column: 31,
 														Line:   111,
 													},
-													File:   "",
+													File:   "promql.flux",
 													Source: "q",
 													Start: ast.Position{
 														Column: 30,
@@ -1822,7 +1822,7 @@ var pkgAST = &ast.Package{
 														Column: 34,
 														Line:   111,
 													},
-													File:   "",
+													File:   "promql.flux",
 													Source: "q",
 													Start: ast.Position{
 														Column: 33,
@@ -1840,7 +1840,7 @@ var pkgAST = &ast.Package{
 													Column: 50,
 													Line:   111,
 												},
-												File:   "",
+												File:   "promql.flux",
 												Source: "method: method",
 												Start: ast.Position{
 													Column: 36,
@@ -1856,7 +1856,7 @@ var pkgAST = &ast.Package{
 														Column: 42,
 														Line:   111,
 													},
-													File:   "",
+													File:   "promql.flux",
 													Source: "method",
 													Start: ast.Position{
 														Column: 36,
@@ -1874,7 +1874,7 @@ var pkgAST = &ast.Package{
 														Column: 50,
 														Line:   111,
 													},
-													File:   "",
+													File:   "promql.flux",
 													Source: "method",
 													Start: ast.Position{
 														Column: 44,
@@ -1894,7 +1894,7 @@ var pkgAST = &ast.Package{
 											Column: 51,
 											Line:   111,
 										},
-										File:   "",
+										File:   "promql.flux",
 										Source: "universe.quantile(q: q, method: method)",
 										Start: ast.Position{
 											Column: 12,
@@ -1910,7 +1910,7 @@ var pkgAST = &ast.Package{
 												Column: 29,
 												Line:   111,
 											},
-											File:   "",
+											File:   "promql.flux",
 											Source: "universe.quantile",
 											Start: ast.Position{
 												Column: 12,
@@ -1926,7 +1926,7 @@ var pkgAST = &ast.Package{
 													Column: 20,
 													Line:   111,
 												},
-												File:   "",
+												File:   "promql.flux",
 												Source: "universe",
 												Start: ast.Position{
 													Column: 12,
@@ -1944,7 +1944,7 @@ var pkgAST = &ast.Package{
 													Column: 29,
 													Line:   111,
 												},
-												File:   "",
+												File:   "promql.flux",
 												Source: "quantile",
 												Start: ast.Position{
 													Column: 21,
@@ -1966,7 +1966,7 @@ var pkgAST = &ast.Package{
 									Column: 29,
 									Line:   109,
 								},
-								File:   "",
+								File:   "promql.flux",
 								Source: "q <= 1.0 and q >= 0.0",
 								Start: ast.Position{
 									Column: 8,
@@ -1982,7 +1982,7 @@ var pkgAST = &ast.Package{
 										Column: 16,
 										Line:   109,
 									},
-									File:   "",
+									File:   "promql.flux",
 									Source: "q <= 1.0",
 									Start: ast.Position{
 										Column: 8,
@@ -1998,7 +1998,7 @@ var pkgAST = &ast.Package{
 											Column: 9,
 											Line:   109,
 										},
-										File:   "",
+										File:   "promql.flux",
 										Source: "q",
 										Start: ast.Position{
 											Column: 8,
@@ -2017,7 +2017,7 @@ var pkgAST = &ast.Package{
 											Column: 16,
 											Line:   109,
 										},
-										File:   "",
+										File:   "promql.flux",
 										Source: "1.0",
 										Start: ast.Position{
 											Column: 13,
@@ -2037,7 +2037,7 @@ var pkgAST = &ast.Package{
 										Column: 29,
 										Line:   109,
 									},
-									File:   "",
+									File:   "promql.flux",
 									Source: "q >= 0.0",
 									Start: ast.Position{
 										Column: 21,
@@ -2053,7 +2053,7 @@ var pkgAST = &ast.Package{
 											Column: 22,
 											Line:   109,
 										},
-										File:   "",
+										File:   "promql.flux",
 										Source: "q",
 										Start: ast.Position{
 											Column: 21,
@@ -2072,7 +2072,7 @@ var pkgAST = &ast.Package{
 											Column: 29,
 											Line:   109,
 										},
-										File:   "",
+										File:   "promql.flux",
 										Source: "0.0",
 										Start: ast.Position{
 											Column: 26,
@@ -2093,7 +2093,7 @@ var pkgAST = &ast.Package{
 								Column: 14,
 								Line:   107,
 							},
-							File:   "",
+							File:   "promql.flux",
 							Source: "q",
 							Start: ast.Position{
 								Column: 13,
@@ -2109,7 +2109,7 @@ var pkgAST = &ast.Package{
 									Column: 14,
 									Line:   107,
 								},
-								File:   "",
+								File:   "promql.flux",
 								Source: "q",
 								Start: ast.Position{
 									Column: 13,
@@ -2128,7 +2128,7 @@ var pkgAST = &ast.Package{
 								Column: 25,
 								Line:   107,
 							},
-							File:   "",
+							File:   "promql.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 16,
@@ -2144,7 +2144,7 @@ var pkgAST = &ast.Package{
 									Column: 22,
 									Line:   107,
 								},
-								File:   "",
+								File:   "promql.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 16,
@@ -2161,7 +2161,7 @@ var pkgAST = &ast.Package{
 								Column: 25,
 								Line:   107,
 							},
-							File:   "",
+							File:   "promql.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 23,
@@ -2177,7 +2177,7 @@ var pkgAST = &ast.Package{
 								Column: 46,
 								Line:   107,
 							},
-							File:   "",
+							File:   "promql.flux",
 							Source: "method=\"exact_mean\"",
 							Start: ast.Position{
 								Column: 27,
@@ -2193,7 +2193,7 @@ var pkgAST = &ast.Package{
 									Column: 33,
 									Line:   107,
 								},
-								File:   "",
+								File:   "promql.flux",
 								Source: "method",
 								Start: ast.Position{
 									Column: 27,
@@ -2211,7 +2211,7 @@ var pkgAST = &ast.Package{
 									Column: 46,
 									Line:   107,
 								},
-								File:   "",
+								File:   "promql.flux",
 								Source: "\"exact_mean\"",
 								Start: ast.Position{
 									Column: 34,
@@ -2231,7 +2231,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   119,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "builtin join",
 					Start: ast.Position{
 						Column: 1,
@@ -2247,7 +2247,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   119,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "join",
 						Start: ast.Position{
 							Column: 9,
@@ -2267,7 +2267,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   4,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "import \"math\"",
 					Start: ast.Position{
 						Column: 1,
@@ -2283,7 +2283,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   4,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "\"math\"",
 						Start: ast.Position{
 							Column: 8,
@@ -2302,7 +2302,7 @@ var pkgAST = &ast.Package{
 						Column: 18,
 						Line:   5,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "import \"universe\"",
 					Start: ast.Position{
 						Column: 1,
@@ -2318,7 +2318,7 @@ var pkgAST = &ast.Package{
 							Column: 18,
 							Line:   5,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "\"universe\"",
 						Start: ast.Position{
 							Column: 8,
@@ -2339,7 +2339,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   2,
 					},
-					File:   "",
+					File:   "promql.flux",
 					Source: "package promql",
 					Start: ast.Position{
 						Column: 1,
@@ -2355,7 +2355,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   2,
 						},
-						File:   "",
+						File:   "promql.flux",
 						Source: "promql",
 						Start: ast.Position{
 							Column: 9,

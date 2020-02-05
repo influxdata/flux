@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 18,
 					Line:   10,
 				},
-				File:   "",
+				File:   "regexp.flux",
 				Source: "package regexp\n\nbuiltin compile\nbuiltin quoteMeta\nbuiltin findString\nbuiltin findStringIndex\nbuiltin matchRegexpString\nbuiltin replaceAllString\nbuiltin splitRegexp\nbuiltin getString",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   3,
 					},
-					File:   "",
+					File:   "regexp.flux",
 					Source: "builtin compile",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   3,
 						},
-						File:   "",
+						File:   "regexp.flux",
 						Source: "compile",
 						Start: ast.Position{
 							Column: 9,
@@ -74,7 +74,7 @@ var pkgAST = &ast.Package{
 						Column: 18,
 						Line:   4,
 					},
-					File:   "",
+					File:   "regexp.flux",
 					Source: "builtin quoteMeta",
 					Start: ast.Position{
 						Column: 1,
@@ -90,7 +90,7 @@ var pkgAST = &ast.Package{
 							Column: 18,
 							Line:   4,
 						},
-						File:   "",
+						File:   "regexp.flux",
 						Source: "quoteMeta",
 						Start: ast.Position{
 							Column: 9,
@@ -108,7 +108,7 @@ var pkgAST = &ast.Package{
 						Column: 19,
 						Line:   5,
 					},
-					File:   "",
+					File:   "regexp.flux",
 					Source: "builtin findString",
 					Start: ast.Position{
 						Column: 1,
@@ -124,7 +124,7 @@ var pkgAST = &ast.Package{
 							Column: 19,
 							Line:   5,
 						},
-						File:   "",
+						File:   "regexp.flux",
 						Source: "findString",
 						Start: ast.Position{
 							Column: 9,
@@ -142,7 +142,7 @@ var pkgAST = &ast.Package{
 						Column: 24,
 						Line:   6,
 					},
-					File:   "",
+					File:   "regexp.flux",
 					Source: "builtin findStringIndex",
 					Start: ast.Position{
 						Column: 1,
@@ -158,7 +158,7 @@ var pkgAST = &ast.Package{
 							Column: 24,
 							Line:   6,
 						},
-						File:   "",
+						File:   "regexp.flux",
 						Source: "findStringIndex",
 						Start: ast.Position{
 							Column: 9,
@@ -176,7 +176,7 @@ var pkgAST = &ast.Package{
 						Column: 26,
 						Line:   7,
 					},
-					File:   "",
+					File:   "regexp.flux",
 					Source: "builtin matchRegexpString",
 					Start: ast.Position{
 						Column: 1,
@@ -192,7 +192,7 @@ var pkgAST = &ast.Package{
 							Column: 26,
 							Line:   7,
 						},
-						File:   "",
+						File:   "regexp.flux",
 						Source: "matchRegexpString",
 						Start: ast.Position{
 							Column: 9,
@@ -210,7 +210,7 @@ var pkgAST = &ast.Package{
 						Column: 25,
 						Line:   8,
 					},
-					File:   "",
+					File:   "regexp.flux",
 					Source: "builtin replaceAllString",
 					Start: ast.Position{
 						Column: 1,
@@ -226,7 +226,7 @@ var pkgAST = &ast.Package{
 							Column: 25,
 							Line:   8,
 						},
-						File:   "",
+						File:   "regexp.flux",
 						Source: "replaceAllString",
 						Start: ast.Position{
 							Column: 9,
@@ -244,7 +244,7 @@ var pkgAST = &ast.Package{
 						Column: 20,
 						Line:   9,
 					},
-					File:   "",
+					File:   "regexp.flux",
 					Source: "builtin splitRegexp",
 					Start: ast.Position{
 						Column: 1,
@@ -260,7 +260,7 @@ var pkgAST = &ast.Package{
 							Column: 20,
 							Line:   9,
 						},
-						File:   "",
+						File:   "regexp.flux",
 						Source: "splitRegexp",
 						Start: ast.Position{
 							Column: 9,
@@ -278,7 +278,7 @@ var pkgAST = &ast.Package{
 						Column: 18,
 						Line:   10,
 					},
-					File:   "",
+					File:   "regexp.flux",
 					Source: "builtin getString",
 					Start: ast.Position{
 						Column: 1,
@@ -294,7 +294,7 @@ var pkgAST = &ast.Package{
 							Column: 18,
 							Line:   10,
 						},
-						File:   "",
+						File:   "regexp.flux",
 						Source: "getString",
 						Start: ast.Position{
 							Column: 9,
@@ -316,7 +316,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   1,
 					},
-					File:   "",
+					File:   "regexp.flux",
 					Source: "package regexp",
 					Start: ast.Position{
 						Column: 1,
@@ -332,7 +332,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   1,
 						},
-						File:   "",
+						File:   "regexp.flux",
 						Source: "regexp",
 						Start: ast.Position{
 							Column: 9,

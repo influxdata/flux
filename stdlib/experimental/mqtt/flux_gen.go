@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 11,
 					Line:   3,
 				},
-				File:   "",
+				File:   "mqtt.flux",
 				Source: "package mqtt\n\nbuiltin to",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 11,
 						Line:   3,
 					},
-					File:   "",
+					File:   "mqtt.flux",
 					Source: "builtin to",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 11,
 							Line:   3,
 						},
-						File:   "",
+						File:   "mqtt.flux",
 						Source: "to",
 						Start: ast.Position{
 							Column: 9,
@@ -78,7 +78,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   1,
 					},
-					File:   "",
+					File:   "mqtt.flux",
 					Source: "package mqtt",
 					Start: ast.Position{
 						Column: 1,
@@ -94,7 +94,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   1,
 						},
-						File:   "",
+						File:   "mqtt.flux",
 						Source: "mqtt",
 						Start: ast.Position{
 							Column: 9,

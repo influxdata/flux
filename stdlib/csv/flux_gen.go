@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 13,
 					Line:   3,
 				},
-				File:   "",
+				File:   "csv.flux",
 				Source: "package csv\n\nbuiltin from",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   3,
 					},
-					File:   "",
+					File:   "csv.flux",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   3,
 						},
-						File:   "",
+						File:   "csv.flux",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
@@ -78,7 +78,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   1,
 					},
-					File:   "",
+					File:   "csv.flux",
 					Source: "package csv",
 					Start: ast.Position{
 						Column: 1,
@@ -94,7 +94,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   1,
 						},
-						File:   "",
+						File:   "csv.flux",
 						Source: "csv",
 						Start: ast.Position{
 							Column: 9,

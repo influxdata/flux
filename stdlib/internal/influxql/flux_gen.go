@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Column: 41,
 					Line:   5,
 				},
-				File:   "",
+				File:   "influxql.flux",
 				Source: "package influxql\n\nepoch = 1970-01-01T00:00:00Z\nminTime = 1677-09-21T00:12:43.145224194Z\nmaxTime = 2262-04-11T23:47:16.854775806Z",
 				Start: ast.Position{
 					Column: 1,
@@ -41,7 +41,7 @@ var pkgAST = &ast.Package{
 						Column: 29,
 						Line:   3,
 					},
-					File:   "",
+					File:   "influxql.flux",
 					Source: "epoch = 1970-01-01T00:00:00Z",
 					Start: ast.Position{
 						Column: 1,
@@ -57,7 +57,7 @@ var pkgAST = &ast.Package{
 							Column: 6,
 							Line:   3,
 						},
-						File:   "",
+						File:   "influxql.flux",
 						Source: "epoch",
 						Start: ast.Position{
 							Column: 1,
@@ -75,7 +75,7 @@ var pkgAST = &ast.Package{
 							Column: 29,
 							Line:   3,
 						},
-						File:   "",
+						File:   "influxql.flux",
 						Source: "1970-01-01T00:00:00Z",
 						Start: ast.Position{
 							Column: 9,
@@ -93,7 +93,7 @@ var pkgAST = &ast.Package{
 						Column: 41,
 						Line:   4,
 					},
-					File:   "",
+					File:   "influxql.flux",
 					Source: "minTime = 1677-09-21T00:12:43.145224194Z",
 					Start: ast.Position{
 						Column: 1,
@@ -109,7 +109,7 @@ var pkgAST = &ast.Package{
 							Column: 8,
 							Line:   4,
 						},
-						File:   "",
+						File:   "influxql.flux",
 						Source: "minTime",
 						Start: ast.Position{
 							Column: 1,
@@ -127,7 +127,7 @@ var pkgAST = &ast.Package{
 							Column: 41,
 							Line:   4,
 						},
-						File:   "",
+						File:   "influxql.flux",
 						Source: "1677-09-21T00:12:43.145224194Z",
 						Start: ast.Position{
 							Column: 11,
@@ -145,7 +145,7 @@ var pkgAST = &ast.Package{
 						Column: 41,
 						Line:   5,
 					},
-					File:   "",
+					File:   "influxql.flux",
 					Source: "maxTime = 2262-04-11T23:47:16.854775806Z",
 					Start: ast.Position{
 						Column: 1,
@@ -161,7 +161,7 @@ var pkgAST = &ast.Package{
 							Column: 8,
 							Line:   5,
 						},
-						File:   "",
+						File:   "influxql.flux",
 						Source: "maxTime",
 						Start: ast.Position{
 							Column: 1,
@@ -179,7 +179,7 @@ var pkgAST = &ast.Package{
 							Column: 41,
 							Line:   5,
 						},
-						File:   "",
+						File:   "influxql.flux",
 						Source: "2262-04-11T23:47:16.854775806Z",
 						Start: ast.Position{
 							Column: 11,
@@ -201,7 +201,7 @@ var pkgAST = &ast.Package{
 						Column: 17,
 						Line:   1,
 					},
-					File:   "",
+					File:   "influxql.flux",
 					Source: "package influxql",
 					Start: ast.Position{
 						Column: 1,
@@ -217,7 +217,7 @@ var pkgAST = &ast.Package{
 							Column: 17,
 							Line:   1,
 						},
-						File:   "",
+						File:   "influxql.flux",
 						Source: "influxql",
 						Start: ast.Position{
 							Column: 9,

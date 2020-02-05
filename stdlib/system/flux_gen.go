@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 13,
 					Line:   3,
 				},
-				File:   "",
+				File:   "system.flux",
 				Source: "package system\n\nbuiltin time",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   3,
 					},
-					File:   "",
+					File:   "system.flux",
 					Source: "builtin time",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   3,
 						},
-						File:   "",
+						File:   "system.flux",
 						Source: "time",
 						Start: ast.Position{
 							Column: 9,
@@ -78,7 +78,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   1,
 					},
-					File:   "",
+					File:   "system.flux",
 					Source: "package system",
 					Start: ast.Position{
 						Column: 1,
@@ -94,7 +94,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   1,
 						},
-						File:   "",
+						File:   "system.flux",
 						Source: "system",
 						Start: ast.Position{
 							Column: 9,

@@ -9,11 +9,11 @@ extern "C" {
 
 // flux_buffer_t is a reference to a byte-slice.
 struct flux_buffer_t {
-	// data is a pointer to the data contained within the buffer.
-	void *data;
+    // data is a pointer to the data contained within the buffer.
+    void *data;
 
-	// len is the length of the buffer.
-	size_t len;
+    // len is the length of the buffer.
+    size_t len;
 };
 
 // flux_error_t represents a flux error.
@@ -29,9 +29,9 @@ void flux_free(void *);
 // flux_ast_pkg_t is the AST representation of a flux query as a package.
 struct flux_ast_pkg_t;
 
-// flux_parse will take in a string and return the AST representation
-// of the query.
-struct flux_ast_pkg_t *flux_parse(const char *);
+// flux_parse will take in a file name string and a source string then
+// return the AST representation of the query.
+struct flux_ast_pkg_t *flux_parse(const char *file_name, const char *flux_source);
 
 // flux_merge_ast_pkgs merges the files of a given input AST package into the file vector of a
 // given output AST package. This function borrows the packages, but it does not own them. The
