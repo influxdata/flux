@@ -507,12 +507,12 @@ pub fn builtins() -> Builtins<'static> {
                 "holtWinters" => r#"
                     forall [t0, t1] where t0: Row, t1: Row (
                         <-tables: [t0],
+                        n: int,
+                        interval: duration
                         ?withFit: bool,
                         ?column: string,
                         ?timeColumn: string,
-                        n: int,
-                        seasonality: int,
-                        interval: duration
+                        ?seasonality: int,
                     ) -> [t1]
                 "#,
                 "hourSelection" => r#"
