@@ -73,7 +73,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 		}
 		filterSpec = &universe.FilterProcedureSpec{
 			Fn: interpreter.ResolvedFunction{
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 				Fn: &semantic.FunctionExpression{
 					Block: &semantic.FunctionBlock{
 						Parameters: &semantic.FunctionParameters{
@@ -370,21 +370,37 @@ func (MergeFiltersRule) Rewrite(pn plan.Node) (plan.Node, bool, error) {
 	return newNode, true, nil
 }
 
+func getFuncBodyExpr(fe *semantic.FunctionExpression) semantic.Expression {
+	switch b := fe.Block.Body.(type) {
+	case *semantic.Block:
+		if len(b.Body) != 1 {
+			panic("expected just one statement in function body")
+		}
+		retStmt := b.Body[0].(*semantic.ReturnStatement)
+		return retStmt.Argument
+	case semantic.Expression:
+		return b
+	default:
+		panic("unknown node type in function body")
+	}
+}
+
 func mergeFilterSpecs(a, b *universe.FilterProcedureSpec) plan.ProcedureSpec {
 	fn := a.Fn.Copy()
 
-	aExp, aOK := a.Fn.Fn.Block.Body.(semantic.Expression)
-	bExp, bOK := b.Fn.Fn.Block.Body.(semantic.Expression)
+	aExp := getFuncBodyExpr(a.Fn.Fn)
+	bExp := getFuncBodyExpr(b.Fn.Fn)
 
-	if !aOK || !bOK {
-		// Note that this is just a unit test, so "return" statements are not handled.
-		panic("function body not expression")
-	}
-
-	fn.Fn.Block.Body = &semantic.LogicalExpression{
-		Operator: ast.AndOperator,
-		Left:     aExp,
-		Right:    bExp,
+	fn.Fn.Block.Body = &semantic.Block{
+		Body: []semantic.Statement{
+			&semantic.ReturnStatement{
+				Argument: &semantic.LogicalExpression{
+					Operator: ast.AndOperator,
+					Left:     aExp,
+					Right:    bExp,
+				},
+			},
+		},
 	}
 
 	return &universe.FilterProcedureSpec{
@@ -436,23 +452,34 @@ func TestLogicalPlanner(t *testing.T) {
 				plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{Bucket: "telegraf"}),
 				plan.CreateLogicalNode("merged_filter1_filter2_filter3", &universe.FilterProcedureSpec{
 					Fn: interpreter.ResolvedFunction{
-						Scope: valuestest.NowScope(),
+						Scope: valuestest.Scope(),
 						Fn: &semantic.FunctionExpression{
 							Block: &semantic.FunctionBlock{
 								Parameters: &semantic.FunctionParameters{
 									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 								},
-								Body: &semantic.LogicalExpression{Operator: ast.AndOperator,
-									Left: &semantic.LogicalExpression{Operator: ast.AndOperator,
-										Left: &semantic.BinaryExpression{Operator: ast.LessThanOperator,
-											Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-											Right: &semantic.FloatLiteral{Value: 0.9}},
-										Right: &semantic.BinaryExpression{Operator: ast.GreaterThanOperator,
-											Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-											Right: &semantic.FloatLiteral{Value: 0.5}}},
-									Right: &semantic.BinaryExpression{Operator: ast.EqualOperator,
-										Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_measurement"},
-										Right: &semantic.StringLiteral{Value: "cpu"}}}}}},
+								Body: &semantic.Block{
+									Body: []semantic.Statement{
+										&semantic.ReturnStatement{
+											Argument: &semantic.LogicalExpression{Operator: ast.AndOperator,
+												Left: &semantic.LogicalExpression{Operator: ast.AndOperator,
+													Left: &semantic.BinaryExpression{Operator: ast.LessThanOperator,
+														Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+														Right: &semantic.FloatLiteral{Value: 0.9}},
+													Right: &semantic.BinaryExpression{Operator: ast.GreaterThanOperator,
+														Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+														Right: &semantic.FloatLiteral{Value: 0.5}}},
+												Right: &semantic.BinaryExpression{Operator: ast.EqualOperator,
+													Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_measurement"},
+													Right: &semantic.StringLiteral{Value: "cpu"},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
 				}),
 				plan.CreateLogicalNode("yield4", &universe.YieldProcedureSpec{Name: "result"}),
 			},
@@ -473,33 +500,41 @@ func TestLogicalPlanner(t *testing.T) {
 					plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{Bucket: "telegraf"}),
 					plan.CreateLogicalNode("filter2_copy", &universe.FilterProcedureSpec{
 						Fn: interpreter.ResolvedFunction{
-							Scope: valuestest.NowScope(),
+							Scope: valuestest.Scope(),
 							Fn: &semantic.FunctionExpression{
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 									},
-									Body: &semantic.BinaryExpression{
-										Operator: ast.LessThanOperator,
-										Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-										Right:    &semantic.FloatLiteral{Value: 10}},
-								}}}}),
+									Body: &semantic.Block{
+										Body: []semantic.Statement{
+											&semantic.ReturnStatement{
+												Argument: &semantic.BinaryExpression{
+													Operator: ast.LessThanOperator,
+													Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+													Right:    &semantic.FloatLiteral{Value: 10},
+												},
+											},
+										}}}}}}),
 					plan.CreateLogicalNode("map1", &universe.MapProcedureSpec{
 						Fn: interpreter.ResolvedFunction{
-							Scope: valuestest.NowScope(),
+							Scope: valuestest.Scope(),
 							Fn: &semantic.FunctionExpression{
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}}},
-									Body: &semantic.ObjectExpression{
-										With: &semantic.IdentifierExpression{Name: "r"},
-										Properties: []*semantic.Property{{
-											Key: &semantic.Identifier{Name: "_value"},
-											Value: &semantic.BinaryExpression{
-												Operator: ast.MultiplicationOperator,
-												Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-												Right:    &semantic.FloatLiteral{Value: 2}}}}},
-								}}}}),
+									Body: &semantic.Block{
+										Body: []semantic.Statement{
+											&semantic.ReturnStatement{
+												Argument: &semantic.ObjectExpression{
+													With: &semantic.IdentifierExpression{Name: "r"},
+													Properties: []*semantic.Property{{
+														Key: &semantic.Identifier{Name: "_value"},
+														Value: &semantic.BinaryExpression{
+															Operator: ast.MultiplicationOperator,
+															Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+															Right:    &semantic.FloatLiteral{Value: 2}}}}},
+											}}}}}}}),
 					plan.CreateLogicalNode("yield3", &universe.YieldProcedureSpec{Name: "result"}),
 				},
 				Edges: [][2]int{
@@ -523,38 +558,46 @@ func TestLogicalPlanner(t *testing.T) {
 					plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{Bucket: "telegraf"}),
 					plan.CreateLogicalNode("merged_filter1_filter3_copy", &universe.FilterProcedureSpec{
 						Fn: interpreter.ResolvedFunction{
-							Scope: valuestest.NowScope(),
+							Scope: valuestest.Scope(),
 							Fn: &semantic.FunctionExpression{
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}}},
-									Body: &semantic.LogicalExpression{
-										Operator: ast.AndOperator,
-										Left: &semantic.BinaryExpression{
-											Operator: ast.LessThanOperator,
-											Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-											Right:    &semantic.IntegerLiteral{Value: 100}},
-										Right: &semantic.BinaryExpression{
-											Operator: ast.NotEqualOperator,
-											Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-											Right:    &semantic.IntegerLiteral{}}},
+									Body: &semantic.Block{
+										Body: []semantic.Statement{
+											&semantic.ReturnStatement{
+												Argument: &semantic.LogicalExpression{
+													Operator: ast.AndOperator,
+													Left: &semantic.BinaryExpression{
+														Operator: ast.LessThanOperator,
+														Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+														Right:    &semantic.IntegerLiteral{Value: 100}},
+													Right: &semantic.BinaryExpression{
+														Operator: ast.NotEqualOperator,
+														Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+														Right:    &semantic.IntegerLiteral{}}},
+											},
+										},
+									},
 								}}}}),
 					plan.CreateLogicalNode("map2", &universe.MapProcedureSpec{
 						Fn: interpreter.ResolvedFunction{
-							Scope: valuestest.NowScope(),
+							Scope: valuestest.Scope(),
 							Fn: &semantic.FunctionExpression{
 								Block: &semantic.FunctionBlock{
 									Parameters: &semantic.FunctionParameters{
 										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}}},
-									Body: &semantic.ObjectExpression{
-										With: &semantic.IdentifierExpression{Name: "r"},
-										Properties: []*semantic.Property{{
-											Key: &semantic.Identifier{Name: "_value"},
-											Value: &semantic.BinaryExpression{
-												Operator: ast.MultiplicationOperator,
-												Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-												Right:    &semantic.IntegerLiteral{Value: 10}}}}},
-								}}}}),
+									Body: &semantic.Block{Body: []semantic.Statement{
+										&semantic.ReturnStatement{Argument: &semantic.ObjectExpression{
+											With: &semantic.IdentifierExpression{Name: "r"},
+											Properties: []*semantic.Property{{
+												Key: &semantic.Identifier{Name: "_value"},
+												Value: &semantic.BinaryExpression{
+													Operator: ast.MultiplicationOperator,
+													Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+													Right:    &semantic.IntegerLiteral{Value: 10}}}}},
+										},
+									}}}}}}),
 					plan.CreateLogicalNode("yield4", &universe.YieldProcedureSpec{Name: "result"}),
 				},
 				Edges: [][2]int{

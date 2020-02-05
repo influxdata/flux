@@ -1,9 +1,9 @@
 package libflux_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
-	"errors"
 
 	"github.com/google/go-cmp/cmp"
 
@@ -127,10 +127,10 @@ c = 3`)
 			wantErr: errors.New("failed to merge packages: current file does not have a package clause"),
 		},
 		{
-			name:   "output package has no package clause",
-			outPkg: noClausePkg,
-			inPkg:  fooPkg,
-			wantErr:    errors.New("failed to merge packages: output package does not have a package clause"),
+			name:    "output package has no package clause",
+			outPkg:  noClausePkg,
+			inPkg:   fooPkg,
+			wantErr: errors.New("failed to merge packages: output package does not have a package clause"),
 		},
 	}
 

@@ -53,7 +53,7 @@ func TestMap_NewQuery(t *testing.T) {
 										},
 									},
 								},
-								Scope: valuestest.NowScope(),
+								Scope: valuestest.Scope(),
 							},
 						},
 					},
@@ -96,7 +96,7 @@ func TestMap_NewQuery(t *testing.T) {
 										},
 									},
 								},
-								Scope: valuestest.NowScope(),
+								Scope: valuestest.Scope(),
 							},
 						},
 					},
@@ -139,7 +139,7 @@ func TestMap_NewQuery(t *testing.T) {
 									},
 								},
 								Scope: func() values.Scope {
-									scope := valuestest.NowScope()
+									scope := valuestest.Scope()
 									scope.Set("x", values.NewInt(2))
 									return scope
 								}(),

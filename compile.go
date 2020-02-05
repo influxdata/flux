@@ -91,6 +91,14 @@ func SetOption(pkg, name string, v values.Value) ScopeMutator {
 			if p, ok := p.(values.Package); ok {
 				values.SetOption(p, name, v)
 			}
+		} else if isPreludePackage(pkg) {
+			opt, ok := scope.Lookup(name)
+			if ok {
+				if opt, ok := opt.(*values.Option); ok {
+					opt.Value = v
+				}
+			}
+
 		}
 	}
 }
@@ -121,6 +129,15 @@ var (
 		"influxdata/influxdb",
 	}
 )
+
+func isPreludePackage(pkg string) bool {
+	for _, p := range prelude {
+		if p == pkg {
+			return true
+		}
+	}
+	return false
+}
 
 type scopeSet struct {
 	packages []*interpreter.Package

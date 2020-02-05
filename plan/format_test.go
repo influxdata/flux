@@ -38,7 +38,7 @@ func TestFormatted(t *testing.T) {
 					},
 				},
 			},
-			Scope: valuestest.NowScope(),
+			Scope: valuestest.Scope(),
 		},
 	}
 

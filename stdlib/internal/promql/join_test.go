@@ -60,7 +60,7 @@ func TestJoin(t *testing.T) {
 						},
 					},
 				},
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.RowWiseTable{
@@ -154,7 +154,7 @@ func TestJoin(t *testing.T) {
 						},
 					},
 				},
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -235,7 +235,7 @@ func TestJoin(t *testing.T) {
 						},
 					},
 				},
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -387,7 +387,7 @@ func TestJoin(t *testing.T) {
 						},
 					},
 				},
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -472,7 +472,7 @@ func TestJoin(t *testing.T) {
 						},
 					},
 				},
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -549,7 +549,7 @@ func TestJoin(t *testing.T) {
 						},
 					},
 				},
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -619,7 +619,7 @@ func TestJoin(t *testing.T) {
 						},
 					},
 				},
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -692,7 +692,7 @@ func TestJoin(t *testing.T) {
 						},
 					},
 				},
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -761,7 +761,7 @@ func TestJoin(t *testing.T) {
 						},
 					},
 				},
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -822,7 +822,7 @@ func TestJoin(t *testing.T) {
 						},
 					},
 				},
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -895,7 +895,7 @@ func TestJoin(t *testing.T) {
 						},
 					},
 				},
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{

@@ -57,4 +57,3 @@ func TestAnalyze(t *testing.T) {
 		})
 	}
 }
-

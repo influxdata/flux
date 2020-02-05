@@ -67,7 +67,7 @@ func TestFilter_NewQuery(t *testing.T) {
 										},
 									},
 								},
-								Scope: valuestest.NowScope(),
+								Scope: valuestest.Scope(),
 							},
 						},
 					},
@@ -164,7 +164,7 @@ func TestFilter_NewQuery(t *testing.T) {
 										},
 									},
 								},
-								Scope: valuestest.NowScope(),
+								Scope: valuestest.Scope(),
 							},
 						},
 					},
@@ -220,7 +220,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &universe.FilterOpSpec{
 							Fn: interpreter.ResolvedFunction{
-								Scope: valuestest.NowScope(),
+								Scope: valuestest.Scope(),
 								Fn: &semantic.FunctionExpression{
 									Block: &semantic.FunctionBlock{
 										Parameters: &semantic.FunctionParameters{
@@ -328,7 +328,7 @@ func TestFilter_NewQuery(t *testing.T) {
 										},
 									},
 								},
-								Scope: valuestest.NowScope(),
+								Scope: valuestest.Scope(),
 							},
 						},
 					},
@@ -410,7 +410,7 @@ func TestFilter_NewQuery(t *testing.T) {
 										},
 									},
 								},
-								Scope: valuestest.NowScope(),
+								Scope: valuestest.Scope(),
 							},
 						},
 					},
@@ -477,7 +477,7 @@ func TestFilter_NewQuery(t *testing.T) {
 										},
 									},
 								},
-								Scope: valuestest.NowScope(),
+								Scope: valuestest.Scope(),
 							},
 						},
 					},
@@ -533,7 +533,7 @@ func TestFilter_NewQuery(t *testing.T) {
 										},
 									},
 								},
-								Scope: valuestest.NowScope(),
+								Scope: valuestest.Scope(),
 							},
 						},
 					},
@@ -566,7 +566,7 @@ func TestFilter_NewQuery(t *testing.T) {
 										Body: &semantic.BooleanLiteral{Value: true},
 									},
 								},
-								Scope: valuestest.NowScope(),
+								Scope: valuestest.Scope(),
 							},
 							OnEmpty: "drop",
 						},
@@ -600,7 +600,7 @@ func TestFilter_NewQuery(t *testing.T) {
 										Body: &semantic.BooleanLiteral{Value: true},
 									},
 								},
-								Scope: valuestest.NowScope(),
+								Scope: valuestest.Scope(),
 							},
 							OnEmpty: "keep",
 						},
@@ -700,7 +700,7 @@ func TestMergeFilterAnyRule(t *testing.T) {
 						},
 					},
 				},
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 			},
 		}
 		filterTrue = &universe.FilterProcedureSpec{
@@ -712,7 +712,7 @@ func TestMergeFilterAnyRule(t *testing.T) {
 						},
 					},
 				},
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 			},
 		}
 		filterFalse = &universe.FilterProcedureSpec{
@@ -724,7 +724,7 @@ func TestMergeFilterAnyRule(t *testing.T) {
 						},
 					},
 				},
-				Scope: valuestest.NowScope(),
+				Scope: valuestest.Scope(),
 			},
 		}
 	)
@@ -847,7 +847,7 @@ func TestFilter_Process(t *testing.T) {
 							},
 						},
 					},
-					Scope: valuestest.NowScope(),
+					Scope: valuestest.Scope(),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -891,7 +891,7 @@ func TestFilter_Process(t *testing.T) {
 							},
 						},
 					},
-					Scope: valuestest.NowScope(),
+					Scope: valuestest.Scope(),
 				},
 			},
 			data: []flux.Table{
@@ -994,7 +994,7 @@ func TestFilter_Process(t *testing.T) {
 							},
 						},
 					},
-					Scope: valuestest.NowScope(),
+					Scope: valuestest.Scope(),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -1041,7 +1041,7 @@ func TestFilter_Process(t *testing.T) {
 							},
 						},
 					},
-					Scope: valuestest.NowScope(),
+					Scope: valuestest.Scope(),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
