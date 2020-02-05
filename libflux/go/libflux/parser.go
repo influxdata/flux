@@ -49,7 +49,7 @@ func (p *ASTPkg) ToJSON() (*ManagedBuffer, error) {
 	// the compiler recognizes the possibility that p might
 	// be used again and prevents it from being garbage collected.
 	runtime.KeepAlive(p)
-	return unwrapBuffer(buf), nil
+	return newManagedBuffer(buf), nil
 }
 
 func (p *ASTPkg) MarshalFB() (*ManagedBuffer, error) {
@@ -67,7 +67,7 @@ func (p *ASTPkg) MarshalFB() (*ManagedBuffer, error) {
 	// the compiler recognizes the possibility that p might
 	// be used again and prevents it from being garbage collected.
 	runtime.KeepAlive(p)
-	return unwrapBuffer(buf), nil
+	return newManagedBuffer(buf), nil
 }
 
 func (p *ASTPkg) Free() {

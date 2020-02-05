@@ -27,7 +27,7 @@ func (b *ManagedBuffer) Free() {
 	}
 }
 
-func unwrapBuffer(buf C.struct_flux_buffer_t) *ManagedBuffer {
+func newManagedBuffer(buf C.struct_flux_buffer_t) *ManagedBuffer {
 	sh := new(reflect.SliceHeader)
 	sh.Data = uintptr(unsafe.Pointer(buf.data))
 	sh.Len = int(C.uint(buf.len))

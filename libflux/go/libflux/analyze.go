@@ -32,7 +32,7 @@ func (p *SemanticPkg) MarshalFB() (*ManagedBuffer, error) {
 	}
 	// See MarshalFB in ASTPkg for why this is needed.
 	runtime.KeepAlive(p)
-	return unwrapBuffer(buf), nil
+	return newManagedBuffer(buf), nil
 }
 
 // Free frees the memory allocated by Rust for the semantic graph.
