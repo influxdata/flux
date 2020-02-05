@@ -54,7 +54,7 @@ stateChanges = (fromLevel="any", toLevel, tables=<-) => {
 }
 
 // Notify will call the endpoint and log the results.
-notify = (tables=<-, endpoint, data={}) =>
+notify = (tables=<-, endpoint, data) =>
     tables
         |> experimental.set(o: data)
         |> experimental.group(mode: "extend", columns: experimental.objectKeys(o: data))
