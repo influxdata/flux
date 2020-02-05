@@ -107,13 +107,61 @@ impl Fresh for Array {
 }
 
 impl Fresh for Row {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
-        match self {
-            Row::Empty => Row::Empty,
-            Row::Extension { head, tail } => Row::Extension {
-                head: head.fresh(f, sub),
-                tail: tail.fresh(f, sub),
-            },
+    fn fresh(mut self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
+        let mut props = HashMap::new();
+        let mut extends = false;
+        let mut tv = Tvar(0);
+        loop {
+            match self {
+                Row::Empty => {
+                    break;
+                }
+                Row::Extension {
+                    head,
+                    tail: MonoType::Row(b),
+                } => {
+                    props.entry(head.k).or_insert_with(Vec::new).push(head.v);
+                    self = *b;
+                }
+                Row::Extension {
+                    head,
+                    tail: MonoType::Var(t),
+                } => {
+                    extends = true;
+                    tv = t;
+                    props.entry(head.k).or_insert_with(Vec::new).push(head.v);
+                    break;
+                }
+                _ => {
+                    break;
+                }
+            }
+        }
+        // If record extends a tvar, freshen it.
+        // Otherwise record must extend empty record.
+        let mut r: MonoType = if extends {
+            MonoType::Var(tv.fresh(f, sub))
+        } else {
+            MonoType::Row(Box::new(Row::Empty))
+        };
+        // Freshen record properties in deterministic order
+        props = props.fresh(f, sub);
+        // Construct new record from the fresh properties
+        for (label, types) in props {
+            for ty in types {
+                let extension = Row::Extension {
+                    head: Property {
+                        k: label.clone(),
+                        v: ty,
+                    },
+                    tail: r,
+                };
+                r = MonoType::Row(Box::new(extension));
+            }
+        }
+        match r {
+            MonoType::Row(b) => *b,
+            _ => Row::Empty,
         }
     }
 }
