@@ -1,12 +1,8 @@
 package valuestest
 
 import (
-	"context"
-	"errors"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -41,18 +37,7 @@ var ScopeTransformer = cmp.Transformer("Scope", func(s values.Scope) *Comparable
 	return sc
 })
 
-// NowScope generates scope with the prelude + the now option.
-func NowScope() values.Scope {
-	scope := flux.Prelude()
-	universe, _ := scope.Lookup("universe")
-	values.SetOption(universe.(values.Package), "now", values.NewFunction(
-		"now",
-		semantic.MustLookupBuiltinType("universe", "now"),
-		func(ctx context.Context, args values.Object) (values.Value, error) {
-			//Functions are only compared by type so the function body here is not important
-			return nil, errors.New("NowScope was called")
-		},
-		false,
-	))
-	return scope
+// Scope returns a scope that contains the prelude.
+func Scope() values.Scope {
+	return flux.Prelude()
 }

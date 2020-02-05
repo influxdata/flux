@@ -61,7 +61,7 @@ func TestReduce_Process(t *testing.T) {
 							},
 						},
 					},
-					Scope: valuestest.NowScope(),
+					Scope: valuestest.Scope(),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -145,7 +145,7 @@ func TestReduce_Process(t *testing.T) {
 							},
 						},
 					},
-					Scope: valuestest.NowScope(),
+					Scope: valuestest.Scope(),
 				},
 			},
 			data: []flux.Table{&executetest.Table{

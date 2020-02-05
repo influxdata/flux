@@ -93,7 +93,12 @@ func (r *runtime) Prelude() values.Scope {
 	if !r.finalized {
 		panic("builtins not finalized")
 	}
-	return r.prelude.Nest(nil)
+	importer := StdLib()
+	scope, err := r.newScopeFor("main", importer)
+	if err != nil {
+		panic(err)
+	}
+	return scope
 }
 
 func (r *runtime) Eval(ctx context.Context, astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
@@ -101,7 +106,7 @@ func (r *runtime) Eval(ctx context.Context, astPkg *ast.Package, opts ...ScopeMu
 	if err != nil {
 		return nil, nil, err
 	}
-	return r.evalHandle(ctx, h)
+	return r.evalHandle(ctx, h, opts...)
 }
 
 func (r *runtime) evalHandle(ctx context.Context, h *libflux.ASTPkg, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
