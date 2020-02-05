@@ -197,7 +197,7 @@ func (f *rowFn) eval(ctx context.Context, row int, cr flux.ColReader, extraParam
 		f.arg0.Set(col.Label, ValueForRow(cr, row, j))
 	}
 	for k, v := range extraParams {
-		f.arg0.Set(k, v)
+		f.args.Set(k, v)
 	}
 	return f.preparedFn.Eval(ctx, f.args)
 }
@@ -296,8 +296,6 @@ func (f *RowMapFn) Eval(ctx context.Context, row int, cr flux.ColReader) (values
 
 type RowReduceFn struct {
 	rowFn
-	isWrap bool
-	// wrapObj *Record
 }
 
 func NewRowReduceFn(fn *semantic.FunctionExpression, scope compiler.Scope) (*RowReduceFn, error) {
@@ -311,27 +309,10 @@ func NewRowReduceFn(fn *semantic.FunctionExpression, scope compiler.Scope) (*Row
 }
 
 func (f *RowReduceFn) Prepare(cols []flux.ColMeta, reducerType map[string]semantic.MonoType) error {
-	err := f.rowFn.prepare(cols, reducerType)
-	if err != nil {
-		return err
-	}
-	k := f.preparedFn.Type().Nature()
-	f.isWrap = k != semantic.Object
-	if f.isWrap {
-		// f.wrapObj = NewRecord(semantic.NewObjectType(
-		//TODO (algow): create correct type
-		//map[string]semantic.MonoType{
-		//	DefaultValueColLabel: f.preparedFn.Type(),
-		//},
-		// ))
-	}
-	return nil
+	return f.rowFn.prepare(cols, reducerType)
 }
 
 func (f *RowReduceFn) Type() semantic.MonoType {
-	if f.isWrap {
-		// return f.wrapObj.Type()
-	}
 	return f.preparedFn.Type()
 }
 
@@ -339,10 +320,6 @@ func (f *RowReduceFn) Eval(ctx context.Context, row int, cr flux.ColReader, extr
 	v, err := f.rowFn.eval(ctx, row, cr, extraParams)
 	if err != nil {
 		return nil, err
-	}
-	if f.isWrap {
-		// f.wrapObj.Set(DefaultValueColLabel, v)
-		// return f.wrapObj, nil
 	}
 	return v.Object(), nil
 }

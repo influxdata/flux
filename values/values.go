@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"regexp"
 	"runtime/debug"
-	"strconv"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -186,49 +185,6 @@ func NewNull(t semantic.MonoType) Value {
 		t: t,
 		v: nil,
 	}
-}
-
-func NewFromString(t semantic.MonoType, s string) (Value, error) {
-	var err error
-	v := value{t: t}
-	switch t.Nature() {
-	case semantic.String:
-		v.v = s
-	case semantic.Int:
-		v.v, err = strconv.ParseInt(s, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-	case semantic.UInt:
-		v.v, err = strconv.ParseUint(s, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-	case semantic.Float:
-		v.v, err = strconv.ParseFloat(s, 64)
-		if err != nil {
-			return nil, err
-		}
-	case semantic.Bool:
-		v.v, err = strconv.ParseBool(s)
-		if err != nil {
-			return nil, err
-		}
-	case semantic.Time:
-		v.v, err = ParseTime(s)
-		if err != nil {
-			return nil, err
-		}
-	case semantic.Duration:
-		v.v, err = ParseDuration(s)
-		if err != nil {
-			return nil, err
-		}
-
-	default:
-		return nil, errors.New(codes.Invalid, "invalid type for value stringer")
-	}
-	return v, nil
 }
 
 func NewString(v string) Value {
