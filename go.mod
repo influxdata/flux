@@ -12,6 +12,7 @@ require (
 	github.com/dave/jennifer v1.2.0
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/go-sql-driver/mysql v1.4.1
+	github.com/golang/geo v0.0.0-20190916061304-5b978397cfec
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/google/flatbuffers v1.11.0
 	github.com/google/go-cmp v0.3.0
@@ -27,7 +28,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/mattn/go-tty v0.0.0-20180907095812-13ff1204f104 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1
-	github.com/mmcloughlin/geohash v0.9.0
 	github.com/opentracing/opentracing-go v1.0.2
 	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
 	github.com/pkg/errors v0.8.1
