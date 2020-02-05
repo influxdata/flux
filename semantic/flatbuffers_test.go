@@ -11,6 +11,7 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic/internal/fbsemantic"
 )
@@ -95,7 +96,10 @@ func TestDeserializeFromFlatBuffer(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			got, err := DeserializeFromFlatBuffer(fb, 0)
+			got, err := DeserializeFromFlatBuffer(&libflux.ManagedBuffer{
+				Buffer: fb,
+				Offset: 0,
+			})
 			if err != nil {
 				t.Fatal(err)
 			}

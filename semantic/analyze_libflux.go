@@ -22,5 +22,5 @@ func AnalyzePackage(astPkg *libflux.ASTPkg) (*Package, error) {
 	if err != nil {
 		return nil, err
 	}
-	return DeserializeFromFlatBuffer(mbuf.Buffer, mbuf.Offset)
+	return DeserializeFromFlatBuffer(mbuf)
 }

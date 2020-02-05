@@ -121,7 +121,7 @@ func ParseAndDeserializeFB(fluxFile string) error {
 	if err != nil {
 		return err
 	}
-	if _ = ast.DeserializeFromFlatBuffer(mbuf.Buffer, mbuf.Offset); err != nil {
+	if _ = ast.DeserializeFromFlatBuffer(mbuf); err != nil {
 		return err
 	}
 	return nil

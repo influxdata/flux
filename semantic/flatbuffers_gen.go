@@ -525,26 +525,26 @@ func (rcv *OptionStatement) FromBuf(fb *fbsemantic.OptionStatement) error {
 	return nil
 }
 
-func (rcv *Package) FromBuf(fb *fbsemantic.Package) error {
+func (p *Package) FromBuf(fb *fbsemantic.Package) error {
 	var err error
 	if fb == nil {
 		return nil
 	}
 	if fbLoc := fb.Loc(nil); fbLoc != nil {
-		if err = rcv.loc.FromBuf(fbLoc); err != nil {
+		if err = p.loc.FromBuf(fbLoc); err != nil {
 			return errors.Wrap(err, codes.Inherit, "Package.loc")
 		}
 	}
-	rcv.Package = string(fb.Package())
+	p.Package = string(fb.Package())
 	if fb.FilesLength() > 0 {
-		rcv.Files = make([]*File, fb.FilesLength())
+		p.Files = make([]*File, fb.FilesLength())
 		for i := 0; i < fb.FilesLength(); i++ {
 			fbFile := new(fbsemantic.File)
 			if !fb.Files(fbFile, i) {
 				return errors.New(codes.Internal, "could not deserialize Package.Files")
 			}
-			rcv.Files[i] = new(File)
-			if err = rcv.Files[i].FromBuf(fbFile); err != nil {
+			p.Files[i] = new(File)
+			if err = p.Files[i].FromBuf(fbFile); err != nil {
 				return errors.Wrap(err, codes.Inherit, "Package.Files")
 			}
 		}

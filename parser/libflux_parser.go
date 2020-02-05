@@ -15,7 +15,7 @@ func parseFile(f *token.File, src []byte) (*ast.File, error) {
 		return nil, err
 	}
 
-	pkg := ast.DeserializeFromFlatBuffer(mbuf.Buffer, mbuf.Offset)
+	pkg := ast.DeserializeFromFlatBuffer(mbuf)
 	mbuf.Free()
 	file := pkg.Files[0]
 	file.Name = f.Name()

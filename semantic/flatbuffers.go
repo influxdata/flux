@@ -2,18 +2,26 @@ package semantic
 
 import (
 	"regexp"
+	"runtime"
 	"time"
 
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/influxdata/flux/semantic/internal/fbsemantic"
 )
 
-func DeserializeFromFlatBuffer(buf []byte, offset flatbuffers.UOffsetT) (*Package, error) {
-	fbPkg := fbsemantic.GetRootAsPackage(buf, offset)
+func DeserializeFromFlatBuffer(mbuf *libflux.ManagedBuffer) (*Package, error) {
+	// Cancel the finalizer on the managed buffer because it will be referenced by the
+	// semantic graph
+	runtime.SetFinalizer(mbuf, nil)
+	fbPkg := fbsemantic.GetRootAsPackage(mbuf.Buffer, mbuf.Offset)
 	p := &Package{}
+	runtime.SetFinalizer(p, func(p *Package) {
+		mbuf.Free()
+	})
 	if err := p.FromBuf(fbPkg); err != nil {
 		return nil, err
 	}

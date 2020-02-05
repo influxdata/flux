@@ -105,7 +105,7 @@ bad_expr = 3 * + 1
 		if err != nil {
 			t.Fatal(err)
 		}
-		astFbs := ast.DeserializeFromFlatBuffer(mbuf.Buffer, mbuf.Offset)
+		astFbs := ast.DeserializeFromFlatBuffer(mbuf)
 		mbuf.Free()
 
 		srcb := []byte(src)
