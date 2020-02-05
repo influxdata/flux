@@ -129,6 +129,7 @@ func (r *runtime) evalHandle(ctx context.Context, h *libflux.ASTPkg, opts ...Sco
 	// Execute the interpreter over the package.
 	itrp := interpreter.NewInterpreter(nil)
 	sideEffects, err := itrp.Eval(ctx, semPkg, scope, importer)
+	semPkg.Free()
 	if err != nil {
 		return nil, nil, err
 	}

@@ -66,6 +66,9 @@ var cmpOpts = []cmp.Option{
 	cmp.Transformer("", func(ty PolyType) int {
 		return 0
 	}),
+	cmp.Transformer("freeFn", func(func()) int {
+		return 0
+	}),
 }
 
 func TestDeserializeFromFlatBuffer(t *testing.T) {

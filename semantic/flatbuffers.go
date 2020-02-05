@@ -18,9 +18,11 @@ func DeserializeFromFlatBuffer(mbuf *libflux.ManagedBuffer) (*Package, error) {
 	// semantic graph
 	runtime.SetFinalizer(mbuf, nil)
 	fbPkg := fbsemantic.GetRootAsPackage(mbuf.Buffer, mbuf.Offset)
-	p := &Package{}
+	p := &Package{
+		freeFn: mbuf.Free,
+	}
 	runtime.SetFinalizer(p, func(p *Package) {
-		mbuf.Free()
+		p.Free()
 	})
 	if err := p.FromBuf(fbPkg); err != nil {
 		return nil, err

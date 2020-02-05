@@ -56,7 +56,7 @@ b = 1`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	got := ast.DeserializeFromFlatBuffer(mbuf.Buffer, mbuf.Offset)
+	got := ast.DeserializeFromFlatBuffer(mbuf)
 	mbuf.Free()
 
 	want := &ast.Package{
