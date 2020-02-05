@@ -1,10 +1,16 @@
-// Provides functions for geographic location filtering and grouping.
+// Provides functions for geographic location filtering and grouping base on S2 cells.
 package geo
 
 import "strings"
 
-// Calculates geohash grid for given box and according to options.
+// Calculates grid (set of cell ID tokens) for given box and according to options.
 builtin getGrid
+
+// Find parent cell ID token for given cell (specified by token) at specified level.
+builtin getParent
+
+// Check whether lat/lon is in a lat/lon box or center/radius circle.
+builtin containsLatLon
 
 // Checks for tag presence in a record and its value against a set.
 builtin containsTag
@@ -13,49 +19,67 @@ builtin containsTag
 // Filtering functions
 // ----------------------------------------
 
-// Filters records by geohash tag value (`_g1` ... `_g12`) if exist
+// Filters records by geohash tag value (`_cid1` ... `_cid30`) if exist
 // TODO(?): uses hardcoded schema tag keys and Flux does not provide dynamic access, therefore containsTag() is provided.
-geohashFilter = (tables=<-, grid) =>
+tokenFilter = (tables=<-, grid) =>
   tables
     |> filter(fn: (r) =>
-	  if grid.precision == 1 and exists r._g1 then contains(value: r._g1, set: grid.set)
-	  else if grid.precision == 2 and exists r._g2 then contains(value: r._g2, set: grid.set)
-	  else if grid.precision == 3 and exists r._g3 then contains(value: r._g3, set: grid.set)
-	  else if grid.precision == 4 and exists r._g4 then contains(value: r._g4, set: grid.set)
-	  else if grid.precision == 5 and exists r._g5 then contains(value: r._g5, set: grid.set)
-	  else if grid.precision == 6 and exists r._g6 then contains(value: r._g6, set: grid.set)
-	  else if grid.precision == 7 and exists r._g7 then contains(value: r._g7, set: grid.set)
-	  else if grid.precision == 8 and exists r._g8 then contains(value: r._g8, set: grid.set)
-	  else if grid.precision == 9 and exists r._g9 then contains(value: r._g9, set: grid.set)
-	  else if grid.precision == 10 and exists r._g10 then contains(value: r._g10, set: grid.set)
-	  else if grid.precision == 11 and exists r._g11 then contains(value: r._g11, set: grid.set)
-	  else if grid.precision == 12 and exists r._g12 then contains(value: r._g12, set: grid.set)
+	  if grid.level == 1 and exists r._cid1 then contains(value: r._cid1, set: grid.set)
+	  else if grid.level == 2 and exists r._cid2 then contains(value: r._cid2, set: grid.set)
+	  else if grid.level == 3 and exists r._cid3 then contains(value: r._cid3, set: grid.set)
+	  else if grid.level == 4 and exists r._cid4 then contains(value: r._cid4, set: grid.set)
+	  else if grid.level == 5 and exists r._cid5 then contains(value: r._cid5, set: grid.set)
+	  else if grid.level == 6 and exists r._cid6 then contains(value: r._cid6, set: grid.set)
+	  else if grid.level == 7 and exists r._cid7 then contains(value: r._cid7, set: grid.set)
+	  else if grid.level == 8 and exists r._cid8 then contains(value: r._cid8, set: grid.set)
+	  else if grid.level == 9 and exists r._cid9 then contains(value: r._cid9, set: grid.set)
+	  else if grid.level == 10 and exists r._cid10 then contains(value: r._cid10, set: grid.set)
+	  else if grid.level == 11 and exists r._cid11 then contains(value: r._cid11, set: grid.set)
+	  else if grid.level == 12 and exists r._cid12 then contains(value: r._cid12, set: grid.set)
+	  else if grid.level == 13 and exists r._cid12 then contains(value: r._cid13, set: grid.set)
+	  else if grid.level == 14 and exists r._cid12 then contains(value: r._cid14, set: grid.set)
+	  else if grid.level == 15 and exists r._cid12 then contains(value: r._cid15, set: grid.set)
+	  else if grid.level == 16 and exists r._cid12 then contains(value: r._cid16, set: grid.set)
+	  else if grid.level == 17 and exists r._cid12 then contains(value: r._cid17, set: grid.set)
+	  else if grid.level == 18 and exists r._cid12 then contains(value: r._cid18, set: grid.set)
+	  else if grid.level == 19 and exists r._cid12 then contains(value: r._cid19, set: grid.set)
+	  else if grid.level == 20 and exists r._cid12 then contains(value: r._cid20, set: grid.set)
+	  else if grid.level == 21 and exists r._cid12 then contains(value: r._cid21, set: grid.set)
+	  else if grid.level == 22 and exists r._cid12 then contains(value: r._cid22, set: grid.set)
+	  else if grid.level == 23 and exists r._cid12 then contains(value: r._cid23, set: grid.set)
+	  else if grid.level == 24 and exists r._cid12 then contains(value: r._cid24, set: grid.set)
+	  else if grid.level == 25 and exists r._cid12 then contains(value: r._cid25, set: grid.set)
+	  else if grid.level == 26 and exists r._cid12 then contains(value: r._cid26, set: grid.set)
+	  else if grid.level == 27 and exists r._cid12 then contains(value: r._cid27, set: grid.set)
+	  else if grid.level == 28 and exists r._cid12 then contains(value: r._cid28, set: grid.set)
+	  else if grid.level == 29 and exists r._cid12 then contains(value: r._cid29, set: grid.set)
+	  else if grid.level == 30 and exists r._cid12 then contains(value: r._cid30, set: grid.set)
 	  else false
     )
 
-// Filters records by geohash tag value using custom builtin function.
-// TODO(ales.pour@bonitoo.io): benchmark it, seems much faster than geohashFilter()
-geohashFilterEx = (tables=<-, grid, prefix="_g") =>
+// Filters records by cell ID token tag value using custom builtin function.
+tokenFilterEx = (tables=<-, grid, prefix="_cid") =>
   tables
     |> filter(fn: (r) =>
-      containsTag(row: r, tagKey: prefix + string(v: grid.precision), set: grid.set)
+      containsTag(row: r, tagKey: prefix + string(v: grid.level), set: grid.set)
     )
 
-// Filters records by lat/lon box. The grid always overlaps specified area and therefore result may contain
-// values outside the box. If precise filtering is needed, `boxFilter()` may be used later (after `toRows()`).
-gridFilter = (tables=<-, fn=geohashFilterEx, box, minGridSize=9, maxGridSize=-1, geohashPrecision=-1, maxGeohashPrecision=12) => {
-  grid = getGrid(box: box, minSize: minGridSize, maxSize: maxGridSize, precision: geohashPrecision, maxPrecision: maxGeohashPrecision)
+// Filters records by lat/lon box or center/radius circle.
+// The grid always overlaps specified area and therefore result may contain values outside the box.
+// If precise filtering is needed, `boxFilter()` may be used later (after `toRows()`).
+gridFilter = (tables=<-, fn=tokenFilterEx, box={}, circle={}, minGridSize=9, maxGridSize=-1, level=-1, maxLevelIndex=30) => {
+  grid = getGrid(box: box, circle: circle, minSize: minGridSize, maxSize: maxGridSize, level: level, maxLevel: maxLevelIndex)
   return
     tables
       |> fn(grid: grid)
 }
 
-// Filters records by lat/lon box. Unlike `gridFilter()`, this is a strict filter.
-// Must be used after `toRows()` because it requires `lat` and `lon` columns in input row set(s).
-boxFilter = (tables=<-, box) =>
+// Filters records by lat/lon box or center/radius circle.
+// Must be used after `toRows()` because it requires `lat` and `lon` columns in input row set.
+strictFilter = (tables=<-, box={}, circle={}) =>
   tables
     |> filter(fn: (r) =>
-      r.lat <= box.maxLat and r.lat >= box.minLat and r.lon <= box.maxLon and r.lon >= box.minLon
+      containsLatLon(box: box, circle: circle, lat: r.lat, lon: r.lon)
     )
 
 // ----------------------------------------
@@ -73,7 +97,7 @@ toRows = (tables=<-, correlationKey=["_time"]) =>
 
 // Drops geohash indexes columns except those specified.
 // It will fail if input tables are grouped by any of them.
-stripMeta = (tables=<-, pattern=/_g\d+/, except=[]) =>
+stripMeta = (tables=<-, pattern=/_cid\d+/, except=[]) =>
   tables
     |> drop(fn: (column) => column =~ pattern and (length(arr: except) == 0 or not contains(value: column, set: except)))
 
@@ -82,32 +106,20 @@ stripMeta = (tables=<-, pattern=/_g\d+/, except=[]) =>
 // ----------------------------------------
 // intended to be used row-wise sets (i.e after `toRows()`)
 
-// Grouping levels (based on geohash length/precision) - cell width x height
-//  1 - 5000 x 5000 km
-//  2 - 1250 x 625 km
-//  3 - 156 x 156 km
-//  4 - 39.1 x 19.5 km
-//  5 - 4.89 x 4.89 km
-//  6 - 1.22 x 0.61 km
-//  7 - 153 x 153 m
-//  8 - 38.2 x 19.1 m
-//  9 - 4.77 x 4.77 m
-// 10 - 1.19 x 0.596 m
-// 11 - 149 x 149 mm
-// 12 - 37.2 x 18.6 mm
+// Grouping levels: https://s2geometry.io/resources/s2cell_statistics.html
 
-// Groups rows by area of size specified by geohash precision. Result is grouped by `newColumn`.
-// Parameter `maxPrecisionIndex` specifies finest precision geohash tag available in the input tables.
-// TODO: can maxPrecisionIndex be discovered at Flux level?
-groupByArea = (tables=<-, newColumn, precision, maxPrecisionIndex, prefix="_g") => {
+// Groups data by area of size specified by level. Result is grouped by `newColumn`.
+// Parameter `maxLevelIndex` specifies finest cell ID level tag available in the input tables.
+// TODO: can maxLevelIndex be discovered at Flux level?
+groupByArea = (tables=<-, newColumn, level, maxLevelIndex, prefix="_cid") => {
   prepared =
-    if precision <= maxPrecisionIndex then
+    if level <= maxLevelIndex then
       tables
-	    |> duplicate(column: prefix + string(v: precision), as: newColumn)
+	    |> duplicate(column: prefix + string(v: level), as: newColumn)
     else
       tables
-        |> map(fn: (r) => ({ r with _gx: strings.substring(v: r.geohash, start:0, end: precision) }))
-	    |> rename(columns: { _gx: newColumn })
+        |> map(fn: (r) => ({ r with _cidx: getParent(token: r.cid, level: level) }))
+	    |> rename(columns: { _cidx: newColumn })
   return prepared
     |> group(columns: [newColumn])
 }
