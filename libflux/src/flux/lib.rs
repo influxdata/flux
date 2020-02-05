@@ -257,9 +257,7 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
 /// package clauses fail validation then an option with an Error is returned.
 pub fn merge_packages(out_pkg: &mut ast::Package, in_pkg: &mut ast::Package) -> Option<Error> {
     let pkg_clause = match &out_pkg.files[0].package {
-        Some(clause) => {
-            &clause.name.name
-        }
+        Some(clause) => &clause.name.name,
         None => return Some(Error::from("output package does not have a package clause")),
     };
 
@@ -327,7 +325,7 @@ mod tests {
             package: "foo".to_string(),
             files: vec![out_file.clone()],
         };
-        merge_packages(&mut out_pkg, &mut in_pkg,);
+        merge_packages(&mut out_pkg, &mut in_pkg);
         let got = out_pkg.files;
         let want = vec![out_file];
         assert_eq!(want, got);
