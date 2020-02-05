@@ -74,6 +74,17 @@ or equal to `maxLevelIndex`.
 User is required to specify correct `maxLevelIndex` that matches existing schema.
 For example, when schema has tags `_cid1` ... `_cid5`, then `5` must be passed as `maxLevelIndex`. 
 
+#### Function definition
+
+```
+gridFilter = (tables=<-, fn=tokenFilterEx, box={}, circle={}, minGridSize=9, maxGridSize=-1, level=-1, maxLevelIndex=30) => {
+  grid = getGrid(box: box, circle: circle, minSize: minGridSize, maxSize: maxGridSize, level: level, maxLevel: maxLevelIndex)
+  return
+    tables
+      |> fn(grid: grid)
+}
+```
+
 ### Function `strictFilter`
 
 Filters records by lat/lon box or center/radius circle. Unlike `gridFilter()`, this is a strict filter.
@@ -89,6 +100,16 @@ from(bucket: "rides")
 ``` 
 
 It makes a lot of sense to use it together with `griFiflter()`.
+
+#### Function definition
+
+```
+strictFilter = (tables=<-, box={}, circle={}) =>
+  tables
+    |> filter(fn: (r) =>
+      containsLatLon(box: box, circle: circle, lat: r.lat, lon: r.lon)
+    )
+```
 
 ### Function `toRows`
 
