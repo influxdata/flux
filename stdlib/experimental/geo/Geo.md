@@ -1,40 +1,31 @@
 ## Package `geo`
 
 The package provides functions for geographic location filtering and grouping.
-It is designed to work on a schema with a set of tags by default named `_gX`,
-where X specifies geohash precision (corresponds to its number of characters),
-fields `lat`, `lon` and `geohash`.
+It is designed to work on a schema with a set of tags by default named `_cidX`,
+where X specifies S2 Cell level, fields `lat`, `lon` and `cid`.
 
-The maximum precision geohash tag is up to user to decide. It is unlikely though
-to use geohash tags more than 4-5 characters long due to sharply rising cardinality.
+The maximum level X is up to user to decide with respect to cardinality.
+The number of cells for each level is shown at [https://s2geometry.io/resources/s2cell_statistics.html].
+These tags hold value of cell ID as hex token (`s2.CellID.ToToken()`) of corresponding level.
 
-| Geohash length | Area size | Cardinality |
-| --- | --- | --- |
-| 1 | 5000 x 5000 km | 32 |
-| 2 | 1250 x 625 km | 1024 |
-| 3 | 156 x 156 km | 32k |
-| 4 | 40 x 20 km | 1M |
-| 5 | 5 x 5 km | 33M |
-
-The `geohash` field holds full geohash precision location value (ie. 12-char string).
 The schema may/should further contain a tag which identifies data source (`id` by default),
 and a field representing track ID (`tid` by default). For some use cases a tag denoting point
 type (with values like `"start"`/`"stop"`/`"via"`, for example) is also helpful.
 
 Examples of line protocol input that conforms to such schema:
 ```
-taxi,pt=end,_g1=d,_g2=dr,_g3=dr5,_g4=dr5r dist=12.7,tip=3.43,lat=40.753944,lon=-73.992035,geohash="dr5ru708u223" 1572567115082153551
-bike,id=bike007,pt=via,_g1=d,_g2=dr,_g3=dr5,_g4=dr5r lat=40.753944,lon=-73.992035,geohash="dr5ru708u223",tid=1572588115012345678i 1572567115082153551
+taxi,_pt=start,_cid1=8c,_cid2=89,_cid3=89c,_cid4=89d,_cid5=89c4,_cid6=89c3,_cid7=89c24,_cid8=89c25,_cid9=89c25c,_cid10=89c259,_cid11=89c2594 lat=40.744614,lon=-73.979424,cid="89c2590882ea0441",tid=1572566401947779410i 1572566401947779410
+bike,id=bike007,_pt=via,_cid1=8c,_cid2=89,_cid3=89c,_cid4=89d,_cid5=89c4,_cid6=89c3,_cid7=89c24,_cid8=89c25,_cid9=89c25c,_cid10=89c259,_cid11=89c2594 lat=40.753944,lon=-73.992035,cid="89c2590882ea0441",tid=1572588115012345678i 1572567115082153551
 ```
 
 The grouping functions works on row-wise sets (as it very likely appears in line protocol),
-with geotemporal values (tags `_gX`, `id` and fields `lat`, `lon`, `geohash` and `tid`) as columns.
+with geo-temporal values (tags `_cidX`, `id` and fields `lat`, `lon`, `cid` and `tid`) as columns.
 That is achieved by correlation by `_time" (and `id` if present) using `pivot()` or provided `geo.toRows()` function.
 Therefore it is advised to store time with nanoseconds precision to avoid false matches.
 
 Fundamental transformations:
 - `gridFilter`
-- `boxFilter`
+- `strictFilter`
 - `toRows`
 
 Schema changing operations:
@@ -46,11 +37,12 @@ Aggregate operations:
 
 The package uses the following types:
 - `box` - has the following named float values: `minLat`, `maxLat`, `minLon`, `maxLon`.
+- `circle` - has the following named float values: `lat`, `lon`, `radius`.
 
 ### Function `gridFilter`
 
-The `gridFilter` filters data by specified lat/lon box.
-It calculates geohash grid that overlays specified lat/lon box.
+The `gridFilter` filters data by specified box or circle.
+It calculates tokens grid that overlays specified box or circle.
 Therefore result may contain data where corresponding latitude and/or longitude is outside the box.
 
 This filter function is intended to be fast as it uses tags values.
@@ -63,22 +55,28 @@ from(bucket: "rides")
   |> filter(fn: (r) => r._measurement == "bike")
   |> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
 ``` 
+```
+from(bucket: "rides")
+  |> range(start: 2019-11-01T00:00:00Z)
+  |> filter(fn: (r) => r._measurement == "bike")
+  |> geo.gridFilter(circle: {lat: 40.69335938, lon: -73.30078125, radius: 20.0})
+``` 
 
 Grid calculation may be customized by following options:
 - `minSize` - minimum number of tiles that cover specified box (default value is `9`).
 - `maxSize` - maximum number of tiles
-- `precision` - desired geohash precision of the tiles
-- `maxPrecision` - maximum geohash precision of the tiles (default value is `12`).
+- `level` - desired cell ID level of the tiles
+- `maxLevelIndex` - highest level of cell ID level tag available in schema
 
-The `precision` parameter is mutually exclusive with others.
-By default the algorithm attempts to 9 tiles grid with finest precision that is less than
-or equal to `maxPrecision`.
-User is required to specify correct `maxPrecision` that matches existing schema.
-For example, when schema has tags `_g1` ... `_g5`, then `5` must be passed as `maxPrecision`. 
+The `level` parameter is mutually exclusive with others and must be less or equal to `maxLevelIndex`.
+By default the algorithm attempts to 9 tiles grid with finest level that is less than
+or equal to `maxLevelIndex`.
+User is required to specify correct `maxLevelIndex` that matches existing schema.
+For example, when schema has tags `_cid1` ... `_cid5`, then `5` must be passed as `maxLevelIndex`. 
 
-### Function `boxFilter`
+### Function `strictFilter`
 
-Filters records by lat/lon box. Unlike `gridFilter()`, this is a strict filter.
+Filters records by lat/lon box or center/radius circle. Unlike `gridFilter()`, this is a strict filter.
 Must be used after `toRows()` because it requires `lat` and `lon` columns in input row set.
 
 Example:
@@ -87,7 +85,7 @@ from(bucket: "rides")
   |> range(start: 2019-11-01T00:00:00Z)
   |> filter(fn: (r) => r._measurement == "bike")
   |> geo.toRows()
-  |> geo.boxFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
+  |> geo.strictFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
 ``` 
 
 It makes a lot of sense to use it together with `griFiflter()`.
@@ -118,23 +116,9 @@ toRows = (tables=<-, correlationKey=["_time"]) =>
 
 ### Function `groupByArea`
 
-Grouping levels (corresponds to geohash precision) - cell width x height
-- `1` - 5000 x 5000 km
-- `2` - 1250 x 625 km
-- `3` - 156 x 156 km
-- `4` - 39.1 x 19.5 km
-- `5` - 4.89 x 4.89 km
-- `6` - 1.22 x 0.61 km
-- `7` - 153 x 153 m
-- `8` - 38.2 x 19.1 m
-- `9` - 4.77 x 4.77 m
-- `10` - 1.19 x 0.596 m
-- `11` - 149 x 149 mm
-- `12` - 37.2 x 18.6 mm
-
-Groups rows by area blocks of size specified by geohash `precision`.
+Groups rows by area blocks of size determined by `level` (see [https://s2geometry.io/resources/s2cell_statistics.html]). 
 Result is grouped by `newColumn`.
-Parameter `maxPrecisionIndex` specifies finest precision geohash tag available in the input.
+Parameter `maxLevelIndex` specifies finest level cell ID tag available in the input.
 
 Example:
 ```
@@ -143,21 +127,21 @@ from(bucket: "rides")
   |> filter(fn: (r) => r._measurement == "bike")
   |> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
   |> geo.toRows()
-  |> geo.groupByArea(newColumn: "gx", precision: 3, maxPrecisionIndex: 5)
+  |> geo.groupByArea(newColumn: "gx", level: 3, maxLevelIndex: 5)
 ```
 
 #### Function definition
 
 ```
-groupByArea = (tables=<-, newColumn, precision, maxPrecisionIndex, prefix="_g") => {
+groupByArea = (tables=<-, newColumn, level, maxLevel, prefix="_cid") => {
   prepared =
-    if precision <= maxPrecisionIndex then
+    if level <= maxlevel then
       tables
-	    |> duplicate(column: prefix + string(v: precision), as: newColumn)
+	    |> duplicate(column: prefix + string(v: level), as: newColumn)
     else
       tables
-        |> map(fn: (r) => ({ r with _gx: strings.substring(v: r.geohash, start:0, end: precision) }))
-	    |> rename(columns: { _gx: newColumn })
+        |> map(fn: (r) => ({ r with _cidx: getParent(v: r.cid, level: level) }))
+	    |> rename(columns: { _cidx: newColumn })
   return prepared
     |> group(columns: [newColumn])
 }
@@ -188,7 +172,7 @@ asTracks = (tables=<-, groupBy=["id","tid"], orderBy=["_time"]) =>
 
 ### Function `stripMeta`
 
-Drops geohash indexes columns (`_gX` by default) except those specified.
+Drops geohash indexes columns (`_cidX` by default) except those specified.
 It will fail if input tables are grouped by any of them.
 
 Example:
@@ -197,14 +181,14 @@ from(bucket: "rides")
   |> range(start: 2019-11-01T00:00:00Z)
   |> filter(fn: (r) => r._measurement == "bike")
   |> geo.toRows()
-  |> geo.groupByArea(newColumn: "gx", precision: 5, maxPrecisionIndex: 5)
-  |> geo.stripMeta(except: ["_g5"])
+  |> geo.groupByArea(newColumn: "cidx", level: 5, maxLevelIndex: 5)
+  |> geo.stripMeta(except: ["_cid5"])
 ```
 
 #### Function definition
 
 ```
-stripMeta = (tables=<-, pattern=/_g\d+/, except=[]) =>
+stripMeta = (tables=<-, pattern=/_cid\d+/, except=[]) =>
   tables
     |> drop(fn: (column) => column =~ pattern and (length(arr: except) == 0 or not contains(value: column, set: except)))
 ```
