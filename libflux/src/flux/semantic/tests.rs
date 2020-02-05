@@ -1460,12 +1460,17 @@ fn binary_expr_comparison() {
             ],
             src: &src,
         }
-        test_infer_err! {
+        // TODO(algow): re-introduce equality constraints for binary comparison operators
+        // https://github.com/influxdata/flux/issues/2466
+        test_infer! {
             env: map![
                 "a" => "forall [] float",
                 "b" => "forall [] int",
             ],
             src: &src,
+            exp: map![
+                "c" => "forall [] bool",
+            ],
         }
     }
     for op in vec![">=", "<=", ">", "<"] {
@@ -1559,12 +1564,17 @@ fn binary_expr_comparison() {
             ],
             src: &src,
         }
-        test_infer_err! {
+        // TODO(algow): re-introduce equality constraints for binary comparison operators
+        // https://github.com/influxdata/flux/issues/2466
+        test_infer! {
             env: map![
                 "a" => "forall [] float",
                 "b" => "forall [] int",
             ],
             src: &src,
+            exp: map![
+                "c" => "forall [] bool",
+            ],
         }
     }
 }
@@ -2576,7 +2586,9 @@ fn record_with_scoped_labels() {
 }
 
 #[test]
-fn psuedo_complete_query() {
+fn pseudo_complete_query() {
+    // TODO(algow): re-introduce equality constraints for binary comparison operators
+    // https://github.com/influxdata/flux/issues/2466
     test_infer! {
         env: map![
             "from"   => "forall [t0, t1] (bucket: string) -> [{field: string | value: t1 | t0}]",
@@ -2592,7 +2604,7 @@ fn psuedo_complete_query() {
                 |> map(fn: (r) => ({r with value: int(v: r.value)}))
         "#,
         exp: map![
-            "out" => "forall [t0,t1] [{value: int | host: string | measurement: string | field: string | value: t1 | t0}]",
+            "out" => "forall [t0,t1,t2,t3] where t2: Equatable, t3: Equatable [{value: int | host: t2 | measurement: t3 | field: string | value: t1 | t0}]",
         ],
     }
 }
@@ -2906,6 +2918,8 @@ fn constrained_generics_divisible() {
 }
 #[test]
 fn constrained_generics_comparable() {
+    // TODO(algow): re-introduce equality constraints for binary comparison operators
+    // https://github.com/influxdata/flux/issues/2466
     test_infer! {
         src: r#"
             f = (a, b) => a < b
@@ -2916,7 +2930,7 @@ fn constrained_generics_comparable() {
             e = f(a: 2019-10-30T00:00:00Z, b: 2019-10-31T00:00:00Z)
         "#,
         exp: map![
-            "f" => "forall [t0] where t0: Comparable (a: t0, b: t0) -> bool",
+            "f" => "forall [t0, t1] where t0: Comparable, t1: Comparable (a: t0, b: t1) -> bool",
             "a" => "forall [] bool",
             "b" => "forall [] bool",
             "c" => "forall [] bool",
@@ -2955,6 +2969,8 @@ fn constrained_generics_comparable() {
 }
 #[test]
 fn constrained_generics_equatable() {
+    // TODO(algow): re-introduce equality constraints for binary comparison operators
+    // https://github.com/influxdata/flux/issues/2466
     test_infer! {
         env: map![
             "true" => "forall [] bool",
@@ -2970,7 +2986,7 @@ fn constrained_generics_equatable() {
             g = f(a: true, b: false)
         "#,
         exp: map![
-            "f" => "forall [t0] where t0: Equatable (a: t0, b: t0) -> bool",
+            "f" => "forall [t0, t1] where t0: Equatable, t1: Equatable (a: t0, b: t1) -> bool",
             "a" => "forall [] bool",
             "b" => "forall [] bool",
             "c" => "forall [] bool",
@@ -3000,6 +3016,8 @@ fn constrained_generics_equatable() {
 }
 #[test]
 fn multiple_constraints() {
+    // TODO(algow): re-introduce equality constraints for binary comparison operators
+    // https://github.com/influxdata/flux/issues/2466
     test_infer! {
         src: r#"
             f = (a, b) => a <= b
@@ -3010,7 +3028,7 @@ fn multiple_constraints() {
             e = f(a: 2019-10-30T00:00:00Z, b: 2019-10-31T00:00:00Z)
         "#,
         exp: map![
-            "f" => "forall [t0] where t0: Comparable + Equatable (a: t0, b: t0) -> bool",
+            "f" => "forall [t0, t1] where t0: Comparable + Equatable, t1: Comparable + Equatable (a: t0, b: t1) -> bool",
             "a" => "forall [] bool",
             "b" => "forall [] bool",
             "c" => "forall [] bool",
