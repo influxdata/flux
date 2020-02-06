@@ -9,6 +9,10 @@ use crate::semantic::walk::Node;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+// OptionMap maps the name of a Flux option (including an optional package qualifier)
+// to its corresponding option statement.
+type OptionMap<'a> = HashMap<(Option<&'a str>, &'a str), &'a nodes::OptionStmt>;
+
 /// This function checks a semantic graph, looking for errors.
 ///
 /// This pass is typically run before type inference, so type-related errors occur
@@ -73,7 +77,7 @@ impl std::error::Error for Error {}
 /// Note that options can only appear at file scope since the structure of the semantic
 /// graph only allows expression statements, assignments and return statements inside function bodies.
 /// As a convenience to later checks, it returns a map of all the option statements in the package.
-fn check_option_stmts(pkg: &nodes::Package) -> Result<HashMap<&str, &nodes::OptionStmt>, Error> {
+fn check_option_stmts(pkg: &nodes::Package) -> Result<OptionMap, Error> {
     let mut opt_stmts = vec![];
     for f in &pkg.files {
         for st in &f.body {
@@ -86,31 +90,41 @@ fn check_option_stmts(pkg: &nodes::Package) -> Result<HashMap<&str, &nodes::Opti
     let mut opts = HashMap::new();
     for o in opt_stmts {
         let name = get_option_name(o)?;
-        if opts.contains_key(name) {
-            return Err(Error::OptionReassign(o.loc.clone(), String::from(name)));
+        if opts.contains_key(&name) {
+            return Err(Error::OptionReassign(o.loc.clone(), format_option(name)));
         }
         opts.insert(name, o);
     }
     Ok(opts)
 }
 
-fn get_option_name(o: &nodes::OptionStmt) -> Result<&str, Error> {
+fn format_option(opt: (Option<&str>, &str)) -> String {
+    match opt {
+        (None, id) => String::from(id),
+        (Some(pkg), id) => format!("{}.{}", pkg, id),
+    }
+}
+
+fn get_option_name(o: &nodes::OptionStmt) -> Result<(Option<&str>, &str), Error> {
     match &o.assignment {
-        Assignment::Variable(va) => Ok(va.id.name.as_str()),
-        Assignment::Member(ma) => match &ma.member.object {
-            Expression::Identifier(ie) => Ok(ie.name.as_str()),
-            e => Err(Error::InvalidOption(e.loc().clone())),
-        },
+        Assignment::Variable(va) => Ok((None, va.id.name.as_str())),
+        Assignment::Member(nodes::MemberAssgn {
+            member:
+                nodes::MemberExpr {
+                    object: Expression::Identifier(nodes::IdentifierExpr { name: id, .. }),
+                    property,
+                    ..
+                },
+            ..
+        }) => Ok((Some(id), property)),
+        _ => Err(Error::InvalidOption(o.loc.clone())),
     }
 }
 
 /// `check_vars()` returns an error if:
 /// - Variables are reassigned within the same block
 /// - A variable name clashes with an option name
-fn check_vars<'a>(
-    pkg: &'a nodes::Package,
-    opts: &'a HashMap<&'a str, &'a nodes::OptionStmt>,
-) -> Result<(), Error> {
+fn check_vars<'a>(pkg: &'a nodes::Package, opts: &'a OptionMap) -> Result<(), Error> {
     let mut v = VarVisitor {
         opts,
         vars_stack: vec![HashMap::new()],
@@ -126,7 +140,7 @@ fn check_vars<'a>(
 
 struct VarVisitor<'a> {
     /// a map of all the options in the package
-    opts: &'a HashMap<&'a str, &'a nodes::OptionStmt>,
+    opts: &'a OptionMap<'a>,
     /// a stack of maps showing which variables are currently in scope
     /// (the last item in the Vec is the most nested scope)
     vars_stack: Vec<HashMap<&'a str, Option<&'a nodes::VariableAssgn>>>,
@@ -159,7 +173,7 @@ impl<'a> walk::Visitor<'a> for VarVisitor<'a> {
                 }
                 let name = va.id.name.as_str();
                 // if we are at file scope (only one map in vars_stack), a variable assignment could collide with an option.
-                if self.vars_stack.len() == 1 && self.opts.contains_key(name) {
+                if self.vars_stack.len() == 1 && self.opts.contains_key(&(None, name)) {
                     self.err = Some(Error::VarReassignOption(va.loc.clone(), String::from(name)))
                 }
                 // if most nested (current) scope, already has a variable of this name, return error.
@@ -183,7 +197,7 @@ impl<'a> walk::Visitor<'a> for VarVisitor<'a> {
 
 /// `check_option_dependencies()` checks that no options declared in a package depend on other
 /// options also declared in the same package.
-fn check_option_dependencies(opts: &HashMap<&str, &nodes::OptionStmt>) -> Result<(), Error> {
+fn check_option_dependencies(opts: &OptionMap) -> Result<(), Error> {
     let mut v = OptionDepVisitor {
         opts,
         vars_stack: vec![HashMap::new()],
@@ -203,7 +217,7 @@ fn check_option_dependencies(opts: &HashMap<&str, &nodes::OptionStmt>) -> Result
             let opt_name = get_option_name(o)?;
             return Err(Error::DependentOptions(
                 id.loc.clone(),
-                String::from(opt_name),
+                format_option(opt_name),
                 id.name.clone(),
             ));
         }
@@ -212,7 +226,7 @@ fn check_option_dependencies(opts: &HashMap<&str, &nodes::OptionStmt>) -> Result
 }
 
 struct OptionDepVisitor<'a> {
-    opts: &'a HashMap<&'a str, &'a nodes::OptionStmt>,
+    opts: &'a OptionMap<'a>,
     vars_stack: Vec<HashMap<&'a str, Option<&'a nodes::VariableAssgn>>>,
     bad_id: Option<&'a nodes::IdentifierExpr>,
 }
@@ -235,7 +249,7 @@ impl<'a> walk::Visitor<'a> for OptionDepVisitor<'a> {
             }
             Node::IdentifierExpr(ie) => {
                 let name = ie.name.as_str();
-                if self.opts.contains_key(name) {
+                if self.opts.contains_key(&(None, name)) {
                     let found = self
                         .vars_stack
                         .iter()
@@ -302,7 +316,7 @@ mod tests {
             Ok(pkg) => pkg,
         };
         if let Err(e) = check::check(&pkg) {
-            panic!(e)
+            panic!(format!("check failed: {}", e))
         }
     }
 
@@ -463,7 +477,21 @@ mod tests {
                 "#,
             ],
             r#"file_3.flux@3:21-3:33: option "c" reassigned"#,
-        )
+        );
+        check_success(vec![
+            r#"
+                package foo
+                option universe.now = () => 2020-01-01T00:00:00.000Z
+            "#,
+        ]);
+        check_success(vec![
+            r#"
+                import "planner"
+                option planner.disablePhysicalRules = ["fromRangeRule"]
+                option planner.disableLogicalRules = ["removeCountRule"]
+                from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()
+           "#,
+        ]);
     }
 
     #[test]
