@@ -773,7 +773,7 @@ pub fn builtins() -> Builtins<'static> {
                 // already exist.
                 // https://github.com/influxdata/flux/issues/2255
                 "window" => r#"
-                    forall [t0] where t0: Row, t1: Row (
+                    forall [t0, t1] where t0: Row, t1: Row (
                         <-tables: [t0],
                         ?every: duration,
                         ?period: duration,
