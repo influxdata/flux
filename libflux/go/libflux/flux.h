@@ -61,13 +61,13 @@ struct flux_error_t *flux_ast_marshal_json(struct flux_ast_pkg_t *, struct flux_
 // using flux_free if it is non-null.
 struct flux_error_t *flux_ast_marshal_fb(struct flux_ast_pkg_t *, struct flux_buffer_t *);
 
-// flux_semantic_pkg_t represents a semantic graph package node, including all of its files
-// and their contents.
-struct flux_semantic_pkg_t;
-
 // flux_get_env_stdlib instantiates a flatbuffers TypeEnvironment and creates a pointer
 // to it to use when performing lookups on the stdlib
 void flux_get_env_stdlib(struct flux_buffer_t *);
+
+// flux_semantic_pkg_t represents a semantic graph package node, including all of its files
+// and their contents.
+struct flux_semantic_pkg_t;
 
 // flux_analyze analyzes the given AST and will populate the second pointer argument with
 // a pointer to the resulting semantic graph.
@@ -92,4 +92,3 @@ struct flux_error_t *flux_semantic_marshal_fb(struct flux_semantic_pkg_t *, stru
 #endif
 
 #endif
-

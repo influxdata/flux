@@ -46,8 +46,6 @@ var errMissingArg = errors.Newf(codes.Invalid, "missing argument %q", conversion
 
 type stringConv struct{}
 
-var required = semantic.LabelSet{conversionArg}
-
 func (c *stringConv) Type() semantic.MonoType {
 	return convStringType
 }

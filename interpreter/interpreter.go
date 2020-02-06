@@ -681,7 +681,6 @@ type Value interface {
 type function struct {
 	e     *semantic.FunctionExpression
 	scope values.Scope
-	pkg   *Package
 
 	itrp *Interpreter
 }

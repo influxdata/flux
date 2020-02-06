@@ -24,6 +24,9 @@ func BenchmarkRustParse(b *testing.B) {
 			_ = f.Close()
 		}()
 		bs, err := ioutil.ReadAll(f)
+		if err != nil {
+			b.Fatal(err)
+		}
 		fluxFile = string(bs)
 	}()
 

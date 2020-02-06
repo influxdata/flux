@@ -22,7 +22,6 @@ var defaultRuntime = &runtime{}
 type runtime struct {
 	pkgs      map[string]*semantic.Package
 	builtins  map[string]map[string]values.Value
-	prelude   *scopeSet
 	finalized bool
 }
 
