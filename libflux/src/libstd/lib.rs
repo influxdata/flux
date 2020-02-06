@@ -159,7 +159,31 @@ mod tests {
 
         // TODO(algow): re-introduce equality constraints for binary comparison operators
         // https://github.com/influxdata/flux/issues/2466
-        let want = semantic::parser::parse(
+        let want_a = semantic::parser::parse(
+            r#"forall [t0, t1, t3] where t1: Equatable [{
+                _value: t0
+                    | A: t1
+                    | _time: time
+                    | _measurement: string
+                    | _field: string
+                    | t3
+                    }]
+            "#,
+        )
+        .unwrap();
+        let want_b = semantic::parser::parse(
+            r#"forall [t0, t1, t3] where t1: Equatable [{
+                _value: t0
+                    | B: t1
+                    | _time: time
+                    | _measurement: string
+                    | _field: string
+                    | t3
+                    }]
+            "#,
+        )
+        .unwrap();
+        let want_c = semantic::parser::parse(
             r#"forall [t0, t1, t2, t3] where t1: Equatable, t2: Equatable [{
                 _value: t0
                     | A: t1
@@ -173,7 +197,9 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(want, got.lookup("c").expect("'c' not found").clone());
+        assert_eq!(want_a, got.lookup("a").expect("'a' not found").clone());
+        assert_eq!(want_b, got.lookup("b").expect("'b' not found").clone());
+        assert_eq!(want_c, got.lookup("c").expect("'c' not found").clone());
     }
 
     #[test]
