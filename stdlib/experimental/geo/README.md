@@ -39,6 +39,18 @@ The package uses the following types:
 - `box` - has the following named float values: `minLat`, `maxLat`, `minLon`, `maxLon`.
 - `circle` - has the following named float values: `lat`, `lon`, `radius`.
 
+**Experimental alternative simple schema**
+
+Single tag `_ci` containing cell ID as token with level decided by user.
+
+Examples of line protocol input (cell level 11):
+```
+taxi,_pt=start,_ci=89c2594 lat=40.744614,lon=-73.979424,cid="89c2590882ea0441",tid=1572566401947779410i 1572566401947779410
+bike,id=bike007,_pt=via,_ci=89c2594 lat=40.753944,lon=-73.992035,cid="89c2590882ea0441",tid=1572588115012345678i 1572567115082153551
+```
+
+Corresponding functions: `gridFilter2`, `groupByArea2`.
+
 ### Function `gridFilter`
 
 The `gridFilter` filters data by specified box or circle.
@@ -46,7 +58,7 @@ It calculates tokens grid that overlays specified box or circle.
 Therefore result may contain data where corresponding latitude and/or longitude is outside the box.
 
 This filter function is intended to be fast as it uses tags values.
-If precise filtering is needed, `boxFilter()` may be used later (after `toRows()`).
+If precise filtering is needed, `strictFilter()` may be used later (after `toRows()`).
 
 Example:
 ```
@@ -64,9 +76,9 @@ from(bucket: "rides")
 
 Grid calculation may be customized by following options:
 - `minSize` - minimum number of tiles that cover specified box (default value is `9`).
-- `maxSize` - maximum number of tiles
-- `level` - desired cell ID level of the tiles
-- `maxLevelIndex` - highest level of cell ID level tag available in schema
+- `maxSize` - maximum number of tiles (optional)
+- `level` - desired cell level of the tiles (optional)
+- `maxLevelIndex` - highest cell level X available in `_cidX` tag.
 
 The `level` parameter is mutually exclusive with others and must be less or equal to `maxLevelIndex`.
 By default the algorithm attempts to 9 tiles grid with finest level that is less than
@@ -99,7 +111,7 @@ from(bucket: "rides")
   |> geo.strictFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
 ``` 
 
-It makes a lot of sense to use it together with `griFiflter()`.
+It makes a lot of sense to use it together with `griFilter()`.
 
 #### Function definition
 
@@ -139,7 +151,7 @@ toRows = (tables=<-, correlationKey=["_time"]) =>
 
 Groups rows by area blocks of size determined by `level` (see [https://s2geometry.io/resources/s2cell_statistics.html]). 
 Result is grouped by `newColumn`.
-Parameter `maxLevelIndex` specifies finest level cell ID tag available in the input.
+Parameter `maxLevelIndex` specifies highest cell level X in the input rows.
 
 Example:
 ```
@@ -148,7 +160,7 @@ from(bucket: "rides")
   |> filter(fn: (r) => r._measurement == "bike")
   |> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
   |> geo.toRows()
-  |> geo.groupByArea(newColumn: "gx", level: 3, maxLevelIndex: 5)
+  |> geo.groupByArea(newColumn: "cidx", level: 3, maxLevelIndex: 5)
 ```
 
 #### Function definition
@@ -193,7 +205,7 @@ asTracks = (tables=<-, groupBy=["id","tid"], orderBy=["_time"]) =>
 
 ### Function `stripMeta`
 
-Drops geohash indexes columns (`_cidX` by default) except those specified.
+Drops cell level indexes columns (`_cidX` by default) except those specified.
 It will fail if input tables are grouped by any of them.
 
 Example:
@@ -212,4 +224,54 @@ from(bucket: "rides")
 stripMeta = (tables=<-, pattern=/_cid\d+/, except=[]) =>
   tables
     |> drop(fn: (column) => column =~ pattern and (length(arr: except) == 0 or not contains(value: column, set: except)))
+```
+
+## *Experimental alternative simple schema functions*
+
+### Function `gridFilter2`
+
+Grid filtering function that works on simplified schema.
+- `ciLevel` - cell level of token stored in `_ci` tag 
+
+Example:
+```
+from(bucket: "rides")
+  |> range(start: 2019-11-01T00:00:00Z)
+  |> filter(fn: (r) => r._measurement == "bike")
+  |> geo.gridFilter2(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}, ciLevel=11)
+``` 
+
+User is required to specify correct `ciLevel` that matches existing schema.
+
+### Function `groupByArea2`
+
+Groups rows by area blocks of size determined by `level` (see [https://s2geometry.io/resources/s2cell_statistics.html]). 
+Result is grouped by `newColumn`.
+Parameter `ciLevel` specifies cell level of token stored in `_ci` tag.
+
+Example:
+```
+from(bucket: "rides")
+  |> range(start: 2019-11-01T00:00:00Z)
+  |> filter(fn: (r) => r._measurement == "bike")
+  |> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
+  |> geo.toRows()
+  |> geo.groupByArea(newColumn: "cix", level: 3, ciLevel: 11)
+```
+
+#### Function definition
+
+```
+groupByArea2 = (tables=<-, newColumn, level, ciLevel) => {
+  prepared =
+    if level == ciLevel then
+      tables
+	    |> duplicate(column: "_ci", as: newColumn)
+    else
+      tables
+        |> map(fn: (r) => ({ r with _cix: getParent(token: r._ci, level: level) }))
+	    |> rename(columns: { _cix: newColumn })
+  return prepared
+    |> group(columns: [newColumn])
+}
 ```
