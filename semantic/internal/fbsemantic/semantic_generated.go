@@ -63,7 +63,7 @@ const (
 	KindEquatable    Kind = 5
 	KindNullable     Kind = 6
 	KindRow          Kind = 7
-	KindSigned       Kind = 8
+	KindNegatable    Kind = 8
 )
 
 var EnumNamesKind = map[Kind]string{
@@ -75,7 +75,7 @@ var EnumNamesKind = map[Kind]string{
 	KindEquatable:    "Equatable",
 	KindNullable:     "Nullable",
 	KindRow:          "Row",
-	KindSigned:       "Signed",
+	KindNegatable:    "Negatable",
 }
 
 type Statement = byte

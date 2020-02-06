@@ -33,6 +33,11 @@ struct flux_ast_pkg_t;
 // of the query.
 struct flux_ast_pkg_t *flux_parse(const char *);
 
+// flux_merge_ast_pkgs merges the files of a given input AST package into the file vector of a
+// given output AST package. This function borrows the packages, but it does not own them. The
+// caller of this function still needs to free the package memory on the Go side.
+struct flux_error_t *flux_merge_ast_pkgs(struct flux_ast_pkg_t *, struct flux_ast_pkg_t *);
+
 // flux_parse_json will take in a JSON string for an AST package
 // and populate its second pointer argument with a pointer to an
 // AST package.
@@ -55,6 +60,10 @@ struct flux_error_t *flux_ast_marshal_json(struct flux_ast_pkg_t *, struct flux_
 // data. If an error happens it will be returned. The error must be freed
 // using flux_free if it is non-null.
 struct flux_error_t *flux_ast_marshal_fb(struct flux_ast_pkg_t *, struct flux_buffer_t *);
+
+// flux_get_env_stdlib instantiates a flatbuffers TypeEnvironment and creates a pointer
+// to it to use when performing lookups on the stdlib
+void flux_get_env_stdlib(struct flux_buffer_t *);
 
 // flux_semantic_pkg_t represents a semantic graph package node, including all of its files
 // and their contents.
