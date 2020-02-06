@@ -119,21 +119,61 @@ mod tests {
         let mut file = convert_file(ast, &mut f).unwrap();
         let (got, _) = infer_file(&mut file, prelude, &mut f, &imports, &None).unwrap();
 
+        // TODO(algow): re-introduce equality constraints for binary comparison operators
+        // https://github.com/influxdata/flux/issues/2466
         let want = semantic::parser::parse(
-            r#"forall [t0, t1] where t0: Addable [{
+            r#"forall [t0, t1, t2] where t0: Addable, t1: Equatable [{
                 _value: t0
                     | _value: t0
                     | _time: time
                     | _measurement: string
                     | _field: string
-                    | region: string
-                    | t1
+                    | region: t1
+                    | t2
                     }]
             "#,
         )
         .unwrap();
 
         assert_eq!(want, got.lookup("x").expect("'x' not found").clone());
+    }
+
+    #[test]
+    fn infer_union() {
+        let prelude = Environment::new(super::prelude().unwrap());
+        let imports = super::imports().unwrap();
+
+        let src = r#"
+            a = from(bucket: "b")
+                |> filter(fn: (r) => r.A == "A")
+            b = from(bucket: "b")
+                |> filter(fn: (r) => r.B == "B")
+            c = union(tables: [a, b])
+        "#;
+
+        let ast = flux::parser::parse_string("main.flux", src);
+        let mut f = super::fresher();
+
+        let mut file = convert_file(ast, &mut f).unwrap();
+        let (got, _) = infer_file(&mut file, prelude, &mut f, &imports, &None).unwrap();
+
+        // TODO(algow): re-introduce equality constraints for binary comparison operators
+        // https://github.com/influxdata/flux/issues/2466
+        let want = semantic::parser::parse(
+            r#"forall [t0, t1, t2, t3] where t1: Equatable, t2: Equatable [{
+                _value: t0
+                    | A: t1
+                    | B: t2
+                    | _time: time
+                    | _measurement: string
+                    | _field: string
+                    | t3
+                    }]
+            "#,
+        )
+        .unwrap();
+
+        assert_eq!(want, got.lookup("c").expect("'c' not found").clone());
     }
 
     #[test]
