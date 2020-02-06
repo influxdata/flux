@@ -5,13 +5,12 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/valuestest"
 )
 
@@ -26,41 +25,11 @@ func TestReduce_Process(t *testing.T) {
 		{
 			name: `sum _value`,
 			spec: &universe.ReduceProcedureSpec{
-				Identity: map[string]string{"sum": "0.0"},
-				ReducerType: semantic.NewObjectType([]semantic.PropertyType{{
-					Key:   []byte("sum"),
-					Value: semantic.BasicFloat,
-				}}),
+				Identity: values.NewObjectWithValues(map[string]values.Value{
+					"sum": values.NewFloat(0.0),
+				}),
 				Fn: interpreter.ResolvedFunction{
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}, {Key: &semantic.Identifier{Name: "accumulator"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "sum"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "accumulator",
-												},
-												Property: "sum",
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r, accumulator) => ({sum: r._value + accumulator.sum})`),
 					Scope: valuestest.Scope(),
 				},
 			},
@@ -86,65 +55,12 @@ func TestReduce_Process(t *testing.T) {
 		{
 			name: `sum+prod _value`,
 			spec: &universe.ReduceProcedureSpec{
-				Identity: map[string]string{"sum": "0.0", "prod": "1.0"},
-				ReducerType: semantic.NewObjectType([]semantic.PropertyType{
-					{
-						Key:   []byte("sum"),
-						Value: semantic.BasicFloat,
-					},
-					{
-						Key:   []byte("prod"),
-						Value: semantic.BasicFloat,
-					},
+				Identity: values.NewObjectWithValues(map[string]values.Value{
+					"sum":  values.NewFloat(0.0),
+					"prod": values.NewFloat(1.0),
 				}),
 				Fn: interpreter.ResolvedFunction{
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}, {Key: &semantic.Identifier{Name: "accumulator"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "sum"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "accumulator",
-												},
-												Property: "sum",
-											},
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "prod"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.MultiplicationOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "accumulator",
-												},
-												Property: "prod",
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r, accumulator) => ({sum: r._value + accumulator.sum, prod: r._value * accumulator.prod})`),
 					Scope: valuestest.Scope(),
 				},
 			},

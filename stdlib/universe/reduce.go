@@ -2,6 +2,7 @@ package universe
 
 import (
 	"context"
+	"sort"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -17,9 +18,8 @@ import (
 const ReduceKind = "reduce"
 
 type ReduceOpSpec struct {
-	Fn          interpreter.ResolvedFunction `json:"fn"`
-	ReducerType semantic.MonoType            `json:"reducer_type"`
-	Identity    map[string]string            `json:"identity"`
+	Fn       interpreter.ResolvedFunction `json:"fn"`
+	Identity values.Object                `json:"identity"`
 }
 
 func init() {
@@ -51,20 +51,7 @@ func createReduceOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	if o, err := args.GetRequiredObject("identity"); err != nil {
 		return nil, err
 	} else {
-		spec.ReducerType = o.Type()
-		spec.Identity = make(map[string]string, o.Len())
-		var haderr error
-		o.Range(func(name string, v values.Value) {
-			stringer, ok := v.(values.ValueStringer)
-			if !ok {
-				haderr = errors.New(codes.FailedPrecondition, "ne contains unencodable type")
-				return
-			}
-			spec.Identity[name] = stringer.String()
-		})
-		if haderr != nil {
-			return nil, haderr
-		}
+		spec.Identity = o
 	}
 
 	return spec, nil
@@ -80,21 +67,21 @@ func (s *ReduceOpSpec) Kind() flux.OperationKind {
 
 type ReduceProcedureSpec struct {
 	plan.DefaultCost
-	Fn          interpreter.ResolvedFunction
-	ReducerType semantic.MonoType
-	Identity    map[string]string
+	Fn       interpreter.ResolvedFunction
+	Identity values.Object
 }
 
 func newReduceProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
 	spec, ok := qs.(*ReduceOpSpec)
 	if !ok {
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
+	} else if n := spec.Identity.Type().Nature(); n != semantic.Object {
+		return nil, errors.Newf(codes.Invalid, "identity must be an object, got %s", n)
 	}
 
 	return &ReduceProcedureSpec{
-		Fn:          spec.Fn,
-		ReducerType: spec.ReducerType,
-		Identity:    spec.Identity,
+		Fn:       spec.Fn,
+		Identity: spec.Identity,
 	}, nil
 }
 
@@ -105,10 +92,6 @@ func (s *ReduceProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(ReduceProcedureSpec)
 	*ns = *s
 	ns.Fn = s.Fn.Copy()
-	ns.ReducerType = s.ReducerType
-	for k, v := range s.Identity {
-		ns.Identity[k] = v
-	}
 	return ns
 }
 
@@ -127,11 +110,11 @@ func createReduceTransformation(id execute.DatasetID, mode execute.AccumulationM
 }
 
 type reduceTransformation struct {
-	d              execute.Dataset
-	cache          execute.TableBuilderCache
-	ctx            context.Context
-	fn             *execute.RowReduceFn
-	neutralElement map[string]values.Value
+	d        execute.Dataset
+	cache    execute.TableBuilderCache
+	ctx      context.Context
+	fn       *execute.RowReduceFn
+	identity values.Object
 }
 
 func NewReduceTransformation(ctx context.Context, spec *ReduceProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*reduceTransformation, error) {
@@ -139,122 +122,112 @@ func NewReduceTransformation(ctx context.Context, spec *ReduceProcedureSpec, d e
 	if err != nil {
 		return nil, err
 	}
-
-	ne := make(map[string]values.Value)
-	// TODO(algow): update now that types are complete
-	//for k, v := range spec.ReducerType.Properties() {
-	//	newVal, err := values.NewFromString(v.Nature(), spec.Identity[k])
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	ne[k] = newVal
-	//}
-
 	return &reduceTransformation{
-		d:              d,
-		cache:          cache,
-		ctx:            ctx,
-		fn:             fn,
-		neutralElement: ne,
+		d:        d,
+		cache:    cache,
+		ctx:      ctx,
+		fn:       fn,
+		identity: spec.Identity,
 	}, nil
 }
 
 func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-
-	var reducer values.Object = values.NewObjectWithValues(t.neutralElement)
-	// t.fn.Prepare will pre-compile the function given the specific columns of the input table,
-	// plus the reducer type.  For a given set of type values, we will cache the compiled function to
-	// avoid costly recompilation.
+	// Prepare the function with the column types list.
 	cols := tbl.Cols()
-	err := t.fn.Prepare(cols, map[string]semantic.MonoType{"accumulator": reducer.Type()})
-	if err != nil {
-		// TODO(nathanielc): Should we not fail the query for failed compilation?
+	if err := t.fn.Prepare(cols, map[string]semantic.MonoType{"accumulator": t.identity.Type()}); err != nil {
 		return err
 	}
 
-	// tbl.Do is our method for iterating over a table.
-	// it takes a function parameter that operated on a column reader type.
-	// internally, large data tables will be broken into parts, and each separate part
-	// will be processed by this function.
+	// Start the reduce operation with the neutral element as the accumulator.
+	const accumulatorParamName = "accumulator"
+	params := map[string]values.Value{accumulatorParamName: t.identity}
 	if err := tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			// the RowReduce function type takes a row of values, and an accumulator value, and
 			// computes a new accumulator result.
-			m, err := t.fn.Eval(t.ctx, i, cr, map[string]values.Value{"accumulator": reducer})
+			m, err := t.fn.Eval(t.ctx, i, cr, params)
 			if err != nil {
 				return errors.Wrap(err, codes.Inherit, "failed to evaluate reduce function")
 			}
-			reducer = m
+			params[accumulatorParamName] = m
 		}
 		return nil
 	}); err != nil {
 		return err
 	}
 
-	// TODO(algow): now that type inference is complete rework this logic
-	//gkb := execute.NewGroupKeyBuilder(tbl.Key())
-	//typ := reducer.Type().Properties()
-	//var typeKeys []string
-	//for k := range typ {
-	//	typeKeys = append(typeKeys, k)
-	//}
-	//// go maps have unsorted keys, so we need to extract the keys and sort them
-	//sort.Strings(typeKeys)
-	//for _, k := range typeKeys {
-	//	if tbl.Key().HasCol(k) {
-	//		val, _ := reducer.Get(k)
-	//		gkb.SetKeyValue(k, val)
-	//	}
-	//}
+	// Compute the group key by replacing columns from the reducer if needed.
+	m := params[accumulatorParamName].Object()
+	key := t.computeGroupKey(tbl.Key(), m)
 
-	//// Find the output table that we will write to.  For reduce, we will write rows with the same
-	//// table group key
-	//tblKey, err := gkb.Build()
-	//if err != nil {
-	//	return err
-	//}
-	//builder, created := t.cache.TableBuilder(tblKey)
-	//if created {
-	//	// add the key columns to the table.
-	//	if err := execute.AddTableKeyCols(tblKey, builder); err != nil {
-	//		return err
-	//	}
+	builder, created := t.cache.TableBuilder(key)
+	if !created {
+		return errors.New(codes.FailedPrecondition, "two reducers writing result to the same table")
+	}
 
-	//	// add table columns for each key in the reducer type map
-	//	for _, k := range typeKeys {
-	//		if tblKey.HasCol(k) {
-	//			continue
-	//		}
-	//		if _, err := builder.AddCol(flux.ColMeta{
-	//			Label: k,
-	//			Type:  flux.ColumnType(typ[k]),
-	//		}); err != nil {
-	//			return err
-	//		}
-	//	}
+	// Add the key columns to the table.
+	if err := execute.AddTableKeyCols(key, builder); err != nil {
+		return err
+	}
 
-	//	for j, c := range builder.Cols() {
-	//		v, ok := reducer.Get(c.Label)
-	//		if !ok {
-	//			if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); idx >= 0 {
-	//				v = tbl.Key().Value(idx)
-	//			} else {
-	//				// This should be unreachable
-	//				return errors.Newf(codes.Internal, "could not find value for column %q", c.Label)
-	//			}
-	//		}
-	//		if err := builder.AppendValue(j, v); err != nil {
-	//			return err
-	//		}
-	//	}
-	//} else {
-	//	return errors.New(codes.FailedPrecondition, "two reducers writing result to the same table")
-	//}
+	// Add remaining columns from the object if they're not in the key.
+	columns := make([]string, 0, m.Len())
+	m.Range(func(name string, v values.Value) {
+		if key.HasCol(name) {
+			return
+		}
+		columns = append(columns, name)
+	})
+	sort.Strings(columns)
+
+	for _, label := range columns {
+		v, _ := m.Get(label)
+		if _, err := builder.AddCol(flux.ColMeta{
+			Label: label,
+			Type:  flux.ColumnType(v.Type()),
+		}); err != nil {
+			return err
+		}
+	}
+
+	// Append a value for each column.
+	for j, c := range builder.Cols() {
+		v, ok := m.Get(c.Label)
+		if !ok {
+			v = key.LabelValue(c.Label)
+		}
+
+		if err := builder.AppendValue(j, v); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
-// advanced stream processing functions, most transformations use this boiler-plate.
+func (t *reduceTransformation) computeGroupKey(key flux.GroupKey, v values.Object) flux.GroupKey {
+	replace := false
+	v.Range(func(name string, v values.Value) {
+		if key.HasCol(name) {
+			replace = true
+		}
+	})
+
+	if !replace {
+		return key
+	}
+
+	// Copy over the values and replace any in the group key.
+	vs := make([]values.Value, len(key.Values()))
+	copy(vs, key.Values())
+	v.Range(func(name string, v values.Value) {
+		if idx := execute.ColIdx(name, key.Cols()); idx >= 0 {
+			vs[idx] = v
+		}
+	})
+	return execute.NewGroupKey(key.Cols(), vs)
+}
+
 func (t *reduceTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }

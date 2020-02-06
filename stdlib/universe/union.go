@@ -32,7 +32,7 @@ func init() {
 }
 
 func createUnionOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
-	tables, err := args.GetRequiredArray("tables", semantic.Object)
+	tables, err := args.GetRequiredArray("tables", semantic.Array)
 	if err != nil {
 		return nil, err
 	}
