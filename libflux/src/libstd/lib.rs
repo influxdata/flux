@@ -77,6 +77,9 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<flux::semantic::nodes::Package, 
     Ok(sem_pkg)
 }
 
+/// # Safety
+///
+/// This function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
 pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
     let env = imports().unwrap();

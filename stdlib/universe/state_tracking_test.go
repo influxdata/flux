@@ -119,6 +119,7 @@ func TestStateTracking_NewQuery(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
+			t.Skip("https://github.com/influxdata/flux/issues/2494")
 			t.Parallel()
 			querytest.NewQueryTestHelper(t, tc)
 		})
@@ -370,6 +371,7 @@ func TestStateTracking_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Skip("https://github.com/influxdata/flux/issues/2473")
 			executetest.ProcessTestHelper(
 				t,
 				tc.data,

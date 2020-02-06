@@ -65,6 +65,7 @@ func TestLength_NewQuery(t *testing.T) {
 }
 
 func lengthTestHelper(t *testing.T, tc lengthCase) {
+	t.Skip("https://github.com/influxdata/flux/issues/2481")
 	t.Helper()
 	length := universe.MakeLengthFunc()
 	result, err := length.Call(

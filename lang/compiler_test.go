@@ -649,6 +649,7 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 			if strings.HasPrefix(tc.name, "multiple files") {
 				t.Skip("how should options behave with multiple files?")
 			}
+
 			if len(tc.files) == 0 {
 				t.Fatal("the test should have at least one file")
 			}
@@ -708,6 +709,7 @@ func getRootErr(err error) error {
 // extracts the TableObjects obtained from evaluation. It eventually compiles TableObjects and
 // compares obtained results with expected ones (obtained from decoding the raw csv data).
 func TestTableObjectCompiler(t *testing.T) {
+	t.Skip("https://github.com/influxdata/flux/issues/2479")
 	dataRaw := `#datatype,string,long,dateTime:RFC3339,long,string,string,string,string
 #group,false,false,false,false,false,false,true,true
 #default,_result,,,,,,,
@@ -764,7 +766,6 @@ csv.from(csv: data)
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	tos := getTableObjects(vs)
 	if len(tos) != 3 {
 		t.Fatalf("wrong number of table objects, got %d", len(tos))

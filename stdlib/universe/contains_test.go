@@ -106,6 +106,7 @@ func TestContains_NewQuery(t *testing.T) {
 }
 
 func containsTestHelper(t *testing.T, tc containsCase) {
+	t.Skip("https://github.com/influxdata/flux/issues/2481")
 	t.Helper()
 	contains := universe.MakeContainsFunc()
 	result, err := contains.Call(dependenciestest.Default().Inject(context.Background()),

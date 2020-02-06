@@ -21,6 +21,7 @@ import (
 )
 
 func TestSlack(t *testing.T) {
+	t.Skip("https://github.com/influxdata/flux/issues/2402")
 	ctx := dependenciestest.Default().Inject(context.Background())
 	_, scope, err := flux.Eval(ctx, `
 import "csv"

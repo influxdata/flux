@@ -32,6 +32,7 @@ func addFail(scope values.Scope) {
 }
 
 func TestPost(t *testing.T) {
+	t.Skip("https://github.com/influxdata/flux/issues/2402")
 	var req *http.Request
 	var body []byte
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
