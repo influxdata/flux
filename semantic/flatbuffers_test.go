@@ -606,7 +606,7 @@ func (e *exprTypeChecker) Done(node Node) {
 	pty := nva.Typ.String()
 	initTy := nva.Init.TypeOf().String()
 	if !strings.Contains(pty, initTy) {
-		err := errors.New(fmt.Sprintf("expected RHS of assignment for %q to have a type contained by %q, but it had %q", nva.Identifier.Name, pty, initTy))
+		err := fmt.Errorf("expected RHS of assignment for %q to have a type contained by %q, but it had %q", nva.Identifier.Name, pty, initTy)
 		e.errs = append(e.errs, err)
 	}
 }

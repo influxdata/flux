@@ -529,68 +529,11 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 	}
 }
 
-// CompilationCache caches compilation results based on the type of the function.
-type CompilationCache struct {
-	fn    *semantic.FunctionExpression
-	scope Scope
-	//compiled map[semantic.MonoType]funcErr
-}
-
-func NewCompilationCache(fn *semantic.FunctionExpression, scope Scope) *CompilationCache {
-	return &CompilationCache{
-		fn:    fn,
-		scope: scope,
-		//compiled: make(map[semantic.MonoType]funcErr),
-	}
-}
-
-// Compile returns a compiled function based on the provided type.
-// The result will be cached for subsequent calls.
-func (c *CompilationCache) Compile(in semantic.MonoType) (Func, error) {
-	// TODO (algow): Re-implement the cache using the input types instead of the entire type.
-	// The cache can be implemented in terms of the input type properties and basic types.
-	// We do not need to cache for arbitrary mono types rather we know its a record with basic types for its properties.
-	// We can special case creating a hash from property name and basic type (which is a single byte).
-
-	//f, ok := c.compiled[in]
-	//if ok {
-	//	return f.F, f.Err
-	//}
-	//fun, err := Compile(c.scope, c.fn, in)
-	//c.compiled[in] = funcErr{
-	//	F:   fun,
-	//	Err: err,
-	//}
-	//return fun, err
-	panic("unimpleneted")
-}
-
-type funcErr struct {
-	F   Func
-	Err error
-}
-
 // CompileFnParam is a utility function for compiling an `fn` parameter for rename or drop/keep. In addition
 // to the function expression, it takes two types to verify the result against:
 // a single argument type, and a single return type.
 func CompileFnParam(fn *semantic.FunctionExpression, scope Scope, paramType, returnType semantic.MonoType) (Func, string, error) {
-	//compileCache := NewCompilationCache(fn, scope)
-	//if fn.Block.Parameters != nil && len(fn.Block.Parameters.List) != 1 {
-	//	return nil, "", errors.New(codes.Invalid, "function should only have a single parameter")
-	//}
-	//paramName := fn.Block.Parameters.List[0].Key.Name
-
-	//compiled, err := compileCache.Compile(semantic.NewObjectType(map[string]semantic.MonoType{
-	//	paramName: paramType,
-	//}))
-	//if err != nil {
-	//	return nil, "", err
-	//}
-
-	//if compiled.Type() != returnType {
-	//	return nil, "", errors.Newf(codes.Invalid, "provided function does not evaluate to type %s", returnType.Nature())
-	//}
-
-	//return compiled, paramName, nil
+	// TODO(algow): this appears to be only used by stdlib/generate/from.go
+	//  https://github.com/influxdata/flux/issues/2484
 	panic("unimplemented")
 }

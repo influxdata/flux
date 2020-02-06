@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/semantic"
@@ -17,12 +16,6 @@ import (
 )
 
 var CmpOptions = semantictest.CmpOptions
-
-func prelude() compiler.Scope {
-	// todo(algow): readd the prelude.
-	return compiler.NewScope()
-	// return compiler.ToScope(flux.Prelude())
-}
 
 func createRecord(row []interface{}) (values.Object, error) {
 	return values.BuildObjectWithSize(len(row)/2, func(set values.ObjectSetter) error {

@@ -25,8 +25,42 @@ type Object interface {
 	Range(func(name string, v Value))
 }
 
+// labelSet is a set of string labels.
+type labelSet []string
+
+// allLabels is a sentinal values indicating the set is the infinite set of all possible string labels.
+const allLabels = "-all-"
+
+// AllLabels returns a label set that represents the infinite set of all possible string labels.
+func AllLabels() labelSet {
+	return labelSet{allLabels}
+}
+
+func (s labelSet) String() string {
+	if s.isAllLabels() {
+		return "L"
+	}
+	if len(s) == 0 {
+		return "∅"
+	}
+	var builder strings.Builder
+	builder.WriteString("(")
+	for i, l := range s {
+		if i != 0 {
+			builder.WriteString(", ")
+		}
+		builder.WriteString(l)
+	}
+	builder.WriteString(")")
+	return builder.String()
+}
+
+func (s labelSet) isAllLabels() bool {
+	return len(s) == 1 && s[0] == allLabels
+}
+
 type object struct {
-	labels semantic.LabelSet
+	labels labelSet
 	values []Value
 	typ    semantic.MonoType
 }
@@ -40,7 +74,7 @@ func NewObject(typ semantic.MonoType) Object {
 	if err != nil {
 		panic(err)
 	}
-	labels := make(semantic.LabelSet, n)
+	labels := make(labelSet, n)
 	for i := 0; i < len(labels); i++ {
 		rp, err := typ.RowProperty(i)
 		if err != nil {

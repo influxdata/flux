@@ -85,15 +85,6 @@ func (f *dynamicFn) returnType() semantic.MonoType {
 	return f.preparedFn.Type()
 }
 
-// returns will check that the function returns a type with the nature
-// that is passed in as an argument.
-func (f *dynamicFn) returns(n semantic.Nature, fmtStr string, args ...interface{}) error {
-	if f.preparedFn.Type().Nature() != n {
-		return errors.Newf(codes.Invalid, fmtStr, args...)
-	}
-	return nil
-}
-
 func ConvertToKind(t flux.ColType) semantic.Nature {
 	// TODO make this an array lookup.
 	switch t {

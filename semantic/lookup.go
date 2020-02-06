@@ -61,8 +61,7 @@ func TypeEnvMap(env *fbsemantic.TypeEnvironment) map[envKey]*fbsemantic.Prop {
 		assignId := string(newAssign.Id())
 		polytype := newAssign.Ty(nil)
 		if polytype.ExprType() != fbsemantic.MonoTypeRow {
-			panic(fmt.Errorf(
-				"Expected PolyType Expr of %v to be fbsemantic.MonoTypeRow; found fbsemantic.%v",
+			panic(fmt.Errorf("expected PolyType Expr of %v to be fbsemantic.MonoTypeRow; found fbsemantic.%v",
 				assignId,
 				fbsemantic.EnumNamesMonoType[polytype.ExprType()],
 			))
