@@ -74,6 +74,26 @@ gridFilter = (tables=<-, fn=tokenFilterEx, box={}, circle={}, minGridSize=9, max
       |> fn(grid: grid)
 }
 
+// --- experimental: simpler token tags schema filter
+
+tokenFilter2 = (tables=<-, grid, ciLevel) =>
+  tables
+    |> filter(fn: (r) =>
+      if grid.level == ciLevel then
+        contains(value: r._ci, set: grid.set)
+      else
+        contains(value: getParent(token: r._ci, level: grid.level), set: grid.set)
+    )
+
+gridFilter2 = (tables=<-, box={}, circle={}, minGridSize=9, maxGridSize=-1, level=-1, ciLevel) => {
+  grid = getGrid(box: box, circle: circle, minSize: minGridSize, maxSize: maxGridSize, level: level, maxLevel: ciLevel)
+  return
+    tables
+      |> tokenFilter2(grid: grid, ciLevel: ciLevel)
+}
+
+// --- end ---
+
 // Filters records by lat/lon box or center/radius circle.
 // Must be used after `toRows()` because it requires `lat` and `lon` columns in input row set.
 strictFilter = (tables=<-, box={}, circle={}) =>
@@ -130,3 +150,18 @@ asTracks = (tables=<-, groupBy=["id","tid"], orderBy=["_time"]) =>
   tables
     |> group(columns: groupBy)
     |> sort(columns: orderBy)
+
+// --- experimental: simpler token tags schema grouping
+
+groupByArea2 = (tables=<-, newColumn, level, ciLevel) => {
+  prepared =
+    if level == ciLevel then
+      tables
+	    |> duplicate(column: "_ci", as: newColumn)
+    else
+      tables
+        |> map(fn: (r) => ({ r with _cix: getParent(token: r._ci, level: level) }))
+	    |> rename(columns: { _cix: newColumn })
+  return prepared
+    |> group(columns: [newColumn])
+}
