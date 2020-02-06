@@ -186,7 +186,7 @@ func (c ASTCompiler) Compile(ctx context.Context) (flux.Program, error) {
 		now = time.Now()
 	}
 	// Ignore context, it will be provided upon Program Start.
-	return CompileAST(c.AST, now), nil
+	return CompileAST(c.AST, now), nil 
 }
 
 func (ASTCompiler) CompilerType() flux.CompilerType {
