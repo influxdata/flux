@@ -14,7 +14,7 @@ type (with values like `"start"`/`"stop"`/`"via"`, for example) is also helpful.
 
 Examples of line protocol input that conforms to such schema:
 ```
-taxi,_pt=start,_cid1=8c,_cid2=89,_cid3=89c,_cid4=89d,_cid5=89c4,_cid6=89c3,_cid7=89c24,_cid8=89c25,_cid9=89c25c,_cid10=89c259,_cid11=89c2594 lat=40.744614,lon=-73.979424,cid="89c2590882ea0441",tid=1572566401947779410i 1572566401947779410
+taxi,_pt=start,_cid1=8c,_cid2=89,_cid3=89c,_cid4=89d,_cid5=89c4,_cid6=89c3,_cid7=89c24,_cid8=89c25,_cid9=89c25c,_cid10=89c259,_cid11=89c2594 tip=3.75,dist=14.3,lat=40.744614,lon=-73.979424,cid="89c2590882ea0441",tid=1572566401947779410i 1572566401947779410
 bike,id=bike007,_pt=via,_cid1=8c,_cid2=89,_cid3=89c,_cid4=89d,_cid5=89c4,_cid6=89c3,_cid7=89c24,_cid8=89c25,_cid9=89c25c,_cid10=89c259,_cid11=89c2594 lat=40.753944,lon=-73.992035,cid="89c2590882ea0441",tid=1572588115012345678i 1572567115082153551
 ```
 
@@ -45,7 +45,7 @@ Single tag `_ci` containing cell ID as token with level decided by user.
 
 Examples of line protocol input (cell level 11):
 ```
-taxi,_pt=start,_ci=89c2594 lat=40.744614,lon=-73.979424,cid="89c2590882ea0441",tid=1572566401947779410i 1572566401947779410
+taxi,_pt=start,_ci=89c2594 tip=3.75,dist=14.3,lat=40.744614,lon=-73.979424,cid="89c2590882ea0441",tid=1572566401947779410i 1572566401947779410
 bike,id=bike007,_pt=via,_ci=89c2594 lat=40.753944,lon=-73.992035,cid="89c2590882ea0441",tid=1572588115012345678i 1572567115082153551
 ```
 
