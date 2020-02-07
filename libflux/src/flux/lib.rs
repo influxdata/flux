@@ -125,7 +125,7 @@ pub unsafe extern "C" fn flux_parse_json(
         }
         Err(err) => {
             let errh = ErrorHandle { err: Box::new(err) };
-            return Box::into_raw(Box::new(errh)) as *mut flux_error_t;
+            Box::into_raw(Box::new(errh)) as *mut flux_error_t
         }
     }
 }
@@ -232,6 +232,11 @@ pub unsafe extern "C" fn flux_free(err: *mut c_void) {
     Box::from_raw(err);
 }
 
+/// # Safety
+///
+/// This function is unsafe because it dereferences a raw pointer passed as a
+/// parameter
+///
 /// flux_merge_ast_pkg_files merges the files of a given input ast::Package into the file
 /// vector of an output ast::Package.
 #[no_mangle]

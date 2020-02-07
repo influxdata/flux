@@ -25,8 +25,10 @@ func TestJoin(t *testing.T) {
 		left, right []flux.Table
 		want        []*executetest.Table
 		wantErr     bool
+		skip        string
 	}{
 		{
+			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "multiple column readers",
 			// fn: (left, right) => ({left with w: right._value})
 			fn: interpreter.ResolvedFunction{
@@ -121,6 +123,7 @@ func TestJoin(t *testing.T) {
 			},
 		},
 		{
+			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "rows with same time",
 			// fn: (left, right) => ({left with w: right._value})
 			fn: interpreter.ResolvedFunction{
@@ -211,6 +214,7 @@ func TestJoin(t *testing.T) {
 			},
 		},
 		{
+			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "multiple tables",
 			// fn: (left, right) => left
 			fn: interpreter.ResolvedFunction{
@@ -354,6 +358,7 @@ func TestJoin(t *testing.T) {
 			},
 		},
 		{
+			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "nulls",
 			// fn: (left, right) => ({left with w: right.w})
 			fn: interpreter.ResolvedFunction{
@@ -439,6 +444,7 @@ func TestJoin(t *testing.T) {
 			},
 		},
 		{
+			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "regular",
 			// fn: (left, right) => ({left with w: right.w})
 			fn: interpreter.ResolvedFunction{
@@ -525,6 +531,7 @@ func TestJoin(t *testing.T) {
 			},
 		},
 		{
+			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "no matches",
 			// fn: (left, right) => left
 			fn: interpreter.ResolvedFunction{
@@ -798,6 +805,7 @@ func TestJoin(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "left semijoin",
 			// fn: (left, right) => left
 			fn: interpreter.ResolvedFunction{
@@ -871,6 +879,7 @@ func TestJoin(t *testing.T) {
 			},
 		},
 		{
+			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "right semijoin",
 			// fn: (left, right) => right
 			fn: interpreter.ResolvedFunction{
@@ -946,7 +955,11 @@ func TestJoin(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		tc := tc
+
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.skip != "" {
+				t.Skip(tc.skip)
+			}
 			l := execute.DatasetID(executetest.RandomDatasetID())
 			r := execute.DatasetID(executetest.RandomDatasetID())
 

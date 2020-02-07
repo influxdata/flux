@@ -24,6 +24,7 @@ func addFail(scope values.Scope) {
 }
 
 func TestObjectKeys(t *testing.T) {
+	t.Skip("https://github.com/influxdata/flux/issues/2402")
 	script := `
 import "experimental"
 

@@ -11,6 +11,7 @@ import (
 )
 
 func Benchmark_FromScript(b *testing.B) {
+	b.Skip("https://github.com/influxdata/flux/issues/2496")
 	query := `
 import "influxdata/influxdb/monitor"
 // Disable to the call to to since that isn't enabled

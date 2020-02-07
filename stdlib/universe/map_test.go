@@ -154,6 +154,7 @@ func TestMap_NewQuery(t *testing.T) {
 		},
 	}
 	for _, tc := range tests {
+		t.Skip("https://github.com/influxdata/flux/issues/2494")
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
@@ -163,6 +164,7 @@ func TestMap_NewQuery(t *testing.T) {
 }
 
 func TestMapOperation_Marshaling(t *testing.T) {
+	t.Skip("https://github.com/influxdata/flux/issues/2492")
 	data := []byte(`{
 		"id":"map",
 		"kind":"map",
@@ -1367,6 +1369,7 @@ func TestMap_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Skip("https://github.com/influxdata/flux/issues/2489")
 			executetest.ProcessTestHelper(
 				t,
 				tc.data,
