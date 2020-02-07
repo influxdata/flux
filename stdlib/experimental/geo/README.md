@@ -42,11 +42,12 @@ The package uses the following types:
 **Experimental alternative simple schema**
 
 Single tag `_ci` containing cell ID as token with level decided by user.
+Also, `cid` field is not needed in schema with `lat` and `lon` fields.
 
-Examples of line protocol input (cell level 11):
+Examples of line protocol input (cell level 11 token in `_ci`):
 ```
-taxi,_pt=start,_ci=89c2594 tip=3.75,dist=14.3,lat=40.744614,lon=-73.979424,cid="89c2590882ea0441",tid=1572566401947779410i 1572566401947779410
-bike,id=bike007,_pt=via,_ci=89c2594 lat=40.753944,lon=-73.992035,cid="89c2590882ea0441",tid=1572588115012345678i 1572567115082153551
+taxi,_pt=start,_ci=89c2594 tip=3.75,dist=14.3,lat=40.744614,lon=-73.979424,tid=1572566401947779410i 1572566401947779410
+bike,id=bike007,_pt=via,_ci=89c2594 lat=40.753944,lon=-73.992035,tid=1572588115012345678i 1572567115082153551
 ```
 
 Corresponding functions: `gridFilter2`, `groupByArea2`.
