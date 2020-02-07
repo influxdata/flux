@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 )
@@ -110,7 +111,7 @@ func containsTestHelper(t *testing.T, tc containsCase) {
 	result, err := contains.Call(dependenciestest.Default().Inject(context.Background()),
 		values.NewObjectWithValues(map[string]values.Value{
 			"value": tc.value,
-			"set":   values.NewArrayWithBacking(tc.value.Type(), tc.set),
+			"set":   values.NewArrayWithBacking(semantic.NewArrayType(tc.value.Type()), tc.set),
 		}),
 	)
 
