@@ -20,7 +20,7 @@ bike,id=bike007,_pt=via,_cid1=8c,_cid2=89,_cid3=89c,_cid4=89d,_cid5=89c4,_cid6=8
 
 The grouping functions works on row-wise sets (as it very likely appears in line protocol),
 with geo-temporal values (tags `_cidX`, `id` and fields `lat`, `lon`, `cid` and `tid`) as columns.
-That is achieved by correlation by `_time" (and `id` if present) using `pivot()` or provided `geo.toRows()` function.
+That is achieved by correlation by `_time` (and `id` if present) using `pivot()` or provided `geo.toRows()` function.
 Therefore it is advised to store time with nanoseconds precision to avoid false matches.
 
 Fundamental transformations:
