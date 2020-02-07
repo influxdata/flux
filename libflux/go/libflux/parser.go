@@ -4,6 +4,7 @@ package libflux
 // #cgo LDFLAGS: -L. -lflux
 // #include "flux.h"
 // #include <stdlib.h>
+// const int VERSION = 1;
 import "C"
 
 import (

@@ -16,14 +16,14 @@ This example takes all the components described above from the Flux repo and use
 compile, execute and print the results of this query.
 
 ```flux
-import g "generate"
-g.from(start: 1993-02-16T00:00:00Z, stop: 1993-02-16T00:03:00Z, count: 5, fn: (n) => 1)
+import g "internal/gen"
+g.tables(n: 6, seed: 0) |> keep(columns: ["_value"])
 ```
 
-The `generate.from` function is not defined by the `builtin` library but it is in the `generate` package,
-you can define your own functions by registering them. You can see how that is done in `stdlib/generate/from.go` at `init`.
+The `gen.tables` function is not defined by the `builtin` library but it is in the `gen` package,
+you can define your own functions by registering them. You can see how that is done in `stdlib/internal/gen/tables.go` at `init`.
 
-Since using `generate.from` function as a data source we are completely decoupled from InfluxDB, so, this example
+Since using `gen.tables` function as a data source we are completely decoupled from InfluxDB, so, this example
 does not require a working installation of InfluxDB.
 
 To implement your own data source, have a look at the various `from.go` files in `stdlib` sub-folders.

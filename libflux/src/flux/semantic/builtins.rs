@@ -96,9 +96,6 @@ pub fn builtins() -> Builtins<'static> {
                  // https://github.com/influxdata/flux/issues/1660
                  "to" => "forall [t0] where t0: Row (<-tables: [t0], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) -> [t0]",
             },
-            "generate" => maplit::hashmap! {
-                "from" => "forall [] (start: time, stop: time, count: int, fn: (n: int) -> int) -> [{ _start: time | _stop: time | _time: time | _value:int }]",
-            },
             "http" => maplit::hashmap! {
                 "post" => "forall [t0] where t0: Row (url: string, ?headers: t0, ?data: bytes) -> int",
                 "basicAuth" => "forall [] (u: string, p: string) -> string",
@@ -154,7 +151,7 @@ pub fn builtins() -> Builtins<'static> {
                 "#,
             },
             "internal/gen" => maplit::hashmap! {
-                "tables" => "forall [t0] (n: int, tags: [{name: string | cardinality: int}]) -> [{_time: time | _value: float | t0}]",
+                "tables" => "forall [t0] (n: int, ?tags: [{name: string | cardinality: int}], ?seed: int) -> [{_time: time | _value: float | t0}]",
             },
             "internal/promql" => maplit::hashmap! {
                 "changes" => "forall [t0, t1] (<-tables: [{_value: float | t0}]) -> [{_value: float | t1}]",

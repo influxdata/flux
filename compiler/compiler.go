@@ -528,12 +528,3 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 		return nil, errors.Newf(codes.Internal, "unknown semantic node of type %T", n)
 	}
 }
-
-// CompileFnParam is a utility function for compiling an `fn` parameter for rename or drop/keep. In addition
-// to the function expression, it takes two types to verify the result against:
-// a single argument type, and a single return type.
-func CompileFnParam(fn *semantic.FunctionExpression, scope Scope, paramType, returnType semantic.MonoType) (Func, string, error) {
-	// TODO(algow): this appears to be only used by stdlib/generate/from.go
-	//  https://github.com/influxdata/flux/issues/2484
-	panic("unimplemented")
-}

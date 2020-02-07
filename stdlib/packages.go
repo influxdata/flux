@@ -10,7 +10,6 @@ import (
 	_ "github.com/influxdata/flux/stdlib/experimental/http"
 	_ "github.com/influxdata/flux/stdlib/experimental/mqtt"
 	_ "github.com/influxdata/flux/stdlib/experimental/prometheus"
-	_ "github.com/influxdata/flux/stdlib/generate"
 	_ "github.com/influxdata/flux/stdlib/http"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/monitor"

@@ -17,8 +17,9 @@ import (
 )
 
 func Example_fromGenerator() {
-	t := `import g "generate"
-g.from(start: 1993-02-16T00:00:00Z, stop: 1993-02-16T00:03:00Z, count: 5, fn: (n) => 1)`
+	t := `import g "internal/gen"
+g.tables(n: 6, seed: 0) |> keep(columns: ["_value"])
+`
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	defer cancelFunc()
@@ -58,13 +59,14 @@ g.from(start: 1993-02-16T00:00:00Z, stop: 1993-02-16T00:03:00Z, count: 5, fn: (n
 	fmt.Println(strings.Replace(buf.String(), "\r\n", "\n", -1))
 
 	// Output:
-	// #datatype,string,long,dateTime:RFC3339,long
-	// #group,false,false,false,false
-	// #default,_result,,,
-	// ,result,table,_time,_value
-	// ,,0,1993-02-16T00:00:00Z,1
-	// ,,0,1993-02-16T00:00:36Z,1
-	// ,,0,1993-02-16T00:01:12Z,1
-	// ,,0,1993-02-16T00:01:48Z,1
-	// ,,0,1993-02-16T00:02:24Z,1
+	// #datatype,string,long,double
+	// #group,false,false,false
+	// #default,_result,,
+	// ,result,table,_value
+	// ,,0,-14.079293543218107
+	// ,,0,28.54665479040335
+	// ,,0,-84.60098163078523
+	// ,,0,9.981145558465496
+	// ,,0,95.9759964561731
+	// ,,0,44.77419397459176
 }
