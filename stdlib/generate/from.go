@@ -6,8 +6,10 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -117,9 +119,15 @@ func createFromGeneratorSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID
 	s.Start = spec.Start
 	s.Stop = spec.Stop
 	s.Count = spec.Count
-	fn, _, err := compiler.CompileFnParam(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope), semantic.BasicInt, semantic.BasicInt)
+	fn, err := compiler.Compile(compiler.ToScope(spec.Fn.Scope), spec.Fn.Fn, semantic.NewObjectType(
+		[]semantic.PropertyType{
+			{Key: []byte("n"), Value: semantic.BasicInt},
+		},
+	))
 	if err != nil {
 		return nil, err
+	} else if n := fn.Type().Nature(); n != semantic.Int {
+		return nil, errors.Newf(codes.Invalid, "function must return type integer, but got %s", n)
 	}
 	s.Fn = fn
 
