@@ -84,8 +84,8 @@ func TestMathFunctionsXY(t *testing.T) {
 		yname  string
 	}{
 		{"hypot", math.Hypot, "p", "q"},
-		{"max", math.Max, "x", "y"},
-		{"min", math.Min, "x", "y"},
+		{"mMax", math.Max, "x", "y"},
+		{"mMin", math.Min, "x", "y"},
 		{"mod", math.Mod, "x", "y"},
 		{"nextafter", math.Nextafter, "x", "y"},
 		{"pow", math.Pow, "x", "y"},
