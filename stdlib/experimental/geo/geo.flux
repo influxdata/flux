@@ -20,7 +20,8 @@ builtin containsTag
 // ----------------------------------------
 
 // Filters records by geohash tag value (`_cid1` ... `_cid30`) if exist
-// TODO(?): uses hardcoded schema tag keys and Flux does not provide dynamic access, therefore containsTag() is provided.
+// TODO: not usable with simplified schema
+// TODO: uses hardcoded schema tag keys and Flux does not provide dynamic access, therefore containsTag() is provided.
 tokenFilter = (tables=<-, grid) =>
   tables
     |> filter(fn: (r) =>
@@ -85,8 +86,8 @@ tokenFilter2 = (tables=<-, grid, ciLevel) =>
         contains(value: getParent(token: r._ci, level: grid.level), set: grid.set)
     )
 
-gridFilter2 = (tables=<-, box={}, circle={}, minGridSize=9, maxGridSize=-1, level=-1, ciLevel) => {
-  grid = getGrid(box: box, circle: circle, minSize: minGridSize, maxSize: maxGridSize, level: level, maxLevel: ciLevel)
+gridFilter2 = (tables=<-, box={}, circle={}, polygon={}, minGridSize=9, maxGridSize=-1, level=-1, ciLevel) => {
+  grid = getGrid(box: box, circle: circle, polygon: polygon, minSize: minGridSize, maxSize: maxGridSize, level: level, maxLevel: ciLevel)
   return
     tables
       |> tokenFilter2(grid: grid, ciLevel: ciLevel)
@@ -94,12 +95,12 @@ gridFilter2 = (tables=<-, box={}, circle={}, minGridSize=9, maxGridSize=-1, leve
 
 // --- end ---
 
-// Filters records by lat/lon box or center/radius circle.
+// Filters records by box, circle or polygon.
 // Must be used after `toRows()` because it requires `lat` and `lon` columns in input row set.
-strictFilter = (tables=<-, box={}, circle={}) =>
+strictFilter = (tables=<-, box={}, circle={}, polygon={}) =>
   tables
     |> filter(fn: (r) =>
-      containsLatLon(box: box, circle: circle, lat: r.lat, lon: r.lon)
+      containsLatLon(box: box, circle: circle, polygon: polygon, lat: r.lat, lon: r.lon)
     )
 
 // ----------------------------------------
@@ -130,7 +131,6 @@ stripMeta = (tables=<-, pattern=/_cid\d+/, except=[]) =>
 
 // Groups data by area of size specified by level. Result is grouped by `newColumn`.
 // Parameter `maxLevelIndex` specifies finest cell ID level tag available in the input tables.
-// TODO: can maxLevelIndex be discovered at Flux level?
 groupByArea = (tables=<-, newColumn, level, maxLevelIndex, prefix="_cid") => {
   prepared =
     if level <= maxLevelIndex then
@@ -138,7 +138,7 @@ groupByArea = (tables=<-, newColumn, level, maxLevelIndex, prefix="_cid") => {
 	    |> duplicate(column: prefix + string(v: level), as: newColumn)
     else
       tables
-        |> map(fn: (r) => ({ r with _cidx: getParent(token: r.cid, level: level) }))
+        |> map(fn: (r) => ({ r with _cidx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }))
 	    |> rename(columns: { _cidx: newColumn })
   return prepared
     |> group(columns: [newColumn])
@@ -160,7 +160,7 @@ groupByArea2 = (tables=<-, newColumn, level, ciLevel) => {
 	    |> duplicate(column: "_ci", as: newColumn)
     else
       tables
-        |> map(fn: (r) => ({ r with _cix: getParent(token: r._ci, level: level) }))
+        |> map(fn: (r) => ({ r with _cix: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }))
 	    |> rename(columns: { _cix: newColumn })
   return prepared
     |> group(columns: [newColumn])
