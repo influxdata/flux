@@ -6,7 +6,7 @@ where X specifies S2 Cell level, fields `lat`, `lon` and `cid`.
 
 The maximum level X is up to user to decide with respect to cardinality.
 The number of cells for each level is shown at [https://s2geometry.io/resources/s2cell_statistics.html].
-These tags hold value of cell ID as hex token (`s2.CellID.ToToken()`) of corresponding level.
+These tags hold value of cell ID as token (`s2.CellID.ToToken()`) of corresponding level.
 
 The schema may/should further contain a tag which identifies data source (`id` by default),
 and a field representing track ID (`tid` by default). For some use cases a tag denoting point
@@ -38,6 +38,7 @@ Aggregate operations:
 The package uses the following types:
 - `box` - has the following named float values: `minLat`, `maxLat`, `minLon`, `maxLon`.
 - `circle` - has the following named float values: `lat`, `lon`, `radius`.
+- `polygon` - has `points` value which is an array of objects with named float values `lat` and `lon`.
 
 **Experimental alternative simple schema**
 
@@ -73,6 +74,12 @@ from(bucket: "rides")
   |> range(start: 2019-11-01T00:00:00Z)
   |> filter(fn: (r) => r._measurement == "bike")
   |> geo.gridFilter(circle: {lat: 40.69335938, lon: -73.30078125, radius: 20.0})
+``` 
+```
+from(bucket: "rides")
+  |> range(start: 2019-11-01T00:00:00Z)
+  |> filter(fn: (r) => r._measurement == "bike")
+  |> geo.gridFilter(polygon: {points: [{lat: 40.671659, lon: -73.936631}, {lat: 40.706543, lon: -73.749177},{lat: 40.791333, lon: -73.880327}]})
 ``` 
 
 Grid calculation may be customized by following options:
@@ -270,7 +277,7 @@ groupByArea2 = (tables=<-, newColumn, level, ciLevel) => {
 	    |> duplicate(column: "_ci", as: newColumn)
     else
       tables
-        |> map(fn: (r) => ({ r with _cix: getParent(token: r._ci, level: level) }))
+        |> map(fn: (r) => ({ r with _cix: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }))
 	    |> rename(columns: { _cix: newColumn })
   return prepared
     |> group(columns: [newColumn])
