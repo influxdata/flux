@@ -54,8 +54,10 @@ pub fn builtins() -> Builtins<'static> {
                      "from" => "forall [t0] where t0: Row (token: string, project: string, instance: string, table: string) -> [t0]",
             },
             "experimental/geo" => maplit::hashmap! {
-                     "getGrid" => "forall [] (?box: {minLat: float | minLon: float | maxLat: float | maxLon: float}, ?minSize: int, ?maxSize: int, ?precision: int, ?maxPrecision: int) -> {precision: int | set: [string]}",
+                     "getGrid" => "forall [] (?box: {minLat: float | minLon: float | maxLat: float | maxLon: float}, ?circle: {lat: float | lon: float | radius: float}, ?polygon: {?points: [{lat: float | lon: float}]}, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int) -> {level: int | set: [string]}",
+                     "getParent" => "forall [] (?token: string, ?point: {lat: float | lon: float}, level: int) -> {level: int | token: string}",
                      "containsTag" => "forall [t0] where t0: Row (row: t0, tagKey: string, set: [string]) -> bool",
+                     "containsLatLon" => "forall [] (?box: {minLat: float | minLon: float | maxLat: float | maxLon: float}, ?circle: {lat: float | lon: float | radius: float}, ?polygon: {?points: [{lat: float | lon: float}]}, lat: float, lon: float) -> bool"
             },
             "experimental/http" => maplit::hashmap! {
                 "get" => r#"
