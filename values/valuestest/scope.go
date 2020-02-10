@@ -15,21 +15,17 @@ type ComparableScope struct {
 
 // ScopeTransformer converts a scope to a ComparableScope.
 var ScopeTransformer = cmp.Transformer("Scope", func(s values.Scope) *ComparableScope {
-	sc := &ComparableScope{
-		Values: make(map[string]values.Value),
-		Child:  nil,
-	}
-
+	var sc *ComparableScope = nil
 	for {
-		s.LocalRange(func(k string, v values.Value) {
-			sc.Values[k] = v
-		})
-		s = s.Pop()
 		if s != nil {
 			sc = &ComparableScope{
 				Values: make(map[string]values.Value),
 				Child:  sc,
 			}
+			s.LocalRange(func(k string, v values.Value) {
+				sc.Values[k] = v
+			})
+			s = s.Pop()
 		} else {
 			break
 		}
