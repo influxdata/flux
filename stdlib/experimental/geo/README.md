@@ -219,6 +219,8 @@ asTracks = (tables=<-, groupBy=["id","tid"], orderBy=["_time"]) =>
 
 ### Function `stripMeta`
 
+**OBSOLETE** simple schema is now preferred
+
 Drops cell level indexes columns (`_cidX` by default) except those specified.
 It will fail if input tables are grouped by any of them.
 
