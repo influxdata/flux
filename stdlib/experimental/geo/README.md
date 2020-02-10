@@ -1,5 +1,7 @@
 ## Package `geo`
 
+**NOTE** simple schema is now preferred
+
 The package provides functions for geographic location filtering and grouping.
 It is designed to work on a schema with a set of tags by default named `_cidX`,
 where X specifies S2 Cell level, fields `lat`, `lon` and `cid`.
@@ -54,6 +56,8 @@ bike,id=bike007,_pt=via,_ci=89c2594 lat=40.753944,lon=-73.992035,tid=15725881150
 Corresponding functions: `gridFilter2`, `groupByArea2`.
 
 ### Function `gridFilter`
+
+**OBSOLETE** simple schema is now preferred
 
 The `gridFilter` filters data by specified box or circle.
 It calculates tokens grid that overlays specified box or circle.
@@ -156,6 +160,8 @@ toRows = (tables=<-, correlationKey=["_time"]) =>
 ```
 
 ### Function `groupByArea`
+
+**OBSOLETE** simple schema is now preferred
 
 Groups rows by area blocks of size determined by `level` (see [https://s2geometry.io/resources/s2cell_statistics.html]). 
 Result is grouped by `newColumn`.
