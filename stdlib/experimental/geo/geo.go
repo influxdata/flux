@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
+	"math"
 )
 
 var boxT = semantic.NewObjectPolyType(map[string]semantic.PolyType{
@@ -141,7 +142,6 @@ func generateGetGridFunc() values.Function {
 					if !latOk || !lonOk  {
 						return nil, fmt.Errorf("code %d: invalid polygin point specification - must have lat, lon fields", codes.Invalid)
 					}
-					fmt.Printf("polygon point: %f, %f\n",lat.Float(), lon.Float())
 					points[i] = s2.PointFromLatLng(s2.LatLngFromDegrees(lat.Float(), lon.Float()))
 				}
 
@@ -451,7 +451,11 @@ func getCapRegion(lat, lon, radius float64) s2.Region {
 }
 
 func getLoopRegion(points []s2.Point) s2.Region {
-	return s2.LoopFromPoints(points)
+	loop := s2.LoopFromPoints(points)
+	if loop.Area() >= 2 * math.Pi { // points are not CCW but CW
+		loop.Invert()
+	}
+	return loop
 }
 
 func getGrid(region s2.Region, reqLevel, maxLevel, minSize, maxSize int) (*grid, error) {
