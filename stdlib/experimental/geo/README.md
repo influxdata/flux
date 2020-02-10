@@ -67,19 +67,19 @@ Example:
 from(bucket: "rides")
   |> range(start: 2019-11-01T00:00:00Z)
   |> filter(fn: (r) => r._measurement == "bike")
-  |> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
+  |> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}, maxCiLevel: 11)
 ``` 
 ```
 from(bucket: "rides")
   |> range(start: 2019-11-01T00:00:00Z)
   |> filter(fn: (r) => r._measurement == "bike")
-  |> geo.gridFilter(circle: {lat: 40.69335938, lon: -73.30078125, radius: 20.0})
+  |> geo.gridFilter(circle: {lat: 40.69335938, lon: -73.30078125, radius: 20.0}, maxCiLevel: 11)
 ``` 
 ```
 from(bucket: "rides")
   |> range(start: 2019-11-01T00:00:00Z)
   |> filter(fn: (r) => r._measurement == "bike")
-  |> geo.gridFilter(polygon: {points: [{lat: 40.671659, lon: -73.936631}, {lat: 40.706543, lon: -73.749177},{lat: 40.791333, lon: -73.880327}]})
+  |> geo.gridFilter(polygon: {points: [{lat: 40.671659, lon: -73.936631}, {lat: 40.706543, lon: -73.749177},{lat: 40.791333, lon: -73.880327}]}, maxCiLevel: 11)
 ``` 
 
 Grid calculation may be customized by following options:
