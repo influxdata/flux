@@ -6,13 +6,11 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/internal/promql"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/valuestest"
@@ -28,40 +26,10 @@ func TestJoin(t *testing.T) {
 		skip        string
 	}{
 		{
-			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "multiple column readers",
 			// fn: (left, right) => ({left with w: right._value})
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.ObjectExpression{
-							With: &semantic.IdentifierExpression{Name: "left"},
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "w"},
-									Value: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "right"},
-										Property: "_value",
-									},
-								},
-							},
-						},
-					},
-				},
+				Fn:    executetest.FunctionExpression(t, `(left, right) => ({left with w: right._value})`),
 				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
@@ -123,40 +91,10 @@ func TestJoin(t *testing.T) {
 			},
 		},
 		{
-			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "rows with same time",
 			// fn: (left, right) => ({left with w: right._value})
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.ObjectExpression{
-							With: &semantic.IdentifierExpression{Name: "left"},
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "w"},
-									Value: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "right"},
-										Property: "_value",
-									},
-								},
-							},
-						},
-					},
-				},
+				Fn:    executetest.FunctionExpression(t, `(left, right) => ({left with w: right._value})`),
 				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
@@ -214,31 +152,10 @@ func TestJoin(t *testing.T) {
 			},
 		},
 		{
-			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "multiple tables",
 			// fn: (left, right) => left
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.IdentifierExpression{
-							Name: "left",
-						},
-					},
-				},
+				Fn:    executetest.FunctionExpression(t, `(left, right) => left`),
 				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
@@ -342,7 +259,7 @@ func TestJoin(t *testing.T) {
 						{execute.Time(12), "11", "22", int64(55)},
 					},
 				},
-				&executetest.Table{
+				{
 					KeyCols: []string{"tag1", "tag2"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
@@ -358,40 +275,10 @@ func TestJoin(t *testing.T) {
 			},
 		},
 		{
-			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "nulls",
 			// fn: (left, right) => ({left with w: right.w})
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.ObjectExpression{
-							With: &semantic.IdentifierExpression{Name: "left"},
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "w"},
-									Value: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "right"},
-										Property: "w",
-									},
-								},
-							},
-						},
-					},
-				},
+				Fn:    executetest.FunctionExpression(t, `(left, right) => ({left with w: right.w})`),
 				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
@@ -444,40 +331,10 @@ func TestJoin(t *testing.T) {
 			},
 		},
 		{
-			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "regular",
 			// fn: (left, right) => ({left with w: right.w})
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.ObjectExpression{
-							With: &semantic.IdentifierExpression{Name: "left"},
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "w"},
-									Value: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "right"},
-										Property: "w",
-									},
-								},
-							},
-						},
-					},
-				},
+				Fn:    executetest.FunctionExpression(t, `(left, right) => ({left with w: right.w})`),
 				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
@@ -531,31 +388,10 @@ func TestJoin(t *testing.T) {
 			},
 		},
 		{
-			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "no matches",
 			// fn: (left, right) => left
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.IdentifierExpression{
-							Name: "left",
-						},
-					},
-				},
+				Fn:    executetest.FunctionExpression(t, `(left, right) => left`),
 				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
@@ -605,27 +441,7 @@ func TestJoin(t *testing.T) {
 			name: "no matches",
 			// fn: (left, right) => left
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.IdentifierExpression{
-							Name: "left",
-						},
-					},
-				},
+				Fn:    executetest.FunctionExpression(t, "(left, right) => left"),
 				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
@@ -663,42 +479,7 @@ func TestJoin(t *testing.T) {
 			name: "modify group key",
 			// fn: (left, right) => ({A: right.B, B: left.A})
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.ObjectExpression{
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "A"},
-									Value: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "right"},
-										Property: "B",
-									},
-								},
-								{
-									Key: &semantic.Identifier{Name: "B"},
-									Value: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "left"},
-										Property: "A",
-									},
-								},
-							},
-						},
-					},
-				},
+				Fn:    executetest.FunctionExpression(t, `(left, right) => ({A: right.B, B: left.A})`),
 				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
@@ -739,35 +520,7 @@ func TestJoin(t *testing.T) {
 			name: "modify group key",
 			// fn: (left, right) => ({A: left.A})
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.ObjectExpression{
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "A"},
-									Value: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "left"},
-										Property: "A",
-									},
-								},
-							},
-						},
-					},
-				},
+				Fn:    executetest.FunctionExpression(t, `(left, right) => ({A: left.A})`),
 				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
@@ -805,31 +558,10 @@ func TestJoin(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "left semijoin",
 			// fn: (left, right) => left
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.IdentifierExpression{
-							Name: "left",
-						},
-					},
-				},
+				Fn:    executetest.FunctionExpression(t, `(left, right) => left`),
 				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
@@ -879,31 +611,10 @@ func TestJoin(t *testing.T) {
 			},
 		},
 		{
-			skip: "https://github.com/influxdata/flux/issues/2473",
 			name: "right semijoin",
 			// fn: (left, right) => right
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.IdentifierExpression{
-							Name: "right",
-						},
-					},
-				},
+				Fn:    executetest.FunctionExpression(t, `(left, right) => right`),
 				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{

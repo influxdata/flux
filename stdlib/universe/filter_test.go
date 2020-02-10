@@ -2,7 +2,6 @@ package universe_test
 
 import (
 	"context"
-	"regexp"
 	"testing"
 	"time"
 
@@ -41,32 +40,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &universe.FilterOpSpec{
 							Fn: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-										},
-										Body: &semantic.LogicalExpression{
-											Operator: ast.AndOperator,
-											Left: &semantic.BinaryExpression{
-												Operator: ast.EqualOperator,
-												Left: &semantic.MemberExpression{
-													Object:   &semantic.IdentifierExpression{Name: "r"},
-													Property: "t1",
-												},
-												Right: &semantic.StringLiteral{Value: "val1"},
-											},
-											Right: &semantic.BinaryExpression{
-												Operator: ast.EqualOperator,
-												Left: &semantic.MemberExpression{
-													Object:   &semantic.IdentifierExpression{Name: "r"},
-													Property: "t2",
-												},
-												Right: &semantic.StringLiteral{Value: "val2"},
-											},
-										},
-									},
-								},
+								Fn:    executetest.FunctionExpression(t, `(r) => r["t1"] == "val1" and r["t2"] == "val2"`),
 								Scope: valuestest.Scope(),
 							},
 						},
@@ -127,43 +101,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &universe.FilterOpSpec{
 							Fn: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-										},
-										Body: &semantic.LogicalExpression{
-											Operator: ast.OrOperator,
-											Left: &semantic.LogicalExpression{
-												Operator: ast.AndOperator,
-												Left: &semantic.BinaryExpression{
-													Operator: ast.EqualOperator,
-													Left: &semantic.MemberExpression{
-														Object:   &semantic.IdentifierExpression{Name: "r"},
-														Property: "t1",
-													},
-													Right: &semantic.StringLiteral{Value: "val1"},
-												},
-												Right: &semantic.BinaryExpression{
-													Operator: ast.EqualOperator,
-													Left: &semantic.MemberExpression{
-														Object:   &semantic.IdentifierExpression{Name: "r"},
-														Property: "t2",
-													},
-													Right: &semantic.StringLiteral{Value: "val2"},
-												},
-											},
-											Right: &semantic.BinaryExpression{
-												Operator: ast.EqualOperator,
-												Left: &semantic.MemberExpression{
-													Object:   &semantic.IdentifierExpression{Name: "r"},
-													Property: "t3",
-												},
-												Right: &semantic.StringLiteral{Value: "val3"},
-											},
-										},
-									},
-								},
+								Fn:    executetest.FunctionExpression(t, `(r) => (r["t1"] == "val1" and r["t2"] == "val2") or r["t3"] == "val3"`),
 								Scope: valuestest.Scope(),
 							},
 						},
@@ -220,33 +158,8 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &universe.FilterOpSpec{
 							Fn: interpreter.ResolvedFunction{
+								Fn:    executetest.FunctionExpression(t, `(r) => r["t1"] == "val1" and r["_field"] == 10`),
 								Scope: valuestest.Scope(),
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-										},
-										Body: &semantic.LogicalExpression{
-											Operator: ast.AndOperator,
-											Left: &semantic.BinaryExpression{
-												Operator: ast.EqualOperator,
-												Left: &semantic.MemberExpression{
-													Object:   &semantic.IdentifierExpression{Name: "r"},
-													Property: "t1",
-												},
-												Right: &semantic.StringLiteral{Value: "val1"},
-											},
-											Right: &semantic.BinaryExpression{
-												Operator: ast.EqualOperator,
-												Left: &semantic.MemberExpression{
-													Object:   &semantic.IdentifierExpression{Name: "r"},
-													Property: "_field",
-												},
-												Right: &semantic.IntegerLiteral{Value: 10},
-											},
-										},
-									},
-								},
 							},
 						},
 					},
@@ -302,32 +215,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &universe.FilterOpSpec{
 							Fn: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-										},
-										Body: &semantic.LogicalExpression{
-											Operator: ast.AndOperator,
-											Left: &semantic.BinaryExpression{
-												Operator: ast.EqualOperator,
-												Left: &semantic.MemberExpression{
-													Object:   &semantic.IdentifierExpression{Name: "r"},
-													Property: "t1",
-												},
-												Right: &semantic.StringLiteral{Value: "val1"},
-											},
-											Right: &semantic.BinaryExpression{
-												Operator: ast.EqualOperator,
-												Left: &semantic.MemberExpression{
-													Object:   &semantic.IdentifierExpression{Name: "r"},
-													Property: "_field",
-												},
-												Right: &semantic.IntegerLiteral{Value: 10},
-											},
-										},
-									},
-								},
+								Fn:    executetest.FunctionExpression(t, `(r) => r["t1"] == "val1" and r["_field"] == 10`),
 								Scope: valuestest.Scope(),
 							},
 						},
@@ -366,7 +254,7 @@ func TestFilter_NewQuery(t *testing.T) {
 			Name: "from with database filter with no parens including regex and field",
 			Raw: `from(bucket:"mybucket")
 						|> filter(fn: (r) =>
-							r["t1"]==/^val1/
+							r["t1"]=~/^val1/
 							and
 							r["_field"] == 10.5
 						)
@@ -384,32 +272,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &universe.FilterOpSpec{
 							Fn: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-										},
-										Body: &semantic.LogicalExpression{
-											Operator: ast.AndOperator,
-											Left: &semantic.BinaryExpression{
-												Operator: ast.EqualOperator,
-												Left: &semantic.MemberExpression{
-													Object:   &semantic.IdentifierExpression{Name: "r"},
-													Property: "t1",
-												},
-												Right: &semantic.RegexpLiteral{Value: regexp.MustCompile("^val1")},
-											},
-											Right: &semantic.BinaryExpression{
-												Operator: ast.EqualOperator,
-												Left: &semantic.MemberExpression{
-													Object:   &semantic.IdentifierExpression{Name: "r"},
-													Property: "_field",
-												},
-												Right: &semantic.FloatLiteral{Value: 10.5},
-											},
-										},
-									},
-								},
+								Fn:    executetest.FunctionExpression(t, `(r) => r["t1"] =~ /^val1/ and r["_field"] == 10.5`),
 								Scope: valuestest.Scope(),
 							},
 						},
@@ -448,7 +311,7 @@ func TestFilter_NewQuery(t *testing.T) {
 			Name: "from with database regex with escape",
 			Raw: `from(bucket:"mybucket")
 						|> filter(fn: (r) =>
-							r["t1"]==/^va\/l1/
+							r["t1"]=~/^va\/l1/
 						)`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
@@ -462,21 +325,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &universe.FilterOpSpec{
 							Fn: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-										},
-										Body: &semantic.BinaryExpression{
-											Operator: ast.EqualOperator,
-											Left: &semantic.MemberExpression{
-												Object:   &semantic.IdentifierExpression{Name: "r"},
-												Property: "t1",
-											},
-											Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`^va/l1`)},
-										},
-									},
-								},
+								Fn:    executetest.FunctionExpression(t, `(r) => r["t1"] =~ /^va\/l1/`),
 								Scope: valuestest.Scope(),
 							},
 						},
@@ -491,9 +340,9 @@ func TestFilter_NewQuery(t *testing.T) {
 			Name: "from with database with two regex",
 			Raw: `from(bucket:"mybucket")
 						|> filter(fn: (r) =>
-							r["t1"]==/^va\/l1/
+							r["t1"]=~/^va\/l1/
 							and
-							r["t2"] != /^val2/
+							r["t2"] !~ /^val2/
 						)`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
@@ -507,32 +356,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &universe.FilterOpSpec{
 							Fn: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-										},
-										Body: &semantic.LogicalExpression{
-											Operator: ast.AndOperator,
-											Left: &semantic.BinaryExpression{
-												Operator: ast.EqualOperator,
-												Left: &semantic.MemberExpression{
-													Object:   &semantic.IdentifierExpression{Name: "r"},
-													Property: "t1",
-												},
-												Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`^va/l1`)},
-											},
-											Right: &semantic.BinaryExpression{
-												Operator: ast.NotEqualOperator,
-												Left: &semantic.MemberExpression{
-													Object:   &semantic.IdentifierExpression{Name: "r"},
-													Property: "t2",
-												},
-												Right: &semantic.RegexpLiteral{Value: regexp.MustCompile(`^val2`)},
-											},
-										},
-									},
-								},
+								Fn:    executetest.FunctionExpression(t, `(r) => r["t1"] =~ /^va\/l1/ and r["t2"] !~ /^val2/`),
 								Scope: valuestest.Scope(),
 							},
 						},
@@ -545,7 +369,7 @@ func TestFilter_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "from with drop",
-			Raw:  `from(bucket:"mybucket") |> filter(fn: (r) => true, onEmpty: "drop")`,
+			Raw:  `from(bucket:"mybucket") |> filter(fn: (r) => r._value > 0.0, onEmpty: "drop")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -558,14 +382,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &universe.FilterOpSpec{
 							Fn: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-										},
-										Body: &semantic.BooleanLiteral{Value: true},
-									},
-								},
+								Fn:    executetest.FunctionExpression(t, `(r) => r._value > 0.0`),
 								Scope: valuestest.Scope(),
 							},
 							OnEmpty: "drop",
@@ -579,7 +396,7 @@ func TestFilter_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "from with keep",
-			Raw:  `from(bucket:"mybucket") |> filter(fn: (r) => true, onEmpty: "keep")`,
+			Raw:  `from(bucket:"mybucket") |> filter(fn: (r) => r._value > 0.0, onEmpty: "keep")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -592,14 +409,7 @@ func TestFilter_NewQuery(t *testing.T) {
 						ID: "filter1",
 						Spec: &universe.FilterOpSpec{
 							Fn: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-										},
-										Body: &semantic.BooleanLiteral{Value: true},
-									},
-								},
+								Fn:    executetest.FunctionExpression(t, `(r) => r._value > 0.0`),
 								Scope: valuestest.Scope(),
 							},
 							OnEmpty: "keep",
@@ -620,12 +430,12 @@ func TestFilter_NewQuery(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
-			t.Skip("https://github.com/influxdata/flux/issues/2494")
 			t.Parallel()
 			querytest.NewQueryTestHelper(t, tc)
 		})
 	}
 }
+
 func TestFilterOperation_Marshaling(t *testing.T) {
 	t.Skip("https://github.com/influxdata/flux/issues/2492")
 	data := []byte(`{
@@ -834,21 +644,7 @@ func TestFilter_Process(t *testing.T) {
 			name: `_value>5`,
 			spec: &universe.FilterProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.BinaryExpression{
-								Operator: ast.GreaterThanOperator,
-								Left: &semantic.MemberExpression{
-									Object:   &semantic.IdentifierExpression{Name: "r"},
-									Property: "_value",
-								},
-								Right: &semantic.FloatLiteral{Value: 5},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => r._value > 5.0`),
 					Scope: valuestest.Scope(),
 				},
 			},
@@ -876,23 +672,7 @@ func TestFilter_Process(t *testing.T) {
 			name: "_value>5 multiple blocks",
 			spec: &universe.FilterProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.BinaryExpression{
-								Operator: ast.GreaterThanOperator,
-								Left: &semantic.MemberExpression{
-									Object:   &semantic.IdentifierExpression{Name: "r"},
-									Property: "_value",
-								},
-								Right: &semantic.FloatLiteral{
-									Value: 5,
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => r._value > 5.0`),
 					Scope: valuestest.Scope(),
 				},
 			},
@@ -953,49 +733,7 @@ func TestFilter_Process(t *testing.T) {
 			name: "_value>5 and t1 = a and t2 = y",
 			spec: &universe.FilterProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.LogicalExpression{
-								Operator: ast.AndOperator,
-								Left: &semantic.BinaryExpression{
-									Operator: ast.GreaterThanOperator,
-									Left: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "r"},
-										Property: "_value",
-									},
-									Right: &semantic.FloatLiteral{
-										Value: 5,
-									},
-								},
-								Right: &semantic.LogicalExpression{
-									Operator: ast.AndOperator,
-									Left: &semantic.BinaryExpression{
-										Operator: ast.EqualOperator,
-										Left: &semantic.MemberExpression{
-											Object:   &semantic.IdentifierExpression{Name: "r"},
-											Property: "t1",
-										},
-										Right: &semantic.StringLiteral{
-											Value: "a",
-										},
-									},
-									Right: &semantic.BinaryExpression{
-										Operator: ast.EqualOperator,
-										Left: &semantic.MemberExpression{
-											Object:   &semantic.IdentifierExpression{Name: "r"},
-											Property: "t2",
-										},
-										Right: &semantic.StringLiteral{
-											Value: "y",
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => r._value > 5.0 and r.t1 == "a" and r.t2 == "y"`),
 					Scope: valuestest.Scope(),
 				},
 			},
@@ -1028,21 +766,7 @@ func TestFilter_Process(t *testing.T) {
 			name: `_value>5 with unused nulls`,
 			spec: &universe.FilterProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.BinaryExpression{
-								Operator: ast.GreaterThanOperator,
-								Left: &semantic.MemberExpression{
-									Object:   &semantic.IdentifierExpression{Name: "r"},
-									Property: "_value",
-								},
-								Right: &semantic.FloatLiteral{Value: 5},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => r._value > 5.0`),
 					Scope: valuestest.Scope(),
 				},
 			},
@@ -1075,7 +799,6 @@ func TestFilter_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Skip("https://github.com/influxdata/flux/issues/2489")
 			executetest.ProcessTestHelper2(
 				t,
 				tc.data,
@@ -1095,25 +818,9 @@ func TestFilter_Process(t *testing.T) {
 }
 
 func BenchmarkFilter_Values(b *testing.B) {
-	b.Skip("https://github.com/influxdata/flux/issues/2473")
 	b.Run("1000", func(b *testing.B) {
-		benchmarkFilter(b, 1000, &semantic.FunctionExpression{
-			Block: &semantic.FunctionBlock{
-				Parameters: &semantic.FunctionParameters{
-					List: []*semantic.FunctionParameter{
-						{Key: &semantic.Identifier{Name: "r"}},
-					},
-				},
-				Body: &semantic.BinaryExpression{
-					Operator: ast.GreaterThanEqualOperator,
-					Left: &semantic.MemberExpression{
-						Object:   &semantic.IdentifierExpression{Name: "r"},
-						Property: "_value",
-					},
-					Right: &semantic.FloatLiteral{Value: 0.0},
-				},
-			},
-		})
+		fn := executetest.FunctionExpression(b, `(r) => r._value > 0.0`)
+		benchmarkFilter(b, 1000, fn)
 	})
 }
 
