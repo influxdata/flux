@@ -65,13 +65,12 @@ func TestLength_NewQuery(t *testing.T) {
 }
 
 func lengthTestHelper(t *testing.T, tc lengthCase) {
-	t.Skip("https://github.com/influxdata/flux/issues/2481")
 	t.Helper()
 	length := universe.MakeLengthFunc()
 	result, err := length.Call(
 		dependenciestest.Default().Inject(context.Background()),
 		values.NewObjectWithValues(map[string]values.Value{
-			"arr": values.NewArrayWithBacking(tc.typ, tc.arr),
+			"arr": values.NewArrayWithBacking(semantic.NewArrayType(tc.typ), tc.arr),
 		}),
 	)
 
