@@ -17,7 +17,6 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
@@ -709,7 +708,6 @@ func getRootErr(err error) error {
 // extracts the TableObjects obtained from evaluation. It eventually compiles TableObjects and
 // compares obtained results with expected ones (obtained from decoding the raw csv data).
 func TestTableObjectCompiler(t *testing.T) {
-	t.Skip("https://github.com/influxdata/flux/issues/2479")
 	dataRaw := `#datatype,string,long,dateTime:RFC3339,long,string,string,string,string
 #group,false,false,false,false,false,false,true,true
 #default,_result,,,,,,,
@@ -766,12 +764,18 @@ csv.from(csv: data)
 	if err != nil {
 		t.Fatal(err)
 	}
-	tos := getTableObjects(vs)
-	if len(tos) != 3 {
-		t.Fatalf("wrong number of table objects, got %d", len(tos))
+	if len(vs) != 1 {
+		t.Fatalf("wrong number of side effect values, got %d", len(vs))
 	}
 
-	fromCsvTO := tos[2]
+	to, ok := vs[0].Value.(*flux.TableObject)
+	if !ok {
+		t.Fatalf("expected TableObject but instead got %T", vs[0].Value)
+	}
+
+	tos := flattenTableObjects(to, []*flux.TableObject{})
+
+	fromCsvTO := tos[0]
 	if fromCsvTO.Kind != csv.FromCSVKind {
 		t.Fatalf("unexpected kind for fromCSV: %s", fromCsvTO.Kind)
 	}
@@ -779,7 +783,7 @@ csv.from(csv: data)
 	if rangeTO.Kind != universe.RangeKind {
 		t.Fatalf("unexpected kind for range: %s", rangeTO.Kind)
 	}
-	filterTO := tos[0]
+	filterTO := tos[2]
 	if filterTO.Kind != universe.FilterKind {
 		t.Fatalf("unexpected kind for filter: %s", filterTO.Kind)
 	}
@@ -862,13 +866,9 @@ func getTablesFromResultOrFail(t *testing.T, result flux.Result) []*executetest.
 	return tables
 }
 
-func getTableObjects(vs []interpreter.SideEffect) []*flux.TableObject {
-	tos := make([]*flux.TableObject, 0)
-	for _, v := range vs {
-		if to, ok := v.Value.(*flux.TableObject); ok {
-			tos = append(tos, to)
-			tos = append(tos, to.Parents...)
-		}
+func flattenTableObjects(to *flux.TableObject, arr []*flux.TableObject) []*flux.TableObject {
+	for _, parent := range to.Parents {
+		arr = flattenTableObjects(parent, arr)
 	}
-	return tos
+	return append(arr, to)
 }
