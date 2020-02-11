@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/influxdata/flux"
+	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/internal/errors"
@@ -364,28 +366,22 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 }
 */
 
-func TestInterpreter_SetNewOption(t *testing.T) {
-	t.Skip("Interpreter seems to ignore option assignments https://github.com/influxdata/flux/issues/2410")
+func TestInterpreter_MutateOption(t *testing.T) {
 	pkg := interpreter.NewPackage("alert")
 	ctx := dependenciestest.Default().Inject(context.Background())
 	itrp := interpreter.NewInterpreter(pkg)
 	script := `
 		package alert
-		option state = "Warning"
-		state
+		import "planner"
+		fail = () => {
+			[][0]
+			return false
+		}
+		option planner.disableLogicalRules = ["dummyRule"]
+		planner.disableLogicalRules[0] == "dummyRule" or fail()
 `
-	if _, err := interptest.Eval(ctx, itrp, values.NewNestedScope(nil, pkg), nil, script); err != nil {
+	if _, err := interptest.Eval(ctx, itrp, values.NewNestedScope(nil, pkg), flux.StdLib(), script); err != nil {
 		t.Fatalf("failed to evaluate package: %v", err)
-	}
-	option, ok := pkg.Get("state")
-	if !ok {
-		t.Errorf("missing option %q in package %s", "state", "alert")
-	}
-	if got, want := option.Type().Nature(), semantic.String; want != got {
-		t.Fatalf("unexpected option type; want=%s got=%s value: %v", want, got, option)
-	}
-	if got, want := option.Str(), "Warning"; want != got {
-		t.Errorf("unexpected option value; want=%s got=%s", want, got)
 	}
 }
 
