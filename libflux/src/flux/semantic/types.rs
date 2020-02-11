@@ -931,6 +931,7 @@ impl fmt::Display for Function {
     }
 }
 
+#[allow(clippy::implicit_hasher)]
 impl<T: Substitutable> Substitutable for HashMap<String, T> {
     fn apply(self, sub: &Substitution) -> Self {
         self.into_iter().map(|(k, v)| (k, v.apply(sub))).collect()

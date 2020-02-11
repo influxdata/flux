@@ -751,7 +751,7 @@ pub fn builtins() -> Builtins<'static> {
                     ) -> [t0]
                 "#,
                 "tripleExponentialDerivative" => r#"
-                    forall [t0] where t0: Numeric, t1: Row (
+                    forall [t0, t1] where t0: Numeric, t1: Row (
                         <-tables: [{_value: t0 | t1}],
                         n: int
                     ) -> [{_value: float | t1}]
@@ -774,7 +774,7 @@ pub fn builtins() -> Builtins<'static> {
                 // already exist.
                 // https://github.com/influxdata/flux/issues/2255
                 "window" => r#"
-                    forall [t0] where t0: Row, t1: Row (
+                    forall [t0, t1] where t0: Row, t1: Row (
                         <-tables: [t0],
                         ?every: duration,
                         ?period: duration,

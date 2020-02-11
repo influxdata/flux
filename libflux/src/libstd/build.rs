@@ -3,6 +3,7 @@ use std::{env, fs, io, io::Write, path};
 use flux::semantic::bootstrap;
 use flux::semantic::env::Environment;
 use flux::semantic::flatbuffers::types as fb;
+use flux::semantic::sub::Substitutable;
 
 use flatbuffers;
 
@@ -48,6 +49,22 @@ fn main() -> Result<(), Error> {
     let dir = path::PathBuf::from(env::var("OUT_DIR")?);
 
     let (pre, lib, fresher) = bootstrap::infer_stdlib()?;
+
+    // Validate there aren't any free type variables in the environment
+    for (name, ty) in &pre {
+        if !ty.free_vars().is_empty() {
+            return Err(Error {
+                msg: format!("found free variables in type of {}: {}", name, ty),
+            });
+        }
+    }
+    for (name, ty) in &lib {
+        if !ty.free_vars().is_empty() {
+            return Err(Error {
+                msg: format!("found free variables in type of package {}: {}", name, ty),
+            });
+        }
+    }
 
     let path = dir.join("prelude.data");
     serialize(Environment::from(pre), fb::build_env, &path)?;

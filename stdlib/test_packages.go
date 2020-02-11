@@ -14,6 +14,7 @@ import (
 	regexp "github.com/influxdata/flux/stdlib/regexp"
 	strings "github.com/influxdata/flux/stdlib/strings"
 	chronograf "github.com/influxdata/flux/stdlib/testing/chronograf"
+	influxql "github.com/influxdata/flux/stdlib/testing/influxql"
 	kapacitor "github.com/influxdata/flux/stdlib/testing/kapacitor"
 	pandas "github.com/influxdata/flux/stdlib/testing/pandas"
 	prometheus "github.com/influxdata/flux/stdlib/testing/prometheus"
@@ -34,6 +35,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, regexp.FluxTestPackages...)
 	pkgs = append(pkgs, strings.FluxTestPackages...)
 	pkgs = append(pkgs, chronograf.FluxTestPackages...)
+	pkgs = append(pkgs, influxql.FluxTestPackages...)
 	pkgs = append(pkgs, kapacitor.FluxTestPackages...)
 	pkgs = append(pkgs, pandas.FluxTestPackages...)
 	pkgs = append(pkgs, prometheus.FluxTestPackages...)
