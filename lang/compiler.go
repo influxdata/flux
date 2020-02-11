@@ -54,22 +54,8 @@ type compileOptions struct {
 		logical  []plan.LogicalOption
 		physical []plan.PhysicalOption
 	}
-}
 
-func WithLogPlanOpts(lopts ...plan.LogicalOption) CompileOption {
-	return func(o *compileOptions) {
-		o.planOptions.logical = append(o.planOptions.logical, lopts...)
-	}
-}
-func WithPhysPlanOpts(popts ...plan.PhysicalOption) CompileOption {
-	return func(o *compileOptions) {
-		o.planOptions.physical = append(o.planOptions.physical, popts...)
-	}
-}
-func WithExtern(extern *ast.File) CompileOption {
-	return func(o *compileOptions) {
-		o.extern = extern
-	}
+	executeOptions []execute.ExecutionOption
 }
 
 func defaultOptions() *compileOptions {
@@ -85,12 +71,38 @@ func applyOptions(opts ...CompileOption) *compileOptions {
 	return o
 }
 
-// NOTE: compileOptions can be used only when invoking Compile* functions.
+// NOTE(affo): compileOptions can be used only when invoking Compile* functions.
 // They can't be used when unmarshaling a Compiler and invoking its Compile method.
+// In order to make an implementation of `flux.Compiler` in package `lang` use some
+// `lang.CompileOptions`, you must `Inject` those in the context. E.g.:
+// ```
+// 	opts := []CompileOption{lang.Verbose(true), lang.WithExtern(nil)}
+// 	ctx = opts.Inject(ctx)
+// ```
 
 func Verbose(v bool) CompileOption {
 	return func(o *compileOptions) {
 		o.verbose = v
+	}
+}
+func WithExtern(extern *ast.File) CompileOption {
+	return func(o *compileOptions) {
+		o.extern = extern
+	}
+}
+func WithLogPlanOpts(lopts ...plan.LogicalOption) CompileOption {
+	return func(o *compileOptions) {
+		o.planOptions.logical = append(o.planOptions.logical, lopts...)
+	}
+}
+func WithPhysPlanOpts(popts ...plan.PhysicalOption) CompileOption {
+	return func(o *compileOptions) {
+		o.planOptions.physical = append(o.planOptions.physical, popts...)
+	}
+}
+func WithExecuteOptions(eopts ...execute.ExecutionOption) CompileOption {
+	return func(o *compileOptions) {
+		o.executeOptions = append(o.executeOptions, eopts...)
 	}
 }
 
@@ -165,8 +177,9 @@ type FluxCompiler struct {
 }
 
 func (c FluxCompiler) Compile(ctx context.Context) (flux.Program, error) {
+	opts := getCompileOptions(ctx)
 	// Ignore context, it will be provided upon Program Start.
-	return Compile(c.Query, c.Now, WithExtern(c.Extern))
+	return Compile(c.Query, c.Now, append(opts, WithExtern(c.Extern))...)
 }
 
 func (c FluxCompiler) CompilerType() flux.CompilerType {
@@ -184,8 +197,9 @@ func (c ASTCompiler) Compile(ctx context.Context) (flux.Program, error) {
 	if now.IsZero() {
 		now = time.Now()
 	}
+	opts := getCompileOptions(ctx)
 	// Ignore context, it will be provided upon Program Start.
-	return CompileAST(c.AST, now), nil
+	return CompileAST(c.AST, now, opts...), nil
 }
 
 func (ASTCompiler) CompilerType() flux.CompilerType {
@@ -206,8 +220,9 @@ type TableObjectCompiler struct {
 }
 
 func (c *TableObjectCompiler) Compile(ctx context.Context) (flux.Program, error) {
+	opts := getCompileOptions(ctx)
 	// Ignore context, it will be provided upon Program Start.
-	return CompileTableObject(ctx, c.Tables, c.Now)
+	return CompileTableObject(ctx, c.Tables, c.Now, opts...)
 }
 
 func (*TableObjectCompiler) CompilerType() flux.CompilerType {
@@ -247,7 +262,7 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 		},
 	}
 
-	e := execute.NewExecutor(p.Logger)
+	e := execute.NewExecutor(p.Logger, p.opts.executeOptions...)
 	resultMap, md, err := e.Execute(cctx, p.PlanSpec, q.alloc)
 	if err != nil {
 		s.Finish()

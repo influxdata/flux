@@ -198,12 +198,22 @@ func processMessage(ctx context.Context, t Transformation, m Message) (finished 
 	case RetractTableMsg:
 		err = t.RetractTable(m.SrcDatasetID(), m.Key())
 	case ProcessMsg:
+		var addMetaFn = func() {}
 		b := m.Table()
+		if mt, ok := t.(*metaTransformation); ok {
+			mb := newMetaTable(b)
+			addMetaFn = func() {
+				mt.addMetadata(*mb.meta)
+			}
+			t = mt
+			b = mb
+		}
 		var span opentracing.Span
 		if flux.IsExperimentalTracingEnabled() {
 			span, _ = opentracing.StartSpanFromContext(ctx, reflect.TypeOf(t).String())
 		}
 		err = t.Process(m.SrcDatasetID(), b)
+		addMetaFn()
 		if span != nil {
 			span.Finish()
 		}

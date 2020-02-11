@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"runtime/debug"
-	"sync"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -29,14 +28,42 @@ type Executor interface {
 
 type executor struct {
 	logger *zap.Logger
+	opts   *executionOptions
 }
 
-func NewExecutor(logger *zap.Logger) Executor {
+type executionOptions struct {
+	profiling bool
+}
+
+func defaultOptions() *executionOptions {
+	o := new(executionOptions)
+	return o
+}
+
+// ExecutionOption is an option for execution.
+type ExecutionOption = func(*executionOptions)
+
+func WithProfiling() ExecutionOption {
+	return func(opts *executionOptions) {
+		opts.profiling = true
+	}
+}
+
+func applyOptions(opts ...ExecutionOption) *executionOptions {
+	o := defaultOptions()
+	for _, opt := range opts {
+		opt(o)
+	}
+	return o
+}
+
+func NewExecutor(logger *zap.Logger, opts ...ExecutionOption) Executor {
 	if logger == nil {
 		logger = zap.NewNop()
 	}
 	e := &executor{
 		logger: logger,
+		opts:   applyOptions(opts...),
 	}
 	return e
 }
@@ -60,7 +87,8 @@ type executionState struct {
 	sources []Source
 	metaCh  chan flux.Metadata
 
-	transports []Transport
+	transports      []Transport
+	transformations []Transformation
 
 	dispatcher *poolDispatcher
 	logger     *zap.Logger
@@ -99,6 +127,7 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a *me
 		ctx:   ctx,
 		es:    es,
 		nodes: make(map[plan.Node]Node),
+		opts:  e.opts,
 	}
 
 	if err := p.BottomUpWalk(v.Visit); err != nil {
@@ -119,6 +148,7 @@ type createExecutionNodeVisitor struct {
 	ctx   context.Context
 	es    *executionState
 	nodes map[plan.Node]Node
+	opts  *executionOptions
 }
 
 func skipYields(pn plan.Node) plan.Node {
@@ -208,9 +238,11 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 		}
 
 		tr, ds, err := createTransformationFn(id, DiscardingMode, spec, ec)
-
 		if err != nil {
 			return err
+		}
+		if v.opts.profiling {
+			tr = newMetaTransformation(node.ID(), tr)
 		}
 
 		if ppn.TriggerSpec == nil {
@@ -223,6 +255,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 			executionNode := v.nodes[p]
 			transport := newConsecutiveTransport(v.es.dispatcher, tr)
 			v.es.transports = append(v.es.transports, transport)
+			v.es.transformations = append(v.es.transformations, tr)
 			executionNode.AddTransformation(transport)
 		}
 
@@ -244,12 +277,8 @@ func (es *executionState) abort(err error) {
 }
 
 func (es *executionState) do(ctx context.Context) {
-	var wg sync.WaitGroup
 	for _, src := range es.sources {
-		wg.Add(1)
 		go func(src Source) {
-			defer wg.Done()
-
 			// Setup panic handling on the source goroutines
 			defer func() {
 				if e := recover(); e != nil {
@@ -280,13 +309,9 @@ func (es *executionState) do(ctx context.Context) {
 		}(src)
 	}
 
-	go func() {
-		defer close(es.metaCh)
-		wg.Wait()
-	}()
-
 	es.dispatcher.Start(es.resources.ConcurrencyQuota, ctx)
 	go func() {
+		defer close(es.metaCh)
 		// Wait for all transports to finish
 		for _, t := range es.transports {
 			select {
@@ -303,6 +328,21 @@ func (es *executionState) do(ctx context.Context) {
 		err := es.dispatcher.Stop()
 		if err != nil {
 			es.abort(err)
+		}
+		// Aggregate and send all metadata from transformations
+		profDetail := make(map[string][]TableMetadata)
+		prof := make(map[string]TableMetadata)
+		for _, t := range es.transformations {
+			if mt, ok := t.(*metaTransformation); ok {
+				profDetail[string(mt.id)] = mt.metas
+				prof[string(mt.id)] = mt.aggregateMetadata()
+			}
+		}
+		if len(prof) > 0 || len(profDetail) > 0 {
+			meta := flux.Metadata{}
+			meta.Add("profiling_detail", profDetail)
+			meta.Add("profiling", prof)
+			es.metaCh <- meta
 		}
 	}()
 }
