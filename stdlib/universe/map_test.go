@@ -112,55 +112,6 @@ func TestMap_NewQuery(t *testing.T) {
 	}
 }
 
-func TestMapOperation_Marshaling(t *testing.T) {
-	t.Skip("https://github.com/influxdata/flux/issues/2492")
-	data := []byte(`{
-		"id":"map",
-		"kind":"map",
-		"spec":{
-			"fn":{
-				"fn":{
-					"type": "FunctionExpression",
-					"block":{
-						"type":"FunctionBlock",
-						"parameters": {
-							"type":"FunctionParameters",
-							"list": [
-								{"type":"FunctionParam","key":{"type":"Identifier","name":"r"}}
-							]
-						},
-						"body":{
-							"type":"BinaryExpression",
-							"operator": "-",
-							"left":{
-								"type":"MemberExpression",
-								"object": {
-									"type": "IdentifierExpression",
-									"name":"r"
-								},
-								"property": "_value"
-							},
-							"right":{
-								"type":"FloatLiteral",
-								"value": 5.6
-							}
-						}
-					}
-				}
-			}
-		}
-	}`)
-	op := &flux.Operation{
-		ID: "map",
-		Spec: &universe.MapOpSpec{
-			Fn: interpreter.ResolvedFunction{
-				Fn:    executetest.FunctionExpression(t, "(r) => r._value - 5.6"),
-				Scope: nil,
-			},
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 func TestMap_Process(t *testing.T) {
 	builtIns := flux.Prelude()
 	testCases := []struct {

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
@@ -434,69 +433,6 @@ func TestFilter_NewQuery(t *testing.T) {
 			querytest.NewQueryTestHelper(t, tc)
 		})
 	}
-}
-
-func TestFilterOperation_Marshaling(t *testing.T) {
-	t.Skip("https://github.com/influxdata/flux/issues/2492")
-	data := []byte(`{
-		"id":"filter",
-		"kind":"filter",
-		"spec":{
-			"fn":{
-				"fn":{
-					"type": "FunctionExpression",
-					"block":{
-						"type":"FunctionBlock",
-						"parameters": {
-							"type":"FunctionParameters",
-							"list": [
-								{"type":"FunctionParameter","key":{"type":"Identifier","name":"r"}}
-							]
-						},
-						"body":{
-							"type":"BinaryExpression",
-							"operator": "!=",
-							"left":{
-								"type":"MemberExpression",
-								"object": {
-									"type": "IdentifierExpression",
-									"name":"r"
-								},
-								"property": "_measurement"
-							},
-							"right":{
-								"type":"StringLiteral",
-								"value":"mem"
-							}
-						}
-					}
-				}
-			}
-		}
-	}`)
-	op := &flux.Operation{
-		ID: "filter",
-		Spec: &universe.FilterOpSpec{
-			Fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-						},
-						Body: &semantic.BinaryExpression{
-							Operator: ast.NotEqualOperator,
-							Left: &semantic.MemberExpression{
-								Object:   &semantic.IdentifierExpression{Name: "r"},
-								Property: "_measurement",
-							},
-							Right: &semantic.StringLiteral{Value: "mem"},
-						},
-					},
-				},
-			},
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestMergeFilterAnyRule(t *testing.T) {
