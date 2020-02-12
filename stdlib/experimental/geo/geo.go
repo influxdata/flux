@@ -19,17 +19,17 @@ var boxT = semantic.NewObjectPolyType(map[string]semantic.PolyType{
 	"minLon": semantic.Float,
 	"maxLat": semantic.Float,
 	"maxLon": semantic.Float,
-}, semantic.LabelSet{"minLat", "minLon", "maxLat", "maxLon"}, nil)
+}, nil, semantic.LabelSet{"minLat", "minLon", "maxLat", "maxLon"})
 
 var circleT = semantic.NewObjectPolyType(map[string]semantic.PolyType{
-	"lat": semantic.Float,
-	"lon": semantic.Float,
+	"lat":    semantic.Float,
+	"lon":    semantic.Float,
 	"radius": semantic.Float,
-}, semantic.LabelSet{"lat", "lon", "radius"}, nil)
+}, nil, semantic.LabelSet{"lat", "lon", "radius"})
 
 var polygonT = semantic.NewObjectPolyType(map[string]semantic.PolyType{
 	"points": semantic.NewArrayPolyType(pointT.Nature()),
-}, semantic.LabelSet{"points"}, nil)
+}, nil, semantic.LabelSet{"points"})
 
 var pointT = semantic.NewObjectType(map[string]semantic.Type{
 	"lat": semantic.Float,
@@ -41,15 +41,15 @@ func generateGetGridFunc() values.Function {
 		"getGrid",
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 			Parameters: map[string]semantic.PolyType{
-				"box": boxT,
-				"circle": circleT,
-				"polygon": polygonT,
+				"box":      boxT,
+				"circle":   circleT,
+				"polygon":  polygonT,
 				"level":    semantic.Int,
 				"maxLevel": semantic.Int,
 				"minSize":  semantic.Int,
 				"maxSize":  semantic.Int,
 			},
-			Return:   semantic.NewObjectPolyType(map[string]semantic.PolyType{"level": semantic.Int, "set": semantic.NewArrayPolyType(semantic.String)}, semantic.LabelSet{"level", "set"}, nil),
+			Return: semantic.NewObjectPolyType(map[string]semantic.PolyType{"level": semantic.Int, "set": semantic.NewArrayPolyType(semantic.String)}, semantic.LabelSet{"level", "set"}, nil),
 		}),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
@@ -87,6 +87,8 @@ func generateGetGridFunc() values.Function {
 			}
 			if !maxLevelOk {
 				maxLevel = -1
+			} else if maxLevel > MaxLevel {
+				return nil, fmt.Errorf("code %d: invalid maxLevel (%d, must be < %d)", codes.Invalid, maxLevel, MaxLevel)
 			}
 
 			minSize, minSizeOk, err := a.GetInt("minSize")
@@ -128,19 +130,19 @@ func generateGetGridFunc() values.Function {
 				radius, radiusOk := circle.Get("radius")
 
 				if !latOk || !lonOk || !radiusOk {
-					return nil, fmt.Errorf("code %d: invalid circle specification - must have lat, lon, radius fields", codes.Invalid)
+					return nil, fmt.Errorf("code %d: invalid circle specification - must have lat, lon and radius fields", codes.Invalid)
 				}
 
 				region = getCapRegion(lat.Float(), lon.Float(), radius.Float())
 			} else if isArrayArgumentOk(polygon, polygonOk) {
 				points := make([]s2.Point, polygon.Len())
-				for i := 0; i< polygon.Len();  i++ {
+				for i := 0; i < polygon.Len(); i++ {
 					point := polygon.Get(i).Object()
 					lat, latOk := point.Get("lat")
 					lon, lonOk := point.Get("lon")
 
-					if !latOk || !lonOk  {
-						return nil, fmt.Errorf("code %d: invalid polygin point specification - must have lat, lon fields", codes.Invalid)
+					if !latOk || !lonOk {
+						return nil, fmt.Errorf("code %d: invalid polygon point specification - must have lat, lon fields", codes.Invalid)
 					}
 					points[i] = s2.PointFromLatLng(s2.LatLngFromDegrees(lat.Float(), lon.Float()))
 				}
@@ -164,7 +166,7 @@ func generateGetGridFunc() values.Function {
 
 			return values.NewObjectWithValues(map[string]values.Value{
 				"level": levelVal,
-				"set":	 setVal,
+				"set":   setVal,
 			}), nil
 		}, false,
 	)
@@ -175,8 +177,8 @@ func generateGetParentFunc() values.Function {
 		"getParent",
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 			Parameters: map[string]semantic.PolyType{
-				"token":    semantic.String,
-				"point":    pointT.Nature(),
+				"token": semantic.String,
+				"point": pointT.Nature(),
 				"level": semantic.Int,
 			},
 			Required: semantic.LabelSet{"level"},
@@ -230,16 +232,38 @@ func generateGetParentFunc() values.Function {
 	)
 }
 
+func generateGetLevelFunc() values.Function {
+	return values.NewFunction(
+		"getLevel",
+		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+			Parameters: map[string]semantic.PolyType{
+				"token": semantic.String,
+			},
+			Required: semantic.LabelSet{"token"},
+			Return:   semantic.Int,
+		}),
+		func(ctx context.Context, args values.Object) (values.Value, error) {
+			a := interpreter.NewArguments(args)
+
+			token, err := a.GetRequiredString("token")
+			if err != nil {
+				return nil, err
+			}
+			return values.NewInt(int64(getLevel(token))), nil
+		}, false,
+	)
+}
+
 func generateContainsLatLonFunc() values.Function {
 	return values.NewFunction(
 		"containsLatLon",
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 			Parameters: map[string]semantic.PolyType{
-				"box": boxT,
-				"circle": circleT,
+				"box":     boxT,
+				"circle":  circleT,
 				"polygon": polygonT,
-				"lat":    semantic.Float,
-				"lon": semantic.Float,
+				"lat":     semantic.Float,
+				"lon":     semantic.Float,
 			},
 			Required: semantic.LabelSet{"lat", "lon"},
 			Return:   semantic.Bool,
@@ -289,27 +313,27 @@ func generateContainsLatLonFunc() values.Function {
 
 				region = getRectRegion(minLat.Float(), minLon.Float(), maxLat.Float(), maxLon.Float())
 			} else if isObjectArgumentOk(circle, circleOk) {
-				lat, latOk := circle.Get("lat")
-				lon, lonOk := circle.Get("lon")
+				centerLat, centerLatOk := circle.Get("lat")
+				centerLon, centerLonOk := circle.Get("lon")
 				radius, radiusOk := circle.Get("radius")
 
-				if !latOk || !lonOk || !radiusOk {
+				if !centerLatOk || !centerLonOk || !radiusOk {
 					return nil, fmt.Errorf("code %d: invalid circle specification - must have lat, lon, radius fields", codes.Invalid)
 				}
 
-				region = getCapRegion(lat.Float(), lon.Float(), radius.Float())
+				region = getCapRegion(centerLat.Float(), centerLon.Float(), radius.Float())
 			} else if isArrayArgumentOk(polygon, polygonOk) {
 				points := make([]s2.Point, polygon.Len())
-				for i := 0; i< polygon.Len();  i++ {
+				for i := 0; i < polygon.Len(); i++ {
 					point := polygon.Get(i).Object()
-					lat, latOk := point.Get("lat")
-					lon, lonOk := point.Get("lon")
+					pointLat, pointLatOk := point.Get("lat")
+					pointLon, pointLonOk := point.Get("lon")
 
-					if !latOk || !lonOk  {
-						return nil, fmt.Errorf("code %d: invalid polygin point specification - must have lat, lon fields", codes.Invalid)
+					if !pointLatOk || !pointLonOk {
+						return nil, fmt.Errorf("code %d: invalid polygon point specification - must have lat, lon fields", codes.Invalid)
 					}
 
-					points[i] = s2.PointFromLatLng(s2.LatLngFromDegrees(lat.Float(), lon.Float()))
+					points[i] = s2.PointFromLatLng(s2.LatLngFromDegrees(pointLat.Float(), pointLon.Float()))
 				}
 
 				region = getLoopRegion(points)
@@ -326,6 +350,7 @@ func generateContainsLatLonFunc() values.Function {
 func init() {
 	flux.RegisterPackageValue("experimental/geo", "getGrid", generateGetGridFunc())
 	flux.RegisterPackageValue("experimental/geo", "getParent", generateGetParentFunc())
+	flux.RegisterPackageValue("experimental/geo", "getLevel", generateGetLevelFunc())
 	flux.RegisterPackageValue("experimental/geo", "containsLatLon", generateContainsLatLonFunc())
 }
 
@@ -394,10 +419,10 @@ func isArrayArgumentOk(v values.Array, vOk bool) bool {
 //
 
 const MaxLevel = 30 // https://s2geometry.io/resources/s2cell_statistics.html
-const AbsoluteMaxSize = 4096
+const AbsoluteMaxSize = 100
 
 type grid struct {
-	set []string
+	set   []string
 	level int
 }
 
@@ -437,8 +462,8 @@ func getRectRegion(minLat, minLon, maxLat, maxLon float64) s2.Region {
 	min := s2.LatLngFromDegrees(minLat, minLon)
 	max := s2.LatLngFromDegrees(maxLat, maxLon)
 	return s2.Rect{
-		Lat:r1.Interval{Lo: min.Lat.Radians(), Hi: max.Lat.Radians()},
-		Lng:s1.Interval{Lo: min.Lng.Radians(), Hi: max.Lng.Radians()},
+		Lat: r1.Interval{Lo: min.Lat.Radians(), Hi: max.Lat.Radians()},
+		Lng: s1.Interval{Lo: min.Lng.Radians(), Hi: max.Lng.Radians()},
 	}
 }
 
@@ -447,12 +472,12 @@ const earthRadiusKm = 6371.01
 
 func getCapRegion(lat, lon, radius float64) s2.Region {
 	center := s2.PointFromLatLng(s2.LatLngFromDegrees(lat, lon))
-	return s2.CapFromCenterChordAngle(center,s1.ChordAngleFromAngle(s1.Angle(radius / earthRadiusKm)))
+	return s2.CapFromCenterAngle(center, s1.Angle(radius/earthRadiusKm))
 }
 
 func getLoopRegion(points []s2.Point) s2.Region {
 	loop := s2.LoopFromPoints(points)
-	if loop.Area() >= 2 * math.Pi { // points are not CCW but CW
+	if loop.Area() >= 2*math.Pi { // points are not CCW but CW
 		loop.Invert()
 	}
 	return loop
@@ -465,6 +490,7 @@ func getGrid(region s2.Region, reqLevel, maxLevel, minSize, maxSize int) (*grid,
 		g := getSpecGrid(region, reqLevel)
 		result = &g
 	} else if minSize > 0 || maxSize > 0 {
+		maxLevelFallback := maxLevel
 		if maxLevel <= 0 {
 			maxLevel = MaxLevel
 		}
@@ -488,7 +514,7 @@ func getGrid(region s2.Region, reqLevel, maxLevel, minSize, maxSize int) (*grid,
 		}
 		if result != nil {
 			n = result.getSize()
-			if n < minSize {
+			if n < minSize && maxLevelFallback <= 0 {
 				result = nil
 			}
 		}
@@ -503,6 +529,10 @@ func getParentFromToken(token string, level int) string {
 	return s2.CellIDFromToken(token).Parent(level).ToToken()
 }
 
-func getParentFromLatLon(lat,lon float64, level int) string {
+func getParentFromLatLon(lat, lon float64, level int) string {
 	return s2.CellIDFromLatLng(s2.LatLngFromDegrees(lat, lon)).Parent(level).ToToken()
+}
+
+func getLevel(token string) int {
+	return s2.CellIDFromToken(token).Level()
 }
