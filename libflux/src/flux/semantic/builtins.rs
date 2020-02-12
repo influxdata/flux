@@ -56,6 +56,7 @@ pub fn builtins() -> Builtins<'static> {
             "experimental/geo" => maplit::hashmap! {
                      "getGrid" => "forall [] (?box: {minLat: float | minLon: float | maxLat: float | maxLon: float}, ?circle: {lat: float | lon: float | radius: float}, ?polygon: {?points: [{lat: float | lon: float}]}, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int) -> {level: int | set: [string]}",
                      "getParent" => "forall [] (?token: string, ?point: {lat: float | lon: float}, level: int) -> {level: int | token: string}",
+                     "getLevel" => "forall [] (token: string) -> int",
                      "containsTag" => "forall [t0] where t0: Row (row: t0, tagKey: string, set: [string]) -> bool",
                      "containsLatLon" => "forall [] (?box: {minLat: float | minLon: float | maxLat: float | maxLon: float}, ?circle: {lat: float | lon: float | radius: float}, ?polygon: {?points: [{lat: float | lon: float}]}, lat: float, lon: float) -> bool"
             },
