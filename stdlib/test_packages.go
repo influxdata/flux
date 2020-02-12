@@ -6,7 +6,6 @@ import (
 	ast "github.com/influxdata/flux/ast"
 	date "github.com/influxdata/flux/stdlib/date"
 	experimental "github.com/influxdata/flux/stdlib/experimental"
-	geo "github.com/influxdata/flux/stdlib/experimental/geo"
 	http "github.com/influxdata/flux/stdlib/http"
 	monitor "github.com/influxdata/flux/stdlib/influxdata/influxdb/monitor"
 	secrets "github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
@@ -27,7 +26,6 @@ var FluxTestPackages = func() []*ast.Package {
 	var pkgs []*ast.Package
 	pkgs = append(pkgs, date.FluxTestPackages...)
 	pkgs = append(pkgs, experimental.FluxTestPackages...)
-	pkgs = append(pkgs, geo.FluxTestPackages...)
 	pkgs = append(pkgs, http.FluxTestPackages...)
 	pkgs = append(pkgs, monitor.FluxTestPackages...)
 	pkgs = append(pkgs, secrets.FluxTestPackages...)
