@@ -105,16 +105,26 @@ filterRows = (tables=<-, box={}, circle={}, polygon={}, minSize=24, maxSize=-1, 
 // Groups data by area of size specified by level. Result is grouped by `newColumn`.
 // Grouping levels: https://s2geometry.io/resources/s2cell_statistics.html
 groupByArea = (tables=<-, newColumn, level, ciLevel=-1) => {
+  _ciLevel =
+    if ciLevel == -1 then
+      tables
+        |> _detectCiLevel()
+    else
+      ciLevel
   _prepared =
-    if level == ciLevel then
+    if level == _ciLevel then
       tables
 	    |> duplicate(column: "_ci", as: newColumn)
     else
       tables
-        |> map(fn: (r) => ({ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }))
+        |> map(fn: (r) => ({
+             r with
+               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)
+           }))
         |> rename(columns: { _cixxx: newColumn })
-  return _prepared
-    |> group(columns: [newColumn])
+  return
+    _prepared
+      |> group(columns: [newColumn])
 }
 
 // Groups rows into tracks.
