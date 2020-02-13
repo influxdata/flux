@@ -101,6 +101,9 @@ For best performance, it is typically used together with `griFilter()`.
 ### Function `toRows`
 
 Collects values to row-wise sets.
+For geo-temporal data sets the result contains rows with `lat` and `lon`, ie. suitable
+for visualization and also `strictFilter` function.
+
 
 Example:
 ```
