@@ -28,16 +28,16 @@ import "csv"
 import "slack"
 
 data = "
-#datatype,string,string,string,string,string,string,string
-#group,false,false,false,false,false,false,false
-#default,_result,,,
-,result,qusername,qchannel,qworkspace,qtext,qiconEmoji,qiconEmoji,qcolor
-,,fakeUser0,fakeChannel,workspace,this is a lot of text yay,\"#FF0000\"
+#datatype,string,string,string
+#group,false,false,false
+#default,_result,,
+,result,qchannel,qtext,qcolor
+,,fakeChannel,this is a lot of text yay,\"#FF0000\"
 "
 
 process = slack.endpoint(url:url, token:token)( mapFn: 
 	(r) => {
-		return {username:r.qusername,channel:r.qchannel,workspace:r.qorkspace,text:r.qtext,iconEmoji:r.qiconEmoji,color:r.color}
+		return {channel:r.qchannel,text:r.qtext,color:r.color}
 	}
 )
 
@@ -104,9 +104,6 @@ type Request struct {
 
 type PostData struct {
 	Channel     string       `json:"channel"`
-	Workspace   string       `json:"workspace"`
-	Icon        string       `json:"icon_emoji"`
-	Username    string       `json:"username"`
 	Text        string       `json:"text"`
 	Attachments []Attachment `json:"attachments"`
 }
@@ -129,9 +126,6 @@ func TestSlackPost(t *testing.T) {
 		channel   string
 		URL       string
 		token     string
-		username  string
-		workspace string
-		icon      string
 	}{
 		{
 			name:     "....",
@@ -140,8 +134,6 @@ func TestSlackPost(t *testing.T) {
 			channel:  "general",
 			URL:      s.URL,
 			token:    "faketoken",
-			username: "username",
-			icon:     ":thumbsup:",
 		},
 		{
 			name:     "....",
@@ -150,8 +142,6 @@ func TestSlackPost(t *testing.T) {
 			channel:  "general",
 			URL:      s.URL,
 			token:    "faketoken",
-			username: "username",
-			icon:     ":thumbsup:",
 		},
 	}
 
@@ -163,7 +153,7 @@ func TestSlackPost(t *testing.T) {
 import "slack"
 
 endpoint = slack.endpoint(url:url, token:token)(mapFn: (r) => {
-	return {username:r.fusername,channel:r.qchannel,workspace:r.qworkspace,text:r.qtext,iconEmoji:r.qiconEmoji,color:r.wcolor}
+	return {channel:r.qchannel,text:r.qtext,color:r.wcolor}
 })
 
 csv.from(csv:data) |> endpoint()`
@@ -189,11 +179,11 @@ csv.from(csv:data) |> endpoint()`
 						Name: "data",
 					},
 					Init: &ast.StringLiteral{
-						Value: `#datatype,string,string,string,string,string,string,string,string
-#group,false,false,false,false,false,false,false,false
-#default,_result,,,,,,,
-,result,,fusername,qchannel,qworkspace,qtext,qiconEmoji,wcolor
-,,,` + strings.Join([]string{tc.username, tc.channel, tc.workspace, tc.text, tc.icon, tc.color}, ","),
+						Value: `#datatype,string,string,string,string,string
+#group,false,false,false,false,false
+#default,_result,,,,
+,result,,qchannel,qtext,wcolor
+,,,` + strings.Join([]string{tc.channel, tc.text, tc.color}, ","),
 					},
 				},
 			}}))
@@ -260,15 +250,6 @@ csv.from(csv:data) |> endpoint()`
 			}
 			if req.PostData.Attachments[0].Color != tc.color {
 				t.Errorf("got color %s, expected %s", req.PostData.Attachments[0].Color, tc.color)
-			}
-			if req.PostData.Username != tc.username {
-				t.Errorf("got username %s, expected %s", req.PostData.Username, tc.username)
-			}
-			if req.PostData.Workspace != tc.workspace {
-				t.Errorf("got workspace %s, expected %s", req.PostData.Workspace, tc.workspace)
-			}
-			if req.PostData.Icon != tc.icon {
-				t.Errorf("got icon-emoji %s, expected %s", req.PostData.Icon, tc.icon)
 			}
 		})
 	}
