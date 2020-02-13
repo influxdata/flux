@@ -1,37 +1,39 @@
 ## Package `geo`
 
-**NOTE** simple schema is now preferred
-
 The package provides functions for geographic location filtering and grouping.
-It is designed to work on a schema with a set of tags by default named `_cidX`,
-where X specifies S2 Cell level, fields `lat`, `lon` and `cid`.
+It uses golang implementation of S2 Geometry Library [https://s2geometry.io/].
+It is designed to work on a schema with a tags `_ci` which contains S2 cell ID token
+of level decided by the user and fields `lat`, `lon`.
 
-The maximum level X is up to user to decide with respect to cardinality.
-The number of cells for each level is shown at [https://s2geometry.io/resources/s2cell_statistics.html].
-These tags hold value of cell ID as token (`s2.CellID.ToToken()`) of corresponding level.
+The `_cid` tags hold value of cell ID expressed as token (`s2.CellID.ToToken()`) of corresponding level.
+The S2 cell levels are shown at [https://s2geometry.io/resources/s2cell_statistics.html].
+The level must be decided by the user.
+The rule of thumb is that it should be as high as possible for faster filtering 
+but not too high in order to avoid risk of having high cardinality. 
 
-The schema may/should further contain a tag which identifies data source (`id` by default),
-and a field representing track ID (`tid` by default). For some use cases a tag denoting point
-type (with values like `"start"`/`"stop"`/`"via"`, for example) is also helpful.
+The schema may further contain a tag which identifies data source (`id` by default),
+and a field representing track identification (`tid` by default).
+For some use cases a tag denoting point type (with values like `start`/`stop`/`via`, for example) may also be useful.
 
-Examples of line protocol input that conforms to such schema:
+Examples of line protocol input (`_ci` with cell ID level 11 token):
 ```
-taxi,_pt=start,_cid1=8c,_cid2=89,_cid3=89c,_cid4=89d,_cid5=89c4,_cid6=89c3,_cid7=89c24,_cid8=89c25,_cid9=89c25c,_cid10=89c259,_cid11=89c2594 tip=3.75,dist=14.3,lat=40.744614,lon=-73.979424,cid="89c2590882ea0441",tid=1572566401947779410i 1572566401947779410
-bike,id=bike007,_pt=via,_cid1=8c,_cid2=89,_cid3=89c,_cid4=89d,_cid5=89c4,_cid6=89c3,_cid7=89c24,_cid8=89c25,_cid9=89c25c,_cid10=89c259,_cid11=89c2594 lat=40.753944,lon=-73.992035,cid="89c2590882ea0441",tid=1572588115012345678i 1572567115082153551
+taxi,_pt=start,_ci=89c2594 tip=3.75,dist=14.3,lat=40.744614,lon=-73.979424,tid=1572566401123234345i 1572566401947779410
+```
+```
+bike,id=biker-007,_pt=via,_ci=89c25dc lat=40.753944,lon=-73.992035,tid=1572588100i 1572567115
 ```
 
-The grouping functions works on row-wise sets (as it very likely appears in line protocol),
-with geo-temporal values (tags `_cidX`, `id` and fields `lat`, `lon`, `cid` and `tid`) as columns.
-That is achieved by correlation by `_time` (and `id` if present) using `pivot()` or provided `geo.toRows()` function.
-Therefore it is advised to store time with nanoseconds precision to avoid false matches.
+Some functions in this package works on row-wise sets (as it very likely appears in line protocol),
+with fields `lat`, `lon` (and possibly `tid`) as columns.
+That is achieved by correlation by `_time` (and `id` if present) using `pivot()` or provided convenience `geo.toRows()` function.
+Therefore it is advised to store time with nanoseconds precision to avoid false matches in deployments
+where `id` (or any other source identifying) tag is no present.
 
 Fundamental transformations:
 - `gridFilter`
 - `strictFilter`
 - `toRows`
-
-Schema changing operations:
-- `stripMeta`
+- `filterRows`
 
 Aggregate operations:
 - `groupByArea`
@@ -42,98 +44,59 @@ The package uses the following types:
 - `circle` - has the following named float values: `lat`, `lon`, `radius`.
 - `polygon` - has `points` value which is an array of objects with named float values `lat` and `lon`.
 
-**Experimental alternative simple schema**
-
-Single tag `_ci` containing cell ID as token with level decided by user.
-Also, `cid` field is not needed in schema with `lat` and `lon` fields.
-
-Examples of line protocol input (cell level 11 token in `_ci`):
-```
-taxi,_pt=start,_ci=89c2594 tip=3.75,dist=14.3,lat=40.744614,lon=-73.979424,tid=1572566401947779410i 1572566401947779410
-bike,id=bike007,_pt=via,_ci=89c2594 lat=40.753944,lon=-73.992035,tid=1572588115012345678i 1572567115082153551
-```
-
-Corresponding functions: `gridFilter2`, `groupByArea2`.
-
 ### Function `gridFilter`
 
-**OBSOLETE** simple schema is now preferred
+The `gridFilter` filters data by specified box, circle or polygon.
+It calculates grid of tokens that overlays specified region and then uses `_ci` to filter
+against the set.
+The grid cells always overlay the region, therefore result may contain data with latitude and/or longitude outside the region.
 
-The `gridFilter` filters data by specified box or circle.
-It calculates tokens grid that overlays specified box or circle.
-Therefore result may contain data where corresponding latitude and/or longitude is outside the box.
-
-This filter function is intended to be fast as it uses tags values.
+This filter function is intended to be fast as it uses `_ci` tag to filter records.
 If precise filtering is needed, `strictFilter()` may be used later (after `toRows()`).
 
 Example:
 ```
 from(bucket: "rides")
   |> range(start: 2019-11-01T00:00:00Z)
-  |> filter(fn: (r) => r._measurement == "bike")
-  |> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}, maxCiLevel: 11)
+  |> filter(fn: (r) => r._measurement == "taxi")
+  |> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
 ``` 
 ```
 from(bucket: "rides")
   |> range(start: 2019-11-01T00:00:00Z)
-  |> filter(fn: (r) => r._measurement == "bike")
-  |> geo.gridFilter(circle: {lat: 40.69335938, lon: -73.30078125, radius: 20.0}, maxCiLevel: 11)
+  |> filter(fn: (r) => r._measurement == "taxi")
+  |> geo.gridFilter(circle: {lat: 40.69335938, lon: -73.30078125, radius: 20.0})
 ``` 
 ```
 from(bucket: "rides")
   |> range(start: 2019-11-01T00:00:00Z)
-  |> filter(fn: (r) => r._measurement == "bike")
-  |> geo.gridFilter(polygon: {points: [{lat: 40.671659, lon: -73.936631}, {lat: 40.706543, lon: -73.749177},{lat: 40.791333, lon: -73.880327}]}, maxCiLevel: 11)
+  |> filter(fn: (r) => r._measurement == "taxi")
+  |> geo.gridFilter(polygon: {points: [{lat: 40.671659, lon: -73.936631}, {lat: 40.706543, lon: -73.749177},{lat: 40.791333, lon: -73.880327}]})
 ``` 
 
 Grid calculation may be customized by following options:
-- `minSize` - minimum number of tiles that cover specified box (default value is `9`).
+- `minSize` - minimum number of tiles that cover specified region (default value is `24`).
 - `maxSize` - maximum number of tiles (optional)
-- `level` - desired cell level of the tiles (optional)
-- `maxLevelIndex` - highest cell level X available in `_cidX` tag.
+- `level` - desired cell level of the grid tiles (optional)
+- `ciLevel` - cell level of token in `_ci` tag (optional - the function attempts to autodetect it)
 
-The `level` parameter is mutually exclusive with others and must be less or equal to `maxLevelIndex`.
-By default the algorithm attempts to 9 tiles grid with finest level that is less than
-or equal to `maxLevelIndex`.
-User is required to specify correct `maxLevelIndex` that matches existing schema.
-For example, when schema has tags `_cid1` ... `_cid5`, then `5` must be passed as `maxLevelIndex`. 
-
-#### Function definition
-
-```
-gridFilter = (tables=<-, fn=tokenFilterEx, box={}, circle={}, minGridSize=9, maxGridSize=-1, level=-1, maxLevelIndex=30) => {
-  grid = getGrid(box: box, circle: circle, minSize: minGridSize, maxSize: maxGridSize, level: level, maxLevel: maxLevelIndex)
-  return
-    tables
-      |> fn(grid: grid)
-}
-```
+The `level` parameter is mutually exclusive with others and must be less or equal to `ciLevel`.
 
 ### Function `strictFilter`
 
-Filters records by lat/lon box or center/radius circle. Unlike `gridFilter()`, this is a strict filter.
-Must be used after `toRows()` because it requires `lat` and `lon` columns in input row set.
+Filters records by lat/lon. Unlike `gridFilter()`, this is a strict filter.
+Must be used after `toRows()` because it requires `lat` and `lon` columns in records.
 
 Example:
 ```
 from(bucket: "rides")
   |> range(start: 2019-11-01T00:00:00Z)
-  |> filter(fn: (r) => r._measurement == "bike")
+  |> filter(fn: (r) => r._measurement == "taxi")
   |> geo.toRows()
   |> geo.strictFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
 ``` 
 
-It makes a lot of sense to use it together with `griFilter()`.
-
-#### Function definition
-
-```
-strictFilter = (tables=<-, box={}, circle={}) =>
-  tables
-    |> filter(fn: (r) =>
-      containsLatLon(box: box, circle: circle, lat: r.lat, lon: r.lon)
-    )
-```
+For best performance, it is typically used together with `griFilter()`.
 
 ### Function `toRows`
 
@@ -143,7 +106,7 @@ Example:
 ```
 from(bucket: "rides")
   |> range(start: 2019-11-01T00:00:00Z)
-  |> filter(fn: (r) => r._measurement == "bike")
+  |> filter(fn: (r) => r._measurement == "taxi")
   |> geo.toRows()
 ```
 
@@ -159,44 +122,60 @@ toRows = (tables=<-, correlationKey=["_time"]) =>
     )
 ```
 
-### Function `groupByArea`
+### Function `filterRows`
 
-**OBSOLETE** simple schema is now preferred
-
-Groups rows by area blocks of size determined by `level` (see [https://s2geometry.io/resources/s2cell_statistics.html]). 
-Result is grouped by `newColumn`.
-Parameter `maxLevelIndex` specifies highest cell level X in the input rows.
+Combined filter. The sequence is either `gridFilter |> toRows |> strictFilter`
+or just `gridFilter |> toRows`, depending on `strict` parameter (`true` by default).
 
 Example:
 ```
 from(bucket: "rides")
   |> range(start: 2019-11-01T00:00:00Z)
-  |> filter(fn: (r) => r._measurement == "bike")
-  |> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
-  |> geo.toRows()
-  |> geo.groupByArea(newColumn: "cidx", level: 3, maxLevelIndex: 5)
+  |> filter(fn: (r) => r._measurement == "taxi")
+  |> geo.filterRows(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
 ```
+
+It has the same input parameters as `gridFilter` By default it uses strict filter (`strict=true`).
 
 #### Function definition
 
 ```
-groupByArea = (tables=<-, newColumn, level, maxLevel, prefix="_cid") => {
-  prepared =
-    if level <= maxlevel then
-      tables
-	    |> duplicate(column: prefix + string(v: level), as: newColumn)
+filterRows = (tables=<-, box={}, circle={}, polygon={}, minSize=24, maxSize=-1, level=-1, ciLevel=-1, correlationKey=["_time"], strict=true) => {
+  _rows =
+    tables
+      |> gridFilter(box: box, circle: circle, polygon: polygon, minSize: minSize, maxSize: maxSize, level: level, ciLevel: ciLevel)
+      |> toRows(correlationKey)
+  _result =
+    if strict then
+      _rows
+        |> strictFilter(box, circle, polygon)
     else
-      tables
-        |> map(fn: (r) => ({ r with _cidx: getParent(v: r.cid, level: level) }))
-	    |> rename(columns: { _cidx: newColumn })
-  return prepared
-    |> group(columns: [newColumn])
+      _rows
+  return _result
 }
 ```
 
+### Function `groupByArea`
+
+Groups rows by area blocks of size determined by `level` (see [https://s2geometry.io/resources/s2cell_statistics.html]). 
+Result is grouped by `newColumn`.
+
+Example:
+```
+from(bucket: "rides")
+  |> range(start: 2019-11-01T00:00:00Z)
+  |> filter(fn: (r) => r._measurement == "taxi")
+  |> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
+  |> geo.toRows()
+  |> geo.groupByArea(newColumn: "cix", level: 3)
+```
+
+Optional parameter `ciLevel` specifies cell level of token stored in `_ci` tag.
+By default the function attempts to autodetect it.
+
 ### Function `asTracks`
 
-Organizes rows into tracks.
+Groups rows into tracks.
 
 Example:
 ```
@@ -215,79 +194,4 @@ asTracks = (tables=<-, groupBy=["id","tid"], orderBy=["_time"]) =>
   tables
     |> group(columns: groupBy)
     |> sort(columns: orderBy)
-```
-
-### Function `stripMeta`
-
-**OBSOLETE** simple schema is now preferred
-
-Drops cell level indexes columns (`_cidX` by default) except those specified.
-It will fail if input tables are grouped by any of them.
-
-Example:
-```
-from(bucket: "rides")
-  |> range(start: 2019-11-01T00:00:00Z)
-  |> filter(fn: (r) => r._measurement == "bike")
-  |> geo.toRows()
-  |> geo.groupByArea(newColumn: "cidx", level: 5, maxLevelIndex: 5)
-  |> geo.stripMeta(except: ["_cid5"])
-```
-
-#### Function definition
-
-```
-stripMeta = (tables=<-, pattern=/_cid\d+/, except=[]) =>
-  tables
-    |> drop(fn: (column) => column =~ pattern and (length(arr: except) == 0 or not contains(value: column, set: except)))
-```
-
-## *Experimental alternative simple schema functions*
-
-### Function `gridFilter2`
-
-Grid filtering function that works on simplified schema.
-- `ciLevel` - cell level of token stored in `_ci` tag 
-
-Example:
-```
-from(bucket: "rides")
-  |> range(start: 2019-11-01T00:00:00Z)
-  |> filter(fn: (r) => r._measurement == "bike")
-  |> geo.gridFilter2(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}, ciLevel=11)
-``` 
-
-User is required to specify correct `ciLevel` that matches existing schema.
-
-### Function `groupByArea2`
-
-Groups rows by area blocks of size determined by `level` (see [https://s2geometry.io/resources/s2cell_statistics.html]). 
-Result is grouped by `newColumn`.
-Parameter `ciLevel` specifies cell level of token stored in `_ci` tag.
-
-Example:
-```
-from(bucket: "rides")
-  |> range(start: 2019-11-01T00:00:00Z)
-  |> filter(fn: (r) => r._measurement == "bike")
-  |> geo.gridFilter(box: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
-  |> geo.toRows()
-  |> geo.groupByArea(newColumn: "cix", level: 3, ciLevel: 11)
-```
-
-#### Function definition
-
-```
-groupByArea2 = (tables=<-, newColumn, level, ciLevel) => {
-  prepared =
-    if level == ciLevel then
-      tables
-	    |> duplicate(column: "_ci", as: newColumn)
-    else
-      tables
-        |> map(fn: (r) => ({ r with _cix: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }))
-	    |> rename(columns: { _cix: newColumn })
-  return prepared
-    |> group(columns: [newColumn])
-}
 ```
