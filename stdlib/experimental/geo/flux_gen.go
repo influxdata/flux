@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 30,
-					Line:   124,
+					Line:   134,
 				},
 				File:   "geo.flux",
-				Source: "package geo\n\n//\n// None of the builtin functions are intended to be used by end users.\n//\n\n// Check whether lat/lon is in a lat/lon box or center/radius circle.\nbuiltin containsLatLon\n\n// Calculates grid (set of cell ID tokens) for given box and according to options.\nbuiltin getGrid\n\n// Finds parent cell ID token for given cell ID at specified level.\nbuiltin getParent\n\n// Returns level of specified cell ID token.\nbuiltin getLevel\n\n//\n// Flux\n//\n\n// Gets level of cell ID tag `_ci` from the first record from the first table from the stream.\n_detectCiLevel = (tables=<-) => {\n  _r0 =\n    tables\n      |> tableFind(fn: (key) => exists key._ci)\n      |> getRecord(idx: 0)\n  _level =\n    if exists _r0 then\n      getLevel(token: _r0._ci)\n    else\n       666\n  return _level\n}\n\n//\n// Convenience functions\n//\n\n// Collects values to row-wise sets.\ntoRows = (tables=<-, correlationKey=[\"_time\"]) =>\n  tables\n    |> pivot(\n      rowKey: correlationKey,\n      columnKey: [\"_field\"],\n      valueColumn: \"_value\"\n    )\n\n//\n// Filtering functions\n//\n\n// Filters records by a box, a circle or a polygon area using S2 cell ID tag.\n// It is a coarse filter, as the grid always overlays the region, the result will likely contain records\n// with lat/lon outside the specified region.\ngridFilter = (tables=<-, box={}, circle={}, polygon={}, minSize=24, maxSize=-1, level=-1, ciLevel=-1) => {\n  _ciLevel =\n    if ciLevel == -1 then\n      tables\n        |> _detectCiLevel()\n    else\n      ciLevel\n  _grid = getGrid(box: box, circle: circle, polygon: polygon, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _ciLevel)\n  return\n    tables\n      |> filter(fn: (r) =>\n        if _grid.level == _ciLevel then\n          contains(value: r._ci, set: _grid.set)\n        else\n          contains(value: getParent(token: r._ci, level: _grid.level), set: _grid.set)\n      )\n}\n\n// Filters records by a box, a circle or a polygon region.\n// It is an exact filter and must be used after `toRows()` because it requires `lat` and `lon` columns in input row sets.\nstrictFilter = (tables=<-, box={}, circle={}, polygon={}) =>\n  tables\n    |> filter(fn: (r) =>\n      containsLatLon(box: box, circle: circle, polygon: polygon, lat: r.lat, lon: r.lon)\n    )\n\n// Two-phase filtering by a box, a circle or a polygon region.\n// Returns rows of fields correlated by `correlationKey`.\nfilterRows = (tables=<-, box={}, circle={}, polygon={}, minSize=24, maxSize=-1, level=-1, ciLevel=-1, correlationKey=[\"_time\"], strict=true) => {\n  _rows =\n    tables\n      |> gridFilter(box: box, circle: circle, polygon: polygon, minSize: minSize, maxSize: maxSize, level: level, ciLevel: ciLevel)\n      |> toRows(correlationKey)\n  _result =\n    if strict then\n      _rows\n        |> strictFilter(box, circle, polygon)\n    else\n      _rows\n  return _result\n}\n\n//\n// Grouping functions\n//\n// intended to be used row-wise sets (i.e after `toRows()`)\n\n// Groups data by area of size specified by level. Result is grouped by `newColumn`.\n// Grouping levels: https://s2geometry.io/resources/s2cell_statistics.html\ngroupByArea = (tables=<-, newColumn, level, ciLevel=-1) => {\n  _prepared =\n    if level == ciLevel then\n      tables\n\t    |> duplicate(column: \"_ci\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }))\n        |> rename(columns: { _cixxx: newColumn })\n  return _prepared\n    |> group(columns: [newColumn])\n}\n\n// Groups rows into tracks.\nasTracks = (tables=<-, groupBy=[\"id\",\"tid\"], orderBy=[\"_time\"]) =>\n  tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
+				Source: "package geo\n\n//\n// None of the builtin functions are intended to be used by end users.\n//\n\n// Check whether lat/lon is in a lat/lon box or center/radius circle.\nbuiltin containsLatLon\n\n// Calculates grid (set of cell ID tokens) for given box and according to options.\nbuiltin getGrid\n\n// Finds parent cell ID token for given cell ID at specified level.\nbuiltin getParent\n\n// Returns level of specified cell ID token.\nbuiltin getLevel\n\n//\n// Flux\n//\n\n// Gets level of cell ID tag `_ci` from the first record from the first table from the stream.\n_detectCiLevel = (tables=<-) => {\n  _r0 =\n    tables\n      |> tableFind(fn: (key) => exists key._ci)\n      |> getRecord(idx: 0)\n  _level =\n    if exists _r0 then\n      getLevel(token: _r0._ci)\n    else\n       666\n  return _level\n}\n\n//\n// Convenience functions\n//\n\n// Collects values to row-wise sets.\ntoRows = (tables=<-, correlationKey=[\"_time\"]) =>\n  tables\n    |> pivot(\n      rowKey: correlationKey,\n      columnKey: [\"_field\"],\n      valueColumn: \"_value\"\n    )\n\n//\n// Filtering functions\n//\n\n// Filters records by a box, a circle or a polygon area using S2 cell ID tag.\n// It is a coarse filter, as the grid always overlays the region, the result will likely contain records\n// with lat/lon outside the specified region.\ngridFilter = (tables=<-, box={}, circle={}, polygon={}, minSize=24, maxSize=-1, level=-1, ciLevel=-1) => {\n  _ciLevel =\n    if ciLevel == -1 then\n      tables\n        |> _detectCiLevel()\n    else\n      ciLevel\n  _grid = getGrid(box: box, circle: circle, polygon: polygon, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _ciLevel)\n  return\n    tables\n      |> filter(fn: (r) =>\n        if _grid.level == _ciLevel then\n          contains(value: r._ci, set: _grid.set)\n        else\n          contains(value: getParent(token: r._ci, level: _grid.level), set: _grid.set)\n      )\n}\n\n// Filters records by a box, a circle or a polygon region.\n// It is an exact filter and must be used after `toRows()` because it requires `lat` and `lon` columns in input row sets.\nstrictFilter = (tables=<-, box={}, circle={}, polygon={}) =>\n  tables\n    |> filter(fn: (r) =>\n      containsLatLon(box: box, circle: circle, polygon: polygon, lat: r.lat, lon: r.lon)\n    )\n\n// Two-phase filtering by a box, a circle or a polygon region.\n// Returns rows of fields correlated by `correlationKey`.\nfilterRows = (tables=<-, box={}, circle={}, polygon={}, minSize=24, maxSize=-1, level=-1, ciLevel=-1, correlationKey=[\"_time\"], strict=true) => {\n  _rows =\n    tables\n      |> gridFilter(box: box, circle: circle, polygon: polygon, minSize: minSize, maxSize: maxSize, level: level, ciLevel: ciLevel)\n      |> toRows(correlationKey)\n  _result =\n    if strict then\n      _rows\n        |> strictFilter(box, circle, polygon)\n    else\n      _rows\n  return _result\n}\n\n//\n// Grouping functions\n//\n// intended to be used row-wise sets (i.e after `toRows()`)\n\n// Groups data by area of size specified by level. Result is grouped by `newColumn`.\n// Grouping levels: https://s2geometry.io/resources/s2cell_statistics.html\ngroupByArea = (tables=<-, newColumn, level, ciLevel=-1) => {\n  _ciLevel =\n    if ciLevel == -1 then\n      tables\n        |> _detectCiLevel()\n    else\n      ciLevel\n  _prepared =\n    if level == _ciLevel then\n      tables\n\t    |> duplicate(column: \"_ci\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _cixxx: newColumn })\n  return\n    _prepared\n      |> group(columns: [newColumn])\n}\n\n// Groups rows into tracks.\nasTracks = (tables=<-, groupBy=[\"id\",\"tid\"], orderBy=[\"_time\"]) =>\n  tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
 				Start: ast.Position{
 					Column: 1,
 					Line:   2,
@@ -5931,10 +5931,10 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   118,
+						Line:   128,
 					},
 					File:   "geo.flux",
-					Source: "groupByArea = (tables=<-, newColumn, level, ciLevel=-1) => {\n  _prepared =\n    if level == ciLevel then\n      tables\n\t    |> duplicate(column: \"_ci\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }))\n        |> rename(columns: { _cixxx: newColumn })\n  return _prepared\n    |> group(columns: [newColumn])\n}",
+					Source: "groupByArea = (tables=<-, newColumn, level, ciLevel=-1) => {\n  _ciLevel =\n    if ciLevel == -1 then\n      tables\n        |> _detectCiLevel()\n    else\n      ciLevel\n  _prepared =\n    if level == _ciLevel then\n      tables\n\t    |> duplicate(column: \"_ci\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _cixxx: newColumn })\n  return\n    _prepared\n      |> group(columns: [newColumn])\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   107,
@@ -5965,10 +5965,10 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   118,
+							Line:   128,
 						},
 						File:   "geo.flux",
-						Source: "(tables=<-, newColumn, level, ciLevel=-1) => {\n  _prepared =\n    if level == ciLevel then\n      tables\n\t    |> duplicate(column: \"_ci\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }))\n        |> rename(columns: { _cixxx: newColumn })\n  return _prepared\n    |> group(columns: [newColumn])\n}",
+						Source: "(tables=<-, newColumn, level, ciLevel=-1) => {\n  _ciLevel =\n    if ciLevel == -1 then\n      tables\n        |> _detectCiLevel()\n    else\n      ciLevel\n  _prepared =\n    if level == _ciLevel then\n      tables\n\t    |> duplicate(column: \"_ci\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _cixxx: newColumn })\n  return\n    _prepared\n      |> group(columns: [newColumn])\n}",
 						Start: ast.Position{
 							Column: 15,
 							Line:   107,
@@ -5981,10 +5981,10 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   118,
+								Line:   128,
 							},
 							File:   "geo.flux",
-							Source: "{\n  _prepared =\n    if level == ciLevel then\n      tables\n\t    |> duplicate(column: \"_ci\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }))\n        |> rename(columns: { _cixxx: newColumn })\n  return _prepared\n    |> group(columns: [newColumn])\n}",
+							Source: "{\n  _ciLevel =\n    if ciLevel == -1 then\n      tables\n        |> _detectCiLevel()\n    else\n      ciLevel\n  _prepared =\n    if level == _ciLevel then\n      tables\n\t    |> duplicate(column: \"_ci\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _cixxx: newColumn })\n  return\n    _prepared\n      |> group(columns: [newColumn])\n}",
 							Start: ast.Position{
 								Column: 60,
 								Line:   107,
@@ -5996,11 +5996,11 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 50,
-									Line:   115,
+									Column: 14,
+									Line:   113,
 								},
 								File:   "geo.flux",
-								Source: "_prepared =\n    if level == ciLevel then\n      tables\n\t    |> duplicate(column: \"_ci\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }))\n        |> rename(columns: { _cixxx: newColumn })",
+								Source: "_ciLevel =\n    if ciLevel == -1 then\n      tables\n        |> _detectCiLevel()\n    else\n      ciLevel",
 								Start: ast.Position{
 									Column: 3,
 									Line:   108,
@@ -6012,801 +6012,47 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
+										Column: 11,
 										Line:   108,
 									},
 									File:   "geo.flux",
-									Source: "_prepared",
+									Source: "_ciLevel",
 									Start: ast.Position{
 										Column: 3,
 										Line:   108,
 									},
 								},
 							},
-							Name: "_prepared",
+							Name: "_ciLevel",
 						},
 						Init: &ast.ConditionalExpression{
-							Alternate: &ast.PipeExpression{
-								Argument: &ast.PipeExpression{
-									Argument: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 13,
-													Line:   113,
-												},
-												File:   "geo.flux",
-												Source: "tables",
-												Start: ast.Position{
-													Column: 7,
-													Line:   113,
-												},
-											},
-										},
-										Name: "tables",
-									},
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 105,
-												Line:   114,
-											},
-											File:   "geo.flux",
-											Source: "tables\n        |> map(fn: (r) => ({ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }))",
-											Start: ast.Position{
-												Column: 7,
-												Line:   113,
-											},
-										},
-									},
-									Call: &ast.CallExpression{
-										Arguments: []ast.Expression{&ast.ObjectExpression{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 104,
-														Line:   114,
-													},
-													File:   "geo.flux",
-													Source: "fn: (r) => ({ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) })",
-													Start: ast.Position{
-														Column: 16,
-														Line:   114,
-													},
-												},
-											},
-											Properties: []*ast.Property{&ast.Property{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 104,
-															Line:   114,
-														},
-														File:   "geo.flux",
-														Source: "fn: (r) => ({ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) })",
-														Start: ast.Position{
-															Column: 16,
-															Line:   114,
-														},
-													},
-												},
-												Key: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 18,
-																Line:   114,
-															},
-															File:   "geo.flux",
-															Source: "fn",
-															Start: ast.Position{
-																Column: 16,
-																Line:   114,
-															},
-														},
-													},
-													Name: "fn",
-												},
-												Value: &ast.FunctionExpression{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 104,
-																Line:   114,
-															},
-															File:   "geo.flux",
-															Source: "(r) => ({ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) })",
-															Start: ast.Position{
-																Column: 20,
-																Line:   114,
-															},
-														},
-													},
-													Body: &ast.ParenExpression{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 104,
-																	Line:   114,
-																},
-																File:   "geo.flux",
-																Source: "({ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) })",
-																Start: ast.Position{
-																	Column: 27,
-																	Line:   114,
-																},
-															},
-														},
-														Expression: &ast.ObjectExpression{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 103,
-																		Line:   114,
-																	},
-																	File:   "geo.flux",
-																	Source: "{ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }",
-																	Start: ast.Position{
-																		Column: 28,
-																		Line:   114,
-																	},
-																},
-															},
-															Properties: []*ast.Property{&ast.Property{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 101,
-																			Line:   114,
-																		},
-																		File:   "geo.flux",
-																		Source: "_cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)",
-																		Start: ast.Position{
-																			Column: 37,
-																			Line:   114,
-																		},
-																	},
-																},
-																Key: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 43,
-																				Line:   114,
-																			},
-																			File:   "geo.flux",
-																			Source: "_cixxx",
-																			Start: ast.Position{
-																				Column: 37,
-																				Line:   114,
-																			},
-																		},
-																	},
-																	Name: "_cixxx",
-																},
-																Value: &ast.CallExpression{
-																	Arguments: []ast.Expression{&ast.ObjectExpression{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 100,
-																					Line:   114,
-																				},
-																				File:   "geo.flux",
-																				Source: "point: {lat: r.lat, lon: r.lon}, level: level",
-																				Start: ast.Position{
-																					Column: 55,
-																					Line:   114,
-																				},
-																			},
-																		},
-																		Properties: []*ast.Property{&ast.Property{
-																			BaseNode: ast.BaseNode{
-																				Errors: nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 86,
-																						Line:   114,
-																					},
-																					File:   "geo.flux",
-																					Source: "point: {lat: r.lat, lon: r.lon}",
-																					Start: ast.Position{
-																						Column: 55,
-																						Line:   114,
-																					},
-																				},
-																			},
-																			Key: &ast.Identifier{
-																				BaseNode: ast.BaseNode{
-																					Errors: nil,
-																					Loc: &ast.SourceLocation{
-																						End: ast.Position{
-																							Column: 60,
-																							Line:   114,
-																						},
-																						File:   "geo.flux",
-																						Source: "point",
-																						Start: ast.Position{
-																							Column: 55,
-																							Line:   114,
-																						},
-																					},
-																				},
-																				Name: "point",
-																			},
-																			Value: &ast.ObjectExpression{
-																				BaseNode: ast.BaseNode{
-																					Errors: nil,
-																					Loc: &ast.SourceLocation{
-																						End: ast.Position{
-																							Column: 86,
-																							Line:   114,
-																						},
-																						File:   "geo.flux",
-																						Source: "{lat: r.lat, lon: r.lon}",
-																						Start: ast.Position{
-																							Column: 62,
-																							Line:   114,
-																						},
-																					},
-																				},
-																				Properties: []*ast.Property{&ast.Property{
-																					BaseNode: ast.BaseNode{
-																						Errors: nil,
-																						Loc: &ast.SourceLocation{
-																							End: ast.Position{
-																								Column: 73,
-																								Line:   114,
-																							},
-																							File:   "geo.flux",
-																							Source: "lat: r.lat",
-																							Start: ast.Position{
-																								Column: 63,
-																								Line:   114,
-																							},
-																						},
-																					},
-																					Key: &ast.Identifier{
-																						BaseNode: ast.BaseNode{
-																							Errors: nil,
-																							Loc: &ast.SourceLocation{
-																								End: ast.Position{
-																									Column: 66,
-																									Line:   114,
-																								},
-																								File:   "geo.flux",
-																								Source: "lat",
-																								Start: ast.Position{
-																									Column: 63,
-																									Line:   114,
-																								},
-																							},
-																						},
-																						Name: "lat",
-																					},
-																					Value: &ast.MemberExpression{
-																						BaseNode: ast.BaseNode{
-																							Errors: nil,
-																							Loc: &ast.SourceLocation{
-																								End: ast.Position{
-																									Column: 73,
-																									Line:   114,
-																								},
-																								File:   "geo.flux",
-																								Source: "r.lat",
-																								Start: ast.Position{
-																									Column: 68,
-																									Line:   114,
-																								},
-																							},
-																						},
-																						Object: &ast.Identifier{
-																							BaseNode: ast.BaseNode{
-																								Errors: nil,
-																								Loc: &ast.SourceLocation{
-																									End: ast.Position{
-																										Column: 69,
-																										Line:   114,
-																									},
-																									File:   "geo.flux",
-																									Source: "r",
-																									Start: ast.Position{
-																										Column: 68,
-																										Line:   114,
-																									},
-																								},
-																							},
-																							Name: "r",
-																						},
-																						Property: &ast.Identifier{
-																							BaseNode: ast.BaseNode{
-																								Errors: nil,
-																								Loc: &ast.SourceLocation{
-																									End: ast.Position{
-																										Column: 73,
-																										Line:   114,
-																									},
-																									File:   "geo.flux",
-																									Source: "lat",
-																									Start: ast.Position{
-																										Column: 70,
-																										Line:   114,
-																									},
-																								},
-																							},
-																							Name: "lat",
-																						},
-																					},
-																				}, &ast.Property{
-																					BaseNode: ast.BaseNode{
-																						Errors: nil,
-																						Loc: &ast.SourceLocation{
-																							End: ast.Position{
-																								Column: 85,
-																								Line:   114,
-																							},
-																							File:   "geo.flux",
-																							Source: "lon: r.lon",
-																							Start: ast.Position{
-																								Column: 75,
-																								Line:   114,
-																							},
-																						},
-																					},
-																					Key: &ast.Identifier{
-																						BaseNode: ast.BaseNode{
-																							Errors: nil,
-																							Loc: &ast.SourceLocation{
-																								End: ast.Position{
-																									Column: 78,
-																									Line:   114,
-																								},
-																								File:   "geo.flux",
-																								Source: "lon",
-																								Start: ast.Position{
-																									Column: 75,
-																									Line:   114,
-																								},
-																							},
-																						},
-																						Name: "lon",
-																					},
-																					Value: &ast.MemberExpression{
-																						BaseNode: ast.BaseNode{
-																							Errors: nil,
-																							Loc: &ast.SourceLocation{
-																								End: ast.Position{
-																									Column: 85,
-																									Line:   114,
-																								},
-																								File:   "geo.flux",
-																								Source: "r.lon",
-																								Start: ast.Position{
-																									Column: 80,
-																									Line:   114,
-																								},
-																							},
-																						},
-																						Object: &ast.Identifier{
-																							BaseNode: ast.BaseNode{
-																								Errors: nil,
-																								Loc: &ast.SourceLocation{
-																									End: ast.Position{
-																										Column: 81,
-																										Line:   114,
-																									},
-																									File:   "geo.flux",
-																									Source: "r",
-																									Start: ast.Position{
-																										Column: 80,
-																										Line:   114,
-																									},
-																								},
-																							},
-																							Name: "r",
-																						},
-																						Property: &ast.Identifier{
-																							BaseNode: ast.BaseNode{
-																								Errors: nil,
-																								Loc: &ast.SourceLocation{
-																									End: ast.Position{
-																										Column: 85,
-																										Line:   114,
-																									},
-																									File:   "geo.flux",
-																									Source: "lon",
-																									Start: ast.Position{
-																										Column: 82,
-																										Line:   114,
-																									},
-																								},
-																							},
-																							Name: "lon",
-																						},
-																					},
-																				}},
-																				With: nil,
-																			},
-																		}, &ast.Property{
-																			BaseNode: ast.BaseNode{
-																				Errors: nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 100,
-																						Line:   114,
-																					},
-																					File:   "geo.flux",
-																					Source: "level: level",
-																					Start: ast.Position{
-																						Column: 88,
-																						Line:   114,
-																					},
-																				},
-																			},
-																			Key: &ast.Identifier{
-																				BaseNode: ast.BaseNode{
-																					Errors: nil,
-																					Loc: &ast.SourceLocation{
-																						End: ast.Position{
-																							Column: 93,
-																							Line:   114,
-																						},
-																						File:   "geo.flux",
-																						Source: "level",
-																						Start: ast.Position{
-																							Column: 88,
-																							Line:   114,
-																						},
-																					},
-																				},
-																				Name: "level",
-																			},
-																			Value: &ast.Identifier{
-																				BaseNode: ast.BaseNode{
-																					Errors: nil,
-																					Loc: &ast.SourceLocation{
-																						End: ast.Position{
-																							Column: 100,
-																							Line:   114,
-																						},
-																						File:   "geo.flux",
-																						Source: "level",
-																						Start: ast.Position{
-																							Column: 95,
-																							Line:   114,
-																						},
-																					},
-																				},
-																				Name: "level",
-																			},
-																		}},
-																		With: nil,
-																	}},
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 101,
-																				Line:   114,
-																			},
-																			File:   "geo.flux",
-																			Source: "getParent(point: {lat: r.lat, lon: r.lon}, level: level)",
-																			Start: ast.Position{
-																				Column: 45,
-																				Line:   114,
-																			},
-																		},
-																	},
-																	Callee: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 54,
-																					Line:   114,
-																				},
-																				File:   "geo.flux",
-																				Source: "getParent",
-																				Start: ast.Position{
-																					Column: 45,
-																					Line:   114,
-																				},
-																			},
-																		},
-																		Name: "getParent",
-																	},
-																},
-															}},
-															With: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 31,
-																			Line:   114,
-																		},
-																		File:   "geo.flux",
-																		Source: "r",
-																		Start: ast.Position{
-																			Column: 30,
-																			Line:   114,
-																		},
-																	},
-																},
-																Name: "r",
-															},
-														},
-													},
-													Params: []*ast.Property{&ast.Property{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 22,
-																	Line:   114,
-																},
-																File:   "geo.flux",
-																Source: "r",
-																Start: ast.Position{
-																	Column: 21,
-																	Line:   114,
-																},
-															},
-														},
-														Key: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 22,
-																		Line:   114,
-																	},
-																	File:   "geo.flux",
-																	Source: "r",
-																	Start: ast.Position{
-																		Column: 21,
-																		Line:   114,
-																	},
-																},
-															},
-															Name: "r",
-														},
-														Value: nil,
-													}},
-												},
-											}},
-											With: nil,
-										}},
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 105,
-													Line:   114,
-												},
-												File:   "geo.flux",
-												Source: "map(fn: (r) => ({ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }))",
-												Start: ast.Position{
-													Column: 12,
-													Line:   114,
-												},
-											},
-										},
-										Callee: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 15,
-														Line:   114,
-													},
-													File:   "geo.flux",
-													Source: "map",
-													Start: ast.Position{
-														Column: 12,
-														Line:   114,
-													},
-												},
-											},
-											Name: "map",
-										},
-									},
-								},
+							Alternate: &ast.Identifier{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 50,
-											Line:   115,
+											Column: 14,
+											Line:   113,
 										},
 										File:   "geo.flux",
-										Source: "tables\n        |> map(fn: (r) => ({ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }))\n        |> rename(columns: { _cixxx: newColumn })",
+										Source: "ciLevel",
 										Start: ast.Position{
 											Column: 7,
 											Line:   113,
 										},
 									},
 								},
-								Call: &ast.CallExpression{
-									Arguments: []ast.Expression{&ast.ObjectExpression{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 49,
-													Line:   115,
-												},
-												File:   "geo.flux",
-												Source: "columns: { _cixxx: newColumn }",
-												Start: ast.Position{
-													Column: 19,
-													Line:   115,
-												},
-											},
-										},
-										Properties: []*ast.Property{&ast.Property{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 49,
-														Line:   115,
-													},
-													File:   "geo.flux",
-													Source: "columns: { _cixxx: newColumn }",
-													Start: ast.Position{
-														Column: 19,
-														Line:   115,
-													},
-												},
-											},
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 26,
-															Line:   115,
-														},
-														File:   "geo.flux",
-														Source: "columns",
-														Start: ast.Position{
-															Column: 19,
-															Line:   115,
-														},
-													},
-												},
-												Name: "columns",
-											},
-											Value: &ast.ObjectExpression{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 49,
-															Line:   115,
-														},
-														File:   "geo.flux",
-														Source: "{ _cixxx: newColumn }",
-														Start: ast.Position{
-															Column: 28,
-															Line:   115,
-														},
-													},
-												},
-												Properties: []*ast.Property{&ast.Property{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 47,
-																Line:   115,
-															},
-															File:   "geo.flux",
-															Source: "_cixxx: newColumn",
-															Start: ast.Position{
-																Column: 30,
-																Line:   115,
-															},
-														},
-													},
-													Key: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 36,
-																	Line:   115,
-																},
-																File:   "geo.flux",
-																Source: "_cixxx",
-																Start: ast.Position{
-																	Column: 30,
-																	Line:   115,
-																},
-															},
-														},
-														Name: "_cixxx",
-													},
-													Value: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 47,
-																	Line:   115,
-																},
-																File:   "geo.flux",
-																Source: "newColumn",
-																Start: ast.Position{
-																	Column: 38,
-																	Line:   115,
-																},
-															},
-														},
-														Name: "newColumn",
-													},
-												}},
-												With: nil,
-											},
-										}},
-										With: nil,
-									}},
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 50,
-												Line:   115,
-											},
-											File:   "geo.flux",
-											Source: "rename(columns: { _cixxx: newColumn })",
-											Start: ast.Position{
-												Column: 12,
-												Line:   115,
-											},
-										},
-									},
-									Callee: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 18,
-													Line:   115,
-												},
-												File:   "geo.flux",
-												Source: "rename",
-												Start: ast.Position{
-													Column: 12,
-													Line:   115,
-												},
-											},
-										},
-										Name: "rename",
-									},
-								},
+								Name: "ciLevel",
 							},
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 50,
-										Line:   115,
+										Column: 14,
+										Line:   113,
 									},
 									File:   "geo.flux",
-									Source: "if level == ciLevel then\n      tables\n\t    |> duplicate(column: \"_ci\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({ r with _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level) }))\n        |> rename(columns: { _cixxx: newColumn })",
+									Source: "if ciLevel == -1 then\n      tables\n        |> _detectCiLevel()\n    else\n      ciLevel",
 									Start: ast.Position{
 										Column: 5,
 										Line:   109,
@@ -6836,14 +6082,980 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 48,
+											Column: 28,
 											Line:   111,
+										},
+										File:   "geo.flux",
+										Source: "tables\n        |> _detectCiLevel()",
+										Start: ast.Position{
+											Column: 7,
+											Line:   110,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: nil,
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 28,
+												Line:   111,
+											},
+											File:   "geo.flux",
+											Source: "_detectCiLevel()",
+											Start: ast.Position{
+												Column: 12,
+												Line:   111,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 26,
+													Line:   111,
+												},
+												File:   "geo.flux",
+												Source: "_detectCiLevel",
+												Start: ast.Position{
+													Column: 12,
+													Line:   111,
+												},
+											},
+										},
+										Name: "_detectCiLevel",
+									},
+								},
+							},
+							Test: &ast.BinaryExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   109,
+										},
+										File:   "geo.flux",
+										Source: "ciLevel == -1",
+										Start: ast.Position{
+											Column: 8,
+											Line:   109,
+										},
+									},
+								},
+								Left: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   109,
+											},
+											File:   "geo.flux",
+											Source: "ciLevel",
+											Start: ast.Position{
+												Column: 8,
+												Line:   109,
+											},
+										},
+									},
+									Name: "ciLevel",
+								},
+								Operator: 17,
+								Right: &ast.UnaryExpression{
+									Argument: &ast.IntegerLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 21,
+													Line:   109,
+												},
+												File:   "geo.flux",
+												Source: "1",
+												Start: ast.Position{
+													Column: 20,
+													Line:   109,
+												},
+											},
+										},
+										Value: int64(1),
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 21,
+												Line:   109,
+											},
+											File:   "geo.flux",
+											Source: "-1",
+											Start: ast.Position{
+												Column: 19,
+												Line:   109,
+											},
+										},
+									},
+									Operator: 6,
+								},
+							},
+						},
+					}, &ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 50,
+									Line:   124,
+								},
+								File:   "geo.flux",
+								Source: "_prepared =\n    if level == _ciLevel then\n      tables\n\t    |> duplicate(column: \"_ci\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _cixxx: newColumn })",
+								Start: ast.Position{
+									Column: 3,
+									Line:   114,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   114,
+									},
+									File:   "geo.flux",
+									Source: "_prepared",
+									Start: ast.Position{
+										Column: 3,
+										Line:   114,
+									},
+								},
+							},
+							Name: "_prepared",
+						},
+						Init: &ast.ConditionalExpression{
+							Alternate: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 13,
+													Line:   119,
+												},
+												File:   "geo.flux",
+												Source: "tables",
+												Start: ast.Position{
+													Column: 7,
+													Line:   119,
+												},
+											},
+										},
+										Name: "tables",
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   123,
+											},
+											File:   "geo.flux",
+											Source: "tables\n        |> map(fn: (r) => ({\n             r with\n               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))",
+											Start: ast.Position{
+												Column: 7,
+												Line:   119,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 14,
+														Line:   123,
+													},
+													File:   "geo.flux",
+													Source: "fn: (r) => ({\n             r with\n               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           })",
+													Start: ast.Position{
+														Column: 16,
+														Line:   120,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 14,
+															Line:   123,
+														},
+														File:   "geo.flux",
+														Source: "fn: (r) => ({\n             r with\n               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           })",
+														Start: ast.Position{
+															Column: 16,
+															Line:   120,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 18,
+																Line:   120,
+															},
+															File:   "geo.flux",
+															Source: "fn",
+															Start: ast.Position{
+																Column: 16,
+																Line:   120,
+															},
+														},
+													},
+													Name: "fn",
+												},
+												Value: &ast.FunctionExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 14,
+																Line:   123,
+															},
+															File:   "geo.flux",
+															Source: "(r) => ({\n             r with\n               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           })",
+															Start: ast.Position{
+																Column: 20,
+																Line:   120,
+															},
+														},
+													},
+													Body: &ast.ParenExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 14,
+																	Line:   123,
+																},
+																File:   "geo.flux",
+																Source: "({\n             r with\n               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           })",
+																Start: ast.Position{
+																	Column: 27,
+																	Line:   120,
+																},
+															},
+														},
+														Expression: &ast.ObjectExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 13,
+																		Line:   123,
+																	},
+																	File:   "geo.flux",
+																	Source: "{\n             r with\n               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }",
+																	Start: ast.Position{
+																		Column: 28,
+																		Line:   120,
+																	},
+																},
+															},
+															Properties: []*ast.Property{&ast.Property{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 80,
+																			Line:   122,
+																		},
+																		File:   "geo.flux",
+																		Source: "_cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)",
+																		Start: ast.Position{
+																			Column: 16,
+																			Line:   122,
+																		},
+																	},
+																},
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 22,
+																				Line:   122,
+																			},
+																			File:   "geo.flux",
+																			Source: "_cixxx",
+																			Start: ast.Position{
+																				Column: 16,
+																				Line:   122,
+																			},
+																		},
+																	},
+																	Name: "_cixxx",
+																},
+																Value: &ast.CallExpression{
+																	Arguments: []ast.Expression{&ast.ObjectExpression{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 79,
+																					Line:   122,
+																				},
+																				File:   "geo.flux",
+																				Source: "point: {lat: r.lat, lon: r.lon}, level: level",
+																				Start: ast.Position{
+																					Column: 34,
+																					Line:   122,
+																				},
+																			},
+																		},
+																		Properties: []*ast.Property{&ast.Property{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 65,
+																						Line:   122,
+																					},
+																					File:   "geo.flux",
+																					Source: "point: {lat: r.lat, lon: r.lon}",
+																					Start: ast.Position{
+																						Column: 34,
+																						Line:   122,
+																					},
+																				},
+																			},
+																			Key: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 39,
+																							Line:   122,
+																						},
+																						File:   "geo.flux",
+																						Source: "point",
+																						Start: ast.Position{
+																							Column: 34,
+																							Line:   122,
+																						},
+																					},
+																				},
+																				Name: "point",
+																			},
+																			Value: &ast.ObjectExpression{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 65,
+																							Line:   122,
+																						},
+																						File:   "geo.flux",
+																						Source: "{lat: r.lat, lon: r.lon}",
+																						Start: ast.Position{
+																							Column: 41,
+																							Line:   122,
+																						},
+																					},
+																				},
+																				Properties: []*ast.Property{&ast.Property{
+																					BaseNode: ast.BaseNode{
+																						Errors: nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 52,
+																								Line:   122,
+																							},
+																							File:   "geo.flux",
+																							Source: "lat: r.lat",
+																							Start: ast.Position{
+																								Column: 42,
+																								Line:   122,
+																							},
+																						},
+																					},
+																					Key: &ast.Identifier{
+																						BaseNode: ast.BaseNode{
+																							Errors: nil,
+																							Loc: &ast.SourceLocation{
+																								End: ast.Position{
+																									Column: 45,
+																									Line:   122,
+																								},
+																								File:   "geo.flux",
+																								Source: "lat",
+																								Start: ast.Position{
+																									Column: 42,
+																									Line:   122,
+																								},
+																							},
+																						},
+																						Name: "lat",
+																					},
+																					Value: &ast.MemberExpression{
+																						BaseNode: ast.BaseNode{
+																							Errors: nil,
+																							Loc: &ast.SourceLocation{
+																								End: ast.Position{
+																									Column: 52,
+																									Line:   122,
+																								},
+																								File:   "geo.flux",
+																								Source: "r.lat",
+																								Start: ast.Position{
+																									Column: 47,
+																									Line:   122,
+																								},
+																							},
+																						},
+																						Object: &ast.Identifier{
+																							BaseNode: ast.BaseNode{
+																								Errors: nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 48,
+																										Line:   122,
+																									},
+																									File:   "geo.flux",
+																									Source: "r",
+																									Start: ast.Position{
+																										Column: 47,
+																										Line:   122,
+																									},
+																								},
+																							},
+																							Name: "r",
+																						},
+																						Property: &ast.Identifier{
+																							BaseNode: ast.BaseNode{
+																								Errors: nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 52,
+																										Line:   122,
+																									},
+																									File:   "geo.flux",
+																									Source: "lat",
+																									Start: ast.Position{
+																										Column: 49,
+																										Line:   122,
+																									},
+																								},
+																							},
+																							Name: "lat",
+																						},
+																					},
+																				}, &ast.Property{
+																					BaseNode: ast.BaseNode{
+																						Errors: nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 64,
+																								Line:   122,
+																							},
+																							File:   "geo.flux",
+																							Source: "lon: r.lon",
+																							Start: ast.Position{
+																								Column: 54,
+																								Line:   122,
+																							},
+																						},
+																					},
+																					Key: &ast.Identifier{
+																						BaseNode: ast.BaseNode{
+																							Errors: nil,
+																							Loc: &ast.SourceLocation{
+																								End: ast.Position{
+																									Column: 57,
+																									Line:   122,
+																								},
+																								File:   "geo.flux",
+																								Source: "lon",
+																								Start: ast.Position{
+																									Column: 54,
+																									Line:   122,
+																								},
+																							},
+																						},
+																						Name: "lon",
+																					},
+																					Value: &ast.MemberExpression{
+																						BaseNode: ast.BaseNode{
+																							Errors: nil,
+																							Loc: &ast.SourceLocation{
+																								End: ast.Position{
+																									Column: 64,
+																									Line:   122,
+																								},
+																								File:   "geo.flux",
+																								Source: "r.lon",
+																								Start: ast.Position{
+																									Column: 59,
+																									Line:   122,
+																								},
+																							},
+																						},
+																						Object: &ast.Identifier{
+																							BaseNode: ast.BaseNode{
+																								Errors: nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 60,
+																										Line:   122,
+																									},
+																									File:   "geo.flux",
+																									Source: "r",
+																									Start: ast.Position{
+																										Column: 59,
+																										Line:   122,
+																									},
+																								},
+																							},
+																							Name: "r",
+																						},
+																						Property: &ast.Identifier{
+																							BaseNode: ast.BaseNode{
+																								Errors: nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 64,
+																										Line:   122,
+																									},
+																									File:   "geo.flux",
+																									Source: "lon",
+																									Start: ast.Position{
+																										Column: 61,
+																										Line:   122,
+																									},
+																								},
+																							},
+																							Name: "lon",
+																						},
+																					},
+																				}},
+																				With: nil,
+																			},
+																		}, &ast.Property{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 79,
+																						Line:   122,
+																					},
+																					File:   "geo.flux",
+																					Source: "level: level",
+																					Start: ast.Position{
+																						Column: 67,
+																						Line:   122,
+																					},
+																				},
+																			},
+																			Key: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 72,
+																							Line:   122,
+																						},
+																						File:   "geo.flux",
+																						Source: "level",
+																						Start: ast.Position{
+																							Column: 67,
+																							Line:   122,
+																						},
+																					},
+																				},
+																				Name: "level",
+																			},
+																			Value: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 79,
+																							Line:   122,
+																						},
+																						File:   "geo.flux",
+																						Source: "level",
+																						Start: ast.Position{
+																							Column: 74,
+																							Line:   122,
+																						},
+																					},
+																				},
+																				Name: "level",
+																			},
+																		}},
+																		With: nil,
+																	}},
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 80,
+																				Line:   122,
+																			},
+																			File:   "geo.flux",
+																			Source: "getParent(point: {lat: r.lat, lon: r.lon}, level: level)",
+																			Start: ast.Position{
+																				Column: 24,
+																				Line:   122,
+																			},
+																		},
+																	},
+																	Callee: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 33,
+																					Line:   122,
+																				},
+																				File:   "geo.flux",
+																				Source: "getParent",
+																				Start: ast.Position{
+																					Column: 24,
+																					Line:   122,
+																				},
+																			},
+																		},
+																		Name: "getParent",
+																	},
+																},
+															}},
+															With: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 15,
+																			Line:   121,
+																		},
+																		File:   "geo.flux",
+																		Source: "r",
+																		Start: ast.Position{
+																			Column: 14,
+																			Line:   121,
+																		},
+																	},
+																},
+																Name: "r",
+															},
+														},
+													},
+													Params: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 22,
+																	Line:   120,
+																},
+																File:   "geo.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 21,
+																	Line:   120,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 22,
+																		Line:   120,
+																	},
+																	File:   "geo.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 21,
+																		Line:   120,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Value: nil,
+													}},
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 15,
+													Line:   123,
+												},
+												File:   "geo.flux",
+												Source: "map(fn: (r) => ({\n             r with\n               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))",
+												Start: ast.Position{
+													Column: 12,
+													Line:   120,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 15,
+														Line:   120,
+													},
+													File:   "geo.flux",
+													Source: "map",
+													Start: ast.Position{
+														Column: 12,
+														Line:   120,
+													},
+												},
+											},
+											Name: "map",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 50,
+											Line:   124,
+										},
+										File:   "geo.flux",
+										Source: "tables\n        |> map(fn: (r) => ({\n             r with\n               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _cixxx: newColumn })",
+										Start: ast.Position{
+											Column: 7,
+											Line:   119,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 49,
+													Line:   124,
+												},
+												File:   "geo.flux",
+												Source: "columns: { _cixxx: newColumn }",
+												Start: ast.Position{
+													Column: 19,
+													Line:   124,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 49,
+														Line:   124,
+													},
+													File:   "geo.flux",
+													Source: "columns: { _cixxx: newColumn }",
+													Start: ast.Position{
+														Column: 19,
+														Line:   124,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 26,
+															Line:   124,
+														},
+														File:   "geo.flux",
+														Source: "columns",
+														Start: ast.Position{
+															Column: 19,
+															Line:   124,
+														},
+													},
+												},
+												Name: "columns",
+											},
+											Value: &ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 49,
+															Line:   124,
+														},
+														File:   "geo.flux",
+														Source: "{ _cixxx: newColumn }",
+														Start: ast.Position{
+															Column: 28,
+															Line:   124,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 47,
+																Line:   124,
+															},
+															File:   "geo.flux",
+															Source: "_cixxx: newColumn",
+															Start: ast.Position{
+																Column: 30,
+																Line:   124,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 36,
+																	Line:   124,
+																},
+																File:   "geo.flux",
+																Source: "_cixxx",
+																Start: ast.Position{
+																	Column: 30,
+																	Line:   124,
+																},
+															},
+														},
+														Name: "_cixxx",
+													},
+													Value: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 47,
+																	Line:   124,
+																},
+																File:   "geo.flux",
+																Source: "newColumn",
+																Start: ast.Position{
+																	Column: 38,
+																	Line:   124,
+																},
+															},
+														},
+														Name: "newColumn",
+													},
+												}},
+												With: nil,
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 50,
+												Line:   124,
+											},
+											File:   "geo.flux",
+											Source: "rename(columns: { _cixxx: newColumn })",
+											Start: ast.Position{
+												Column: 12,
+												Line:   124,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   124,
+												},
+												File:   "geo.flux",
+												Source: "rename",
+												Start: ast.Position{
+													Column: 12,
+													Line:   124,
+												},
+											},
+										},
+										Name: "rename",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 50,
+										Line:   124,
+									},
+									File:   "geo.flux",
+									Source: "if level == _ciLevel then\n      tables\n\t    |> duplicate(column: \"_ci\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _cixxx: newColumn })",
+									Start: ast.Position{
+										Column: 5,
+										Line:   115,
+									},
+								},
+							},
+							Consequent: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   116,
+											},
+											File:   "geo.flux",
+											Source: "tables",
+											Start: ast.Position{
+												Column: 7,
+												Line:   116,
+											},
+										},
+									},
+									Name: "tables",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 48,
+											Line:   117,
 										},
 										File:   "geo.flux",
 										Source: "tables\n\t    |> duplicate(column: \"_ci\", as: newColumn)",
 										Start: ast.Position{
 											Column: 7,
-											Line:   110,
+											Line:   116,
 										},
 									},
 								},
@@ -6854,13 +7066,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   111,
+													Line:   117,
 												},
 												File:   "geo.flux",
 												Source: "column: \"_ci\", as: newColumn",
 												Start: ast.Position{
 													Column: 19,
-													Line:   111,
+													Line:   117,
 												},
 											},
 										},
@@ -6870,13 +7082,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 32,
-														Line:   111,
+														Line:   117,
 													},
 													File:   "geo.flux",
 													Source: "column: \"_ci\"",
 													Start: ast.Position{
 														Column: 19,
-														Line:   111,
+														Line:   117,
 													},
 												},
 											},
@@ -6886,13 +7098,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 25,
-															Line:   111,
+															Line:   117,
 														},
 														File:   "geo.flux",
 														Source: "column",
 														Start: ast.Position{
 															Column: 19,
-															Line:   111,
+															Line:   117,
 														},
 													},
 												},
@@ -6904,13 +7116,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 32,
-															Line:   111,
+															Line:   117,
 														},
 														File:   "geo.flux",
 														Source: "\"_ci\"",
 														Start: ast.Position{
 															Column: 27,
-															Line:   111,
+															Line:   117,
 														},
 													},
 												},
@@ -6922,13 +7134,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 47,
-														Line:   111,
+														Line:   117,
 													},
 													File:   "geo.flux",
 													Source: "as: newColumn",
 													Start: ast.Position{
 														Column: 34,
-														Line:   111,
+														Line:   117,
 													},
 												},
 											},
@@ -6938,13 +7150,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 36,
-															Line:   111,
+															Line:   117,
 														},
 														File:   "geo.flux",
 														Source: "as",
 														Start: ast.Position{
 															Column: 34,
-															Line:   111,
+															Line:   117,
 														},
 													},
 												},
@@ -6956,13 +7168,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 47,
-															Line:   111,
+															Line:   117,
 														},
 														File:   "geo.flux",
 														Source: "newColumn",
 														Start: ast.Position{
 															Column: 38,
-															Line:   111,
+															Line:   117,
 														},
 													},
 												},
@@ -6976,13 +7188,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 48,
-												Line:   111,
+												Line:   117,
 											},
 											File:   "geo.flux",
 											Source: "duplicate(column: \"_ci\", as: newColumn)",
 											Start: ast.Position{
 												Column: 9,
-												Line:   111,
+												Line:   117,
 											},
 										},
 									},
@@ -6992,13 +7204,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   111,
+													Line:   117,
 												},
 												File:   "geo.flux",
 												Source: "duplicate",
 												Start: ast.Position{
 													Column: 9,
-													Line:   111,
+													Line:   117,
 												},
 											},
 										},
@@ -7011,14 +7223,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 24,
-											Line:   109,
+											Column: 25,
+											Line:   115,
 										},
 										File:   "geo.flux",
-										Source: "level == ciLevel",
+										Source: "level == _ciLevel",
 										Start: ast.Position{
 											Column: 8,
-											Line:   109,
+											Line:   115,
 										},
 									},
 								},
@@ -7028,13 +7240,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   109,
+												Line:   115,
 											},
 											File:   "geo.flux",
 											Source: "level",
 											Start: ast.Position{
 												Column: 8,
-												Line:   109,
+												Line:   115,
 											},
 										},
 									},
@@ -7046,18 +7258,18 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 24,
-												Line:   109,
+												Column: 25,
+												Line:   115,
 											},
 											File:   "geo.flux",
-											Source: "ciLevel",
+											Source: "_ciLevel",
 											Start: ast.Position{
 												Column: 17,
-												Line:   109,
+												Line:   115,
 											},
 										},
 									},
-									Name: "ciLevel",
+									Name: "_ciLevel",
 								},
 							},
 						},
@@ -7068,14 +7280,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 19,
-											Line:   116,
+											Column: 14,
+											Line:   126,
 										},
 										File:   "geo.flux",
 										Source: "_prepared",
 										Start: ast.Position{
-											Column: 10,
-											Line:   116,
+											Column: 5,
+											Line:   126,
 										},
 									},
 								},
@@ -7085,14 +7297,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 35,
-										Line:   117,
+										Column: 37,
+										Line:   127,
 									},
 									File:   "geo.flux",
-									Source: "_prepared\n    |> group(columns: [newColumn])",
+									Source: "_prepared\n      |> group(columns: [newColumn])",
 									Start: ast.Position{
-										Column: 10,
-										Line:   116,
+										Column: 5,
+										Line:   126,
 									},
 								},
 							},
@@ -7102,14 +7314,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 34,
-												Line:   117,
+												Column: 36,
+												Line:   127,
 											},
 											File:   "geo.flux",
 											Source: "columns: [newColumn]",
 											Start: ast.Position{
-												Column: 14,
-												Line:   117,
+												Column: 16,
+												Line:   127,
 											},
 										},
 									},
@@ -7118,14 +7330,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 34,
-													Line:   117,
+													Column: 36,
+													Line:   127,
 												},
 												File:   "geo.flux",
 												Source: "columns: [newColumn]",
 												Start: ast.Position{
-													Column: 14,
-													Line:   117,
+													Column: 16,
+													Line:   127,
 												},
 											},
 										},
@@ -7134,14 +7346,14 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 21,
-														Line:   117,
+														Column: 23,
+														Line:   127,
 													},
 													File:   "geo.flux",
 													Source: "columns",
 													Start: ast.Position{
-														Column: 14,
-														Line:   117,
+														Column: 16,
+														Line:   127,
 													},
 												},
 											},
@@ -7152,14 +7364,14 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 34,
-														Line:   117,
+														Column: 36,
+														Line:   127,
 													},
 													File:   "geo.flux",
 													Source: "[newColumn]",
 													Start: ast.Position{
-														Column: 23,
-														Line:   117,
+														Column: 25,
+														Line:   127,
 													},
 												},
 											},
@@ -7168,14 +7380,14 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 33,
-															Line:   117,
+															Column: 35,
+															Line:   127,
 														},
 														File:   "geo.flux",
 														Source: "newColumn",
 														Start: ast.Position{
-															Column: 24,
-															Line:   117,
+															Column: 26,
+															Line:   127,
 														},
 													},
 												},
@@ -7189,14 +7401,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 35,
-											Line:   117,
+											Column: 37,
+											Line:   127,
 										},
 										File:   "geo.flux",
 										Source: "group(columns: [newColumn])",
 										Start: ast.Position{
-											Column: 8,
-											Line:   117,
+											Column: 10,
+											Line:   127,
 										},
 									},
 								},
@@ -7205,14 +7417,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 13,
-												Line:   117,
+												Column: 15,
+												Line:   127,
 											},
 											File:   "geo.flux",
 											Source: "group",
 											Start: ast.Position{
-												Column: 8,
-												Line:   117,
+												Column: 10,
+												Line:   127,
 											},
 										},
 									},
@@ -7224,14 +7436,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 35,
-									Line:   117,
+									Column: 37,
+									Line:   127,
 								},
 								File:   "geo.flux",
-								Source: "return _prepared\n    |> group(columns: [newColumn])",
+								Source: "return\n    _prepared\n      |> group(columns: [newColumn])",
 								Start: ast.Position{
 									Column: 3,
-									Line:   116,
+									Line:   125,
 								},
 							},
 						},
@@ -7434,13 +7646,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 30,
-						Line:   124,
+						Line:   134,
 					},
 					File:   "geo.flux",
 					Source: "asTracks = (tables=<-, groupBy=[\"id\",\"tid\"], orderBy=[\"_time\"]) =>\n  tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   121,
+						Line:   131,
 					},
 				},
 			},
@@ -7450,13 +7662,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   121,
+							Line:   131,
 						},
 						File:   "geo.flux",
 						Source: "asTracks",
 						Start: ast.Position{
 							Column: 1,
-							Line:   121,
+							Line:   131,
 						},
 					},
 				},
@@ -7468,13 +7680,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 30,
-							Line:   124,
+							Line:   134,
 						},
 						File:   "geo.flux",
 						Source: "(tables=<-, groupBy=[\"id\",\"tid\"], orderBy=[\"_time\"]) =>\n  tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
 						Start: ast.Position{
 							Column: 12,
-							Line:   121,
+							Line:   131,
 						},
 					},
 				},
@@ -7486,13 +7698,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   122,
+										Line:   132,
 									},
 									File:   "geo.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 3,
-										Line:   122,
+										Line:   132,
 									},
 								},
 							},
@@ -7503,13 +7715,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   123,
+									Line:   133,
 								},
 								File:   "geo.flux",
 								Source: "tables\n    |> group(columns: groupBy)",
 								Start: ast.Position{
 									Column: 3,
-									Line:   122,
+									Line:   132,
 								},
 							},
 						},
@@ -7520,13 +7732,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   123,
+											Line:   133,
 										},
 										File:   "geo.flux",
 										Source: "columns: groupBy",
 										Start: ast.Position{
 											Column: 14,
-											Line:   123,
+											Line:   133,
 										},
 									},
 								},
@@ -7536,13 +7748,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   123,
+												Line:   133,
 											},
 											File:   "geo.flux",
 											Source: "columns: groupBy",
 											Start: ast.Position{
 												Column: 14,
-												Line:   123,
+												Line:   133,
 											},
 										},
 									},
@@ -7552,13 +7764,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
-													Line:   123,
+													Line:   133,
 												},
 												File:   "geo.flux",
 												Source: "columns",
 												Start: ast.Position{
 													Column: 14,
-													Line:   123,
+													Line:   133,
 												},
 											},
 										},
@@ -7570,13 +7782,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   123,
+													Line:   133,
 												},
 												File:   "geo.flux",
 												Source: "groupBy",
 												Start: ast.Position{
 													Column: 23,
-													Line:   123,
+													Line:   133,
 												},
 											},
 										},
@@ -7590,13 +7802,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   123,
+										Line:   133,
 									},
 									File:   "geo.flux",
 									Source: "group(columns: groupBy)",
 									Start: ast.Position{
 										Column: 8,
-										Line:   123,
+										Line:   133,
 									},
 								},
 							},
@@ -7606,13 +7818,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   123,
+											Line:   133,
 										},
 										File:   "geo.flux",
 										Source: "group",
 										Start: ast.Position{
 											Column: 8,
-											Line:   123,
+											Line:   133,
 										},
 									},
 								},
@@ -7625,13 +7837,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
-								Line:   124,
+								Line:   134,
 							},
 							File:   "geo.flux",
 							Source: "tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
 							Start: ast.Position{
 								Column: 3,
-								Line:   122,
+								Line:   132,
 							},
 						},
 					},
@@ -7642,13 +7854,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   124,
+										Line:   134,
 									},
 									File:   "geo.flux",
 									Source: "columns: orderBy",
 									Start: ast.Position{
 										Column: 13,
-										Line:   124,
+										Line:   134,
 									},
 								},
 							},
@@ -7658,13 +7870,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   124,
+											Line:   134,
 										},
 										File:   "geo.flux",
 										Source: "columns: orderBy",
 										Start: ast.Position{
 											Column: 13,
-											Line:   124,
+											Line:   134,
 										},
 									},
 								},
@@ -7674,13 +7886,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   124,
+												Line:   134,
 											},
 											File:   "geo.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
-												Line:   124,
+												Line:   134,
 											},
 										},
 									},
@@ -7692,13 +7904,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   124,
+												Line:   134,
 											},
 											File:   "geo.flux",
 											Source: "orderBy",
 											Start: ast.Position{
 												Column: 22,
-												Line:   124,
+												Line:   134,
 											},
 										},
 									},
@@ -7712,13 +7924,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   124,
+									Line:   134,
 								},
 								File:   "geo.flux",
 								Source: "sort(columns: orderBy)",
 								Start: ast.Position{
 									Column: 8,
-									Line:   124,
+									Line:   134,
 								},
 							},
 						},
@@ -7728,13 +7940,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   124,
+										Line:   134,
 									},
 									File:   "geo.flux",
 									Source: "sort",
 									Start: ast.Position{
 										Column: 8,
-										Line:   124,
+										Line:   134,
 									},
 								},
 							},
@@ -7748,13 +7960,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   121,
+								Line:   131,
 							},
 							File:   "geo.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 13,
-								Line:   121,
+								Line:   131,
 							},
 						},
 					},
@@ -7764,13 +7976,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   121,
+									Line:   131,
 								},
 								File:   "geo.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 13,
-									Line:   121,
+									Line:   131,
 								},
 							},
 						},
@@ -7781,13 +7993,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   121,
+								Line:   131,
 							},
 							File:   "geo.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 20,
-								Line:   121,
+								Line:   131,
 							},
 						},
 					}},
@@ -7797,13 +8009,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 44,
-								Line:   121,
+								Line:   131,
 							},
 							File:   "geo.flux",
 							Source: "groupBy=[\"id\",\"tid\"]",
 							Start: ast.Position{
 								Column: 24,
-								Line:   121,
+								Line:   131,
 							},
 						},
 					},
@@ -7813,13 +8025,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   121,
+									Line:   131,
 								},
 								File:   "geo.flux",
 								Source: "groupBy",
 								Start: ast.Position{
 									Column: 24,
-									Line:   121,
+									Line:   131,
 								},
 							},
 						},
@@ -7831,13 +8043,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   121,
+									Line:   131,
 								},
 								File:   "geo.flux",
 								Source: "[\"id\",\"tid\"]",
 								Start: ast.Position{
 									Column: 32,
-									Line:   121,
+									Line:   131,
 								},
 							},
 						},
@@ -7847,13 +8059,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 37,
-										Line:   121,
+										Line:   131,
 									},
 									File:   "geo.flux",
 									Source: "\"id\"",
 									Start: ast.Position{
 										Column: 33,
-										Line:   121,
+										Line:   131,
 									},
 								},
 							},
@@ -7864,13 +8076,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 43,
-										Line:   121,
+										Line:   131,
 									},
 									File:   "geo.flux",
 									Source: "\"tid\"",
 									Start: ast.Position{
 										Column: 38,
-										Line:   121,
+										Line:   131,
 									},
 								},
 							},
@@ -7883,13 +8095,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 63,
-								Line:   121,
+								Line:   131,
 							},
 							File:   "geo.flux",
 							Source: "orderBy=[\"_time\"]",
 							Start: ast.Position{
 								Column: 46,
-								Line:   121,
+								Line:   131,
 							},
 						},
 					},
@@ -7899,13 +8111,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 53,
-									Line:   121,
+									Line:   131,
 								},
 								File:   "geo.flux",
 								Source: "orderBy",
 								Start: ast.Position{
 									Column: 46,
-									Line:   121,
+									Line:   131,
 								},
 							},
 						},
@@ -7917,13 +8129,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 63,
-									Line:   121,
+									Line:   131,
 								},
 								File:   "geo.flux",
 								Source: "[\"_time\"]",
 								Start: ast.Position{
 									Column: 54,
-									Line:   121,
+									Line:   131,
 								},
 							},
 						},
@@ -7933,13 +8145,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 62,
-										Line:   121,
+										Line:   131,
 									},
 									File:   "geo.flux",
 									Source: "\"_time\"",
 									Start: ast.Position{
 										Column: 55,
-										Line:   121,
+										Line:   131,
 									},
 								},
 							},
