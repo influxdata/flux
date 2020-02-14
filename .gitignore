@@ -12,4 +12,5 @@ target
 /libflux/pkg
 /libflux/site/node_modules
 /libflux/.cache
+/libflux/lib/
 /release-notes.txt

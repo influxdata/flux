@@ -8,7 +8,7 @@ COPY . /go/src/github.com/influxdata/flux
 WORKDIR /go/src/github.com/influxdata/flux
 
 # Install common packages
-RUN apt-get update && \
+RUN apt-get clean && apt-get update && \
     apt-get install --no-install-recommends -y \
         clang \
         gcc-arm-linux-gnueabihf \
@@ -16,13 +16,10 @@ RUN apt-get update && \
         gcc-aarch64-linux-gnu \
         gcc-i686-linux-gnu && \
     rm -rf /var/lib/apt/lists/*
+RUN go get github.com/influxdata/pkg-config
 RUN curl https://sh.rustup.rs -sSf | \
-    sh -s -- --default-toolchain stable -y
+        sh -s -- --default-toolchain stable -y
 
-RUN cd libflux && cargo build
-RUN go build \
-        -ldflags '-extldflags "-fno-PIC -static"' \
-        -buildmode pie \
-        -tags 'libflux static_build' \
-        -o flux \
-        .
+# XXX: rockstar (13 Feb 2020) - The `-tags` portion of this command can be
+# removed when applied to feat/algo-w.
+RUN go build -tags 'libflux'

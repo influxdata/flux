@@ -79,7 +79,7 @@ pub fn infer_stdlib() -> Result<
 > {
     let (builtins, mut f) = builtin_types()?;
 
-    let files = file_map(parse_flux_files("../../stdlib")?);
+    let files = file_map(parse_flux_files("../../../stdlib")?);
 
     let (prelude, importer) = infer_pre(&mut f, &files, &builtins)?;
     let importer = infer_std(&mut f, &files, &builtins, prelude.clone(), importer)?;
