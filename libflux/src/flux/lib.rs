@@ -97,7 +97,10 @@ pub struct flux_buffer_t {
 /// in as a parameter. For example, if that pointer is NULL, undefined behavior
 /// could occur.
 #[no_mangle]
-pub unsafe extern "C" fn flux_parse(cfname: *const c_char, csrc: *const c_char) -> *mut flux_ast_pkg_t {
+pub unsafe extern "C" fn flux_parse(
+    cfname: *const c_char,
+    csrc: *const c_char,
+) -> *mut flux_ast_pkg_t {
     let fname = String::from_utf8(CStr::from_ptr(cfname).to_bytes().to_vec()).unwrap();
     let src = String::from_utf8(CStr::from_ptr(csrc).to_bytes().to_vec()).unwrap();
     let mut p = Parser::new(&src);
