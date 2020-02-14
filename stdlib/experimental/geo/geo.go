@@ -217,17 +217,17 @@ func generateGetParentFunc() values.Function {
 
 			var parentToken string
 			if tokenOk && len(token) > 0 {
-				parentToken = getParentFromToken(token, int(level))
+				parentToken, err = getParentFromToken(token, int(level))
 			} else {
 				lat, latOk := point.Get("lat")
 				lon, lonOk := point.Get("lon")
 				if !latOk || !lonOk {
 					return nil, fmt.Errorf("code %d: invalid point specification - must have lat, lon fields", codes.Invalid)
 				}
-				parentToken = getParentFromLatLon(lat.Float(), lon.Float(), int(level))
+				parentToken, err = getParentFromLatLon(lat.Float(), lon.Float(), int(level))
 			}
 
-			return values.NewString(parentToken), nil
+			return values.NewString(parentToken), err
 		}, false,
 	)
 }
@@ -249,7 +249,9 @@ func generateGetLevelFunc() values.Function {
 			if err != nil {
 				return nil, err
 			}
-			return values.NewInt(int64(getLevel(token))), nil
+			level, err := getLevel(token)
+
+			return values.NewInt(int64(level)), err
 		}, false,
 	)
 }
@@ -525,14 +527,26 @@ func getGrid(region s2.Region, reqLevel, maxLevel, minSize, maxSize int) (*grid,
 	return result, nil
 }
 
-func getParentFromToken(token string, level int) string {
-	return s2.CellIDFromToken(token).Parent(level).ToToken()
+func getParentFromToken(token string, level int) (string, error) {
+	cellID := s2.CellIDFromToken(token)
+	if cellID.IsValid() && level <= cellID.Level() {
+		return cellID.Parent(level).ToToken(), nil
+	}
+	return "", fmt.Errorf("code %d: invalid token specified or requested level greater then current level", codes.Invalid)
 }
 
-func getParentFromLatLon(lat, lon float64, level int) string {
-	return s2.CellIDFromLatLng(s2.LatLngFromDegrees(lat, lon)).Parent(level).ToToken()
+func getParentFromLatLon(lat, lon float64, level int) (string, error) {
+	cellID := s2.CellIDFromLatLng(s2.LatLngFromDegrees(lat, lon))
+	if cellID.IsValid() {
+		return cellID.Parent(level).ToToken(), nil
+	}
+	return "", fmt.Errorf("code %d: invalid coordinates", codes.Invalid)
 }
 
-func getLevel(token string) int {
-	return s2.CellIDFromToken(token).Level()
+func getLevel(token string) (int, error) {
+	cellID := s2.CellIDFromToken(token)
+	if cellID.IsValid() {
+		return cellID.Level(), nil
+	}
+	return -1, fmt.Errorf("code %d: invalid token specified", codes.Invalid)
 }
