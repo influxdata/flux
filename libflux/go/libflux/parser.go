@@ -101,10 +101,10 @@ func ParseString(src string) *ASTPkg {
 // Parse will take a filename and source string and return a parsed source file.
 func Parse(fname string, src string) *ASTPkg {
 	csrc := C.CString(src)
+	defer C.free(unsafe.Pointer(csrc))
 	cfname := C.CString(fname)
+	defer C.free(unsafe.Pointer(cfname))
 	ptr := C.flux_parse(cfname, csrc)
-	C.free(unsafe.Pointer(cfname))
-	C.free(unsafe.Pointer(csrc))
 	p := &ASTPkg{ptr: ptr}
 	runtime.SetFinalizer(p, free)
 	return p
