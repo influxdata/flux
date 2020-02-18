@@ -17,6 +17,1525 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
+					Column: 98,
+					Line:   170,
+				},
+				File:   "asTracks_test.flux",
+				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,40.762662,89c258c,lat,bikes,end,vehicleB\n,,0,2019-11-10T21:17:47Z,40.762424,89c258c,lat,bikes,end,vehicleB\n,,1,2019-11-10T11:07:12Z,40.762096,89c258c,lat,bikes,start,vehicleB\n,,1,2019-11-10T21:16:00Z,40.763126,89c258c,lat,bikes,start,vehicleB\n,,2,2019-11-10T11:07:35Z,40.762225,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:38Z,40.762247,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:43Z,40.762331,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:48Z,40.762408,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:52Z,40.762484,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:08:01Z,40.762597,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:08:16Z,40.762574,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:06Z,40.76309,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:18Z,40.763036,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:31Z,40.763006,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:48Z,40.762904,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:08Z,40.762836,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:23Z,40.762736,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:36Z,40.762469,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:46Z,40.762418,89c258c,lat,bikes,via,vehicleB\n,,3,2019-11-10T11:08:34Z,-73.967971,89c258c,lon,bikes,end,vehicleB\n,,3,2019-11-10T21:17:47Z,-73.965583,89c258c,lon,bikes,end,vehicleB\n,,4,2019-11-10T11:07:12Z,-73.967104,89c258c,lon,bikes,start,vehicleB\n,,4,2019-11-10T21:16:00Z,-73.966333,89c258c,lon,bikes,start,vehicleB\n,,5,2019-11-10T11:07:35Z,-73.967081,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:38Z,-73.967129,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:43Z,-73.967261,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:48Z,-73.967422,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:52Z,-73.967542,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:08:01Z,-73.967718,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:08:16Z,-73.967803,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:06Z,-73.966254,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:18Z,-73.966091,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:31Z,-73.965889,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:48Z,-73.96573,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:08Z,-73.965721,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:23Z,-73.965801,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:36Z,-73.96559,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:46Z,-73.965579,89c258c,lon,bikes,via,vehicleB\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,1573384032,89c258c,tid,bikes,end,vehicleB\n,,6,2019-11-10T21:17:47Z,1573420560,89c258c,tid,bikes,end,vehicleB\n,,7,2019-11-10T11:07:12Z,1573384032,89c258c,tid,bikes,start,vehicleB\n,,7,2019-11-10T21:16:00Z,1573420560,89c258c,tid,bikes,start,vehicleB\n,,8,2019-11-10T11:07:35Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:38Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:43Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:48Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:52Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:08:01Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:08:16Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:06Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:18Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:31Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:48Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:08Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:23Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:36Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:46Z,1573420560,89c258c,tid,bikes,via,vehicleB\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,9,2019-11-20T10:17:17Z,40.700344,89e82cc,lat,bikes,start,vehicleA\n,,10,2019-11-20T10:17:18Z,40.700348,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:24Z,40.700397,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:26Z,40.700413,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:32Z,40.700474,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:35Z,40.700481,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:42Z,40.700459,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:47Z,40.700455,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:54Z,40.700542,89e82cc,lat,bikes,via,vehicleA\n,,11,2019-11-20T10:17:17Z,-73.324814,89e82cc,lon,bikes,start,vehicleA\n,,12,2019-11-20T10:17:18Z,-73.324799,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:24Z,-73.324699,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:26Z,-73.324638,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:32Z,-73.324471,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:35Z,-73.324371,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:42Z,-73.324181,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:47Z,-73.323982,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:54Z,-73.323769,89e82cc,lon,bikes,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,13,2019-11-20T10:17:17Z,1574245037,89e82cc,tid,bikes,start,vehicleA\n,,14,2019-11-20T10:17:18Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:24Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:26Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:32Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:35Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:42Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:47Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:54Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,15,2019-11-20T10:18:00Z,40.700684,89e82d4,lat,bikes,end,vehicleA\n,,16,2019-11-20T10:18:00Z,-73.323692,89e82d4,lon,bikes,end,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,17,2019-11-20T10:18:00Z,1574245037,89e82d4,tid,bikes,end,vehicleA\n\"\n\noutData = \"\n#group,false,false,false,false,false,false,true,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double,long,double\n#default,_result,,,,,,,,,\n,result,table,_time,_ci,_measurement,_pt,id,lat,tid,lon\n,,0,2019-11-20T10:17:17Z,89e82cc,bikes,start,vehicleA,40.700344,1574245037,-73.324814\n,,0,2019-11-20T10:17:18Z,89e82cc,bikes,via,vehicleA,40.700348,1574245037,-73.324799\n,,0,2019-11-20T10:17:24Z,89e82cc,bikes,via,vehicleA,40.700397,1574245037,-73.324699\n,,0,2019-11-20T10:17:26Z,89e82cc,bikes,via,vehicleA,40.700413,1574245037,-73.324638\n,,0,2019-11-20T10:17:32Z,89e82cc,bikes,via,vehicleA,40.700474,1574245037,-73.324471\n,,0,2019-11-20T10:17:35Z,89e82cc,bikes,via,vehicleA,40.700481,1574245037,-73.324371\n,,0,2019-11-20T10:17:42Z,89e82cc,bikes,via,vehicleA,40.700459,1574245037,-73.324181\n,,0,2019-11-20T10:17:47Z,89e82cc,bikes,via,vehicleA,40.700455,1574245037,-73.323982\n,,0,2019-11-20T10:17:54Z,89e82cc,bikes,via,vehicleA,40.700542,1574245037,-73.323769\n,,0,2019-11-20T10:18:00Z,89e82d4,bikes,end,vehicleA,40.700684,1574245037,-73.323692\n,,1,2019-11-10T11:07:12Z,89c258c,bikes,start,vehicleB,40.762096,1573384032,-73.967104\n,,1,2019-11-10T11:07:35Z,89c258c,bikes,via,vehicleB,40.762225,1573384032,-73.967081\n,,1,2019-11-10T11:07:38Z,89c258c,bikes,via,vehicleB,40.762247,1573384032,-73.967129\n,,1,2019-11-10T11:07:43Z,89c258c,bikes,via,vehicleB,40.762331,1573384032,-73.967261\n,,1,2019-11-10T11:07:48Z,89c258c,bikes,via,vehicleB,40.762408,1573384032,-73.967422\n,,1,2019-11-10T11:07:52Z,89c258c,bikes,via,vehicleB,40.762484,1573384032,-73.967542\n,,1,2019-11-10T11:08:01Z,89c258c,bikes,via,vehicleB,40.762597,1573384032,-73.967718\n,,1,2019-11-10T11:08:16Z,89c258c,bikes,via,vehicleB,40.762574,1573384032,-73.967803\n,,1,2019-11-10T11:08:34Z,89c258c,bikes,end,vehicleB,40.762662,1573384032,-73.967971\n,,2,2019-11-10T21:16:00Z,89c258c,bikes,start,vehicleB,40.763126,1573420560,-73.966333\n,,2,2019-11-10T21:16:06Z,89c258c,bikes,via,vehicleB,40.76309,1573420560,-73.966254\n,,2,2019-11-10T21:16:18Z,89c258c,bikes,via,vehicleB,40.763036,1573420560,-73.966091\n,,2,2019-11-10T21:16:31Z,89c258c,bikes,via,vehicleB,40.763006,1573420560,-73.965889\n,,2,2019-11-10T21:16:48Z,89c258c,bikes,via,vehicleB,40.762904,1573420560,-73.96573\n,,2,2019-11-10T21:17:08Z,89c258c,bikes,via,vehicleB,40.762836,1573420560,-73.965721\n,,2,2019-11-10T21:17:23Z,89c258c,bikes,via,vehicleB,40.762736,1573420560,-73.965801\n,,2,2019-11-10T21:17:36Z,89c258c,bikes,via,vehicleB,40.762469,1573420560,-73.96559\n,,2,2019-11-10T21:17:46Z,89c258c,bikes,via,vehicleB,40.762418,1573420560,-73.965579\n,,2,2019-11-10T21:17:47Z,89c258c,bikes,end,vehicleB,40.762424,1573420560,-73.965583\n\"\n\nt_asTracks = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows(correlationKey: [\"id\", \"_time\"])\n    |> geo.asTracks()\n    |> drop(columns: [\"_start\", \"_stop\"])\ntest _asTracks = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "asTracks_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "asTracks_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "asTracks_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "asTracks_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "asTracks_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "asTracks_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   125,
+					},
+					File:   "asTracks_test.flux",
+					Source: "inData = \"\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,40.762662,89c258c,lat,bikes,end,vehicleB\n,,0,2019-11-10T21:17:47Z,40.762424,89c258c,lat,bikes,end,vehicleB\n,,1,2019-11-10T11:07:12Z,40.762096,89c258c,lat,bikes,start,vehicleB\n,,1,2019-11-10T21:16:00Z,40.763126,89c258c,lat,bikes,start,vehicleB\n,,2,2019-11-10T11:07:35Z,40.762225,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:38Z,40.762247,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:43Z,40.762331,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:48Z,40.762408,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:52Z,40.762484,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:08:01Z,40.762597,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:08:16Z,40.762574,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:06Z,40.76309,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:18Z,40.763036,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:31Z,40.763006,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:48Z,40.762904,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:08Z,40.762836,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:23Z,40.762736,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:36Z,40.762469,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:46Z,40.762418,89c258c,lat,bikes,via,vehicleB\n,,3,2019-11-10T11:08:34Z,-73.967971,89c258c,lon,bikes,end,vehicleB\n,,3,2019-11-10T21:17:47Z,-73.965583,89c258c,lon,bikes,end,vehicleB\n,,4,2019-11-10T11:07:12Z,-73.967104,89c258c,lon,bikes,start,vehicleB\n,,4,2019-11-10T21:16:00Z,-73.966333,89c258c,lon,bikes,start,vehicleB\n,,5,2019-11-10T11:07:35Z,-73.967081,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:38Z,-73.967129,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:43Z,-73.967261,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:48Z,-73.967422,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:52Z,-73.967542,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:08:01Z,-73.967718,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:08:16Z,-73.967803,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:06Z,-73.966254,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:18Z,-73.966091,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:31Z,-73.965889,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:48Z,-73.96573,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:08Z,-73.965721,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:23Z,-73.965801,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:36Z,-73.96559,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:46Z,-73.965579,89c258c,lon,bikes,via,vehicleB\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,1573384032,89c258c,tid,bikes,end,vehicleB\n,,6,2019-11-10T21:17:47Z,1573420560,89c258c,tid,bikes,end,vehicleB\n,,7,2019-11-10T11:07:12Z,1573384032,89c258c,tid,bikes,start,vehicleB\n,,7,2019-11-10T21:16:00Z,1573420560,89c258c,tid,bikes,start,vehicleB\n,,8,2019-11-10T11:07:35Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:38Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:43Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:48Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:52Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:08:01Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:08:16Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:06Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:18Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:31Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:48Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:08Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:23Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:36Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:46Z,1573420560,89c258c,tid,bikes,via,vehicleB\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,9,2019-11-20T10:17:17Z,40.700344,89e82cc,lat,bikes,start,vehicleA\n,,10,2019-11-20T10:17:18Z,40.700348,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:24Z,40.700397,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:26Z,40.700413,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:32Z,40.700474,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:35Z,40.700481,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:42Z,40.700459,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:47Z,40.700455,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:54Z,40.700542,89e82cc,lat,bikes,via,vehicleA\n,,11,2019-11-20T10:17:17Z,-73.324814,89e82cc,lon,bikes,start,vehicleA\n,,12,2019-11-20T10:17:18Z,-73.324799,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:24Z,-73.324699,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:26Z,-73.324638,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:32Z,-73.324471,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:35Z,-73.324371,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:42Z,-73.324181,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:47Z,-73.323982,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:54Z,-73.323769,89e82cc,lon,bikes,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,13,2019-11-20T10:17:17Z,1574245037,89e82cc,tid,bikes,start,vehicleA\n,,14,2019-11-20T10:17:18Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:24Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:26Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:32Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:35Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:42Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:47Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:54Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,15,2019-11-20T10:18:00Z,40.700684,89e82d4,lat,bikes,end,vehicleA\n,,16,2019-11-20T10:18:00Z,-73.323692,89e82d4,lon,bikes,end,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,17,2019-11-20T10:18:00Z,1574245037,89e82d4,tid,bikes,end,vehicleA\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "asTracks_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   125,
+						},
+						File:   "asTracks_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,40.762662,89c258c,lat,bikes,end,vehicleB\n,,0,2019-11-10T21:17:47Z,40.762424,89c258c,lat,bikes,end,vehicleB\n,,1,2019-11-10T11:07:12Z,40.762096,89c258c,lat,bikes,start,vehicleB\n,,1,2019-11-10T21:16:00Z,40.763126,89c258c,lat,bikes,start,vehicleB\n,,2,2019-11-10T11:07:35Z,40.762225,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:38Z,40.762247,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:43Z,40.762331,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:48Z,40.762408,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:52Z,40.762484,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:08:01Z,40.762597,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:08:16Z,40.762574,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:06Z,40.76309,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:18Z,40.763036,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:31Z,40.763006,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:48Z,40.762904,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:08Z,40.762836,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:23Z,40.762736,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:36Z,40.762469,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:46Z,40.762418,89c258c,lat,bikes,via,vehicleB\n,,3,2019-11-10T11:08:34Z,-73.967971,89c258c,lon,bikes,end,vehicleB\n,,3,2019-11-10T21:17:47Z,-73.965583,89c258c,lon,bikes,end,vehicleB\n,,4,2019-11-10T11:07:12Z,-73.967104,89c258c,lon,bikes,start,vehicleB\n,,4,2019-11-10T21:16:00Z,-73.966333,89c258c,lon,bikes,start,vehicleB\n,,5,2019-11-10T11:07:35Z,-73.967081,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:38Z,-73.967129,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:43Z,-73.967261,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:48Z,-73.967422,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:52Z,-73.967542,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:08:01Z,-73.967718,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:08:16Z,-73.967803,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:06Z,-73.966254,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:18Z,-73.966091,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:31Z,-73.965889,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:48Z,-73.96573,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:08Z,-73.965721,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:23Z,-73.965801,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:36Z,-73.96559,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:46Z,-73.965579,89c258c,lon,bikes,via,vehicleB\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,1573384032,89c258c,tid,bikes,end,vehicleB\n,,6,2019-11-10T21:17:47Z,1573420560,89c258c,tid,bikes,end,vehicleB\n,,7,2019-11-10T11:07:12Z,1573384032,89c258c,tid,bikes,start,vehicleB\n,,7,2019-11-10T21:16:00Z,1573420560,89c258c,tid,bikes,start,vehicleB\n,,8,2019-11-10T11:07:35Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:38Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:43Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:48Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:52Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:08:01Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:08:16Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:06Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:18Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:31Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:48Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:08Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:23Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:36Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:46Z,1573420560,89c258c,tid,bikes,via,vehicleB\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,9,2019-11-20T10:17:17Z,40.700344,89e82cc,lat,bikes,start,vehicleA\n,,10,2019-11-20T10:17:18Z,40.700348,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:24Z,40.700397,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:26Z,40.700413,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:32Z,40.700474,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:35Z,40.700481,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:42Z,40.700459,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:47Z,40.700455,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:54Z,40.700542,89e82cc,lat,bikes,via,vehicleA\n,,11,2019-11-20T10:17:17Z,-73.324814,89e82cc,lon,bikes,start,vehicleA\n,,12,2019-11-20T10:17:18Z,-73.324799,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:24Z,-73.324699,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:26Z,-73.324638,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:32Z,-73.324471,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:35Z,-73.324371,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:42Z,-73.324181,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:47Z,-73.323982,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:54Z,-73.323769,89e82cc,lon,bikes,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,13,2019-11-20T10:17:17Z,1574245037,89e82cc,tid,bikes,start,vehicleA\n,,14,2019-11-20T10:17:18Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:24Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:26Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:32Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:35Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:42Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:47Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:54Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,15,2019-11-20T10:18:00Z,40.700684,89e82d4,lat,bikes,end,vehicleA\n,,16,2019-11-20T10:18:00Z,-73.323692,89e82d4,lon,bikes,end,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,17,2019-11-20T10:18:00Z,1574245037,89e82d4,tid,bikes,end,vehicleA\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,40.762662,89c258c,lat,bikes,end,vehicleB\n,,0,2019-11-10T21:17:47Z,40.762424,89c258c,lat,bikes,end,vehicleB\n,,1,2019-11-10T11:07:12Z,40.762096,89c258c,lat,bikes,start,vehicleB\n,,1,2019-11-10T21:16:00Z,40.763126,89c258c,lat,bikes,start,vehicleB\n,,2,2019-11-10T11:07:35Z,40.762225,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:38Z,40.762247,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:43Z,40.762331,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:48Z,40.762408,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:52Z,40.762484,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:08:01Z,40.762597,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:08:16Z,40.762574,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:06Z,40.76309,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:18Z,40.763036,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:31Z,40.763006,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:48Z,40.762904,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:08Z,40.762836,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:23Z,40.762736,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:36Z,40.762469,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:46Z,40.762418,89c258c,lat,bikes,via,vehicleB\n,,3,2019-11-10T11:08:34Z,-73.967971,89c258c,lon,bikes,end,vehicleB\n,,3,2019-11-10T21:17:47Z,-73.965583,89c258c,lon,bikes,end,vehicleB\n,,4,2019-11-10T11:07:12Z,-73.967104,89c258c,lon,bikes,start,vehicleB\n,,4,2019-11-10T21:16:00Z,-73.966333,89c258c,lon,bikes,start,vehicleB\n,,5,2019-11-10T11:07:35Z,-73.967081,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:38Z,-73.967129,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:43Z,-73.967261,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:48Z,-73.967422,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:52Z,-73.967542,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:08:01Z,-73.967718,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:08:16Z,-73.967803,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:06Z,-73.966254,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:18Z,-73.966091,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:31Z,-73.965889,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:48Z,-73.96573,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:08Z,-73.965721,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:23Z,-73.965801,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:36Z,-73.96559,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:46Z,-73.965579,89c258c,lon,bikes,via,vehicleB\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,1573384032,89c258c,tid,bikes,end,vehicleB\n,,6,2019-11-10T21:17:47Z,1573420560,89c258c,tid,bikes,end,vehicleB\n,,7,2019-11-10T11:07:12Z,1573384032,89c258c,tid,bikes,start,vehicleB\n,,7,2019-11-10T21:16:00Z,1573420560,89c258c,tid,bikes,start,vehicleB\n,,8,2019-11-10T11:07:35Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:38Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:43Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:48Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:52Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:08:01Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:08:16Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:06Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:18Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:31Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:48Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:08Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:23Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:36Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:46Z,1573420560,89c258c,tid,bikes,via,vehicleB\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,9,2019-11-20T10:17:17Z,40.700344,89e82cc,lat,bikes,start,vehicleA\n,,10,2019-11-20T10:17:18Z,40.700348,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:24Z,40.700397,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:26Z,40.700413,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:32Z,40.700474,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:35Z,40.700481,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:42Z,40.700459,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:47Z,40.700455,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:54Z,40.700542,89e82cc,lat,bikes,via,vehicleA\n,,11,2019-11-20T10:17:17Z,-73.324814,89e82cc,lon,bikes,start,vehicleA\n,,12,2019-11-20T10:17:18Z,-73.324799,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:24Z,-73.324699,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:26Z,-73.324638,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:32Z,-73.324471,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:35Z,-73.324371,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:42Z,-73.324181,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:47Z,-73.323982,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:54Z,-73.323769,89e82cc,lon,bikes,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,13,2019-11-20T10:17:17Z,1574245037,89e82cc,tid,bikes,start,vehicleA\n,,14,2019-11-20T10:17:18Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:24Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:26Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:32Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:35Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:42Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:47Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:54Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,15,2019-11-20T10:18:00Z,40.700684,89e82d4,lat,bikes,end,vehicleA\n,,16,2019-11-20T10:18:00Z,-73.323692,89e82d4,lon,bikes,end,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,_ci,_field,_measurement,_pt,id\n,,17,2019-11-20T10:18:00Z,1574245037,89e82d4,tid,bikes,end,vehicleA\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   161,
+					},
+					File:   "asTracks_test.flux",
+					Source: "outData = \"\n#group,false,false,false,false,false,false,true,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double,long,double\n#default,_result,,,,,,,,,\n,result,table,_time,_ci,_measurement,_pt,id,lat,tid,lon\n,,0,2019-11-20T10:17:17Z,89e82cc,bikes,start,vehicleA,40.700344,1574245037,-73.324814\n,,0,2019-11-20T10:17:18Z,89e82cc,bikes,via,vehicleA,40.700348,1574245037,-73.324799\n,,0,2019-11-20T10:17:24Z,89e82cc,bikes,via,vehicleA,40.700397,1574245037,-73.324699\n,,0,2019-11-20T10:17:26Z,89e82cc,bikes,via,vehicleA,40.700413,1574245037,-73.324638\n,,0,2019-11-20T10:17:32Z,89e82cc,bikes,via,vehicleA,40.700474,1574245037,-73.324471\n,,0,2019-11-20T10:17:35Z,89e82cc,bikes,via,vehicleA,40.700481,1574245037,-73.324371\n,,0,2019-11-20T10:17:42Z,89e82cc,bikes,via,vehicleA,40.700459,1574245037,-73.324181\n,,0,2019-11-20T10:17:47Z,89e82cc,bikes,via,vehicleA,40.700455,1574245037,-73.323982\n,,0,2019-11-20T10:17:54Z,89e82cc,bikes,via,vehicleA,40.700542,1574245037,-73.323769\n,,0,2019-11-20T10:18:00Z,89e82d4,bikes,end,vehicleA,40.700684,1574245037,-73.323692\n,,1,2019-11-10T11:07:12Z,89c258c,bikes,start,vehicleB,40.762096,1573384032,-73.967104\n,,1,2019-11-10T11:07:35Z,89c258c,bikes,via,vehicleB,40.762225,1573384032,-73.967081\n,,1,2019-11-10T11:07:38Z,89c258c,bikes,via,vehicleB,40.762247,1573384032,-73.967129\n,,1,2019-11-10T11:07:43Z,89c258c,bikes,via,vehicleB,40.762331,1573384032,-73.967261\n,,1,2019-11-10T11:07:48Z,89c258c,bikes,via,vehicleB,40.762408,1573384032,-73.967422\n,,1,2019-11-10T11:07:52Z,89c258c,bikes,via,vehicleB,40.762484,1573384032,-73.967542\n,,1,2019-11-10T11:08:01Z,89c258c,bikes,via,vehicleB,40.762597,1573384032,-73.967718\n,,1,2019-11-10T11:08:16Z,89c258c,bikes,via,vehicleB,40.762574,1573384032,-73.967803\n,,1,2019-11-10T11:08:34Z,89c258c,bikes,end,vehicleB,40.762662,1573384032,-73.967971\n,,2,2019-11-10T21:16:00Z,89c258c,bikes,start,vehicleB,40.763126,1573420560,-73.966333\n,,2,2019-11-10T21:16:06Z,89c258c,bikes,via,vehicleB,40.76309,1573420560,-73.966254\n,,2,2019-11-10T21:16:18Z,89c258c,bikes,via,vehicleB,40.763036,1573420560,-73.966091\n,,2,2019-11-10T21:16:31Z,89c258c,bikes,via,vehicleB,40.763006,1573420560,-73.965889\n,,2,2019-11-10T21:16:48Z,89c258c,bikes,via,vehicleB,40.762904,1573420560,-73.96573\n,,2,2019-11-10T21:17:08Z,89c258c,bikes,via,vehicleB,40.762836,1573420560,-73.965721\n,,2,2019-11-10T21:17:23Z,89c258c,bikes,via,vehicleB,40.762736,1573420560,-73.965801\n,,2,2019-11-10T21:17:36Z,89c258c,bikes,via,vehicleB,40.762469,1573420560,-73.96559\n,,2,2019-11-10T21:17:46Z,89c258c,bikes,via,vehicleB,40.762418,1573420560,-73.965579\n,,2,2019-11-10T21:17:47Z,89c258c,bikes,end,vehicleB,40.762424,1573420560,-73.965583\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   127,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   127,
+						},
+						File:   "asTracks_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   127,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   161,
+						},
+						File:   "asTracks_test.flux",
+						Source: "\"\n#group,false,false,false,false,false,false,true,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double,long,double\n#default,_result,,,,,,,,,\n,result,table,_time,_ci,_measurement,_pt,id,lat,tid,lon\n,,0,2019-11-20T10:17:17Z,89e82cc,bikes,start,vehicleA,40.700344,1574245037,-73.324814\n,,0,2019-11-20T10:17:18Z,89e82cc,bikes,via,vehicleA,40.700348,1574245037,-73.324799\n,,0,2019-11-20T10:17:24Z,89e82cc,bikes,via,vehicleA,40.700397,1574245037,-73.324699\n,,0,2019-11-20T10:17:26Z,89e82cc,bikes,via,vehicleA,40.700413,1574245037,-73.324638\n,,0,2019-11-20T10:17:32Z,89e82cc,bikes,via,vehicleA,40.700474,1574245037,-73.324471\n,,0,2019-11-20T10:17:35Z,89e82cc,bikes,via,vehicleA,40.700481,1574245037,-73.324371\n,,0,2019-11-20T10:17:42Z,89e82cc,bikes,via,vehicleA,40.700459,1574245037,-73.324181\n,,0,2019-11-20T10:17:47Z,89e82cc,bikes,via,vehicleA,40.700455,1574245037,-73.323982\n,,0,2019-11-20T10:17:54Z,89e82cc,bikes,via,vehicleA,40.700542,1574245037,-73.323769\n,,0,2019-11-20T10:18:00Z,89e82d4,bikes,end,vehicleA,40.700684,1574245037,-73.323692\n,,1,2019-11-10T11:07:12Z,89c258c,bikes,start,vehicleB,40.762096,1573384032,-73.967104\n,,1,2019-11-10T11:07:35Z,89c258c,bikes,via,vehicleB,40.762225,1573384032,-73.967081\n,,1,2019-11-10T11:07:38Z,89c258c,bikes,via,vehicleB,40.762247,1573384032,-73.967129\n,,1,2019-11-10T11:07:43Z,89c258c,bikes,via,vehicleB,40.762331,1573384032,-73.967261\n,,1,2019-11-10T11:07:48Z,89c258c,bikes,via,vehicleB,40.762408,1573384032,-73.967422\n,,1,2019-11-10T11:07:52Z,89c258c,bikes,via,vehicleB,40.762484,1573384032,-73.967542\n,,1,2019-11-10T11:08:01Z,89c258c,bikes,via,vehicleB,40.762597,1573384032,-73.967718\n,,1,2019-11-10T11:08:16Z,89c258c,bikes,via,vehicleB,40.762574,1573384032,-73.967803\n,,1,2019-11-10T11:08:34Z,89c258c,bikes,end,vehicleB,40.762662,1573384032,-73.967971\n,,2,2019-11-10T21:16:00Z,89c258c,bikes,start,vehicleB,40.763126,1573420560,-73.966333\n,,2,2019-11-10T21:16:06Z,89c258c,bikes,via,vehicleB,40.76309,1573420560,-73.966254\n,,2,2019-11-10T21:16:18Z,89c258c,bikes,via,vehicleB,40.763036,1573420560,-73.966091\n,,2,2019-11-10T21:16:31Z,89c258c,bikes,via,vehicleB,40.763006,1573420560,-73.965889\n,,2,2019-11-10T21:16:48Z,89c258c,bikes,via,vehicleB,40.762904,1573420560,-73.96573\n,,2,2019-11-10T21:17:08Z,89c258c,bikes,via,vehicleB,40.762836,1573420560,-73.965721\n,,2,2019-11-10T21:17:23Z,89c258c,bikes,via,vehicleB,40.762736,1573420560,-73.965801\n,,2,2019-11-10T21:17:36Z,89c258c,bikes,via,vehicleB,40.762469,1573420560,-73.96559\n,,2,2019-11-10T21:17:46Z,89c258c,bikes,via,vehicleB,40.762418,1573420560,-73.965579\n,,2,2019-11-10T21:17:47Z,89c258c,bikes,end,vehicleB,40.762424,1573420560,-73.965583\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   127,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,false,false,true,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double,long,double\n#default,_result,,,,,,,,,\n,result,table,_time,_ci,_measurement,_pt,id,lat,tid,lon\n,,0,2019-11-20T10:17:17Z,89e82cc,bikes,start,vehicleA,40.700344,1574245037,-73.324814\n,,0,2019-11-20T10:17:18Z,89e82cc,bikes,via,vehicleA,40.700348,1574245037,-73.324799\n,,0,2019-11-20T10:17:24Z,89e82cc,bikes,via,vehicleA,40.700397,1574245037,-73.324699\n,,0,2019-11-20T10:17:26Z,89e82cc,bikes,via,vehicleA,40.700413,1574245037,-73.324638\n,,0,2019-11-20T10:17:32Z,89e82cc,bikes,via,vehicleA,40.700474,1574245037,-73.324471\n,,0,2019-11-20T10:17:35Z,89e82cc,bikes,via,vehicleA,40.700481,1574245037,-73.324371\n,,0,2019-11-20T10:17:42Z,89e82cc,bikes,via,vehicleA,40.700459,1574245037,-73.324181\n,,0,2019-11-20T10:17:47Z,89e82cc,bikes,via,vehicleA,40.700455,1574245037,-73.323982\n,,0,2019-11-20T10:17:54Z,89e82cc,bikes,via,vehicleA,40.700542,1574245037,-73.323769\n,,0,2019-11-20T10:18:00Z,89e82d4,bikes,end,vehicleA,40.700684,1574245037,-73.323692\n,,1,2019-11-10T11:07:12Z,89c258c,bikes,start,vehicleB,40.762096,1573384032,-73.967104\n,,1,2019-11-10T11:07:35Z,89c258c,bikes,via,vehicleB,40.762225,1573384032,-73.967081\n,,1,2019-11-10T11:07:38Z,89c258c,bikes,via,vehicleB,40.762247,1573384032,-73.967129\n,,1,2019-11-10T11:07:43Z,89c258c,bikes,via,vehicleB,40.762331,1573384032,-73.967261\n,,1,2019-11-10T11:07:48Z,89c258c,bikes,via,vehicleB,40.762408,1573384032,-73.967422\n,,1,2019-11-10T11:07:52Z,89c258c,bikes,via,vehicleB,40.762484,1573384032,-73.967542\n,,1,2019-11-10T11:08:01Z,89c258c,bikes,via,vehicleB,40.762597,1573384032,-73.967718\n,,1,2019-11-10T11:08:16Z,89c258c,bikes,via,vehicleB,40.762574,1573384032,-73.967803\n,,1,2019-11-10T11:08:34Z,89c258c,bikes,end,vehicleB,40.762662,1573384032,-73.967971\n,,2,2019-11-10T21:16:00Z,89c258c,bikes,start,vehicleB,40.763126,1573420560,-73.966333\n,,2,2019-11-10T21:16:06Z,89c258c,bikes,via,vehicleB,40.76309,1573420560,-73.966254\n,,2,2019-11-10T21:16:18Z,89c258c,bikes,via,vehicleB,40.763036,1573420560,-73.966091\n,,2,2019-11-10T21:16:31Z,89c258c,bikes,via,vehicleB,40.763006,1573420560,-73.965889\n,,2,2019-11-10T21:16:48Z,89c258c,bikes,via,vehicleB,40.762904,1573420560,-73.96573\n,,2,2019-11-10T21:17:08Z,89c258c,bikes,via,vehicleB,40.762836,1573420560,-73.965721\n,,2,2019-11-10T21:17:23Z,89c258c,bikes,via,vehicleB,40.762736,1573420560,-73.965801\n,,2,2019-11-10T21:17:36Z,89c258c,bikes,via,vehicleB,40.762469,1573420560,-73.96559\n,,2,2019-11-10T21:17:46Z,89c258c,bikes,via,vehicleB,40.762418,1573420560,-73.965579\n,,2,2019-11-10T21:17:47Z,89c258c,bikes,end,vehicleB,40.762424,1573420560,-73.965583\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   168,
+					},
+					File:   "asTracks_test.flux",
+					Source: "t_asTracks = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows(correlationKey: [\"id\", \"_time\"])\n    |> geo.asTracks()\n    |> drop(columns: [\"_start\", \"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   163,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 11,
+							Line:   163,
+						},
+						File:   "asTracks_test.flux",
+						Source: "t_asTracks",
+						Start: ast.Position{
+							Column: 1,
+							Line:   163,
+						},
+					},
+				},
+				Name: "t_asTracks",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   168,
+						},
+						File:   "asTracks_test.flux",
+						Source: "(table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows(correlationKey: [\"id\", \"_time\"])\n    |> geo.asTracks()\n    |> drop(columns: [\"_start\", \"_stop\"])",
+						Start: ast.Position{
+							Column: 14,
+							Line:   163,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 8,
+												Line:   164,
+											},
+											File:   "asTracks_test.flux",
+											Source: "table",
+											Start: ast.Position{
+												Column: 3,
+												Line:   164,
+											},
+										},
+									},
+									Name: "table",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   165,
+										},
+										File:   "asTracks_test.flux",
+										Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)",
+										Start: ast.Position{
+											Column: 3,
+											Line:   164,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   165,
+												},
+												File:   "asTracks_test.flux",
+												Source: "start: 2019-11-01T00:00:00Z",
+												Start: ast.Position{
+													Column: 14,
+													Line:   165,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   165,
+													},
+													File:   "asTracks_test.flux",
+													Source: "start: 2019-11-01T00:00:00Z",
+													Start: ast.Position{
+														Column: 14,
+														Line:   165,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 19,
+															Line:   165,
+														},
+														File:   "asTracks_test.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 14,
+															Line:   165,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Value: &ast.DateTimeLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   165,
+														},
+														File:   "asTracks_test.flux",
+														Source: "2019-11-01T00:00:00Z",
+														Start: ast.Position{
+															Column: 21,
+															Line:   165,
+														},
+													},
+												},
+												Value: parser.MustParseTime("2019-11-01T00:00:00Z"),
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   165,
+											},
+											File:   "asTracks_test.flux",
+											Source: "range(start: 2019-11-01T00:00:00Z)",
+											Start: ast.Position{
+												Column: 8,
+												Line:   165,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 13,
+													Line:   165,
+												},
+												File:   "asTracks_test.flux",
+												Source: "range",
+												Start: ast.Position{
+													Column: 8,
+													Line:   165,
+												},
+											},
+										},
+										Name: "range",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 51,
+										Line:   166,
+									},
+									File:   "asTracks_test.flux",
+									Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows(correlationKey: [\"id\", \"_time\"])",
+									Start: ast.Position{
+										Column: 3,
+										Line:   164,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 50,
+												Line:   166,
+											},
+											File:   "asTracks_test.flux",
+											Source: "correlationKey: [\"id\", \"_time\"]",
+											Start: ast.Position{
+												Column: 19,
+												Line:   166,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 50,
+													Line:   166,
+												},
+												File:   "asTracks_test.flux",
+												Source: "correlationKey: [\"id\", \"_time\"]",
+												Start: ast.Position{
+													Column: 19,
+													Line:   166,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   166,
+													},
+													File:   "asTracks_test.flux",
+													Source: "correlationKey",
+													Start: ast.Position{
+														Column: 19,
+														Line:   166,
+													},
+												},
+											},
+											Name: "correlationKey",
+										},
+										Value: &ast.ArrayExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 50,
+														Line:   166,
+													},
+													File:   "asTracks_test.flux",
+													Source: "[\"id\", \"_time\"]",
+													Start: ast.Position{
+														Column: 35,
+														Line:   166,
+													},
+												},
+											},
+											Elements: []ast.Expression{&ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 40,
+															Line:   166,
+														},
+														File:   "asTracks_test.flux",
+														Source: "\"id\"",
+														Start: ast.Position{
+															Column: 36,
+															Line:   166,
+														},
+													},
+												},
+												Value: "id",
+											}, &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 49,
+															Line:   166,
+														},
+														File:   "asTracks_test.flux",
+														Source: "\"_time\"",
+														Start: ast.Position{
+															Column: 42,
+															Line:   166,
+														},
+													},
+												},
+												Value: "_time",
+											}},
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 51,
+											Line:   166,
+										},
+										File:   "asTracks_test.flux",
+										Source: "geo.toRows(correlationKey: [\"id\", \"_time\"])",
+										Start: ast.Position{
+											Column: 8,
+											Line:   166,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   166,
+											},
+											File:   "asTracks_test.flux",
+											Source: "geo.toRows",
+											Start: ast.Position{
+												Column: 8,
+												Line:   166,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 11,
+													Line:   166,
+												},
+												File:   "asTracks_test.flux",
+												Source: "geo",
+												Start: ast.Position{
+													Column: 8,
+													Line:   166,
+												},
+											},
+										},
+										Name: "geo",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   166,
+												},
+												File:   "asTracks_test.flux",
+												Source: "toRows",
+												Start: ast.Position{
+													Column: 12,
+													Line:   166,
+												},
+											},
+										},
+										Name: "toRows",
+									},
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   167,
+								},
+								File:   "asTracks_test.flux",
+								Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows(correlationKey: [\"id\", \"_time\"])\n    |> geo.asTracks()",
+								Start: ast.Position{
+									Column: 3,
+									Line:   164,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: nil,
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 22,
+										Line:   167,
+									},
+									File:   "asTracks_test.flux",
+									Source: "geo.asTracks()",
+									Start: ast.Position{
+										Column: 8,
+										Line:   167,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 20,
+											Line:   167,
+										},
+										File:   "asTracks_test.flux",
+										Source: "geo.asTracks",
+										Start: ast.Position{
+											Column: 8,
+											Line:   167,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   167,
+											},
+											File:   "asTracks_test.flux",
+											Source: "geo",
+											Start: ast.Position{
+												Column: 8,
+												Line:   167,
+											},
+										},
+									},
+									Name: "geo",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   167,
+											},
+											File:   "asTracks_test.flux",
+											Source: "asTracks",
+											Start: ast.Position{
+												Column: 12,
+												Line:   167,
+											},
+										},
+									},
+									Name: "asTracks",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   168,
+							},
+							File:   "asTracks_test.flux",
+							Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows(correlationKey: [\"id\", \"_time\"])\n    |> geo.asTracks()\n    |> drop(columns: [\"_start\", \"_stop\"])",
+							Start: ast.Position{
+								Column: 3,
+								Line:   164,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   168,
+									},
+									File:   "asTracks_test.flux",
+									Source: "columns: [\"_start\", \"_stop\"]",
+									Start: ast.Position{
+										Column: 13,
+										Line:   168,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 41,
+											Line:   168,
+										},
+										File:   "asTracks_test.flux",
+										Source: "columns: [\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 13,
+											Line:   168,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   168,
+											},
+											File:   "asTracks_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 13,
+												Line:   168,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   168,
+											},
+											File:   "asTracks_test.flux",
+											Source: "[\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 22,
+												Line:   168,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   168,
+												},
+												File:   "asTracks_test.flux",
+												Source: "\"_start\"",
+												Start: ast.Position{
+													Column: 23,
+													Line:   168,
+												},
+											},
+										},
+										Value: "_start",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 40,
+													Line:   168,
+												},
+												File:   "asTracks_test.flux",
+												Source: "\"_stop\"",
+												Start: ast.Position{
+													Column: 33,
+													Line:   168,
+												},
+											},
+										},
+										Value: "_stop",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   168,
+								},
+								File:   "asTracks_test.flux",
+								Source: "drop(columns: [\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 8,
+									Line:   168,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   168,
+									},
+									File:   "asTracks_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 8,
+										Line:   168,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 23,
+								Line:   163,
+							},
+							File:   "asTracks_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 15,
+								Line:   163,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 20,
+									Line:   163,
+								},
+								File:   "asTracks_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 15,
+									Line:   163,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 23,
+								Line:   163,
+							},
+							File:   "asTracks_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 21,
+								Line:   163,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 98,
+							Line:   170,
+						},
+						File:   "asTracks_test.flux",
+						Source: "_asTracks = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   169,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 15,
+								Line:   169,
+							},
+							File:   "asTracks_test.flux",
+							Source: "_asTracks",
+							Start: ast.Position{
+								Column: 6,
+								Line:   169,
+							},
+						},
+					},
+					Name: "_asTracks",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 98,
+								Line:   170,
+							},
+							File:   "asTracks_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
+							Start: ast.Position{
+								Column: 18,
+								Line:   169,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 98,
+									Line:   170,
+								},
+								File:   "asTracks_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   170,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 97,
+										Line:   170,
+									},
+									File:   "asTracks_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   170,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   170,
+										},
+										File:   "asTracks_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   170,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   170,
+											},
+											File:   "asTracks_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   170,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   170,
+												},
+												File:   "asTracks_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   170,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   170,
+													},
+													File:   "asTracks_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   170,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   170,
+														},
+														File:   "asTracks_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   170,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   170,
+														},
+														File:   "asTracks_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   170,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   170,
+											},
+											File:   "asTracks_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   170,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   170,
+												},
+												File:   "asTracks_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   170,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   170,
+													},
+													File:   "asTracks_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   170,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   170,
+													},
+													File:   "asTracks_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   170,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   170,
+										},
+										File:   "asTracks_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   170,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   170,
+											},
+											File:   "asTracks_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   170,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   170,
+												},
+												File:   "asTracks_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   170,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   170,
+													},
+													File:   "asTracks_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   170,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   170,
+														},
+														File:   "asTracks_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   170,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   170,
+														},
+														File:   "asTracks_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   170,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   170,
+											},
+											File:   "asTracks_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   170,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   170,
+												},
+												File:   "asTracks_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   170,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   170,
+													},
+													File:   "asTracks_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   170,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   170,
+													},
+													File:   "asTracks_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   170,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 96,
+											Line:   170,
+										},
+										File:   "asTracks_test.flux",
+										Source: "fn: t_asTracks",
+										Start: ast.Position{
+											Column: 82,
+											Line:   170,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   170,
+											},
+											File:   "asTracks_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   170,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 96,
+												Line:   170,
+											},
+											File:   "asTracks_test.flux",
+											Source: "t_asTracks",
+											Start: ast.Position{
+												Column: 86,
+												Line:   170,
+											},
+										},
+									},
+									Name: "t_asTracks",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 98,
+						Line:   170,
+					},
+					File:   "asTracks_test.flux",
+					Source: "test _asTracks = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   169,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   3,
+					},
+					File:   "asTracks_test.flux",
+					Source: "import \"experimental/geo\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   3,
+						},
+						File:   "asTracks_test.flux",
+						Source: "\"experimental/geo\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental/geo",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "asTracks_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "asTracks_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "asTracks_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   1,
+					},
+					File:   "asTracks_test.flux",
+					Source: "package geo_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   1,
+						},
+						File:   "asTracks_test.flux",
+						Source: "geo_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "geo_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
 					Column: 109,
 					Line:   219,
 				},
