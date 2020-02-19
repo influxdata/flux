@@ -239,6 +239,26 @@ func (t *mapTransformation) createSchema(b execute.TableBuilder, m values.Object
 		}
 	}
 
+	returnType := t.fn.Type()
+
+	numProps, err := returnType.NumProperties()
+	if err != nil {
+		return err
+	}
+
+	props := make(map[string]semantic.Nature, numProps)
+	for i := 0; i < numProps; i++ {
+		prop, err := returnType.RowProperty(i)
+		if err != nil {
+			return err
+		}
+		typ, err := prop.TypeOf()
+		if err != nil {
+			return err
+		}
+		props[prop.Name()] = typ.Nature()
+	}
+
 	// Add columns from function in sorted order.
 	n, err := m.Type().NumProperties()
 	if err != nil {
@@ -260,14 +280,22 @@ func (t *mapTransformation) createSchema(b execute.TableBuilder, m values.Object
 			continue
 		}
 
-		n, ok := m.Get(k)
+		v, ok := m.Get(k)
 		if !ok {
 			continue
 		}
 
+		nature := v.Type().Nature()
+
+		if kind, ok := props[k]; ok && kind != semantic.Invalid {
+			nature = kind
+		}
+		if nature == semantic.Invalid {
+			continue
+		}
 		if _, err := b.AddCol(flux.ColMeta{
 			Label: k,
-			Type:  execute.ConvertFromKind(n.Type().Nature()),
+			Type:  execute.ConvertFromKind(nature),
 		}); err != nil {
 			return err
 		}
