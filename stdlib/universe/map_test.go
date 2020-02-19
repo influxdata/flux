@@ -618,7 +618,6 @@ func TestMap_Process(t *testing.T) {
 			wantErr: errors.New(`failed to evaluate map function: strconv.ParseFloat: parsing "foo": invalid syntax`),
 		},
 		{
-			skip: "map() panics on null values in algo-w branch: https://github.com/influxdata/flux/issues/2497",
 			name: `with null record`,
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
@@ -647,7 +646,6 @@ func TestMap_Process(t *testing.T) {
 			}},
 		},
 		{
-			skip: "map() panics on null values in algo-w branch: https://github.com/influxdata/flux/issues/2497",
 			name: `with null column`,
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
