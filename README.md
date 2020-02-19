@@ -15,6 +15,12 @@ The specification contains many examples to start learning Flux.
 
 Flux is currently available in InfluxDB 1.7 and 2.0 or through the REPL that can be compiled from this repository.
 
+To build flux, first install the `pkg-config` utility, and ensure the GNU `pkg-config` utility is also installed.
+
+```
+$ go get github.com/influxdata/pkg-config
+```
+
 To compile the REPL, use the following command:
 
 ```
