@@ -1446,17 +1446,37 @@ fn binary_expr_comparison() {
             ],
             src: &src,
         }
-        test_infer_err! {
+        test_infer! {
             env: map![
                 "a" => "forall [] {a: int | b: float}",
                 "b" => "forall [] {a: int | b: float}",
             ],
             src: &src,
+            exp: map![
+                "c" => "forall [] bool",
+            ],
         }
         test_infer_err! {
             env: map![
+                "a" => "forall [] {a: int | b: float | c: regexp}",
+                "b" => "forall [] {a: int | b: float | c: regexp}",
+            ],
+            src: &src,
+        }
+        test_infer! {
+            env: map![
                 "a" => "forall [] [int]",
                 "b" => "forall [] [int]",
+            ],
+            src: &src,
+            exp: map![
+                "c" => "forall [] bool",
+            ],
+        }
+        test_infer_err! {
+            env: map![
+                "a" => "forall [] [regexp]",
+                "b" => "forall [] [regexp]",
             ],
             src: &src,
         }
