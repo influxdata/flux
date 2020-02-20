@@ -848,6 +848,7 @@ pub struct ArrayExpr {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
+    #[serde(deserialize_with = "deserialize_default_from_null")]
     pub elements: Vec<Expression>,
 }
 
