@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -164,39 +165,42 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 	if !created {
 		return errors.Newf(codes.FailedPrecondition, "derivative found duplicate table with key: %v", tbl.Key())
 	}
+
 	cols := tbl.Cols()
-	doDerivative := make([]bool, len(cols))
+	doDerivative := make([]*derivative, len(cols))
 	timeIdx := -1
 	for j, c := range cols {
-		found := false
-		for _, label := range t.columns {
-			if c.Label == label {
-				found = true
-				break
-			}
+		d := &derivative{
+			col:         c,
+			unit:        t.unit,
+			nonNegative: t.nonNegative,
 		}
+		if !execute.ContainsStr(t.columns, c.Label) {
+			d.passthrough = true
+		}
+
 		if c.Label == t.timeCol {
 			timeIdx = j
 		}
-
-		if found {
-			dc := c
-			// Derivative always results in a float
-			dc.Type = flux.TFloat
-			_, err := builder.AddCol(dc)
-			if err != nil {
-				return err
-			}
-			doDerivative[j] = true
-		} else {
-			_, err := builder.AddCol(c)
-			if err != nil {
-				return err
-			}
-		}
+		doDerivative[j] = d
 	}
+
 	if timeIdx < 0 {
 		return errors.Newf(codes.FailedPrecondition, "no column %q exists", t.timeCol)
+	}
+
+	for j, d := range doDerivative {
+		typ, err := d.Type()
+		if err != nil {
+			return err
+		}
+		c := flux.ColMeta{
+			Label: cols[j].Label,
+			Type:  typ,
+		}
+		if _, err := builder.AddCol(c); err != nil {
+			return err
+		}
 	}
 
 	return tbl.Do(func(cr flux.ColReader) error {
@@ -204,28 +208,14 @@ func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table)
 			return nil
 		}
 
-		if cr.Times(timeIdx).NullN() > 0 {
+		ts := cr.Times(timeIdx)
+		if ts.NullN() > 0 {
 			return errors.New(codes.FailedPrecondition, "derivative found null time in time column")
 		}
 
-		for j, c := range cr.Cols() {
-			var err error
-			switch c.Type {
-			case flux.TBool:
-				err = t.passThroughBool(cr.Times(timeIdx), cr.Bools(j), builder, j)
-			case flux.TInt:
-				err = t.doInt(cr.Times(timeIdx), cr.Ints(j), builder, j, doDerivative[j])
-			case flux.TUInt:
-				err = t.doUInt(cr.Times(timeIdx), cr.UInts(j), builder, j, doDerivative[j])
-			case flux.TFloat:
-				err = t.doFloat(cr.Times(timeIdx), cr.Floats(j), builder, j, doDerivative[j])
-			case flux.TString:
-				err = t.passThroughString(cr.Times(timeIdx), cr.Strings(j), builder, j)
-			case flux.TTime:
-				err = t.passThroughTime(cr.Times(timeIdx), cr.Times(j), builder, j)
-			}
-
-			if err != nil {
+		for j, d := range doDerivative {
+			vs := table.Values(cr, j)
+			if err := d.Do(ts, vs, builder, j); err != nil {
 				return err
 			}
 		}
@@ -245,378 +235,389 @@ func (t *derivativeTransformation) Finish(id execute.DatasetID, err error) {
 
 const derivativeUnsortedTimeErr = "derivative found out-of-order times in time column"
 
-func (t *derivativeTransformation) passThroughBool(ts *array.Int64, vs *array.Boolean, b execute.TableBuilder, bj int) error {
+// derivative computes the derivative for an array.
+type derivative struct {
+	t           int64
+	v           interface{}
+	col         flux.ColMeta
+	unit        float64
+	passthrough bool
+	nonNegative bool
+	initialized bool
+}
+
+// Type will return the type for this column given the input type.
+func (d *derivative) Type() (flux.ColType, error) {
+	if d.passthrough {
+		return d.col.Type, nil
+	}
+
+	switch d.col.Type {
+	case flux.TFloat, flux.TInt, flux.TUInt:
+		// The above types are the only ones that support derivative.
+		return flux.TFloat, nil
+	default:
+		// Everything else will fail.
+		return flux.TInvalid, errors.Newf(codes.FailedPrecondition, "unsupported derivative column type %s:%s", d.col.Label, d.col.Type)
+	}
+}
+
+// Do will compute the derivative for the given array using the times.
+func (d *derivative) Do(ts *array.Int64, vs array.Interface, b execute.TableBuilder, j int) error {
+	switch d.col.Type {
+	case flux.TInt:
+		return d.doInts(ts, vs.(*array.Int64), b, j)
+	case flux.TUInt:
+		return d.doUints(ts, vs.(*array.Uint64), b, j)
+	case flux.TFloat:
+		return d.doFloats(ts, vs.(*array.Float64), b, j)
+	case flux.TString:
+		return d.doStrings(ts, vs.(*array.Binary), b, j)
+	case flux.TBool:
+		return d.doBools(ts, vs.(*array.Boolean), b, j)
+	case flux.TTime:
+		return d.doTimes(ts, vs.(*array.Int64), b, j)
+	}
+	return errors.Newf(codes.Unimplemented, "derivative: column type %s is unimplemented", d.col.Type)
+}
+
+func (d *derivative) doInts(ts, vs *array.Int64, b execute.TableBuilder, j int) error {
 	i := 0
 
-	pTime := execute.Time(ts.Value(i))
-	i++
-
-	// Process the rest of the rows
-	l := vs.Len()
-	for ; i < l; i++ {
-		cTime := execute.Time(ts.Value(i))
-		if cTime < pTime {
-			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
-		}
-
-		if cTime == pTime {
-			// Only use the first value found if a time value is the same as
-			// the previous row.
-			continue
-		}
-
-		// We have a valid time for this row.  Code below should not exit
-		// the loop early so pTime can be set for the next iteration.
-
+	// Initialize by reading the first value.
+	if !d.initialized {
+		d.t = ts.Value(i)
 		if vs.IsValid(i) {
-			if err := b.AppendBool(bj, vs.Value(i)); err != nil {
-				return err
-			}
-		} else {
-			if err := b.AppendNil(bj); err != nil {
-				return err
-			}
+			d.v = vs.Value(i)
 		}
-
-		pTime = cTime
+		d.initialized = true
+		i++
 	}
 
-	return nil
-}
-
-func (t *derivativeTransformation) doInt(ts, vs *array.Int64, b execute.TableBuilder, bj int, doDerivative bool) error {
-	i := 0
-	var pValue int64
-	var pValueTime execute.Time
-	validPValue := false
-
-	// Now consume the first input value, which doesn't produce an output value
-	pTime := execute.Time(ts.Value(i))
-	if vs.IsValid(i) {
-		pValue = vs.Value(i)
-		pValueTime = pTime
-		validPValue = true
-	}
-	i++
-
-	// Process the rest of the rows
-	l := vs.Len()
-	for ; i < l; i++ {
-		cTime := execute.Time(ts.Value(i))
-		if cTime < pTime {
+	// Process the rest of the rows.
+	for l := vs.Len(); i < l; i++ {
+		t := ts.Value(i)
+		if t < d.t {
 			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
-		}
-
-		if cTime == pTime {
-			// if time did not increase with this row, ignore it.
+		} else if t == d.t {
+			// If time did not increase with this row, ignore it.
 			continue
 		}
 
-		// We have a valid time for this row.  Code below should not exit
-		// the loop early so pTime can be set for the next iteration.
-
-		if !doDerivative {
-			// Just write the value to the builder
-			if vs.IsValid(i) {
-				if err := b.AppendInt(bj, vs.Value(i)); err != nil {
+		// If we have been told to pass through the value, just do that.
+		if d.passthrough {
+			if vs.IsNull(i) {
+				if err := b.AppendNil(j); err != nil {
 					return err
 				}
 			} else {
-				if err := b.AppendNil(bj); err != nil {
+				if err := b.AppendInt(j, vs.Value(i)); err != nil {
 					return err
 				}
 			}
-		} else if !validPValue {
-			// We have not yet seen a valid value.
-			if err := b.AppendNil(bj); err != nil {
-				return err
-			}
-
-			if vs.IsValid(i) {
-				pValue = vs.Value(i)
-				pValueTime = cTime
-				validPValue = true
-			}
-		} else if vs.IsNull(i) {
-			// If current value is null, then produce null value
-			if err := b.AppendNil(bj); err != nil {
-				return err
-			}
-		} else {
-			// We have a valid previous value and current value.
-			cValue := vs.Value(i)
-			if t.nonNegative && pValue > cValue {
-				if err := b.AppendNil(bj); err != nil {
-					return err
-				}
-			} else {
-				// Finally, do the derivative.
-				elapsed := float64(cTime-pValueTime) / t.unit
-				diff := float64(cValue - pValue)
-				if err := b.AppendFloat(bj, diff/elapsed); err != nil {
-					return err
-				}
-			}
-
-			pValue = cValue
-			pValueTime = cTime
-		}
-
-		pTime = cTime
-	}
-
-	return nil
-}
-
-func (t *derivativeTransformation) doUInt(ts *array.Int64, vs *array.Uint64, b execute.TableBuilder, bj int, doDerivative bool) error {
-	i := 0
-	var pValue uint64
-	var pValueTime execute.Time
-	validPValue := false
-
-	// Now consume the first input value, which doesn't produce an output value
-	pTime := execute.Time(ts.Value(i))
-	if vs.IsValid(i) {
-		pValue = vs.Value(i)
-		pValueTime = pTime
-		validPValue = true
-	}
-	i++
-
-	// Process the rest of the rows
-	l := vs.Len()
-	for ; i < l; i++ {
-		cTime := execute.Time(ts.Value(i))
-		if cTime < pTime {
-			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
-		}
-
-		if cTime == pTime {
-			// if time did not increase with this row, ignore it.
+			d.t = t
 			continue
 		}
 
-		// We have a valid time for this row.  Code below should not exit
-		// the loop early so pTime can be set for the next iteration.
-
-		if !doDerivative {
-			// Just write the value to the builder
-			if vs.IsValid(i) {
-				if err := b.AppendUInt(bj, vs.Value(i)); err != nil {
-					return err
-				}
-			} else {
-				if err := b.AppendNil(bj); err != nil {
-					return err
-				}
-			}
-		} else if !validPValue {
-			// We have not yet seen a valid value.
-			if err := b.AppendNil(bj); err != nil {
+		// If the current value is nil, append nil and skip to the
+		// next point. We do not modify the previous value when we
+		// see null and we do not update the timestamp.
+		if vs.IsNull(i) {
+			if err := b.AppendNil(j); err != nil {
 				return err
 			}
-
-			if vs.IsValid(i) {
-				pValue = vs.Value(i)
-				pValueTime = cTime
-				validPValue = true
-			}
-		} else if vs.IsNull(i) {
-			// If current value is null, then produce null value
-			if err := b.AppendNil(bj); err != nil {
-				return err
-			}
-		} else {
-			// We have a valid previous value and current value.
-			cValue := vs.Value(i)
-			isNeg := pValue > cValue
-			if t.nonNegative && isNeg {
-				if err := b.AppendNil(bj); err != nil {
-					return err
-				}
-			} else {
-				// Finally, do the derivative.
-				elapsed := float64(cTime-pValueTime) / t.unit
-
-				var diff float64
-				if isNeg {
-					// Avoid wrapping on unsigned subtraction
-					diff = -float64(pValue - cValue)
-				} else {
-					diff = float64(cValue - pValue)
-				}
-
-				if err := b.AppendFloat(bj, diff/elapsed); err != nil {
-					return err
-				}
-			}
-
-			pValue = cValue
-			pValueTime = cTime
-		}
-
-		pTime = cTime
-	}
-
-	return nil
-}
-
-func (t *derivativeTransformation) doFloat(ts *array.Int64, vs *array.Float64, b execute.TableBuilder, bj int, doDerivative bool) error {
-	i := 0
-	var pValue float64
-	var pValueTime execute.Time
-	validPValue := false
-
-	// Now consume the first input value, which doesn't produce an output value
-	pTime := execute.Time(ts.Value(i))
-	if vs.IsValid(i) {
-		pValue = vs.Value(i)
-		pValueTime = pTime
-		validPValue = true
-	}
-	i++
-
-	// Process the rest of the rows
-	l := vs.Len()
-	for ; i < l; i++ {
-		cTime := execute.Time(ts.Value(i))
-		if cTime < pTime {
-			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
-		}
-
-		if cTime == pTime {
-			// if time did not increase with this row, ignore it.
 			continue
 		}
 
-		// We have a valid time for this row.  Code below should not exit
-		// the loop early so pTime can be set for the next iteration.
-
-		if !doDerivative {
-			// Just write the value to the builder
-			if vs.IsValid(i) {
-				if err := b.AppendFloat(bj, vs.Value(i)); err != nil {
-					return err
-				}
-			} else {
-				if err := b.AppendNil(bj); err != nil {
-					return err
-				}
-			}
-		} else if !validPValue {
-			// We have not yet seen a valid value.
-			if err := b.AppendNil(bj); err != nil {
+		// If we haven't yet seen a valid value, append nil and use
+		// the current value as the previous for the next iteration.
+		// to use the current value.
+		if d.v == nil {
+			if err := b.AppendNil(j); err != nil {
 				return err
 			}
-
-			if vs.IsValid(i) {
-				pValue = vs.Value(i)
-				pValueTime = cTime
-				validPValue = true
-			}
-		} else if vs.IsNull(i) {
-			// If current value is null, then produce null value
-			if err := b.AppendNil(bj); err != nil {
-				return err
-			}
-		} else {
-			// We have a valid previous value and current value.
-			cValue := vs.Value(i)
-			if t.nonNegative && pValue > cValue {
-				if err := b.AppendNil(bj); err != nil {
-					return err
-				}
-			} else {
-				// Finally, do the derivative.
-				elapsed := float64(cTime-pValueTime) / t.unit
-				diff := float64(cValue - pValue)
-				if err := b.AppendFloat(bj, diff/elapsed); err != nil {
-					return err
-				}
-			}
-
-			pValue = cValue
-			pValueTime = cTime
-		}
-
-		pTime = cTime
-	}
-
-	return nil
-}
-
-func (t *derivativeTransformation) passThroughString(ts *array.Int64, vs *array.Binary, b execute.TableBuilder, bj int) error {
-	i := 0
-	pTime := execute.Time(ts.Value(i))
-	i++
-
-	// Process the rest of the rows
-	l := vs.Len()
-	for ; i < l; i++ {
-		cTime := execute.Time(ts.Value(i))
-		if cTime < pTime {
-			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
-		}
-
-		if cTime == pTime {
-			// Only use the first value found if a time value is the same as
-			// the previous row.
+			d.t, d.v = t, vs.Value(i)
 			continue
 		}
 
-		// We have a valid time for this row.  Code below should not exit
-		// the loop early so pTime can be set for the next iteration.
+		// We have seen a valid value so retrieve it now.
+		pv, cv := d.v.(int64), vs.Value(i)
+		if d.nonNegative && pv > cv {
+			// The previous value is greater than the current
+			// value and non-negative was set.
+			if err := b.AppendNil(j); err != nil {
+				return err
+			}
+		} else {
+			// Do the derivative.
+			elapsed := float64(t-d.t) / d.unit
+			diff := float64(cv - pv)
+			if err := b.AppendFloat(j, diff/elapsed); err != nil {
+				return err
+			}
+		}
+		d.t, d.v = t, cv
+	}
+	return nil
+}
 
+func (d *derivative) doUints(ts *array.Int64, vs *array.Uint64, b execute.TableBuilder, j int) error {
+	i := 0
+
+	// Initialize by reading the first value.
+	if !d.initialized {
+		d.t = ts.Value(i)
 		if vs.IsValid(i) {
-			if err := b.AppendString(bj, string(vs.Value(i))); err != nil {
-				return err
-			}
-		} else {
-			if err := b.AppendNil(bj); err != nil {
-				return err
-			}
+			d.v = vs.Value(i)
 		}
-
-		pTime = cTime
+		d.initialized = true
+		i++
 	}
 
-	return nil
-}
-
-func (t *derivativeTransformation) passThroughTime(ts *array.Int64, vs *array.Int64, b execute.TableBuilder, bj int) error {
-	i := 0
-	pTime := execute.Time(ts.Value(i))
-	i++
-
-	// Process the rest of the rows
-	l := vs.Len()
-	for ; i < l; i++ {
-		cTime := execute.Time(ts.Value(i))
-		if cTime < pTime {
+	// Process the rest of the rows.
+	for l := vs.Len(); i < l; i++ {
+		t := ts.Value(i)
+		if t < d.t {
 			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
-		}
-
-		if cTime == pTime {
-			// Only use the first value found if a time value is the same as
-			// the previous row.
+		} else if t == d.t {
+			// If time did not increase with this row, ignore it.
 			continue
 		}
 
-		// We have a valid time for this row.  Code below should not exit
-		// the loop early so pTime can be set for the next iteration.
+		// If we have been told to pass through the value, just do that.
+		if d.passthrough {
+			if vs.IsNull(i) {
+				if err := b.AppendNil(j); err != nil {
+					return err
+				}
+			} else {
+				if err := b.AppendUInt(j, vs.Value(i)); err != nil {
+					return err
+				}
+			}
+			d.t = t
+			continue
+		}
 
-		if vs.IsValid(i) {
-			if err := b.AppendTime(bj, execute.Time(vs.Value(i))); err != nil {
+		// If the current value is nil, append nil and skip to the
+		// next point. We do not modify the previous value when we
+		// see null and we do not update the timestamp.
+		if vs.IsNull(i) {
+			if err := b.AppendNil(j); err != nil {
+				return err
+			}
+			continue
+		}
+
+		// If we haven't yet seen a valid value, append nil and use
+		// the current value as the previous for the next iteration.
+		// to use the current value.
+		if d.v == nil {
+			if err := b.AppendNil(j); err != nil {
+				return err
+			}
+			d.t, d.v = t, vs.Value(i)
+			continue
+		}
+
+		// We have seen a valid value so retrieve it now.
+		pv, cv := d.v.(uint64), vs.Value(i)
+		if d.nonNegative && pv > cv {
+			// The previous value is greater than the current
+			// value and non-negative was set.
+			if err := b.AppendNil(j); err != nil {
 				return err
 			}
 		} else {
-			if err := b.AppendNil(bj); err != nil {
+			// Do the derivative.
+			elapsed := float64(t-d.t) / d.unit
+
+			var diff float64
+			if pv > cv {
+				// Avoid wrapping on unsigned subtraction.
+				diff = -float64(pv - cv)
+			} else {
+				diff = float64(cv - pv)
+			}
+
+			if err := b.AppendFloat(j, diff/elapsed); err != nil {
 				return err
 			}
 		}
+		d.t, d.v = t, cv
+	}
+	return nil
+}
 
-		pTime = cTime
+func (d *derivative) doFloats(ts *array.Int64, vs *array.Float64, b execute.TableBuilder, j int) error {
+	i := 0
+
+	// Initialize by reading the first value.
+	if !d.initialized {
+		d.t = ts.Value(i)
+		if vs.IsValid(i) {
+			d.v = vs.Value(i)
+		}
+		d.initialized = true
+		i++
 	}
 
+	// Process the rest of the rows.
+	for l := vs.Len(); i < l; i++ {
+		t := ts.Value(i)
+		if t < d.t {
+			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
+		} else if t == d.t {
+			// If time did not increase with this row, ignore it.
+			continue
+		}
+
+		// If we have been told to pass through the value, just do that.
+		if d.passthrough {
+			if vs.IsNull(i) {
+				if err := b.AppendNil(j); err != nil {
+					return err
+				}
+			} else {
+				if err := b.AppendFloat(j, vs.Value(i)); err != nil {
+					return err
+				}
+			}
+			d.t = t
+			continue
+		}
+
+		// If the current value is nil, append nil and skip to the
+		// next point. We do not modify the previous value when we
+		// see null and we do not update the timestamp.
+		if vs.IsNull(i) {
+			if err := b.AppendNil(j); err != nil {
+				return err
+			}
+			continue
+		}
+
+		// If we haven't yet seen a valid value, append nil and use
+		// the current value as the previous for the next iteration.
+		// to use the current value.
+		if d.v == nil {
+			if err := b.AppendNil(j); err != nil {
+				return err
+			}
+			d.t, d.v = t, vs.Value(i)
+			continue
+		}
+
+		// We have seen a valid value so retrieve it now.
+		pv, cv := d.v.(float64), vs.Value(i)
+		if d.nonNegative && pv > cv {
+			// The previous value is greater than the current
+			// value and non-negative was set.
+			if err := b.AppendNil(j); err != nil {
+				return err
+			}
+		} else {
+			// Do the derivative.
+			elapsed := float64(t-d.t) / d.unit
+			diff := cv - pv
+			if err := b.AppendFloat(j, diff/elapsed); err != nil {
+				return err
+			}
+		}
+		d.t, d.v = t, cv
+	}
+	return nil
+}
+
+func (d *derivative) doStrings(ts *array.Int64, vs *array.Binary, b execute.TableBuilder, j int) error {
+	i := 0
+	if !d.initialized {
+		d.t = ts.Value(i)
+		d.initialized = true
+		i++
+	}
+
+	for l := vs.Len(); i < l; i++ {
+		t := ts.Value(i)
+		if t < d.t {
+			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
+		} else if t == d.t {
+			// If time did not increase with this row, ignore it.
+			continue
+		}
+
+		if vs.IsNull(i) {
+			if err := b.AppendNil(j); err != nil {
+				return err
+			}
+		} else {
+			if err := b.AppendString(j, vs.ValueString(i)); err != nil {
+				return err
+			}
+		}
+		d.t = t
+	}
+	return nil
+}
+
+func (d *derivative) doBools(ts *array.Int64, vs *array.Boolean, b execute.TableBuilder, j int) error {
+	i := 0
+	if !d.initialized {
+		d.t = ts.Value(i)
+		d.initialized = true
+		i++
+	}
+
+	for l := vs.Len(); i < l; i++ {
+		t := ts.Value(i)
+		if t < d.t {
+			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
+		} else if t == d.t {
+			// If time did not increase with this row, ignore it.
+			continue
+		}
+
+		if vs.IsNull(i) {
+			if err := b.AppendNil(j); err != nil {
+				return err
+			}
+		} else {
+			if err := b.AppendBool(j, vs.Value(i)); err != nil {
+				return err
+			}
+		}
+		d.t = t
+	}
+	return nil
+}
+
+func (d *derivative) doTimes(ts, vs *array.Int64, b execute.TableBuilder, j int) error {
+	i := 0
+	if !d.initialized {
+		d.t = ts.Value(i)
+		d.initialized = true
+		i++
+	}
+
+	for l := vs.Len(); i < l; i++ {
+		t := ts.Value(i)
+		if t < d.t {
+			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
+		} else if t == d.t {
+			// If time did not increase with this row, ignore it.
+			continue
+		}
+
+		if vs.IsNull(i) {
+			if err := b.AppendNil(j); err != nil {
+				return err
+			}
+		} else {
+			if err := b.AppendTime(j, execute.Time(vs.Value(i))); err != nil {
+				return err
+			}
+		}
+		d.t = t
+	}
 	return nil
 }
