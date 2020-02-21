@@ -206,7 +206,7 @@ func arrayFromColumn(idx int, cr flux.ColReader) values.Array {
 			execute.PanicUnknownType(typ)
 		}
 	}
-	return values.NewArrayWithBacking(flux.SemanticType(typ), vsSlice)
+	return values.NewArrayWithBacking(semantic.NewArrayType(flux.SemanticType(typ)), vsSlice)
 }
 
 func NewGetRecordFunction() values.Value {
