@@ -4,11 +4,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/internal/parser"
 )
 
 type Time int64
@@ -365,11 +366,27 @@ func (d *Duration) UnmarshalText(data []byte) error {
 }
 
 func ParseDuration(s string) (Duration, error) {
-	dur, err := parser.ParseSignedDuration(s)
+	dur, err := parseSignedDuration(s)
 	if err != nil {
 		return Duration{}, err
 	}
-	return FromDurationValues(dur.Values)
+	return FromDurationValues(dur)
+}
+
+// parseSignedDuration will convert a string into a possibly negative DurationLiteral.
+func parseSignedDuration(lit string) ([]ast.Duration, error) {
+	r, s := utf8.DecodeRuneInString(lit)
+	if r == '-' {
+		d, err := parser.ParseDuration(lit[s:])
+		if err != nil {
+			return nil, err
+		}
+		for i := range d {
+			d[i].Magnitude = -d[i].Magnitude
+		}
+		return d, nil
+	}
+	return parser.ParseDuration(lit)
 }
 
 // FromDurationValues creates a duration value from the duration values.
