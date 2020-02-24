@@ -10,7 +10,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 )
 
 const HoltWintersKind = "promHoltWinters"
@@ -21,7 +20,7 @@ type HoltWintersOpSpec struct {
 }
 
 func init() {
-	holtWintersSignature := semantic.MustLookupBuiltinType("internal/promql", "holtWinters")
+	holtWintersSignature := runtime.MustLookupBuiltinType("internal/promql", "holtWinters")
 
 	runtime.RegisterPackageValue("internal/promql", "holtWinters", flux.MustValue(flux.FunctionValue(HoltWintersKind, createHoltWintersOpSpec, holtWintersSignature)))
 	flux.RegisterOpSpec(HoltWintersKind, newHoltWintersOp)

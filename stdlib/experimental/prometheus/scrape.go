@@ -21,7 +21,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 
 	// Prometheus packages
@@ -36,7 +35,7 @@ type ScrapePrometheusOpSpec struct {
 }
 
 func init() {
-	scrapePrometheusSignature := semantic.MustLookupBuiltinType("experimental/prometheus", "scrape")
+	scrapePrometheusSignature := runtime.MustLookupBuiltinType("experimental/prometheus", "scrape")
 	runtime.RegisterPackageValue("experimental/prometheus", "scrape", flux.MustValue(flux.FunctionValue(ScrapePrometheusKind, createScrapePrometheusOpSpec, scrapePrometheusSignature)))
 	flux.RegisterOpSpec(ScrapePrometheusKind, newScrapePrometheusOp)
 	plan.RegisterProcedureSpec(ScrapePrometheusKind, newScrapePrometheusProcedure, ScrapePrometheusKind)

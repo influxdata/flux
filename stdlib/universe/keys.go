@@ -8,7 +8,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 )
 
 const KeysKind = "keys"
@@ -18,7 +17,7 @@ type KeysOpSpec struct {
 }
 
 func init() {
-	keysSignature := semantic.MustLookupBuiltinType("universe", "keys")
+	keysSignature := runtime.MustLookupBuiltinType("universe", "keys")
 
 	runtime.RegisterPackageValue("universe", KeysKind, flux.MustValue(flux.FunctionValue(KeysKind, createKeysOpSpec, keysSignature)))
 	flux.RegisterOpSpec(KeysKind, newKeysOp)

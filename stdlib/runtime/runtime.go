@@ -4,7 +4,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -15,7 +14,7 @@ var errBuildInfoNotPresent = errors.New(codes.NotFound, "build info is not prese
 func init() {
 	runtime.RegisterPackageValue("runtime", versionFuncName, values.NewFunction(
 		versionFuncName,
-		semantic.MustLookupBuiltinType("runtime", versionFuncName),
+		runtime.MustLookupBuiltinType("runtime", versionFuncName),
 		Version,
 		false,
 	))

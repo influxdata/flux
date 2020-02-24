@@ -14,7 +14,7 @@ import (
 func generateDateFunction(name string, dateFn func(time.Time) int) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.MustLookupBuiltinType("internal/promql", name),
+		runtime.MustLookupBuiltinType("internal/promql", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			v, ok := args.Get("timestamp")
 			if !ok {

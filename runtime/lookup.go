@@ -1,12 +1,14 @@
-package semantic
+package runtime
 
 import (
 	"fmt"
+
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/fbsemantic"
 	"github.com/influxdata/flux/libflux/go/libflux"
-	"github.com/influxdata/flux/semantic/internal/fbsemantic"
+	"github.com/influxdata/flux/semantic"
 )
 
 var stdlibTypeEnvironment = TypeEnvMap(fbsemantic.GetRootAsTypeEnvironment(libflux.EnvStdlib(), 0))
@@ -18,22 +20,22 @@ type envKey struct {
 
 // LookupBuiltinType returns the type of the builtin value for a given
 // Flux stdlib package. Returns an error if lookup fails.
-func LookupBuiltinType(pkg, name string) (MonoType, error) {
+func LookupBuiltinType(pkg, name string) (semantic.MonoType, error) {
 	key := envKey{
 		Package: pkg,
 		Prop:    name,
 	}
 	prop, ok := stdlibTypeEnvironment[key]
 	if !ok {
-		return MonoType{}, errors.Newf(codes.Internal, "Expected to find Prop for %v %v, but Prop was missing.", pkg, name)
+		return semantic.MonoType{}, errors.Newf(codes.Internal, "Expected to find Prop for %v %v, but Prop was missing.", pkg, name)
 	}
 	var table flatbuffers.Table
 	if !prop.V(&table) {
-		return MonoType{}, errors.Newf(codes.Internal, "Prop value is not valid: pkg %v name %v", pkg, name)
+		return semantic.MonoType{}, errors.Newf(codes.Internal, "Prop value is not valid: pkg %v name %v", pkg, name)
 	}
-	monotype, err := NewMonoType(table, prop.VType())
+	monotype, err := semantic.NewMonoType(table, prop.VType())
 	if err != nil {
-		return MonoType{}, err
+		return semantic.MonoType{}, err
 	}
 	// return fb polytype within semantic wrapper
 	return monotype, nil
@@ -41,7 +43,7 @@ func LookupBuiltinType(pkg, name string) (MonoType, error) {
 
 // MustLookupBuiltinType validates that call to LookupBuiltInType was
 // successful. If there is an error with lookup, then panic.
-func MustLookupBuiltinType(pkg, name string) MonoType {
+func MustLookupBuiltinType(pkg, name string) semantic.MonoType {
 	mt, err := LookupBuiltinType(pkg, name)
 	if err != nil {
 		panic(err)

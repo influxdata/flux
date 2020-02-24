@@ -19,7 +19,6 @@ import (
 	"github.com/influxdata/flux/line"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -31,7 +30,7 @@ type FromSocketOpSpec struct {
 }
 
 func init() {
-	fromSocketSignature := semantic.MustLookupBuiltinType("socket", "from")
+	fromSocketSignature := runtime.MustLookupBuiltinType("socket", "from")
 
 	runtime.RegisterPackageValue("socket", "from", flux.MustValue(flux.FunctionValue(FromSocketKind, createFromSocketOpSpec, fromSocketSignature)))
 	flux.RegisterOpSpec(FromSocketKind, newFromSocketOp)

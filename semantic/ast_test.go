@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/semantic/semantictest"
 )
@@ -137,12 +138,12 @@ exists r.b
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			want, err := semantic.AnalyzeSource(prelude + tt.s)
+			want, err := runtime.AnalyzeSource(prelude + tt.s)
 			if err != nil {
 				t.Fatalf("unexpected error analyzing source: %s", err)
 			}
 
-			got, err := semantic.AnalyzeSource(ast.Format(semantic.ToAST(want)))
+			got, err := runtime.AnalyzeSource(ast.Format(semantic.ToAST(want)))
 			if err != nil {
 				t.Fatalf("unexpected error analyzing generated AST: %s", err)
 			}

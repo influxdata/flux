@@ -26,7 +26,7 @@ func (s *DedupKeyOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-	dedupKeySignature := semantic.MustLookupBuiltinType("pagerduty", "dedupKey")
+	dedupKeySignature := runtime.MustLookupBuiltinType("pagerduty", "dedupKey")
 	runtime.RegisterPackageValue("pagerduty", "dedupKey", flux.MustValue(flux.FunctionValue(DedupKeyKind, createDedupKeyOpSpec, dedupKeySignature)))
 	flux.RegisterOpSpec(DedupKeyKind, newDedupKeyOp)
 	plan.RegisterProcedureSpec(DedupKeyKind, newDedupKeyProcedure, DedupKeyKind)

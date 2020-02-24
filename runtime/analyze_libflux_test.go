@@ -1,9 +1,10 @@
-package semantic_test
+package runtime_test
 
 import (
 	"errors"
-	"github.com/influxdata/flux/semantic"
 	"testing"
+
+	"github.com/influxdata/flux/runtime"
 )
 
 func TestAnalyzeSource(t *testing.T) {
@@ -25,7 +26,7 @@ func TestAnalyzeSource(t *testing.T) {
 	for _, tc := range tcs {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := semantic.AnalyzeSource(tc.flx)
+			_, err := runtime.AnalyzeSource(tc.flx)
 			if err != nil {
 				if tc.err == nil {
 					t.Fatalf("expected no error, got %v", err)

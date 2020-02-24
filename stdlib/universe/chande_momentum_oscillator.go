@@ -19,7 +19,7 @@ type ChandeMomentumOscillatorOpSpec struct {
 }
 
 func init() {
-	chandeMomentumOscillatorSignature := semantic.MustLookupBuiltinType("universe", ChandeMomentumOscillatorKind)
+	chandeMomentumOscillatorSignature := runtime.MustLookupBuiltinType("universe", ChandeMomentumOscillatorKind)
 
 	runtime.RegisterPackageValue("universe", ChandeMomentumOscillatorKind, flux.MustValue(flux.FunctionValue(ChandeMomentumOscillatorKind, createChandeMomentumOscillatorOpSpec, chandeMomentumOscillatorSignature)))
 	flux.RegisterOpSpec(ChandeMomentumOscillatorKind, newChandeMomentumOscillatorOp)

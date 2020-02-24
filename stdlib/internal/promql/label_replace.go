@@ -10,7 +10,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const (
@@ -26,7 +25,7 @@ type LabelReplaceOpSpec struct {
 }
 
 func init() {
-	labelReplaceSignature := semantic.MustLookupBuiltinType("internal/promql", "labelReplace")
+	labelReplaceSignature := runtime.MustLookupBuiltinType("internal/promql", "labelReplace")
 	runtime.RegisterPackageValue("internal/promql", "labelReplace", flux.MustValue(flux.FunctionValue(LabelReplaceKind, createLabelReplaceOpSpec, labelReplaceSignature)))
 	flux.RegisterOpSpec(LabelReplaceKind, func() flux.OperationSpec { return &LabelReplaceOpSpec{} })
 	plan.RegisterProcedureSpec(LabelReplaceKind, newLabelReplaceProcedure, LabelReplaceKind)

@@ -13,7 +13,6 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 )
 
 const FromCSVKind = "fromCSV"
@@ -24,7 +23,7 @@ type FromCSVOpSpec struct {
 }
 
 func init() {
-	fromCSVSignature := semantic.MustLookupBuiltinType("csv", "from")
+	fromCSVSignature := runtime.MustLookupBuiltinType("csv", "from")
 	runtime.RegisterPackageValue("csv", "from", flux.MustValue(flux.FunctionValue(FromCSVKind, createFromCSVOpSpec, fromCSVSignature)))
 	flux.RegisterOpSpec(FromCSVKind, newFromCSVOp)
 	plan.RegisterProcedureSpec(FromCSVKind, newFromCSVProcedure, FromCSVKind)

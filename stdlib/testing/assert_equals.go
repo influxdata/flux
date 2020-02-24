@@ -11,7 +11,6 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 )
 
 const AssertEqualsKind = "assertEquals"
@@ -25,7 +24,7 @@ func (s *AssertEqualsOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-	assertEqualsSignature := semantic.MustLookupBuiltinType("testing", "assertEquals")
+	assertEqualsSignature := runtime.MustLookupBuiltinType("testing", "assertEquals")
 
 	runtime.RegisterPackageValue("testing", "assertEquals", flux.MustValue(flux.FunctionValue(AssertEqualsKind, createAssertEqualsOpSpec, assertEqualsSignature)))
 	flux.RegisterOpSpec(AssertEqualsKind, newAssertEqualsOp)

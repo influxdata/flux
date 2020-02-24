@@ -23,7 +23,7 @@ const (
 
 var sleepFunc = values.NewFunction(
 	"sleep",
-	semantic.MustLookupBuiltinType("universe", "sleep"),
+	runtime.MustLookupBuiltinType("universe", "sleep"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		return interpreter.DoFunctionCallContext(sleep, ctx, args)
 	},

@@ -60,7 +60,7 @@ type MutationRegistrar struct {
 }
 
 func (m MutationRegistrar) Register() {
-	t := semantic.MustLookupBuiltinType("universe", string(m.Kind))
+	t := runtime.MustLookupBuiltinType("universe", string(m.Kind))
 	runtime.RegisterPackageValue("universe", string(m.Kind), flux.MustValue(flux.FunctionValue(string(m.Kind), m.Create, t)))
 	flux.RegisterOpSpec(m.Kind, m.New)
 
@@ -74,25 +74,25 @@ func (m MutationRegistrar) Register() {
 var Registrars = []MutationRegistrar{
 	{
 		Kind:   RenameKind,
-		Type:   semantic.MustLookupBuiltinType("universe", "rename"),
+		Type:   runtime.MustLookupBuiltinType("universe", "rename"),
 		Create: createRenameOpSpec,
 		New:    newRenameOp,
 	},
 	{
 		Kind:   DropKind,
-		Type:   semantic.MustLookupBuiltinType("universe", "drop"),
+		Type:   runtime.MustLookupBuiltinType("universe", "drop"),
 		Create: createDropOpSpec,
 		New:    newDropOp,
 	},
 	{
 		Kind:   KeepKind,
-		Type:   semantic.MustLookupBuiltinType("universe", "keep"),
+		Type:   runtime.MustLookupBuiltinType("universe", "keep"),
 		Create: createKeepOpSpec,
 		New:    newKeepOp,
 	},
 	{
 		Kind:   DuplicateKind,
-		Type:   semantic.MustLookupBuiltinType("universe", "duplicate"),
+		Type:   runtime.MustLookupBuiltinType("universe", "duplicate"),
 		Create: createDuplicateOpSpec,
 		New:    newDuplicateOp,
 	},

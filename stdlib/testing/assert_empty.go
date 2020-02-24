@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 )
 
 const AssertEmptyKind = "assertEmpty"
@@ -19,7 +18,7 @@ func (s *AssertEmptyOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-	assertEmptySignature := semantic.MustLookupBuiltinType("testing", "assertEmpty")
+	assertEmptySignature := runtime.MustLookupBuiltinType("testing", "assertEmpty")
 
 	runtime.RegisterPackageValue("testing", "assertEmpty", flux.MustValue(flux.FunctionValue(AssertEmptyKind, createAssertEmptyOpSpec, assertEmptySignature)))
 	flux.RegisterOpSpec(AssertEmptyKind, newAssertEmptyOp)

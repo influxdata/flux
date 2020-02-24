@@ -23,7 +23,7 @@ type CovarianceOpSpec struct {
 }
 
 func init() {
-	var covarianceSignature = semantic.MustLookupBuiltinType("universe", "covariance")
+	var covarianceSignature = runtime.MustLookupBuiltinType("universe", "covariance")
 	runtime.RegisterPackageValue("universe", CovarianceKind, flux.MustValue(flux.FunctionValue(CovarianceKind, createCovarianceOpSpec, covarianceSignature)))
 	flux.RegisterOpSpec(CovarianceKind, newCovarianceOp)
 	plan.RegisterProcedureSpec(CovarianceKind, newCovarianceProcedure, CovarianceKind)

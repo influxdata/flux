@@ -47,7 +47,7 @@ type FromOpSpec struct {
 }
 
 func init() {
-	fromSignature := semantic.MustLookupBuiltinType("influxdata/influxdb", "from")
+	fromSignature := runtime.MustLookupBuiltinType("influxdata/influxdb", "from")
 
 	runtime.RegisterPackageValue("influxdata/influxdb", FromKind, flux.MustValue(flux.FunctionValue(FromKind, createFromOpSpec, fromSignature)))
 	flux.RegisterOpSpec(FromKind, newFromOp)

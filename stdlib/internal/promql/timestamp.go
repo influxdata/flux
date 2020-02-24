@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const (
@@ -20,7 +19,7 @@ const (
 type TimestampOpSpec struct{}
 
 func init() {
-	timestampSignature := semantic.MustLookupBuiltinType("internal/promql", "timestamp")
+	timestampSignature := runtime.MustLookupBuiltinType("internal/promql", "timestamp")
 	runtime.RegisterPackageValue("internal/promql", "timestamp", flux.MustValue(flux.FunctionValue(TimestampKind, createTimestampOpSpec, timestampSignature)))
 	flux.RegisterOpSpec(TimestampKind, func() flux.OperationSpec { return &TimestampOpSpec{} })
 	plan.RegisterProcedureSpec(TimestampKind, newTimestampProcedure, TimestampKind)

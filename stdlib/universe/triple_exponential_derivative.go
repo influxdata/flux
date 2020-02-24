@@ -13,7 +13,6 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -24,7 +23,7 @@ type TripleExponentialDerivativeOpSpec struct {
 }
 
 func init() {
-	tripleExponentialDerivativeSignature := semantic.MustLookupBuiltinType("universe", "tripleExponentialDerivative")
+	tripleExponentialDerivativeSignature := runtime.MustLookupBuiltinType("universe", "tripleExponentialDerivative")
 
 	runtime.RegisterPackageValue("universe", TripleExponentialDerivativeKind, flux.MustValue(flux.FunctionValue(TripleExponentialDerivativeKind, createTripleExponentialDerivativeOpSpec, tripleExponentialDerivativeSignature)))
 	flux.RegisterOpSpec(TripleExponentialDerivativeKind, newTripleExponentialDerivativeOp)

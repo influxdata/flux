@@ -8,7 +8,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 )
 
 const CountKind = "count"
@@ -18,7 +17,7 @@ type CountOpSpec struct {
 }
 
 func init() {
-	countSignature := semantic.MustLookupBuiltinType("universe", "count")
+	countSignature := runtime.MustLookupBuiltinType("universe", "count")
 	runtime.RegisterPackageValue("universe", CountKind, flux.MustValue(flux.FunctionValue(CountKind, createCountOpSpec, countSignature)))
 	flux.RegisterOpSpec(CountKind, newCountOp)
 	plan.RegisterProcedureSpec(CountKind, newCountProcedure, CountKind)

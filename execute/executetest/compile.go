@@ -36,7 +36,7 @@ func FunctionExpression(t testing.TB, source string) *semantic.FunctionExpressio
 		}
 	}
 
-	pkg, err := semantic.AnalyzeSource(source)
+	pkg, err := runtime.AnalyzeSource(source)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

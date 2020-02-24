@@ -8,7 +8,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 )
 
 const MinKind = "min"
@@ -18,7 +17,7 @@ type MinOpSpec struct {
 }
 
 func init() {
-	minSignature := semantic.MustLookupBuiltinType("universe", "min")
+	minSignature := runtime.MustLookupBuiltinType("universe", "min")
 
 	runtime.RegisterPackageValue("universe", MinKind, flux.MustValue(flux.FunctionValue(MinKind, createMinOpSpec, minSignature)))
 	flux.RegisterOpSpec(MinKind, newMinOp)

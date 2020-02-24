@@ -26,7 +26,7 @@ const maxResponseBody = 512 * 1024 // 512 KB
 // http get mirrors the http post originally completed for alerts & notifications
 var get = values.NewFunction(
 	"get",
-	semantic.MustLookupBuiltinType("experimental/http", "get"),
+	runtime.MustLookupBuiltinType("experimental/http", "get"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		// Get and validate URL
 		uV, ok := args.Get("url")
