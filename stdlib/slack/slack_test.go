@@ -18,15 +18,16 @@ import (
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/values"
 )
 
 func TestSlack(t *testing.T) {
-	t.Skip("https://github.com/influxdata/flux/issues/2402")
 	ctx := dependenciestest.Default().Inject(context.Background())
 	_, scope, err := runtime.Eval(ctx, `
 import "csv"
 import "slack"
+
+option url = "http://fakeurl.com/fakeyfake"
+option token = "faketoken"
 
 data = "
 #datatype,string,string,string
@@ -44,11 +45,7 @@ process = slack.endpoint(url:url, token:token)( mapFn:
 
 csv.from(csv:data) |> process()
 
-`, func(s values.Scope) {
-		s.Set("url", values.New("http://fakeurl.com/fakeyfake"))
-		s.Set("token", values.New("faketoken"))
-
-	})
+`)
 
 	if err != nil {
 		t.Error(err)
@@ -68,7 +65,7 @@ func NewServer(t *testing.T) *Server {
 	s := new(Server)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sr := Request{
-			URL:           r.URL.String(), //r.URL.String(),
+			URL:           r.URL.String(), // r.URL.String(),
 			Authorization: r.Header.Get("Authorization"),
 		}
 		dec := json.NewDecoder(r.Body)
@@ -121,28 +118,28 @@ func TestSlackPost(t *testing.T) {
 	defer s.Close()
 
 	testCases := []struct {
-		name      string
-		color     string
-		text      string
-		channel   string
-		URL       string
-		token     string
+		name    string
+		color   string
+		text    string
+		channel string
+		URL     string
+		token   string
 	}{
 		{
-			name:     "....",
-			color:    `warning`,
-			text:     "aaaaaaab",
-			channel:  "general",
-			URL:      s.URL,
-			token:    "faketoken",
+			name:    "....",
+			color:   `warning`,
+			text:    "aaaaaaab",
+			channel: "general",
+			URL:     s.URL,
+			token:   "faketoken",
 		},
 		{
-			name:     "....",
-			color:    `#ffffff`,
-			text:     "qaaaaaaab",
-			channel:  "general",
-			URL:      s.URL,
-			token:    "faketoken",
+			name:    "....",
+			color:   `#ffffff`,
+			text:    "qaaaaaaab",
+			channel: "general",
+			URL:     s.URL,
+			token:   "faketoken",
 		},
 	}
 

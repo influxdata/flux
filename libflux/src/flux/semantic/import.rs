@@ -7,11 +7,17 @@ pub trait Importer {
     }
 }
 
-impl Importer for HashMap<String, PolyType> {
+impl<S: std::hash::BuildHasher> Importer for HashMap<String, PolyType, S> {
     fn import(&self, name: &str) -> Option<PolyType> {
         match self.get(name) {
             Some(pty) => Some(pty.clone()),
             None => None,
         }
+    }
+}
+
+impl Importer for Box<dyn Importer> {
+    fn import(&self, name: &str) -> Option<PolyType> {
+        self.as_ref().import(name)
     }
 }

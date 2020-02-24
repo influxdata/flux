@@ -18,15 +18,15 @@ import (
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/values"
 )
 
 func TestPagerduty(t *testing.T) {
-	t.Skip("https://github.com/influxdata/flux/issues/2402")
+	t.Skip("https://github.com/influxdata/flux/issues/2532")
 	ctx := dependenciestest.Default().Inject(context.Background())
 	_, _, err := runtime.Eval(ctx, `
 import "csv"
 import "pagerduty"
+option url = "http://fakeurl.com/fakeyfake"
 data = "
 #datatype,string,string,string,string,string,string,string,string,string,string,string,string
 #group,false,false,false,false,false,false,false,false,false,false,false,false
@@ -40,9 +40,7 @@ process = pagerduty.endpoint(url:url)( mapFn:
 	}
 )
 csv.from(csv:data) |> process()
-`, func(s values.Scope) {
-		s.Set("url", values.New("http://fakeurl.com/fakeyfake"))
-	})
+`)
 
 	if err != nil {
 		t.Error(err)

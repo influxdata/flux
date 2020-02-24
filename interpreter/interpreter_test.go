@@ -2,140 +2,30 @@ package interpreter_test
 
 import (
 	"context"
-	"errors"
-	"regexp"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/interpreter/interptest"
-	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/repl"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/semantic/semantictest"
 	"github.com/influxdata/flux/values"
 )
 
-var testScope = values.NewNestedScope(nil, values.NewObjectWithValues(
-	map[string]values.Value{
-		"true":  values.NewBool(true),
-		"false": values.NewBool(false),
-	}))
-
-var optionsObject = values.NewObject(semantic.NewObjectType([]semantic.PropertyType{
-	{
-		Key:   []byte("name"),
-		Value: semantic.BasicString,
-	},
-	{
-		Key:   []byte("repeat"),
-		Value: semantic.BasicInt,
-	},
-}))
-
-func addFunc(f *function) {
-	testScope.Set(f.name, f)
-}
-
-func addOption(name string, opt values.Value) {
-	testScope.Set(name, opt)
-}
-
-func addValue(name string, v values.Value) {
-	addOption(name, v)
-}
-
-func init() {
-	optionsObject.Set("name", values.NewString("foo"))
-	optionsObject.Set("repeat", values.NewInt(100))
-
-	addOption("task", optionsObject)
-	addValue("NULL", values.NewNull(semantic.BasicInt))
-
-	addFunc(&function{
-		name: "fortyTwo",
-		t:    semantic.NewFunctionType(semantic.BasicFloat, nil),
-		call: func(ctx context.Context, args values.Object) (values.Value, error) {
-			return values.NewFloat(42.0), nil
-		},
-		hasSideEffect: false,
-	})
-	addFunc(&function{
-		name: "six",
-		t:    semantic.NewFunctionType(semantic.BasicFloat, nil),
-		call: func(ctx context.Context, args values.Object) (values.Value, error) {
-			return values.NewFloat(6.0), nil
-		},
-		hasSideEffect: false,
-	})
-	addFunc(&function{
-		name: "nine",
-		t:    semantic.NewFunctionType(semantic.BasicFloat, nil),
-		call: func(ctx context.Context, args values.Object) (values.Value, error) {
-			return values.NewFloat(9.0), nil
-		},
-		hasSideEffect: false,
-	})
-	addFunc(&function{
-		name: "fail",
-		t:    semantic.NewFunctionType(semantic.BasicBool, nil),
-		call: func(ctx context.Context, args values.Object) (values.Value, error) {
-			return nil, errors.New("fail")
-		},
-		hasSideEffect: false,
-	})
-	addFunc(&function{
-		name: "plusOne",
-		t: semantic.NewFunctionType(semantic.BasicFloat, []semantic.ArgumentType{{
-			Name: []byte("x"),
-			Type: semantic.BasicFloat,
-			Pipe: true,
-		}}),
-		call: func(ctx context.Context, args values.Object) (values.Value, error) {
-			v, ok := args.Get("x")
-			if !ok {
-				return nil, errors.New("missing argument x")
-			}
-			return values.NewFloat(v.Float() + 1), nil
-		},
-		hasSideEffect: false,
-	})
-	addFunc(&function{
-		name: "sideEffect",
-		t:    semantic.NewFunctionType(semantic.BasicInt, nil),
-		call: func(ctx context.Context, args values.Object) (values.Value, error) {
-			return values.NewInt(0), nil
-		},
-		hasSideEffect: true,
-	})
-}
-
-// TODO(algow): This is only here because we cannot
-//   yet pass scopes to type inference
-//   https://github.com/influxdata/flux/issues/2402
-var builtinSrc = `
-name = "foo"
-repeat = 100
+var prelude = `
+import "internal/testutil"
+fail = testutil.fail
 fortyTwo = () => 42.0
 six = () => 6.0
 nine = () => 9.0
-// This will produce an error
-fail = () => {
-    [0][1]
-    return true
-}
 plusOne = (x=<-) => x + 1.0
+makeRecord = testutil.makeRecord
+hasValue = (o) => exists o.value
+sideEffect = () => 0 |> testutil.yield()
 `
-
-// TODO(algow): Unskip when we have #2402
-var testEvalSkip = map[string]string{
-	// Cannot produce side effects with pure flux, we need to tell inference about
-	// a special builtin
-	"query with side effects": "need type env parameter https://github.com/influxdata/flux/issues/2402",
-	// Cannot produce a NULL value with pure flux
-	"exists null": "need type env parameter https://github.com/influxdata/flux/issues/2402",
-}
 
 // TestEval tests whether a program can run to completion or not
 func TestEval(t *testing.T) {
@@ -446,15 +336,14 @@ func TestEval(t *testing.T) {
 		},
 		{
 			name:  "exists",
-			query: `exists 1`,
+			query: `hasValue(o: makeRecord(o: {value: 1}))`,
 			want: []values.Value{
 				values.NewBool(true),
 			},
 		},
 		{
-			name: "exists null",
-			query: `
-				exists NULL`,
+			name:  "exists null",
+			query: `hasValue(o: makeRecord(o: {val: 2}))`,
 			want: []values.Value{
 				values.NewBool(false),
 			},
@@ -464,19 +353,10 @@ func TestEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			if msg, ok := testEvalSkip[tc.name]; ok {
-				t.Skip(msg)
-			}
-			src := builtinSrc + tc.query
-			graph, err := semantic.AnalyzeSource(src)
-			if err != nil {
-				t.Fatalf("type inference error: %v", err)
-			}
+			src := prelude + tc.query
 
-			// Create new interpreter for each test case
-			itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
-
-			sideEffects, err := itrp.Eval(dependenciestest.Default().Inject(context.Background()), graph, testScope.Copy(), nil)
+			ctx := dependenciestest.Default().Inject(context.Background())
+			sideEffects, _, err := runtime.Eval(ctx, src)
 			if !tc.wantErr && err != nil {
 				t.Fatal(err)
 			} else if tc.wantErr && err == nil {
@@ -491,158 +371,7 @@ func TestEval(t *testing.T) {
 	}
 }
 
-// TestEval_Parallel ensures that function values returned from the interpreter can be used in parallel in multiple Eval calls.
-func TestEval_Parallel(t *testing.T) {
-	// TODO(algow): unskip when issue is complete
-	t.Skip("need to be able to pass type environment to type inference https://github.com/influxdata/flux/issues/2402")
-	var scope = values.NewScope()
-
-	{
-		var ident = "ident = (x) => x"
-		pkg := parser.ParseSource(ident)
-		if ast.Check(pkg) > 0 {
-			t.Fatal(ast.GetError(pkg))
-		}
-		graph, err := semantic.New(pkg)
-		if err != nil {
-			t.Fatal(err)
-		}
-		ctx := dependenciestest.Default().Inject(context.Background())
-		itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
-		if _, err := itrp.Eval(ctx, graph, scope, nil); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	script := "ident(x:1)"
-	pkg := parser.ParseSource(script)
-	if ast.Check(pkg) > 0 {
-		t.Fatal(ast.GetError(pkg))
-	}
-	graph, err := semantic.New(pkg)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Spin up multiple interpreters all using the same parent scope
-	n := 100
-	errC := make(chan error, n)
-	for i := 0; i < n; i++ {
-		go func() {
-			itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
-			ctx := dependenciestest.Default().Inject(context.Background())
-			_, err := itrp.Eval(ctx, graph, scope.Nest(nil), nil)
-			errC <- err
-		}()
-	}
-	for i := 0; i < n; i++ {
-		err := <-errC
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
-}
-
-func TestNestedExternBlocks(t *testing.T) {
-	// TODO(algow): unskip when issue is complete
-	t.Skip("need to be able to pass type environment to type inference https://github.com/influxdata/flux/issues/2402")
-	testcases := []struct {
-		packageNode *semantic.Package
-		externScope values.Scope
-		wantError   error
-	}{
-		{
-			packageNode: &semantic.Package{
-				Files: []*semantic.File{
-					{
-						Body: []semantic.Statement{
-							&semantic.OptionStatement{
-								Assignment: &semantic.NativeVariableAssignment{
-									Identifier: &semantic.Identifier{Name: "b"},
-									Init:       &semantic.IdentifierExpression{Name: "a"},
-								},
-							},
-							&semantic.OptionStatement{
-								Assignment: &semantic.NativeVariableAssignment{
-									Identifier: &semantic.Identifier{Name: "b"},
-									Init:       &semantic.StringLiteral{Value: "-----"},
-								},
-							},
-							&semantic.NativeVariableAssignment{
-								Identifier: &semantic.Identifier{Name: "a"},
-								Init:       &semantic.FloatLiteral{Value: 0.055},
-							},
-						},
-					},
-				},
-			},
-			externScope: values.NewNestedScope(nil, values.NewObjectWithValues(
-				map[string]values.Value{
-					// initial 'a' value with type int
-					"a": values.NewInt(0),
-				})).Nest(values.NewObjectWithValues(
-				map[string]values.Value{
-					// 'a' shadowed, given new type string
-					"a": values.NewString("0"),
-				})).Nest(nil),
-		},
-		{
-			packageNode: &semantic.Package{
-				Files: []*semantic.File{
-					{
-						Body: []semantic.Statement{
-							&semantic.OptionStatement{
-								// 'b' should be of type int
-								Assignment: &semantic.NativeVariableAssignment{
-									Identifier: &semantic.Identifier{Name: "b"},
-									Init:       &semantic.IdentifierExpression{Name: "a"},
-								},
-							},
-							&semantic.OptionStatement{
-								// Assigning 'b' to value of type string should cause type error
-								Assignment: &semantic.NativeVariableAssignment{
-									Identifier: &semantic.Identifier{Name: "b"},
-									Init:       &semantic.StringLiteral{Value: "-----"},
-								},
-							},
-						},
-					},
-				},
-			},
-			externScope: values.NewNestedScope(nil, values.NewObjectWithValues(
-				map[string]values.Value{
-					// initial 'a' value with type string
-					"a": values.NewString("0"),
-				})).Nest(values.NewObjectWithValues(
-				map[string]values.Value{
-					// 'a' shadowed, given new type int
-					"a": values.NewInt(0),
-				})).Nest(nil),
-			wantError: errors.New("type error 0:0-0:0: string != int"),
-		},
-	}
-
-	for _, tc := range testcases {
-		tc := tc
-		t.Run("", func(t *testing.T) {
-			itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
-			_, err := itrp.Eval(dependenciestest.Default().Inject(context.Background()), tc.packageNode, tc.externScope, nil)
-			if tc.wantError != nil {
-				if err == nil {
-					t.Errorf("expected error=(%v) but got nothing", tc.wantError)
-				} else if tc.wantError.Error() != err.Error() {
-					t.Errorf("expected error=(%v) but got error=(%v)", tc.wantError, err)
-				}
-			} else if tc.wantError == nil && err != nil {
-				t.Errorf("unexpected error: %v", err)
-			}
-		})
-	}
-}
-
 func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
-	// TODO(algow): unskip when issue is complete
-	t.Skip("need to be able to pass type environment to type inference https://github.com/influxdata/flux/issues/2402")
 	testCases := []struct {
 		name     string
 		builtins []string
@@ -699,16 +428,18 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := dependenciestest.Default().Inject(context.Background())
-			itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
-			scope := testScope.Copy()
+			r := repl.New(ctx, dependenciestest.Default(), nil)
+			if _, err := r.Eval(prelude); err != nil {
+				t.Fatalf("unable to evaluate prelude: %s", err)
+			}
 
 			for _, builtin := range tc.builtins {
-				if _, err := interptest.Eval(ctx, itrp, scope, nil, builtin); err != nil {
+				if _, err := r.Eval(builtin); err != nil {
 					t.Fatal("evaluation of builtin failed: ", err)
 				}
 			}
 
-			sideEffects, err := interptest.Eval(ctx, itrp, scope, nil, tc.program)
+			sideEffects, err := r.Eval(tc.program)
 			if err != nil && !tc.wantErr {
 				t.Fatal("program evaluation failed: ", err)
 			} else if err == nil && tc.wantErr {
@@ -783,8 +514,12 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 						{
 							Value: values.NewInt(0),
 							Node: &semantic.CallExpression{
-								Callee:    &semantic.IdentifierExpression{Name: "sideEffect"},
-								Arguments: &semantic.ObjectExpression{},
+								Callee: &semantic.MemberExpression{
+									Object:   &semantic.IdentifierExpression{Name: "testutil"},
+									Property: "yield",
+								},
+								Arguments: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
+								Pipe:      &semantic.IntegerLiteral{Value: 0},
 							},
 						},
 						{
@@ -792,7 +527,7 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 							Node: &semantic.ExpressionStatement{
 								Expression: &semantic.CallExpression{
 									Callee:    &semantic.IdentifierExpression{Name: "foo"},
-									Arguments: &semantic.ObjectExpression{},
+									Arguments: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								},
 							},
 						},
@@ -804,17 +539,15 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.name == "more expression statements" {
-				// inference won't know about the sideEffects()
-				// TODO(algow): unskip when issue is complete
-				t.Skip("need to be able to pass type environent to inference https://github.com/influxdata/flux/issues/2402")
-			}
 			ctx := dependenciestest.Default().Inject(context.Background())
-			itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
-			scope := testScope.Copy()
+			r := repl.New(ctx, dependenciestest.Default(), nil)
+
+			if _, err := r.Eval(prelude); err != nil {
+				t.Fatalf("unable to evaluate prelude: %s", err)
+			}
 
 			for _, line := range tc.lines {
-				if ses, err := interptest.Eval(ctx, itrp, scope, nil, line.script); err != nil {
+				if ses, err := r.Eval(line.script); err != nil {
 					t.Fatal("evaluation of builtin failed: ", err)
 				} else {
 					if !cmp.Equal(line.sideEffects, ses, semantictest.CmpOptions...) {
@@ -827,59 +560,31 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 }
 
 func TestResolver(t *testing.T) {
-	// TODO(algow): unskip when issue is complete
-	t.Skip("need to be able to pass type environment to type inference https://github.com/influxdata/flux/issues/2402")
-	var got semantic.Expression
-	f := &function{
-		name: "resolver",
-		t: semantic.NewFunctionType(semantic.BasicInt, []semantic.ArgumentType{{
-			Name: []byte("f"),
-			Type: semantic.NewFunctionType(semantic.BasicInt, []semantic.ArgumentType{{
-				Name: []byte("r"),
-				Type: semantic.BasicInt,
-			}}),
-		}}),
-		call: func(ctx context.Context, args values.Object) (values.Value, error) {
-			f, ok := args.Get("f")
-			if !ok {
-				return nil, errors.New("missing argument f")
-			}
-			resolver, ok := f.Function().(interpreter.Resolver)
-			if !ok {
-				return nil, errors.New("function cannot be resolved")
-			}
-			g, err := resolver.Resolve()
-			if err != nil {
-				return nil, err
-			}
-			got = g.(semantic.Expression)
-			return nil, nil
-		},
-		hasSideEffect: false,
-	}
-	s := make(map[string]values.Value)
-	s[f.name] = f
-
-	pkg := parser.ParseSource(`
+	src := `
 	x = 42
-	resolver(f: (r) => r + x)
-`)
-	if ast.Check(pkg) > 0 {
-		t.Fatal(ast.GetError(pkg))
-	}
+	f = (r) => r + x
+`
 
-	graph, err := semantic.New(pkg)
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	// Evaluate script with a function definition.
 	ctx := dependenciestest.Default().Inject(context.Background())
-	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
+	_, scope, err := runtime.Eval(ctx, src)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
 
-	ns := values.NewNestedScope(nil, values.NewObjectWithValues(s))
+	fn, ok := scope.Lookup("f")
+	if !ok {
+		t.Fatalf("could not lookup function definition")
+	}
 
-	if _, err := itrp.Eval(ctx, graph, ns, nil); err != nil {
-		t.Fatal(err)
+	resolver, ok := fn.Function().(interpreter.Resolver)
+	if !ok {
+		t.Fatalf("function is not resolvable")
+	}
+
+	got, err := resolver.Resolve()
+	if err != nil {
+		t.Fatalf("could not resolve function: %s", err)
 	}
 
 	want := &semantic.FunctionExpression{
@@ -887,10 +592,16 @@ func TestResolver(t *testing.T) {
 			Parameters: &semantic.FunctionParameters{
 				List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
 			},
-			Body: &semantic.BinaryExpression{
-				Operator: ast.AdditionOperator,
-				Left:     &semantic.IdentifierExpression{Name: "r"},
-				Right:    &semantic.IntegerLiteral{Value: 42},
+			Body: &semantic.Block{
+				Body: []semantic.Statement{
+					&semantic.ReturnStatement{
+						Argument: &semantic.BinaryExpression{
+							Operator: ast.AdditionOperator,
+							Left:     &semantic.IdentifierExpression{Name: "r"},
+							Right:    &semantic.IntegerLiteral{Value: 42},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -905,68 +616,4 @@ func getSideEffectsValues(ses []interpreter.SideEffect) []values.Value {
 		vs[i] = se.Value
 	}
 	return vs
-}
-
-type function struct {
-	name          string
-	t             semantic.MonoType
-	call          func(ctx context.Context, args values.Object) (values.Value, error)
-	hasSideEffect bool
-}
-
-func (f *function) Type() semantic.MonoType {
-	return f.t
-}
-func (f *function) IsNull() bool {
-	return false
-}
-func (f *function) Str() string {
-	panic(values.UnexpectedKind(semantic.Function, semantic.String))
-}
-func (f *function) Bytes() []byte {
-	panic(values.UnexpectedKind(semantic.Function, semantic.Bytes))
-}
-func (f *function) Int() int64 {
-	panic(values.UnexpectedKind(semantic.Function, semantic.Int))
-}
-func (f *function) UInt() uint64 {
-	panic(values.UnexpectedKind(semantic.Function, semantic.UInt))
-}
-func (f *function) Float() float64 {
-	panic(values.UnexpectedKind(semantic.Function, semantic.Float))
-}
-func (f *function) Bool() bool {
-	panic(values.UnexpectedKind(semantic.Function, semantic.Bool))
-}
-func (f *function) Time() values.Time {
-	panic(values.UnexpectedKind(semantic.Function, semantic.Time))
-}
-func (f *function) Duration() values.Duration {
-	panic(values.UnexpectedKind(semantic.Function, semantic.Duration))
-}
-func (f *function) Regexp() *regexp.Regexp {
-	panic(values.UnexpectedKind(semantic.Function, semantic.Regexp))
-}
-func (f *function) Array() values.Array {
-	panic(values.UnexpectedKind(semantic.Function, semantic.Array))
-}
-func (f *function) Object() values.Object {
-	panic(values.UnexpectedKind(semantic.Function, semantic.Object))
-}
-func (f *function) Function() values.Function {
-	return f
-}
-func (f *function) Equal(rhs values.Value) bool {
-	if f.Type() != rhs.Type() {
-		return false
-	}
-	v, ok := rhs.(*function)
-	return ok && (f == v)
-}
-func (f *function) HasSideEffect() bool {
-	return f.hasSideEffect
-}
-
-func (f *function) Call(ctx context.Context, args values.Object) (values.Value, error) {
-	return f.call(ctx, args)
 }

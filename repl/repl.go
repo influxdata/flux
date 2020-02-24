@@ -17,19 +17,31 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/spec"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/libflux/go/libflux"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 type REPL struct {
-	scope   values.Scope
-	querier Querier
 	ctx     context.Context
 	deps    flux.Dependencies
+	querier Querier
+
+	scope    values.Scope
+	itrp     *interpreter.Interpreter
+	analyzer *libflux.Analyzer
+	importer interpreter.Importer
 
 	cancelMu   sync.Mutex
 	cancelFunc context.CancelFunc
+}
+
+var prelude = []string{
+	"universe",
+	"influxdata/influxdb",
 }
 
 type Querier interface {
@@ -37,11 +49,26 @@ type Querier interface {
 }
 
 func New(ctx context.Context, deps flux.Dependencies, q Querier) *REPL {
+	scope := values.NewScope()
+	importer := runtime.StdLib()
+	for _, p := range prelude {
+		pkg, err := importer.ImportPackageObject(p)
+		if err != nil {
+			panic(err)
+		}
+		pkg.Range(scope.Set)
+	}
+	if q == nil {
+		q = querier{}
+	}
 	return &REPL{
-		scope:   values.NewScope(),
-		querier: q,
-		ctx:     ctx,
-		deps:    deps,
+		ctx:      ctx,
+		deps:     deps,
+		querier:  q,
+		scope:    scope,
+		itrp:     interpreter.NewInterpreter(nil),
+		analyzer: libflux.NewAnalyzer("main"),
+		importer: importer,
 	}
 }
 
@@ -123,31 +150,33 @@ func (r *REPL) input(t string) {
 	}
 }
 
-// executeLine processes a line of input.
-// If the input evaluates to a valid value, that value is returned.
-func (r *REPL) executeLine(t string) error {
+func (r *REPL) Eval(t string) ([]interpreter.SideEffect, error) {
 	if t == "" {
-		return nil
+		return nil, nil
 	}
 
 	if t[0] == '@' {
 		q, err := LoadQuery(t)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		t = q
 	}
 
-	ses, scope, err := runtime.Eval(r.ctx, t, func(ns values.Scope) {
-		// copy values saved in the cached scope to the new interpreter's scope
-		r.scope.Range(func(k string, v values.Value) {
-			ns.Set(k, v)
-		})
-	})
+	pkg, err := r.analyzeLine(t)
+	if err != nil {
+		return nil, err
+	}
+	return r.itrp.Eval(r.ctx, pkg, r.scope, r.importer)
+}
+
+// executeLine processes a line of input.
+// If the input evaluates to a valid value, that value is returned.
+func (r *REPL) executeLine(t string) error {
+	ses, err := r.Eval(t)
 	if err != nil {
 		return err
 	}
-	r.scope = scope
 
 	for _, se := range ses {
 		if _, ok := se.Node.(*semantic.ExpressionStatement); ok {
@@ -174,6 +203,19 @@ func (r *REPL) executeLine(t string) error {
 		}
 	}
 	return nil
+}
+
+func (r *REPL) analyzeLine(t string) (*semantic.Package, error) {
+	pkg, err := r.analyzer.Analyze(libflux.Parse(t))
+	if err != nil {
+		return nil, err
+	}
+
+	bs, err := pkg.MarshalFB()
+	if err != nil {
+		return nil, err
+	}
+	return semantic.DeserializeFromFlatBuffer(bs)
 }
 
 func (r *REPL) doQuery(cx context.Context, spec *flux.Spec, deps flux.Dependencies) error {
@@ -250,4 +292,20 @@ func LoadQuery(q string) (string, error) {
 	}
 
 	return q, nil
+}
+
+type querier struct{}
+
+func (querier) Query(ctx context.Context, deps flux.Dependencies, c flux.Compiler) (flux.ResultIterator, error) {
+	program, err := c.Compile(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ctx = deps.Inject(ctx)
+	alloc := &memory.Allocator{}
+	qry, err := program.Start(ctx, alloc)
+	if err != nil {
+		return nil, err
+	}
+	return flux.NewResultIteratorFromQuery(qry), nil
 }
