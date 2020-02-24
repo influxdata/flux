@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -22,7 +23,7 @@ const MergeJoinKind = "merge-join"
 
 func init() {
 	joinSignature := semantic.MustLookupBuiltinType("universe", "join")
-	flux.RegisterPackageValue("universe", JoinKind, flux.MustValue(flux.FunctionValue(JoinKind, createJoinOpSpec, joinSignature)))
+	runtime.RegisterPackageValue("universe", JoinKind, flux.MustValue(flux.FunctionValue(JoinKind, createJoinOpSpec, joinSignature)))
 	flux.RegisterOpSpec(JoinKind, newJoinOp)
 	//TODO(nathanielc): Allow for other types of join implementations
 	plan.RegisterProcedureSpec(MergeJoinKind, newMergeJoinProcedure, JoinKind)

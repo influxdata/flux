@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -30,9 +31,9 @@ type HistogramOpSpec struct {
 func init() {
 	histogramSignature := semantic.MustLookupBuiltinType("universe", "histogram")
 
-	flux.RegisterPackageValue("universe", HistogramKind, flux.MustValue(flux.FunctionValue(HistogramKind, createHistogramOpSpec, histogramSignature)))
-	flux.RegisterPackageValue("universe", "linearBins", linearBins{})
-	flux.RegisterPackageValue("universe", "logarithmicBins", logarithmicBins{})
+	runtime.RegisterPackageValue("universe", HistogramKind, flux.MustValue(flux.FunctionValue(HistogramKind, createHistogramOpSpec, histogramSignature)))
+	runtime.RegisterPackageValue("universe", "linearBins", linearBins{})
+	runtime.RegisterPackageValue("universe", "logarithmicBins", logarithmicBins{})
 	flux.RegisterOpSpec(HistogramKind, newHistogramOp)
 	plan.RegisterProcedureSpec(HistogramKind, newHistogramProcedure, HistogramKind)
 	execute.RegisterTransformation(HistogramKind, createHistogramTransformation)

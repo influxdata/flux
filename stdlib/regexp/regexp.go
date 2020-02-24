@@ -4,9 +4,9 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -172,12 +172,12 @@ func init() {
 		),
 	}
 
-	flux.RegisterPackageValue("regexp", "compile", SpecialFns["compile"])
-	flux.RegisterPackageValue("regexp", "quoteMeta", SpecialFns["quoteMeta"])
-	flux.RegisterPackageValue("regexp", "findString", SpecialFns["findString"])
-	flux.RegisterPackageValue("regexp", "findStringIndex", SpecialFns["findStringIndex"])
-	flux.RegisterPackageValue("regexp", "matchRegexpString", SpecialFns["matchRegexpString"])
-	flux.RegisterPackageValue("regexp", "replaceAllString", SpecialFns["replaceAllString"])
-	flux.RegisterPackageValue("regexp", "splitRegexp", SpecialFns["splitRegexp"])
-	flux.RegisterPackageValue("regexp", "getString", SpecialFns["getString"])
+	runtime.RegisterPackageValue("regexp", "compile", SpecialFns["compile"])
+	runtime.RegisterPackageValue("regexp", "quoteMeta", SpecialFns["quoteMeta"])
+	runtime.RegisterPackageValue("regexp", "findString", SpecialFns["findString"])
+	runtime.RegisterPackageValue("regexp", "findStringIndex", SpecialFns["findStringIndex"])
+	runtime.RegisterPackageValue("regexp", "matchRegexpString", SpecialFns["matchRegexpString"])
+	runtime.RegisterPackageValue("regexp", "replaceAllString", SpecialFns["replaceAllString"])
+	runtime.RegisterPackageValue("regexp", "splitRegexp", SpecialFns["splitRegexp"])
+	runtime.RegisterPackageValue("regexp", "getString", SpecialFns["getString"])
 }

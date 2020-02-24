@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -61,5 +61,5 @@ var validateColorStringFluxFn = values.NewFunction(
 )
 
 func init() {
-	flux.RegisterPackageValue("slack", "validateColorString", validateColorStringFluxFn)
+	runtime.RegisterPackageValue("slack", "validateColorString", validateColorStringFluxFn)
 }

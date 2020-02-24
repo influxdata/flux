@@ -2,6 +2,7 @@ package influxdb
 
 import (
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -11,5 +12,5 @@ const ToKind = "to"
 var ToSignature = semantic.MustLookupBuiltinType("influxdata/influxdb", "to")
 
 func init() {
-	flux.RegisterPackageValue("influxdata/influxdb", ToKind, flux.MustValue(flux.FunctionValueWithSideEffect(ToKind, nil, ToSignature)))
+	runtime.RegisterPackageValue("influxdata/influxdb", ToKind, flux.MustValue(flux.FunctionValueWithSideEffect(ToKind, nil, ToSignature)))
 }

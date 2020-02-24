@@ -7,6 +7,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/runtime"
 	"github.com/opentracing/opentracing-go"
 )
 
@@ -129,14 +130,14 @@ func FromTableObject(ctx context.Context, to *flux.TableObject, now time.Time) (
 // This function is used in tests that compare flux.Specs (e.g. in planner tests).
 func FromScript(ctx context.Context, now time.Time, script string) (*flux.Spec, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "parse")
-	astPkg, err := flux.Parse(script)
+	astPkg, err := runtime.Parse(script)
 	if err != nil {
 		return nil, err
 	}
 	s.Finish()
 
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-	sideEffects, scope, err := flux.EvalAST(cctx, astPkg, flux.SetNowOption(now))
+	sideEffects, scope, err := runtime.EvalAST(cctx, astPkg, runtime.SetNowOption(now))
 	if err != nil {
 		return nil, err
 	}

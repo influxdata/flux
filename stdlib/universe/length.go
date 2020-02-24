@@ -3,10 +3,10 @@ package universe
 import (
 	"context"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -33,5 +33,5 @@ func MakeLengthFunc() values.Function {
 }
 
 func init() {
-	flux.RegisterPackageValue("universe", "length", MakeLengthFunc())
+	runtime.RegisterPackageValue("universe", "length", MakeLengthFunc())
 }

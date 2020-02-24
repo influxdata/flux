@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -22,7 +23,7 @@ type LinearRegressionOpSpec struct {
 func init() {
 	linearRegressionSignature := semantic.MustLookupBuiltinType("internal/promql", LinearRegressionKind)
 
-	flux.RegisterPackageValue("internal/promql", LinearRegressionKind, flux.MustValue(flux.FunctionValue(LinearRegressionKind, createLinearRegressionOpSpec, linearRegressionSignature)))
+	runtime.RegisterPackageValue("internal/promql", LinearRegressionKind, flux.MustValue(flux.FunctionValue(LinearRegressionKind, createLinearRegressionOpSpec, linearRegressionSignature)))
 	flux.RegisterOpSpec(LinearRegressionKind, newLinearRegressionOp)
 	plan.RegisterProcedureSpec(LinearRegressionKind, newLinearRegressionProcedure, LinearRegressionKind)
 	execute.RegisterTransformation(LinearRegressionKind, createLinearRegressionTransformation)

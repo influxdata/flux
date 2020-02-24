@@ -23,6 +23,7 @@ import (
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/csv"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -258,7 +259,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			astPkg, err := flux.Parse(tc.script)
+			astPkg, err := runtime.Parse(tc.script)
 			if err != nil {
 				t.Fatalf("failed to parse script: %v", err)
 			}
@@ -652,14 +653,14 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 			if len(tc.files) == 0 {
 				t.Fatal("the test should have at least one file")
 			}
-			astPkg, err := flux.Parse(tc.files[0])
+			astPkg, err := runtime.Parse(tc.files[0])
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			if len(tc.files) > 1 {
 				for _, file := range tc.files[1:] {
-					otherPkg, err := flux.Parse(file)
+					otherPkg, err := runtime.Parse(file)
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -760,7 +761,7 @@ csv.from(csv: data)
 	wantRange := getTablesFromRawOrFail(t, rangedDataRaw)
 	wantFilter := getTablesFromRawOrFail(t, filteredDataRaw)
 
-	vs, _, err := flux.Eval(dependenciestest.Default().Inject(context.Background()), script)
+	vs, _, err := runtime.Eval(dependenciestest.Default().Inject(context.Background()), script)
 	if err != nil {
 		t.Fatal(err)
 	}

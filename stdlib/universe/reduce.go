@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -25,7 +26,7 @@ type ReduceOpSpec struct {
 func init() {
 	reduceSignature := semantic.MustLookupBuiltinType("universe", "reduce")
 
-	flux.RegisterPackageValue("universe", ReduceKind, flux.MustValue(flux.FunctionValue(ReduceKind, createReduceOpSpec, reduceSignature)))
+	runtime.RegisterPackageValue("universe", ReduceKind, flux.MustValue(flux.FunctionValue(ReduceKind, createReduceOpSpec, reduceSignature)))
 	flux.RegisterOpSpec(ReduceKind, newReduceOp)
 	plan.RegisterProcedureSpec(ReduceKind, newReduceProcedure, ReduceKind)
 	execute.RegisterTransformation(ReduceKind, createReduceTransformation)

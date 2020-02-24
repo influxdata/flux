@@ -6,6 +6,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -19,7 +20,7 @@ type SetOpSpec struct {
 func init() {
 	setSignature := semantic.MustLookupBuiltinType("experimental", "set")
 
-	flux.RegisterPackageValue("experimental", "set", flux.MustValue(flux.FunctionValue(SetKind, createSetOpSpec, setSignature)))
+	runtime.RegisterPackageValue("experimental", "set", flux.MustValue(flux.FunctionValue(SetKind, createSetOpSpec, setSignature)))
 	flux.RegisterOpSpec(SetKind, newSetOp)
 	plan.RegisterProcedureSpec(SetKind, newSetProcedure, SetKind)
 	execute.RegisterTransformation(SetKind, createSetTransformation)

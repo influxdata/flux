@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/influxdata/flux/runtime"
 	"github.com/matttproud/golang_protobuf_extensions/pbutil"
 
 	// Flux packages
@@ -36,7 +37,7 @@ type ScrapePrometheusOpSpec struct {
 
 func init() {
 	scrapePrometheusSignature := semantic.MustLookupBuiltinType("experimental/prometheus", "scrape")
-	flux.RegisterPackageValue("experimental/prometheus", "scrape", flux.MustValue(flux.FunctionValue(ScrapePrometheusKind, createScrapePrometheusOpSpec, scrapePrometheusSignature)))
+	runtime.RegisterPackageValue("experimental/prometheus", "scrape", flux.MustValue(flux.FunctionValue(ScrapePrometheusKind, createScrapePrometheusOpSpec, scrapePrometheusSignature)))
 	flux.RegisterOpSpec(ScrapePrometheusKind, newScrapePrometheusOp)
 	plan.RegisterProcedureSpec(ScrapePrometheusKind, newScrapePrometheusProcedure, ScrapePrometheusKind)
 	execute.RegisterSource(ScrapePrometheusKind, createScrapePrometheusSource)

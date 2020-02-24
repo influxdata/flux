@@ -1,7 +1,8 @@
-package flux
+package runtime
 
 import (
 	"context"
+	"time"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
@@ -92,7 +93,7 @@ func (r *runtime) Prelude() values.Scope {
 	if !r.finalized {
 		panic("builtins not finalized")
 	}
-	importer := StdLib()
+	importer := r.Stdlib()
 	scope, err := r.newScopeFor("main", importer)
 	if err != nil {
 		panic(err)
@@ -180,5 +181,88 @@ func (r *runtime) Finalize() error {
 	// The only one we're missing is validating that all of the referenced
 	// builtins are included and that all registered builtins are referenced,
 	// but we don't actually execute anything until we evaluate a script.
+	return nil
+}
+
+func isPreludePackage(pkg string) bool {
+	for _, p := range prelude {
+		if p == pkg {
+			return true
+		}
+	}
+	return false
+}
+
+// ScopeMutator is any function that mutates the scope of an identifier.
+type ScopeMutator = func(values.Scope)
+
+// SetOption returns a func that adds a var binding to a scope.
+func SetOption(pkg, name string, v values.Value) ScopeMutator {
+	return func(scope values.Scope) {
+		p, ok := scope.Lookup(pkg)
+		if ok {
+			if p, ok := p.(values.Package); ok {
+				values.SetOption(p, name, v)
+			}
+		} else if isPreludePackage(pkg) {
+			opt, ok := scope.Lookup(name)
+			if ok {
+				if opt, ok := opt.(*values.Option); ok {
+					opt.Value = v
+				}
+			}
+
+		}
+	}
+}
+
+var (
+	NowOption = "now"
+	nowPkg    = "universe"
+)
+
+// SetNowOption returns a ScopeMutator that sets the `now` option to the given time.
+func SetNowOption(now time.Time) ScopeMutator {
+	return SetOption(nowPkg, NowOption, generateNowFunc(now))
+}
+
+func generateNowFunc(now time.Time) values.Function {
+	timeVal := values.NewTime(values.ConvertTime(now))
+	ftype := semantic.MustLookupBuiltinType("universe", "now")
+	call := func(ctx context.Context, args values.Object) (values.Value, error) {
+		return timeVal, nil
+	}
+	return values.NewFunction(NowOption, ftype, call, false)
+}
+
+// TODO(algow): Needs to be refactored into the runtime finalize.
+// validatePackageBuiltins ensures that all package builtins have both an AST builtin statement and a registered value.
+func validatePackageBuiltins(pkg *interpreter.Package, astPkg *ast.Package) error {
+	builtinStmts := make(map[string]*ast.BuiltinStatement)
+	ast.Walk(ast.CreateVisitor(func(n ast.Node) {
+		if bs, ok := n.(*ast.BuiltinStatement); ok {
+			builtinStmts[bs.ID.Name] = bs
+		}
+	}), astPkg)
+
+	missing := make([]string, 0, len(builtinStmts))
+	extra := make([]string, 0, len(builtinStmts))
+
+	for n := range builtinStmts {
+		if _, ok := pkg.Get(n); !ok {
+			missing = append(missing, n)
+			continue
+		}
+		// TODO(nathanielc): Ensure that the value's type matches the type expression
+	}
+	pkg.Range(func(k string, v values.Value) {
+		if _, ok := builtinStmts[k]; !ok {
+			extra = append(extra, k)
+			return
+		}
+	})
+	if len(missing) > 0 || len(extra) > 0 {
+		return errors.Newf(codes.Internal, "missing builtin values %v, extra builtin values %v", missing, extra)
+	}
 	return nil
 }

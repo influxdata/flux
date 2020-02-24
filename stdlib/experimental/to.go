@@ -2,6 +2,7 @@ package experimental
 
 import (
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -11,5 +12,5 @@ const ExperimentalToKind = "experimental-to"
 var ToSignature = semantic.MustLookupBuiltinType("experimental", "to")
 
 func init() {
-	flux.RegisterPackageValue("experimental", "to", flux.MustValue(flux.FunctionValueWithSideEffect("to", nil, ToSignature)))
+	runtime.RegisterPackageValue("experimental", "to", flux.MustValue(flux.FunctionValueWithSideEffect("to", nil, ToSignature)))
 }

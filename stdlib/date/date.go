@@ -6,10 +6,10 @@ import (
 	"math"
 	"time"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -244,18 +244,18 @@ func init() {
 		),
 	}
 
-	flux.RegisterPackageValue("date", "second", SpecialFns["second"])
-	flux.RegisterPackageValue("date", "minute", SpecialFns["minute"])
-	flux.RegisterPackageValue("date", "hour", SpecialFns["hour"])
-	flux.RegisterPackageValue("date", "weekDay", SpecialFns["weekDay"])
-	flux.RegisterPackageValue("date", "monthDay", SpecialFns["monthDay"])
-	flux.RegisterPackageValue("date", "yearDay", SpecialFns["yearDay"])
-	flux.RegisterPackageValue("date", "month", SpecialFns["month"])
-	flux.RegisterPackageValue("date", "year", SpecialFns["year"])
-	flux.RegisterPackageValue("date", "week", SpecialFns["week"])
-	flux.RegisterPackageValue("date", "quarter", SpecialFns["quarter"])
-	flux.RegisterPackageValue("date", "millisecond", SpecialFns["millisecond"])
-	flux.RegisterPackageValue("date", "microsecond", SpecialFns["microsecond"])
-	flux.RegisterPackageValue("date", "nanosecond", SpecialFns["nanosecond"])
-	flux.RegisterPackageValue("date", "truncate", SpecialFns["truncate"])
+	runtime.RegisterPackageValue("date", "second", SpecialFns["second"])
+	runtime.RegisterPackageValue("date", "minute", SpecialFns["minute"])
+	runtime.RegisterPackageValue("date", "hour", SpecialFns["hour"])
+	runtime.RegisterPackageValue("date", "weekDay", SpecialFns["weekDay"])
+	runtime.RegisterPackageValue("date", "monthDay", SpecialFns["monthDay"])
+	runtime.RegisterPackageValue("date", "yearDay", SpecialFns["yearDay"])
+	runtime.RegisterPackageValue("date", "month", SpecialFns["month"])
+	runtime.RegisterPackageValue("date", "year", SpecialFns["year"])
+	runtime.RegisterPackageValue("date", "week", SpecialFns["week"])
+	runtime.RegisterPackageValue("date", "quarter", SpecialFns["quarter"])
+	runtime.RegisterPackageValue("date", "millisecond", SpecialFns["millisecond"])
+	runtime.RegisterPackageValue("date", "microsecond", SpecialFns["microsecond"])
+	runtime.RegisterPackageValue("date", "nanosecond", SpecialFns["nanosecond"])
+	runtime.RegisterPackageValue("date", "truncate", SpecialFns["truncate"])
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/lang/langtest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
@@ -40,7 +41,7 @@ data = "#datatype,string,long,dateTime:RFC3339,double,string,string
 
 csv.from(csv: data)`
 	ctx := dependenciestest.Default().Inject(context.Background())
-	vs, _, err := flux.Eval(ctx, script)
+	vs, _, err := runtime.Eval(ctx, script)
 	if err != nil {
 		panic(fmt.Errorf("cannot compile simple script to prepare test: %s", err))
 	}
@@ -117,12 +118,12 @@ func mustLookup(s values.Scope, valueID string) values.Value {
 	return v
 }
 
-func evalOrFail(t *testing.T, script string, mutator flux.ScopeMutator) values.Scope {
+func evalOrFail(t *testing.T, script string, mutator runtime.ScopeMutator) values.Scope {
 	t.Helper()
 
 	ctx := dependenciestest.Default().Inject(context.Background())
 	ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
-	_, s, err := flux.Eval(ctx, script, func(s values.Scope) {
+	_, s, err := runtime.Eval(ctx, script, func(s values.Scope) {
 		if mutator != nil {
 			mutator(s)
 		}
@@ -172,7 +173,7 @@ func TestTableFind_Call(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := dependenciestest.Default().Inject(context.Background())
 			ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
-			_, scope, err := flux.Eval(ctx, tc.fn)
+			_, scope, err := runtime.Eval(ctx, tc.fn)
 			if err != nil {
 				t.Fatalf("error compiling function: %v", err)
 			}

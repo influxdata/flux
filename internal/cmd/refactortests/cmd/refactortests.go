@@ -21,13 +21,14 @@ import (
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/runtime"
 	_ "github.com/influxdata/flux/stdlib" // Import the Flux standard library
 	"github.com/influxdata/flux/stdlib/testing"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	flux.FinalizeBuiltIns()
+	runtime.FinalizeBuiltIns()
 }
 
 // refactorCmd represents the refactortests command

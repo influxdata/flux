@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -24,7 +25,7 @@ type DifferenceOpSpec struct {
 func init() {
 	differenceSignature := semantic.MustLookupBuiltinType("universe", "difference")
 
-	flux.RegisterPackageValue("universe", DifferenceKind, flux.MustValue(flux.FunctionValue(DifferenceKind, createDifferenceOpSpec, differenceSignature)))
+	runtime.RegisterPackageValue("universe", DifferenceKind, flux.MustValue(flux.FunctionValue(DifferenceKind, createDifferenceOpSpec, differenceSignature)))
 	flux.RegisterOpSpec(DifferenceKind, newDifferenceOp)
 	plan.RegisterProcedureSpec(DifferenceKind, newDifferenceProcedure, DifferenceKind)
 	execute.RegisterTransformation(DifferenceKind, createDifferenceTransformation)

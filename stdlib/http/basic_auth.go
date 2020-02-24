@@ -5,14 +5,14 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 func init() {
-	flux.RegisterPackageValue("http", "basicAuth", basicAuthFunc)
+	runtime.RegisterPackageValue("http", "basicAuth", basicAuthFunc)
 }
 
 const (

@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -24,7 +25,7 @@ type ExtrapolatedRateOpSpec struct {
 func init() {
 	extrapolatedRateSignature := semantic.MustLookupBuiltinType("internal/promql", ExtrapolatedRateKind)
 
-	flux.RegisterPackageValue("internal/promql", ExtrapolatedRateKind, flux.MustValue(flux.FunctionValue(ExtrapolatedRateKind, createExtrapolatedRateOpSpec, extrapolatedRateSignature)))
+	runtime.RegisterPackageValue("internal/promql", ExtrapolatedRateKind, flux.MustValue(flux.FunctionValue(ExtrapolatedRateKind, createExtrapolatedRateOpSpec, extrapolatedRateSignature)))
 	flux.RegisterOpSpec(ExtrapolatedRateKind, newExtrapolatedRateOp)
 	plan.RegisterProcedureSpec(ExtrapolatedRateKind, newExtrapolatedRateProcedure, ExtrapolatedRateKind)
 	execute.RegisterTransformation(ExtrapolatedRateKind, createExtrapolatedRateTransformation)

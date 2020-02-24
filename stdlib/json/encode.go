@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 func init() {
-	flux.RegisterPackageValue("json", "encode", values.NewFunction(
+	runtime.RegisterPackageValue("json", "encode", values.NewFunction(
 		"encode",
 		semantic.MustLookupBuiltinType("json", "encode"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {

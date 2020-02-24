@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -21,7 +22,7 @@ type KamaOpSpec struct {
 func init() {
 	kamaSignature := semantic.MustLookupBuiltinType("universe", "kaufmansAMA")
 
-	flux.RegisterPackageValue("universe", kamaKind, flux.MustValue(flux.FunctionValue(kamaKind, createkamaOpSpec, kamaSignature)))
+	runtime.RegisterPackageValue("universe", kamaKind, flux.MustValue(flux.FunctionValue(kamaKind, createkamaOpSpec, kamaSignature)))
 	flux.RegisterOpSpec(kamaKind, newkamaOp)
 	plan.RegisterProcedureSpec(kamaKind, newkamaProcedure, kamaKind)
 	execute.RegisterTransformation(kamaKind, createkamaTransformation)

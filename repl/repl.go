@@ -17,6 +17,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/spec"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -137,7 +138,7 @@ func (r *REPL) executeLine(t string) error {
 		t = q
 	}
 
-	ses, scope, err := flux.Eval(r.ctx, t, func(ns values.Scope) {
+	ses, scope, err := runtime.Eval(r.ctx, t, func(ns values.Scope) {
 		// copy values saved in the cached scope to the new interpreter's scope
 		r.scope.Range(func(k string, v values.Value) {
 			ns.Set(k, v)

@@ -15,6 +15,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	protocol "github.com/influxdata/line-protocol"
@@ -28,7 +29,7 @@ const (
 func init() {
 	toMQTTSignature := semantic.MustLookupBuiltinType("experimental/mqtt", "to")
 
-	flux.RegisterPackageValue("experimental/mqtt", "to", flux.MustValue(flux.FunctionValueWithSideEffect(ToMQTTKind, createToMQTTOpSpec, toMQTTSignature)))
+	runtime.RegisterPackageValue("experimental/mqtt", "to", flux.MustValue(flux.FunctionValueWithSideEffect(ToMQTTKind, createToMQTTOpSpec, toMQTTSignature)))
 	flux.RegisterOpSpec(ToMQTTKind, func() flux.OperationSpec { return &ToMQTTOpSpec{} })
 	plan.RegisterProcedureSpecWithSideEffect(ToMQTTKind, newToMQTTProcedure, ToMQTTKind)
 	execute.RegisterTransformation(ToMQTTKind, createToMQTTTransformation)

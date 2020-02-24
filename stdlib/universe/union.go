@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -25,7 +26,7 @@ func (s *UnionOpSpec) Kind() flux.OperationKind {
 func init() {
 	unionSignature := semantic.MustLookupBuiltinType("universe", "union")
 
-	flux.RegisterPackageValue("universe", UnionKind, flux.MustValue(flux.FunctionValue(UnionKind, createUnionOpSpec, unionSignature)))
+	runtime.RegisterPackageValue("universe", UnionKind, flux.MustValue(flux.FunctionValue(UnionKind, createUnionOpSpec, unionSignature)))
 	flux.RegisterOpSpec(UnionKind, newUnionOp)
 	plan.RegisterProcedureSpec(UnionKind, newUnionProcedure, UnionKind)
 	execute.RegisterTransformation(UnionKind, createUnionTransformation)
