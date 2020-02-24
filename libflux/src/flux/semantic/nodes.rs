@@ -353,11 +353,7 @@ impl File {
 
         for dec in &self.imports {
             let path = &dec.path.value;
-
-            let name = match &dec.alias {
-                None => path.rsplitn(2, '/').collect::<Vec<&str>>()[0],
-                Some(id) => &id.name[..],
-            };
+            let name = dec.import_name();
 
             imports.push(name);
 
@@ -423,6 +419,16 @@ pub struct ImportDeclaration {
 
     pub alias: Option<Identifier>,
     pub path: StringLit,
+}
+
+impl ImportDeclaration {
+    pub fn import_name(&self) -> &str {
+        let path = &self.path.value;
+        match &self.alias {
+            None => path.rsplitn(2, '/').collect::<Vec<&str>>()[0],
+            Some(id) => &id.name[..],
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]

@@ -29,7 +29,9 @@ use crate::semantic::convert::convert_with;
 use crate::semantic::convert::Result as ConversionResult;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
-use crate::semantic::import::Importer;
+// This needs to be public so libstd can access it.
+// Once we merge libstd and flux this can be made private again.
+pub use crate::semantic::import::Importer;
 use crate::semantic::nodes::{infer_pkg_types, inject_pkg_types};
 
 impl Importer for Option<()> {}

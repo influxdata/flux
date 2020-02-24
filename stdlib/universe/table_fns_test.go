@@ -2,7 +2,6 @@ package universe_test
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"testing"
 
@@ -18,13 +17,7 @@ import (
 	"github.com/influxdata/flux/values/objects"
 )
 
-var (
-	to     *flux.TableObject
-	tables []flux.Table
-)
-
-func init() {
-	script := `
+var prelude = `
 import "csv"
 
 data = "#datatype,string,long,dateTime:RFC3339,double,string,string
@@ -39,68 +32,9 @@ data = "#datatype,string,long,dateTime:RFC3339,double,string,string
 ,,2,2018-05-22T19:53:26Z,1,RAM,user1
 "
 
-csv.from(csv: data)`
-	ctx := dependenciestest.Default().Inject(context.Background())
-	vs, _, err := runtime.Eval(ctx, script)
-	if err != nil {
-		panic(fmt.Errorf("cannot compile simple script to prepare test: %s", err))
-	}
-	for _, v := range vs {
-		if v, ok := v.Value.(*flux.TableObject); ok {
-			to = v
-			break
-		}
-	}
-	if to == nil {
-		panic(errors.New("cannot find TableObject as result of test script"))
-	}
+inj = csv.from(csv: data)
 
-	// init tables
-	tables = make([]flux.Table, 0, 4)
-	t0 := &executetest.Table{
-		KeyCols: []string{"_measurement", "user"},
-		ColMeta: []flux.ColMeta{
-			{Label: "_time", Type: flux.TTime},
-			{Label: "_value", Type: flux.TFloat},
-			{Label: "_measurement", Type: flux.TString},
-			{Label: "user", Type: flux.TString},
-		},
-		Data: [][]interface{}{
-			{mustParseTime("2018-05-22T19:53:26.000000000Z"), 0.0, "CPU", "user1"},
-			{mustParseTime("2018-05-22T19:53:36.000000000Z"), 1.0, "CPU", "user1"},
-		},
-	}
-	t1 := &executetest.Table{
-		KeyCols: []string{"_measurement", "user"},
-		ColMeta: []flux.ColMeta{
-			{Label: "_time", Type: flux.TTime},
-			{Label: "_value", Type: flux.TFloat},
-			{Label: "_measurement", Type: flux.TString},
-			{Label: "user", Type: flux.TString},
-		},
-		Data: [][]interface{}{
-			{mustParseTime("2018-05-22T19:53:26.000000000Z"), 4.0, "CPU", "user2"},
-			{mustParseTime("2018-05-22T19:53:36.000000000Z"), 20.0, "CPU", "user2"},
-			{mustParseTime("2018-05-22T19:53:46.000000000Z"), 7.0, "CPU", "user2"},
-		},
-	}
-	t2 := &executetest.Table{
-		KeyCols: []string{"_measurement", "user"},
-		ColMeta: []flux.ColMeta{
-			{Label: "_time", Type: flux.TTime},
-			{Label: "_value", Type: flux.TFloat},
-			{Label: "_measurement", Type: flux.TString},
-			{Label: "user", Type: flux.TString},
-		},
-		Data: [][]interface{}{
-			{mustParseTime("2018-05-22T19:53:26.000000000Z"), 1.0, "RAM", "user1"},
-		},
-	}
-	t0.Normalize()
-	t1.Normalize()
-	t2.Normalize()
-	tables = append(tables, t0, t1, t2)
-}
+`
 
 func mustParseTime(t string) values.Time {
 	if t, err := values.ParseTime(t); err != nil {
@@ -118,16 +52,12 @@ func mustLookup(s values.Scope, valueID string) values.Value {
 	return v
 }
 
-func evalOrFail(t *testing.T, script string, mutator runtime.ScopeMutator) values.Scope {
+func evalOrFail(t *testing.T, script string) values.Scope {
 	t.Helper()
 
 	ctx := dependenciestest.Default().Inject(context.Background())
 	ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
-	_, s, err := runtime.Eval(ctx, script, func(s values.Scope) {
-		if mutator != nil {
-			mutator(s)
-		}
-	})
+	_, s, err := runtime.Eval(ctx, script)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -144,23 +74,87 @@ func TestTableFind_Call(t *testing.T) {
 	}{
 		{
 			name: "exactly one match 1", // first table
-			want: tables[0],
-			fn:   `f = (key) => key.user == "user1" and key._measurement == "CPU"`,
+			want: func() flux.Table {
+				want := &executetest.Table{
+					KeyCols: []string{"_measurement", "user"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "user", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{mustParseTime(`2018-05-22T19:53:26.000000000Z`), 0.0, "CPU", "user1"},
+						{mustParseTime(`2018-05-22T19:53:36.000000000Z`), 1.0, "CPU", "user1"},
+					},
+				}
+				want.Normalize()
+				return want
+			}(),
+			fn: `f = (key) => key.user == "user1" and key._measurement == "CPU"`,
 		},
 		{
 			name: "exactly one match 2", // second table
-			want: tables[1],
-			fn:   `f = (key) => key.user == "user2"`,
+			want: func() flux.Table {
+				want := &executetest.Table{
+					KeyCols: []string{"_measurement", "user"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "user", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{mustParseTime(`2018-05-22T19:53:26.000000000Z`), 4.0, "CPU", "user2"},
+						{mustParseTime(`2018-05-22T19:53:36.000000000Z`), 20.0, "CPU", "user2"},
+						{mustParseTime(`2018-05-22T19:53:46.000000000Z`), 7.0, "CPU", "user2"},
+					},
+				}
+				want.Normalize()
+				return want
+			}(),
+			fn: `f = (key) => key.user == "user2"`,
 		},
 		{
 			name: "exactly one match 3", // third table
-			want: tables[2],
-			fn:   `f = (key) => key.user == "user1" and key._measurement == "RAM"`,
+			want: func() flux.Table {
+				want := &executetest.Table{
+					KeyCols: []string{"_measurement", "user"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "user", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{mustParseTime(`2018-05-22T19:53:26.000000000Z`), 1.0, "RAM", "user1"},
+					},
+				}
+				want.Normalize()
+				return want
+			}(),
+			fn: `f = (key) => key.user == "user1" and key._measurement == "RAM"`,
 		},
 		{
 			name: "multiple match", // first and third
-			want: tables[0],
-			fn:   `f = (key) => key.user == "user1"`,
+			want: func() flux.Table {
+				want := &executetest.Table{
+					KeyCols: []string{"_measurement", "user"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "user", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{mustParseTime(`2018-05-22T19:53:26.000000000Z`), 0.0, "CPU", "user1"},
+						{mustParseTime(`2018-05-22T19:53:36.000000000Z`), 1.0, "CPU", "user1"},
+					},
+				}
+				want.Normalize()
+				return want
+			}(),
+			fn: `f = (key) => key.user == "user1"`,
 		},
 		{
 			name:    "no match",
@@ -173,7 +167,17 @@ func TestTableFind_Call(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := dependenciestest.Default().Inject(context.Background())
 			ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
-			_, scope, err := runtime.Eval(ctx, tc.fn)
+			_, scope, err := runtime.Eval(ctx, prelude)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			to, ok := scope.Lookup("inj")
+			if !ok {
+				t.Fatal("unable to find input in prelude script")
+			}
+
+			_, scope, err = runtime.Eval(ctx, tc.fn)
 			if err != nil {
 				t.Fatalf("error compiling function: %v", err)
 			}
@@ -213,14 +217,10 @@ func TestTableFind_Call(t *testing.T) {
 }
 
 func TestGetColumn_Call(t *testing.T) {
-	t.Skip("https://github.com/influxdata/flux/issues/2402")
-	script := `
-// 'inj' is injected in the scope before evaluation
+	script := prelude + `
 t = inj |> tableFind(fn: (key) => key.user == "user1")`
 
-	s := evalOrFail(t, script, func(s values.Scope) {
-		s.Set("inj", to)
-	})
+	s := evalOrFail(t, script)
 	tbl := mustLookup(s, "t")
 
 	f := universe.NewGetColumnFunction()
@@ -250,7 +250,7 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 			"column": values.New("idk"),
 		}))
 	if err == nil {
-		t.Error("expected error got none")
+		t.Fatal("expected error got none")
 	}
 
 	wantErr := "cannot find column idk"
@@ -260,14 +260,10 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 }
 
 func TestGetRecord_Call(t *testing.T) {
-	t.Skip("https://github.com/influxdata/flux/issues/2402")
-	script := `
-// 'inj' is injected in the scope before evaluation
+	script := prelude + `
 t = inj |> tableFind(fn: (key) => key.user == "user1")`
 
-	s := evalOrFail(t, script, func(s values.Scope) {
-		s.Set("inj", to)
-	})
+	s := evalOrFail(t, script)
 	tbl := mustLookup(s, "t")
 
 	f := universe.NewGetRecordFunction()
@@ -314,10 +310,8 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 // We have to write this test as a non-standard e2e test, because
 // our framework doesn't allow comparison between "simple" values, but only streams of tables.
 func TestIndexFns_EndToEnd(t *testing.T) {
-	t.Skip("https://github.com/influxdata/flux/issues/2402")
 	// TODO(affo): uncomment schema-testing lines (in the `script` too) once we decide to expose the schema.
-	script := `
-// 'inj' is injected in the scope before evaluation
+	script := prelude + `
 t = inj |> tableFind(fn: (key) => key._measurement == "RAM")
 c = t |> getColumn(column: "_value")
 r = t |> getRecord(idx: 0)
@@ -332,9 +326,7 @@ columnOK = c[0] == 1.0
 // >>> unsupported binary expression {_value: float,_measurement: string,user: string,_time: time,} == {_value: float,_measurement: string,user: string,_time: time,}
 recordOK = r._time == 2018-05-22T19:53:26Z and r._value == 1.0 and r._measurement == "RAM" and r.user == "user1"`
 
-	s := evalOrFail(t, script, func(s values.Scope) {
-		s.Set("inj", to)
-	})
+	s := evalOrFail(t, script)
 
 	for _, id := range []string{
 		// "schemaOK",

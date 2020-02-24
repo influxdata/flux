@@ -153,17 +153,19 @@ func TestMap_Process(t *testing.T) {
 			}},
 		},
 		{
-			skip: "https://github.com/influxdata/flux/issues/2402",
 			name: `_value+5 custom scope`,
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: func() values.Scope {
-						scope := builtIns.Nest(nil)
+						scope := values.NewScope()
 						scope.Set("x", values.NewFloat(5))
 						return scope
 					}(),
-					// This needs a custom scope...
-					// Fn: executetest.FunctionExpression(t, "(r) => ({_time: r._time, _value: r._value + x})"),
+					Fn: executetest.FunctionExpression(t, `
+x = 5.0
+f = (r) => ({_time: r._time, _value: r._value + x})
+f
+`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{

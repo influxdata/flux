@@ -176,6 +176,13 @@ pub fn builtins() -> Builtins<'static> {
                 "promqlYear" => "forall [] (timestamp: float) -> float",
                 "join" => "forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (left: [t0], right: [t1], fn: (left: t0, right: t1) -> t2) -> [t2]",
             },
+            "internal/testutil" => maplit::hashmap! {
+                "fail" => "forall [] () -> bool",
+                "yield" => r#"
+                    forall [t0] (<-v: t0) -> t0
+                "#,
+                "makeRecord" => "forall [t0, t1] where t0: Row, t1: Row (o: t0) -> t1",
+            },
             "json" => maplit::hashmap! {
                 "encode" => "forall [t0] (v: t0) -> bytes",
             },

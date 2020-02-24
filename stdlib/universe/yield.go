@@ -18,7 +18,7 @@ type YieldOpSpec struct {
 func init() {
 	yieldSignature := semantic.MustLookupBuiltinType("universe", "yield")
 
-	runtime.RegisterPackageValue("universe", YieldKind, flux.MustValue(flux.FunctionValueWithSideEffect(YieldKind, createYieldOpSpec, yieldSignature)))
+	runtime.RegisterPackageValue("universe", YieldKind, flux.MustValue(flux.FunctionValueWithSideEffect("yield", createYieldOpSpec, yieldSignature)))
 	flux.RegisterOpSpec(YieldKind, newYieldOp)
 	plan.RegisterProcedureSpecWithSideEffect(YieldKind, newYieldProcedure, YieldKind)
 }

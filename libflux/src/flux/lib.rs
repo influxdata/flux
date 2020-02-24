@@ -37,7 +37,7 @@ pub struct ErrorHandle {
 
 /// An error that can occur due to problems in ast generation or semantic
 /// analysis.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Error {
     msg: String,
 }

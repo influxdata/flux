@@ -405,8 +405,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		return function{
 			e:     e,
 			scope: scope,
-			// TODO(algow): What should go here?
-			// pkg:   itrp.pkg,
+			itrp:  itrp,
 		}, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "unsupported expression %T", expr)
@@ -804,13 +803,7 @@ func (f function) doCall(ctx context.Context, args Arguments) (values.Value, err
 				}
 			}
 		}
-		// TODO(jlapacik): Return values should not be associated with variable scope.
-		// This check should be performed during type inference, not here.
-		v := nested.Return()
-		if v.Type().Nature() == semantic.Invalid {
-			return nil, errors.New(codes.Invalid, "function has no return value")
-		}
-		return v, nil
+		return nested.Return(), nil
 	default:
 		return nil, errors.Newf(codes.Internal, "unsupported function body type %T", f.e.Block.Body)
 	}
