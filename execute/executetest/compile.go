@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -23,10 +23,10 @@ func FunctionExpression(t testing.TB, source string) *semantic.FunctionExpressio
 	t.Helper()
 
 	if prelude == nil {
-		prelude = flux.Prelude()
+		prelude = runtime.Prelude()
 	}
 	if stdlib == nil {
-		stdlib = flux.StdLib()
+		stdlib = runtime.StdLib()
 	}
 
 	pkg, err := semantic.AnalyzeSource(source)

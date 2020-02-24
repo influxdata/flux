@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -25,7 +26,7 @@ type MapOpSpec struct {
 func init() {
 	mapSignature := semantic.MustLookupBuiltinType("universe", "map")
 
-	flux.RegisterPackageValue("universe", MapKind, flux.MustValue(flux.FunctionValue(MapKind, createMapOpSpec, mapSignature)))
+	runtime.RegisterPackageValue("universe", MapKind, flux.MustValue(flux.FunctionValue(MapKind, createMapOpSpec, mapSignature)))
 	flux.RegisterOpSpec(MapKind, newMapOp)
 	plan.RegisterProcedureSpec(MapKind, newMapProcedure, MapKind)
 	execute.RegisterTransformation(MapKind, createMapTransformation)

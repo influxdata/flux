@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -18,7 +19,7 @@ type ColumnsOpSpec struct {
 
 func init() {
 	columnsSignature := semantic.MustLookupBuiltinType("universe", "columns")
-	flux.RegisterPackageValue("universe", ColumnsKind, flux.MustValue(flux.FunctionValue(ColumnsKind, createColumnsOpSpec, columnsSignature)))
+	runtime.RegisterPackageValue("universe", ColumnsKind, flux.MustValue(flux.FunctionValue(ColumnsKind, createColumnsOpSpec, columnsSignature)))
 	flux.RegisterOpSpec(ColumnsKind, newColumnsOp)
 	plan.RegisterProcedureSpec(ColumnsKind, newColumnsProcedure, ColumnsKind)
 	execute.RegisterTransformation(ColumnsKind, createColumnsTransformation)

@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -26,7 +27,7 @@ func (s *DedupKeyOpSpec) Kind() flux.OperationKind {
 
 func init() {
 	dedupKeySignature := semantic.MustLookupBuiltinType("pagerduty", "dedupKey")
-	flux.RegisterPackageValue("pagerduty", "dedupKey", flux.MustValue(flux.FunctionValue(DedupKeyKind, createDedupKeyOpSpec, dedupKeySignature)))
+	runtime.RegisterPackageValue("pagerduty", "dedupKey", flux.MustValue(flux.FunctionValue(DedupKeyKind, createDedupKeyOpSpec, dedupKeySignature)))
 	flux.RegisterOpSpec(DedupKeyKind, newDedupKeyOp)
 	plan.RegisterProcedureSpec(DedupKeyKind, newDedupKeyProcedure, DedupKeyKind)
 	execute.RegisterTransformation(DedupKeyKind, createDedupKeyTransformation)

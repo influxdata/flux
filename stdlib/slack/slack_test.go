@@ -17,13 +17,14 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 )
 
 func TestSlack(t *testing.T) {
 	t.Skip("https://github.com/influxdata/flux/issues/2402")
 	ctx := dependenciestest.Default().Inject(context.Background())
-	_, scope, err := flux.Eval(ctx, `
+	_, scope, err := runtime.Eval(ctx, `
 import "csv"
 import "slack"
 

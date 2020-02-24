@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -14,7 +15,7 @@ import (
 const GetKind = "get"
 
 func init() {
-	flux.RegisterPackageValue("influxdata/influxdb/secrets", GetKind, GetFunc)
+	runtime.RegisterPackageValue("influxdata/influxdb/secrets", GetKind, GetFunc)
 }
 
 // GetFunc is a function that calls Get.

@@ -18,6 +18,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -32,7 +33,7 @@ type FilterOpSpec struct {
 func init() {
 	filterSignature := semantic.MustLookupBuiltinType("universe", "filter")
 
-	flux.RegisterPackageValue("universe", FilterKind, flux.MustValue(flux.FunctionValue(FilterKind, createFilterOpSpec, filterSignature)))
+	runtime.RegisterPackageValue("universe", FilterKind, flux.MustValue(flux.FunctionValue(FilterKind, createFilterOpSpec, filterSignature)))
 	flux.RegisterOpSpec(FilterKind, newFilterOp)
 	plan.RegisterProcedureSpec(FilterKind, newFilterProcedure, FilterKind)
 	execute.RegisterTransformation(FilterKind, createFilterTransformation)

@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/interpreter/interptest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -380,7 +380,7 @@ func TestInterpreter_MutateOption(t *testing.T) {
 		option planner.disableLogicalRules = ["dummyRule"]
 		planner.disableLogicalRules[0] == "dummyRule" or fail()
 `
-	if _, err := interptest.Eval(ctx, itrp, values.NewNestedScope(nil, pkg), flux.StdLib(), script); err != nil {
+	if _, err := interptest.Eval(ctx, itrp, values.NewNestedScope(nil, pkg), runtime.StdLib(), script); err != nil {
 		t.Fatalf("failed to evaluate package: %v", err)
 	}
 }

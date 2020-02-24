@@ -3,6 +3,7 @@ package promql
 import (
 	"fmt"
 
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 
 	"github.com/influxdata/flux"
@@ -20,7 +21,7 @@ type TimestampOpSpec struct{}
 
 func init() {
 	timestampSignature := semantic.MustLookupBuiltinType("internal/promql", "timestamp")
-	flux.RegisterPackageValue("internal/promql", "timestamp", flux.MustValue(flux.FunctionValue(TimestampKind, createTimestampOpSpec, timestampSignature)))
+	runtime.RegisterPackageValue("internal/promql", "timestamp", flux.MustValue(flux.FunctionValue(TimestampKind, createTimestampOpSpec, timestampSignature)))
 	flux.RegisterOpSpec(TimestampKind, func() flux.OperationSpec { return &TimestampOpSpec{} })
 	plan.RegisterProcedureSpec(TimestampKind, newTimestampProcedure, TimestampKind)
 	execute.RegisterTransformation(TimestampKind, createTimestampTransformation)

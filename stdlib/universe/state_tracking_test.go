@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values/valuestest"
@@ -126,7 +127,7 @@ func TestStateTrackingOperation_Marshaling(t *testing.T) {
 func TestStateTracking_Process(t *testing.T) {
 	gt5 := interpreter.ResolvedFunction{
 		Fn:    executetest.FunctionExpression(t, "(r) => r._value > 5.0"),
-		Scope: flux.Prelude(),
+		Scope: runtime.Prelude(),
 	}
 
 	testCases := []struct {

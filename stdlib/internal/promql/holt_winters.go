@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -22,7 +23,7 @@ type HoltWintersOpSpec struct {
 func init() {
 	holtWintersSignature := semantic.MustLookupBuiltinType("internal/promql", "holtWinters")
 
-	flux.RegisterPackageValue("internal/promql", "holtWinters", flux.MustValue(flux.FunctionValue(HoltWintersKind, createHoltWintersOpSpec, holtWintersSignature)))
+	runtime.RegisterPackageValue("internal/promql", "holtWinters", flux.MustValue(flux.FunctionValue(HoltWintersKind, createHoltWintersOpSpec, holtWintersSignature)))
 	flux.RegisterOpSpec(HoltWintersKind, newHoltWintersOp)
 	plan.RegisterProcedureSpec(HoltWintersKind, newHoltWintersProcedure, HoltWintersKind)
 	execute.RegisterTransformation(HoltWintersKind, createHoltWintersTransformation)

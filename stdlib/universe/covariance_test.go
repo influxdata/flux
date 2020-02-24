@@ -7,13 +7,14 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/runtime"
 	_ "github.com/influxdata/flux/stdlib"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func init() {
-	flux.FinalizeBuiltIns()
+	runtime.FinalizeBuiltIns()
 }
 
 func TestCovariance_NewQuery(t *testing.T) {

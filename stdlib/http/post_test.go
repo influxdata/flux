@@ -16,6 +16,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -55,7 +56,7 @@ status == 204 or fail()
 `, ts.URL)
 
 	ctx := flux.NewDefaultDependencies().Inject(context.Background())
-	if _, _, err := flux.Eval(ctx, script, addFail); err != nil {
+	if _, _, err := runtime.Eval(ctx, script, addFail); err != nil {
 		t.Fatal("evaluation of http.post failed: ", err)
 	}
 	if want, got := "/path/a/b/c", req.URL.Path; want != got {
@@ -92,7 +93,7 @@ http.post(url:"http://127.1.1.1/path/a/b/c", headers: {x:"a",y:"b",z:"c"}, data:
 	deps.Deps.HTTPClient = http.DefaultClient
 	deps.Deps.URLValidator = url.PrivateIPValidator{}
 	ctx := deps.Inject(context.Background())
-	_, _, err := flux.Eval(ctx, script, addFail)
+	_, _, err := runtime.Eval(ctx, script, addFail)
 	if err == nil {
 		t.Fatal("expected failure")
 	}

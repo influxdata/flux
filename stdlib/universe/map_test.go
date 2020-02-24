@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
@@ -113,7 +114,7 @@ func TestMap_NewQuery(t *testing.T) {
 }
 
 func TestMap_Process(t *testing.T) {
-	builtIns := flux.Prelude()
+	builtIns := runtime.Prelude()
 	testCases := []struct {
 		skip    string
 		name    string

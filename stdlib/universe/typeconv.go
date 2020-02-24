@@ -8,23 +8,23 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 func init() {
-	flux.RegisterPackageValue("universe", "string", &stringConv{})
-	flux.RegisterPackageValue("universe", "int", &intConv{})
-	flux.RegisterPackageValue("universe", "uint", &uintConv{})
-	flux.RegisterPackageValue("universe", "float", &floatConv{})
-	flux.RegisterPackageValue("universe", "bool", &boolConv{})
-	flux.RegisterPackageValue("universe", "time", &timeConv{})
-	flux.RegisterPackageValue("universe", "duration", &durationConv{})
-	flux.RegisterPackageValue("universe", "bytes", bytes)
+	runtime.RegisterPackageValue("universe", "string", &stringConv{})
+	runtime.RegisterPackageValue("universe", "int", &intConv{})
+	runtime.RegisterPackageValue("universe", "uint", &uintConv{})
+	runtime.RegisterPackageValue("universe", "float", &floatConv{})
+	runtime.RegisterPackageValue("universe", "bool", &boolConv{})
+	runtime.RegisterPackageValue("universe", "time", &timeConv{})
+	runtime.RegisterPackageValue("universe", "duration", &durationConv{})
+	runtime.RegisterPackageValue("universe", "bytes", bytes)
 }
 
 var (

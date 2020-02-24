@@ -16,6 +16,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/pkg/syncutil"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	protocol "github.com/influxdata/line-protocol"
@@ -41,7 +42,7 @@ type ToKafkaOpSpec struct {
 
 func init() {
 	toKafkaSignature := semantic.MustLookupBuiltinType("kafka", "to")
-	flux.RegisterPackageValue("kafka", "to", flux.MustValue(flux.FunctionValueWithSideEffect(ToKafkaKind, createToKafkaOpSpec, toKafkaSignature)))
+	runtime.RegisterPackageValue("kafka", "to", flux.MustValue(flux.FunctionValueWithSideEffect(ToKafkaKind, createToKafkaOpSpec, toKafkaSignature)))
 	flux.RegisterOpSpec(ToKafkaKind, func() flux.OperationSpec { return &ToKafkaOpSpec{} })
 	plan.RegisterProcedureSpecWithSideEffect(ToKafkaKind, newToKafkaProcedure, ToKafkaKind)
 	execute.RegisterTransformation(ToKafkaKind, createToKafkaTransformation)

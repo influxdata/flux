@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/iocounter"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
@@ -23,7 +24,7 @@ import (
 const maxResponseBody = 512 * 1024 // 512 KB
 
 func init() {
-	flux.RegisterPackageValue("http", "post", values.NewFunction(
+	runtime.RegisterPackageValue("http", "post", values.NewFunction(
 		"post",
 		semantic.MustLookupBuiltinType("http", "post"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {

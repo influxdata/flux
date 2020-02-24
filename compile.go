@@ -7,11 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -26,149 +24,7 @@ const (
 	nowPkg    = "universe"
 )
 
-// Parse parses a Flux script and produces an ast.Package.
-func Parse(flux string) (*ast.Package, error) {
-	astPkg := parser.ParseSource(flux)
-	if ast.Check(astPkg) > 0 {
-		return nil, ast.GetError(astPkg)
-	}
-
-	return astPkg, nil
-}
-
-// Eval accepts a Flux script and evaluates it to produce a set of side effects (as a slice of values) and a scope.
-func Eval(ctx context.Context, flux string, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
-	h := parser.ParseToHandle([]byte(flux))
-	return defaultRuntime.evalHandle(ctx, h, opts...)
-}
-
-// EvalAST accepts a Flux AST and evaluates it to produce a set of side effects (as a slice of values) and a scope.
-func EvalAST(ctx context.Context, astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
-	return defaultRuntime.Eval(ctx, astPkg, opts...)
-}
-
-// EvalOptions is like EvalAST, but only evaluates options.
-func EvalOptions(ctx context.Context, astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
-	return EvalAST(ctx, options(astPkg), opts...)
-}
-
-// options returns a shallow copy of the AST, trimmed to include only option statements.
-func options(astPkg *ast.Package) *ast.Package {
-	trimmed := &ast.Package{
-		BaseNode: astPkg.BaseNode,
-		Path:     astPkg.Path,
-		Package:  astPkg.Package,
-	}
-	for _, f := range astPkg.Files {
-		var body []ast.Statement
-		for _, s := range f.Body {
-			if opt, ok := s.(*ast.OptionStatement); ok {
-				body = append(body, opt)
-			}
-		}
-		if len(body) > 0 {
-			trimmed.Files = append(trimmed.Files, &ast.File{
-				Body:     body,
-				BaseNode: f.BaseNode,
-				Name:     f.Name,
-				Package:  f.Package,
-				Imports:  f.Imports,
-			})
-		}
-	}
-
-	return trimmed
-}
-
-// ScopeMutator is any function that mutates the scope of an identifier.
-type ScopeMutator = func(values.Scope)
-
-// SetOption returns a func that adds a var binding to a scope.
-func SetOption(pkg, name string, v values.Value) ScopeMutator {
-	return func(scope values.Scope) {
-		p, ok := scope.Lookup(pkg)
-		if ok {
-			if p, ok := p.(values.Package); ok {
-				values.SetOption(p, name, v)
-			}
-		} else if isPreludePackage(pkg) {
-			opt, ok := scope.Lookup(name)
-			if ok {
-				if opt, ok := opt.(*values.Option); ok {
-					opt.Value = v
-				}
-			}
-
-		}
-	}
-}
-
-// SetNowOption returns a ScopeMutator that sets the `now` option to the given time.
-func SetNowOption(now time.Time) ScopeMutator {
-	return SetOption(nowPkg, NowOption, generateNowFunc(now))
-}
-
-func generateNowFunc(now time.Time) values.Function {
-	timeVal := values.NewTime(values.ConvertTime(now))
-	ftype := semantic.MustLookupBuiltinType("universe", "now")
-	call := func(ctx context.Context, args values.Object) (values.Value, error) {
-		return timeVal, nil
-	}
-	sideEffect := false
-	return values.NewFunction(NowOption, ftype, call, sideEffect)
-}
-
 type CreateOperationSpec func(args Arguments, a *Administration) (OperationSpec, error)
-
-// set of builtins
-var (
-	// list of packages included in the prelude.
-	// Packages must be listed in import order
-	prelude = []string{
-		"universe",
-		"influxdata/influxdb",
-	}
-)
-
-func isPreludePackage(pkg string) bool {
-	for _, p := range prelude {
-		if p == pkg {
-			return true
-		}
-	}
-	return false
-}
-
-// StdLib returns an importer for the Flux standard library.
-func StdLib() interpreter.Importer {
-	return defaultRuntime.Stdlib()
-}
-
-// Prelude returns a scope object representing the Flux universe block
-func Prelude() values.Scope {
-	return defaultRuntime.Prelude()
-}
-
-// RegisterPackage adds a builtin package
-func RegisterPackage(pkg *ast.Package) {
-	if err := defaultRuntime.RegisterPackage(pkg); err != nil {
-		panic(err)
-	}
-}
-
-// RegisterPackageValue adds a value for an identifier in a builtin package
-func RegisterPackageValue(pkgpath, name string, value values.Value) {
-	if err := defaultRuntime.RegisterPackageValue(pkgpath, name, value); err != nil {
-		panic(err)
-	}
-}
-
-// ReplacePackageValue replaces a value for an identifier in a builtin package
-func ReplacePackageValue(pkgpath, name string, value values.Value) {
-	if err := defaultRuntime.ReplacePackageValue(pkgpath, name, value); err != nil {
-		panic(err)
-	}
-}
 
 // MustValue panics if err is not nil, otherwise value is returned.
 func MustValue(v values.Value, err error) values.Value {
@@ -209,46 +65,6 @@ func functionValue(name string, c CreateOperationSpec, mt semantic.MonoType, sid
 		createOpSpec:  c,
 		hasSideEffect: sideEffects,
 	}, nil
-}
-
-// FinalizeBuiltIns must be called to complete registration.
-// Future calls to RegisterFunction or RegisterPackageValue will panic.
-func FinalizeBuiltIns() {
-	if err := defaultRuntime.Finalize(); err != nil {
-		panic(err)
-	}
-}
-
-// TODO(algow): Needs to be refactored into the runtime finalize.
-// validatePackageBuiltins ensures that all package builtins have both an AST builtin statement and a registered value.
-func validatePackageBuiltins(pkg *interpreter.Package, astPkg *ast.Package) error {
-	builtinStmts := make(map[string]*ast.BuiltinStatement)
-	ast.Walk(ast.CreateVisitor(func(n ast.Node) {
-		if bs, ok := n.(*ast.BuiltinStatement); ok {
-			builtinStmts[bs.ID.Name] = bs
-		}
-	}), astPkg)
-
-	missing := make([]string, 0, len(builtinStmts))
-	extra := make([]string, 0, len(builtinStmts))
-
-	for n := range builtinStmts {
-		if _, ok := pkg.Get(n); !ok {
-			missing = append(missing, n)
-			continue
-		}
-		// TODO(nathanielc): Ensure that the value's type matches the type expression
-	}
-	pkg.Range(func(k string, v values.Value) {
-		if _, ok := builtinStmts[k]; !ok {
-			extra = append(extra, k)
-			return
-		}
-	})
-	if len(missing) > 0 || len(extra) > 0 {
-		return errors.Newf(codes.Internal, "missing builtin values %v, extra builtin values %v", missing, extra)
-	}
-	return nil
 }
 
 var _ = tableSpecKey // So that linter doesn't think tableSpecKey is unused, considering above TODO.
@@ -570,85 +386,4 @@ func ToQueryTime(value values.Value) (Time, error) {
 	default:
 		return Time{}, errors.Newf(codes.Invalid, "value is not a time, got %v", value.Type())
 	}
-}
-
-type importer struct {
-	r    *runtime
-	pkgs map[string]*interpreter.Package
-}
-
-func (imp *importer) Import(path string) (semantic.MonoType, error) {
-	p, err := imp.ImportPackageObject(path)
-	if err != nil {
-		return semantic.MonoType{}, err
-	}
-	return p.Type(), nil
-}
-
-func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, error) {
-	// If this package has been imported previously, return the import now.
-	if p, ok := imp.pkgs[path]; ok {
-		if p == nil {
-			return nil, errors.Newf(codes.Invalid, "detected cyclical import for package path %q", path)
-		}
-		return p, nil
-	}
-
-	// Mark down that we are currently evaluating this package
-	// so that we can detect a circular import.
-	if imp.pkgs == nil {
-		imp.pkgs = make(map[string]*interpreter.Package)
-	}
-	imp.pkgs[path] = nil
-
-	// If this package is part of the prelude, fill in a fake
-	// empty package to resolve cyclical imports.
-	for _, ppath := range prelude {
-		if ppath == path {
-			imp.pkgs[path] = interpreter.NewPackage(path)
-			break
-		}
-	}
-
-	// Find the package for the given import path.
-	semPkg, ok := imp.r.pkgs[path]
-	if !ok {
-		return nil, errors.Newf(codes.Invalid, "invalid import path %s", path)
-	}
-
-	// Construct the prelude scope from the prelude paths.
-	// If we are importing part of the prelude, we do not
-	// include it as part of the prelude and will stop
-	// including values as soon as we hit the prelude.
-	// This allows us to import all previous paths when loading
-	// the prelude, but avoid a circular import.
-	scope, err := imp.r.newScopeFor(path, imp)
-	if err != nil {
-		return nil, err
-	}
-
-	// Run the interpreter on the package to construct the values
-	// created by the package. Pass in the previously initialized
-	// packages as importable packages as we evaluate these in order.
-	itrp := interpreter.NewInterpreter(nil)
-	if _, err := itrp.Eval(context.Background(), semPkg, scope, imp); err != nil {
-		return nil, err
-	}
-	obj := newObjectFromScope(scope)
-	imp.pkgs[path] = interpreter.NewPackageWithValues(itrp.PackageName(), obj)
-	return imp.pkgs[path], nil
-}
-
-func newObjectFromScope(scope values.Scope) values.Object {
-	obj, _ := values.BuildObject(func(set values.ObjectSetter) error {
-		scope.LocalRange(func(k string, v values.Value) {
-			// Packages should not expose the packages they import.
-			if _, ok := v.(values.Package); ok {
-				return
-			}
-			set(k, v)
-		})
-		return nil
-	})
-	return obj
 }

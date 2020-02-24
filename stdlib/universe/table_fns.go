@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/objects"
@@ -27,9 +28,9 @@ const (
 )
 
 func init() {
-	flux.RegisterPackageValue("universe", "tableFind", NewTableFindFunction())
-	flux.RegisterPackageValue("universe", "getColumn", NewGetColumnFunction())
-	flux.RegisterPackageValue("universe", "getRecord", NewGetRecordFunction())
+	runtime.RegisterPackageValue("universe", "tableFind", NewTableFindFunction())
+	runtime.RegisterPackageValue("universe", "getColumn", NewGetColumnFunction())
+	runtime.RegisterPackageValue("universe", "getRecord", NewGetRecordFunction())
 }
 
 func NewTableFindFunction() values.Value {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
@@ -32,13 +32,13 @@ func generateDateFunction(name string, dateFn func(time.Time) int) values.Functi
 }
 
 func init() {
-	flux.RegisterPackageValue("internal/promql", "promqlDayOfMonth", generateDateFunction("promqlDayOfMonth", dayOfMonthFn))
-	flux.RegisterPackageValue("internal/promql", "promqlDayOfWeek", generateDateFunction("promqlDayOfWeek", dayOfWeekFn))
-	flux.RegisterPackageValue("internal/promql", "promqlDaysInMonth", generateDateFunction("promqlDaysInMonth", daysInMonthFn))
-	flux.RegisterPackageValue("internal/promql", "promqlHour", generateDateFunction("promqlHour", hourFn))
-	flux.RegisterPackageValue("internal/promql", "promqlMinute", generateDateFunction("promqlMinute", minuteFn))
-	flux.RegisterPackageValue("internal/promql", "promqlMonth", generateDateFunction("promqlMonth", monthFn))
-	flux.RegisterPackageValue("internal/promql", "promqlYear", generateDateFunction("promqlYear", yearFn))
+	runtime.RegisterPackageValue("internal/promql", "promqlDayOfMonth", generateDateFunction("promqlDayOfMonth", dayOfMonthFn))
+	runtime.RegisterPackageValue("internal/promql", "promqlDayOfWeek", generateDateFunction("promqlDayOfWeek", dayOfWeekFn))
+	runtime.RegisterPackageValue("internal/promql", "promqlDaysInMonth", generateDateFunction("promqlDaysInMonth", daysInMonthFn))
+	runtime.RegisterPackageValue("internal/promql", "promqlHour", generateDateFunction("promqlHour", hourFn))
+	runtime.RegisterPackageValue("internal/promql", "promqlMinute", generateDateFunction("promqlMinute", minuteFn))
+	runtime.RegisterPackageValue("internal/promql", "promqlMonth", generateDateFunction("promqlMonth", monthFn))
+	runtime.RegisterPackageValue("internal/promql", "promqlYear", generateDateFunction("promqlYear", yearFn))
 }
 
 func dayOfMonthFn(t time.Time) int {
