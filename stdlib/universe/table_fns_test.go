@@ -140,6 +140,7 @@ func TestTableFind_Call(t *testing.T) {
 		fn   string
 		// fn      func(key values.Object) (values.Value, error)
 		wantErr error
+		omitExecDeps bool
 	}{
 		{
 			name: "exactly one match 1", // first table
@@ -166,12 +167,20 @@ func TestTableFind_Call(t *testing.T) {
 			wantErr: fmt.Errorf("no table found"),
 			fn:      `f = (key) => key.user == "no-user"`,
 		},
+		{
+			name: "no execution context", // notifying the user of no-execution context
+			wantErr: fmt.Errorf("do not have an execution context for tableFind, if using the repl, try executing this code on the server using the InfluxDB API"),
+			fn:   `f = (key) => key.user == "user1" and key._measurement == "CPU"`,
+			omitExecDeps: true,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := dependenciestest.Default().Inject(context.Background())
-			ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
+			if !tc.omitExecDeps {
+				ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
+			}
 			_, scope, err := flux.Eval(ctx, tc.fn)
 			if err != nil {
 				t.Fatalf("error compiling function: %v", err)
