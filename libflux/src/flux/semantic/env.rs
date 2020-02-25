@@ -17,18 +17,18 @@ pub struct Environment {
 
 impl Substitutable for Environment {
     fn apply(self, sub: &Substitution) -> Self {
-        Environment {
-            parent: match self.parent {
-                Some(env) => Some(Box::new(env.apply(sub))),
-                None => None,
+        match self.parent {
+            Some(env) => Environment {
+                parent: Some(Box::new(env.apply(sub))),
+                values: self.values.apply(sub),
             },
-            values: self.values.apply(sub),
+            None => self,
         }
     }
     fn free_vars(&self) -> Vec<Tvar> {
         match &self.parent {
             Some(env) => union(env.free_vars(), self.values.free_vars()),
-            None => self.values.free_vars(),
+            None => Vec::new(),
         }
     }
 }
