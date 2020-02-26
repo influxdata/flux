@@ -9,7 +9,8 @@ The `_cid` tags hold value of cell ID expressed as token (`s2.CellID.ToToken()`)
 The S2 cell levels are shown at [https://s2geometry.io/resources/s2cell_statistics.html].
 The level must be decided by the user.
 The rule of thumb is that it should be as high as possible for faster filtering 
-but not too high in order to avoid risk of having high cardinality. 
+but not too high in order to avoid risk of having high cardinality.
+The token can be easily calculated from lat and lon using Google S2 library which is available for many languages.
 
 The schema may further contain a tag which identifies data source (`id` by default),
 and a field representing track identification (`tid` by default).
