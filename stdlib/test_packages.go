@@ -29,11 +29,8 @@ var FluxTestPackages = func() []*ast.Package {
 	var pkgs []*ast.Package
 	pkgs = append(pkgs, date.FluxTestPackages...)
 	pkgs = append(pkgs, experimental.FluxTestPackages...)
-<<<<<<< HEAD
-	pkgs = append(pkgs, geo.FluxTestPackages...)
-=======
 	pkgs = append(pkgs, aggregate.FluxTestPackages...)
->>>>>>> master
+	pkgs = append(pkgs, geo.FluxTestPackages...)
 	pkgs = append(pkgs, http.FluxTestPackages...)
 	pkgs = append(pkgs, monitor.FluxTestPackages...)
 	pkgs = append(pkgs, secrets.FluxTestPackages...)
