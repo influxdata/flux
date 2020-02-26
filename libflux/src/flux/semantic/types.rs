@@ -551,8 +551,11 @@ impl Array {
         self.0.unify(with.0, cons, f)
     }
 
-    fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
-        Err(Error::cannot_constrain(&self, with))
+    fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<Substitution, Error> {
+        match with {
+            Kind::Equatable => self.0.constrain(with, cons),
+            _ => Err(Error::cannot_constrain(&self, with)),
+        }
     }
 
     fn contains(&self, tv: Tvar) -> bool {
@@ -785,9 +788,16 @@ impl Row {
         }
     }
 
-    fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
+    fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         match with {
             Kind::Row => Ok(Substitution::empty()),
+            Kind::Equatable => match self {
+                Row::Empty => Ok(Substitution::empty()),
+                Row::Extension { head, tail } => {
+                    let sub = head.v.constrain(with, cons)?;
+                    Ok(sub.merge(tail.constrain(with, cons)?))
+                }
+            },
             _ => Err(Error::cannot_constrain(&self, with)),
         }
     }
@@ -931,6 +941,7 @@ impl fmt::Display for Function {
     }
 }
 
+#[allow(clippy::implicit_hasher)]
 impl<T: Substitutable> Substitutable for HashMap<String, T> {
     fn apply(self, sub: &Substitution) -> Self {
         self.into_iter().map(|(k, v)| (k, v.apply(sub))).collect()
@@ -1781,7 +1792,6 @@ mod tests {
             Kind::Divisible,
             Kind::Numeric,
             Kind::Comparable,
-            Kind::Equatable,
             Kind::Nullable,
         ];
         for c in unallowable_cons {

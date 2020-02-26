@@ -4,7 +4,6 @@ pub mod convert;
 mod import;
 
 mod infer;
-mod sub;
 
 pub mod bootstrap;
 pub mod check;
@@ -12,6 +11,7 @@ pub mod env;
 pub mod fresh;
 pub mod nodes;
 pub mod parser;
+pub mod sub;
 pub mod types;
 pub mod walk;
 
