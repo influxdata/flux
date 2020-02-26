@@ -26,9 +26,8 @@ import (
 )
 
 type REPL struct {
-	ctx     context.Context
-	deps    flux.Dependencies
-	querier Querier
+	ctx  context.Context
+	deps flux.Dependencies
 
 	scope    values.Scope
 	itrp     *interpreter.Interpreter
@@ -44,11 +43,7 @@ var prelude = []string{
 	"influxdata/influxdb",
 }
 
-type Querier interface {
-	Query(ctx context.Context, deps flux.Dependencies, compiler flux.Compiler) (flux.ResultIterator, error)
-}
-
-func New(ctx context.Context, deps flux.Dependencies, q Querier) *REPL {
+func New(ctx context.Context, deps flux.Dependencies) *REPL {
 	scope := values.NewScope()
 	importer := runtime.StdLib()
 	for _, p := range prelude {
@@ -58,13 +53,9 @@ func New(ctx context.Context, deps flux.Dependencies, q Querier) *REPL {
 		}
 		pkg.Range(scope.Set)
 	}
-	if q == nil {
-		q = querier{}
-	}
 	return &REPL{
 		ctx:      ctx,
 		deps:     deps,
-		querier:  q,
 		scope:    scope,
 		itrp:     interpreter.NewInterpreter(nil),
 		analyzer: libflux.NewAnalyzer("main"),
@@ -218,36 +209,41 @@ func (r *REPL) analyzeLine(t string) (*semantic.Package, error) {
 	return semantic.DeserializeFromFlatBuffer(bs)
 }
 
-func (r *REPL) doQuery(cx context.Context, spec *flux.Spec, deps flux.Dependencies) error {
+func (r *REPL) doQuery(ctx context.Context, spec *flux.Spec, deps flux.Dependencies) error {
 	// Setup cancel context
-	ctx, cancelFunc := context.WithCancel(cx)
+	ctx, cancelFunc := context.WithCancel(ctx)
 	r.setCancel(cancelFunc)
 	defer cancelFunc()
 	defer r.clearCancel()
 
-	replCompiler := Compiler{
+	c := Compiler{
 		Spec: spec,
 	}
 
-	results, err := r.querier.Query(ctx, deps, replCompiler)
+	program, err := c.Compile(ctx)
 	if err != nil {
 		return err
 	}
-	defer results.Release()
+	alloc := &memory.Allocator{}
 
-	for results.More() {
-		result := results.Next()
+	qry, err := program.Start(deps.Inject(ctx), alloc)
+	if err != nil {
+		return err
+	}
+	defer qry.Done()
+
+	for result := range qry.Results() {
 		tables := result.Tables()
 		fmt.Println("Result:", result.Name())
-		err := tables.Do(func(tbl flux.Table) error {
+		if err := tables.Do(func(tbl flux.Table) error {
 			_, err := execute.NewFormatter(tbl, nil).WriteTo(os.Stdout)
 			return err
-		})
-		if err != nil {
+		}); err != nil {
 			return err
 		}
 	}
-	return results.Err()
+	qry.Done()
+	return qry.Err()
 }
 
 func getFluxFiles(path string) ([]string, error) {
@@ -292,20 +288,4 @@ func LoadQuery(q string) (string, error) {
 	}
 
 	return q, nil
-}
-
-type querier struct{}
-
-func (querier) Query(ctx context.Context, deps flux.Dependencies, c flux.Compiler) (flux.ResultIterator, error) {
-	program, err := c.Compile(ctx)
-	if err != nil {
-		return nil, err
-	}
-	ctx = deps.Inject(ctx)
-	alloc := &memory.Allocator{}
-	qry, err := program.Start(ctx, alloc)
-	if err != nil {
-		return nil, err
-	}
-	return flux.NewResultIteratorFromQuery(qry), nil
 }
