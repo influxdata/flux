@@ -694,8 +694,7 @@ t_difference = (tables=<-) => tables
 	|> filter(fn: (r) => r._field == "f")
 	|> difference()
 	|> drop(columns: ["_start", "_stop", "_field"])
-	|> map(fn: (r) =>
-		({_time: r._time, difference: r._value}), mergeKey: true)
+	|> rename(columns: {_value: "difference"})
 
 test _difference = () => ({
 	input: testing.loadStorage(csv: inData),

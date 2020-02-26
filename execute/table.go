@@ -22,7 +22,6 @@ const (
 	DefaultStopColLabel  = "_stop"
 	DefaultTimeColLabel  = "_time"
 	DefaultValueColLabel = "_value"
-	DefaultFieldColLabel = "_field"
 )
 
 func GroupKeyForRowOn(i int, cr flux.ColReader, on map[string]bool) flux.GroupKey {
