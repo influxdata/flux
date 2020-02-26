@@ -54,9 +54,9 @@ pub fn builtins() -> Builtins<'static> {
                      "from" => "forall [t0] where t0: Row (token: string, project: string, instance: string, table: string) -> [t0]",
             },
             "experimental/geo" => maplit::hashmap! {
-                     "containsLatLon" => "forall [] (?box: {minLat: float | minLon: float | maxLat: float | maxLon: float}, ?circle: {lat: float | lon: float | radius: float}, ?polygon: {?points: [{lat: float | lon: float}]}, lat: float, lon: float) -> bool",
-                     "getGrid" => "forall [] (?box: {minLat: float | minLon: float | maxLat: float | maxLon: float}, ?circle: {lat: float | lon: float | radius: float}, ?polygon: {?points: [{lat: float | lon: float}]}, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int) -> {level: int | set: [string]}",
-                     "getParent" => "forall [] (?token: string, ?point: {lat: float | lon: float}, level: int) -> {level: int | token: string}",
+                     "containsLatLon" => "forall [] (?box: {}, ?circle: {}, ?polygon: {}, lat: float, lon: float) -> bool",
+                     "getGrid" => "forall [] (?box: {}, ?circle: {}, ?polygon: {}, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int) -> {level: int | set: [string]}",
+                     "getParent" => "forall [] (?token: string, ?point: {lat: float | lon: float}, level: int) -> string",
                      "getLevel" => "forall [] (token: string) -> int",
             },
             "experimental/http" => maplit::hashmap! {

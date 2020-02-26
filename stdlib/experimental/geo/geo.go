@@ -31,10 +31,10 @@ var polygonT = semantic.NewObjectPolyType(map[string]semantic.PolyType{
 	"points": semantic.NewArrayPolyType(pointT.Nature()),
 }, nil, semantic.LabelSet{"points"})
 
-var pointT = semantic.NewObjectType(map[string]semantic.Type{
+var pointT = semantic.NewObjectPolyType(map[string]semantic.PolyType{
 	"lat": semantic.Float,
 	"lon": semantic.Float,
-})
+}, nil, semantic.LabelSet{"lat", "lon"})
 
 func generateGetGridFunc() values.Function {
 	return values.NewFunction(
@@ -178,7 +178,7 @@ func generateGetParentFunc() values.Function {
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 			Parameters: map[string]semantic.PolyType{
 				"token": semantic.String,
-				"point": pointT.Nature(),
+				"point": pointT,
 				"level": semantic.Int,
 			},
 			Required: semantic.LabelSet{"level"},
