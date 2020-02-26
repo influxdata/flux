@@ -8,6 +8,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/experimental"
 	_ "github.com/influxdata/flux/stdlib/experimental/aggregate"
 	_ "github.com/influxdata/flux/stdlib/experimental/bigtable"
+	_ "github.com/influxdata/flux/stdlib/experimental/geo"
 	_ "github.com/influxdata/flux/stdlib/experimental/http"
 	_ "github.com/influxdata/flux/stdlib/experimental/mqtt"
 	_ "github.com/influxdata/flux/stdlib/experimental/prometheus"
