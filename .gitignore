@@ -9,6 +9,7 @@ target
 .tern-project
 .idea
 /coverage.txt
+/libflux/lib
 /libflux/pkg
 /libflux/site/node_modules
 /libflux/.cache
