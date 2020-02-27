@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 func TestPrintErrors(t *testing.T) {
@@ -46,5 +48,10 @@ func TestPrintErrors(t *testing.T) {
 error:2:7: invalid statement: &
 `; want != got {
 		t.Errorf("unexpected output -want/+got\n\t- %q\n\t+ %q", want, got)
+	}
+
+	theErr := ast.GetError(file)
+	if got, want := errors.Code(theErr), codes.Invalid; got != want {
+		t.Errorf("wanted error code: %q, got %q", want.String(), got.String())
 	}
 }

@@ -94,7 +94,8 @@ func GetErrors(n Node) (errs []error) {
 	Walk(CreateVisitor(func(node Node) {
 		if nerrs := node.Errs(); len(nerrs) > 0 {
 			for _, err := range nerrs {
-				errs = append(errs, errors.Wrapf(err, codes.Inherit, "loc %v", node.Location()))
+				// Errors in the AST are a result of invalid Flux, so the error code should be codes.Invalid.
+				errs = append(errs, errors.Wrapf(err, codes.Invalid, "loc %v", node.Location()))
 			}
 		}
 	}), n)
