@@ -2,12 +2,13 @@ package geo_test
 
 import (
 	"context"
+	"strings"
+	"testing"
+
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/experimental/geo"
 	"github.com/influxdata/flux/values"
-	"strings"
-	"testing"
 )
 
 func TestGetParent_NewQuery(t *testing.T) {

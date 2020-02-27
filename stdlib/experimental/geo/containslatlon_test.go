@@ -2,12 +2,13 @@ package geo_test
 
 import (
 	"context"
+	"testing"
+
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/experimental/geo"
 	"github.com/influxdata/flux/values"
-	"testing"
 )
 
 func TestContainsLatLon_NewQuery(t *testing.T) {
