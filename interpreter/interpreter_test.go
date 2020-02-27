@@ -428,7 +428,7 @@ func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := dependenciestest.Default().Inject(context.Background())
-			r := repl.New(ctx, dependenciestest.Default(), nil)
+			r := repl.New(ctx, dependenciestest.Default())
 			if _, err := r.Eval(prelude); err != nil {
 				t.Fatalf("unable to evaluate prelude: %s", err)
 			}
@@ -540,7 +540,7 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := dependenciestest.Default().Inject(context.Background())
-			r := repl.New(ctx, dependenciestest.Default(), nil)
+			r := repl.New(ctx, dependenciestest.Default())
 
 			if _, err := r.Eval(prelude); err != nil {
 				t.Fatalf("unable to evaluate prelude: %s", err)
