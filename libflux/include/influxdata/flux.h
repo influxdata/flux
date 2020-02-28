@@ -24,7 +24,7 @@ struct flux_error_t;
 const char *flux_error_str(struct flux_error_t *);
 
 // flux_free will free a resource.
-void flux_free(void *);
+void flux_free(const void *);
 
 // flux_ast_pkg_t is the AST representation of a flux query as a package.
 struct flux_ast_pkg_t;
