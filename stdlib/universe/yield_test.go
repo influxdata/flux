@@ -24,7 +24,7 @@ func TestYield_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "foo",
+							Bucket: influxdb.NameOrID{Name: "foo"},
 						},
 					},
 					{
@@ -51,7 +51,7 @@ func TestYield_NewQuery(t *testing.T) {
 					{
 						ID: "from3",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "foo",
+							Bucket: influxdb.NameOrID{Name: "foo"},
 						},
 					},
 					{
@@ -110,7 +110,7 @@ func TestYield_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "foo",
+							Bucket: influxdb.NameOrID{Name: "foo"},
 						},
 					},
 					{
@@ -157,7 +157,7 @@ func TestYield_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "foo",
+							Bucket: influxdb.NameOrID{Name: "foo"},
 						},
 					},
 					{

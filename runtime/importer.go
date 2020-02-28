@@ -82,7 +82,7 @@ func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, err
 		return nil, err
 	}
 	obj := newObjectFromScope(scope)
-	imp.pkgs[path] = interpreter.NewPackageWithValues(itrp.PackageName(), obj)
+	imp.pkgs[path] = interpreter.NewPackageWithValues(itrp.PackageName(), path, obj)
 	return imp.pkgs[path], nil
 }
 

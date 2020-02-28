@@ -27,7 +27,7 @@ from(bucket:"mybucket") |> mqtt.to(broker: "tcp://iot.eclipse.org:1883", timeout
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{

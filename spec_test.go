@@ -1,103 +1,13 @@
 package flux_test
 
 import (
-	"encoding/json"
 	"errors"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
-	"github.com/influxdata/flux/stdlib/universe"
 )
-
-var ignoreUnexportedQuerySpec = cmpopts.IgnoreUnexported(flux.Spec{})
-
-func TestSpec_JSON(t *testing.T) {
-	srcData := []byte(`
-{
-	"operations":[
-		{
-			"id": "from",
-			"kind": "from",
-			"spec": {
-				"bucket":"mybucket"
-			}
-		},
-		{
-			"id": "range",
-			"kind": "range",
-			"spec": {
-				"start": "-4h",
-				"stop": "now"
-			}
-		},
-		{
-			"id": "sum",
-			"kind": "sum"
-		}
-	],
-	"edges":[
-		{"parent":"from","child":"range"},
-		{"parent":"range","child":"sum"}
-	]
-}
-	`)
-
-	// Ensure we can properly unmarshal a query
-	gotQ := flux.Spec{}
-	if err := json.Unmarshal(srcData, &gotQ); err != nil {
-		t.Fatal(err)
-	}
-	expQ := flux.Spec{
-		Operations: []*flux.Operation{
-			{
-				ID: "from",
-				Spec: &influxdb.FromOpSpec{
-					Bucket: "mybucket",
-				},
-			},
-			{
-				ID: "range",
-				Spec: &universe.RangeOpSpec{
-					Start: flux.Time{
-						Relative:   -4 * time.Hour,
-						IsRelative: true,
-					},
-					Stop: flux.Time{
-						IsRelative: true,
-					},
-				},
-			},
-			{
-				ID:   "sum",
-				Spec: &universe.SumOpSpec{},
-			},
-		},
-		Edges: []flux.Edge{
-			{Parent: "from", Child: "range"},
-			{Parent: "range", Child: "sum"},
-		},
-	}
-	if !cmp.Equal(gotQ, expQ, ignoreUnexportedQuerySpec) {
-		t.Errorf("unexpected query:\n%s", cmp.Diff(gotQ, expQ, ignoreUnexportedQuerySpec))
-	}
-
-	// Ensure we can properly marshal a query
-	data, err := json.Marshal(expQ)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := json.Unmarshal(data, &gotQ); err != nil {
-		t.Fatal(err)
-	}
-	if !cmp.Equal(gotQ, expQ, ignoreUnexportedQuerySpec) {
-		t.Errorf("unexpected query after marshalling: -want/+got %s", cmp.Diff(expQ, gotQ, ignoreUnexportedQuerySpec))
-	}
-}
 
 func TestSpec_Walk(t *testing.T) {
 	testCases := []struct {

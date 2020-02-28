@@ -124,7 +124,14 @@ pub fn builtins() -> Builtins<'static> {
             "influxdata/influxdb" => maplit::hashmap! {
                 // This is a one-or-the-other parameters function
                 // https://github.com/influxdata/flux/issues/1659
-                "from" => "forall [t0, t1] (?bucket: string, ?bucketID: string) -> [{_measurement: string | _field: string | _time: time | _value: t0 | t1}]",
+                "from" => r#"forall [t0, t1] (
+                    ?bucket: string,
+                    ?bucketID: string,
+                    ?org: string,
+                    ?orgID: string,
+                    ?host: string,
+                    ?token: string
+                ) -> [{_measurement: string | _field: string | _time: time | _value: t0 | t1}]"#,
                 // exactly one of (bucket, bucketID) must be specified
                 // exactly one of (org, orgID) must be specified
                 // https://github.com/influxdata/flux/issues/1660
