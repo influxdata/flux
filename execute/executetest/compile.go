@@ -22,11 +22,18 @@ var (
 func FunctionExpression(t testing.TB, source string) *semantic.FunctionExpression {
 	t.Helper()
 
-	if prelude == nil {
-		prelude = runtime.Prelude()
-	}
 	if stdlib == nil {
 		stdlib = runtime.StdLib()
+	}
+	if prelude == nil {
+		prelude = values.NewScope()
+		for _, path := range []string{"universe", "influxdata/influxdb"} {
+			p, err := stdlib.ImportPackageObject(path)
+			if err != nil {
+				t.Fatalf("error importing prelude package %q: %s", path, err)
+			}
+			p.Range(prelude.Set)
+		}
 	}
 
 	pkg, err := semantic.AnalyzeSource(source)

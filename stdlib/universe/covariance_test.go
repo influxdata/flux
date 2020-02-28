@@ -27,7 +27,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
@@ -51,7 +51,7 @@ func TestCovariance_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
@@ -76,13 +76,13 @@ func TestCovariance_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
 						ID: "from1",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
