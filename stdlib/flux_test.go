@@ -50,9 +50,7 @@ var skip = map[string]map[string]string{
 		"partition_strings_splitN":       "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
 	},
 	"testing/usage": {
-		"api":     "todo(algow): stalls",
-		"storage": "todo(algow): stalls",
-		"writes":  "todo(algow): stalls",
+		"storage": "overwriting field in map with different type (https://github.com/influxdata/flux/issues/2570)",
 	},
 }
 
