@@ -37,7 +37,7 @@ type PivotOpSpec struct {
 }
 
 func init() {
-	pivotSignature := semantic.MustLookupBuiltinType("universe", "pivot")
+	pivotSignature := runtime.MustLookupBuiltinType("universe", "pivot")
 
 	runtime.RegisterPackageValue("universe", PivotKind, flux.MustValue(flux.FunctionValue(PivotKind, createPivotOpSpec, pivotSignature)))
 	flux.RegisterOpSpec(PivotKind, newPivotOp)

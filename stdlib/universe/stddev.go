@@ -10,7 +10,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 )
 
 const (
@@ -26,7 +25,7 @@ type StddevOpSpec struct {
 }
 
 func init() {
-	stddevSignature := semantic.MustLookupBuiltinType("universe", "stddev")
+	stddevSignature := runtime.MustLookupBuiltinType("universe", "stddev")
 
 	runtime.RegisterPackageValue("universe", StddevKind, flux.MustValue(flux.FunctionValue(StddevKind, createStddevOpSpec, stddevSignature)))
 	flux.RegisterOpSpec(StddevKind, newStddevOp)

@@ -10,7 +10,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 )
 
 const SampleKind = "sample"
@@ -22,7 +21,7 @@ type SampleOpSpec struct {
 }
 
 func init() {
-	sampleSignature := semantic.MustLookupBuiltinType("universe", "sample")
+	sampleSignature := runtime.MustLookupBuiltinType("universe", "sample")
 
 	runtime.RegisterPackageValue("universe", SampleKind, flux.MustValue(flux.FunctionValue(SampleKind, createSampleOpSpec, sampleSignature)))
 	flux.RegisterOpSpec(SampleKind, newSampleOp)

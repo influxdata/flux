@@ -28,7 +28,7 @@ type TablesOpSpec struct {
 }
 
 func init() {
-	tablesSignature := semantic.MustLookupBuiltinType("internal/gen", "tables")
+	tablesSignature := runtime.MustLookupBuiltinType("internal/gen", "tables")
 	runtime.RegisterPackageValue("internal/gen", "tables", flux.MustValue(flux.FunctionValue(TablesKind, createTablesOpSpec, tablesSignature)))
 	flux.RegisterOpSpec(TablesKind, newTablesOp)
 	plan.RegisterProcedureSpec(TablesKind, newTablesProcedure, TablesKind)

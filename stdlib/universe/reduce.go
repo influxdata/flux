@@ -24,7 +24,7 @@ type ReduceOpSpec struct {
 }
 
 func init() {
-	reduceSignature := semantic.MustLookupBuiltinType("universe", "reduce")
+	reduceSignature := runtime.MustLookupBuiltinType("universe", "reduce")
 
 	runtime.RegisterPackageValue("universe", ReduceKind, flux.MustValue(flux.FunctionValue(ReduceKind, createReduceOpSpec, reduceSignature)))
 	flux.RegisterOpSpec(ReduceKind, newReduceOp)

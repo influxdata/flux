@@ -12,7 +12,6 @@ import (
 	fluxmemory "github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe/holt_winters"
 	"github.com/influxdata/flux/values"
 )
@@ -29,7 +28,7 @@ type HoltWintersOpSpec struct {
 }
 
 func init() {
-	hwSignature := semantic.MustLookupBuiltinType("universe", "holtWinters")
+	hwSignature := runtime.MustLookupBuiltinType("universe", "holtWinters")
 	runtime.RegisterPackageValue("universe", HoltWintersKind, flux.MustValue(flux.FunctionValue(HoltWintersKind, createHoltWintersOpSpec, hwSignature)))
 	flux.RegisterOpSpec(HoltWintersKind, newHoltWintersOp)
 	plan.RegisterProcedureSpec(HoltWintersKind, newHoltWintersProcedure, HoltWintersKind)

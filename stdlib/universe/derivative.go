@@ -26,7 +26,7 @@ type DerivativeOpSpec struct {
 }
 
 func init() {
-	derivativeSignature := semantic.MustLookupBuiltinType("universe", "derivative")
+	derivativeSignature := runtime.MustLookupBuiltinType("universe", "derivative")
 
 	runtime.RegisterPackageValue("universe", DerivativeKind, flux.MustValue(flux.FunctionValue(DerivativeKind, createDerivativeOpSpec, derivativeSignature)))
 	flux.RegisterOpSpec(DerivativeKind, newDerivativeOp)

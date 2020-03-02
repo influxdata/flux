@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 )
 
 const ResetsKind = "resets"
@@ -15,7 +14,7 @@ const ResetsKind = "resets"
 type ResetsOpSpec struct{}
 
 func init() {
-	resetsSignature := semantic.MustLookupBuiltinType("internal/promql", ResetsKind)
+	resetsSignature := runtime.MustLookupBuiltinType("internal/promql", ResetsKind)
 
 	runtime.RegisterPackageValue("internal/promql", ResetsKind, flux.MustValue(flux.FunctionValue(ResetsKind, createResetsOpSpec, resetsSignature)))
 	flux.RegisterOpSpec(ResetsKind, newResetsOp)

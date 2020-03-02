@@ -49,7 +49,7 @@ func (r *runtime) RegisterPackage(pkg *ast.Package) error {
 		return err
 	}
 
-	root, err := semantic.AnalyzePackage(ap)
+	root, err := AnalyzePackage(ap)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (r *runtime) Eval(ctx context.Context, astPkg *ast.Package, opts ...ScopeMu
 }
 
 func (r *runtime) evalHandle(ctx context.Context, h *libflux.ASTPkg, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
-	semPkg, err := semantic.AnalyzePackage(h)
+	semPkg, err := AnalyzePackage(h)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -228,7 +228,7 @@ func SetNowOption(now time.Time) ScopeMutator {
 
 func generateNowFunc(now time.Time) values.Function {
 	timeVal := values.NewTime(values.ConvertTime(now))
-	ftype := semantic.MustLookupBuiltinType("universe", "now")
+	ftype := MustLookupBuiltinType("universe", "now")
 	call := func(ctx context.Context, args values.Object) (values.Value, error) {
 		return timeVal, nil
 	}

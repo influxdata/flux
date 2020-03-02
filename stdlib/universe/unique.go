@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 )
 
 const UniqueKind = "unique"
@@ -17,7 +16,7 @@ type UniqueOpSpec struct {
 }
 
 func init() {
-	uniqueSignature := semantic.MustLookupBuiltinType("universe", "unique")
+	uniqueSignature := runtime.MustLookupBuiltinType("universe", "unique")
 
 	runtime.RegisterPackageValue("universe", UniqueKind, flux.MustValue(flux.FunctionValue(UniqueKind, createUniqueOpSpec, uniqueSignature)))
 	flux.RegisterOpSpec(UniqueKind, newUniqueOp)

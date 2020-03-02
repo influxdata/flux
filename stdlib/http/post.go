@@ -26,7 +26,7 @@ const maxResponseBody = 512 * 1024 // 512 KB
 func init() {
 	runtime.RegisterPackageValue("http", "post", values.NewFunction(
 		"post",
-		semantic.MustLookupBuiltinType("http", "post"),
+		runtime.MustLookupBuiltinType("http", "post"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			// Get and validate URL
 			uV, ok := args.Get("url")

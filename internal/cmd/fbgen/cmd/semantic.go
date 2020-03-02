@@ -48,7 +48,7 @@ func init() {
 
 const (
 	semPath    = "github.com/influxdata/flux/semantic"
-	fbsemPath  = "github.com/influxdata/flux/semantic/internal/fbsemantic"
+	fbsemPath  = "github.com/influxdata/flux/internal/fbsemantic"
 	errorsPath = "github.com/influxdata/flux/internal/errors"
 	codesPath  = "github.com/influxdata/flux/codes"
 )
@@ -89,7 +89,7 @@ func generateSemantic(cmd *cobra.Command, args []string) error {
 
 		// cs will be populated with the code for the function body of this struct type's "FromBuf" method.
 		cs := make([]jen.Code, st.NumFields())
-		// First generate some builerplate:
+		// First generate some boilerplate:
 		//   var err
 		//   if fb == nil {
 		//     return nil
@@ -194,14 +194,14 @@ func doNamed(o types.Object, field *types.Var) ([]jen.Code, error) {
 	t := field.Type().(*types.Named)
 	var codes []jen.Code
 	switch fieldType := t.Obj().Name(); fieldType {
-	case "loc":
+	case "Loc":
 		codes = append(codes,
 			jen.If(
 				jen.Id("fbLoc").Op(":=").Id("fb").Dot("Loc").Params(jen.Nil()),
 				jen.Id("fbLoc").Op("!=").Nil(),
 			).Block(
 				ifErrorPropagate(
-					jen.Id("rcv").Dot("loc").Dot("FromBuf").Params(jen.Id("fbLoc")),
+					jen.Id("rcv").Dot("Loc").Dot("FromBuf").Params(jen.Id("fbLoc")),
 					o.Name()+"."+field.Name(),
 				),
 			),

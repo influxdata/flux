@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -17,7 +16,7 @@ import (
 func MakeContainsFunc() values.Function {
 	return values.NewFunction(
 		"contains",
-		semantic.MustLookupBuiltinType("universe", "contains"),
+		runtime.MustLookupBuiltinType("universe", "contains"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
 			v, err := a.GetRequired("value")

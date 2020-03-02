@@ -15,7 +15,7 @@ import (
 func init() {
 	runtime.RegisterPackageValue("json", "encode", values.NewFunction(
 		"encode",
-		semantic.MustLookupBuiltinType("json", "encode"),
+		runtime.MustLookupBuiltinType("json", "encode"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			v, ok := args.Get("v")
 			if !ok {

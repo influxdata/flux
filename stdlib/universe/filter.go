@@ -31,7 +31,7 @@ type FilterOpSpec struct {
 }
 
 func init() {
-	filterSignature := semantic.MustLookupBuiltinType("universe", "filter")
+	filterSignature := runtime.MustLookupBuiltinType("universe", "filter")
 
 	runtime.RegisterPackageValue("universe", FilterKind, flux.MustValue(flux.FunctionValue(FilterKind, createFilterOpSpec, filterSignature)))
 	flux.RegisterOpSpec(FilterKind, newFilterOp)

@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -18,7 +17,7 @@ type DistinctOpSpec struct {
 }
 
 func init() {
-	distinctSignature := semantic.MustLookupBuiltinType("universe", "distinct")
+	distinctSignature := runtime.MustLookupBuiltinType("universe", "distinct")
 
 	runtime.RegisterPackageValue("universe", DistinctKind, flux.MustValue(flux.FunctionValue(DistinctKind, createDistinctOpSpec, distinctSignature)))
 	flux.RegisterOpSpec(DistinctKind, newDistinctOp)

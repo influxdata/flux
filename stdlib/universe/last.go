@@ -8,7 +8,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 )
 
 const LastKind = "last"
@@ -18,7 +17,7 @@ type LastOpSpec struct {
 }
 
 func init() {
-	lastSignature := semantic.MustLookupBuiltinType("universe", "last")
+	lastSignature := runtime.MustLookupBuiltinType("universe", "last")
 
 	runtime.RegisterPackageValue("universe", LastKind, flux.MustValue(flux.FunctionValue(LastKind, createLastOpSpec, lastSignature)))
 	flux.RegisterOpSpec(LastKind, newLastOp)

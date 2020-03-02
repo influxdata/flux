@@ -28,14 +28,14 @@ func init() {
 }
 
 var (
-	convBoolType     = semantic.MustLookupBuiltinType("universe", "bool")
-	convIntType      = semantic.MustLookupBuiltinType("universe", "int")
-	convUintType     = semantic.MustLookupBuiltinType("universe", "uint")
-	convFloatType    = semantic.MustLookupBuiltinType("universe", "float")
-	convStringType   = semantic.MustLookupBuiltinType("universe", "string")
-	convTimeType     = semantic.MustLookupBuiltinType("universe", "time")
-	convDurationType = semantic.MustLookupBuiltinType("universe", "duration")
-	convBytesType    = semantic.MustLookupBuiltinType("universe", "bytes")
+	convBoolType     = runtime.MustLookupBuiltinType("universe", "bool")
+	convIntType      = runtime.MustLookupBuiltinType("universe", "int")
+	convUintType     = runtime.MustLookupBuiltinType("universe", "uint")
+	convFloatType    = runtime.MustLookupBuiltinType("universe", "float")
+	convStringType   = runtime.MustLookupBuiltinType("universe", "string")
+	convTimeType     = runtime.MustLookupBuiltinType("universe", "time")
+	convDurationType = runtime.MustLookupBuiltinType("universe", "duration")
+	convBytesType    = runtime.MustLookupBuiltinType("universe", "bytes")
 )
 
 const (

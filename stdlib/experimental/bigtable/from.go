@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 	"google.golang.org/api/option"
@@ -25,7 +24,7 @@ type FromBigtableOpSpec struct {
 }
 
 func init() {
-	fromBigtableSignature := semantic.MustLookupBuiltinType("experimental/bigtable", "from")
+	fromBigtableSignature := runtime.MustLookupBuiltinType("experimental/bigtable", "from")
 	runtime.RegisterPackageValue("experimental/bigtable", "from", flux.MustValue(flux.FunctionValue(FromBigtableKind, createFromBigtableOpSpec, fromBigtableSignature)))
 	flux.RegisterOpSpec(FromBigtableKind, newFromBigtableOp)
 	plan.RegisterProcedureSpec(FromBigtableKind, newFromBigtableProcedure, FromBigtableKind)

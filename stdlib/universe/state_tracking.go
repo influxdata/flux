@@ -13,7 +13,6 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -28,7 +27,7 @@ type StateTrackingOpSpec struct {
 }
 
 func init() {
-	stateTrackingSignature := semantic.MustLookupBuiltinType("universe", "stateTracking")
+	stateTrackingSignature := runtime.MustLookupBuiltinType("universe", "stateTracking")
 
 	runtime.RegisterPackageValue("universe", StateTrackingKind, flux.MustValue(flux.FunctionValue(StateTrackingKind, createStateTrackingOpSpec, stateTrackingSignature)))
 	flux.RegisterOpSpec(StateTrackingKind, newStateTrackingOp)

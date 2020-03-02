@@ -14,7 +14,7 @@ import (
 func init() {
 	runtime.RegisterPackageValue("experimental", "objectKeys", values.NewFunction(
 		"objectKeys",
-		semantic.MustLookupBuiltinType("experimental", "objectKeys"),
+		runtime.MustLookupBuiltinType("experimental", "objectKeys"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			o, ok := args.Get("o")
 			if !ok {

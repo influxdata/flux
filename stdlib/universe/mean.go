@@ -11,7 +11,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 )
 
 const MeanKind = "mean"
@@ -21,7 +20,7 @@ type MeanOpSpec struct {
 }
 
 func init() {
-	meanSignature := semantic.MustLookupBuiltinType("universe", "mean")
+	meanSignature := runtime.MustLookupBuiltinType("universe", "mean")
 
 	runtime.RegisterPackageValue("universe", MeanKind, flux.MustValue(flux.FunctionValue(MeanKind, createMeanOpSpec, meanSignature)))
 	flux.RegisterOpSpec(MeanKind, newMeanOp)

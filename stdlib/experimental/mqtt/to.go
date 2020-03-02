@@ -27,7 +27,7 @@ const (
 )
 
 func init() {
-	toMQTTSignature := semantic.MustLookupBuiltinType("experimental/mqtt", "to")
+	toMQTTSignature := runtime.MustLookupBuiltinType("experimental/mqtt", "to")
 
 	runtime.RegisterPackageValue("experimental/mqtt", "to", flux.MustValue(flux.FunctionValueWithSideEffect(ToMQTTKind, createToMQTTOpSpec, toMQTTSignature)))
 	flux.RegisterOpSpec(ToMQTTKind, func() flux.OperationSpec { return &ToMQTTOpSpec{} })

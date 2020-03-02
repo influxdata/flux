@@ -8,7 +8,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -22,7 +21,7 @@ func init() {
 var GetFunc = makeGetFunc()
 
 func makeGetFunc() values.Function {
-	sig := semantic.MustLookupBuiltinType("influxdata/influxdb/secrets", "get")
+	sig := runtime.MustLookupBuiltinType("influxdata/influxdb/secrets", "get")
 	return values.NewFunction("get", sig, Get, false)
 }
 

@@ -20,7 +20,7 @@ type SortOpSpec struct {
 }
 
 func init() {
-	sortSignature := semantic.MustLookupBuiltinType("universe", "sort")
+	sortSignature := runtime.MustLookupBuiltinType("universe", "sort")
 
 	runtime.RegisterPackageValue("universe", SortKind, flux.MustValue(flux.FunctionValue(SortKind, createSortOpSpec, sortSignature)))
 	flux.RegisterOpSpec(SortKind, newSortOp)

@@ -8,7 +8,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/semantic/internal/fbsemantic"
+	"github.com/influxdata/flux/internal/fbsemantic"
 )
 
 func DeserializeFromFlatBuffer(buf []byte) (*Package, error) {
@@ -20,7 +20,7 @@ func DeserializeFromFlatBuffer(buf []byte) (*Package, error) {
 	return p, nil
 }
 
-func (l *loc) FromBuf(fb *fbsemantic.SourceLocation) error {
+func (l *Loc) FromBuf(fb *fbsemantic.SourceLocation) error {
 	l.File = string(fb.File())
 	posFromBuf(&l.Start, fb.Start(nil))
 	posFromBuf(&l.End, fb.End(nil))
@@ -453,7 +453,7 @@ func fromFBStringExpressionPartVector(fbExpr *fbsemantic.StringExpression) ([]St
 				Value: string(text),
 			}
 			if fbLoc != nil {
-				if err := tp.loc.FromBuf(fbLoc); err != nil {
+				if err := tp.Loc.FromBuf(fbLoc); err != nil {
 					return nil, err
 				}
 			}
@@ -467,7 +467,7 @@ func fromFBStringExpressionPartVector(fbExpr *fbsemantic.StringExpression) ([]St
 				Expression: expr,
 			}
 			if fbLoc != nil {
-				if err := ip.loc.FromBuf(fbLoc); err != nil {
+				if err := ip.Loc.FromBuf(fbLoc); err != nil {
 					return nil, err
 				}
 			}
@@ -495,7 +495,7 @@ func fromFBRegexpLiteral(fbRegexp []byte) (*regexp.Regexp, error) {
 
 func (e *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
 	if fbLoc := fb.Loc(nil); fbLoc != nil {
-		if err := e.loc.FromBuf(fbLoc); err != nil {
+		if err := e.Loc.FromBuf(fbLoc); err != nil {
 			return errors.Wrap(err, codes.Inherit, "FunctionExpression.loc")
 		}
 	}
@@ -503,9 +503,9 @@ func (e *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
 	bl := new(FunctionBlock)
 	var defaults []*Property
 	{
-		bl.loc = e.loc
+		bl.Loc = e.Loc
 		ps := &FunctionParameters{
-			loc: e.loc,
+			Loc: e.Loc,
 		}
 		{
 			nParams := fb.ParamsLength()
@@ -527,7 +527,7 @@ func (e *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
 						return errors.Wrapf(err, codes.Inherit, "default for parameter at position %v", i)
 					}
 					defaults = append(defaults, &Property{
-						loc:   p.loc,
+						Loc:   p.Loc,
 						Key:   p.Key,
 						Value: e,
 					})
@@ -556,7 +556,7 @@ func (e *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
 
 	if len(defaults) > 0 {
 		e.Defaults = &ObjectExpression{
-			loc:        e.loc,
+			Loc:        e.Loc,
 			Properties: defaults,
 		}
 	}
@@ -571,7 +571,7 @@ func (e *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
 
 func (p *FunctionParameter) FromBuf(fb *fbsemantic.FunctionParameter) error {
 	if fbLoc := fb.Loc(nil); fbLoc != nil {
-		if err := p.loc.FromBuf(fbLoc); err != nil {
+		if err := p.Loc.FromBuf(fbLoc); err != nil {
 			return errors.Wrap(err, codes.Inherit, "FunctionParameter.loc")
 		}
 	}
@@ -634,14 +634,14 @@ func objectExprFromProperties(fb *fbsemantic.CallExpression) (*ObjectExpression,
 		return NewObjectType(properties)
 	}()
 
-	l := loc{}
+	l := Loc{}
 	if len(props) > 0 {
-		l = props[0].loc
-		l.End = props[len(props)-1].loc.End
+		l = props[0].Loc
+		l.End = props[len(props)-1].Loc.End
 		l.Source = ""
 	}
 	obj := &ObjectExpression{
-		loc:        l,
+		Loc:        l,
 		Properties: props,
 		typ:        typ,
 	}

@@ -18,7 +18,7 @@ func init() {
 	SpecialFns = map[string]values.Function{
 		"compile": values.NewFunction(
 			"compile",
-			semantic.MustLookupBuiltinType("regexp", "compile"),
+			runtime.MustLookupBuiltinType("regexp", "compile"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				if !ok {
@@ -38,7 +38,7 @@ func init() {
 		),
 		"quoteMeta": values.NewFunction(
 			"quoteMeta",
-			semantic.MustLookupBuiltinType("regexp", "quoteMeta"),
+			runtime.MustLookupBuiltinType("regexp", "quoteMeta"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				if !ok {
@@ -55,7 +55,7 @@ func init() {
 		),
 		"findString": values.NewFunction(
 			"findString",
-			semantic.MustLookupBuiltinType("regexp", "findString"),
+			runtime.MustLookupBuiltinType("regexp", "findString"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
@@ -73,7 +73,7 @@ func init() {
 		),
 		"findStringIndex": values.NewFunction(
 			"findStringIndex",
-			semantic.MustLookupBuiltinType("regexp", "findStringIndex"),
+			runtime.MustLookupBuiltinType("regexp", "findStringIndex"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
@@ -95,7 +95,7 @@ func init() {
 		),
 		"matchRegexpString": values.NewFunction(
 			"matchRegexpString",
-			semantic.MustLookupBuiltinType("regexp", "matchRegexpString"),
+			runtime.MustLookupBuiltinType("regexp", "matchRegexpString"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
@@ -113,7 +113,7 @@ func init() {
 		),
 		"replaceAllString": values.NewFunction(
 			"replaceAllString",
-			semantic.MustLookupBuiltinType("regexp", "replaceAllString"),
+			runtime.MustLookupBuiltinType("regexp", "replaceAllString"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				r, ok := args.Get("r")
 				v, okk := args.Get("v")
@@ -132,7 +132,7 @@ func init() {
 		),
 		"splitRegexp": values.NewFunction(
 			"splitRegexp",
-			semantic.MustLookupBuiltinType("regexp", "splitRegexp"),
+			runtime.MustLookupBuiltinType("regexp", "splitRegexp"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				r, ok := args.Get("r")
 				v, okk := args.Get("v")
@@ -155,7 +155,7 @@ func init() {
 		),
 		"getString": values.NewFunction(
 			"getString",
-			semantic.MustLookupBuiltinType("regexp", "getString"),
+			runtime.MustLookupBuiltinType("regexp", "getString"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				r, ok := args.Get("r")
 				if !ok {
