@@ -34,17 +34,28 @@ func TestGetParent_NewQuery(t *testing.T) {
 }
 
 func TestGetParent_Process(t *testing.T) {
+	type point struct {
+		lat float64
+		lon float64
+	}
 	testCases := []struct {
 		name         string
 		token        string
+		point        *point
 		level        int64
 		want         string
 		wantErr      bool
 		errSubstring string
 	}{
 		{
-			name:  "parent level 7",
+			name:  "parent level 7 for token",
 			token: "89c284", // level 9
+			level: 7,
+			want:  "89c2c",
+		},
+		{
+			name:  "parent level 7 for lat/lon",
+			point: &point{40.808978, -73.558041},
 			level: 7,
 			want:  "89c2c",
 		},
@@ -74,12 +85,22 @@ func TestGetParent_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		getGrid := geo.Functions["getParent"]
-		result, err := getGrid.Call(context.Background(),
-			values.NewObjectWithValues(map[string]values.Value{
+		var owv values.Object
+		if tc.token != "" {
+			owv = values.NewObjectWithValues(map[string]values.Value{
 				"token": values.NewString(tc.token),
 				"level": values.NewInt(tc.level),
-			}),
-		)
+			})
+		} else if tc.point != nil {
+			owv = values.NewObjectWithValues(map[string]values.Value{
+				"point": values.NewObjectWithValues(map[string]values.Value{
+					"lat": values.NewFloat(tc.point.lat),
+					"lon": values.NewFloat(tc.point.lon),
+				}),
+				"level": values.NewInt(tc.level),
+			})
+		}
+		result, err := getGrid.Call(context.Background(), owv)
 		if err != nil {
 			if !tc.wantErr {
 				t.Error(err.Error())

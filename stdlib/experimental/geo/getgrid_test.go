@@ -16,22 +16,37 @@ func TestGetGrid_NewQuery(t *testing.T) {
 		{
 			Name:    "no args",
 			Raw:     `import "experimental/geo" geo.getGrid()`,
-			WantErr: true, // missing required parameter(s)
+			WantErr: true, // missing required keyword argument
 		},
 		{
-			Name:    "invalid args - box",
-			Raw:     `import "experimental/geo" geo.getGrid(box: { minLat: 40.5, minLon: -74.5 })`,
-			WantErr: true, // invalid box specification - must have minLat, minLon, maxLat, maxLon fields
+			Name:    "invalid args - invalid box",
+			Raw:     `import "experimental/geo" geo.getGrid(region: { minLat: 40.5, minLon: -74.5 })`,
+			WantErr: true, // box must have minLat, minLon, maxLat, maxLon fields
+		},
+		{
+			Name:    "invalid args - invalid circle",
+			Raw:     `import "experimental/geo" geo.getGrid(region: { radius: 16.0 })`,
+			WantErr: true, // circle must have lat, lon, radius fields
+		},
+		{
+			Name:    "invalid args - invalid polygon",
+			Raw:     `import "experimental/geo" geo.getGrid(region: { points: [{ lat: 40.5, lon: -74.5 }] })`,
+			WantErr: true, // circle must have at least 3 points
+		},
+		{
+			Name:    "invalid args - unknown region",
+			Raw:     `import "experimental/geo" geo.getGrid(region: { lat: 40.5, lon: -74.5 })`,
+			WantErr: true, // cannot infer region type
+		},
+		{
+			Name:    "invalid args - multitype region",
+			Raw:     `import "experimental/geo" geo.getGrid(region: { minLat: 40.5, minLon: -74.5, maxLat: 41.5, maxLon: -73.5, lat: 41.0, lon: -74.0, radius: 15.0 })`,
+			WantErr: true, // infers multiple region types
 		},
 		{
 			Name:    "invalid args - minSize > maxSize",
-			Raw:     `import "experimental/geo" geo.getGrid(box: { minLat: 40.5, minLon: -74.5, maxLat: 41.5, maxLon: -73.5 }, minSize: 11, maxSize: 9)`,
+			Raw:     `import "experimental/geo" geo.getGrid(region: { minLat: 40.5, minLon: -74.5, maxLat: 41.5, maxLon: -73.5 }, minSize: 11, maxSize: 9)`,
 			WantErr: true, // minSize > maxSize (11 > 9)
-		},
-		{
-			Name:    "invalid args - more than one region",
-			Raw:     `import "experimental/geo" geo.getGrid(box: { minLat: 40.5, minLon: -74.5, maxLat: 41.5, maxLon: -73.5 }, circle: { lat: 40.5, lon: -74.5, radius: 15.0 }, minSize: 24)`,
-			WantErr: true, // either ...
 		},
 	}
 	for _, tc := range tests {
@@ -146,7 +161,7 @@ func TestGetGrid_Process(t *testing.T) {
 		var owv values.Object
 		if tc.box != nil {
 			owv = values.NewObjectWithValues(map[string]values.Value{
-				"box": values.NewObjectWithValues(map[string]values.Value{
+				"region": values.NewObjectWithValues(map[string]values.Value{
 					"minLat": values.NewFloat(tc.box.minLat),
 					"minLon": values.NewFloat(tc.box.minLon),
 					"maxLat": values.NewFloat(tc.box.maxLat),
@@ -159,7 +174,7 @@ func TestGetGrid_Process(t *testing.T) {
 			})
 		} else if tc.circle != nil {
 			owv = values.NewObjectWithValues(map[string]values.Value{
-				"circle": values.NewObjectWithValues(map[string]values.Value{
+				"region": values.NewObjectWithValues(map[string]values.Value{
 					"lat":    values.NewFloat(tc.circle.lat),
 					"lon":    values.NewFloat(tc.circle.lon),
 					"radius": values.NewFloat(tc.circle.radius),
@@ -178,7 +193,7 @@ func TestGetGrid_Process(t *testing.T) {
 				}))
 			}
 			owv = values.NewObjectWithValues(map[string]values.Value{
-				"polygon": values.NewObjectWithValues(map[string]values.Value{
+				"region": values.NewObjectWithValues(map[string]values.Value{
 					"points": array,
 				}),
 				"minSize":  values.NewInt(int64(tc.minsize)),

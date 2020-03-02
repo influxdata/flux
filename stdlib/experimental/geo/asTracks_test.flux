@@ -9,7 +9,7 @@ inData = "
 #group,false,false,false,false,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string
 #default,_result,,,,,,,,
-,result,table,_time,_value,_ci,_field,_measurement,_pt,id
+,result,table,_time,_value,s2cellID,_field,_measurement,_pt,id
 ,,0,2019-11-10T11:08:34Z,40.762662,89c258c,lat,bikes,end,vehicleB
 ,,0,2019-11-10T21:17:47Z,40.762424,89c258c,lat,bikes,end,vehicleB
 ,,1,2019-11-10T11:07:12Z,40.762096,89c258c,lat,bikes,start,vehicleB
@@ -52,7 +52,7 @@ inData = "
 #group,false,false,false,false,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string
 #default,_result,,,,,,,,
-,result,table,_time,_value,_ci,_field,_measurement,_pt,id
+,result,table,_time,_value,s2cellID,_field,_measurement,_pt,id
 ,,6,2019-11-10T11:08:34Z,1573384032,89c258c,tid,bikes,end,vehicleB
 ,,6,2019-11-10T21:17:47Z,1573420560,89c258c,tid,bikes,end,vehicleB
 ,,7,2019-11-10T11:07:12Z,1573384032,89c258c,tid,bikes,start,vehicleB
@@ -76,7 +76,7 @@ inData = "
 #group,false,false,false,false,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string
 #default,_result,,,,,,,,
-,result,table,_time,_value,_ci,_field,_measurement,_pt,id
+,result,table,_time,_value,s2cellID,_field,_measurement,_pt,id
 ,,9,2019-11-20T10:17:17Z,40.700344,89e82cc,lat,bikes,start,vehicleA
 ,,10,2019-11-20T10:17:18Z,40.700348,89e82cc,lat,bikes,via,vehicleA
 ,,10,2019-11-20T10:17:24Z,40.700397,89e82cc,lat,bikes,via,vehicleA
@@ -99,7 +99,7 @@ inData = "
 #group,false,false,false,false,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string
 #default,_result,,,,,,,,
-,result,table,_time,_value,_ci,_field,_measurement,_pt,id
+,result,table,_time,_value,s2cellID,_field,_measurement,_pt,id
 ,,13,2019-11-20T10:17:17Z,1574245037,89e82cc,tid,bikes,start,vehicleA
 ,,14,2019-11-20T10:17:18Z,1574245037,89e82cc,tid,bikes,via,vehicleA
 ,,14,2019-11-20T10:17:24Z,1574245037,89e82cc,tid,bikes,via,vehicleA
@@ -113,14 +113,14 @@ inData = "
 #group,false,false,false,false,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string
 #default,_result,,,,,,,,
-,result,table,_time,_value,_ci,_field,_measurement,_pt,id
+,result,table,_time,_value,s2cellID,_field,_measurement,_pt,id
 ,,15,2019-11-20T10:18:00Z,40.700684,89e82d4,lat,bikes,end,vehicleA
 ,,16,2019-11-20T10:18:00Z,-73.323692,89e82d4,lon,bikes,end,vehicleA
 
 #group,false,false,false,false,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string
 #default,_result,,,,,,,,
-,result,table,_time,_value,_ci,_field,_measurement,_pt,id
+,result,table,_time,_value,s2cellID,_field,_measurement,_pt,id
 ,,17,2019-11-20T10:18:00Z,1574245037,89e82d4,tid,bikes,end,vehicleA
 "
 
@@ -128,7 +128,7 @@ outData = "
 #group,false,false,false,false,false,false,true,false,true,false
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,double,long,double
 #default,_result,,,,,,,,,
-,result,table,_time,_ci,_measurement,_pt,id,lat,tid,lon
+,result,table,_time,s2cellID,_measurement,_pt,id,lat,tid,lon
 ,,0,2019-11-20T10:17:17Z,89e82cc,bikes,start,vehicleA,40.700344,1574245037,-73.324814
 ,,0,2019-11-20T10:17:18Z,89e82cc,bikes,via,vehicleA,40.700348,1574245037,-73.324799
 ,,0,2019-11-20T10:17:24Z,89e82cc,bikes,via,vehicleA,40.700397,1574245037,-73.324699

@@ -3,6 +3,8 @@ package geo
 import (
 	"context"
 	"fmt"
+	"math"
+
 	"github.com/golang/geo/r1"
 	"github.com/golang/geo/s1"
 	"github.com/golang/geo/s2"
@@ -11,25 +13,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"math"
 )
-
-var boxT = semantic.NewObjectPolyType(map[string]semantic.PolyType{
-	"minLat": semantic.Float,
-	"minLon": semantic.Float,
-	"maxLat": semantic.Float,
-	"maxLon": semantic.Float,
-}, nil, semantic.LabelSet{"minLat", "minLon", "maxLat", "maxLon"})
-
-var circleT = semantic.NewObjectPolyType(map[string]semantic.PolyType{
-	"lat":    semantic.Float,
-	"lon":    semantic.Float,
-	"radius": semantic.Float,
-}, nil, semantic.LabelSet{"lat", "lon", "radius"})
-
-var polygonT = semantic.NewObjectPolyType(map[string]semantic.PolyType{
-	"points": semantic.NewArrayPolyType(pointT.Nature()),
-}, nil, semantic.LabelSet{"points"})
 
 var pointT = semantic.NewObjectPolyType(map[string]semantic.PolyType{
 	"lat": semantic.Float,
@@ -41,9 +25,7 @@ func generateGetGridFunc() values.Function {
 		"getGrid",
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 			Parameters: map[string]semantic.PolyType{
-				"box":      boxT,
-				"circle":   circleT,
-				"polygon":  polygonT,
+				"region":   semantic.Tvar(1),
 				"level":    semantic.Int,
 				"maxLevel": semantic.Int,
 				"minSize":  semantic.Int,
@@ -53,24 +35,14 @@ func generateGetGridFunc() values.Function {
 		}),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
-			box, boxOk, err := a.GetObject("box")
-			if err != nil {
-				return nil, err
-			}
-			circle, circleOk, err := a.GetObject("circle")
-			if err != nil {
-				return nil, err
-			}
-			polygon, polygonOk, err := unwrapPolygonArg(a.GetObject("polygon"))
+			regionArg, err := a.GetRequiredObject("region")
 			if err != nil {
 				return nil, err
 			}
 
-			if err := regionArgumentCheck(box, circle, polygon, boxOk, circleOk, polygonOk); err != nil {
+			box, boxOk, circle, circleOk, polygon, polygonOk, err := parseRegionArgument(regionArg)
+			if err != nil {
 				return nil, err
-			}
-			if isArrayArgumentOk(polygon, polygonOk) && polygon.Len() < 3 {
-				return nil, fmt.Errorf("code %d: polygon must have at least 3 points", codes.Invalid)
 			}
 
 			level, levelOk, err := a.GetInt("level")
@@ -261,35 +233,23 @@ func generateContainsLatLonFunc() values.Function {
 		"containsLatLon",
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 			Parameters: map[string]semantic.PolyType{
-				"box":     boxT,
-				"circle":  circleT,
-				"polygon": polygonT,
-				"lat":     semantic.Float,
-				"lon":     semantic.Float,
+				"region": semantic.Tvar(1),
+				"lat":    semantic.Float,
+				"lon":    semantic.Float,
 			},
 			Required: semantic.LabelSet{"lat", "lon"},
 			Return:   semantic.Bool,
 		}),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
-			box, boxOk, err := a.GetObject("box")
-			if err != nil {
-				return nil, err
-			}
-			circle, circleOk, err := a.GetObject("circle")
-			if err != nil {
-				return nil, err
-			}
-			polygon, polygonOk, err := unwrapPolygonArg(a.GetObject("polygon"))
+			regionArg, err := a.GetRequiredObject("region")
 			if err != nil {
 				return nil, err
 			}
 
-			if err := regionArgumentCheck(box, circle, polygon, boxOk, circleOk, polygonOk); err != nil {
+			box, boxOk, circle, circleOk, polygon, polygonOk, err := parseRegionArgument(regionArg)
+			if err != nil {
 				return nil, err
-			}
-			if isArrayArgumentOk(polygon, polygonOk) && polygon.Len() < 3 {
-				return nil, fmt.Errorf("code %d: polygon must have at least 3 points", codes.Invalid)
 			}
 
 			lat, err := a.GetRequiredFloat("lat")
@@ -360,52 +320,35 @@ func init() {
 // Flux helpers
 //
 
-func unwrapPolygonArg(pObject values.Object, pObjectOk bool, err error) (values.Array, bool, error) {
-	if err != nil {
-		return nil, false, err
-	}
-	if pObjectOk {
-		points, pointsOk := pObject.Get("points")
-		if pointsOk {
-			return points.Array(), true, nil
-		}
-	}
-	return nil, false, nil
-}
-
-func regionArgumentCheck(box, circle values.Object, polygon values.Array, boxOk, circleOk, polygonOk bool) error {
+func parseRegionArgument(regionArg values.Object) (box values.Object, boxOk bool, circle values.Object, circleOk bool, polygon values.Array, polygonOk bool, err error) {
 	oks := 0
-	nzs := 0
-
+	_, boxOk = regionArg.Get("minLat")
 	if boxOk {
 		oks++
-		if box.Len() > 0 {
-			nzs++
-		}
+		box = regionArg
 	}
+	_, circleOk = regionArg.Get("radius")
 	if circleOk {
 		oks++
-		if circle.Len() > 0 {
-			nzs++
-		}
+		circle = regionArg
 	}
+	points, polygonOk := regionArg.Get("points")
 	if polygonOk {
 		oks++
-		if polygon.Len() > 0 {
-			nzs++
+		polygon = points.Array()
+		if polygon.Len() < 3 {
+			err = fmt.Errorf("code %d: polygon must have at least 3 points", codes.Invalid)
 		}
 	}
 
-	if oks == 0 || nzs == 0 {
-		return fmt.Errorf("code %d: either box or circle or polygon parameter must be specified", codes.Invalid)
+	if oks == 0 {
+		err = fmt.Errorf("code %d: region is neither a box, a circle or a polygon", codes.Invalid)
+	}
+	if oks > 1 {
+		err = fmt.Errorf("code %d: region must be either a box, a circle or a polygon", codes.Invalid)
 	}
 
-	// TODO (alespour@bonitoo.io) would not be needed if we knew how to specify default null object/array value in flux
-	if oks > 1 && nzs > 1 {
-		return fmt.Errorf("code %d: either box or circle or polygon parameter must be specified and must not be empty", codes.Invalid)
-	}
-
-	return nil
+	return box, boxOk, circle, circleOk, polygon, polygonOk, err
 }
 
 func isObjectArgumentOk(v values.Object, vOk bool) bool {

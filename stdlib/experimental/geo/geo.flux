@@ -5,10 +5,10 @@ package geo
 // None of the builtin functions are intended to be used by end users.
 //
 
-// Check whether lat/lon is in a lat/lon box or center/radius circle.
+// Check whether lat/lon is in specified region.
 builtin containsLatLon
 
-// Calculates grid (set of cell ID tokens) for given box and according to options.
+// Calculates grid (set of cell ID tokens) for given region and according to options.
 builtin getGrid
 
 // Finds parent cell ID token for given cell ID at specified level.
@@ -21,15 +21,15 @@ builtin getLevel
 // Flux
 //
 
-// Gets level of cell ID tag `_ci` from the first record from the first table from the stream.
-_detectCiLevel = (tables=<-) => {
+// Gets level of cell ID tag `s2cellID` from the first record from the first table from the stream.
+_detectLevel = (tables=<-) => {
   _r0 =
     tables
-      |> tableFind(fn: (key) => exists key._ci)
+      |> tableFind(fn: (key) => exists key.s2cellID)
       |> getRecord(idx: 0)
   _level =
     if exists _r0 then
-      getLevel(token: _r0._ci)
+      getLevel(token: _r0.s2cellID)
     else
        666
   return _level
@@ -55,43 +55,43 @@ toRows = (tables=<-, correlationKey=["_time"]) =>
 // Filters records by a box, a circle or a polygon area using S2 cell ID tag.
 // It is a coarse filter, as the grid always overlays the region, the result will likely contain records
 // with lat/lon outside the specified region.
-gridFilter = (tables=<-, box={}, circle={}, polygon={}, minSize=24, maxSize=-1, level=-1, ciLevel=-1) => {
-  _ciLevel =
-    if ciLevel == -1 then
+gridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1) => {
+  _s2cellIDLevel =
+    if s2cellIDLevel == -1 then
       tables
-        |> _detectCiLevel()
+        |> _detectLevel()
     else
-      ciLevel
-  _grid = getGrid(box: box, circle: circle, polygon: polygon, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _ciLevel)
+      s2cellIDLevel
+  _grid = getGrid(region: region, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _s2cellIDLevel)
   return
     tables
       |> filter(fn: (r) =>
-        if _grid.level == _ciLevel then
-          contains(value: r._ci, set: _grid.set)
+        if _grid.level == _s2cellIDLevel then
+          contains(value: r.s2cellID, set: _grid.set)
         else
-          contains(value: getParent(token: r._ci, level: _grid.level), set: _grid.set)
+          contains(value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set)
       )
 }
 
-// Filters records by a box, a circle or a polygon region.
+// Filters records by specified region.
 // It is an exact filter and must be used after `toRows()` because it requires `lat` and `lon` columns in input row sets.
-strictFilter = (tables=<-, box={}, circle={}, polygon={}) =>
+strictFilter = (tables=<-, region) =>
   tables
     |> filter(fn: (r) =>
-      containsLatLon(box: box, circle: circle, polygon: polygon, lat: r.lat, lon: r.lon)
+      containsLatLon(region: region, lat: r.lat, lon: r.lon)
     )
 
-// Two-phase filtering by a box, a circle or a polygon region.
+// Two-phase filtering by speficied region.
 // Returns rows of fields correlated by `correlationKey`.
-filterRows = (tables=<-, box={}, circle={}, polygon={}, minSize=24, maxSize=-1, level=-1, ciLevel=-1, correlationKey=["_time"], strict=true) => {
+filterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, correlationKey=["_time"], strict=true) => {
   _rows =
     tables
-      |> gridFilter(box: box, circle: circle, polygon: polygon, minSize: minSize, maxSize: maxSize, level: level, ciLevel: ciLevel)
+      |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)
       |> toRows(correlationKey)
   _result =
     if strict then
       _rows
-        |> strictFilter(box, circle, polygon)
+        |> strictFilter(region)
     else
       _rows
   return _result
@@ -104,24 +104,24 @@ filterRows = (tables=<-, box={}, circle={}, polygon={}, minSize=24, maxSize=-1, 
 
 // Groups data by area of size specified by level. Result is grouped by `newColumn`.
 // Grouping levels: https://s2geometry.io/resources/s2cell_statistics.html
-groupByArea = (tables=<-, newColumn, level, ciLevel=-1) => {
-  _ciLevel =
-    if ciLevel == -1 then
+groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {
+  _s2cellIDLevel =
+    if s2cellIDLevel == -1 then
       tables
-        |> _detectCiLevel()
+        |> _detectLevel()
     else
-      ciLevel
+      s2cellIDLevel
   _prepared =
-    if level == _ciLevel then
+    if level == _s2cellIDLevel then
       tables
-	    |> duplicate(column: "_ci", as: newColumn)
+	    |> duplicate(column: "s2cellID", as: newColumn)
     else
       tables
         |> map(fn: (r) => ({
              r with
-               _cixxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)
+               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)
            }))
-        |> rename(columns: { _cixxx: newColumn })
+        |> rename(columns: { _s2cellIDxxx: newColumn })
   return
     _prepared
       |> group(columns: [newColumn])

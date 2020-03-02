@@ -19,19 +19,29 @@ func TestContainsLatLon_NewQuery(t *testing.T) {
 			WantErr: true, // missing required parameter(s)
 		},
 		{
-			Name:    "missing lat lon",
-			Raw:     `import "experimental/geo" geo.containsLatLon(circle: { lat: 40.5, lon: -74.5, radius: 15.0 })`,
+			Name:    "missing lat lon args",
+			Raw:     `import "experimental/geo" geo.containsLatLon(region: { lat: 40.5, lon: -74.5, radius: 15.0 })`,
 			WantErr: true, // missing required parameter(s)
 		},
 		{
-			Name:    "invalid args - polygon",
-			Raw:     `import "experimental/geo" geo.containsLatLon(polygon: { points: [{ lat: 40.5, lon: -74.5 }] }, lat: 40.5, lon: -74.5)`,
-			WantErr: true, // invalid polygon specification - must have at least 3 points
+			Name:    "invalid args - invalid box",
+			Raw:     `import "experimental/geo" geo.containsLatLon(region: { minLat: 40.5, minLon: -74.5, maxLat: 41.5 } , lat: 40.5, lon: -74.5)`,
+			WantErr: true, // missing maxLon
 		},
 		{
-			Name:    "invalid args - more than one region",
-			Raw:     `import "experimental/geo" geo.containsLatLon(box: { minLat: 40.5, minLon: -74.5, maxLat: 41.5, maxLon: -73.5 }, circle: { lat: 40.5, lon: -74.5, radius: 15.0 }, lat: 40.5, lon: -74.5)`,
-			WantErr: true, // either ...
+			Name:    "invalid args - invalid circle",
+			Raw:     `import "experimental/geo" geo.containsLatLon(region: { lat: 40.5, radius: 15.0 }, lat: 40.5, lon: -74.5)`,
+			WantErr: true, // missing lon
+		},
+		{
+			Name:    "invalid args - invalid polygon",
+			Raw:     `import "experimental/geo" geo.containsLatLon(region: { points: [{ lat: 40.5, lon: -74.5 }] }, lat: 40.5, lon: -74.5)`,
+			WantErr: true, // polygon must have at least 3 points
+		},
+		{
+			Name:    "invalid args - unknown region",
+			Raw:     `import "experimental/geo" geo.containsLatLon(region: { lat: 40.5, lon: -74.5 }, lat: 40.5, lon: -74.5)`,
+			WantErr: true, // cannot infer region
 		},
 	}
 	for _, tc := range tests {
@@ -60,27 +70,27 @@ func TestContainsLatLon_Process(t *testing.T) {
 		lon float64
 	}
 	testCases := []struct {
-		name     string
-		box      *box
-		circle   *circle
-		polygon  *[]point
-		lat  float64
-		lon  float64
-		want     bool
+		name    string
+		box     *box
+		circle  *circle
+		polygon *[]point
+		lat     float64
+		lon     float64
+		want    bool
 	}{
 		{
-			name:     "box contains",
-			box:      &box{minLat: 40.5880775, maxLat: 40.8247008, minLon: -73.80014, maxLon: -73.4630336},
+			name: "box contains",
+			box:  &box{minLat: 40.5880775, maxLat: 40.8247008, minLon: -73.80014, maxLon: -73.4630336},
 			lat:  40.710594,
 			lon:  -73.652183,
-			want:     true,
+			want: true,
 		},
 		{
-			name:     "circle contains",
-			circle:   &circle{lat: 40.7090214, lon: -73.61846, radius: 15.0},
-			lat:  40.710594,
-			lon:  -73.652183,
-			want:     true,
+			name:   "circle contains",
+			circle: &circle{lat: 40.7090214, lon: -73.61846, radius: 15.0},
+			lat:    40.710594,
+			lon:    -73.652183,
+			want:   true,
 		},
 		{
 			name: "polygon contains",
@@ -92,14 +102,14 @@ func TestContainsLatLon_Process(t *testing.T) {
 			},
 			lat:  40.710594,
 			lon:  -73.652183,
-			want:     true,
+			want: true,
 		},
 		{
-			name:     "not contains",
-			box:      &box{minLat: 40.5880775, maxLat: 40.8247008, minLon: -73.80014, maxLon: -73.4630336},
+			name: "not contains",
+			box:  &box{minLat: 40.5880775, maxLat: 40.8247008, minLon: -73.80014, maxLon: -73.4630336},
 			lat:  40.690732,
 			lon:  -74.046267,
-			want:     false,
+			want: false,
 		},
 	}
 
@@ -109,24 +119,24 @@ func TestContainsLatLon_Process(t *testing.T) {
 		var owv values.Object
 		if tc.box != nil {
 			owv = values.NewObjectWithValues(map[string]values.Value{
-				"box": values.NewObjectWithValues(map[string]values.Value{
+				"region": values.NewObjectWithValues(map[string]values.Value{
 					"minLat": values.NewFloat(tc.box.minLat),
 					"minLon": values.NewFloat(tc.box.minLon),
 					"maxLat": values.NewFloat(tc.box.maxLat),
 					"maxLon": values.NewFloat(tc.box.maxLon),
 				}),
-				"lat":  values.NewFloat(tc.lat),
-				"lon":  values.NewFloat(tc.lon),
+				"lat": values.NewFloat(tc.lat),
+				"lon": values.NewFloat(tc.lon),
 			})
 		} else if tc.circle != nil {
 			owv = values.NewObjectWithValues(map[string]values.Value{
-				"circle": values.NewObjectWithValues(map[string]values.Value{
+				"region": values.NewObjectWithValues(map[string]values.Value{
 					"lat":    values.NewFloat(tc.circle.lat),
 					"lon":    values.NewFloat(tc.circle.lon),
 					"radius": values.NewFloat(tc.circle.radius),
 				}),
-				"lat":  values.NewFloat(tc.lat),
-				"lon":  values.NewFloat(tc.lon),
+				"lat": values.NewFloat(tc.lat),
+				"lon": values.NewFloat(tc.lon),
 			})
 		} else if tc.polygon != nil {
 			array := values.NewArray(semantic.Object)
@@ -137,11 +147,11 @@ func TestContainsLatLon_Process(t *testing.T) {
 				}))
 			}
 			owv = values.NewObjectWithValues(map[string]values.Value{
-				"polygon": values.NewObjectWithValues(map[string]values.Value{
+				"region": values.NewObjectWithValues(map[string]values.Value{
 					"points": array,
 				}),
-				"lat":  values.NewFloat(tc.lat),
-				"lon":  values.NewFloat(tc.lon),
+				"lat": values.NewFloat(tc.lat),
+				"lon": values.NewFloat(tc.lon),
 			})
 		}
 		result, err := getGrid.Call(context.Background(), owv)
