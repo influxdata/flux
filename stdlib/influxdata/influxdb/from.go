@@ -149,6 +149,19 @@ func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
 	return ns
 }
 
+func (s *FromProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
+	// This condition should never be met.
+	// Customized planner rules within each binary should have
+	// filled in either a default host or registered a from procedure
+	// for when no host is specified.
+	// We mark this as an internal error because it is a programming
+	// error if this one ever gets hit.
+	if s.Host == nil {
+		return errors.New(codes.Internal, "from requires a remote host to be specified")
+	}
+	return nil
+}
+
 type FromRemoteProcedureSpec struct {
 	plan.DefaultCost
 
@@ -175,6 +188,21 @@ func (s *FromRemoteProcedureSpec) Copy() plan.ProcedureSpec {
 		copy(ns.Transformations, s.Transformations)
 	}
 	return ns
+}
+
+func (s *FromRemoteProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
+	if s.Org == nil {
+		return errors.New(codes.Invalid, "reading from a remote host requires an organization to be set")
+	} else if s.Range == nil {
+		var bucket string
+		if s.Bucket.Name != "" {
+			bucket = s.Bucket.Name
+		} else {
+			bucket = s.Bucket.ID
+		}
+		return errors.Newf(codes.Invalid, "cannot submit unbounded read to %q; try bounding 'from' with a call to 'range'", bucket)
+	}
+	return nil
 }
 
 type source struct {
