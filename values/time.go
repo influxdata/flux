@@ -229,27 +229,23 @@ func (d Duration) Duration() time.Duration {
 }
 
 // AsValues will reconstruct the duration as a set of values.
+// All of the components will be positive numbers.
 func (d Duration) AsValues() []ast.Duration {
 	if d.IsZero() {
 		return nil
-	}
-
-	scale := int64(1)
-	if d.negative {
-		scale = -1
 	}
 
 	var values []ast.Duration
 	if d.months > 0 {
 		if years := d.months / 12; years > 0 {
 			values = append(values, ast.Duration{
-				Magnitude: years * scale,
+				Magnitude: years,
 				Unit:      ast.YearUnit,
 			})
 		}
 		if months := d.months % 12; months > 0 {
 			values = append(values, ast.Duration{
-				Magnitude: months * scale,
+				Magnitude: months,
 				Unit:      ast.MonthUnit,
 			})
 		}
@@ -274,49 +270,49 @@ func (d Duration) AsValues() []ast.Duration {
 
 		if weeks > 0 {
 			values = append(values, ast.Duration{
-				Magnitude: weeks * scale,
+				Magnitude: weeks,
 				Unit:      ast.WeekUnit,
 			})
 		}
 		if days > 0 {
 			values = append(values, ast.Duration{
-				Magnitude: days * scale,
+				Magnitude: days,
 				Unit:      ast.DayUnit,
 			})
 		}
 		if hours > 0 {
 			values = append(values, ast.Duration{
-				Magnitude: hours * scale,
+				Magnitude: hours,
 				Unit:      ast.HourUnit,
 			})
 		}
 		if mins > 0 {
 			values = append(values, ast.Duration{
-				Magnitude: mins * scale,
+				Magnitude: mins,
 				Unit:      ast.MinuteUnit,
 			})
 		}
 		if secs > 0 {
 			values = append(values, ast.Duration{
-				Magnitude: secs * scale,
+				Magnitude: secs,
 				Unit:      ast.SecondUnit,
 			})
 		}
 		if msecs > 0 {
 			values = append(values, ast.Duration{
-				Magnitude: msecs * scale,
+				Magnitude: msecs,
 				Unit:      ast.MillisecondUnit,
 			})
 		}
 		if usecs > 0 {
 			values = append(values, ast.Duration{
-				Magnitude: usecs * scale,
+				Magnitude: usecs,
 				Unit:      ast.MicrosecondUnit,
 			})
 		}
 		if nsecs > 0 {
 			values = append(values, ast.Duration{
-				Magnitude: nsecs * scale,
+				Magnitude: nsecs,
 				Unit:      ast.NanosecondUnit,
 			})
 		}
@@ -339,15 +335,11 @@ func (d Duration) String() string {
 		buf = buf[:0]
 	}
 	var sb strings.Builder
-	if values[0].Magnitude < 0 {
+	if d.IsNegative() {
 		sb.WriteByte('-')
 	}
 	for _, v := range values {
-		mag := v.Magnitude
-		if mag < 0 {
-			mag = -mag
-		}
-		writeInt(&sb, mag, v.Unit)
+		writeInt(&sb, v.Magnitude, v.Unit)
 	}
 	return sb.String()
 }

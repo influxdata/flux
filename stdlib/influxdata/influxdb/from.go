@@ -395,12 +395,21 @@ func (s *source) fromArgs() *ast.ObjectExpression {
 }
 
 func (s *source) rangeArgs() *ast.ObjectExpression {
-	toLiteral := func(t flux.Time) ast.Literal {
+	toLiteral := func(t flux.Time) ast.Expression {
 		if t.IsRelative {
 			// TODO(jsternberg): This seems wrong. Relative should be a values.Duration
 			// and not a time.Duration.
 			d := flux.ConvertDuration(t.Relative)
-			return &ast.DurationLiteral{Values: d.AsValues()}
+			var expr ast.Expression = &ast.DurationLiteral{
+				Values: d.AsValues(),
+			}
+			if d.IsNegative() {
+				expr = &ast.UnaryExpression{
+					Operator: ast.SubtractionOperator,
+					Argument: expr,
+				}
+			}
+			return expr
 		}
 		return &ast.DateTimeLiteral{Value: t.Absolute}
 	}
