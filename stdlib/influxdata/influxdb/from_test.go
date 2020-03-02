@@ -224,9 +224,12 @@ func TestFrom_Run(t *testing.T) {
 												Properties: []*ast.Property{
 													{
 														Key: &ast.Identifier{Name: "start"},
-														Value: &ast.DurationLiteral{Values: []ast.Duration{
-															{Magnitude: -1, Unit: "m"},
-														}},
+														Value: &ast.UnaryExpression{
+															Operator: ast.SubtractionOperator,
+															Argument: &ast.DurationLiteral{Values: []ast.Duration{
+																{Magnitude: 1, Unit: "m"},
+															}},
+														},
 													},
 												},
 											},
@@ -294,9 +297,12 @@ func TestFrom_Run(t *testing.T) {
 												Properties: []*ast.Property{
 													{
 														Key: &ast.Identifier{Name: "start"},
-														Value: &ast.DurationLiteral{Values: []ast.Duration{
-															{Magnitude: -1, Unit: "m"},
-														}},
+														Value: &ast.UnaryExpression{
+															Operator: ast.SubtractionOperator,
+															Argument: &ast.DurationLiteral{Values: []ast.Duration{
+																{Magnitude: 1, Unit: "m"},
+															}},
+														},
 													},
 												},
 											},
@@ -448,9 +454,12 @@ func TestFrom_Run(t *testing.T) {
 													Properties: []*ast.Property{
 														{
 															Key: &ast.Identifier{Name: "start"},
-															Value: &ast.DurationLiteral{Values: []ast.Duration{
-																{Magnitude: -1, Unit: "m"},
-															}},
+															Value: &ast.UnaryExpression{
+																Operator: ast.SubtractionOperator,
+																Argument: &ast.DurationLiteral{Values: []ast.Duration{
+																	{Magnitude: 1, Unit: "m"},
+																}},
+															},
 														},
 													},
 												},
@@ -560,9 +569,12 @@ func TestFrom_Run(t *testing.T) {
 													Properties: []*ast.Property{
 														{
 															Key: &ast.Identifier{Name: "start"},
-															Value: &ast.DurationLiteral{Values: []ast.Duration{
-																{Magnitude: -1, Unit: "m"},
-															}},
+															Value: &ast.UnaryExpression{
+																Operator: ast.SubtractionOperator,
+																Argument: &ast.DurationLiteral{Values: []ast.Duration{
+																	{Magnitude: 1, Unit: "m"},
+																}},
+															},
 														},
 													},
 												},
@@ -699,9 +711,12 @@ import "math"
 													Properties: []*ast.Property{
 														{
 															Key: &ast.Identifier{Name: "start"},
-															Value: &ast.DurationLiteral{Values: []ast.Duration{
-																{Magnitude: -1, Unit: "m"},
-															}},
+															Value: &ast.UnaryExpression{
+																Operator: ast.SubtractionOperator,
+																Argument: &ast.DurationLiteral{Values: []ast.Duration{
+																	{Magnitude: 1, Unit: "m"},
+																}},
+															},
 														},
 													},
 												},
