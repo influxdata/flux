@@ -109,10 +109,9 @@ func packageName(f *ast.File) string {
 // converts both AST packages to libflux.ASTPkg types, merges those packages and analyzes them,
 // returning a libflux.SemanticPkg
 func MergeExternToHandle(extern *ast.File, sourcePkg *ast.Package) (*libflux.ASTPkg, error) {
-	var externList []*ast.File
-	externList = append(externList, extern)
 	externPkg := &ast.Package{
-		Files: externList,
+		Package: extern.Package.Name.Name,
+		Files:   []*ast.File{extern},
 	}
 
 	externHandle, err := ToHandle(externPkg)
