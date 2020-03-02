@@ -1,0 +1,9 @@
+include '../flux.lm'
+
+parse Flux: file [stdin]
+if !Flux {
+	print "[error]
+	exit(1)
+}
+
+print [Flux]
