@@ -25,11 +25,11 @@ builtin getLevel
 _detectLevel = (tables=<-) => {
   _r0 =
     tables
-      |> tableFind(fn: (key) => exists key.s2cellID)
+      |> tableFind(fn: (key) => exists key.s2_cell_id)
       |> getRecord(idx: 0)
   _level =
     if exists _r0 then
-      getLevel(token: _r0.s2cellID)
+      getLevel(token: _r0.s2_cell_id)
     else
        666
   return _level
@@ -67,9 +67,9 @@ gridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel
     tables
       |> filter(fn: (r) =>
         if _grid.level == _s2cellIDLevel then
-          contains(value: r.s2cellID, set: _grid.set)
+          contains(value: r.s2_cell_id, set: _grid.set)
         else
-          contains(value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set)
+          contains(value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set)
       )
 }
 
@@ -114,14 +114,14 @@ groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {
   _prepared =
     if level == _s2cellIDLevel then
       tables
-	    |> duplicate(column: "s2cellID", as: newColumn)
+	    |> duplicate(column: "s2_cell_id", as: newColumn)
     else
       tables
         |> map(fn: (r) => ({
              r with
-               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)
+               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)
            }))
-        |> rename(columns: { _s2cellIDxxx: newColumn })
+        |> rename(columns: { _s2_cell_id_xxx: newColumn })
   return
     _prepared
       |> group(columns: [newColumn])

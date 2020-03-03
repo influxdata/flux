@@ -2,11 +2,11 @@
 
 The package provides functions for geographic location filtering and grouping.
 It uses golang implementation of S2 Geometry Library [https://s2geometry.io/].
-It is designed to work on a schema with a tags `s2cellID` which contains S2 cell ID (as token)
+It is designed to work on a schema with a tags `s2_cell_id` which contains S2 cell ID (as token)
 of level decided by the user, and fields `lat`, `lon` containing WGS-84 coordinates
 in decimal degrees.
 
-The `s2cellID` tag contains cell ID token (`s2.CellID.ToToken()`) of corresponding level.
+The `s2_cell_id` tag contains cell ID token (`s2.CellID.ToToken()`) of corresponding level.
 The cell levels are shown at [https://s2geometry.io/resources/s2cell_statistics.html].
 The level must be decided by the user.
 The rule of thumb is that it should be as high as possible for faster filtering 
@@ -17,12 +17,12 @@ The schema may further contain a tag which identifies data source (`id` by defau
 and a field representing track identification (`tid` by default).
 For some use cases a tag denoting point type (eg. with values like `start`/`stop`/`via`) may also be useful.
 
-Examples of line protocol input (`s2cellID`` with cell ID level 11 token):
+Examples of line protocol input (`s2_cell_id`` with cell ID level 11 token):
 ```
-taxi,pt=start,s2cellID=89c2594 tip=3.75,dist=14.3,lat=40.744614,lon=-73.979424,tid=1572566401123234345i 1572566401947779410
+taxi,pt=start,s2_cell_id=89c2594 tip=3.75,dist=14.3,lat=40.744614,lon=-73.979424,tid=1572566401123234345i 1572566401947779410
 ```
 ```
-bike,id=biker-007,pt=via,s2cellID=89c25dc lat=40.753944,lon=-73.992035,tid=1572588100i 1572567115
+bike,id=biker-007,pt=via,s2_cell_id=89c25dc lat=40.753944,lon=-73.992035,tid=1572588100i 1572567115
 ```
 
 Some functions in this package works on row-wise sets (as it very likely appears in line protocol),
@@ -50,11 +50,11 @@ The package uses the following types:
 ### Function `gridFilter`
 
 The `gridFilter` filters data by specified region.
-It calculates grid of tokens that overlays specified region and then uses `s2cellID` to filter
+It calculates grid of tokens that overlays specified region and then uses `s2_cell_id` to filter
 against the set.
 The grid cells always overlay the region, therefore result may contain data with latitude and/or longitude outside the region.
 
-This filter function is intended to be fast as it uses `s2cellID` tag to filter records.
+This filter function is intended to be fast as it uses `s2_cell_id` tag to filter records.
 If precise filtering is needed, `strictFilter()` may be used later (after `toRows()`).
 
 Example:
@@ -81,7 +81,7 @@ Grid calculation may be customized by following options:
 - `minSize` - minimum number of tiles that cover specified region (default value is `24`).
 - `maxSize` - maximum number of tiles (optional)
 - `level` - desired cell level of the grid tiles (optional)
-- `s2cellIDLevel` - cell level in `s2cellID` tag (optional - the function attempts to autodetect it)
+- `s2cellIDLevel` - cell level in `s2_cell_id` tag (optional - the function attempts to autodetect it)
 
 The `level` parameter is mutually exclusive with others and must be less or equal to `s2cellIDLevel`.
 
@@ -177,7 +177,7 @@ from(bucket: "rides")
   |> geo.groupByArea(newColumn: "l3", level: 3)
 ```
 
-Optional parameter `s2cellIDLevel` specifies cell level of `s2cellID` tag.
+Optional parameter `s2cellIDLevel` specifies cell level of `s2_cell_id` tag.
 By default the function attempts to autodetect it.
 
 ### Function `asTracks`

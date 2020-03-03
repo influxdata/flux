@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   134,
 				},
 				File:   "geo.flux",
-				Source: "package geo\n\n//\n// None of the builtin functions are intended to be used by end users.\n//\n\n// Check whether lat/lon is in specified region.\nbuiltin containsLatLon\n\n// Calculates grid (set of cell ID tokens) for given region and according to options.\nbuiltin getGrid\n\n// Finds parent cell ID token for given cell ID at specified level.\nbuiltin getParent\n\n// Returns level of specified cell ID token.\nbuiltin getLevel\n\n//\n// Flux\n//\n\n// Gets level of cell ID tag `s2cellID` from the first record from the first table from the stream.\n_detectLevel = (tables=<-) => {\n  _r0 =\n    tables\n      |> tableFind(fn: (key) => exists key.s2cellID)\n      |> getRecord(idx: 0)\n  _level =\n    if exists _r0 then\n      getLevel(token: _r0.s2cellID)\n    else\n       666\n  return _level\n}\n\n//\n// Convenience functions\n//\n\n// Collects values to row-wise sets.\ntoRows = (tables=<-, correlationKey=[\"_time\"]) =>\n  tables\n    |> pivot(\n      rowKey: correlationKey,\n      columnKey: [\"_field\"],\n      valueColumn: \"_value\"\n    )\n\n//\n// Filtering functions\n//\n\n// Filters records by a box, a circle or a polygon area using S2 cell ID tag.\n// It is a coarse filter, as the grid always overlays the region, the result will likely contain records\n// with lat/lon outside the specified region.\ngridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _grid = getGrid(region: region, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _s2cellIDLevel)\n  return\n    tables\n      |> filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2cellID, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set)\n      )\n}\n\n// Filters records by specified region.\n// It is an exact filter and must be used after `toRows()` because it requires `lat` and `lon` columns in input row sets.\nstrictFilter = (tables=<-, region) =>\n  tables\n    |> filter(fn: (r) =>\n      containsLatLon(region: region, lat: r.lat, lon: r.lon)\n    )\n\n// Two-phase filtering by speficied region.\n// Returns rows of fields correlated by `correlationKey`.\nfilterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, correlationKey=[\"_time\"], strict=true) => {\n  _rows =\n    tables\n      |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)\n      |> toRows(correlationKey)\n  _result =\n    if strict then\n      _rows\n        |> strictFilter(region)\n    else\n      _rows\n  return _result\n}\n\n//\n// Grouping functions\n//\n// intended to be used row-wise sets (i.e after `toRows()`)\n\n// Groups data by area of size specified by level. Result is grouped by `newColumn`.\n// Grouping levels: https://s2geometry.io/resources/s2cell_statistics.html\ngroupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _prepared =\n    if level == _s2cellIDLevel then\n      tables\n\t    |> duplicate(column: \"s2cellID\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2cellIDxxx: newColumn })\n  return\n    _prepared\n      |> group(columns: [newColumn])\n}\n\n// Groups rows into tracks.\nasTracks = (tables=<-, groupBy=[\"id\",\"tid\"], orderBy=[\"_time\"]) =>\n  tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
+				Source: "package geo\n\n//\n// None of the builtin functions are intended to be used by end users.\n//\n\n// Check whether lat/lon is in specified region.\nbuiltin containsLatLon\n\n// Calculates grid (set of cell ID tokens) for given region and according to options.\nbuiltin getGrid\n\n// Finds parent cell ID token for given cell ID at specified level.\nbuiltin getParent\n\n// Returns level of specified cell ID token.\nbuiltin getLevel\n\n//\n// Flux\n//\n\n// Gets level of cell ID tag `s2cellID` from the first record from the first table from the stream.\n_detectLevel = (tables=<-) => {\n  _r0 =\n    tables\n      |> tableFind(fn: (key) => exists key.s2_cell_id)\n      |> getRecord(idx: 0)\n  _level =\n    if exists _r0 then\n      getLevel(token: _r0.s2_cell_id)\n    else\n       666\n  return _level\n}\n\n//\n// Convenience functions\n//\n\n// Collects values to row-wise sets.\ntoRows = (tables=<-, correlationKey=[\"_time\"]) =>\n  tables\n    |> pivot(\n      rowKey: correlationKey,\n      columnKey: [\"_field\"],\n      valueColumn: \"_value\"\n    )\n\n//\n// Filtering functions\n//\n\n// Filters records by a box, a circle or a polygon area using S2 cell ID tag.\n// It is a coarse filter, as the grid always overlays the region, the result will likely contain records\n// with lat/lon outside the specified region.\ngridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _grid = getGrid(region: region, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _s2cellIDLevel)\n  return\n    tables\n      |> filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2_cell_id, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set)\n      )\n}\n\n// Filters records by specified region.\n// It is an exact filter and must be used after `toRows()` because it requires `lat` and `lon` columns in input row sets.\nstrictFilter = (tables=<-, region) =>\n  tables\n    |> filter(fn: (r) =>\n      containsLatLon(region: region, lat: r.lat, lon: r.lon)\n    )\n\n// Two-phase filtering by speficied region.\n// Returns rows of fields correlated by `correlationKey`.\nfilterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, correlationKey=[\"_time\"], strict=true) => {\n  _rows =\n    tables\n      |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)\n      |> toRows(correlationKey)\n  _result =\n    if strict then\n      _rows\n        |> strictFilter(region)\n    else\n      _rows\n  return _result\n}\n\n//\n// Grouping functions\n//\n// intended to be used row-wise sets (i.e after `toRows()`)\n\n// Groups data by area of size specified by level. Result is grouped by `newColumn`.\n// Grouping levels: https://s2geometry.io/resources/s2cell_statistics.html\ngroupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _prepared =\n    if level == _s2cellIDLevel then\n      tables\n\t    |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2_cell_id_xxx: newColumn })\n  return\n    _prepared\n      |> group(columns: [newColumn])\n}\n\n// Groups rows into tracks.\nasTracks = (tables=<-, groupBy=[\"id\",\"tid\"], orderBy=[\"_time\"]) =>\n  tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
 				Start: ast.Position{
 					Column: 1,
 					Line:   2,
@@ -177,7 +177,7 @@ var pkgAST = &ast.Package{
 						Line:   36,
 					},
 					File:   "geo.flux",
-					Source: "_detectLevel = (tables=<-) => {\n  _r0 =\n    tables\n      |> tableFind(fn: (key) => exists key.s2cellID)\n      |> getRecord(idx: 0)\n  _level =\n    if exists _r0 then\n      getLevel(token: _r0.s2cellID)\n    else\n       666\n  return _level\n}",
+					Source: "_detectLevel = (tables=<-) => {\n  _r0 =\n    tables\n      |> tableFind(fn: (key) => exists key.s2_cell_id)\n      |> getRecord(idx: 0)\n  _level =\n    if exists _r0 then\n      getLevel(token: _r0.s2_cell_id)\n    else\n       666\n  return _level\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   25,
@@ -211,7 +211,7 @@ var pkgAST = &ast.Package{
 							Line:   36,
 						},
 						File:   "geo.flux",
-						Source: "(tables=<-) => {\n  _r0 =\n    tables\n      |> tableFind(fn: (key) => exists key.s2cellID)\n      |> getRecord(idx: 0)\n  _level =\n    if exists _r0 then\n      getLevel(token: _r0.s2cellID)\n    else\n       666\n  return _level\n}",
+						Source: "(tables=<-) => {\n  _r0 =\n    tables\n      |> tableFind(fn: (key) => exists key.s2_cell_id)\n      |> getRecord(idx: 0)\n  _level =\n    if exists _r0 then\n      getLevel(token: _r0.s2_cell_id)\n    else\n       666\n  return _level\n}",
 						Start: ast.Position{
 							Column: 16,
 							Line:   25,
@@ -227,7 +227,7 @@ var pkgAST = &ast.Package{
 								Line:   36,
 							},
 							File:   "geo.flux",
-							Source: "{\n  _r0 =\n    tables\n      |> tableFind(fn: (key) => exists key.s2cellID)\n      |> getRecord(idx: 0)\n  _level =\n    if exists _r0 then\n      getLevel(token: _r0.s2cellID)\n    else\n       666\n  return _level\n}",
+							Source: "{\n  _r0 =\n    tables\n      |> tableFind(fn: (key) => exists key.s2_cell_id)\n      |> getRecord(idx: 0)\n  _level =\n    if exists _r0 then\n      getLevel(token: _r0.s2_cell_id)\n    else\n       666\n  return _level\n}",
 							Start: ast.Position{
 								Column: 31,
 								Line:   25,
@@ -243,7 +243,7 @@ var pkgAST = &ast.Package{
 									Line:   29,
 								},
 								File:   "geo.flux",
-								Source: "_r0 =\n    tables\n      |> tableFind(fn: (key) => exists key.s2cellID)\n      |> getRecord(idx: 0)",
+								Source: "_r0 =\n    tables\n      |> tableFind(fn: (key) => exists key.s2_cell_id)\n      |> getRecord(idx: 0)",
 								Start: ast.Position{
 									Column: 3,
 									Line:   26,
@@ -292,11 +292,11 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 53,
+											Column: 55,
 											Line:   28,
 										},
 										File:   "geo.flux",
-										Source: "tables\n      |> tableFind(fn: (key) => exists key.s2cellID)",
+										Source: "tables\n      |> tableFind(fn: (key) => exists key.s2_cell_id)",
 										Start: ast.Position{
 											Column: 5,
 											Line:   27,
@@ -309,11 +309,11 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 52,
+													Column: 54,
 													Line:   28,
 												},
 												File:   "geo.flux",
-												Source: "fn: (key) => exists key.s2cellID",
+												Source: "fn: (key) => exists key.s2_cell_id",
 												Start: ast.Position{
 													Column: 20,
 													Line:   28,
@@ -325,11 +325,11 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 52,
+														Column: 54,
 														Line:   28,
 													},
 													File:   "geo.flux",
-													Source: "fn: (key) => exists key.s2cellID",
+													Source: "fn: (key) => exists key.s2_cell_id",
 													Start: ast.Position{
 														Column: 20,
 														Line:   28,
@@ -359,11 +359,11 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 52,
+															Column: 54,
 															Line:   28,
 														},
 														File:   "geo.flux",
-														Source: "(key) => exists key.s2cellID",
+														Source: "(key) => exists key.s2_cell_id",
 														Start: ast.Position{
 															Column: 24,
 															Line:   28,
@@ -376,11 +376,11 @@ var pkgAST = &ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 52,
+																	Column: 54,
 																	Line:   28,
 																},
 																File:   "geo.flux",
-																Source: "key.s2cellID",
+																Source: "key.s2_cell_id",
 																Start: ast.Position{
 																	Column: 40,
 																	Line:   28,
@@ -410,29 +410,29 @@ var pkgAST = &ast.Package{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 52,
+																		Column: 54,
 																		Line:   28,
 																	},
 																	File:   "geo.flux",
-																	Source: "s2cellID",
+																	Source: "s2_cell_id",
 																	Start: ast.Position{
 																		Column: 44,
 																		Line:   28,
 																	},
 																},
 															},
-															Name: "s2cellID",
+															Name: "s2_cell_id",
 														},
 													},
 													BaseNode: ast.BaseNode{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 52,
+																Column: 54,
 																Line:   28,
 															},
 															File:   "geo.flux",
-															Source: "exists key.s2cellID",
+															Source: "exists key.s2_cell_id",
 															Start: ast.Position{
 																Column: 33,
 																Line:   28,
@@ -485,11 +485,11 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 53,
+												Column: 55,
 												Line:   28,
 											},
 											File:   "geo.flux",
-											Source: "tableFind(fn: (key) => exists key.s2cellID)",
+											Source: "tableFind(fn: (key) => exists key.s2_cell_id)",
 											Start: ast.Position{
 												Column: 10,
 												Line:   28,
@@ -524,7 +524,7 @@ var pkgAST = &ast.Package{
 										Line:   29,
 									},
 									File:   "geo.flux",
-									Source: "tables\n      |> tableFind(fn: (key) => exists key.s2cellID)\n      |> getRecord(idx: 0)",
+									Source: "tables\n      |> tableFind(fn: (key) => exists key.s2_cell_id)\n      |> getRecord(idx: 0)",
 									Start: ast.Position{
 										Column: 5,
 										Line:   27,
@@ -647,7 +647,7 @@ var pkgAST = &ast.Package{
 									Line:   34,
 								},
 								File:   "geo.flux",
-								Source: "_level =\n    if exists _r0 then\n      getLevel(token: _r0.s2cellID)\n    else\n       666",
+								Source: "_level =\n    if exists _r0 then\n      getLevel(token: _r0.s2_cell_id)\n    else\n       666",
 								Start: ast.Position{
 									Column: 3,
 									Line:   30,
@@ -699,7 +699,7 @@ var pkgAST = &ast.Package{
 										Line:   34,
 									},
 									File:   "geo.flux",
-									Source: "if exists _r0 then\n      getLevel(token: _r0.s2cellID)\n    else\n       666",
+									Source: "if exists _r0 then\n      getLevel(token: _r0.s2_cell_id)\n    else\n       666",
 									Start: ast.Position{
 										Column: 5,
 										Line:   31,
@@ -712,11 +712,11 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 35,
+												Column: 37,
 												Line:   32,
 											},
 											File:   "geo.flux",
-											Source: "token: _r0.s2cellID",
+											Source: "token: _r0.s2_cell_id",
 											Start: ast.Position{
 												Column: 16,
 												Line:   32,
@@ -728,11 +728,11 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 35,
+													Column: 37,
 													Line:   32,
 												},
 												File:   "geo.flux",
-												Source: "token: _r0.s2cellID",
+												Source: "token: _r0.s2_cell_id",
 												Start: ast.Position{
 													Column: 16,
 													Line:   32,
@@ -762,11 +762,11 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 35,
+														Column: 37,
 														Line:   32,
 													},
 													File:   "geo.flux",
-													Source: "_r0.s2cellID",
+													Source: "_r0.s2_cell_id",
 													Start: ast.Position{
 														Column: 23,
 														Line:   32,
@@ -796,18 +796,18 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 35,
+															Column: 37,
 															Line:   32,
 														},
 														File:   "geo.flux",
-														Source: "s2cellID",
+														Source: "s2_cell_id",
 														Start: ast.Position{
 															Column: 27,
 															Line:   32,
 														},
 													},
 												},
-												Name: "s2cellID",
+												Name: "s2_cell_id",
 											},
 										},
 									}},
@@ -817,11 +817,11 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 36,
+											Column: 38,
 											Line:   32,
 										},
 										File:   "geo.flux",
-										Source: "getLevel(token: _r0.s2cellID)",
+										Source: "getLevel(token: _r0.s2_cell_id)",
 										Start: ast.Position{
 											Column: 7,
 											Line:   32,
@@ -1412,7 +1412,7 @@ var pkgAST = &ast.Package{
 						Line:   74,
 					},
 					File:   "geo.flux",
-					Source: "gridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _grid = getGrid(region: region, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _s2cellIDLevel)\n  return\n    tables\n      |> filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2cellID, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set)\n      )\n}",
+					Source: "gridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _grid = getGrid(region: region, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _s2cellIDLevel)\n  return\n    tables\n      |> filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2_cell_id, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set)\n      )\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   58,
@@ -1446,7 +1446,7 @@ var pkgAST = &ast.Package{
 							Line:   74,
 						},
 						File:   "geo.flux",
-						Source: "(tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _grid = getGrid(region: region, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _s2cellIDLevel)\n  return\n    tables\n      |> filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2cellID, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set)\n      )\n}",
+						Source: "(tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _grid = getGrid(region: region, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _s2cellIDLevel)\n  return\n    tables\n      |> filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2_cell_id, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set)\n      )\n}",
 						Start: ast.Position{
 							Column: 14,
 							Line:   58,
@@ -1462,7 +1462,7 @@ var pkgAST = &ast.Package{
 								Line:   74,
 							},
 							File:   "geo.flux",
-							Source: "{\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _grid = getGrid(region: region, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _s2cellIDLevel)\n  return\n    tables\n      |> filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2cellID, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set)\n      )\n}",
+							Source: "{\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _grid = getGrid(region: region, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _s2cellIDLevel)\n  return\n    tables\n      |> filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2_cell_id, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set)\n      )\n}",
 							Start: ast.Position{
 								Column: 89,
 								Line:   58,
@@ -2057,7 +2057,7 @@ var pkgAST = &ast.Package{
 										Line:   73,
 									},
 									File:   "geo.flux",
-									Source: "tables\n      |> filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2cellID, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set)\n      )",
+									Source: "tables\n      |> filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2_cell_id, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set)\n      )",
 									Start: ast.Position{
 										Column: 5,
 										Line:   67,
@@ -2070,11 +2070,11 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 92,
+												Column: 94,
 												Line:   72,
 											},
 											File:   "geo.flux",
-											Source: "fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2cellID, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set)",
+											Source: "fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2_cell_id, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
 											Start: ast.Position{
 												Column: 17,
 												Line:   68,
@@ -2086,11 +2086,11 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 92,
+													Column: 94,
 													Line:   72,
 												},
 												File:   "geo.flux",
-												Source: "fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2cellID, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set)",
+												Source: "fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2_cell_id, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
 												Start: ast.Position{
 													Column: 17,
 													Line:   68,
@@ -2120,11 +2120,11 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 92,
+														Column: 94,
 														Line:   72,
 													},
 													File:   "geo.flux",
-													Source: "(r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2cellID, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set)",
+													Source: "(r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2_cell_id, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
 													Start: ast.Position{
 														Column: 21,
 														Line:   68,
@@ -2138,11 +2138,11 @@ var pkgAST = &ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 91,
+																	Column: 93,
 																	Line:   72,
 																},
 																File:   "geo.flux",
-																Source: "value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set",
+																Source: "value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set",
 																Start: ast.Position{
 																	Column: 20,
 																	Line:   72,
@@ -2154,11 +2154,11 @@ var pkgAST = &ast.Package{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 75,
+																		Column: 77,
 																		Line:   72,
 																	},
 																	File:   "geo.flux",
-																	Source: "value: getParent(token: r.s2cellID, level: _grid.level)",
+																	Source: "value: getParent(token: r.s2_cell_id, level: _grid.level)",
 																	Start: ast.Position{
 																		Column: 20,
 																		Line:   72,
@@ -2189,11 +2189,11 @@ var pkgAST = &ast.Package{
 																		Errors: nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 74,
+																				Column: 76,
 																				Line:   72,
 																			},
 																			File:   "geo.flux",
-																			Source: "token: r.s2cellID, level: _grid.level",
+																			Source: "token: r.s2_cell_id, level: _grid.level",
 																			Start: ast.Position{
 																				Column: 37,
 																				Line:   72,
@@ -2205,11 +2205,11 @@ var pkgAST = &ast.Package{
 																			Errors: nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 54,
+																					Column: 56,
 																					Line:   72,
 																				},
 																				File:   "geo.flux",
-																				Source: "token: r.s2cellID",
+																				Source: "token: r.s2_cell_id",
 																				Start: ast.Position{
 																					Column: 37,
 																					Line:   72,
@@ -2239,11 +2239,11 @@ var pkgAST = &ast.Package{
 																				Errors: nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 54,
+																						Column: 56,
 																						Line:   72,
 																					},
 																					File:   "geo.flux",
-																					Source: "r.s2cellID",
+																					Source: "r.s2_cell_id",
 																					Start: ast.Position{
 																						Column: 44,
 																						Line:   72,
@@ -2273,18 +2273,18 @@ var pkgAST = &ast.Package{
 																					Errors: nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 54,
+																							Column: 56,
 																							Line:   72,
 																						},
 																						File:   "geo.flux",
-																						Source: "s2cellID",
+																						Source: "s2_cell_id",
 																						Start: ast.Position{
 																							Column: 46,
 																							Line:   72,
 																						},
 																					},
 																				},
-																				Name: "s2cellID",
+																				Name: "s2_cell_id",
 																			},
 																		},
 																	}, &ast.Property{
@@ -2292,13 +2292,13 @@ var pkgAST = &ast.Package{
 																			Errors: nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 74,
+																					Column: 76,
 																					Line:   72,
 																				},
 																				File:   "geo.flux",
 																				Source: "level: _grid.level",
 																				Start: ast.Position{
-																					Column: 56,
+																					Column: 58,
 																					Line:   72,
 																				},
 																			},
@@ -2308,13 +2308,13 @@ var pkgAST = &ast.Package{
 																				Errors: nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 61,
+																						Column: 63,
 																						Line:   72,
 																					},
 																					File:   "geo.flux",
 																					Source: "level",
 																					Start: ast.Position{
-																						Column: 56,
+																						Column: 58,
 																						Line:   72,
 																					},
 																				},
@@ -2326,13 +2326,13 @@ var pkgAST = &ast.Package{
 																				Errors: nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 74,
+																						Column: 76,
 																						Line:   72,
 																					},
 																					File:   "geo.flux",
 																					Source: "_grid.level",
 																					Start: ast.Position{
-																						Column: 63,
+																						Column: 65,
 																						Line:   72,
 																					},
 																				},
@@ -2342,13 +2342,13 @@ var pkgAST = &ast.Package{
 																					Errors: nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 68,
+																							Column: 70,
 																							Line:   72,
 																						},
 																						File:   "geo.flux",
 																						Source: "_grid",
 																						Start: ast.Position{
-																							Column: 63,
+																							Column: 65,
 																							Line:   72,
 																						},
 																					},
@@ -2360,13 +2360,13 @@ var pkgAST = &ast.Package{
 																					Errors: nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 74,
+																							Column: 76,
 																							Line:   72,
 																						},
 																						File:   "geo.flux",
 																						Source: "level",
 																						Start: ast.Position{
-																							Column: 69,
+																							Column: 71,
 																							Line:   72,
 																						},
 																					},
@@ -2381,11 +2381,11 @@ var pkgAST = &ast.Package{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 75,
+																			Column: 77,
 																			Line:   72,
 																		},
 																		File:   "geo.flux",
-																		Source: "getParent(token: r.s2cellID, level: _grid.level)",
+																		Source: "getParent(token: r.s2_cell_id, level: _grid.level)",
 																		Start: ast.Position{
 																			Column: 27,
 																			Line:   72,
@@ -2416,13 +2416,13 @@ var pkgAST = &ast.Package{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 91,
+																		Column: 93,
 																		Line:   72,
 																	},
 																	File:   "geo.flux",
 																	Source: "set: _grid.set",
 																	Start: ast.Position{
-																		Column: 77,
+																		Column: 79,
 																		Line:   72,
 																	},
 																},
@@ -2432,13 +2432,13 @@ var pkgAST = &ast.Package{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 80,
+																			Column: 82,
 																			Line:   72,
 																		},
 																		File:   "geo.flux",
 																		Source: "set",
 																		Start: ast.Position{
-																			Column: 77,
+																			Column: 79,
 																			Line:   72,
 																		},
 																	},
@@ -2450,13 +2450,13 @@ var pkgAST = &ast.Package{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 91,
+																			Column: 93,
 																			Line:   72,
 																		},
 																		File:   "geo.flux",
 																		Source: "_grid.set",
 																		Start: ast.Position{
-																			Column: 82,
+																			Column: 84,
 																			Line:   72,
 																		},
 																	},
@@ -2466,13 +2466,13 @@ var pkgAST = &ast.Package{
 																		Errors: nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 87,
+																				Column: 89,
 																				Line:   72,
 																			},
 																			File:   "geo.flux",
 																			Source: "_grid",
 																			Start: ast.Position{
-																				Column: 82,
+																				Column: 84,
 																				Line:   72,
 																			},
 																		},
@@ -2484,13 +2484,13 @@ var pkgAST = &ast.Package{
 																		Errors: nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 91,
+																				Column: 93,
 																				Line:   72,
 																			},
 																			File:   "geo.flux",
 																			Source: "set",
 																			Start: ast.Position{
-																				Column: 88,
+																				Column: 90,
 																				Line:   72,
 																			},
 																		},
@@ -2505,11 +2505,11 @@ var pkgAST = &ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 92,
+																Column: 94,
 																Line:   72,
 															},
 															File:   "geo.flux",
-															Source: "contains(value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set)",
+															Source: "contains(value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
 															Start: ast.Position{
 																Column: 11,
 																Line:   72,
@@ -2539,11 +2539,11 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 92,
+															Column: 94,
 															Line:   72,
 														},
 														File:   "geo.flux",
-														Source: "if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2cellID, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set)",
+														Source: "if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2_cell_id, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
 														Start: ast.Position{
 															Column: 9,
 															Line:   69,
@@ -2556,11 +2556,11 @@ var pkgAST = &ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 53,
+																	Column: 55,
 																	Line:   70,
 																},
 																File:   "geo.flux",
-																Source: "value: r.s2cellID, set: _grid.set",
+																Source: "value: r.s2_cell_id, set: _grid.set",
 																Start: ast.Position{
 																	Column: 20,
 																	Line:   70,
@@ -2572,11 +2572,11 @@ var pkgAST = &ast.Package{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 37,
+																		Column: 39,
 																		Line:   70,
 																	},
 																	File:   "geo.flux",
-																	Source: "value: r.s2cellID",
+																	Source: "value: r.s2_cell_id",
 																	Start: ast.Position{
 																		Column: 20,
 																		Line:   70,
@@ -2606,11 +2606,11 @@ var pkgAST = &ast.Package{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 37,
+																			Column: 39,
 																			Line:   70,
 																		},
 																		File:   "geo.flux",
-																		Source: "r.s2cellID",
+																		Source: "r.s2_cell_id",
 																		Start: ast.Position{
 																			Column: 27,
 																			Line:   70,
@@ -2640,18 +2640,18 @@ var pkgAST = &ast.Package{
 																		Errors: nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 37,
+																				Column: 39,
 																				Line:   70,
 																			},
 																			File:   "geo.flux",
-																			Source: "s2cellID",
+																			Source: "s2_cell_id",
 																			Start: ast.Position{
 																				Column: 29,
 																				Line:   70,
 																			},
 																		},
 																	},
-																	Name: "s2cellID",
+																	Name: "s2_cell_id",
 																},
 															},
 														}, &ast.Property{
@@ -2659,13 +2659,13 @@ var pkgAST = &ast.Package{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 53,
+																		Column: 55,
 																		Line:   70,
 																	},
 																	File:   "geo.flux",
 																	Source: "set: _grid.set",
 																	Start: ast.Position{
-																		Column: 39,
+																		Column: 41,
 																		Line:   70,
 																	},
 																},
@@ -2675,13 +2675,13 @@ var pkgAST = &ast.Package{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 42,
+																			Column: 44,
 																			Line:   70,
 																		},
 																		File:   "geo.flux",
 																		Source: "set",
 																		Start: ast.Position{
-																			Column: 39,
+																			Column: 41,
 																			Line:   70,
 																		},
 																	},
@@ -2693,13 +2693,13 @@ var pkgAST = &ast.Package{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 53,
+																			Column: 55,
 																			Line:   70,
 																		},
 																		File:   "geo.flux",
 																		Source: "_grid.set",
 																		Start: ast.Position{
-																			Column: 44,
+																			Column: 46,
 																			Line:   70,
 																		},
 																	},
@@ -2709,13 +2709,13 @@ var pkgAST = &ast.Package{
 																		Errors: nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 49,
+																				Column: 51,
 																				Line:   70,
 																			},
 																			File:   "geo.flux",
 																			Source: "_grid",
 																			Start: ast.Position{
-																				Column: 44,
+																				Column: 46,
 																				Line:   70,
 																			},
 																		},
@@ -2727,13 +2727,13 @@ var pkgAST = &ast.Package{
 																		Errors: nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 53,
+																				Column: 55,
 																				Line:   70,
 																			},
 																			File:   "geo.flux",
 																			Source: "set",
 																			Start: ast.Position{
-																				Column: 50,
+																				Column: 52,
 																				Line:   70,
 																			},
 																		},
@@ -2748,11 +2748,11 @@ var pkgAST = &ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 54,
+																Column: 56,
 																Line:   70,
 															},
 															File:   "geo.flux",
-															Source: "contains(value: r.s2cellID, set: _grid.set)",
+															Source: "contains(value: r.s2_cell_id, set: _grid.set)",
 															Start: ast.Position{
 																Column: 11,
 																Line:   70,
@@ -2916,7 +2916,7 @@ var pkgAST = &ast.Package{
 											Line:   73,
 										},
 										File:   "geo.flux",
-										Source: "filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2cellID, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set)\n      )",
+										Source: "filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2_cell_id, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set)\n      )",
 										Start: ast.Position{
 											Column: 10,
 											Line:   68,
@@ -2951,7 +2951,7 @@ var pkgAST = &ast.Package{
 									Line:   73,
 								},
 								File:   "geo.flux",
-								Source: "return\n    tables\n      |> filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2cellID, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2cellID, level: _grid.level), set: _grid.set)\n      )",
+								Source: "return\n    tables\n      |> filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2_cell_id, set: _grid.set)\n        else\n          contains(value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set)\n      )",
 								Start: ast.Position{
 									Column: 3,
 									Line:   66,
@@ -5180,7 +5180,7 @@ var pkgAST = &ast.Package{
 						Line:   128,
 					},
 					File:   "geo.flux",
-					Source: "groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _prepared =\n    if level == _s2cellIDLevel then\n      tables\n\t    |> duplicate(column: \"s2cellID\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2cellIDxxx: newColumn })\n  return\n    _prepared\n      |> group(columns: [newColumn])\n}",
+					Source: "groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _prepared =\n    if level == _s2cellIDLevel then\n      tables\n\t    |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2_cell_id_xxx: newColumn })\n  return\n    _prepared\n      |> group(columns: [newColumn])\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   107,
@@ -5214,7 +5214,7 @@ var pkgAST = &ast.Package{
 							Line:   128,
 						},
 						File:   "geo.flux",
-						Source: "(tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _prepared =\n    if level == _s2cellIDLevel then\n      tables\n\t    |> duplicate(column: \"s2cellID\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2cellIDxxx: newColumn })\n  return\n    _prepared\n      |> group(columns: [newColumn])\n}",
+						Source: "(tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _prepared =\n    if level == _s2cellIDLevel then\n      tables\n\t    |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2_cell_id_xxx: newColumn })\n  return\n    _prepared\n      |> group(columns: [newColumn])\n}",
 						Start: ast.Position{
 							Column: 15,
 							Line:   107,
@@ -5230,7 +5230,7 @@ var pkgAST = &ast.Package{
 								Line:   128,
 							},
 							File:   "geo.flux",
-							Source: "{\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _prepared =\n    if level == _s2cellIDLevel then\n      tables\n\t    |> duplicate(column: \"s2cellID\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2cellIDxxx: newColumn })\n  return\n    _prepared\n      |> group(columns: [newColumn])\n}",
+							Source: "{\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _prepared =\n    if level == _s2cellIDLevel then\n      tables\n\t    |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2_cell_id_xxx: newColumn })\n  return\n    _prepared\n      |> group(columns: [newColumn])\n}",
 							Start: ast.Position{
 								Column: 66,
 								Line:   107,
@@ -5454,11 +5454,11 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 56,
+									Column: 59,
 									Line:   124,
 								},
 								File:   "geo.flux",
-								Source: "_prepared =\n    if level == _s2cellIDLevel then\n      tables\n\t    |> duplicate(column: \"s2cellID\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2cellIDxxx: newColumn })",
+								Source: "_prepared =\n    if level == _s2cellIDLevel then\n      tables\n\t    |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2_cell_id_xxx: newColumn })",
 								Start: ast.Position{
 									Column: 3,
 									Line:   114,
@@ -5512,7 +5512,7 @@ var pkgAST = &ast.Package{
 												Line:   123,
 											},
 											File:   "geo.flux",
-											Source: "tables\n        |> map(fn: (r) => ({\n             r with\n               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))",
+											Source: "tables\n        |> map(fn: (r) => ({\n             r with\n               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))",
 											Start: ast.Position{
 												Column: 7,
 												Line:   119,
@@ -5529,7 +5529,7 @@ var pkgAST = &ast.Package{
 														Line:   123,
 													},
 													File:   "geo.flux",
-													Source: "fn: (r) => ({\n             r with\n               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           })",
+													Source: "fn: (r) => ({\n             r with\n               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           })",
 													Start: ast.Position{
 														Column: 16,
 														Line:   120,
@@ -5545,7 +5545,7 @@ var pkgAST = &ast.Package{
 															Line:   123,
 														},
 														File:   "geo.flux",
-														Source: "fn: (r) => ({\n             r with\n               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           })",
+														Source: "fn: (r) => ({\n             r with\n               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           })",
 														Start: ast.Position{
 															Column: 16,
 															Line:   120,
@@ -5579,7 +5579,7 @@ var pkgAST = &ast.Package{
 																Line:   123,
 															},
 															File:   "geo.flux",
-															Source: "(r) => ({\n             r with\n               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           })",
+															Source: "(r) => ({\n             r with\n               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           })",
 															Start: ast.Position{
 																Column: 20,
 																Line:   120,
@@ -5595,7 +5595,7 @@ var pkgAST = &ast.Package{
 																	Line:   123,
 																},
 																File:   "geo.flux",
-																Source: "({\n             r with\n               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           })",
+																Source: "({\n             r with\n               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           })",
 																Start: ast.Position{
 																	Column: 27,
 																	Line:   120,
@@ -5611,7 +5611,7 @@ var pkgAST = &ast.Package{
 																		Line:   123,
 																	},
 																	File:   "geo.flux",
-																	Source: "{\n             r with\n               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }",
+																	Source: "{\n             r with\n               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }",
 																	Start: ast.Position{
 																		Column: 28,
 																		Line:   120,
@@ -5623,11 +5623,11 @@ var pkgAST = &ast.Package{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 86,
+																			Column: 89,
 																			Line:   122,
 																		},
 																		File:   "geo.flux",
-																		Source: "_s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)",
+																		Source: "_s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)",
 																		Start: ast.Position{
 																			Column: 16,
 																			Line:   122,
@@ -5639,18 +5639,18 @@ var pkgAST = &ast.Package{
 																		Errors: nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 28,
+																				Column: 31,
 																				Line:   122,
 																			},
 																			File:   "geo.flux",
-																			Source: "_s2cellIDxxx",
+																			Source: "_s2_cell_id_xxx",
 																			Start: ast.Position{
 																				Column: 16,
 																				Line:   122,
 																			},
 																		},
 																	},
-																	Name: "_s2cellIDxxx",
+																	Name: "_s2_cell_id_xxx",
 																},
 																Value: &ast.CallExpression{
 																	Arguments: []ast.Expression{&ast.ObjectExpression{
@@ -5658,13 +5658,13 @@ var pkgAST = &ast.Package{
 																			Errors: nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 85,
+																					Column: 88,
 																					Line:   122,
 																				},
 																				File:   "geo.flux",
 																				Source: "point: {lat: r.lat, lon: r.lon}, level: level",
 																				Start: ast.Position{
-																					Column: 40,
+																					Column: 43,
 																					Line:   122,
 																				},
 																			},
@@ -5674,13 +5674,13 @@ var pkgAST = &ast.Package{
 																				Errors: nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 71,
+																						Column: 74,
 																						Line:   122,
 																					},
 																					File:   "geo.flux",
 																					Source: "point: {lat: r.lat, lon: r.lon}",
 																					Start: ast.Position{
-																						Column: 40,
+																						Column: 43,
 																						Line:   122,
 																					},
 																				},
@@ -5690,13 +5690,13 @@ var pkgAST = &ast.Package{
 																					Errors: nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 45,
+																							Column: 48,
 																							Line:   122,
 																						},
 																						File:   "geo.flux",
 																						Source: "point",
 																						Start: ast.Position{
-																							Column: 40,
+																							Column: 43,
 																							Line:   122,
 																						},
 																					},
@@ -5708,13 +5708,13 @@ var pkgAST = &ast.Package{
 																					Errors: nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 71,
+																							Column: 74,
 																							Line:   122,
 																						},
 																						File:   "geo.flux",
 																						Source: "{lat: r.lat, lon: r.lon}",
 																						Start: ast.Position{
-																							Column: 47,
+																							Column: 50,
 																							Line:   122,
 																						},
 																					},
@@ -5724,13 +5724,13 @@ var pkgAST = &ast.Package{
 																						Errors: nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 58,
+																								Column: 61,
 																								Line:   122,
 																							},
 																							File:   "geo.flux",
 																							Source: "lat: r.lat",
 																							Start: ast.Position{
-																								Column: 48,
+																								Column: 51,
 																								Line:   122,
 																							},
 																						},
@@ -5740,13 +5740,13 @@ var pkgAST = &ast.Package{
 																							Errors: nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 51,
+																									Column: 54,
 																									Line:   122,
 																								},
 																								File:   "geo.flux",
 																								Source: "lat",
 																								Start: ast.Position{
-																									Column: 48,
+																									Column: 51,
 																									Line:   122,
 																								},
 																							},
@@ -5758,13 +5758,13 @@ var pkgAST = &ast.Package{
 																							Errors: nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 58,
+																									Column: 61,
 																									Line:   122,
 																								},
 																								File:   "geo.flux",
 																								Source: "r.lat",
 																								Start: ast.Position{
-																									Column: 53,
+																									Column: 56,
 																									Line:   122,
 																								},
 																							},
@@ -5774,13 +5774,13 @@ var pkgAST = &ast.Package{
 																								Errors: nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 54,
+																										Column: 57,
 																										Line:   122,
 																									},
 																									File:   "geo.flux",
 																									Source: "r",
 																									Start: ast.Position{
-																										Column: 53,
+																										Column: 56,
 																										Line:   122,
 																									},
 																								},
@@ -5792,13 +5792,13 @@ var pkgAST = &ast.Package{
 																								Errors: nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 58,
+																										Column: 61,
 																										Line:   122,
 																									},
 																									File:   "geo.flux",
 																									Source: "lat",
 																									Start: ast.Position{
-																										Column: 55,
+																										Column: 58,
 																										Line:   122,
 																									},
 																								},
@@ -5811,13 +5811,13 @@ var pkgAST = &ast.Package{
 																						Errors: nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 70,
+																								Column: 73,
 																								Line:   122,
 																							},
 																							File:   "geo.flux",
 																							Source: "lon: r.lon",
 																							Start: ast.Position{
-																								Column: 60,
+																								Column: 63,
 																								Line:   122,
 																							},
 																						},
@@ -5827,13 +5827,13 @@ var pkgAST = &ast.Package{
 																							Errors: nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 63,
+																									Column: 66,
 																									Line:   122,
 																								},
 																								File:   "geo.flux",
 																								Source: "lon",
 																								Start: ast.Position{
-																									Column: 60,
+																									Column: 63,
 																									Line:   122,
 																								},
 																							},
@@ -5845,13 +5845,13 @@ var pkgAST = &ast.Package{
 																							Errors: nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 70,
+																									Column: 73,
 																									Line:   122,
 																								},
 																								File:   "geo.flux",
 																								Source: "r.lon",
 																								Start: ast.Position{
-																									Column: 65,
+																									Column: 68,
 																									Line:   122,
 																								},
 																							},
@@ -5861,13 +5861,13 @@ var pkgAST = &ast.Package{
 																								Errors: nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 66,
+																										Column: 69,
 																										Line:   122,
 																									},
 																									File:   "geo.flux",
 																									Source: "r",
 																									Start: ast.Position{
-																										Column: 65,
+																										Column: 68,
 																										Line:   122,
 																									},
 																								},
@@ -5879,13 +5879,13 @@ var pkgAST = &ast.Package{
 																								Errors: nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 70,
+																										Column: 73,
 																										Line:   122,
 																									},
 																									File:   "geo.flux",
 																									Source: "lon",
 																									Start: ast.Position{
-																										Column: 67,
+																										Column: 70,
 																										Line:   122,
 																									},
 																								},
@@ -5901,13 +5901,13 @@ var pkgAST = &ast.Package{
 																				Errors: nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 85,
+																						Column: 88,
 																						Line:   122,
 																					},
 																					File:   "geo.flux",
 																					Source: "level: level",
 																					Start: ast.Position{
-																						Column: 73,
+																						Column: 76,
 																						Line:   122,
 																					},
 																				},
@@ -5917,13 +5917,13 @@ var pkgAST = &ast.Package{
 																					Errors: nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 78,
+																							Column: 81,
 																							Line:   122,
 																						},
 																						File:   "geo.flux",
 																						Source: "level",
 																						Start: ast.Position{
-																							Column: 73,
+																							Column: 76,
 																							Line:   122,
 																						},
 																					},
@@ -5935,13 +5935,13 @@ var pkgAST = &ast.Package{
 																					Errors: nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 85,
+																							Column: 88,
 																							Line:   122,
 																						},
 																						File:   "geo.flux",
 																						Source: "level",
 																						Start: ast.Position{
-																							Column: 80,
+																							Column: 83,
 																							Line:   122,
 																						},
 																					},
@@ -5955,13 +5955,13 @@ var pkgAST = &ast.Package{
 																		Errors: nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 86,
+																				Column: 89,
 																				Line:   122,
 																			},
 																			File:   "geo.flux",
 																			Source: "getParent(point: {lat: r.lat, lon: r.lon}, level: level)",
 																			Start: ast.Position{
-																				Column: 30,
+																				Column: 33,
 																				Line:   122,
 																			},
 																		},
@@ -5971,13 +5971,13 @@ var pkgAST = &ast.Package{
 																			Errors: nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 39,
+																					Column: 42,
 																					Line:   122,
 																				},
 																				File:   "geo.flux",
 																				Source: "getParent",
 																				Start: ast.Position{
-																					Column: 30,
+																					Column: 33,
 																					Line:   122,
 																				},
 																			},
@@ -6054,7 +6054,7 @@ var pkgAST = &ast.Package{
 													Line:   123,
 												},
 												File:   "geo.flux",
-												Source: "map(fn: (r) => ({\n             r with\n               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))",
+												Source: "map(fn: (r) => ({\n             r with\n               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))",
 												Start: ast.Position{
 													Column: 12,
 													Line:   120,
@@ -6085,11 +6085,11 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 56,
+											Column: 59,
 											Line:   124,
 										},
 										File:   "geo.flux",
-										Source: "tables\n        |> map(fn: (r) => ({\n             r with\n               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2cellIDxxx: newColumn })",
+										Source: "tables\n        |> map(fn: (r) => ({\n             r with\n               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2_cell_id_xxx: newColumn })",
 										Start: ast.Position{
 											Column: 7,
 											Line:   119,
@@ -6102,11 +6102,11 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 55,
+													Column: 58,
 													Line:   124,
 												},
 												File:   "geo.flux",
-												Source: "columns: { _s2cellIDxxx: newColumn }",
+												Source: "columns: { _s2_cell_id_xxx: newColumn }",
 												Start: ast.Position{
 													Column: 19,
 													Line:   124,
@@ -6118,11 +6118,11 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 55,
+														Column: 58,
 														Line:   124,
 													},
 													File:   "geo.flux",
-													Source: "columns: { _s2cellIDxxx: newColumn }",
+													Source: "columns: { _s2_cell_id_xxx: newColumn }",
 													Start: ast.Position{
 														Column: 19,
 														Line:   124,
@@ -6152,11 +6152,11 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 55,
+															Column: 58,
 															Line:   124,
 														},
 														File:   "geo.flux",
-														Source: "{ _s2cellIDxxx: newColumn }",
+														Source: "{ _s2_cell_id_xxx: newColumn }",
 														Start: ast.Position{
 															Column: 28,
 															Line:   124,
@@ -6168,11 +6168,11 @@ var pkgAST = &ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 53,
+																Column: 56,
 																Line:   124,
 															},
 															File:   "geo.flux",
-															Source: "_s2cellIDxxx: newColumn",
+															Source: "_s2_cell_id_xxx: newColumn",
 															Start: ast.Position{
 																Column: 30,
 																Line:   124,
@@ -6184,31 +6184,31 @@ var pkgAST = &ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 42,
+																	Column: 45,
 																	Line:   124,
 																},
 																File:   "geo.flux",
-																Source: "_s2cellIDxxx",
+																Source: "_s2_cell_id_xxx",
 																Start: ast.Position{
 																	Column: 30,
 																	Line:   124,
 																},
 															},
 														},
-														Name: "_s2cellIDxxx",
+														Name: "_s2_cell_id_xxx",
 													},
 													Value: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 53,
+																	Column: 56,
 																	Line:   124,
 																},
 																File:   "geo.flux",
 																Source: "newColumn",
 																Start: ast.Position{
-																	Column: 44,
+																	Column: 47,
 																	Line:   124,
 																},
 															},
@@ -6225,11 +6225,11 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 56,
+												Column: 59,
 												Line:   124,
 											},
 											File:   "geo.flux",
-											Source: "rename(columns: { _s2cellIDxxx: newColumn })",
+											Source: "rename(columns: { _s2_cell_id_xxx: newColumn })",
 											Start: ast.Position{
 												Column: 12,
 												Line:   124,
@@ -6260,11 +6260,11 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 56,
+										Column: 59,
 										Line:   124,
 									},
 									File:   "geo.flux",
-									Source: "if level == _s2cellIDLevel then\n      tables\n\t    |> duplicate(column: \"s2cellID\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _s2cellIDxxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2cellIDxxx: newColumn })",
+									Source: "if level == _s2cellIDLevel then\n      tables\n\t    |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2_cell_id_xxx: newColumn })",
 									Start: ast.Position{
 										Column: 5,
 										Line:   115,
@@ -6294,11 +6294,11 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 53,
+											Column: 55,
 											Line:   117,
 										},
 										File:   "geo.flux",
-										Source: "tables\n\t    |> duplicate(column: \"s2cellID\", as: newColumn)",
+										Source: "tables\n\t    |> duplicate(column: \"s2_cell_id\", as: newColumn)",
 										Start: ast.Position{
 											Column: 7,
 											Line:   116,
@@ -6311,11 +6311,11 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 52,
+													Column: 54,
 													Line:   117,
 												},
 												File:   "geo.flux",
-												Source: "column: \"s2cellID\", as: newColumn",
+												Source: "column: \"s2_cell_id\", as: newColumn",
 												Start: ast.Position{
 													Column: 19,
 													Line:   117,
@@ -6327,11 +6327,11 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 37,
+														Column: 39,
 														Line:   117,
 													},
 													File:   "geo.flux",
-													Source: "column: \"s2cellID\"",
+													Source: "column: \"s2_cell_id\"",
 													Start: ast.Position{
 														Column: 19,
 														Line:   117,
@@ -6361,31 +6361,31 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 37,
+															Column: 39,
 															Line:   117,
 														},
 														File:   "geo.flux",
-														Source: "\"s2cellID\"",
+														Source: "\"s2_cell_id\"",
 														Start: ast.Position{
 															Column: 27,
 															Line:   117,
 														},
 													},
 												},
-												Value: "s2cellID",
+												Value: "s2_cell_id",
 											},
 										}, &ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 52,
+														Column: 54,
 														Line:   117,
 													},
 													File:   "geo.flux",
 													Source: "as: newColumn",
 													Start: ast.Position{
-														Column: 39,
+														Column: 41,
 														Line:   117,
 													},
 												},
@@ -6395,13 +6395,13 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 41,
+															Column: 43,
 															Line:   117,
 														},
 														File:   "geo.flux",
 														Source: "as",
 														Start: ast.Position{
-															Column: 39,
+															Column: 41,
 															Line:   117,
 														},
 													},
@@ -6413,13 +6413,13 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 52,
+															Column: 54,
 															Line:   117,
 														},
 														File:   "geo.flux",
 														Source: "newColumn",
 														Start: ast.Position{
-															Column: 43,
+															Column: 45,
 															Line:   117,
 														},
 													},
@@ -6433,11 +6433,11 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 53,
+												Column: 55,
 												Line:   117,
 											},
 											File:   "geo.flux",
-											Source: "duplicate(column: \"s2cellID\", as: newColumn)",
+											Source: "duplicate(column: \"s2_cell_id\", as: newColumn)",
 											Start: ast.Position{
 												Column: 9,
 												Line:   117,
