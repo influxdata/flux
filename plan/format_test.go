@@ -17,7 +17,7 @@ import (
 
 func TestFormatted(t *testing.T) {
 	fromSpec := &influxdb.FromProcedureSpec{
-		Bucket: "my-bucket",
+		Bucket: influxdb.NameOrID{Name: "my-bucket"},
 	}
 
 	// (r) => r._value > 5.0

@@ -16,6 +16,7 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/universe"
 	"go.uber.org/zap/zaptest"
 )
@@ -107,7 +108,7 @@ func TestExecutor_Execute(t *testing.T) {
 					plan.CreatePhysicalNode("filter", &universe.FilterProcedureSpec{
 						Fn: interpreter.ResolvedFunction{
 							Fn:    executetest.FunctionExpression(t, "(r) => r._value < 2.5"),
-							Scope: flux.Prelude(),
+							Scope: runtime.Prelude(),
 						},
 					}),
 					plan.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("_result")),
@@ -175,7 +176,7 @@ func TestExecutor_Execute(t *testing.T) {
 					)),
 					plan.CreatePhysicalNode("filter", &universe.FilterProcedureSpec{
 						Fn: interpreter.ResolvedFunction{
-							Scope: flux.Prelude(),
+							Scope: runtime.Prelude(),
 							Fn:    executetest.FunctionExpression(t, "(r) => r._value < 7.5"),
 						},
 					}),

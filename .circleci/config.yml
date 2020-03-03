@@ -11,13 +11,6 @@ jobs:
       SCCACHE_CACHE_SIZE: 1G
     steps:
       - checkout
-      # Populate GOCACHE.
-      - restore_cache:
-          name: Restoring GOCACHE
-          keys:
-            - flux-gocache-{{ .Branch }}-{{ .Revision }} # Matches when retrying a single run.
-            - flux-gocache-{{ .Branch }}-                # Matches a new commit on an existing branch.
-            - flux-gocache-                              # Matches a new branch.
       # Populate GOPATH/pkg.
       - restore_cache:
           name: Restoring GOPATH/pkg/mod
@@ -42,12 +35,6 @@ jobs:
           name: Uploading coverage report
           command: |
             bash <(curl -s https://codecov.io/bash)
-      - save_cache:
-          name: Saving GOCACHE
-          key: flux-gocache-{{ .Branch }}-{{ .Revision }}
-          paths:
-            - /tmp/go-cache
-          when: always
       - save_cache:
           name: Saving GOPATH/pkg/mod
           key: flux-gomod-{{checksum "go.sum"}}

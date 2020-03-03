@@ -54,7 +54,9 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 
 	var (
 		fromSpec = &influxdb.FromProcedureSpec{
-			Bucket: "my-bucket",
+			Org:    &influxdb.NameOrID{Name: "influxdata"},
+			Bucket: influxdb.NameOrID{Name: "my-bucket"},
+			Host:   func(v string) *string { return &v }("http://localhost:9999"),
 		}
 		rangeSpec = &universe.RangeProcedureSpec{
 			Bounds: flux.Bounds{
@@ -449,7 +451,9 @@ func TestLogicalPlanner(t *testing.T) {
 				yield(name: "result")`,
 		wantPlan: plantest.PlanSpec{
 			Nodes: []plan.Node{
-				plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{Bucket: "telegraf"}),
+				plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{
+					Bucket: influxdb.NameOrID{Name: "telegraf"},
+				}),
 				plan.CreateLogicalNode("merged_filter1_filter2_filter3", &universe.FilterProcedureSpec{
 					Fn: interpreter.ResolvedFunction{
 						Scope: valuestest.Scope(),
@@ -497,7 +501,9 @@ func TestLogicalPlanner(t *testing.T) {
 				from(bucket: "telegraf") |> map(fn: (r) => ({r with _value: r._value * 2.0})) |> filter(fn: (r) => r._value < 10.0) |> yield(name: "result")`,
 			wantPlan: plantest.PlanSpec{
 				Nodes: []plan.Node{
-					plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{Bucket: "telegraf"}),
+					plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{
+						Bucket: influxdb.NameOrID{Name: "telegraf"},
+					}),
 					plan.CreateLogicalNode("filter2_copy", &universe.FilterProcedureSpec{
 						Fn: interpreter.ResolvedFunction{
 							Scope: valuestest.Scope(),
@@ -555,7 +561,9 @@ func TestLogicalPlanner(t *testing.T) {
 					yield(name: "result")`,
 			wantPlan: plantest.PlanSpec{
 				Nodes: []plan.Node{
-					plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{Bucket: "telegraf"}),
+					plan.CreateLogicalNode("from0", &influxdb.FromProcedureSpec{
+						Bucket: influxdb.NameOrID{Name: "telegraf"},
+					}),
 					plan.CreateLogicalNode("merged_filter1_filter3_copy", &universe.FilterProcedureSpec{
 						Fn: interpreter.ResolvedFunction{
 							Scope: valuestest.Scope(),

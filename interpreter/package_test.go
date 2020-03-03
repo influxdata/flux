@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"testing"
 
+	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/interpreter/interptest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -40,13 +42,13 @@ func TestAccessNestedImport(t *testing.T) {
 	t.Skip("Handle imports for user-defined packages https://github.com/influxdata/flux/issues/2343")
 	// package a
 	// x = 0
-	packageA := interpreter.NewPackageWithValues("a", values.NewObjectWithValues(map[string]values.Value{
+	packageA := interpreter.NewPackageWithValues("a", "", values.NewObjectWithValues(map[string]values.Value{
 		"x": values.NewInt(0),
 	}))
 
 	// package b
 	// import "a"
-	packageB := interpreter.NewPackageWithValues("b", values.NewObjectWithValues(map[string]values.Value{
+	packageB := interpreter.NewPackageWithValues("b", "", values.NewObjectWithValues(map[string]values.Value{
 		"a": packageA,
 	}))
 
@@ -364,28 +366,22 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 }
 */
 
-func TestInterpreter_SetNewOption(t *testing.T) {
-	t.Skip("Interpreter seems to ignore option assignments https://github.com/influxdata/flux/issues/2410")
+func TestInterpreter_MutateOption(t *testing.T) {
 	pkg := interpreter.NewPackage("alert")
 	ctx := dependenciestest.Default().Inject(context.Background())
 	itrp := interpreter.NewInterpreter(pkg)
 	script := `
 		package alert
-		option state = "Warning"
-		state
+		import "planner"
+		fail = () => {
+			[][0]
+			return false
+		}
+		option planner.disableLogicalRules = ["dummyRule"]
+		planner.disableLogicalRules[0] == "dummyRule" or fail()
 `
-	if _, err := interptest.Eval(ctx, itrp, values.NewNestedScope(nil, pkg), nil, script); err != nil {
+	if _, err := interptest.Eval(ctx, itrp, values.NewNestedScope(nil, pkg), runtime.StdLib(), script); err != nil {
 		t.Fatalf("failed to evaluate package: %v", err)
-	}
-	option, ok := pkg.Get("state")
-	if !ok {
-		t.Errorf("missing option %q in package %s", "state", "alert")
-	}
-	if got, want := option.Type().Nature(), semantic.String; want != got {
-		t.Fatalf("unexpected option type; want=%s got=%s value: %v", want, got, option)
-	}
-	if got, want := option.Str(), "Warning"; want != got {
-		t.Errorf("unexpected option value; want=%s got=%s", want, got)
 	}
 }
 

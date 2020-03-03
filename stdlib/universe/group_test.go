@@ -40,8 +40,10 @@ func TestGroup_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID:   "from0",
-						Spec: &influxdb.FromOpSpec{Bucket: "telegraf"},
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "telegraf"},
+						},
 					},
 					{
 						ID: "range1",
@@ -73,8 +75,10 @@ func TestGroup_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID:   "from0",
-						Spec: &influxdb.FromOpSpec{Bucket: "telegraf"},
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "telegraf"},
+						},
 					},
 					{
 						ID: "range1",
@@ -106,8 +110,10 @@ func TestGroup_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID:   "from0",
-						Spec: &influxdb.FromOpSpec{Bucket: "telegraf"},
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "telegraf"},
+						},
 					},
 					{
 						ID: "range1",
@@ -139,8 +145,10 @@ func TestGroup_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID:   "from0",
-						Spec: &influxdb.FromOpSpec{Bucket: "telegraf"},
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "telegraf"},
+						},
 					},
 					{
 						ID: "range1",
@@ -175,8 +183,10 @@ func TestGroup_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID:   "from0",
-						Spec: &influxdb.FromOpSpec{Bucket: "telegraf"},
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "telegraf"},
+						},
 					},
 					{
 						ID: "range1",
@@ -963,7 +973,6 @@ func TestMergeGroupRule(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
-			t.Skip("https://github.com/influxdata/flux/issues/2490")
 			t.Parallel()
 			plantest.LogicalRuleTestHelper(t, &tc)
 		})

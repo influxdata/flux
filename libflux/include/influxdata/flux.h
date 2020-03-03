@@ -72,6 +72,17 @@ void flux_get_env_stdlib(struct flux_buffer_t *);
 // and their contents.
 struct flux_semantic_pkg_t;
 
+// flux_semantic_analyzer_t represents a semantic analyzer that can be used to iteratively
+// analyze snippets of code.
+struct flux_semantic_analyzer_t;
+
+// flux_new_semantic_analyzer creates a new semantic analyzer for the given package path.
+struct flux_semantic_analyzer_t *flux_new_semantic_analyzer(const char *pkgpath);
+
+// flux_analyze_with will analyze the ast snippet using the flux_semantic_analyzer_t and produce
+// a semantic graph for that snippet.
+struct flux_error_t *flux_analyze_with(struct flux_semantic_analyzer_t *, struct flux_ast_pkg_t *, struct flux_semantic_pkg_t **);
+
 // flux_analyze analyzes the given AST and will populate the second pointer argument with
 // a pointer to the resulting semantic graph.
 // It is the caller's responsibility to free the resulting semantic graph with a call to flux_free().

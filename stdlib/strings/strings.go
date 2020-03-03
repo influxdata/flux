@@ -7,7 +7,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -31,7 +31,7 @@ const (
 func generateSingleArgStringFunction(name string, stringFn func(string) string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.MustLookupBuiltinType("strings", name),
+		runtime.MustLookupBuiltinType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var str string
 
@@ -59,7 +59,7 @@ func generateDualArgStringFunction(name string, argNames []string, stringFn func
 
 	return values.NewFunction(
 		name,
-		semantic.MustLookupBuiltinType("strings", name),
+		runtime.MustLookupBuiltinType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
@@ -89,7 +89,7 @@ func generateDualArgStringFunctionReturnBool(name string, argNames []string, str
 
 	return values.NewFunction(
 		name,
-		semantic.MustLookupBuiltinType("strings", name),
+		runtime.MustLookupBuiltinType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
@@ -119,7 +119,7 @@ func generateDualArgStringFunctionReturnInt(name string, argNames []string, stri
 
 	return values.NewFunction(
 		name,
-		semantic.MustLookupBuiltinType("strings", name),
+		runtime.MustLookupBuiltinType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
@@ -145,7 +145,7 @@ func generateDualArgStringFunctionReturnInt(name string, argNames []string, stri
 func generateSplit(name string, argNames []string, fn func(string, string) []string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.MustLookupBuiltinType("strings", name),
+		runtime.MustLookupBuiltinType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 
@@ -176,7 +176,7 @@ func generateSplit(name string, argNames []string, fn func(string, string) []str
 func generateSplitN(name string, argNames []string, fn func(string, string, int) []string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.MustLookupBuiltinType("strings", name),
+		runtime.MustLookupBuiltinType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 3)
 			var argTypes = []semantic.Nature{semantic.String, semantic.String, semantic.Int}
@@ -208,7 +208,7 @@ func generateSplitN(name string, argNames []string, fn func(string, string, int)
 func generateRepeat(name string, argNames []string, fn func(string, int) string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.MustLookupBuiltinType("strings", name),
+		runtime.MustLookupBuiltinType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 2)
 			var argType = []semantic.Nature{semantic.String, semantic.Int}
@@ -235,7 +235,7 @@ func generateRepeat(name string, argNames []string, fn func(string, int) string)
 func generateReplace(name string, argNames []string, fn func(string, string, string, int) string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.MustLookupBuiltinType("strings", name),
+		runtime.MustLookupBuiltinType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 4)
 			var argType = []semantic.Nature{semantic.String, semantic.String, semantic.String, semantic.Int}
@@ -262,7 +262,7 @@ func generateReplace(name string, argNames []string, fn func(string, string, str
 func generateReplaceAll(name string, argNames []string, fn func(string, string, string) string) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.MustLookupBuiltinType("strings", name),
+		runtime.MustLookupBuiltinType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var argVals = make([]values.Value, 3)
 
@@ -288,7 +288,7 @@ func generateReplaceAll(name string, argNames []string, fn func(string, string, 
 func generateUnicodeIsFunction(name string, Fn func(rune) bool) values.Function {
 	return values.NewFunction(
 		name,
-		semantic.MustLookupBuiltinType("strings", name),
+		runtime.MustLookupBuiltinType("strings", name),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			var str string
 
@@ -320,7 +320,7 @@ func generateUnicodeIsFunction(name string, Fn func(rune) bool) values.Function 
 
 var strlen = values.NewFunction(
 	"strlen",
-	semantic.MustLookupBuiltinType("strings", "strlen"),
+	runtime.MustLookupBuiltinType("strings", "strlen"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		v, ok := args.Get(stringArgV)
 		if !ok {
@@ -337,7 +337,7 @@ var strlen = values.NewFunction(
 
 var substring = values.NewFunction(
 	"substring",
-	semantic.MustLookupBuiltinType("strings", "substring"),
+	runtime.MustLookupBuiltinType("strings", "substring"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		v, vOk := args.Get(stringArgV)
 		a, aOk := args.Get(start)
@@ -375,78 +375,78 @@ var substring = values.NewFunction(
 )
 
 func init() {
-	flux.RegisterPackageValue("strings", "strlen", strlen)
-	flux.RegisterPackageValue("strings", "substring", substring)
+	runtime.RegisterPackageValue("strings", "strlen", strlen)
+	runtime.RegisterPackageValue("strings", "substring", substring)
 
-	flux.RegisterPackageValue("strings", "trim",
+	runtime.RegisterPackageValue("strings", "trim",
 		generateDualArgStringFunction("trim", []string{stringArgV, cutset}, strings.Trim))
-	flux.RegisterPackageValue("strings", "trimSpace",
+	runtime.RegisterPackageValue("strings", "trimSpace",
 		generateSingleArgStringFunction("trimSpace", strings.TrimSpace))
-	flux.RegisterPackageValue("strings", "trimPrefix",
+	runtime.RegisterPackageValue("strings", "trimPrefix",
 		generateDualArgStringFunction("trimSuffix", []string{stringArgV, prefix}, strings.TrimPrefix))
-	flux.RegisterPackageValue("strings", "trimSuffix",
+	runtime.RegisterPackageValue("strings", "trimSuffix",
 		generateDualArgStringFunction("trimSuffix", []string{stringArgV, suffix}, strings.TrimSuffix))
-	flux.RegisterPackageValue("strings", "title",
+	runtime.RegisterPackageValue("strings", "title",
 		generateSingleArgStringFunction("title", strings.Title))
-	flux.RegisterPackageValue("strings", "toUpper",
+	runtime.RegisterPackageValue("strings", "toUpper",
 		generateSingleArgStringFunction("toUpper", strings.ToUpper))
-	flux.RegisterPackageValue("strings", "toLower",
+	runtime.RegisterPackageValue("strings", "toLower",
 		generateSingleArgStringFunction("toLower", strings.ToLower))
-	flux.RegisterPackageValue("strings", "trimRight",
+	runtime.RegisterPackageValue("strings", "trimRight",
 		generateDualArgStringFunction("trimRight", []string{stringArgV, cutset}, strings.TrimRight))
-	flux.RegisterPackageValue("strings", "trimLeft",
+	runtime.RegisterPackageValue("strings", "trimLeft",
 		generateDualArgStringFunction("trimLeft", []string{stringArgV, cutset}, strings.TrimLeft))
-	flux.RegisterPackageValue("strings", "toTitle",
+	runtime.RegisterPackageValue("strings", "toTitle",
 		generateSingleArgStringFunction("toTitle", strings.ToTitle))
-	flux.RegisterPackageValue("strings", "hasPrefix",
+	runtime.RegisterPackageValue("strings", "hasPrefix",
 		generateDualArgStringFunctionReturnBool("hasPrefix", []string{stringArgV, prefix}, strings.HasPrefix))
-	flux.RegisterPackageValue("strings", "hasSuffix",
+	runtime.RegisterPackageValue("strings", "hasSuffix",
 		generateDualArgStringFunctionReturnBool("hasSuffix", []string{stringArgV, suffix}, strings.HasSuffix))
-	flux.RegisterPackageValue("strings", "containsStr",
+	runtime.RegisterPackageValue("strings", "containsStr",
 		generateDualArgStringFunctionReturnBool("containsStr", []string{stringArgV, substr}, strings.Contains))
-	flux.RegisterPackageValue("strings", "containsAny",
+	runtime.RegisterPackageValue("strings", "containsAny",
 		generateDualArgStringFunctionReturnBool("containsAny", []string{stringArgV, chars}, strings.ContainsAny))
-	flux.RegisterPackageValue("strings", "equalFold",
+	runtime.RegisterPackageValue("strings", "equalFold",
 		generateDualArgStringFunctionReturnBool("equalFold", []string{stringArgV, stringArgT}, strings.EqualFold))
-	flux.RegisterPackageValue("strings", "compare",
+	runtime.RegisterPackageValue("strings", "compare",
 		generateDualArgStringFunctionReturnInt("compare", []string{stringArgV, stringArgT}, strings.Compare))
-	flux.RegisterPackageValue("strings", "countStr",
+	runtime.RegisterPackageValue("strings", "countStr",
 		generateDualArgStringFunctionReturnInt("countStr", []string{stringArgV, substr}, strings.Count))
-	flux.RegisterPackageValue("strings", "index",
+	runtime.RegisterPackageValue("strings", "index",
 		generateDualArgStringFunctionReturnInt("index", []string{stringArgV, substr}, strings.Index))
-	flux.RegisterPackageValue("strings", "indexAny",
+	runtime.RegisterPackageValue("strings", "indexAny",
 		generateDualArgStringFunctionReturnInt("indexAny", []string{stringArgV, chars}, strings.IndexAny))
-	flux.RegisterPackageValue("strings", "lastIndex",
+	runtime.RegisterPackageValue("strings", "lastIndex",
 		generateDualArgStringFunctionReturnInt("lastIndex", []string{stringArgV, substr}, strings.LastIndex))
-	flux.RegisterPackageValue("strings", "lastIndexAny",
+	runtime.RegisterPackageValue("strings", "lastIndexAny",
 		generateDualArgStringFunctionReturnInt("lastIndexAny", []string{stringArgV, substr}, strings.LastIndexAny))
-	flux.RegisterPackageValue("strings", "isDigit",
+	runtime.RegisterPackageValue("strings", "isDigit",
 		generateUnicodeIsFunction("isDigit", unicode.IsDigit))
-	flux.RegisterPackageValue("strings", "isLetter",
+	runtime.RegisterPackageValue("strings", "isLetter",
 		generateUnicodeIsFunction("isLetter", unicode.IsLetter))
-	flux.RegisterPackageValue("strings", "isLower",
+	runtime.RegisterPackageValue("strings", "isLower",
 		generateUnicodeIsFunction("isLower", unicode.IsLower))
-	flux.RegisterPackageValue("strings", "isUpper",
+	runtime.RegisterPackageValue("strings", "isUpper",
 		generateUnicodeIsFunction("isUpper", unicode.IsUpper))
-	flux.RegisterPackageValue("strings", "repeat",
+	runtime.RegisterPackageValue("strings", "repeat",
 		generateRepeat("repeat", []string{stringArgV, integer}, strings.Repeat))
-	flux.RegisterPackageValue("strings", "replace",
+	runtime.RegisterPackageValue("strings", "replace",
 		generateReplace("replace", []string{stringArgV, stringArgT, stringArgU, integer}, strings.Replace))
-	flux.RegisterPackageValue("strings", "replaceAll",
+	runtime.RegisterPackageValue("strings", "replaceAll",
 		generateReplaceAll("replaceAll", []string{stringArgV, stringArgT, stringArgU}, replaceAll))
-	flux.RegisterPackageValue("strings", "split",
+	runtime.RegisterPackageValue("strings", "split",
 		generateSplit("split", []string{stringArgV, stringArgT}, strings.Split))
-	flux.RegisterPackageValue("strings", "splitAfter",
+	runtime.RegisterPackageValue("strings", "splitAfter",
 		generateSplit("splitAfter", []string{stringArgV, stringArgT}, strings.SplitAfter))
-	flux.RegisterPackageValue("strings", "splitN",
+	runtime.RegisterPackageValue("strings", "splitN",
 		generateSplitN("splitN", []string{stringArgV, stringArgT, integer}, strings.SplitN))
-	flux.RegisterPackageValue("strings", "splitAfterN",
+	runtime.RegisterPackageValue("strings", "splitAfterN",
 		generateSplitN("splitAfterN", []string{stringArgV, stringArgT, integer}, strings.SplitAfterN))
 
 	SpecialFns = map[string]values.Function{
 		"joinStr": values.NewFunction(
 			"joinStr",
-			semantic.MustLookupBuiltinType("strings", "joinStr"),
+			runtime.MustLookupBuiltinType("strings", "joinStr"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				var argVals = make([]values.Value, 2)
 
@@ -483,6 +483,6 @@ func init() {
 		),
 	}
 
-	flux.RegisterPackageValue("strings", "joinStr", SpecialFns["joinStr"])
+	runtime.RegisterPackageValue("strings", "joinStr", SpecialFns["joinStr"])
 
 }

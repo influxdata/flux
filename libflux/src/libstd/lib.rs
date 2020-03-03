@@ -9,6 +9,10 @@ use flux::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 use flux::semantic::flatbuffers::types::build_env;
 use flux::semantic::fresh::Fresher;
 use flux::semantic::nodes::{infer_pkg_types, inject_pkg_types};
+use flux::semantic::Importer;
+
+use std::ffi::CStr;
+use std::os::raw::c_char;
 
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
@@ -27,7 +31,7 @@ pub fn fresher() -> Fresher {
 
 /// # Safety
 ///
-/// Ths function is unsafe because it dereferences a raw pointer.
+/// This function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
 pub unsafe extern "C" fn flux_analyze(
     ast_pkg: *mut flux_ast_pkg_t,
@@ -45,6 +49,121 @@ pub unsafe extern "C" fn flux_analyze(
             Box::into_raw(Box::new(errh)) as *mut flux_error_t
         }
     }
+}
+
+struct SemanticAnalyzer {
+    f: Fresher,
+    env: Environment,
+    imports: Environment,
+    importer: Box<dyn Importer>,
+}
+
+fn new_semantic_analyzer(pkgpath: &str) -> Result<SemanticAnalyzer, flux::Error> {
+    let env = match prelude() {
+        Some(prelude) => Environment::new(prelude),
+        None => return Err(flux::Error::from("missing prelude")),
+    };
+    let imports = match imports() {
+        Some(imports) => imports,
+        None => return Err(flux::Error::from("missing stdlib imports")),
+    };
+    let mut f = fresher();
+    let importer = builtins().importer_for(pkgpath, &mut f);
+    Ok(SemanticAnalyzer {
+        f,
+        env,
+        imports,
+        importer: Box::new(importer),
+    })
+}
+
+impl SemanticAnalyzer {
+    fn analyze(
+        &mut self,
+        ast_pkg: ast::Package,
+    ) -> Result<flux::semantic::nodes::Package, flux::Error> {
+        let errs = ast::check::check(ast::walk::Node::Package(&ast_pkg));
+        if !errs.is_empty() {
+            return Err(flux::Error::from(format!("{}", &errs[0])));
+        }
+
+        let mut sem_pkg = flux::semantic::convert::convert_with(ast_pkg, &mut self.f)?;
+        check::check(&sem_pkg)?;
+
+        // Clone the environment. The environment may not be returned but we need to maintain
+        // a copy of it for this function to be re-entrant.
+        let env = self.env.clone();
+        let (mut env, sub) = infer_pkg_types(
+            &mut sem_pkg,
+            env,
+            &mut self.f,
+            &self.imports,
+            &self.importer,
+        )?;
+        // TODO(jsternberg): This part is hacky and can be improved
+        // by refactoring infer file so we can use the internals without
+        // infering the file itself.
+        // Look at the imports that were part of this semantic package
+        // and re-add them to the environment.
+        for file in &sem_pkg.files {
+            for dec in &file.imports {
+                let path = &dec.path.value;
+                let name = dec.import_name();
+
+                // A failure should have already happened if any of these
+                // imports would have failed.
+                let poly = self.imports.lookup(&path).unwrap();
+                env.add(name.to_owned(), poly.to_owned());
+            }
+        }
+        self.env = env;
+        Ok(inject_pkg_types(sem_pkg, &sub))
+    }
+}
+
+/// # Safety
+///
+/// Ths function is unsafe because it dereferences a raw pointer.
+#[no_mangle]
+pub unsafe extern "C" fn flux_new_semantic_analyzer(
+    cstr: *mut c_char,
+) -> *mut flux_semantic_analyzer_t {
+    let buf = CStr::from_ptr(cstr).to_bytes(); // Unsafe
+    let s = String::from_utf8(buf.to_vec()).unwrap();
+    let analyzer = Box::new(new_semantic_analyzer(&s));
+    Box::into_raw(analyzer) as *mut flux_semantic_analyzer_t
+}
+
+/// # Safety
+///
+/// Ths function is unsafe because it dereferences a raw pointer.
+#[no_mangle]
+pub unsafe extern "C" fn flux_analyze_with(
+    analyzer: *mut flux_semantic_analyzer_t,
+    ast_pkg: *mut flux_ast_pkg_t,
+    out_sem_pkg: *mut *const flux_semantic_pkg_t,
+) -> *mut flux_error_t {
+    let ast_pkg = *Box::from_raw(ast_pkg as *mut ast::Package);
+    let analyzer = match &mut (*(analyzer as *mut Result<SemanticAnalyzer, flux::Error>)) {
+        Ok(a) => a,
+        Err(err) => {
+            let errh = flux::ErrorHandle {
+                err: Box::new(err.to_owned()),
+            };
+            return Box::into_raw(Box::new(errh)) as *mut flux_error_t;
+        }
+    };
+
+    let sem_pkg = Box::new(match analyzer.analyze(ast_pkg) {
+        Ok(sem_pkg) => sem_pkg,
+        Err(err) => {
+            let errh = flux::ErrorHandle { err: Box::new(err) };
+            return Box::into_raw(Box::new(errh)) as *mut flux_error_t;
+        }
+    });
+
+    *out_sem_pkg = Box::into_raw(sem_pkg) as *const flux_semantic_pkg_t;
+    std::ptr::null_mut()
 }
 
 /// analyze consumes the given AST package and returns a semantic package

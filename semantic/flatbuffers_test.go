@@ -1,4 +1,4 @@
-package semantic
+package semantic_test
 
 import (
 	"errors"
@@ -11,59 +11,60 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/libflux/go/libflux"
+	"github.com/influxdata/flux/internal/fbsemantic"
 	"github.com/influxdata/flux/parser"
-	"github.com/influxdata/flux/semantic/internal/fbsemantic"
+	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
 )
 
 var cmpOpts = []cmp.Option{
 	cmp.AllowUnexported(
-		ArrayExpression{},
-		BinaryExpression{},
-		Block{},
-		CallExpression{},
-		ConditionalExpression{},
-		DateTimeLiteral{},
-		DurationLiteral{},
-		ExpressionStatement{},
-		File{},
-		FloatLiteral{},
-		FunctionBlock{},
-		FunctionExpression{},
-		FunctionParameters{},
-		FunctionParameter{},
-		IdentifierExpression{},
-		Identifier{},
-		ImportDeclaration{},
-		IndexExpression{},
-		IntegerLiteral{},
-		InterpolatedPart{},
-		LogicalExpression{},
-		MemberAssignment{},
-		MemberExpression{},
-		NativeVariableAssignment{},
-		ObjectExpression{},
-		OptionStatement{},
-		Package{},
-		PackageClause{},
-		RegexpLiteral{},
-		Property{},
-		ReturnStatement{},
-		StringExpression{},
-		StringLiteral{},
-		TestStatement{},
-		TextPart{},
-		UnaryExpression{},
+		semantic.ArrayExpression{},
+		semantic.BinaryExpression{},
+		semantic.Block{},
+		semantic.CallExpression{},
+		semantic.ConditionalExpression{},
+		semantic.DateTimeLiteral{},
+		semantic.DurationLiteral{},
+		semantic.ExpressionStatement{},
+		semantic.File{},
+		semantic.FloatLiteral{},
+		semantic.FunctionBlock{},
+		semantic.FunctionExpression{},
+		semantic.FunctionParameters{},
+		semantic.FunctionParameter{},
+		semantic.IdentifierExpression{},
+		semantic.Identifier{},
+		semantic.ImportDeclaration{},
+		semantic.IndexExpression{},
+		semantic.IntegerLiteral{},
+		semantic.InterpolatedPart{},
+		semantic.LogicalExpression{},
+		semantic.MemberAssignment{},
+		semantic.MemberExpression{},
+		semantic.NativeVariableAssignment{},
+		semantic.ObjectExpression{},
+		semantic.OptionStatement{},
+		semantic.Package{},
+		semantic.PackageClause{},
+		semantic.RegexpLiteral{},
+		semantic.Property{},
+		semantic.ReturnStatement{},
+		semantic.StringExpression{},
+		semantic.StringLiteral{},
+		semantic.TestStatement{},
+		semantic.TextPart{},
+		semantic.UnaryExpression{},
 	),
 	cmp.Transformer("regexp", func(re *regexp.Regexp) string {
 		return re.String()
 	}),
 	// Just ignore types when comparing against Go semantic graph, since
 	// Go does not annotate expressions nodes with types directly.
-	cmp.Transformer("", func(ty MonoType) int {
+	cmp.Transformer("", func(ty semantic.MonoType) int {
 		return 0
 	}),
-	cmp.Transformer("", func(ty PolyType) int {
+	cmp.Transformer("", func(ty semantic.PolyType) int {
 		return 0
 	}),
 	cmp.Transformer("freeFn", func(func()) int {
@@ -94,7 +95,7 @@ func TestDeserializeFromFlatBuffer(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			src, fb := tc.fbFn()
 			astPkg := parser.ParseSource(src)
-			want, err := New(astPkg)
+			want, err := semantic.New(astPkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -112,7 +113,7 @@ func TestDeserializeFromFlatBuffer(t *testing.T) {
 			}
 
 			// Make sure the polytype looks as expected
-			pt := got.Files[0].Body[0].(*NativeVariableAssignment).Typ
+			pt := got.Files[0].Body[0].(*semantic.NativeVariableAssignment).Typ
 			if diff := cmp.Diff(tc.polyType, pt.String()); diff != "" {
 				t.Fatalf("unexpected polytype: -want/+got:\n%v", diff)
 			}
@@ -475,10 +476,10 @@ func source(src string, loc *ast.SourceLocation) string {
 // for comparing NativeVariableAssignments with
 // PolyTypes provided by a test case.
 type MyAssignement struct {
-	loc
+	semantic.Loc
 
-	Identifier *Identifier
-	Init       Expression
+	Identifier *semantic.Identifier
+	Init       semantic.Expression
 
 	Typ string
 }
@@ -486,14 +487,14 @@ type MyAssignement struct {
 // transformGraph takes a semantic graph produced by Go, and modifies it
 // so it looks like something produced by Rust.
 // The differences do not affect program behavior at runtime.
-func transformGraph(pkg *Package) error {
-	Walk(&transformingVisitor{}, pkg)
+func transformGraph(pkg *semantic.Package) error {
+	semantic.Walk(&transformingVisitor{}, pkg)
 	return nil
 }
 
 type transformingVisitor struct{}
 
-func (tv *transformingVisitor) Visit(node Node) Visitor {
+func (tv *transformingVisitor) Visit(node semantic.Node) semantic.Visitor {
 	return tv
 }
 
@@ -534,29 +535,29 @@ func toMonthsAndNanos(ds []ast.Duration) []ast.Duration {
 	return outDurs
 }
 
-func (tv *transformingVisitor) Done(node Node) {
+func (tv *transformingVisitor) Done(node semantic.Node) {
 	switch n := node.(type) {
-	case *CallExpression:
+	case *semantic.CallExpression:
 		// Rust call expr args are just an array, so there's no location info.
 		n.Arguments.Source = ""
-	case *DurationLiteral:
+	case *semantic.DurationLiteral:
 		// Rust duration literals use the months + nanos representation,
 		// Go uses AST units.
 		n.Values = toMonthsAndNanos(n.Values)
-	case *File:
+	case *semantic.File:
 		if len(n.Body) == 0 {
 			n.Body = nil
 		}
-	case *FunctionBlock:
-		if e, ok := n.Body.(Expression); ok {
+	case *semantic.FunctionBlock:
+		if e, ok := n.Body.(semantic.Expression); ok {
 			// The Rust semantic graph has only block-style function bodies
 			l := e.Location()
 			l.Source = ""
-			n.Body = &Block{
-				loc: loc(l),
-				Body: []Statement{
-					&ReturnStatement{
-						loc:      loc(e.Location()),
+			n.Body = &semantic.Block{
+				Loc: semantic.Loc(l),
+				Body: []semantic.Statement{
+					&semantic.ReturnStatement{
+						Loc:      semantic.Loc(e.Location()),
 						Argument: e,
 					},
 				},
@@ -564,7 +565,7 @@ func (tv *transformingVisitor) Done(node Node) {
 		} else {
 			// Blocks in Rust models blocks as linked lists, so we don't have a location for the
 			// entire block including the curly braces.  It uses location of the statements instead.
-			bl := n.Body.(*Block)
+			bl := n.Body.(*semantic.Block)
 			nStmts := len(bl.Body)
 			bl.Start = bl.Body[0].Location().Start
 			bl.End = bl.Body[nStmts-1].Location().End
@@ -601,12 +602,12 @@ type exprTypeChecker struct {
 	errs []error
 }
 
-func (e *exprTypeChecker) Visit(node Node) Visitor {
+func (e *exprTypeChecker) Visit(node semantic.Node) semantic.Visitor {
 	return e
 }
 
-func (e *exprTypeChecker) Done(node Node) {
-	nva, ok := node.(*NativeVariableAssignment)
+func (e *exprTypeChecker) Done(node semantic.Node) {
+	nva, ok := node.(*semantic.NativeVariableAssignment)
 	if !ok {
 		return
 	}
@@ -618,9 +619,9 @@ func (e *exprTypeChecker) Done(node Node) {
 	}
 }
 
-func checkExprTypes(pkg *Package) []error {
+func checkExprTypes(pkg *semantic.Package) []error {
 	v := new(exprTypeChecker)
-	Walk(v, pkg)
+	semantic.Walk(v, pkg)
 	return v.errs
 }
 
@@ -778,11 +779,11 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 			name: "binary expression",
 			fluxSrc: `
                 x = 1 * 2 / 3 - 1 + 7 % 8^9
-                lt = 1 < 3                
-                lte = 1 <= 3                
-                gt = 1 > 3                
-                gte = 1 >= 3                
-                eq = 1 == 3                
+                lt = 1 < 3
+                lte = 1 <= 3
+                gt = 1 > 3
+                gte = 1 >= 3
+                eq = 1 == 3
                 neq = 1 != 3
                 rem = "foo" =~ /foo/
                 renm = "food" !~ /foog/`,
@@ -984,7 +985,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			astPkg := parser.ParseSource(tc.fluxSrc)
-			want, err := New(astPkg)
+			want, err := semantic.New(astPkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -992,7 +993,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			got, err := AnalyzeSource(tc.fluxSrc)
+			got, err := runtime.AnalyzeSource(tc.fluxSrc)
 			if err != nil {
 				if tc.err == nil {
 					t.Fatal(err)
@@ -1017,9 +1018,9 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 			// Create a special comparison option to compare the types
 			// of NativeVariableAssignments using the expected types in the map
 			// provided by the test case.
-			assignCmp := cmp.Transformer("assign", func(nva *NativeVariableAssignment) *MyAssignement {
+			assignCmp := cmp.Transformer("assign", func(nva *semantic.NativeVariableAssignment) *MyAssignement {
 				var typStr string
-				if nva.Typ.fb == nil {
+				if nva.Typ.IsNil() == true {
 					// This is the assignment from Go.
 					var ok bool
 					typStr, ok = tc.types[nva.Identifier.Name]
@@ -1031,7 +1032,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 					typStr = nva.Typ.CanonicalString()
 				}
 				return &MyAssignement{
-					loc:        nva.loc,
+					Loc:        nva.Loc,
 					Identifier: nva.Identifier,
 					Init:       nva.Init,
 					Typ:        typStr,

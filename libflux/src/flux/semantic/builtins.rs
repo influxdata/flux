@@ -124,7 +124,14 @@ pub fn builtins() -> Builtins<'static> {
             "influxdata/influxdb" => maplit::hashmap! {
                 // This is a one-or-the-other parameters function
                 // https://github.com/influxdata/flux/issues/1659
-                "from" => "forall [t0, t1] (?bucket: string, ?bucketID: string) -> [{_measurement: string | _field: string | _time: time | _value: t0 | t1}]",
+                "from" => r#"forall [t0, t1] (
+                    ?bucket: string,
+                    ?bucketID: string,
+                    ?org: string,
+                    ?orgID: string,
+                    ?host: string,
+                    ?token: string
+                ) -> [{_measurement: string | _field: string | _time: time | _value: t0 | t1}]"#,
                 // exactly one of (bucket, bucketID) must be specified
                 // exactly one of (org, orgID) must be specified
                 // https://github.com/influxdata/flux/issues/1660
@@ -175,6 +182,13 @@ pub fn builtins() -> Builtins<'static> {
                 "timestamp" => "forall [t0] (<-tables: [{_value: float | t0}]) -> [{_value: float | t0}]",
                 "promqlYear" => "forall [] (timestamp: float) -> float",
                 "join" => "forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (left: [t0], right: [t1], fn: (left: t0, right: t1) -> t2) -> [t2]",
+            },
+            "internal/testutil" => maplit::hashmap! {
+                "fail" => "forall [] () -> bool",
+                "yield" => r#"
+                    forall [t0] (<-v: t0) -> t0
+                "#,
+                "makeRecord" => "forall [t0, t1] where t0: Row, t1: Row (o: t0) -> t1",
             },
             "json" => maplit::hashmap! {
                 "encode" => "forall [t0] (v: t0) -> bytes",
@@ -751,7 +765,7 @@ pub fn builtins() -> Builtins<'static> {
                     ) -> [t0]
                 "#,
                 "tripleExponentialDerivative" => r#"
-                    forall [t0] where t0: Numeric, t1: Row (
+                    forall [t0, t1] where t0: Numeric, t1: Row (
                         <-tables: [{_value: t0 | t1}],
                         n: int
                     ) -> [{_value: float | t1}]
@@ -774,7 +788,7 @@ pub fn builtins() -> Builtins<'static> {
                 // already exist.
                 // https://github.com/influxdata/flux/issues/2255
                 "window" => r#"
-                    forall [t0] where t0: Row, t1: Row (
+                    forall [t0, t1] where t0: Row, t1: Row (
                         <-tables: [t0],
                         ?every: duration,
                         ?period: duration,

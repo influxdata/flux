@@ -4,16 +4,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 func init() {
-	flux.RegisterPackageValue("universe", "sleep", sleepFunc)
+	runtime.RegisterPackageValue("universe", "sleep", sleepFunc)
 }
 
 const (
@@ -23,7 +23,7 @@ const (
 
 var sleepFunc = values.NewFunction(
 	"sleep",
-	semantic.MustLookupBuiltinType("universe", "sleep"),
+	runtime.MustLookupBuiltinType("universe", "sleep"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		return interpreter.DoFunctionCallContext(sleep, ctx, args)
 	},

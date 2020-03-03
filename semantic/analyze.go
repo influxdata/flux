@@ -37,7 +37,7 @@ func analyzePackage(pkg *ast.Package) (*Package, error) {
 
 func analyzeFile(file *ast.File) (*File, error) {
 	f := &File{
-		loc:  loc(file.Location()),
+		Loc:  Loc(file.Location()),
 		Body: make([]Statement, len(file.Body)),
 	}
 	pkg, err := analyzePackageClause(file.Package)
@@ -76,14 +76,14 @@ func analyzePackageClause(pkg *ast.PackageClause) (*PackageClause, error) {
 		return nil, err
 	}
 	return &PackageClause{
-		loc:  loc(pkg.Location()),
+		Loc:  Loc(pkg.Location()),
 		Name: name,
 	}, nil
 }
 
 func analyzeImportDeclaration(imp *ast.ImportDeclaration) (*ImportDeclaration, error) {
 	n := &ImportDeclaration{
-		loc: loc(imp.Location()),
+		Loc: Loc(imp.Location()),
 	}
 	if imp.As != nil {
 		as, err := analyzeIdentifier(imp.As)
@@ -148,7 +148,7 @@ func analyzeAssignment(a ast.Assignment) (Assignment, error) {
 
 func analyzeBlock(block *ast.Block) (*Block, error) {
 	b := &Block{
-		loc:  loc(block.Location()),
+		Loc:  Loc(block.Location()),
 		Body: make([]Statement, len(block.Body)),
 	}
 	for i, s := range block.Body {
@@ -171,7 +171,7 @@ func analyzeOptionStatement(option *ast.OptionStatement) (*OptionStatement, erro
 		return nil, err
 	}
 	return &OptionStatement{
-		loc:        loc(option.Location()),
+		Loc:        Loc(option.Location()),
 		Assignment: assignment,
 	}, nil
 }
@@ -182,7 +182,7 @@ func analyzeBuiltinStatement(builtin *ast.BuiltinStatement) (*BuiltinStatement, 
 		return nil, err
 	}
 	return &BuiltinStatement{
-		loc: loc(builtin.Location()),
+		Loc: Loc(builtin.Location()),
 		ID:  ident,
 	}, nil
 }
@@ -192,7 +192,7 @@ func analyzeTestStatement(test *ast.TestStatement) (*TestStatement, error) {
 		return nil, err
 	}
 	return &TestStatement{
-		loc:        loc(test.Location()),
+		Loc:        Loc(test.Location()),
 		Assignment: assignment,
 	}, nil
 }
@@ -202,7 +202,7 @@ func analyzeExpressionStatement(expr *ast.ExpressionStatement) (*ExpressionState
 		return nil, err
 	}
 	return &ExpressionStatement{
-		loc:        loc(expr.Location()),
+		Loc:        Loc(expr.Location()),
 		Expression: e,
 	}, nil
 }
@@ -213,7 +213,7 @@ func analyzeReturnStatement(ret *ast.ReturnStatement) (*ReturnStatement, error) 
 		return nil, err
 	}
 	return &ReturnStatement{
-		loc:      loc(ret.Location()),
+		Loc:      Loc(ret.Location()),
 		Argument: arg,
 	}, nil
 }
@@ -228,7 +228,7 @@ func analyzeVariableAssignment(decl *ast.VariableAssignment) (*NativeVariableAss
 		return nil, err
 	}
 	vd := &NativeVariableAssignment{
-		loc:        loc(decl.Location()),
+		Loc:        Loc(decl.Location()),
 		Identifier: id,
 		Init:       init,
 	}
@@ -245,7 +245,7 @@ func analyzeMemberAssignment(a *ast.MemberAssignment) (*MemberAssignment, error)
 		return nil, err
 	}
 	return &MemberAssignment{
-		loc:    loc(a.Location()),
+		Loc:    Loc(a.Location()),
 		Member: member,
 		Init:   init,
 	}, nil
@@ -299,7 +299,7 @@ func analyzeStringExpression(expr *ast.StringExpression) (Expression, error) {
 		parts[i] = part
 	}
 	return &StringExpression{
-		loc:   loc(expr.Location()),
+		Loc:   Loc(expr.Location()),
 		Parts: parts,
 	}, nil
 }
@@ -316,7 +316,7 @@ func analyzeStringExpressionPart(part ast.StringExpressionPart) (StringExpressio
 
 func analyzeTextPart(part *ast.TextPart) (*TextPart, error) {
 	return &TextPart{
-		loc:   loc(part.Location()),
+		Loc:   Loc(part.Location()),
 		Value: part.Value,
 	}, nil
 }
@@ -327,7 +327,7 @@ func analyzeInterpolatedPart(part *ast.InterpolatedPart) (*InterpolatedPart, err
 		return nil, err
 	}
 	return &InterpolatedPart{
-		loc:        loc(part.Location()),
+		Loc:        Loc(part.Location()),
 		Expression: expr,
 	}, nil
 }
@@ -374,7 +374,7 @@ func analyzeFunctionExpression(arrow *ast.FunctionExpression) (*FunctionExpressi
 	if len(arrow.Params) > 0 {
 		pipedCount := 0
 		parameters = &FunctionParameters{
-			loc: loc(arrow.Location()),
+			Loc: Loc(arrow.Location()),
 		}
 		parameters.List = make([]*FunctionParameter, len(arrow.Params))
 		for i, p := range arrow.Params {
@@ -407,18 +407,18 @@ func analyzeFunctionExpression(arrow *ast.FunctionExpression) (*FunctionExpressi
 			}
 
 			parameters.List[i] = &FunctionParameter{
-				loc: loc(p.Location()),
+				Loc: Loc(p.Location()),
 				Key: key,
 			}
 			if def != nil {
 				if defaults == nil {
 					defaults = &ObjectExpression{
-						loc:        loc(arrow.Location()),
+						Loc:        Loc(arrow.Location()),
 						Properties: make([]*Property, 0, len(arrow.Params)),
 					}
 				}
 				defaults.Properties = append(defaults.Properties, &Property{
-					loc:   loc(p.Location()),
+					Loc:   Loc(p.Location()),
 					Key:   key,
 					Value: def,
 				})
@@ -435,10 +435,10 @@ func analyzeFunctionExpression(arrow *ast.FunctionExpression) (*FunctionExpressi
 	}
 
 	f := &FunctionExpression{
-		loc:      loc(arrow.Location()),
+		Loc:      Loc(arrow.Location()),
 		Defaults: defaults,
 		Block: &FunctionBlock{
-			loc:        loc(arrow.Location()),
+			Loc:        Loc(arrow.Location()),
 			Parameters: parameters,
 			Body:       b,
 		},
@@ -467,12 +467,12 @@ func analyzeCallExpression(call *ast.CallExpression) (*CallExpression, error) {
 		}
 	} else {
 		args = &ObjectExpression{
-			loc: loc(call.Location()),
+			Loc: Loc(call.Location()),
 		}
 	}
 
 	return &CallExpression{
-		loc:       loc(call.Location()),
+		Loc:       Loc(call.Location()),
 		Callee:    callee,
 		Arguments: args,
 	}, nil
@@ -491,7 +491,7 @@ func analyzeMemberExpression(member *ast.MemberExpression) (*MemberExpression, e
 		prop = n.Value
 	}
 	return &MemberExpression{
-		loc:      loc(member.Location()),
+		Loc:      Loc(member.Location()),
 		Object:   obj,
 		Property: prop,
 	}, nil
@@ -507,7 +507,7 @@ func analyzeIndexExpression(e *ast.IndexExpression) (Expression, error) {
 		return nil, err
 	}
 	return &IndexExpression{
-		loc:   loc(e.Location()),
+		Loc:   Loc(e.Location()),
 		Array: array,
 		Index: index,
 	}, nil
@@ -538,7 +538,7 @@ func analyzeBinaryExpression(binary *ast.BinaryExpression) (*BinaryExpression, e
 		return nil, err
 	}
 	return &BinaryExpression{
-		loc:      loc(binary.Location()),
+		Loc:      Loc(binary.Location()),
 		Operator: binary.Operator,
 		Left:     left,
 		Right:    right,
@@ -551,7 +551,7 @@ func analyzeUnaryExpression(unary *ast.UnaryExpression) (*UnaryExpression, error
 		return nil, err
 	}
 	return &UnaryExpression{
-		loc:      loc(unary.Location()),
+		Loc:      Loc(unary.Location()),
 		Operator: unary.Operator,
 		Argument: arg,
 	}, nil
@@ -566,7 +566,7 @@ func analyzeLogicalExpression(logical *ast.LogicalExpression) (*LogicalExpressio
 		return nil, err
 	}
 	return &LogicalExpression{
-		loc:      loc(logical.Location()),
+		Loc:      Loc(logical.Location()),
 		Operator: logical.Operator,
 		Left:     left,
 		Right:    right,
@@ -586,7 +586,7 @@ func analyzeConditionalExpression(ce *ast.ConditionalExpression) (*ConditionalEx
 		return nil, err
 	}
 	return &ConditionalExpression{
-		loc:        loc(ce.Location()),
+		Loc:        Loc(ce.Location()),
 		Test:       t,
 		Consequent: c,
 		Alternate:  a,
@@ -594,7 +594,7 @@ func analyzeConditionalExpression(ce *ast.ConditionalExpression) (*ConditionalEx
 }
 func analyzeObjectExpression(obj *ast.ObjectExpression) (*ObjectExpression, error) {
 	o := &ObjectExpression{
-		loc:        loc(obj.Location()),
+		Loc:        Loc(obj.Location()),
 		Properties: make([]*Property, len(obj.Properties)),
 	}
 	if obj.With != nil {
@@ -615,7 +615,7 @@ func analyzeObjectExpression(obj *ast.ObjectExpression) (*ObjectExpression, erro
 }
 func analyzeArrayExpression(array *ast.ArrayExpression) (*ArrayExpression, error) {
 	a := &ArrayExpression{
-		loc:      loc(array.Location()),
+		Loc:      Loc(array.Location()),
 		Elements: make([]Expression, len(array.Elements)),
 	}
 	for i, e := range array.Elements {
@@ -630,14 +630,14 @@ func analyzeArrayExpression(array *ast.ArrayExpression) (*ArrayExpression, error
 
 func analyzeIdentifier(ident *ast.Identifier) (*Identifier, error) {
 	return &Identifier{
-		loc:  loc(ident.Location()),
+		Loc:  Loc(ident.Location()),
 		Name: ident.Name,
 	}, nil
 }
 
 func analyzeIdentifierExpression(ident *ast.Identifier) (*IdentifierExpression, error) {
 	return &IdentifierExpression{
-		loc:  loc(ident.Location()),
+		Loc:  Loc(ident.Location()),
 		Name: ident.Name,
 	}, nil
 }
@@ -649,10 +649,10 @@ func analyzeProperty(property *ast.Property) (*Property, error) {
 	}
 	if property.Value == nil {
 		return &Property{
-			loc: loc(property.Location()),
+			Loc: Loc(property.Location()),
 			Key: key,
 			Value: &IdentifierExpression{
-				loc:  loc(key.Location()),
+				Loc:  Loc(key.Location()),
 				Name: key.Key(),
 			},
 		}, nil
@@ -662,7 +662,7 @@ func analyzeProperty(property *ast.Property) (*Property, error) {
 		return nil, err
 	}
 	return &Property{
-		loc:   loc(property.Location()),
+		Loc:   Loc(property.Location()),
 		Key:   key,
 		Value: value,
 	}, nil
@@ -670,49 +670,49 @@ func analyzeProperty(property *ast.Property) (*Property, error) {
 
 func analyzeDateTimeLiteral(lit *ast.DateTimeLiteral) (*DateTimeLiteral, error) {
 	return &DateTimeLiteral{
-		loc:   loc(lit.Location()),
+		Loc:   Loc(lit.Location()),
 		Value: lit.Value,
 	}, nil
 }
 func analyzeDurationLiteral(lit *ast.DurationLiteral) (*DurationLiteral, error) {
 	return &DurationLiteral{
-		loc:    loc(lit.Location()),
+		Loc:    Loc(lit.Location()),
 		Values: lit.Values,
 	}, nil
 }
 func analyzeFloatLiteral(lit *ast.FloatLiteral) (*FloatLiteral, error) {
 	return &FloatLiteral{
-		loc:   loc(lit.Location()),
+		Loc:   Loc(lit.Location()),
 		Value: lit.Value,
 	}, nil
 }
 func analyzeIntegerLiteral(lit *ast.IntegerLiteral) (*IntegerLiteral, error) {
 	return &IntegerLiteral{
-		loc:   loc(lit.Location()),
+		Loc:   Loc(lit.Location()),
 		Value: lit.Value,
 	}, nil
 }
 func analyzeUnsignedIntegerLiteral(lit *ast.UnsignedIntegerLiteral) (*UnsignedIntegerLiteral, error) {
 	return &UnsignedIntegerLiteral{
-		loc:   loc(lit.Location()),
+		Loc:   Loc(lit.Location()),
 		Value: lit.Value,
 	}, nil
 }
 func analyzeStringLiteral(lit *ast.StringLiteral) (*StringLiteral, error) {
 	return &StringLiteral{
-		loc:   loc(lit.Location()),
+		Loc:   Loc(lit.Location()),
 		Value: lit.Value,
 	}, nil
 }
 func analyzeBooleanLiteral(lit *ast.BooleanLiteral) (*BooleanLiteral, error) {
 	return &BooleanLiteral{
-		loc:   loc(lit.Location()),
+		Loc:   Loc(lit.Location()),
 		Value: lit.Value,
 	}, nil
 }
 func analyzeRegexpLiteral(lit *ast.RegexpLiteral) (*RegexpLiteral, error) {
 	return &RegexpLiteral{
-		loc:   loc(lit.Location()),
+		Loc:   Loc(lit.Location()),
 		Value: lit.Value,
 	}, nil
 }

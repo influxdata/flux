@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -22,9 +23,9 @@ type FillOpSpec struct {
 }
 
 func init() {
-	fillSignature := semantic.MustLookupBuiltinType("universe", "fill")
+	fillSignature := runtime.MustLookupBuiltinType("universe", "fill")
 
-	flux.RegisterPackageValue("universe", FillKind, flux.MustValue(flux.FunctionValue(FillKind, createFillOpSpec, fillSignature)))
+	runtime.RegisterPackageValue("universe", FillKind, flux.MustValue(flux.FunctionValue(FillKind, createFillOpSpec, fillSignature)))
 	flux.RegisterOpSpec(FillKind, newFillOp)
 	plan.RegisterProcedureSpec(FillKind, newFillProcedure, FillKind)
 	execute.RegisterTransformation(FillKind, createFillTransformation)

@@ -2,9 +2,10 @@ package semantic_test
 
 import (
 	"fmt"
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/semantic"
 	"testing"
+
+	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
 )
 
 func TestFormatted(t *testing.T) {
@@ -35,7 +36,7 @@ func TestFormatted(t *testing.T) {
 	for _, tc := range tcs {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			ast, err := flux.Parse(tc.flux)
+			ast, err := runtime.Parse(tc.flux)
 			if err != nil {
 				t.Fatal(err)
 			}

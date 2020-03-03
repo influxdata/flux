@@ -10,7 +10,17 @@ import (
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 )
+
+func init() {
+	plan.RegisterLogicalRules(
+		influxdb.DefaultFromAttributes{
+			Org:  &influxdb.NameOrID{Name: "influxdata"},
+			Host: func(v string) *string { return &v }("http://localhost:9999"),
+		},
+	)
+}
 
 func TestRuleRegistration(t *testing.T) {
 	simpleRule := plantest.SimpleRule{}
@@ -43,8 +53,6 @@ func TestRuleRegistration(t *testing.T) {
 	// Test rule registration for the physical plan too.
 	simpleRule.SeenNodes = simpleRule.SeenNodes[0:0]
 	plan.RegisterPhysicalRules(&simpleRule)
-	// register a rule that merges from and range
-	plan.RegisterPhysicalRules(&plantest.MergeFromRangePhysicalRule{})
 
 	physicalPlanner := plan.NewPhysicalPlanner()
 	_, err = physicalPlanner.Plan(logicalPlanSpec)

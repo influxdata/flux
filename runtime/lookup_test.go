@@ -1,9 +1,8 @@
-package semantic_test
+package runtime_test
 
 import (
+	"github.com/influxdata/flux/runtime"
 	"testing"
-
-	semantic "github.com/influxdata/flux/semantic"
 )
 
 func TestLookupSimpleTypes(t *testing.T) {
@@ -17,7 +16,7 @@ func TestLookupSimpleTypes(t *testing.T) {
 		{path: "math", id: "maxint", name: "lookup math.maxint", want: "int"},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
-			got, _ := semantic.LookupBuiltinType(testCase.path, testCase.id)
+			got, _ := runtime.LookupBuiltinType(testCase.path, testCase.id)
 			if want, got := testCase.want, got.String(); want != got {
 				t.Fatalf("unexpected result -want/+got\n\t- %s\n\t+ %s", want, got)
 			}
@@ -135,7 +134,7 @@ func TestLookupComplexTypes(t *testing.T) {
 	} {
 
 		t.Run(testCase.name, func(t *testing.T) {
-			got, _ := semantic.LookupBuiltinType(testCase.path, testCase.id)
+			got, _ := runtime.LookupBuiltinType(testCase.path, testCase.id)
 			if want, got := testCase.want, got.CanonicalString(); want != got {
 				t.Fatalf("unexpected result -want/+got\n\t- %s\n\t+ %s", want, got)
 			}

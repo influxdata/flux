@@ -14,6 +14,7 @@ import (
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
@@ -97,7 +98,7 @@ func Verbose(v bool) CompileOption {
 // Compile evaluates a Flux script producing a flux.Program.
 // now parameter must be non-zero, that is the default now time should be set before compiling.
 func Compile(q string, now time.Time, opts ...CompileOption) (*AstProgram, error) {
-	astPkg, err := flux.Parse(q)
+	astPkg, err := runtime.Parse(q)
 	if err != nil {
 		return nil, err
 	}
@@ -313,7 +314,7 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 	}
 	ctx = deps.Inject(ctx)
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-	sideEffects, scope, err := flux.EvalAST(cctx, p.Ast, flux.SetNowOption(p.Now))
+	sideEffects, scope, err := runtime.EvalAST(cctx, p.Ast, runtime.SetNowOption(p.Now))
 	if err != nil {
 		return nil, nil, err
 	}

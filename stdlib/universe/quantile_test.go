@@ -25,7 +25,7 @@ func TestQuantile_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "testdb",
+							Bucket: influxdb.NameOrID{Name: "testdb"},
 						},
 					},
 					{
@@ -67,7 +67,7 @@ func TestQuantile_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "testdb",
+							Bucket: influxdb.NameOrID{Name: "testdb"},
 						},
 					},
 					{
@@ -108,7 +108,7 @@ func TestQuantile_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "testdb",
+							Bucket: influxdb.NameOrID{Name: "testdb"},
 						},
 					},
 					{
@@ -149,7 +149,7 @@ func TestQuantile_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "testdb",
+							Bucket: influxdb.NameOrID{Name: "testdb"},
 						},
 					},
 					{
@@ -192,7 +192,7 @@ func TestQuantile_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "testdb",
+							Bucket: influxdb.NameOrID{Name: "testdb"},
 						},
 					},
 					{

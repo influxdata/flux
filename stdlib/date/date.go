@@ -6,10 +6,10 @@ import (
 	"math"
 	"time"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -20,7 +20,7 @@ func init() {
 	SpecialFns = map[string]values.Function{
 		"second": values.NewFunction(
 			"second",
-			semantic.MustLookupBuiltinType("date", "second"),
+			runtime.MustLookupBuiltinType("date", "second"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -35,7 +35,7 @@ func init() {
 		),
 		"minute": values.NewFunction(
 			"minute",
-			semantic.MustLookupBuiltinType("date", "minute"),
+			runtime.MustLookupBuiltinType("date", "minute"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -50,7 +50,7 @@ func init() {
 		),
 		"hour": values.NewFunction(
 			"hour",
-			semantic.MustLookupBuiltinType("date", "hour"),
+			runtime.MustLookupBuiltinType("date", "hour"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -65,7 +65,7 @@ func init() {
 		),
 		"weekDay": values.NewFunction(
 			"weekDay",
-			semantic.MustLookupBuiltinType("date", "weekDay"),
+			runtime.MustLookupBuiltinType("date", "weekDay"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -80,7 +80,7 @@ func init() {
 		),
 		"monthDay": values.NewFunction(
 			"monthDay",
-			semantic.MustLookupBuiltinType("date", "monthDay"),
+			runtime.MustLookupBuiltinType("date", "monthDay"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -95,7 +95,7 @@ func init() {
 		),
 		"yearDay": values.NewFunction(
 			"yearDay",
-			semantic.MustLookupBuiltinType("date", "yearDay"),
+			runtime.MustLookupBuiltinType("date", "yearDay"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -110,7 +110,7 @@ func init() {
 		),
 		"month": values.NewFunction(
 			"month",
-			semantic.MustLookupBuiltinType("date", "month"),
+			runtime.MustLookupBuiltinType("date", "month"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -125,7 +125,7 @@ func init() {
 		),
 		"year": values.NewFunction(
 			"year",
-			semantic.MustLookupBuiltinType("date", "year"),
+			runtime.MustLookupBuiltinType("date", "year"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -140,7 +140,7 @@ func init() {
 		),
 		"week": values.NewFunction(
 			"week",
-			semantic.MustLookupBuiltinType("date", "week"),
+			runtime.MustLookupBuiltinType("date", "week"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -156,7 +156,7 @@ func init() {
 		),
 		"quarter": values.NewFunction(
 			"quarter",
-			semantic.MustLookupBuiltinType("date", "quarter"),
+			runtime.MustLookupBuiltinType("date", "quarter"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -172,7 +172,7 @@ func init() {
 		),
 		"millisecond": values.NewFunction(
 			"millisecond",
-			semantic.MustLookupBuiltinType("date", "millisecond"),
+			runtime.MustLookupBuiltinType("date", "millisecond"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -188,7 +188,7 @@ func init() {
 		),
 		"microsecond": values.NewFunction(
 			"microsecond",
-			semantic.MustLookupBuiltinType("date", "microsecond"),
+			runtime.MustLookupBuiltinType("date", "microsecond"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -204,7 +204,7 @@ func init() {
 		),
 		"nanosecond": values.NewFunction(
 			"nanosecond",
-			semantic.MustLookupBuiltinType("date", "nanosecond"),
+			runtime.MustLookupBuiltinType("date", "nanosecond"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v1, ok := args.Get("t")
 				if !ok {
@@ -219,7 +219,7 @@ func init() {
 		),
 		"truncate": values.NewFunction(
 			"truncate",
-			semantic.MustLookupBuiltinType("date", "truncate"),
+			runtime.MustLookupBuiltinType("date", "truncate"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("t")
 				if !ok {
@@ -244,18 +244,18 @@ func init() {
 		),
 	}
 
-	flux.RegisterPackageValue("date", "second", SpecialFns["second"])
-	flux.RegisterPackageValue("date", "minute", SpecialFns["minute"])
-	flux.RegisterPackageValue("date", "hour", SpecialFns["hour"])
-	flux.RegisterPackageValue("date", "weekDay", SpecialFns["weekDay"])
-	flux.RegisterPackageValue("date", "monthDay", SpecialFns["monthDay"])
-	flux.RegisterPackageValue("date", "yearDay", SpecialFns["yearDay"])
-	flux.RegisterPackageValue("date", "month", SpecialFns["month"])
-	flux.RegisterPackageValue("date", "year", SpecialFns["year"])
-	flux.RegisterPackageValue("date", "week", SpecialFns["week"])
-	flux.RegisterPackageValue("date", "quarter", SpecialFns["quarter"])
-	flux.RegisterPackageValue("date", "millisecond", SpecialFns["millisecond"])
-	flux.RegisterPackageValue("date", "microsecond", SpecialFns["microsecond"])
-	flux.RegisterPackageValue("date", "nanosecond", SpecialFns["nanosecond"])
-	flux.RegisterPackageValue("date", "truncate", SpecialFns["truncate"])
+	runtime.RegisterPackageValue("date", "second", SpecialFns["second"])
+	runtime.RegisterPackageValue("date", "minute", SpecialFns["minute"])
+	runtime.RegisterPackageValue("date", "hour", SpecialFns["hour"])
+	runtime.RegisterPackageValue("date", "weekDay", SpecialFns["weekDay"])
+	runtime.RegisterPackageValue("date", "monthDay", SpecialFns["monthDay"])
+	runtime.RegisterPackageValue("date", "yearDay", SpecialFns["yearDay"])
+	runtime.RegisterPackageValue("date", "month", SpecialFns["month"])
+	runtime.RegisterPackageValue("date", "year", SpecialFns["year"])
+	runtime.RegisterPackageValue("date", "week", SpecialFns["week"])
+	runtime.RegisterPackageValue("date", "quarter", SpecialFns["quarter"])
+	runtime.RegisterPackageValue("date", "millisecond", SpecialFns["millisecond"])
+	runtime.RegisterPackageValue("date", "microsecond", SpecialFns["microsecond"])
+	runtime.RegisterPackageValue("date", "nanosecond", SpecialFns["nanosecond"])
+	runtime.RegisterPackageValue("date", "truncate", SpecialFns["truncate"])
 }

@@ -11,7 +11,6 @@ import (
 )
 
 func Benchmark_FromScript(b *testing.B) {
-	b.Skip("https://github.com/influxdata/flux/issues/2496")
 	query := `
 import "influxdata/influxdb/monitor"
 // Disable to the call to to since that isn't enabled
@@ -21,7 +20,7 @@ check = from(bucket: "telegraf")
 	|> range(start: -5m)
 	|> mean()
 	|> monitor.check(
-		data: {tags: {}},
+		data: {tags: {}, _type: "default", _check_id: 101, _check_name: "test"},
 		crit: (r) => r._value > 90,
 		messageFn: (r) => "${r._value} is greater than 90",
 	)

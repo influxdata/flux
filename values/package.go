@@ -2,7 +2,12 @@ package values
 
 type Package interface {
 	Object
+
+	// Name returns the package name.
 	Name() string
+
+	// Path returns the canonical import path for this package.
+	Path() string
 }
 
 // SetOption will set an option on the package and return

@@ -3,12 +3,12 @@
 package pagerduty
 
 import (
-	flux "github.com/influxdata/flux"
 	ast "github.com/influxdata/flux/ast"
+	runtime "github.com/influxdata/flux/runtime"
 )
 
 func init() {
-	flux.RegisterPackage(pkgAST)
+	runtime.RegisterPackage(pkgAST)
 }
 
 var pkgAST = &ast.Package{
@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 15,
-					Line:   109,
+					Line:   105,
 				},
 				File:   "",
-				Source: "package pagerduty\n\nimport \"http\"\nimport \"json\"\nimport \"strings\"\n\n// `dedupKey` - adds a newline concatinated value of the sorted group key that is then sha256-hashed and hex-encoded to a column with the key `_pagerdutyDedupKey`.\nbuiltin dedupKey\n\noption defaultURL = \"https://events.pagerduty.com/v2/enqueue\"\n\n\n// severity levels on status objects can be one of the following: ok,info,warn,crit,unknown\n// but pagerduty only accepts critical, error, warning or info.\n// severityFromLevel turns a level from the status object into a pagerduty severity\nseverityFromLevel = (level) => {\n    lvl = strings.toLower(v:level)\n    sev = if lvl == \"warn\" then \"warning\" \n        else if lvl == \"crit\" then \"critical\" \n        else if lvl == \"info\" then \"info\" \n        else if lvl == \"ok\" then \"info\" \n        else \"error\"\n    return sev\n}\n\n// `actionFromLevel` converts a monitoring level to an action; \"ok\" becomes \"resolve\" everything else converts to \"trigger\".\nactionFromLevel = (level)=> if strings.toLower(v:level) == \"ok\" then \"resolve\" else \"trigger\"\n\n// `sendEvent` sends an event to PagerDuty, the description of some of these parameters taken from the pagerduty documentation at https://v2.developer.pagerduty.com/docs/send-an-event-events-api-v2\n// `pagerdutyURL` - sring - URL of the pagerduty endpoint.  Defaults to: `option defaultURL = \"https://events.pagerduty.com/v2/enqueue\"`\n// `routingKey` - string - routingKey.\n// `client` - string - name of the client sending the alert.\n// `clientURL` - string - url of the client sending the alert.\n// `dedupkey` - string - a per alert ID. It acts as deduplication key, that allows you to ack or change the severity of previous messages. Supports a maximum of 255 characters.\n// `class` - string - The class/type of the event, for example ping failure or cpu load.\n// `group` - string - Logical grouping of components of a service, for example app-stack.\n// `severity` - string - The perceived severity of the status the event is describing with respect to the affected system. This can be critical, error, warning or info.\n// `eventAction` - string - The type of event to send to PagerDuty (ex. trigger, resolve, acknowledge)\n// `component` - string - Component of the source machine that is responsible for the event, for example mysql or eth0.\n// `source` - string - The unique location of the affected system, preferably a hostname or FQDN.\n// `summary` - string - A brief text summary of the event, used to generate the summaries/titles of any associated alerts. The maximum permitted length of this property is 1024 characters.\n// `timestamp` - string - The time at which the emitting tool detected or generated the event, in RFC 3339 nano format.\nsendEvent = (pagerdutyURL=defaultURL,\n    routingKey,\n    client,\n    clientURL,\n    dedupKey,\n    class,\n    group,\n    severity,\n    eventAction,\n    component,\n    source,\n    summary,\n    timestamp) => {\n\n    payload = {\n            summary: summary,\n            timestamp: timestamp,\n            source: source,\n            severity: severity,\n            component: component,\n            group: group,\n            class: class,\n    }\n    data = {\n        payload: payload,\n        routing_key: routingKey,\n        dedup_key: dedupKey,\n        event_action: eventAction,\n        client: client,\n        client_url: clientURL,\n    }\n\n    headers = {\n        \"Accept\": \"application/vnd.pagerduty+json;version=2\",\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n    return http.post(headers: headers, url: pagerdutyURL, data: enc)\n}\n\n// `endpoint` creates the endpoint for the PagerDuty external service.\n// `url` - string - URL of the Pagerduty endpoint. Defaults to: \"https://events.pagerduty.com/v2/enqueue\".\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` parameter must be a function that returns an object with `routingKey`, `client`, `client_url`, `class`, `group`, `severity`, `eventAction`, `component`, `source`, `summary`, and `timestamp` as defined in the sendEvent function.\n// Note that while sendEvent accepts a dedup key, endpoint gets the dedupkey from the groupkey of the input table instead of it being handled by the `mapFn`.\nendpoint = (url=defaultURL) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> dedupKey()\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            })",
+				Source: "package pagerduty\n\nimport \"http\"\nimport \"json\"\nimport \"strings\"\n\n// `dedupKey` - adds a newline concatinated value of the sorted group key that is then sha256-hashed and hex-encoded to a column with the key `_pagerdutyDedupKey`.\nbuiltin dedupKey\n\noption defaultURL = \"https://events.pagerduty.com/v2/enqueue\"\n\n\n// severity levels on status objects can be one of the following: ok,info,warn,crit,unknown\n// but pagerduty only accepts critical, error, warning or info.\n// severityFromLevel turns a level from the status object into a pagerduty severity\nseverityFromLevel = (level) => {\n    lvl = strings.toLower(v:level)\n    sev = if lvl == \"warn\" then \"warning\" \n        else if lvl == \"crit\" then \"critical\" \n        else if lvl == \"info\" then \"info\" \n        else if lvl == \"ok\" then \"info\" \n        else \"error\"\n    return sev\n}\n\n// `actionFromLevel` converts a monitoring level to an action; \"ok\" becomes \"resolve\" everything else converts to \"trigger\".\nactionFromLevel = (level)=> if strings.toLower(v:level) == \"ok\" then \"resolve\" else \"trigger\"\n\n// `sendEvent` sends an event to PagerDuty, the description of some of these parameters taken from the pagerduty documentation at https://v2.developer.pagerduty.com/docs/send-an-event-events-api-v2\n// `pagerdutyURL` - sring - URL of the pagerduty endpoint.  Defaults to: `option defaultURL = \"https://events.pagerduty.com/v2/enqueue\"`\n// `routingKey` - string - routingKey.\n// `client` - string - name of the client sending the alert.\n// `clientURL` - string - url of the client sending the alert.\n// `dedupkey` - string - a per alert ID. It acts as deduplication key, that allows you to ack or change the severity of previous messages. Supports a maximum of 255 characters.\n// `class` - string - The class/type of the event, for example ping failure or cpu load.\n// `group` - string - Logical grouping of components of a service, for example app-stack.\n// `severity` - string - The perceived severity of the status the event is describing with respect to the affected system. This can be critical, error, warning or info.\n// `eventAction` - string - The type of event to send to PagerDuty (ex. trigger, resolve, acknowledge)\n// `source` - string - The unique location of the affected system, preferably a hostname or FQDN.\n// `summary` - string - A brief text summary of the event, used to generate the summaries/titles of any associated alerts. The maximum permitted length of this property is 1024 characters.\n// `timestamp` - string - The time at which the emitting tool detected or generated the event, in RFC 3339 nano format.\nsendEvent = (pagerdutyURL=defaultURL,\n    routingKey,\n    client,\n    clientURL,\n    dedupKey,\n    class,\n    group,\n    severity,\n    eventAction,\n    source,\n    summary,\n    timestamp) => {\n\n    payload = {\n            summary: summary,\n            timestamp: timestamp,\n            source: source,\n            severity: severity,\n            group: group,\n            class: class,\n    }\n    data = {\n        payload: payload,\n        routing_key: routingKey,\n        dedup_key: dedupKey,\n        event_action: eventAction,\n        client: client,\n        client_url: clientURL,\n    }\n\n    headers = {\n        \"Accept\": \"application/vnd.pagerduty+json;version=2\",\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n    return http.post(headers: headers, url: pagerdutyURL, data: enc)\n}\n\n// `endpoint` creates the endpoint for the PagerDuty external service.\n// `url` - string - URL of the Pagerduty endpoint. Defaults to: \"https://events.pagerduty.com/v2/enqueue\".\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` parameter must be a function that returns an object with `routingKey`, `client`, `client_url`, `class`, `group`, `severity`, `eventAction`, `source`, `summary`, and `timestamp` as defined in the sendEvent function.\n// Note that while sendEvent accepts a dedup key, endpoint gets the dedupkey from the groupkey of the input table instead of it being handled by the `mapFn`.\nendpoint = (url=defaultURL) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> dedupKey()\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            })",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -1180,13 +1180,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   81,
+						Line:   78,
 					},
 					File:   "",
-					Source: "sendEvent = (pagerdutyURL=defaultURL,\n    routingKey,\n    client,\n    clientURL,\n    dedupKey,\n    class,\n    group,\n    severity,\n    eventAction,\n    component,\n    source,\n    summary,\n    timestamp) => {\n\n    payload = {\n            summary: summary,\n            timestamp: timestamp,\n            source: source,\n            severity: severity,\n            component: component,\n            group: group,\n            class: class,\n    }\n    data = {\n        payload: payload,\n        routing_key: routingKey,\n        dedup_key: dedupKey,\n        event_action: eventAction,\n        client: client,\n        client_url: clientURL,\n    }\n\n    headers = {\n        \"Accept\": \"application/vnd.pagerduty+json;version=2\",\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n    return http.post(headers: headers, url: pagerdutyURL, data: enc)\n}",
+					Source: "sendEvent = (pagerdutyURL=defaultURL,\n    routingKey,\n    client,\n    clientURL,\n    dedupKey,\n    class,\n    group,\n    severity,\n    eventAction,\n    source,\n    summary,\n    timestamp) => {\n\n    payload = {\n            summary: summary,\n            timestamp: timestamp,\n            source: source,\n            severity: severity,\n            group: group,\n            class: class,\n    }\n    data = {\n        payload: payload,\n        routing_key: routingKey,\n        dedup_key: dedupKey,\n        event_action: eventAction,\n        client: client,\n        client_url: clientURL,\n    }\n\n    headers = {\n        \"Accept\": \"application/vnd.pagerduty+json;version=2\",\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n    return http.post(headers: headers, url: pagerdutyURL, data: enc)\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   43,
+						Line:   42,
 					},
 				},
 			},
@@ -1196,13 +1196,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   43,
+							Line:   42,
 						},
 						File:   "",
 						Source: "sendEvent",
 						Start: ast.Position{
 							Column: 1,
-							Line:   43,
+							Line:   42,
 						},
 					},
 				},
@@ -1214,13 +1214,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   81,
+							Line:   78,
 						},
 						File:   "",
-						Source: "(pagerdutyURL=defaultURL,\n    routingKey,\n    client,\n    clientURL,\n    dedupKey,\n    class,\n    group,\n    severity,\n    eventAction,\n    component,\n    source,\n    summary,\n    timestamp) => {\n\n    payload = {\n            summary: summary,\n            timestamp: timestamp,\n            source: source,\n            severity: severity,\n            component: component,\n            group: group,\n            class: class,\n    }\n    data = {\n        payload: payload,\n        routing_key: routingKey,\n        dedup_key: dedupKey,\n        event_action: eventAction,\n        client: client,\n        client_url: clientURL,\n    }\n\n    headers = {\n        \"Accept\": \"application/vnd.pagerduty+json;version=2\",\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n    return http.post(headers: headers, url: pagerdutyURL, data: enc)\n}",
+						Source: "(pagerdutyURL=defaultURL,\n    routingKey,\n    client,\n    clientURL,\n    dedupKey,\n    class,\n    group,\n    severity,\n    eventAction,\n    source,\n    summary,\n    timestamp) => {\n\n    payload = {\n            summary: summary,\n            timestamp: timestamp,\n            source: source,\n            severity: severity,\n            group: group,\n            class: class,\n    }\n    data = {\n        payload: payload,\n        routing_key: routingKey,\n        dedup_key: dedupKey,\n        event_action: eventAction,\n        client: client,\n        client_url: clientURL,\n    }\n\n    headers = {\n        \"Accept\": \"application/vnd.pagerduty+json;version=2\",\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n    return http.post(headers: headers, url: pagerdutyURL, data: enc)\n}",
 						Start: ast.Position{
 							Column: 13,
-							Line:   43,
+							Line:   42,
 						},
 					},
 				},
@@ -1230,13 +1230,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   81,
+								Line:   78,
 							},
 							File:   "",
-							Source: "{\n\n    payload = {\n            summary: summary,\n            timestamp: timestamp,\n            source: source,\n            severity: severity,\n            component: component,\n            group: group,\n            class: class,\n    }\n    data = {\n        payload: payload,\n        routing_key: routingKey,\n        dedup_key: dedupKey,\n        event_action: eventAction,\n        client: client,\n        client_url: clientURL,\n    }\n\n    headers = {\n        \"Accept\": \"application/vnd.pagerduty+json;version=2\",\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n    return http.post(headers: headers, url: pagerdutyURL, data: enc)\n}",
+							Source: "{\n\n    payload = {\n            summary: summary,\n            timestamp: timestamp,\n            source: source,\n            severity: severity,\n            group: group,\n            class: class,\n    }\n    data = {\n        payload: payload,\n        routing_key: routingKey,\n        dedup_key: dedupKey,\n        event_action: eventAction,\n        client: client,\n        client_url: clientURL,\n    }\n\n    headers = {\n        \"Accept\": \"application/vnd.pagerduty+json;version=2\",\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n    return http.post(headers: headers, url: pagerdutyURL, data: enc)\n}",
 							Start: ast.Position{
 								Column: 19,
-								Line:   55,
+								Line:   53,
 							},
 						},
 					},
@@ -1246,13 +1246,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   65,
+									Line:   62,
 								},
 								File:   "",
-								Source: "payload = {\n            summary: summary,\n            timestamp: timestamp,\n            source: source,\n            severity: severity,\n            component: component,\n            group: group,\n            class: class,\n    }",
+								Source: "payload = {\n            summary: summary,\n            timestamp: timestamp,\n            source: source,\n            severity: severity,\n            group: group,\n            class: class,\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   57,
+									Line:   55,
 								},
 							},
 						},
@@ -1262,13 +1262,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   57,
+										Line:   55,
 									},
 									File:   "",
 									Source: "payload",
 									Start: ast.Position{
 										Column: 5,
-										Line:   57,
+										Line:   55,
 									},
 								},
 							},
@@ -1280,13 +1280,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   65,
+										Line:   62,
 									},
 									File:   "",
-									Source: "{\n            summary: summary,\n            timestamp: timestamp,\n            source: source,\n            severity: severity,\n            component: component,\n            group: group,\n            class: class,\n    }",
+									Source: "{\n            summary: summary,\n            timestamp: timestamp,\n            source: source,\n            severity: severity,\n            group: group,\n            class: class,\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   57,
+										Line:   55,
 									},
 								},
 							},
@@ -1296,13 +1296,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   58,
+											Line:   56,
 										},
 										File:   "",
 										Source: "summary: summary",
 										Start: ast.Position{
 											Column: 13,
-											Line:   58,
+											Line:   56,
 										},
 									},
 								},
@@ -1312,13 +1312,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   58,
+												Line:   56,
 											},
 											File:   "",
 											Source: "summary",
 											Start: ast.Position{
 												Column: 13,
-												Line:   58,
+												Line:   56,
 											},
 										},
 									},
@@ -1330,13 +1330,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   58,
+												Line:   56,
 											},
 											File:   "",
 											Source: "summary",
 											Start: ast.Position{
 												Column: 22,
-												Line:   58,
+												Line:   56,
 											},
 										},
 									},
@@ -1348,13 +1348,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   59,
+											Line:   57,
 										},
 										File:   "",
 										Source: "timestamp: timestamp",
 										Start: ast.Position{
 											Column: 13,
-											Line:   59,
+											Line:   57,
 										},
 									},
 								},
@@ -1364,13 +1364,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 22,
-												Line:   59,
+												Line:   57,
 											},
 											File:   "",
 											Source: "timestamp",
 											Start: ast.Position{
 												Column: 13,
-												Line:   59,
+												Line:   57,
 											},
 										},
 									},
@@ -1382,13 +1382,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
-												Line:   59,
+												Line:   57,
 											},
 											File:   "",
 											Source: "timestamp",
 											Start: ast.Position{
 												Column: 24,
-												Line:   59,
+												Line:   57,
 											},
 										},
 									},
@@ -1400,13 +1400,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   60,
+											Line:   58,
 										},
 										File:   "",
 										Source: "source: source",
 										Start: ast.Position{
 											Column: 13,
-											Line:   60,
+											Line:   58,
 										},
 									},
 								},
@@ -1416,13 +1416,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   60,
+												Line:   58,
 											},
 											File:   "",
 											Source: "source",
 											Start: ast.Position{
 												Column: 13,
-												Line:   60,
+												Line:   58,
 											},
 										},
 									},
@@ -1434,13 +1434,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   60,
+												Line:   58,
 											},
 											File:   "",
 											Source: "source",
 											Start: ast.Position{
 												Column: 21,
-												Line:   60,
+												Line:   58,
 											},
 										},
 									},
@@ -1452,13 +1452,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   61,
+											Line:   59,
 										},
 										File:   "",
 										Source: "severity: severity",
 										Start: ast.Position{
 											Column: 13,
-											Line:   61,
+											Line:   59,
 										},
 									},
 								},
@@ -1468,13 +1468,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   61,
+												Line:   59,
 											},
 											File:   "",
 											Source: "severity",
 											Start: ast.Position{
 												Column: 13,
-												Line:   61,
+												Line:   59,
 											},
 										},
 									},
@@ -1486,13 +1486,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   61,
+												Line:   59,
 											},
 											File:   "",
 											Source: "severity",
 											Start: ast.Position{
 												Column: 23,
-												Line:   61,
+												Line:   59,
 											},
 										},
 									},
@@ -1503,66 +1503,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 33,
-											Line:   62,
-										},
-										File:   "",
-										Source: "component: component",
-										Start: ast.Position{
-											Column: 13,
-											Line:   62,
-										},
-									},
-								},
-								Key: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 22,
-												Line:   62,
-											},
-											File:   "",
-											Source: "component",
-											Start: ast.Position{
-												Column: 13,
-												Line:   62,
-											},
-										},
-									},
-									Name: "component",
-								},
-								Value: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 33,
-												Line:   62,
-											},
-											File:   "",
-											Source: "component",
-											Start: ast.Position{
-												Column: 24,
-												Line:   62,
-											},
-										},
-									},
-									Name: "component",
-								},
-							}, &ast.Property{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
 											Column: 25,
-											Line:   63,
+											Line:   60,
 										},
 										File:   "",
 										Source: "group: group",
 										Start: ast.Position{
 											Column: 13,
-											Line:   63,
+											Line:   60,
 										},
 									},
 								},
@@ -1572,13 +1520,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   63,
+												Line:   60,
 											},
 											File:   "",
 											Source: "group",
 											Start: ast.Position{
 												Column: 13,
-												Line:   63,
+												Line:   60,
 											},
 										},
 									},
@@ -1590,13 +1538,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   63,
+												Line:   60,
 											},
 											File:   "",
 											Source: "group",
 											Start: ast.Position{
 												Column: 20,
-												Line:   63,
+												Line:   60,
 											},
 										},
 									},
@@ -1608,13 +1556,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   64,
+											Line:   61,
 										},
 										File:   "",
 										Source: "class: class",
 										Start: ast.Position{
 											Column: 13,
-											Line:   64,
+											Line:   61,
 										},
 									},
 								},
@@ -1624,13 +1572,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   64,
+												Line:   61,
 											},
 											File:   "",
 											Source: "class",
 											Start: ast.Position{
 												Column: 13,
-												Line:   64,
+												Line:   61,
 											},
 										},
 									},
@@ -1642,13 +1590,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   64,
+												Line:   61,
 											},
 											File:   "",
 											Source: "class",
 											Start: ast.Position{
 												Column: 20,
-												Line:   64,
+												Line:   61,
 											},
 										},
 									},
@@ -1663,13 +1611,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   73,
+									Line:   70,
 								},
 								File:   "",
 								Source: "data = {\n        payload: payload,\n        routing_key: routingKey,\n        dedup_key: dedupKey,\n        event_action: eventAction,\n        client: client,\n        client_url: clientURL,\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   66,
+									Line:   63,
 								},
 							},
 						},
@@ -1679,13 +1627,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   66,
+										Line:   63,
 									},
 									File:   "",
 									Source: "data",
 									Start: ast.Position{
 										Column: 5,
-										Line:   66,
+										Line:   63,
 									},
 								},
 							},
@@ -1697,13 +1645,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   73,
+										Line:   70,
 									},
 									File:   "",
 									Source: "{\n        payload: payload,\n        routing_key: routingKey,\n        dedup_key: dedupKey,\n        event_action: eventAction,\n        client: client,\n        client_url: clientURL,\n    }",
 									Start: ast.Position{
 										Column: 12,
-										Line:   66,
+										Line:   63,
 									},
 								},
 							},
@@ -1713,13 +1661,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   67,
+											Line:   64,
 										},
 										File:   "",
 										Source: "payload: payload",
 										Start: ast.Position{
 											Column: 9,
-											Line:   67,
+											Line:   64,
 										},
 									},
 								},
@@ -1729,13 +1677,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   67,
+												Line:   64,
 											},
 											File:   "",
 											Source: "payload",
 											Start: ast.Position{
 												Column: 9,
-												Line:   67,
+												Line:   64,
 											},
 										},
 									},
@@ -1747,13 +1695,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   67,
+												Line:   64,
 											},
 											File:   "",
 											Source: "payload",
 											Start: ast.Position{
 												Column: 18,
-												Line:   67,
+												Line:   64,
 											},
 										},
 									},
@@ -1765,13 +1713,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   68,
+											Line:   65,
 										},
 										File:   "",
 										Source: "routing_key: routingKey",
 										Start: ast.Position{
 											Column: 9,
-											Line:   68,
+											Line:   65,
 										},
 									},
 								},
@@ -1781,13 +1729,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   68,
+												Line:   65,
 											},
 											File:   "",
 											Source: "routing_key",
 											Start: ast.Position{
 												Column: 9,
-												Line:   68,
+												Line:   65,
 											},
 										},
 									},
@@ -1799,13 +1747,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   68,
+												Line:   65,
 											},
 											File:   "",
 											Source: "routingKey",
 											Start: ast.Position{
 												Column: 22,
-												Line:   68,
+												Line:   65,
 											},
 										},
 									},
@@ -1817,13 +1765,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   69,
+											Line:   66,
 										},
 										File:   "",
 										Source: "dedup_key: dedupKey",
 										Start: ast.Position{
 											Column: 9,
-											Line:   69,
+											Line:   66,
 										},
 									},
 								},
@@ -1833,13 +1781,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   69,
+												Line:   66,
 											},
 											File:   "",
 											Source: "dedup_key",
 											Start: ast.Position{
 												Column: 9,
-												Line:   69,
+												Line:   66,
 											},
 										},
 									},
@@ -1851,13 +1799,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 28,
-												Line:   69,
+												Line:   66,
 											},
 											File:   "",
 											Source: "dedupKey",
 											Start: ast.Position{
 												Column: 20,
-												Line:   69,
+												Line:   66,
 											},
 										},
 									},
@@ -1869,13 +1817,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   70,
+											Line:   67,
 										},
 										File:   "",
 										Source: "event_action: eventAction",
 										Start: ast.Position{
 											Column: 9,
-											Line:   70,
+											Line:   67,
 										},
 									},
 								},
@@ -1885,13 +1833,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   70,
+												Line:   67,
 											},
 											File:   "",
 											Source: "event_action",
 											Start: ast.Position{
 												Column: 9,
-												Line:   70,
+												Line:   67,
 											},
 										},
 									},
@@ -1903,13 +1851,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   70,
+												Line:   67,
 											},
 											File:   "",
 											Source: "eventAction",
 											Start: ast.Position{
 												Column: 23,
-												Line:   70,
+												Line:   67,
 											},
 										},
 									},
@@ -1921,13 +1869,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   71,
+											Line:   68,
 										},
 										File:   "",
 										Source: "client: client",
 										Start: ast.Position{
 											Column: 9,
-											Line:   71,
+											Line:   68,
 										},
 									},
 								},
@@ -1937,13 +1885,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   71,
+												Line:   68,
 											},
 											File:   "",
 											Source: "client",
 											Start: ast.Position{
 												Column: 9,
-												Line:   71,
+												Line:   68,
 											},
 										},
 									},
@@ -1955,13 +1903,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   71,
+												Line:   68,
 											},
 											File:   "",
 											Source: "client",
 											Start: ast.Position{
 												Column: 17,
-												Line:   71,
+												Line:   68,
 											},
 										},
 									},
@@ -1973,13 +1921,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   72,
+											Line:   69,
 										},
 										File:   "",
 										Source: "client_url: clientURL",
 										Start: ast.Position{
 											Column: 9,
-											Line:   72,
+											Line:   69,
 										},
 									},
 								},
@@ -1989,13 +1937,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   72,
+												Line:   69,
 											},
 											File:   "",
 											Source: "client_url",
 											Start: ast.Position{
 												Column: 9,
-												Line:   72,
+												Line:   69,
 											},
 										},
 									},
@@ -2007,13 +1955,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   72,
+												Line:   69,
 											},
 											File:   "",
 											Source: "clientURL",
 											Start: ast.Position{
 												Column: 21,
-												Line:   72,
+												Line:   69,
 											},
 										},
 									},
@@ -2028,13 +1976,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   78,
+									Line:   75,
 								},
 								File:   "",
 								Source: "headers = {\n        \"Accept\": \"application/vnd.pagerduty+json;version=2\",\n        \"Content-Type\": \"application/json\",\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   75,
+									Line:   72,
 								},
 							},
 						},
@@ -2044,13 +1992,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   75,
+										Line:   72,
 									},
 									File:   "",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 5,
-										Line:   75,
+										Line:   72,
 									},
 								},
 							},
@@ -2062,13 +2010,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   78,
+										Line:   75,
 									},
 									File:   "",
 									Source: "{\n        \"Accept\": \"application/vnd.pagerduty+json;version=2\",\n        \"Content-Type\": \"application/json\",\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   75,
+										Line:   72,
 									},
 								},
 							},
@@ -2078,13 +2026,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 61,
-											Line:   76,
+											Line:   73,
 										},
 										File:   "",
 										Source: "\"Accept\": \"application/vnd.pagerduty+json;version=2\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   76,
+											Line:   73,
 										},
 									},
 								},
@@ -2094,13 +2042,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   76,
+												Line:   73,
 											},
 											File:   "",
 											Source: "\"Accept\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   76,
+												Line:   73,
 											},
 										},
 									},
@@ -2112,13 +2060,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 61,
-												Line:   76,
+												Line:   73,
 											},
 											File:   "",
 											Source: "\"application/vnd.pagerduty+json;version=2\"",
 											Start: ast.Position{
 												Column: 19,
-												Line:   76,
+												Line:   73,
 											},
 										},
 									},
@@ -2130,13 +2078,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   77,
+											Line:   74,
 										},
 										File:   "",
 										Source: "\"Content-Type\": \"application/json\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   77,
+											Line:   74,
 										},
 									},
 								},
@@ -2146,13 +2094,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   77,
+												Line:   74,
 											},
 											File:   "",
 											Source: "\"Content-Type\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   77,
+												Line:   74,
 											},
 										},
 									},
@@ -2164,13 +2112,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   77,
+												Line:   74,
 											},
 											File:   "",
 											Source: "\"application/json\"",
 											Start: ast.Position{
 												Column: 25,
-												Line:   77,
+												Line:   74,
 											},
 										},
 									},
@@ -2185,13 +2133,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   79,
+									Line:   76,
 								},
 								File:   "",
 								Source: "enc = json.encode(v: data)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   79,
+									Line:   76,
 								},
 							},
 						},
@@ -2201,13 +2149,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 8,
-										Line:   79,
+										Line:   76,
 									},
 									File:   "",
 									Source: "enc",
 									Start: ast.Position{
 										Column: 5,
-										Line:   79,
+										Line:   76,
 									},
 								},
 							},
@@ -2220,13 +2168,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   79,
+											Line:   76,
 										},
 										File:   "",
 										Source: "v: data",
 										Start: ast.Position{
 											Column: 23,
-											Line:   79,
+											Line:   76,
 										},
 									},
 								},
@@ -2236,13 +2184,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   79,
+												Line:   76,
 											},
 											File:   "",
 											Source: "v: data",
 											Start: ast.Position{
 												Column: 23,
-												Line:   79,
+												Line:   76,
 											},
 										},
 									},
@@ -2252,13 +2200,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   79,
+													Line:   76,
 												},
 												File:   "",
 												Source: "v",
 												Start: ast.Position{
 													Column: 23,
-													Line:   79,
+													Line:   76,
 												},
 											},
 										},
@@ -2270,13 +2218,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   79,
+													Line:   76,
 												},
 												File:   "",
 												Source: "data",
 												Start: ast.Position{
 													Column: 26,
-													Line:   79,
+													Line:   76,
 												},
 											},
 										},
@@ -2290,13 +2238,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   79,
+										Line:   76,
 									},
 									File:   "",
 									Source: "json.encode(v: data)",
 									Start: ast.Position{
 										Column: 11,
-										Line:   79,
+										Line:   76,
 									},
 								},
 							},
@@ -2306,13 +2254,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 22,
-											Line:   79,
+											Line:   76,
 										},
 										File:   "",
 										Source: "json.encode",
 										Start: ast.Position{
 											Column: 11,
-											Line:   79,
+											Line:   76,
 										},
 									},
 								},
@@ -2322,13 +2270,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   79,
+												Line:   76,
 											},
 											File:   "",
 											Source: "json",
 											Start: ast.Position{
 												Column: 11,
-												Line:   79,
+												Line:   76,
 											},
 										},
 									},
@@ -2340,13 +2288,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 22,
-												Line:   79,
+												Line:   76,
 											},
 											File:   "",
 											Source: "encode",
 											Start: ast.Position{
 												Column: 16,
-												Line:   79,
+												Line:   76,
 											},
 										},
 									},
@@ -2362,13 +2310,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 68,
-											Line:   80,
+											Line:   77,
 										},
 										File:   "",
 										Source: "headers: headers, url: pagerdutyURL, data: enc",
 										Start: ast.Position{
 											Column: 22,
-											Line:   80,
+											Line:   77,
 										},
 									},
 								},
@@ -2378,13 +2326,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   80,
+												Line:   77,
 											},
 											File:   "",
 											Source: "headers: headers",
 											Start: ast.Position{
 												Column: 22,
-												Line:   80,
+												Line:   77,
 											},
 										},
 									},
@@ -2394,13 +2342,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   80,
+													Line:   77,
 												},
 												File:   "",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 22,
-													Line:   80,
+													Line:   77,
 												},
 											},
 										},
@@ -2412,13 +2360,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   80,
+													Line:   77,
 												},
 												File:   "",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 31,
-													Line:   80,
+													Line:   77,
 												},
 											},
 										},
@@ -2430,13 +2378,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 57,
-												Line:   80,
+												Line:   77,
 											},
 											File:   "",
 											Source: "url: pagerdutyURL",
 											Start: ast.Position{
 												Column: 40,
-												Line:   80,
+												Line:   77,
 											},
 										},
 									},
@@ -2446,13 +2394,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   80,
+													Line:   77,
 												},
 												File:   "",
 												Source: "url",
 												Start: ast.Position{
 													Column: 40,
-													Line:   80,
+													Line:   77,
 												},
 											},
 										},
@@ -2464,13 +2412,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 57,
-													Line:   80,
+													Line:   77,
 												},
 												File:   "",
 												Source: "pagerdutyURL",
 												Start: ast.Position{
 													Column: 45,
-													Line:   80,
+													Line:   77,
 												},
 											},
 										},
@@ -2482,13 +2430,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 68,
-												Line:   80,
+												Line:   77,
 											},
 											File:   "",
 											Source: "data: enc",
 											Start: ast.Position{
 												Column: 59,
-												Line:   80,
+												Line:   77,
 											},
 										},
 									},
@@ -2498,13 +2446,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 63,
-													Line:   80,
+													Line:   77,
 												},
 												File:   "",
 												Source: "data",
 												Start: ast.Position{
 													Column: 59,
-													Line:   80,
+													Line:   77,
 												},
 											},
 										},
@@ -2516,13 +2464,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
-													Line:   80,
+													Line:   77,
 												},
 												File:   "",
 												Source: "enc",
 												Start: ast.Position{
 													Column: 65,
-													Line:   80,
+													Line:   77,
 												},
 											},
 										},
@@ -2536,13 +2484,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 69,
-										Line:   80,
+										Line:   77,
 									},
 									File:   "",
 									Source: "http.post(headers: headers, url: pagerdutyURL, data: enc)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   80,
+										Line:   77,
 									},
 								},
 							},
@@ -2552,13 +2500,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   80,
+											Line:   77,
 										},
 										File:   "",
 										Source: "http.post",
 										Start: ast.Position{
 											Column: 12,
-											Line:   80,
+											Line:   77,
 										},
 									},
 								},
@@ -2568,13 +2516,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   80,
+												Line:   77,
 											},
 											File:   "",
 											Source: "http",
 											Start: ast.Position{
 												Column: 12,
-												Line:   80,
+												Line:   77,
 											},
 										},
 									},
@@ -2586,13 +2534,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   80,
+												Line:   77,
 											},
 											File:   "",
 											Source: "post",
 											Start: ast.Position{
 												Column: 17,
-												Line:   80,
+												Line:   77,
 											},
 										},
 									},
@@ -2605,13 +2553,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 69,
-									Line:   80,
+									Line:   77,
 								},
 								File:   "",
 								Source: "return http.post(headers: headers, url: pagerdutyURL, data: enc)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   80,
+									Line:   77,
 								},
 							},
 						},
@@ -2623,13 +2571,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   43,
+								Line:   42,
 							},
 							File:   "",
 							Source: "pagerdutyURL=defaultURL",
 							Start: ast.Position{
 								Column: 14,
-								Line:   43,
+								Line:   42,
 							},
 						},
 					},
@@ -2639,13 +2587,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   43,
+									Line:   42,
 								},
 								File:   "",
 								Source: "pagerdutyURL",
 								Start: ast.Position{
 									Column: 14,
-									Line:   43,
+									Line:   42,
 								},
 							},
 						},
@@ -2657,13 +2605,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 37,
-									Line:   43,
+									Line:   42,
 								},
 								File:   "",
 								Source: "defaultURL",
 								Start: ast.Position{
 									Column: 27,
-									Line:   43,
+									Line:   42,
 								},
 							},
 						},
@@ -2675,13 +2623,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   44,
+								Line:   43,
 							},
 							File:   "",
 							Source: "routingKey",
 							Start: ast.Position{
 								Column: 5,
-								Line:   44,
+								Line:   43,
 							},
 						},
 					},
@@ -2691,13 +2639,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   44,
+									Line:   43,
 								},
 								File:   "",
 								Source: "routingKey",
 								Start: ast.Position{
 									Column: 5,
-									Line:   44,
+									Line:   43,
 								},
 							},
 						},
@@ -2710,13 +2658,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
-								Line:   45,
+								Line:   44,
 							},
 							File:   "",
 							Source: "client",
 							Start: ast.Position{
 								Column: 5,
-								Line:   45,
+								Line:   44,
 							},
 						},
 					},
@@ -2726,13 +2674,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   45,
+									Line:   44,
 								},
 								File:   "",
 								Source: "client",
 								Start: ast.Position{
 									Column: 5,
-									Line:   45,
+									Line:   44,
 								},
 							},
 						},
@@ -2745,13 +2693,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   46,
+								Line:   45,
 							},
 							File:   "",
 							Source: "clientURL",
 							Start: ast.Position{
 								Column: 5,
-								Line:   46,
+								Line:   45,
 							},
 						},
 					},
@@ -2761,13 +2709,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   46,
+									Line:   45,
 								},
 								File:   "",
 								Source: "clientURL",
 								Start: ast.Position{
 									Column: 5,
-									Line:   46,
+									Line:   45,
 								},
 							},
 						},
@@ -2780,13 +2728,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 13,
-								Line:   47,
+								Line:   46,
 							},
 							File:   "",
 							Source: "dedupKey",
 							Start: ast.Position{
 								Column: 5,
-								Line:   47,
+								Line:   46,
 							},
 						},
 					},
@@ -2796,13 +2744,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   47,
+									Line:   46,
 								},
 								File:   "",
 								Source: "dedupKey",
 								Start: ast.Position{
 									Column: 5,
-									Line:   47,
+									Line:   46,
 								},
 							},
 						},
@@ -2815,13 +2763,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 10,
-								Line:   48,
+								Line:   47,
 							},
 							File:   "",
 							Source: "class",
 							Start: ast.Position{
 								Column: 5,
-								Line:   48,
+								Line:   47,
 							},
 						},
 					},
@@ -2831,13 +2779,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   48,
+									Line:   47,
 								},
 								File:   "",
 								Source: "class",
 								Start: ast.Position{
 									Column: 5,
-									Line:   48,
+									Line:   47,
 								},
 							},
 						},
@@ -2850,13 +2798,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 10,
-								Line:   49,
+								Line:   48,
 							},
 							File:   "",
 							Source: "group",
 							Start: ast.Position{
 								Column: 5,
-								Line:   49,
+								Line:   48,
 							},
 						},
 					},
@@ -2866,13 +2814,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   49,
+									Line:   48,
 								},
 								File:   "",
 								Source: "group",
 								Start: ast.Position{
 									Column: 5,
-									Line:   49,
+									Line:   48,
 								},
 							},
 						},
@@ -2885,13 +2833,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 13,
-								Line:   50,
+								Line:   49,
 							},
 							File:   "",
 							Source: "severity",
 							Start: ast.Position{
 								Column: 5,
-								Line:   50,
+								Line:   49,
 							},
 						},
 					},
@@ -2901,13 +2849,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   50,
+									Line:   49,
 								},
 								File:   "",
 								Source: "severity",
 								Start: ast.Position{
 									Column: 5,
-									Line:   50,
+									Line:   49,
 								},
 							},
 						},
@@ -2920,13 +2868,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   51,
+								Line:   50,
 							},
 							File:   "",
 							Source: "eventAction",
 							Start: ast.Position{
 								Column: 5,
-								Line:   51,
+								Line:   50,
 							},
 						},
 					},
@@ -2936,13 +2884,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   51,
+									Line:   50,
 								},
 								File:   "",
 								Source: "eventAction",
 								Start: ast.Position{
 									Column: 5,
-									Line:   51,
+									Line:   50,
 								},
 							},
 						},
@@ -2954,49 +2902,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
-								Line:   52,
-							},
-							File:   "",
-							Source: "component",
-							Start: ast.Position{
-								Column: 5,
-								Line:   52,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 14,
-									Line:   52,
-								},
-								File:   "",
-								Source: "component",
-								Start: ast.Position{
-									Column: 5,
-									Line:   52,
-								},
-							},
-						},
-						Name: "component",
-					},
-					Value: nil,
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
 								Column: 11,
-								Line:   53,
+								Line:   51,
 							},
 							File:   "",
 							Source: "source",
 							Start: ast.Position{
 								Column: 5,
-								Line:   53,
+								Line:   51,
 							},
 						},
 					},
@@ -3006,13 +2919,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   53,
+									Line:   51,
 								},
 								File:   "",
 								Source: "source",
 								Start: ast.Position{
 									Column: 5,
-									Line:   53,
+									Line:   51,
 								},
 							},
 						},
@@ -3025,13 +2938,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 12,
-								Line:   54,
+								Line:   52,
 							},
 							File:   "",
 							Source: "summary",
 							Start: ast.Position{
 								Column: 5,
-								Line:   54,
+								Line:   52,
 							},
 						},
 					},
@@ -3041,13 +2954,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   54,
+									Line:   52,
 								},
 								File:   "",
 								Source: "summary",
 								Start: ast.Position{
 									Column: 5,
-									Line:   54,
+									Line:   52,
 								},
 							},
 						},
@@ -3060,13 +2973,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   55,
+								Line:   53,
 							},
 							File:   "",
 							Source: "timestamp",
 							Start: ast.Position{
 								Column: 5,
-								Line:   55,
+								Line:   53,
 							},
 						},
 					},
@@ -3076,13 +2989,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   55,
+									Line:   53,
 								},
 								File:   "",
 								Source: "timestamp",
 								Start: ast.Position{
 									Column: 5,
-									Line:   55,
+									Line:   53,
 								},
 							},
 						},
@@ -3097,13 +3010,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   109,
+						Line:   105,
 					},
 					File:   "",
-					Source: "endpoint = (url=defaultURL) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> dedupKey()\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            })",
+					Source: "endpoint = (url=defaultURL) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> dedupKey()\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            })",
 					Start: ast.Position{
 						Column: 1,
-						Line:   88,
+						Line:   85,
 					},
 				},
 			},
@@ -3113,13 +3026,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   88,
+							Line:   85,
 						},
 						File:   "",
 						Source: "endpoint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   88,
+							Line:   85,
 						},
 					},
 				},
@@ -3131,13 +3044,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   109,
+							Line:   105,
 						},
 						File:   "",
-						Source: "(url=defaultURL) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> dedupKey()\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            })",
+						Source: "(url=defaultURL) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> dedupKey()\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            })",
 						Start: ast.Position{
 							Column: 12,
-							Line:   88,
+							Line:   85,
 						},
 					},
 				},
@@ -3147,13 +3060,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   109,
+								Line:   105,
 							},
 							File:   "",
-							Source: "(mapFn) =>\n        (tables=<-) => tables\n            |> dedupKey()\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            })",
+							Source: "(mapFn) =>\n        (tables=<-) => tables\n            |> dedupKey()\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            })",
 							Start: ast.Position{
 								Column: 5,
-								Line:   89,
+								Line:   86,
 							},
 						},
 					},
@@ -3163,13 +3076,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   109,
+									Line:   105,
 								},
 								File:   "",
-								Source: "(tables=<-) => tables\n            |> dedupKey()\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            })",
+								Source: "(tables=<-) => tables\n            |> dedupKey()\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            })",
 								Start: ast.Position{
 									Column: 9,
-									Line:   90,
+									Line:   87,
 								},
 							},
 						},
@@ -3181,13 +3094,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   90,
+												Line:   87,
 											},
 											File:   "",
 											Source: "tables",
 											Start: ast.Position{
 												Column: 24,
-												Line:   90,
+												Line:   87,
 											},
 										},
 									},
@@ -3198,13 +3111,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 26,
-											Line:   91,
+											Line:   88,
 										},
 										File:   "",
 										Source: "tables\n            |> dedupKey()",
 										Start: ast.Position{
 											Column: 24,
-											Line:   90,
+											Line:   87,
 										},
 									},
 								},
@@ -3215,13 +3128,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 26,
-												Line:   91,
+												Line:   88,
 											},
 											File:   "",
 											Source: "dedupKey()",
 											Start: ast.Position{
 												Column: 16,
-												Line:   91,
+												Line:   88,
 											},
 										},
 									},
@@ -3231,13 +3144,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   91,
+													Line:   88,
 												},
 												File:   "",
 												Source: "dedupKey",
 												Start: ast.Position{
 													Column: 16,
-													Line:   91,
+													Line:   88,
 												},
 											},
 										},
@@ -3250,13 +3163,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
-										Line:   109,
+										Line:   105,
 									},
 									File:   "",
-									Source: "tables\n            |> dedupKey()\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            })",
+									Source: "tables\n            |> dedupKey()\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            })",
 									Start: ast.Position{
 										Column: 24,
-										Line:   90,
+										Line:   87,
 									},
 								},
 							},
@@ -3267,13 +3180,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   109,
+												Line:   105,
 											},
 											File:   "",
-											Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            }",
+											Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            }",
 											Start: ast.Position{
 												Column: 20,
-												Line:   92,
+												Line:   89,
 											},
 										},
 									},
@@ -3283,13 +3196,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   109,
+													Line:   105,
 												},
 												File:   "",
-												Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            }",
+												Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            }",
 												Start: ast.Position{
 													Column: 20,
-													Line:   92,
+													Line:   89,
 												},
 											},
 										},
@@ -3299,13 +3212,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 22,
-														Line:   92,
+														Line:   89,
 													},
 													File:   "",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 20,
-														Line:   92,
+														Line:   89,
 													},
 												},
 											},
@@ -3317,13 +3230,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   109,
+														Line:   105,
 													},
 													File:   "",
-													Source: "(r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            }",
+													Source: "(r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            }",
 													Start: ast.Position{
 														Column: 24,
-														Line:   92,
+														Line:   89,
 													},
 												},
 											},
@@ -3333,13 +3246,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
-															Line:   109,
+															Line:   105,
 														},
 														File:   "",
-														Source: "{\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            }",
+														Source: "{\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            }",
 														Start: ast.Position{
 															Column: 31,
-															Line:   92,
+															Line:   89,
 														},
 													},
 												},
@@ -3349,13 +3262,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 34,
-																Line:   93,
+																Line:   90,
 															},
 															File:   "",
 															Source: "obj = mapFn(r: r)",
 															Start: ast.Position{
 																Column: 17,
-																Line:   93,
+																Line:   90,
 															},
 														},
 													},
@@ -3365,13 +3278,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 20,
-																	Line:   93,
+																	Line:   90,
 																},
 																File:   "",
 																Source: "obj",
 																Start: ast.Position{
 																	Column: 17,
-																	Line:   93,
+																	Line:   90,
 																},
 															},
 														},
@@ -3384,13 +3297,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 33,
-																		Line:   93,
+																		Line:   90,
 																	},
 																	File:   "",
 																	Source: "r: r",
 																	Start: ast.Position{
 																		Column: 29,
-																		Line:   93,
+																		Line:   90,
 																	},
 																},
 															},
@@ -3400,13 +3313,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 33,
-																			Line:   93,
+																			Line:   90,
 																		},
 																		File:   "",
 																		Source: "r: r",
 																		Start: ast.Position{
 																			Column: 29,
-																			Line:   93,
+																			Line:   90,
 																		},
 																	},
 																},
@@ -3416,13 +3329,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
-																				Line:   93,
+																				Line:   90,
 																			},
 																			File:   "",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 29,
-																				Line:   93,
+																				Line:   90,
 																			},
 																		},
 																	},
@@ -3434,13 +3347,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 33,
-																				Line:   93,
+																				Line:   90,
 																			},
 																			File:   "",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 32,
-																				Line:   93,
+																				Line:   90,
 																			},
 																		},
 																	},
@@ -3454,13 +3367,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 34,
-																	Line:   93,
+																	Line:   90,
 																},
 																File:   "",
 																Source: "mapFn(r: r)",
 																Start: ast.Position{
 																	Column: 23,
-																	Line:   93,
+																	Line:   90,
 																},
 															},
 														},
@@ -3470,13 +3383,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 28,
-																		Line:   93,
+																		Line:   90,
 																	},
 																	File:   "",
 																	Source: "mapFn",
 																	Start: ast.Position{
 																		Column: 23,
-																		Line:   93,
+																		Line:   90,
 																	},
 																},
 															},
@@ -3490,13 +3403,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 27,
-																	Line:   108,
+																	Line:   104,
 																},
 																File:   "",
-																Source: "{r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}",
+																Source: "{r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}",
 																Start: ast.Position{
 																	Column: 24,
-																	Line:   95,
+																	Line:   92,
 																},
 															},
 														},
@@ -3506,13 +3419,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 26,
-																		Line:   108,
+																		Line:   104,
 																	},
 																	File:   "",
-																	Source: "_sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))",
+																	Source: "_sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))",
 																	Start: ast.Position{
 																		Column: 32,
-																		Line:   95,
+																		Line:   92,
 																	},
 																},
 															},
@@ -3522,13 +3435,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 37,
-																			Line:   95,
+																			Line:   92,
 																		},
 																		File:   "",
 																		Source: "_sent",
 																		Start: ast.Position{
 																			Column: 32,
-																			Line:   95,
+																			Line:   92,
 																		},
 																	},
 																},
@@ -3541,13 +3454,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 25,
-																				Line:   108,
+																				Line:   104,
 																			},
 																			File:   "",
-																			Source: "v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100)",
+																			Source: "v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100)",
 																			Start: ast.Position{
 																				Column: 46,
-																				Line:   95,
+																				Line:   92,
 																			},
 																		},
 																	},
@@ -3557,13 +3470,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 25,
-																					Line:   108,
+																					Line:   104,
 																				},
 																				File:   "",
-																				Source: "v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100)",
+																				Source: "v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100)",
 																				Start: ast.Position{
 																					Column: 46,
-																					Line:   95,
+																					Line:   92,
 																				},
 																			},
 																		},
@@ -3573,13 +3486,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 47,
-																						Line:   95,
+																						Line:   92,
 																					},
 																					File:   "",
 																					Source: "v",
 																					Start: ast.Position{
 																						Column: 46,
-																						Line:   95,
+																						Line:   92,
 																					},
 																				},
 																			},
@@ -3591,13 +3504,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 25,
-																						Line:   108,
+																						Line:   104,
 																					},
 																					File:   "",
-																					Source: "2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100)",
+																					Source: "2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100)",
 																					Start: ast.Position{
 																						Column: 49,
-																						Line:   95,
+																						Line:   92,
 																					},
 																				},
 																			},
@@ -3607,13 +3520,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 50,
-																							Line:   95,
+																							Line:   92,
 																						},
 																						File:   "",
 																						Source: "2",
 																						Start: ast.Position{
 																							Column: 49,
-																							Line:   95,
+																							Line:   92,
 																						},
 																					},
 																				},
@@ -3626,13 +3539,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 25,
-																							Line:   108,
+																							Line:   104,
 																						},
 																						File:   "",
-																						Source: "(sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100)",
+																						Source: "(sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100)",
 																						Start: ast.Position{
 																							Column: 54,
-																							Line:   95,
+																							Line:   92,
 																						},
 																					},
 																				},
@@ -3642,13 +3555,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 24,
-																								Line:   108,
+																								Line:   104,
 																							},
 																							File:   "",
-																							Source: "sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100",
+																							Source: "sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100",
 																							Start: ast.Position{
 																								Column: 55,
-																								Line:   95,
+																								Line:   92,
 																							},
 																						},
 																					},
@@ -3659,13 +3572,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 45,
-																										Line:   107,
+																										Line:   103,
 																									},
 																									File:   "",
-																									Source: "pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp",
+																									Source: "pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp",
 																									Start: ast.Position{
 																										Column: 65,
-																										Line:   95,
+																										Line:   92,
 																									},
 																								},
 																							},
@@ -3675,13 +3588,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 82,
-																											Line:   95,
+																											Line:   92,
 																										},
 																										File:   "",
 																										Source: "pagerdutyURL: url",
 																										Start: ast.Position{
 																											Column: 65,
-																											Line:   95,
+																											Line:   92,
 																										},
 																									},
 																								},
@@ -3691,13 +3604,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 77,
-																												Line:   95,
+																												Line:   92,
 																											},
 																											File:   "",
 																											Source: "pagerdutyURL",
 																											Start: ast.Position{
 																												Column: 65,
-																												Line:   95,
+																												Line:   92,
 																											},
 																										},
 																									},
@@ -3709,13 +3622,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 82,
-																												Line:   95,
+																												Line:   92,
 																											},
 																											File:   "",
 																											Source: "url",
 																											Start: ast.Position{
 																												Column: 79,
-																												Line:   95,
+																												Line:   92,
 																											},
 																										},
 																									},
@@ -3727,13 +3640,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 47,
-																											Line:   96,
+																											Line:   93,
 																										},
 																										File:   "",
 																										Source: "routingKey: obj.routingKey",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   96,
+																											Line:   93,
 																										},
 																									},
 																								},
@@ -3743,13 +3656,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 31,
-																												Line:   96,
+																												Line:   93,
 																											},
 																											File:   "",
 																											Source: "routingKey",
 																											Start: ast.Position{
 																												Column: 21,
-																												Line:   96,
+																												Line:   93,
 																											},
 																										},
 																									},
@@ -3761,13 +3674,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 47,
-																												Line:   96,
+																												Line:   93,
 																											},
 																											File:   "",
 																											Source: "obj.routingKey",
 																											Start: ast.Position{
 																												Column: 33,
-																												Line:   96,
+																												Line:   93,
 																											},
 																										},
 																									},
@@ -3777,13 +3690,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 36,
-																													Line:   96,
+																													Line:   93,
 																												},
 																												File:   "",
 																												Source: "obj",
 																												Start: ast.Position{
 																													Column: 33,
-																													Line:   96,
+																													Line:   93,
 																												},
 																											},
 																										},
@@ -3795,13 +3708,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 47,
-																													Line:   96,
+																													Line:   93,
 																												},
 																												File:   "",
 																												Source: "routingKey",
 																												Start: ast.Position{
 																													Column: 37,
-																													Line:   96,
+																													Line:   93,
 																												},
 																											},
 																										},
@@ -3814,13 +3727,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 39,
-																											Line:   97,
+																											Line:   94,
 																										},
 																										File:   "",
 																										Source: "client: obj.client",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   97,
+																											Line:   94,
 																										},
 																									},
 																								},
@@ -3830,13 +3743,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 27,
-																												Line:   97,
+																												Line:   94,
 																											},
 																											File:   "",
 																											Source: "client",
 																											Start: ast.Position{
 																												Column: 21,
-																												Line:   97,
+																												Line:   94,
 																											},
 																										},
 																									},
@@ -3848,13 +3761,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 39,
-																												Line:   97,
+																												Line:   94,
 																											},
 																											File:   "",
 																											Source: "obj.client",
 																											Start: ast.Position{
 																												Column: 29,
-																												Line:   97,
+																												Line:   94,
 																											},
 																										},
 																									},
@@ -3864,13 +3777,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 32,
-																													Line:   97,
+																													Line:   94,
 																												},
 																												File:   "",
 																												Source: "obj",
 																												Start: ast.Position{
 																													Column: 29,
-																													Line:   97,
+																													Line:   94,
 																												},
 																											},
 																										},
@@ -3882,13 +3795,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 39,
-																													Line:   97,
+																													Line:   94,
 																												},
 																												File:   "",
 																												Source: "client",
 																												Start: ast.Position{
 																													Column: 33,
-																													Line:   97,
+																													Line:   94,
 																												},
 																											},
 																										},
@@ -3901,13 +3814,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 45,
-																											Line:   98,
+																											Line:   95,
 																										},
 																										File:   "",
 																										Source: "clientURL: obj.clientURL",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   98,
+																											Line:   95,
 																										},
 																									},
 																								},
@@ -3917,13 +3830,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 30,
-																												Line:   98,
+																												Line:   95,
 																											},
 																											File:   "",
 																											Source: "clientURL",
 																											Start: ast.Position{
 																												Column: 21,
-																												Line:   98,
+																												Line:   95,
 																											},
 																										},
 																									},
@@ -3935,13 +3848,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 45,
-																												Line:   98,
+																												Line:   95,
 																											},
 																											File:   "",
 																											Source: "obj.clientURL",
 																											Start: ast.Position{
 																												Column: 32,
-																												Line:   98,
+																												Line:   95,
 																											},
 																										},
 																									},
@@ -3951,13 +3864,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 35,
-																													Line:   98,
+																													Line:   95,
 																												},
 																												File:   "",
 																												Source: "obj",
 																												Start: ast.Position{
 																													Column: 32,
-																													Line:   98,
+																													Line:   95,
 																												},
 																											},
 																										},
@@ -3969,13 +3882,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 45,
-																													Line:   98,
+																													Line:   95,
 																												},
 																												File:   "",
 																												Source: "clientURL",
 																												Start: ast.Position{
 																													Column: 36,
-																													Line:   98,
+																													Line:   95,
 																												},
 																											},
 																										},
@@ -3988,13 +3901,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 51,
-																											Line:   99,
+																											Line:   96,
 																										},
 																										File:   "",
 																										Source: "dedupKey: r._pagerdutyDedupKey",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   99,
+																											Line:   96,
 																										},
 																									},
 																								},
@@ -4004,13 +3917,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 29,
-																												Line:   99,
+																												Line:   96,
 																											},
 																											File:   "",
 																											Source: "dedupKey",
 																											Start: ast.Position{
 																												Column: 21,
-																												Line:   99,
+																												Line:   96,
 																											},
 																										},
 																									},
@@ -4022,13 +3935,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 51,
-																												Line:   99,
+																												Line:   96,
 																											},
 																											File:   "",
 																											Source: "r._pagerdutyDedupKey",
 																											Start: ast.Position{
 																												Column: 31,
-																												Line:   99,
+																												Line:   96,
 																											},
 																										},
 																									},
@@ -4038,13 +3951,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 32,
-																													Line:   99,
+																													Line:   96,
 																												},
 																												File:   "",
 																												Source: "r",
 																												Start: ast.Position{
 																													Column: 31,
-																													Line:   99,
+																													Line:   96,
 																												},
 																											},
 																										},
@@ -4056,13 +3969,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 51,
-																													Line:   99,
+																													Line:   96,
 																												},
 																												File:   "",
 																												Source: "_pagerdutyDedupKey",
 																												Start: ast.Position{
 																													Column: 33,
-																													Line:   99,
+																													Line:   96,
 																												},
 																											},
 																										},
@@ -4075,13 +3988,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 37,
-																											Line:   100,
+																											Line:   97,
 																										},
 																										File:   "",
 																										Source: "class: obj.class",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   100,
+																											Line:   97,
 																										},
 																									},
 																								},
@@ -4091,13 +4004,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 26,
-																												Line:   100,
+																												Line:   97,
 																											},
 																											File:   "",
 																											Source: "class",
 																											Start: ast.Position{
 																												Column: 21,
-																												Line:   100,
+																												Line:   97,
 																											},
 																										},
 																									},
@@ -4109,13 +4022,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 37,
-																												Line:   100,
+																												Line:   97,
 																											},
 																											File:   "",
 																											Source: "obj.class",
 																											Start: ast.Position{
 																												Column: 28,
-																												Line:   100,
+																												Line:   97,
 																											},
 																										},
 																									},
@@ -4125,13 +4038,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 31,
-																													Line:   100,
+																													Line:   97,
 																												},
 																												File:   "",
 																												Source: "obj",
 																												Start: ast.Position{
 																													Column: 28,
-																													Line:   100,
+																													Line:   97,
 																												},
 																											},
 																										},
@@ -4143,13 +4056,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 37,
-																													Line:   100,
+																													Line:   97,
 																												},
 																												File:   "",
 																												Source: "class",
 																												Start: ast.Position{
 																													Column: 32,
-																													Line:   100,
+																													Line:   97,
 																												},
 																											},
 																										},
@@ -4162,13 +4075,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 37,
-																											Line:   101,
+																											Line:   98,
 																										},
 																										File:   "",
 																										Source: "group: obj.group",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   101,
+																											Line:   98,
 																										},
 																									},
 																								},
@@ -4178,13 +4091,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 26,
-																												Line:   101,
+																												Line:   98,
 																											},
 																											File:   "",
 																											Source: "group",
 																											Start: ast.Position{
 																												Column: 21,
-																												Line:   101,
+																												Line:   98,
 																											},
 																										},
 																									},
@@ -4196,13 +4109,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 37,
-																												Line:   101,
+																												Line:   98,
 																											},
 																											File:   "",
 																											Source: "obj.group",
 																											Start: ast.Position{
 																												Column: 28,
-																												Line:   101,
+																												Line:   98,
 																											},
 																										},
 																									},
@@ -4212,13 +4125,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 31,
-																													Line:   101,
+																													Line:   98,
 																												},
 																												File:   "",
 																												Source: "obj",
 																												Start: ast.Position{
 																													Column: 28,
-																													Line:   101,
+																													Line:   98,
 																												},
 																											},
 																										},
@@ -4230,13 +4143,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 37,
-																													Line:   101,
+																													Line:   98,
 																												},
 																												File:   "",
 																												Source: "group",
 																												Start: ast.Position{
 																													Column: 32,
-																													Line:   101,
+																													Line:   98,
 																												},
 																											},
 																										},
@@ -4249,13 +4162,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 43,
-																											Line:   102,
+																											Line:   99,
 																										},
 																										File:   "",
 																										Source: "severity: obj.severity",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   102,
+																											Line:   99,
 																										},
 																									},
 																								},
@@ -4265,13 +4178,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 29,
-																												Line:   102,
+																												Line:   99,
 																											},
 																											File:   "",
 																											Source: "severity",
 																											Start: ast.Position{
 																												Column: 21,
-																												Line:   102,
+																												Line:   99,
 																											},
 																										},
 																									},
@@ -4283,13 +4196,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 43,
-																												Line:   102,
+																												Line:   99,
 																											},
 																											File:   "",
 																											Source: "obj.severity",
 																											Start: ast.Position{
 																												Column: 31,
-																												Line:   102,
+																												Line:   99,
 																											},
 																										},
 																									},
@@ -4299,13 +4212,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 34,
-																													Line:   102,
+																													Line:   99,
 																												},
 																												File:   "",
 																												Source: "obj",
 																												Start: ast.Position{
 																													Column: 31,
-																													Line:   102,
+																													Line:   99,
 																												},
 																											},
 																										},
@@ -4317,13 +4230,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 43,
-																													Line:   102,
+																													Line:   99,
 																												},
 																												File:   "",
 																												Source: "severity",
 																												Start: ast.Position{
 																													Column: 35,
-																													Line:   102,
+																													Line:   99,
 																												},
 																											},
 																										},
@@ -4336,13 +4249,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 49,
-																											Line:   103,
+																											Line:   100,
 																										},
 																										File:   "",
 																										Source: "eventAction: obj.eventAction",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   103,
+																											Line:   100,
 																										},
 																									},
 																								},
@@ -4352,13 +4265,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 32,
-																												Line:   103,
+																												Line:   100,
 																											},
 																											File:   "",
 																											Source: "eventAction",
 																											Start: ast.Position{
 																												Column: 21,
-																												Line:   103,
+																												Line:   100,
 																											},
 																										},
 																									},
@@ -4370,13 +4283,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 49,
-																												Line:   103,
+																												Line:   100,
 																											},
 																											File:   "",
 																											Source: "obj.eventAction",
 																											Start: ast.Position{
 																												Column: 34,
-																												Line:   103,
+																												Line:   100,
 																											},
 																										},
 																									},
@@ -4386,13 +4299,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 37,
-																													Line:   103,
+																													Line:   100,
 																												},
 																												File:   "",
 																												Source: "obj",
 																												Start: ast.Position{
 																													Column: 34,
-																													Line:   103,
+																													Line:   100,
 																												},
 																											},
 																										},
@@ -4404,13 +4317,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 49,
-																													Line:   103,
+																													Line:   100,
 																												},
 																												File:   "",
 																												Source: "eventAction",
 																												Start: ast.Position{
 																													Column: 38,
-																													Line:   103,
+																													Line:   100,
 																												},
 																											},
 																										},
@@ -4422,101 +4335,14 @@ var pkgAST = &ast.Package{
 																									Errors: nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 45,
-																											Line:   104,
-																										},
-																										File:   "",
-																										Source: "component: obj.component",
-																										Start: ast.Position{
-																											Column: 21,
-																											Line:   104,
-																										},
-																									},
-																								},
-																								Key: &ast.Identifier{
-																									BaseNode: ast.BaseNode{
-																										Errors: nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 30,
-																												Line:   104,
-																											},
-																											File:   "",
-																											Source: "component",
-																											Start: ast.Position{
-																												Column: 21,
-																												Line:   104,
-																											},
-																										},
-																									},
-																									Name: "component",
-																								},
-																								Value: &ast.MemberExpression{
-																									BaseNode: ast.BaseNode{
-																										Errors: nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 45,
-																												Line:   104,
-																											},
-																											File:   "",
-																											Source: "obj.component",
-																											Start: ast.Position{
-																												Column: 32,
-																												Line:   104,
-																											},
-																										},
-																									},
-																									Object: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 35,
-																													Line:   104,
-																												},
-																												File:   "",
-																												Source: "obj",
-																												Start: ast.Position{
-																													Column: 32,
-																													Line:   104,
-																												},
-																											},
-																										},
-																										Name: "obj",
-																									},
-																									Property: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 45,
-																													Line:   104,
-																												},
-																												File:   "",
-																												Source: "component",
-																												Start: ast.Position{
-																													Column: 36,
-																													Line:   104,
-																												},
-																											},
-																										},
-																										Name: "component",
-																									},
-																								},
-																							}, &ast.Property{
-																								BaseNode: ast.BaseNode{
-																									Errors: nil,
-																									Loc: &ast.SourceLocation{
-																										End: ast.Position{
 																											Column: 39,
-																											Line:   105,
+																											Line:   101,
 																										},
 																										File:   "",
 																										Source: "source: obj.source",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   105,
+																											Line:   101,
 																										},
 																									},
 																								},
@@ -4526,13 +4352,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 27,
-																												Line:   105,
+																												Line:   101,
 																											},
 																											File:   "",
 																											Source: "source",
 																											Start: ast.Position{
 																												Column: 21,
-																												Line:   105,
+																												Line:   101,
 																											},
 																										},
 																									},
@@ -4544,13 +4370,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 39,
-																												Line:   105,
+																												Line:   101,
 																											},
 																											File:   "",
 																											Source: "obj.source",
 																											Start: ast.Position{
 																												Column: 29,
-																												Line:   105,
+																												Line:   101,
 																											},
 																										},
 																									},
@@ -4560,13 +4386,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 32,
-																													Line:   105,
+																													Line:   101,
 																												},
 																												File:   "",
 																												Source: "obj",
 																												Start: ast.Position{
 																													Column: 29,
-																													Line:   105,
+																													Line:   101,
 																												},
 																											},
 																										},
@@ -4578,13 +4404,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 39,
-																													Line:   105,
+																													Line:   101,
 																												},
 																												File:   "",
 																												Source: "source",
 																												Start: ast.Position{
 																													Column: 33,
-																													Line:   105,
+																													Line:   101,
 																												},
 																											},
 																										},
@@ -4597,13 +4423,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 41,
-																											Line:   106,
+																											Line:   102,
 																										},
 																										File:   "",
 																										Source: "summary: obj.summary",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   106,
+																											Line:   102,
 																										},
 																									},
 																								},
@@ -4613,13 +4439,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 28,
-																												Line:   106,
+																												Line:   102,
 																											},
 																											File:   "",
 																											Source: "summary",
 																											Start: ast.Position{
 																												Column: 21,
-																												Line:   106,
+																												Line:   102,
 																											},
 																										},
 																									},
@@ -4631,13 +4457,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 41,
-																												Line:   106,
+																												Line:   102,
 																											},
 																											File:   "",
 																											Source: "obj.summary",
 																											Start: ast.Position{
 																												Column: 30,
-																												Line:   106,
+																												Line:   102,
 																											},
 																										},
 																									},
@@ -4647,13 +4473,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 33,
-																													Line:   106,
+																													Line:   102,
 																												},
 																												File:   "",
 																												Source: "obj",
 																												Start: ast.Position{
 																													Column: 30,
-																													Line:   106,
+																													Line:   102,
 																												},
 																											},
 																										},
@@ -4665,13 +4491,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 41,
-																													Line:   106,
+																													Line:   102,
 																												},
 																												File:   "",
 																												Source: "summary",
 																												Start: ast.Position{
 																													Column: 34,
-																													Line:   106,
+																													Line:   102,
 																												},
 																											},
 																										},
@@ -4684,13 +4510,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 45,
-																											Line:   107,
+																											Line:   103,
 																										},
 																										File:   "",
 																										Source: "timestamp: obj.timestamp",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   107,
+																											Line:   103,
 																										},
 																									},
 																								},
@@ -4700,13 +4526,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 30,
-																												Line:   107,
+																												Line:   103,
 																											},
 																											File:   "",
 																											Source: "timestamp",
 																											Start: ast.Position{
 																												Column: 21,
-																												Line:   107,
+																												Line:   103,
 																											},
 																										},
 																									},
@@ -4718,13 +4544,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 45,
-																												Line:   107,
+																												Line:   103,
 																											},
 																											File:   "",
 																											Source: "obj.timestamp",
 																											Start: ast.Position{
 																												Column: 32,
-																												Line:   107,
+																												Line:   103,
 																											},
 																										},
 																									},
@@ -4734,13 +4560,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 35,
-																													Line:   107,
+																													Line:   103,
 																												},
 																												File:   "",
 																												Source: "obj",
 																												Start: ast.Position{
 																													Column: 32,
-																													Line:   107,
+																													Line:   103,
 																												},
 																											},
 																										},
@@ -4752,13 +4578,13 @@ var pkgAST = &ast.Package{
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 45,
-																													Line:   107,
+																													Line:   103,
 																												},
 																												File:   "",
 																												Source: "timestamp",
 																												Start: ast.Position{
 																													Column: 36,
-																													Line:   107,
+																													Line:   103,
 																												},
 																											},
 																										},
@@ -4773,13 +4599,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 18,
-																									Line:   108,
+																									Line:   104,
 																								},
 																								File:   "",
-																								Source: "sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                )",
+																								Source: "sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                )",
 																								Start: ast.Position{
 																									Column: 55,
-																									Line:   95,
+																									Line:   92,
 																								},
 																							},
 																						},
@@ -4789,13 +4615,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 64,
-																										Line:   95,
+																										Line:   92,
 																									},
 																									File:   "",
 																									Source: "sendEvent",
 																									Start: ast.Position{
 																										Column: 55,
-																										Line:   95,
+																										Line:   92,
 																									},
 																								},
 																							},
@@ -4809,13 +4635,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 24,
-																									Line:   108,
+																									Line:   104,
 																								},
 																								File:   "",
 																								Source: "100",
 																								Start: ast.Position{
 																									Column: 21,
-																									Line:   108,
+																									Line:   104,
 																								},
 																							},
 																						},
@@ -4832,13 +4658,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 26,
-																			Line:   108,
+																			Line:   104,
 																		},
 																		File:   "",
-																		Source: "string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))",
+																		Source: "string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))",
 																		Start: ast.Position{
 																			Column: 39,
-																			Line:   95,
+																			Line:   92,
 																		},
 																	},
 																},
@@ -4848,13 +4674,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 45,
-																				Line:   95,
+																				Line:   92,
 																			},
 																			File:   "",
 																			Source: "string",
 																			Start: ast.Position{
 																				Column: 39,
-																				Line:   95,
+																				Line:   92,
 																			},
 																		},
 																	},
@@ -4868,13 +4694,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 26,
-																		Line:   95,
+																		Line:   92,
 																	},
 																	File:   "",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 25,
-																		Line:   95,
+																		Line:   92,
 																	},
 																},
 															},
@@ -4886,13 +4712,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 27,
-																Line:   108,
+																Line:   104,
 															},
 															File:   "",
-															Source: "return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}",
+															Source: "return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}",
 															Start: ast.Position{
 																Column: 17,
-																Line:   95,
+																Line:   92,
 															},
 														},
 													},
@@ -4904,13 +4730,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 26,
-															Line:   92,
+															Line:   89,
 														},
 														File:   "",
 														Source: "r",
 														Start: ast.Position{
 															Column: 25,
-															Line:   92,
+															Line:   89,
 														},
 													},
 												},
@@ -4920,13 +4746,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 26,
-																Line:   92,
+																Line:   89,
 															},
 															File:   "",
 															Source: "r",
 															Start: ast.Position{
 																Column: 25,
-																Line:   92,
+																Line:   89,
 															},
 														},
 													},
@@ -4943,13 +4769,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
-											Line:   109,
+											Line:   105,
 										},
 										File:   "",
-										Source: "map(fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    component: obj.component,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            })",
+										Source: "map(fn: (r) => {\n                obj = mapFn(r: r)\n                \n                return {r with _sent: string(v: 2 == (sendEvent(pagerdutyURL: url,\n                    routingKey: obj.routingKey,\n                    client: obj.client,\n                    clientURL: obj.clientURL,\n                    dedupKey: r._pagerdutyDedupKey,\n                    class: obj.class,\n                    group: obj.group,\n                    severity: obj.severity,\n                    eventAction: obj.eventAction,\n                    source: obj.source,\n                    summary: obj.summary,\n                    timestamp: obj.timestamp,\n                ) / 100))}\n            })",
 										Start: ast.Position{
 											Column: 16,
-											Line:   92,
+											Line:   89,
 										},
 									},
 								},
@@ -4959,13 +4785,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   92,
+												Line:   89,
 											},
 											File:   "",
 											Source: "map",
 											Start: ast.Position{
 												Column: 16,
-												Line:   92,
+												Line:   89,
 											},
 										},
 									},
@@ -4979,13 +4805,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   90,
+										Line:   87,
 									},
 									File:   "",
 									Source: "tables=<-",
 									Start: ast.Position{
 										Column: 10,
-										Line:   90,
+										Line:   87,
 									},
 								},
 							},
@@ -4995,13 +4821,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   90,
+											Line:   87,
 										},
 										File:   "",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 10,
-											Line:   90,
+											Line:   87,
 										},
 									},
 								},
@@ -5012,13 +4838,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   90,
+										Line:   87,
 									},
 									File:   "",
 									Source: "<-",
 									Start: ast.Position{
 										Column: 17,
-										Line:   90,
+										Line:   87,
 									},
 								},
 							}},
@@ -5030,13 +4856,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   89,
+									Line:   86,
 								},
 								File:   "",
 								Source: "mapFn",
 								Start: ast.Position{
 									Column: 6,
-									Line:   89,
+									Line:   86,
 								},
 							},
 						},
@@ -5046,13 +4872,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 11,
-										Line:   89,
+										Line:   86,
 									},
 									File:   "",
 									Source: "mapFn",
 									Start: ast.Position{
 										Column: 6,
-										Line:   89,
+										Line:   86,
 									},
 								},
 							},
@@ -5067,13 +4893,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 27,
-								Line:   88,
+								Line:   85,
 							},
 							File:   "",
 							Source: "url=defaultURL",
 							Start: ast.Position{
 								Column: 13,
-								Line:   88,
+								Line:   85,
 							},
 						},
 					},
@@ -5083,13 +4909,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   88,
+									Line:   85,
 								},
 								File:   "",
 								Source: "url",
 								Start: ast.Position{
 									Column: 13,
-									Line:   88,
+									Line:   85,
 								},
 							},
 						},
@@ -5101,13 +4927,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   88,
+									Line:   85,
 								},
 								File:   "",
 								Source: "defaultURL",
 								Start: ast.Position{
 									Column: 17,
-									Line:   88,
+									Line:   85,
 								},
 							},
 						},

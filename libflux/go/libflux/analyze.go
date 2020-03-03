@@ -1,8 +1,6 @@
 package libflux
 
-// #cgo CFLAGS: -I.
-// #cgo LDFLAGS: -L. -llibstd
-// #include "flux.h"
+// #include "influxdata/flux.h"
 // #include <stdlib.h>
 import "C"
 
@@ -71,6 +69,52 @@ func Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 	p := &SemanticPkg{ptr: semPkg}
 	runtime.SetFinalizer(p, free)
 	return p, nil
+}
+
+type Analyzer struct {
+	ptr *C.struct_flux_semantic_analyzer_t
+}
+
+func NewAnalyzer(pkgpath string) *Analyzer {
+	cstr := C.CString(pkgpath)
+	defer C.free(unsafe.Pointer(cstr))
+
+	ptr := C.flux_new_semantic_analyzer(cstr)
+	p := &Analyzer{ptr: ptr}
+	runtime.SetFinalizer(p, free)
+	return p
+}
+
+func (p *Analyzer) Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
+	var semPkg *C.struct_flux_semantic_pkg_t
+	defer func() {
+		astPkg.ptr = nil
+	}()
+	if err := C.flux_analyze_with(p.ptr, astPkg.ptr, &semPkg); err != nil {
+		defer C.flux_free(unsafe.Pointer(err))
+		cstr := C.flux_error_str(err)
+		defer C.flux_free(unsafe.Pointer(cstr))
+
+		str := C.GoString(cstr)
+		return nil, errors.New(codes.Invalid, str)
+	}
+	runtime.KeepAlive(p)
+
+	pkg := &SemanticPkg{ptr: semPkg}
+	runtime.SetFinalizer(pkg, free)
+	return pkg, nil
+}
+
+// Free frees the memory allocated by Rust for the semantic graph.
+func (p *Analyzer) Free() {
+	if p.ptr != nil {
+		C.flux_free(unsafe.Pointer(p.ptr))
+	}
+	p.ptr = nil
+
+	// See the equivalent method in ASTPkg for why
+	// this is needed.
+	runtime.KeepAlive(p)
 }
 
 // EnvStdlib takes care of creating a flux_buffer_t, passes the buffer to

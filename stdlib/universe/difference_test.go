@@ -606,6 +606,87 @@ func TestDifference_Process(t *testing.T) {
 				},
 			}},
 		},
+		{
+			name: "float rowwise",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns: []string{execute.DefaultValueColLabel},
+			},
+			data: []flux.Table{&executetest.RowWiseTable{
+				Table: &executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0},
+						{execute.Time(2), 1.0},
+					},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), -1.0},
+				},
+			}},
+		},
+		{
+			name: "int rowwise",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns: []string{execute.DefaultValueColLabel},
+			},
+			data: []flux.Table{&executetest.RowWiseTable{
+				Table: &executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), int64(20)},
+						{execute.Time(2), int64(10)},
+					},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), int64(-10)},
+				},
+			}},
+		},
+		{
+			name: "uint rowwise",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns: []string{execute.DefaultValueColLabel},
+			},
+			data: []flux.Table{&executetest.RowWiseTable{
+				Table: &executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TUInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), uint64(10)},
+						{execute.Time(2), uint64(20)},
+					},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), int64(10)},
+				},
+			}},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

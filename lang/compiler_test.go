@@ -17,13 +17,13 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/csv"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -31,6 +31,12 @@ import (
 
 func init() {
 	execute.RegisterSource(influxdb.FromKind, mock.CreateMockFromSource)
+	plan.RegisterLogicalRules(
+		influxdb.DefaultFromAttributes{
+			Org:  &influxdb.NameOrID{Name: "influxdata"},
+			Host: func(v string) *string { return &v }("http://localhost:9999"),
+		},
+	)
 }
 
 func TestFluxCompiler(t *testing.T) {
@@ -45,7 +51,7 @@ func TestFluxCompiler(t *testing.T) {
 	}{
 		{
 			name: "simple",
-			q:    `from(bucket: "foo")`,
+			q:    `from(bucket: "foo") |> range(start: -5m)`,
 		},
 		{
 			name: "syntax error",
@@ -59,12 +65,12 @@ func TestFluxCompiler(t *testing.T) {
 		},
 		{
 			name: "from with no streaming data",
-			q:    `x = from(bucket: "foo")`,
+			q:    `x = from(bucket: "foo") |> range(start: -5m)`,
 			err:  "no streaming data",
 		},
 		{
 			name: "from with yield",
-			q:    `x = from(bucket: "foo") |> yield()`,
+			q:    `x = from(bucket: "foo") |> range(start: -5m) |> yield()`,
 		},
 		{
 			name: "extern",
@@ -80,7 +86,7 @@ func TestFluxCompiler(t *testing.T) {
 			},
 			q: `twentySeven = twentySix + 1
 				twentySeven
-				from(bucket: "foo")`,
+				from(bucket: "foo") |> range(start: -5m)`,
 		},
 		{
 			name: "extern with error",
@@ -96,13 +102,13 @@ func TestFluxCompiler(t *testing.T) {
 			},
 			q: `twentySeven = twentyFive + 2
 				twentySeven
-				from(bucket: "foo")`,
+				from(bucket: "foo") |> range(start: -5m)`,
 			err: "undeclared variable twentyFive",
 		},
 		{
 			name: "with now",
 			now:  time.Unix(1000, 0),
-			q:    `from(bucket: "foo")`,
+			q:    `from(bucket: "foo") |> range(start: -5m)`,
 		},
 	} {
 		tc := tc
@@ -259,7 +265,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			astPkg, err := flux.Parse(tc.script)
+			astPkg, err := runtime.Parse(tc.script)
 			if err != nil {
 				t.Fatalf("failed to parse script: %v", err)
 			}
@@ -362,8 +368,6 @@ func TestCompileOptions_FromFluxOptions(t *testing.T) {
 	nowFn := func() time.Time {
 		return parser.MustParseTime("2018-10-10T00:00:00Z").Value
 	}
-
-	plan.RegisterPhysicalRules(&plantest.MergeFromRangePhysicalRule{})
 	plan.RegisterLogicalRules(&removeCount{})
 
 	tcs := []struct {
@@ -380,55 +384,50 @@ import "planner"
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
 			}),
 		},
 		{
-			name: "remove push down range",
+			name: "remove push down filter",
 			files: []string{`
 import "planner"
 
-option planner.disablePhysicalRules = ["fromRangeRule"]
+option planner.disablePhysicalRules = ["influxdata/influxdb.MergeRemoteFilterRule"]
 
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
 					{1, 2},
-					{2, 3},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
 			}),
 		},
 		{
-			name: "remove push down range and count",
+			name: "remove push down filter and count",
 			files: []string{`
 import "planner"
 
-option planner.disablePhysicalRules = ["fromRangeRule"]
+option planner.disablePhysicalRules = ["influxdata/influxdb.MergeRemoteFilterRule"]
 option planner.disableLogicalRules = ["removeCountRule"]
 
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
@@ -437,25 +436,23 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 					{0, 1},
 					{1, 2},
 					{2, 3},
-					{3, 4},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
 			}),
 		},
 		{
-			name: "remove push down range and count - with non existent rule",
+			name: "remove push down filter and count - with non existent rule",
 			files: []string{`
 import "planner"
 
-option planner.disablePhysicalRules = ["fromRangeRule", "non_existent"]
+option planner.disablePhysicalRules = ["influxdata/influxdb.MergeRemoteFilterRule", "non_existent"]
 option planner.disableLogicalRules = ["removeCountRule", "non_existent"]
 
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
@@ -464,7 +461,6 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 					{0, 1},
 					{1, 2},
 					{2, 3},
-					{3, 4},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -481,13 +477,11 @@ option planner.disableLogicalRules = ["foo", "bar", "mew", "buz", "foxtrot"]
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -504,13 +498,11 @@ option planner.disableLogicalRules = [""]
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -572,13 +564,11 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 			// This shouldn't change the plan.
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -589,14 +579,13 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 			files: []string{`
 import pl "planner"
 
-option pl.disablePhysicalRules = ["fromRangeRule"]
+option pl.disablePhysicalRules = ["influxdata/influxdb.MergeRemoteFilterRule"]
 option pl.disableLogicalRules = ["removeCountRule"]
 
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
@@ -605,7 +594,6 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 					{0, 1},
 					{1, 2},
 					{2, 3},
-					{3, 4},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -617,7 +605,7 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 				`package main
 import pl "planner"
 
-option pl.disablePhysicalRules = ["fromRangeRule"]
+option pl.disablePhysicalRules = ["influxdata/influxdb.MergeRemoteFilterRule"]
 
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`,
 				`package foo
@@ -626,8 +614,7 @@ import "planner"
 option planner.disableLogicalRules = ["removeCountRule"]`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
@@ -636,7 +623,6 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 					{0, 1},
 					{1, 2},
 					{2, 3},
-					{3, 4},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -653,14 +639,14 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 			if len(tc.files) == 0 {
 				t.Fatal("the test should have at least one file")
 			}
-			astPkg, err := flux.Parse(tc.files[0])
+			astPkg, err := runtime.Parse(tc.files[0])
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			if len(tc.files) > 1 {
 				for _, file := range tc.files[1:] {
-					otherPkg, err := flux.Parse(file)
+					otherPkg, err := runtime.Parse(file)
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -709,7 +695,6 @@ func getRootErr(err error) error {
 // extracts the TableObjects obtained from evaluation. It eventually compiles TableObjects and
 // compares obtained results with expected ones (obtained from decoding the raw csv data).
 func TestTableObjectCompiler(t *testing.T) {
-	t.Skip("https://github.com/influxdata/flux/issues/2479")
 	dataRaw := `#datatype,string,long,dateTime:RFC3339,long,string,string,string,string
 #group,false,false,false,false,false,false,true,true
 #default,_result,,,,,,,
@@ -762,16 +747,22 @@ csv.from(csv: data)
 	wantRange := getTablesFromRawOrFail(t, rangedDataRaw)
 	wantFilter := getTablesFromRawOrFail(t, filteredDataRaw)
 
-	vs, _, err := flux.Eval(dependenciestest.Default().Inject(context.Background()), script)
+	vs, _, err := runtime.Eval(dependenciestest.Default().Inject(context.Background()), script)
 	if err != nil {
 		t.Fatal(err)
 	}
-	tos := getTableObjects(vs)
-	if len(tos) != 3 {
-		t.Fatalf("wrong number of table objects, got %d", len(tos))
+	if len(vs) != 1 {
+		t.Fatalf("wrong number of side effect values, got %d", len(vs))
 	}
 
-	fromCsvTO := tos[2]
+	to, ok := vs[0].Value.(*flux.TableObject)
+	if !ok {
+		t.Fatalf("expected TableObject but instead got %T", vs[0].Value)
+	}
+
+	tos := flattenTableObjects(to, []*flux.TableObject{})
+
+	fromCsvTO := tos[0]
 	if fromCsvTO.Kind != csv.FromCSVKind {
 		t.Fatalf("unexpected kind for fromCSV: %s", fromCsvTO.Kind)
 	}
@@ -779,7 +770,7 @@ csv.from(csv: data)
 	if rangeTO.Kind != universe.RangeKind {
 		t.Fatalf("unexpected kind for range: %s", rangeTO.Kind)
 	}
-	filterTO := tos[0]
+	filterTO := tos[2]
 	if filterTO.Kind != universe.FilterKind {
 		t.Fatalf("unexpected kind for filter: %s", filterTO.Kind)
 	}
@@ -862,13 +853,9 @@ func getTablesFromResultOrFail(t *testing.T, result flux.Result) []*executetest.
 	return tables
 }
 
-func getTableObjects(vs []interpreter.SideEffect) []*flux.TableObject {
-	tos := make([]*flux.TableObject, 0)
-	for _, v := range vs {
-		if to, ok := v.Value.(*flux.TableObject); ok {
-			tos = append(tos, to)
-			tos = append(tos, to.Parents...)
-		}
+func flattenTableObjects(to *flux.TableObject, arr []*flux.TableObject) []*flux.TableObject {
+	for _, parent := range to.Parents {
+		arr = flattenTableObjects(parent, arr)
 	}
-	return tos
+	return append(arr, to)
 }

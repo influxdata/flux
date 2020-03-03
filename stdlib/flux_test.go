@@ -12,11 +12,12 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib"
 )
 
 func init() {
-	flux.FinalizeBuiltIns()
+	runtime.FinalizeBuiltIns()
 }
 
 // list of end-to-end tests that are meant to be skipped and not run for various reasons
@@ -49,9 +50,7 @@ var skip = map[string]map[string]string{
 		"partition_strings_splitN":       "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
 	},
 	"testing/usage": {
-		"api":     "todo(algow): stalls",
-		"storage": "todo(algow): stalls",
-		"writes":  "todo(algow): stalls",
+		"storage": "overwriting field in map with different type (https://github.com/influxdata/flux/issues/2570)",
 	},
 }
 

@@ -1,0 +1,28 @@
+FROM golang:1.13
+
+ENV PATH="/root/.cargo/bin:${PATH}"
+ENV GO111MODULE=on
+ENV CGO_ENABLED=1
+
+COPY . /go/src/github.com/influxdata/flux
+WORKDIR /go/src/github.com/influxdata/flux
+
+# Install common packages
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+        clang \
+        gcc-arm-linux-gnueabihf \
+        gcc-arm-linux-gnueabi \
+        gcc-aarch64-linux-gnu \
+        gcc-i686-linux-gnu && \
+    rm -rf /var/lib/apt/lists/*
+RUN curl https://sh.rustup.rs -sSf | \
+    sh -s -- --default-toolchain stable -y
+
+RUN cd libflux && cargo build
+RUN go build \
+        -ldflags '-extldflags "-fno-PIC -static"' \
+        -buildmode pie \
+        -tags 'libflux static_build' \
+        -o flux \
+        .

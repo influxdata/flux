@@ -3,8 +3,8 @@ package experimental
 import (
 	"context"
 
-	flux "github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/runtime"
 
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
@@ -12,9 +12,9 @@ import (
 )
 
 func init() {
-	flux.RegisterPackageValue("experimental", "objectKeys", values.NewFunction(
+	runtime.RegisterPackageValue("experimental", "objectKeys", values.NewFunction(
 		"objectKeys",
-		semantic.MustLookupBuiltinType("experimental", "objectKeys"),
+		runtime.MustLookupBuiltinType("experimental", "objectKeys"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			o, ok := args.Get("o")
 			if !ok {

@@ -6,13 +6,12 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/querytest"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
@@ -29,30 +28,14 @@ func TestMap_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
 						ID: "map1",
 						Spec: &universe.MapOpSpec{
 							Fn: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-										},
-										Body: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.IntegerLiteral{Value: 1},
-										},
-									},
-								},
+								Fn:    executetest.FunctionExpression(t, "(r) => r._value + 1"),
 								Scope: valuestest.Scope(),
 							},
 						},
@@ -71,7 +54,7 @@ func TestMap_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
@@ -79,23 +62,7 @@ func TestMap_NewQuery(t *testing.T) {
 						Spec: &universe.MapOpSpec{
 							MergeKey: true,
 							Fn: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-										},
-										Body: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.IntegerLiteral{Value: 1},
-										},
-									},
-								},
+								Fn:    executetest.FunctionExpression(t, "(r) => r._value + 1"),
 								Scope: valuestest.Scope(),
 							},
 						},
@@ -114,30 +81,14 @@ func TestMap_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
 						ID: "map1",
 						Spec: &universe.MapOpSpec{
 							Fn: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-										},
-										Body: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.IntegerLiteral{Value: 2},
-										},
-									},
-								},
+								Fn: executetest.FunctionExpression(t, "(r) => r._value + 2"),
 								Scope: func() values.Scope {
 									scope := valuestest.Scope()
 									scope.Set("x", values.NewInt(2))
@@ -154,7 +105,6 @@ func TestMap_NewQuery(t *testing.T) {
 		},
 	}
 	for _, tc := range tests {
-		t.Skip("https://github.com/influxdata/flux/issues/2494")
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
@@ -163,74 +113,10 @@ func TestMap_NewQuery(t *testing.T) {
 	}
 }
 
-func TestMapOperation_Marshaling(t *testing.T) {
-	t.Skip("https://github.com/influxdata/flux/issues/2492")
-	data := []byte(`{
-		"id":"map",
-		"kind":"map",
-		"spec":{
-			"fn":{
-				"fn":{
-					"type": "FunctionExpression",
-					"block":{
-						"type":"FunctionBlock",
-						"parameters": {
-							"type":"FunctionParameters",
-							"list": [
-								{"type":"FunctionParam","key":{"type":"Identifier","name":"r"}}
-							]
-						},
-						"body":{
-							"type":"BinaryExpression",
-							"operator": "-",
-							"left":{
-								"type":"MemberExpression",
-								"object": {
-									"type": "IdentifierExpression",
-									"name":"r"
-								},
-								"property": "_value"
-							},
-							"right":{
-								"type":"FloatLiteral",
-								"value": 5.6
-							}
-						}
-					}
-				}
-			}
-		}
-	}`)
-	op := &flux.Operation{
-		ID: "map",
-		Spec: &universe.MapOpSpec{
-			Fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-						},
-						Body: &semantic.BinaryExpression{
-							Operator: ast.SubtractionOperator,
-							Left: &semantic.MemberExpression{
-								Object: &semantic.IdentifierExpression{
-									Name: "r",
-								},
-								Property: "_value",
-							},
-							Right: &semantic.FloatLiteral{Value: 5.6},
-						},
-					},
-				},
-				Scope: nil,
-			},
-		},
-	}
-	querytest.OperationMarshalingTestHelper(t, data, op)
-}
 func TestMap_Process(t *testing.T) {
-	builtIns := flux.Prelude()
+	builtIns := runtime.Prelude()
 	testCases := []struct {
+		skip    string
 		name    string
 		spec    *universe.MapProcedureSpec
 		data    []flux.Table
@@ -242,41 +128,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "_time"},
-										Value: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_time",
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "_value"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.FloatLiteral{
-												Value: 5,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, "(r) => ({_time: r._time, _value: r._value + 5.0})"),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -305,43 +157,15 @@ func TestMap_Process(t *testing.T) {
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: func() values.Scope {
-						scope := builtIns.Nest(nil)
+						scope := values.NewScope()
 						scope.Set("x", values.NewFloat(5))
 						return scope
 					}(),
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "_time"},
-										Value: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_time",
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "_value"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.IdentifierExpression{Name: "x"},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn: executetest.FunctionExpression(t, `
+x = 5.0
+f = (r) => ({_time: r._time, _value: r._value + x})
+f
+`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -370,41 +194,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "_time"},
-										Value: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_time",
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "_value"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.FloatLiteral{
-												Value: 5,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, "(r) => ({_time: r._time, _value: r._value + 5.0})"),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -436,41 +226,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "_time"},
-										Value: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_time",
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "_value"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.FloatLiteral{
-												Value: 5,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, "(r) => ({_time: r._time, _value: r._value + 5.0})"),
 				},
 			},
 			data: []flux.Table{
@@ -519,46 +275,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								With: &semantic.IdentifierExpression{Name: "r"},
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "host"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "host",
-											},
-											Right: &semantic.StringLiteral{Value: ".local"},
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "_value"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.FloatLiteral{
-												Value: 5,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => ({r with host: r.host + ".local", _value: r._value + 5.0})`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -593,55 +310,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								With: &semantic.IdentifierExpression{Name: "r"},
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "host"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "host",
-											},
-											Right: &semantic.BinaryExpression{
-												Operator: ast.AdditionOperator,
-												Left:     &semantic.StringLiteral{Value: "."},
-												Right: &semantic.MemberExpression{
-													Object: &semantic.IdentifierExpression{
-														Name: "r",
-													},
-													Property: "domain",
-												},
-											},
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "_value"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.FloatLiteral{
-												Value: 5,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => ({r with host: r.host + "." + r.domain, _value: r._value + 5.0})`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -692,33 +361,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								With: &semantic.IdentifierExpression{Name: "r"},
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "_value"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.FloatLiteral{
-												Value: 5,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => ({r with _value: r._value + 5.0})`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -754,54 +397,7 @@ func TestMap_Process(t *testing.T) {
 				MergeKey: true,
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "_time"},
-										Value: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_time",
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "host"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "host",
-											},
-											Right: &semantic.StringLiteral{Value: ".local"},
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "_value"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.FloatLiteral{
-												Value: 5,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_time: r._time, host: r.host + ".local", _value: r._value + 5.0})`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -837,63 +433,7 @@ func TestMap_Process(t *testing.T) {
 				MergeKey: true,
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "_time"},
-										Value: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_time",
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "host"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "host",
-											},
-											Right: &semantic.BinaryExpression{
-												Operator: ast.AdditionOperator,
-												Left:     &semantic.StringLiteral{Value: "."},
-												Right: &semantic.MemberExpression{
-													Object: &semantic.IdentifierExpression{
-														Name: "r",
-													},
-													Property: "domain",
-												},
-											},
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "_value"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.FloatLiteral{
-												Value: 5,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_time: r._time, host: r.host + "." + r.domain, _value: r._value + 5.0})`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -943,41 +483,7 @@ func TestMap_Process(t *testing.T) {
 				MergeKey: true,
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "_time"},
-										Value: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_time",
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "_value"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.FloatLiteral{
-												Value: 5,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_time: r._time, _value: r._value + 5.0, })`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -1012,44 +518,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "_time"},
-										Value: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_time",
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "_value"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.MultiplicationOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_time: r._time, _value: r._value * r._value})`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -1078,43 +547,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "_time"},
-										Value: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_time",
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "_value"},
-										Value: &semantic.CallExpression{
-											Callee: &semantic.IdentifierExpression{Name: "float"},
-											Arguments: &semantic.ObjectExpression{
-												Properties: []*semantic.Property{{
-													Key: &semantic.Identifier{Name: "v"},
-													Value: &semantic.MemberExpression{
-														Object: &semantic.IdentifierExpression{
-															Name: "r",
-														},
-														Property: "_value",
-													},
-												}},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_time: r._time, _value: float(v: r._value)})`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -1143,43 +576,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "_time"},
-										Value: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_time",
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "_value"},
-										Value: &semantic.CallExpression{
-											Callee: &semantic.IdentifierExpression{Name: "float"},
-											Arguments: &semantic.ObjectExpression{
-												Properties: []*semantic.Property{{
-													Key: &semantic.Identifier{Name: "v"},
-													Value: &semantic.MemberExpression{
-														Object: &semantic.IdentifierExpression{
-															Name: "r",
-														},
-														Property: "_value",
-													},
-												}},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_time: r._time, _value: float(v: r._value)})`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -1208,40 +605,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "_time"},
-										Value: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_time",
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "_value"},
-										Value: &semantic.CallExpression{
-											Callee: &semantic.IdentifierExpression{Name: "float"},
-											Arguments: &semantic.ObjectExpression{
-												Properties: []*semantic.Property{{
-													Key: &semantic.Identifier{Name: "v"},
-													Value: &semantic.StringLiteral{
-														Value: "foo",
-													},
-												}},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_time: r._time, _value: float(v: "foo")})`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -1261,32 +625,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "value"},
-										Value: &semantic.BinaryExpression{
-											Operator: ast.AdditionOperator,
-											Left: &semantic.MemberExpression{
-												Object: &semantic.IdentifierExpression{
-													Name: "r",
-												},
-												Property: "_value",
-											},
-											Right: &semantic.FloatLiteral{
-												Value: 5,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => ({value: r._value + 5.0})`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -1314,35 +653,7 @@ func TestMap_Process(t *testing.T) {
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: builtIns,
-					Fn: &semantic.FunctionExpression{
-						Block: &semantic.FunctionBlock{
-							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-							},
-							Body: &semantic.ObjectExpression{
-								Properties: []*semantic.Property{
-									{
-										Key: &semantic.Identifier{Name: "value"},
-										Value: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_value",
-										},
-									},
-									{
-										Key: &semantic.Identifier{Name: "missing"},
-										Value: &semantic.MemberExpression{
-											Object: &semantic.IdentifierExpression{
-												Name: "r",
-											},
-											Property: "_missing",
-										},
-									},
-								},
-							},
-						},
-					},
+					Fn:    executetest.FunctionExpression(t, `(r) => ({value: r._value, missing: r._missing})`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -1369,7 +680,9 @@ func TestMap_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Skip("https://github.com/influxdata/flux/issues/2489")
+			if tc.skip != "" {
+				t.Skip(tc.skip)
+			}
 			executetest.ProcessTestHelper(
 				t,
 				tc.data,

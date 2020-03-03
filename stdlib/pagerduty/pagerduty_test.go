@@ -17,15 +17,16 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/values"
+	"github.com/influxdata/flux/runtime"
 )
 
 func TestPagerduty(t *testing.T) {
-	t.Skip("https://github.com/influxdata/flux/issues/2402")
+	t.Skip("https://github.com/influxdata/flux/issues/2532")
 	ctx := dependenciestest.Default().Inject(context.Background())
-	_, _, err := flux.Eval(ctx, `
+	_, _, err := runtime.Eval(ctx, `
 import "csv"
 import "pagerduty"
+option url = "http://fakeurl.com/fakeyfake"
 data = "
 #datatype,string,string,string,string,string,string,string,string,string,string,string,string
 #group,false,false,false,false,false,false,false,false,false,false,false,false
@@ -39,9 +40,7 @@ process = pagerduty.endpoint(url:url)( mapFn:
 	}
 )
 csv.from(csv:data) |> process()
-`, func(s values.Scope) {
-		s.Set("url", values.New("http://fakeurl.com/fakeyfake"))
-	})
+`)
 
 	if err != nil {
 		t.Error(err)
@@ -101,7 +100,6 @@ type Payload struct {
 	Source    string `json:"source"`
 	Class     string `json:"class"`
 	Group     string `json:"group"`
-	Component string `json:"component"`
 }
 
 type PostData struct {
@@ -127,7 +125,6 @@ func TestPagerdutySendEvent(t *testing.T) {
 		class         string
 		group         string
 		severity      string
-		component     string
 		source        string
 		summary       string
 		timestamp     string
@@ -144,7 +141,6 @@ func TestPagerdutySendEvent(t *testing.T) {
 			class:         "deploy",
 			group:         "app-stack",
 			severity:      "warning",
-			component:     "influxdb",
 			source:        "monitoringtool:vendor:region",
 			summary:       "this is a testing summary",
 			timestamp:     "2015-07-17T08:42:58.315+0000",
@@ -161,7 +157,6 @@ func TestPagerdutySendEvent(t *testing.T) {
 			class:         "deploy",
 			group:         "app-stack",
 			severity:      "critical",
-			component:     "influxdb",
 			source:        "monitoringtool:vendor:region",
 			summary:       "this is a testing summary",
 			timestamp:     "2015-07-17T08:42:58.315+0000",
@@ -178,7 +173,6 @@ func TestPagerdutySendEvent(t *testing.T) {
 			class:         "deploy",
 			group:         "app-stack",
 			severity:      "info",
-			component:     "postgres",
 			source:        "monitoringtool:vendor:region",
 			summary:       "this is another testing summary",
 			timestamp:     "2016-07-17T08:42:58.315+0000",
@@ -204,7 +198,6 @@ endpoint = pagerduty.endpoint(url:url)(mapFn: (r) => {
 		group:r.wgroup,
 		severity: sev,
 		eventAction:action,
-		component:r.wcomponent,
 		source:r.wsource,
 		summary:r.wsummary,
 		timestamp:r.wtimestamp,
@@ -228,10 +221,10 @@ csv.from(csv:data) |> endpoint()
 						Name: "data",
 					},
 					Init: &ast.StringLiteral{
-						Value: `#datatype,string,string,string,string,string,string,string,string,string,string,string,string,string,string,long
-#group,false,false,false,true,false,false,false,false,false,false,false,false,true,true,true
-#default,_result,,,,,,,,,,,,,,
-,result,,froutingKey,qclient,qclientURL,wclass,wgroup,wlevel,wcomponent,wsource,wsummary,wtimestamp,name,otherGroupKey,groupKey2
+						Value: `#datatype,string,string,string,string,string,string,string,string,string,string,string,string,string,long
+#group,false,false,false,true,false,false,false,false,false,false,false,true,true,true
+#default,_result,,,,,,,,,,,,,
+,result,,froutingKey,qclient,qclientURL,wclass,wgroup,wlevel,wsource,wsummary,wtimestamp,name,otherGroupKey,groupKey2
 ,,,` + strings.Join([]string{
 							tc.routingKey,
 							tc.client,
@@ -239,7 +232,6 @@ csv.from(csv:data) |> endpoint()
 							tc.class,
 							tc.group,
 							tc.level,
-							tc.component,
 							tc.source,
 							tc.summary,
 							tc.timestamp,
@@ -335,10 +327,6 @@ csv.from(csv:data) |> endpoint()
 
 			if req.PostData.Payload.Severity != tc.severity {
 				t.Errorf("got severity %s, expected %s", req.PostData.Payload.Severity, tc.severity)
-			}
-
-			if req.PostData.Payload.Component != tc.component {
-				t.Errorf("got component %s, expected %s", req.PostData.Payload.Component, tc.component)
 			}
 
 		})

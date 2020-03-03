@@ -5,8 +5,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
-	"github.com/influxdata/flux/stdlib/universe"
 )
 
 // SimpleRule is a simple rule whose pattern matches any plan node and
@@ -20,32 +18,17 @@ func (sr *SimpleRule) Pattern() plan.Pattern {
 }
 
 func (sr *SimpleRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
+	for _, nid := range sr.SeenNodes {
+		if nid == node.ID() {
+			return node, false, nil
+		}
+	}
 	sr.SeenNodes = append(sr.SeenNodes, node.ID())
 	return node, false, nil
 }
 
 func (sr *SimpleRule) Name() string {
 	return "simple"
-}
-
-// MergeFromRangePhysicalRule merges a from and a subsequent range.
-type MergeFromRangePhysicalRule struct{}
-
-func (sr *MergeFromRangePhysicalRule) Pattern() plan.Pattern {
-	return plan.Pat(universe.RangeKind, plan.Pat(influxdb.FromKind))
-}
-
-func (sr *MergeFromRangePhysicalRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
-	mergedSpec := node.Predecessors()[0].ProcedureSpec().Copy().(*influxdb.FromProcedureSpec)
-	mergedNode, err := plan.MergeToPhysicalNode(node, node.Predecessors()[0], mergedSpec)
-	if err != nil {
-		return nil, false, err
-	}
-	return mergedNode, true, nil
-}
-
-func (sr *MergeFromRangePhysicalRule) Name() string {
-	return "fromRangeRule"
 }
 
 // SmashPlanRule adds an `Intruder` as predecessor of the given `Node` without
@@ -125,11 +108,12 @@ func (ccr CreateCycleRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
 
 // RuleTestCase allows for concise creation of test cases that exercise rules
 type RuleTestCase struct {
-	Name     string
-	Rules    []plan.Rule
-	Before   *PlanSpec
-	After    *PlanSpec
-	NoChange bool
+	Name          string
+	Rules         []plan.Rule
+	Before        *PlanSpec
+	After         *PlanSpec
+	NoChange      bool
+	ValidateError error
 }
 
 // PhysicalRuleTestHelper will run a rule test case.
@@ -138,21 +122,32 @@ func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 
 	before := CreatePlanSpec(tc.Before)
 	var after *plan.Spec
-	if tc.NoChange {
+	if tc.NoChange || tc.ValidateError != nil {
 		after = CreatePlanSpec(tc.Before.Copy())
 	} else {
 		after = CreatePlanSpec(tc.After)
 	}
 
-	// Disable validation so that we can avoid having to push a range into every from
-	physicalPlanner := plan.NewPhysicalPlanner(
+	opts := []plan.PhysicalOption{
 		plan.OnlyPhysicalRules(tc.Rules...),
-		plan.DisableValidation(),
-	)
+	}
+	if tc.ValidateError == nil {
+		// Disable validation so that we can avoid having to push a range into every from
+		opts = append(opts, plan.DisableValidation())
+	}
+	physicalPlanner := plan.NewPhysicalPlanner(opts...)
 
 	pp, err := physicalPlanner.Plan(before)
 	if err != nil {
+		if tc.ValidateError != nil {
+			if got, want := err, tc.ValidateError; !cmp.Equal(want, got) {
+				t.Fatalf("unexpected planner error -want/+got:\n%s", cmp.Diff(want, got))
+			}
+			return
+		}
 		t.Fatal(err)
+	} else if tc.ValidateError != nil {
+		t.Fatal("expected planner error")
 	}
 
 	type testAttrs struct {

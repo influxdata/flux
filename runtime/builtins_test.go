@@ -1,4 +1,4 @@
-package flux
+package runtime
 
 import (
 	"errors"
@@ -19,7 +19,7 @@ func TestValidatePackageBuiltins(t *testing.T) {
 	}{
 		{
 			name: "no errors",
-			pkg: interpreter.NewPackageWithValues("test", values.NewObjectWithValues(map[string]values.Value{
+			pkg: interpreter.NewPackageWithValues("test", "", values.NewObjectWithValues(map[string]values.Value{
 				"foo": values.NewInt(0),
 			})),
 			astPkg: &ast.Package{
@@ -34,7 +34,7 @@ func TestValidatePackageBuiltins(t *testing.T) {
 		},
 		{
 			name: "extra values",
-			pkg: interpreter.NewPackageWithValues("test", values.NewObjectWithValues(map[string]values.Value{
+			pkg: interpreter.NewPackageWithValues("test", "", values.NewObjectWithValues(map[string]values.Value{
 				"foo": values.NewInt(0),
 			})),
 			astPkg: &ast.Package{},
@@ -42,7 +42,7 @@ func TestValidatePackageBuiltins(t *testing.T) {
 		},
 		{
 			name: "missing values",
-			pkg:  interpreter.NewPackageWithValues("test", values.NewObjectWithValues(map[string]values.Value{})),
+			pkg:  interpreter.NewPackageWithValues("test", "", values.NewObjectWithValues(map[string]values.Value{})),
 			astPkg: &ast.Package{
 				Files: []*ast.File{{
 					Body: []ast.Statement{
@@ -56,7 +56,7 @@ func TestValidatePackageBuiltins(t *testing.T) {
 		},
 		{
 			name: "missing and values",
-			pkg: interpreter.NewPackageWithValues("test", values.NewObjectWithValues(map[string]values.Value{
+			pkg: interpreter.NewPackageWithValues("test", "", values.NewObjectWithValues(map[string]values.Value{
 				"foo": values.NewInt(0),
 				"bar": values.NewInt(0),
 			})),
