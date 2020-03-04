@@ -248,7 +248,10 @@ func (t *mapTransformation) createSchema(b execute.TableBuilder, m values.Object
 	}
 
 	props := make(map[string]semantic.Nature, numProps)
-	for i := 0; i < numProps; i++ {
+	// Deduplicate the properties in the return type.
+	// Scan properties in reverse order to ensure we only
+	// add visible properties to the list.
+	for i := numProps - 1; i >= 0; i-- {
 		prop, err := returnType.RowProperty(i)
 		if err != nil {
 			return err

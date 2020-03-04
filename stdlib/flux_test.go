@@ -49,9 +49,6 @@ var skip = map[string]map[string]string{
 		"extract_regexp_findStringIndex": "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
 		"partition_strings_splitN":       "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
 	},
-	"testing/usage": {
-		"storage": "overwriting field in map with different type (https://github.com/influxdata/flux/issues/2570)",
-	},
 }
 
 func TestFluxEndToEnd(t *testing.T) {
