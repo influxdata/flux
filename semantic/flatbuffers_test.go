@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/internal/fbsemantic"
+	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
@@ -100,7 +101,7 @@ func TestDeserializeFromFlatBuffer(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			got, err := DeserializeFromFlatBuffer(&libflux.ManagedBuffer{
+			got, err := semantic.DeserializeFromFlatBuffer(&libflux.ManagedBuffer{
 				Buffer: fb,
 				Offset: 0,
 			})

@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/fbsemantic"
+	"github.com/influxdata/flux/libflux/go/libflux"
 )
 
 func DeserializeFromFlatBuffer(mbuf *libflux.ManagedBuffer) (*Package, error) {

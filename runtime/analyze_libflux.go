@@ -23,5 +23,5 @@ func AnalyzePackage(astPkg *libflux.ASTPkg) (*semantic.Package, error) {
 	if err != nil {
 		return nil, err
 	}
-	return DeserializeFromFlatBuffer(mbuf)
+	return semantic.DeserializeFromFlatBuffer(mbuf)
 }
