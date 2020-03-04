@@ -350,7 +350,7 @@ pub fn builtins() -> Builtins<'static> {
                 "splitAfter" => "forall [] (v: string, t: string) -> [string]",
                 "splitN" => "forall [] (v: string, t: string, n: int) -> [string]",
                 "splitAfterN" => "forall [] (v: string, t: string, i: int) -> [string]",
-                "joinStr" => "forall [] (arr: [string], v: string) -> {}",
+                "joinStr" => "forall [] (arr: [string], v: string) -> string",
                 "strlen" => "forall [] (v: string) -> int",
                 "substring" => "forall [] (v: string, start: int, end: int) -> string",
             },
