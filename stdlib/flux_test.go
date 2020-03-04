@@ -34,8 +34,6 @@ var skip = map[string]map[string]string{
 		"yield":                       "yield requires special test case (https://github.com/influxdata/flux/issues/535)",
 		"task_per_line":               "join produces inconsistent/racy results when table schemas do not match (https://github.com/influxdata/flux/issues/855)",
 		"integral_columns":            "aggregates changed to operate on just a single columnm.",
-
-		"dynamic_query": "todo(algow): find table functions",
 	},
 	"http": {
 		"http_endpoint": "need ability to test side effects in e2e tests: https://github.com/influxdata/flux/issues/1723)",
