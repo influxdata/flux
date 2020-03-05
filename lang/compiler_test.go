@@ -133,7 +133,7 @@ func TestFluxCompiler(t *testing.T) {
 				t.Errorf("compiler serialized/deserialized does not match: -want/+got:\n%v", diff)
 			}
 
-			program, err := c.Compile(ctx)
+			program, err := c.Compile(ctx, runtime.Default)
 			if err != nil {
 				if tc.err != "" {
 					if !strings.Contains(err.Error(), tc.err) {
@@ -164,7 +164,7 @@ func TestFluxCompiler(t *testing.T) {
 }
 
 func TestCompilationError(t *testing.T) {
-	program, err := lang.Compile(`illegal query`, time.Unix(0, 0))
+	program, err := lang.Compile(`illegal query`, runtime.Default, time.Unix(0, 0))
 	if err != nil {
 		// This shouldn't happen, has the script should be evaluated at program Start.
 		t.Fatal(err)
@@ -293,7 +293,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				c.PrependFile(tc.file)
 			}
 
-			program, err := c.Compile(context.Background())
+			program, err := c.Compile(context.Background(), runtime.Default)
 			if err != nil {
 				t.Fatalf("failed to compile AST: %v", err)
 			}
@@ -322,7 +322,7 @@ func TestCompileOptions(t *testing.T) {
 
 	opt := lang.WithLogPlanOpts(plan.OnlyLogicalRules(removeCount{}))
 
-	program, err := lang.Compile(src, now, opt)
+	program, err := lang.Compile(src, runtime.Default, now, opt)
 	if err != nil {
 		t.Fatalf("failed to compile script: %v", err)
 	}
@@ -654,7 +654,7 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 				}
 			}
 
-			program := lang.CompileAST(astPkg, nowFn())
+			program := lang.CompileAST(astPkg, runtime.Default, nowFn())
 			ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
 			if _, err := program.Start(ctx, &memory.Allocator{}); err != nil {
 				if tc.wantErr == "" {

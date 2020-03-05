@@ -2,8 +2,8 @@ package runtime
 
 import (
 	"context"
-	"time"
 
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -14,9 +14,9 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-// defaultRuntime contains the preregistered packages and builtin values
+// Default contains the preregistered packages and builtin values
 // required to execute a flux script.
-var defaultRuntime = &runtime{}
+var Default = &runtime{}
 
 // runtime contains the flux runtime for interpreting and
 // executing queries.
@@ -24,6 +24,23 @@ type runtime struct {
 	pkgs      map[string]*semantic.Package
 	builtins  map[string]map[string]values.Value
 	finalized bool
+}
+
+func (r *runtime) Parse(flux string) (*ast.Package, error) {
+	return Parse(flux)
+}
+
+func (r *runtime) IsPreludePackage(pkg string) bool {
+	for _, p := range prelude {
+		if p == pkg {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *runtime) LookupBuiltinType(pkg, name string) (semantic.MonoType, error) {
+	return LookupBuiltinType(pkg, name)
 }
 
 func (r *runtime) RegisterPackage(pkg *ast.Package) error {
@@ -101,7 +118,7 @@ func (r *runtime) Prelude() values.Scope {
 	return scope
 }
 
-func (r *runtime) Eval(ctx context.Context, astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+func (r *runtime) Eval(ctx context.Context, astPkg *ast.Package, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
 	h, err := parser.ToHandle(astPkg)
 	if err != nil {
 		return nil, nil, err
@@ -109,7 +126,7 @@ func (r *runtime) Eval(ctx context.Context, astPkg *ast.Package, opts ...ScopeMu
 	return r.evalHandle(ctx, h, opts...)
 }
 
-func (r *runtime) evalHandle(ctx context.Context, h *libflux.ASTPkg, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+func (r *runtime) evalHandle(ctx context.Context, h *libflux.ASTPkg, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
 	semPkg, err := AnalyzePackage(h)
 	if err != nil {
 		return nil, nil, err
@@ -124,7 +141,7 @@ func (r *runtime) evalHandle(ctx context.Context, h *libflux.ASTPkg, opts ...Sco
 
 	// Mutate the scope with any additional options.
 	for _, opt := range opts {
-		opt(scope)
+		opt(r, scope)
 	}
 
 	// Execute the interpreter over the package.
@@ -187,57 +204,6 @@ func (r *runtime) Finalize() error {
 		}
 	}
 	return nil
-}
-
-func isPreludePackage(pkg string) bool {
-	for _, p := range prelude {
-		if p == pkg {
-			return true
-		}
-	}
-	return false
-}
-
-// ScopeMutator is any function that mutates the scope of an identifier.
-type ScopeMutator = func(values.Scope)
-
-// SetOption returns a func that adds a var binding to a scope.
-func SetOption(pkg, name string, v values.Value) ScopeMutator {
-	return func(scope values.Scope) {
-		p, ok := scope.Lookup(pkg)
-		if ok {
-			if p, ok := p.(values.Package); ok {
-				values.SetOption(p, name, v)
-			}
-		} else if isPreludePackage(pkg) {
-			opt, ok := scope.Lookup(name)
-			if ok {
-				if opt, ok := opt.(*values.Option); ok {
-					opt.Value = v
-				}
-			}
-
-		}
-	}
-}
-
-var (
-	NowOption = "now"
-	nowPkg    = "universe"
-)
-
-// SetNowOption returns a ScopeMutator that sets the `now` option to the given time.
-func SetNowOption(now time.Time) ScopeMutator {
-	return SetOption(nowPkg, NowOption, generateNowFunc(now))
-}
-
-func generateNowFunc(now time.Time) values.Function {
-	timeVal := values.NewTime(values.ConvertTime(now))
-	ftype := MustLookupBuiltinType("universe", "now")
-	call := func(ctx context.Context, args values.Object) (values.Value, error) {
-		return timeVal, nil
-	}
-	return values.NewFunction(NowOption, ftype, call, false)
 }
 
 // validatePackageBuiltins ensures that all package builtins have both an AST builtin statement and a registered value.

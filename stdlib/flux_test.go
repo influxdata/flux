@@ -156,7 +156,7 @@ func testFlux(t testing.TB, file *ast.File) flux.Statistics {
 }
 
 func doTestRun(t testing.TB, c flux.Compiler) flux.Statistics {
-	program, err := c.Compile(context.Background())
+	program, err := c.Compile(context.Background(), runtime.Default)
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}
@@ -186,7 +186,7 @@ func doTestRun(t testing.TB, c flux.Compiler) flux.Statistics {
 }
 
 func doTestInspect(t testing.TB, c flux.Compiler) flux.Statistics {
-	program, err := c.Compile(context.Background())
+	program, err := c.Compile(context.Background(), runtime.Default)
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}

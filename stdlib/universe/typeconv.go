@@ -10,7 +10,7 @@ import (
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/internal/parser"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -573,11 +573,11 @@ func (c *timeConv) Call(ctx context.Context, args values.Object) (values.Value, 
 	}
 	switch v.Type().Nature() {
 	case semantic.String:
-		ast, err := parser.ParseTime(v.Str())
+		ts, err := parser.ParseTime(v.Str())
 		if err != nil {
 			return nil, err
 		}
-		t = values.Time(ast.Value.UnixNano())
+		t = values.Time(ts.UnixNano())
 	case semantic.Int:
 		t = values.Time(v.Int())
 	case semantic.UInt:

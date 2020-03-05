@@ -14,6 +14,7 @@ import (
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/kafka"
@@ -22,7 +23,7 @@ import (
 )
 
 func compile(fluxText string, now time.Time) (*flux.Spec, error) {
-	return spec.FromScript(dependenciestest.Default().Inject(context.Background()), now, fluxText)
+	return spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now, fluxText)
 }
 
 func TestPlan_LogicalPlanFromSpec(t *testing.T) {

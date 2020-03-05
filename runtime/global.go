@@ -3,6 +3,7 @@ package runtime
 import (
 	"context"
 
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/parser"
@@ -11,48 +12,48 @@ import (
 
 // RegisterPackage adds a builtin package
 func RegisterPackage(pkg *ast.Package) {
-	if err := defaultRuntime.RegisterPackage(pkg); err != nil {
+	if err := Default.RegisterPackage(pkg); err != nil {
 		panic(err)
 	}
 }
 
 // RegisterPackageValue adds a value for an identifier in a builtin package
 func RegisterPackageValue(pkgpath, name string, value values.Value) {
-	if err := defaultRuntime.RegisterPackageValue(pkgpath, name, value); err != nil {
+	if err := Default.RegisterPackageValue(pkgpath, name, value); err != nil {
 		panic(err)
 	}
 }
 
 // ReplacePackageValue replaces a value for an identifier in a builtin package
 func ReplacePackageValue(pkgpath, name string, value values.Value) {
-	if err := defaultRuntime.ReplacePackageValue(pkgpath, name, value); err != nil {
+	if err := Default.ReplacePackageValue(pkgpath, name, value); err != nil {
 		panic(err)
 	}
 }
 
 // StdLib returns an importer for the Flux standard library.
 func StdLib() interpreter.Importer {
-	return defaultRuntime.Stdlib()
+	return Default.Stdlib()
 }
 
 // Prelude returns a scope object representing the Flux universe block
 func Prelude() values.Scope {
-	return defaultRuntime.Prelude()
+	return Default.Prelude()
 }
 
 // Eval accepts a Flux script and evaluates it to produce a set of side effects (as a slice of values) and a scope.
-func Eval(ctx context.Context, flux string, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+func Eval(ctx context.Context, flux string, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
 	h := parser.ParseToHandle([]byte(flux))
-	return defaultRuntime.evalHandle(ctx, h, opts...)
+	return Default.evalHandle(ctx, h, opts...)
 }
 
 // EvalAST accepts a Flux AST and evaluates it to produce a set of side effects (as a slice of values) and a scope.
-func EvalAST(ctx context.Context, astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
-	return defaultRuntime.Eval(ctx, astPkg, opts...)
+func EvalAST(ctx context.Context, astPkg *ast.Package, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+	return Default.Eval(ctx, astPkg, opts...)
 }
 
 // EvalOptions is like EvalAST, but only evaluates options.
-func EvalOptions(ctx context.Context, astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+func EvalOptions(ctx context.Context, astPkg *ast.Package, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
 	return EvalAST(ctx, options(astPkg), opts...)
 }
 
@@ -87,7 +88,7 @@ func options(astPkg *ast.Package) *ast.Package {
 // FinalizeBuiltIns must be called to complete registration.
 // Future calls to RegisterFunction or RegisterPackageValue will panic.
 func FinalizeBuiltIns() {
-	if err := defaultRuntime.Finalize(); err != nil {
+	if err := Default.Finalize(); err != nil {
 		panic(err)
 	}
 }

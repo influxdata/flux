@@ -178,7 +178,7 @@ func executeScript(pkg *ast.Package) (string, string, error) {
 	}
 
 	ctx := flux.NewDefaultDependencies().Inject(context.Background())
-	program, err := c.Compile(ctx)
+	program, err := c.Compile(ctx, runtime.Default)
 	if err != nil {
 		fmt.Println(ast.Format(testPkg))
 		return "", "", errors.Wrap(err, codes.Inherit, "error during compilation, check your script and retry")
