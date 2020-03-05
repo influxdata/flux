@@ -6,27 +6,27 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 func TestValidatePackageBuiltins(t *testing.T) {
 	testCases := []struct {
 		name   string
-		pkg    *interpreter.Package
-		astPkg *ast.Package
+		pkg    map[string]values.Value
+		semPkg *semantic.Package
 		err    error
 	}{
 		{
 			name: "no errors",
-			pkg: interpreter.NewPackageWithValues("test", "", values.NewObjectWithValues(map[string]values.Value{
+			pkg: map[string]values.Value{
 				"foo": values.NewInt(0),
-			})),
-			astPkg: &ast.Package{
-				Files: []*ast.File{{
-					Body: []ast.Statement{
-						&ast.BuiltinStatement{
-							ID: &ast.Identifier{Name: "foo"},
+			},
+			semPkg: &semantic.Package{
+				Files: []*semantic.File{{
+					Body: []semantic.Statement{
+						&semantic.BuiltinStatement{
+							ID: &semantic.Identifier{Name: "foo"},
 						},
 					},
 				}},
@@ -34,20 +34,20 @@ func TestValidatePackageBuiltins(t *testing.T) {
 		},
 		{
 			name: "extra values",
-			pkg: interpreter.NewPackageWithValues("test", "", values.NewObjectWithValues(map[string]values.Value{
+			pkg: map[string]values.Value{
 				"foo": values.NewInt(0),
-			})),
-			astPkg: &ast.Package{},
+			},
+			semPkg: &semantic.Package{},
 			err:    errors.New("missing builtin values [], extra builtin values [foo]"),
 		},
 		{
 			name: "missing values",
-			pkg:  interpreter.NewPackageWithValues("test", "", values.NewObjectWithValues(map[string]values.Value{})),
-			astPkg: &ast.Package{
-				Files: []*ast.File{{
-					Body: []ast.Statement{
-						&ast.BuiltinStatement{
-							ID: &ast.Identifier{Name: "foo"},
+			pkg:  map[string]values.Value{},
+			semPkg: &semantic.Package{
+				Files: []*semantic.File{{
+					Body: []semantic.Statement{
+						&semantic.BuiltinStatement{
+							ID: &semantic.Identifier{Name: "foo"},
 						},
 					},
 				}},
@@ -56,18 +56,18 @@ func TestValidatePackageBuiltins(t *testing.T) {
 		},
 		{
 			name: "missing and values",
-			pkg: interpreter.NewPackageWithValues("test", "", values.NewObjectWithValues(map[string]values.Value{
+			pkg: map[string]values.Value{
 				"foo": values.NewInt(0),
 				"bar": values.NewInt(0),
-			})),
-			astPkg: &ast.Package{
-				Files: []*ast.File{{
-					Body: []ast.Statement{
-						&ast.BuiltinStatement{
-							ID: &ast.Identifier{Name: "foo"},
+			},
+			semPkg: &semantic.Package{
+				Files: []*semantic.File{{
+					Body: []semantic.Statement{
+						&semantic.BuiltinStatement{
+							ID: &semantic.Identifier{Name: "foo"},
 						},
-						&ast.BuiltinStatement{
-							ID: &ast.Identifier{Name: "baz"},
+						&semantic.BuiltinStatement{
+							ID: &semantic.Identifier{Name: "baz"},
 						},
 					},
 				}},
@@ -78,7 +78,7 @@ func TestValidatePackageBuiltins(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			err := validatePackageBuiltins(tc.pkg, tc.astPkg)
+			err := validatePackageBuiltins(tc.pkg, tc.semPkg)
 			switch {
 			case err == nil && tc.err == nil:
 				// Test passes

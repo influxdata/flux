@@ -88,23 +88,6 @@ func Example_option() {
 	// Output:
 }
 
-// TODO(algow): This method doesn't work since you cannot set new options from outside of the package.
-// Example_setOption demonstrates setting an option value on a scope object
-// func Example_setOption() {
-//
-// 	// Import the universe package.
-// 	importer := flux.StdLib()
-// 	universe, _ := importer.ImportPackageObject("universe")
-//
-// 	// Create a new option binding
-// 	universe.Set("dummy_option", values.NewInt(3))
-//
-// 	v, _ := universe.Lookup("dummy_option")
-//
-// 	fmt.Printf("dummy_option = %d", v.Int())
-// 	// Output: dummy_option = 3
-// }
-
 // Example_overrideDefaultOptionExternally demonstrates how declaring an option
 // in a Flux script will change that option's binding globally.
 func Example_overrideDefaultOptionExternally() {
@@ -125,42 +108,3 @@ func Example_overrideDefaultOptionExternally() {
 	fmt.Printf("The new current time (UTC) is: %v", now)
 	// Output: The new current time (UTC) is: 2018-07-13T00:00:00.000000000Z
 }
-
-// Example_overrideDefaultOptionInternally demonstrates how one can override a default
-// option that is used in a query before that query is evaluated by the interpreter.
-// func Example_overrideDefaultOptionInternally() {
-// 	queryString := `what_time_is_it = now()`
-//
-// 	ctx := dependenciestest.Default().Inject(context.Background())
-//
-// 	importer := flux.StdLib()
-// 	universe, _ := importer.ImportPackageObject("universe")
-//
-// 	// Define a new now function which returns a static time value of 2018-07-13T00:00:00.000000000Z
-// 	timeValue := time.Date(2018, 7, 13, 0, 0, 0, 0, time.UTC)
-// 	functionName := "newTime"
-// 	// TODO (algow): determine correct type
-// 	functionType := semantic.NewFunctionType(semantic.MonoType{}, nil)
-// 	functionCall := func(ctx context.Context, args values.Object) (values.Value, error) {
-// 		return values.NewTime(values.ConvertTime(timeValue)), nil
-// 	}
-// 	sideEffect := false
-//
-// 	newNowFunc := values.NewFunction(functionName, functionType, functionCall, sideEffect)
-//
-// 	// Override the default now function with the new one
-//  values.SetOption(universe, "now", newNowFunc)
-//
-// 	// Evaluate package
-// 	_, err := itrp.Eval(ctx, semPkg, universe, nil)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-//
-// 	// After evaluating the package, lookup the value of what_time_is_it
-// 	now, _ := universe.Lookup("what_time_is_it")
-//
-// 	// what_time_is_it? Why it's ....
-// 	fmt.Printf("The new current time (UTC) is: %v", now)
-// 	// Output: The new current time (UTC) is: 2018-07-13T00:00:00.000000000Z
-// }
