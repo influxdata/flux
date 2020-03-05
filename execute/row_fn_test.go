@@ -263,7 +263,7 @@ func TestRowMapFn_Eval(t *testing.T) {
 	}
 }
 
-func TestRowPredicateFn_EvalRow(t *testing.T) {
+func testRowPredicateFn_EvalRow(t *testing.T, scope compiler.Scope) {
 	gt2F := func() (*execute.RowPredicateFn, error) {
 		return execute.NewRowPredicateFn(&semantic.FunctionExpression{
 			Block: &semantic.FunctionBlock{
@@ -279,7 +279,7 @@ func TestRowPredicateFn_EvalRow(t *testing.T) {
 					Right: &semantic.FloatLiteral{Value: 2.0},
 				},
 			},
-		}, prelude())
+		}, scope)
 	}
 
 	testCases := []struct {
@@ -370,4 +370,9 @@ func TestRowPredicateFn_EvalRow(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRowPredicateFn_EvalRow(t *testing.T) {
+	testRowPredicateFn_EvalRow(t, prelude())
+	testRowPredicateFn_EvalRow(t, compiler.ToScope(nil))
 }

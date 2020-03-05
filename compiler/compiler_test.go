@@ -1161,3 +1161,9 @@ func TestCompileAndEval(t *testing.T) {
 		})
 	}
 }
+
+func TestToScopeNil(t *testing.T) {
+	if compiler.ToScope(nil) != nil {
+		t.Fatal("ToScope made non-nil scope from a nil base")
+	}
+}
