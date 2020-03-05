@@ -27,7 +27,7 @@ func v1(cmd *cobra.Command, args []string) error {
 		b := new(bytes.Buffer)
 		for _, res := range resp.Results {
 			for _, s := range res.Series {
-				seriesHeader := fmt.Sprintf("%s,", s.Name)
+				seriesHeader := s.Name
 				var tags []string
 				for k, v := range s.Tags {
 					tags = append(tags, fmt.Sprintf("%s=%s", k, v))
@@ -39,7 +39,10 @@ func v1(cmd *cobra.Command, args []string) error {
 						break
 					}
 				}
-				seriesHeader += strings.Join(tags, ",") + " "
+				if len(tags) > 0 {
+					seriesHeader += "," + strings.Join(tags, ",")
+				}
+				seriesHeader += " "
 				for _, row := range s.Values {
 					b.WriteString(seriesHeader)
 					for i, v := range row {
