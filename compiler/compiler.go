@@ -14,8 +14,6 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 	if in.Nature() != semantic.Object {
 		return nil, errors.Newf(codes.Invalid, "function input must be an object @ %v", f.Location())
 	}
-	// TODO (algow): how do externs work now?
-	//extern := values.BuildExternAssignments(f, scope)
 
 	// Retrieve the function argument types and create an object type from them.
 	fnType := f.TypeOf()
@@ -181,7 +179,7 @@ func substituteTypes(subst map[uint64]semantic.MonoType, inType, in semantic.Mon
 		}
 		return nil
 	case semantic.Fun:
-		// TODO(algow): Support passing functions to compiled functions.
+		// TODO: https://github.com/influxdata/flux/issues/2587
 		return errors.New(codes.Unimplemented)
 	default:
 		return errors.Newf(codes.Internal, "unknown semantic kind: %s", inType)

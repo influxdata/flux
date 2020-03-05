@@ -30,34 +30,20 @@ type compiledFn struct {
 	inputScope Scope
 }
 
-func (c compiledFn) validate(input values.Object) error {
-	// TODO (algow): update to use new types
-	//sig := c.fnType.FunctionSignature()
-	//properties := input.Type().Properties()
-	//if len(properties) != len(sig.Parameters) {
-	//	return errors.New(codes.Invalid, "mismatched parameters and properties")
-	//}
-	//for k, v := range sig.Parameters {
-	//	if !values.AssignableTo(properties[k], v) {
-	//		return errors.Newf(codes.Invalid, "parameter %q has the wrong type, expected %v got %v", k, v, properties[k])
-	//	}
-	//}
-	return nil
-}
-
 func (c compiledFn) buildScope(input values.Object) error {
-	if err := c.validate(input); err != nil {
-		return err
-	}
 	input.Range(func(k string, v values.Value) {
 		c.inputScope.Set(k, v)
 	})
 	return nil
 }
 
+// Type returns the return type of the compiled function.
+// Will panic if assigned type is not a function type.
 func (c compiledFn) Type() semantic.MonoType {
-	// TODO (algow): validate we have a function type
-	rt, _ := c.fnType.ReturnType()
+	rt, err := c.fnType.ReturnType()
+	if err != nil {
+		panic(err)
+	}
 	return rt
 }
 

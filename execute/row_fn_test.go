@@ -157,13 +157,10 @@ func TestRowMapFn_Eval(t *testing.T) {
 				for i := 0; i < cr.Len(); i++ {
 					obj, err := f.Eval(ctx, i, cr)
 					if err != nil {
-						// TODO(algow): determine correct type
-						got = append(got, nil)
-					} else {
-						got = append(got, obj)
+						return err
 					}
+					got = append(got, obj)
 				}
-
 				return nil
 			}); err != nil {
 				t.Fatal(err)

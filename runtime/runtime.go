@@ -177,10 +177,15 @@ func (r *runtime) Finalize() error {
 		return errors.New(codes.Internal, "already finalized")
 	}
 	r.finalized = true
-	// TODO(algow): Should we bother with any validations?
-	// The only one we're missing is validating that all of the referenced
-	// builtins are included and that all registered builtins are referenced,
-	// but we don't actually execute anything until we evaluate a script.
+	for path, pkg := range r.builtins {
+		semPkg, ok := r.pkgs[path]
+		if !ok {
+			return errors.Newf(codes.Internal, "missing semantic package %s", path)
+		}
+		if err := validatePackageBuiltins(pkg, semPkg); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -235,32 +240,30 @@ func generateNowFunc(now time.Time) values.Function {
 	return values.NewFunction(NowOption, ftype, call, false)
 }
 
-// TODO(algow): Needs to be refactored into the runtime finalize.
 // validatePackageBuiltins ensures that all package builtins have both an AST builtin statement and a registered value.
-func validatePackageBuiltins(pkg *interpreter.Package, astPkg *ast.Package) error {
-	builtinStmts := make(map[string]*ast.BuiltinStatement)
-	ast.Walk(ast.CreateVisitor(func(n ast.Node) {
-		if bs, ok := n.(*ast.BuiltinStatement); ok {
+func validatePackageBuiltins(pkg map[string]values.Value, semPkg *semantic.Package) error {
+	builtinStmts := make(map[string]*semantic.BuiltinStatement)
+	semantic.Walk(semantic.CreateVisitor(func(n semantic.Node) {
+		if bs, ok := n.(*semantic.BuiltinStatement); ok {
 			builtinStmts[bs.ID.Name] = bs
 		}
-	}), astPkg)
+	}), semPkg)
 
 	missing := make([]string, 0, len(builtinStmts))
 	extra := make([]string, 0, len(builtinStmts))
 
 	for n := range builtinStmts {
-		if _, ok := pkg.Get(n); !ok {
+		if _, ok := pkg[n]; !ok {
 			missing = append(missing, n)
 			continue
 		}
 		// TODO(nathanielc): Ensure that the value's type matches the type expression
 	}
-	pkg.Range(func(k string, v values.Value) {
+	for k := range pkg {
 		if _, ok := builtinStmts[k]; !ok {
 			extra = append(extra, k)
-			return
 		}
-	})
+	}
 	if len(missing) > 0 || len(extra) > 0 {
 		return errors.Newf(codes.Internal, "missing builtin values %v, extra builtin values %v", missing, extra)
 	}
