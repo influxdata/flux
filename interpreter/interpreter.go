@@ -42,10 +42,6 @@ type SideEffect struct {
 
 // Eval evaluates the expressions composing a Flux package and returns any side effects that occurred during this evaluation.
 func (itrp *Interpreter) Eval(ctx context.Context, node semantic.Node, scope values.Scope, importer Importer) ([]SideEffect, error) {
-	// TODO (algow): how does this change?
-	//n := values.BuildExternAssignments(node, scope)
-
-	// reset side effect list
 	itrp.sideEffects = itrp.sideEffects[:0]
 	if err := itrp.doRoot(ctx, node, scope, importer); err != nil {
 		return nil, err
@@ -332,17 +328,6 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			return nil, err
 		}
 
-		// TODO (algow): validate that indeed type inference fixes this
-		// TODO(jsternberg): This next section needs to be removed
-		// since type inference should give the correct type.
-		//if ltyp == semantic.Nil && l.Type().Nature() != semantic.Nil {
-		//	// There's a weird bug in type inference where it
-		//	// determines the type is null even when it's not.
-		//	ltyp = l.Type()
-		//}
-		//if rtyp == semantic.Nil && r.Type().Nature() != semantic.Nil {
-		//	rtyp = r.Type()
-		//}
 		bf, err := values.LookupBinaryFunction(values.BinaryFuncSignature{
 			Operator: e.Operator,
 			Left:     l.Type().Nature(),

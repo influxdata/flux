@@ -38,7 +38,6 @@ func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, err
 }
 
 func TestAccessNestedImport(t *testing.T) {
-	// TODO(algow): unskip when issue is complete
 	t.Skip("Handle imports for user-defined packages https://github.com/influxdata/flux/issues/2343")
 	// package a
 	// x = 0
@@ -386,7 +385,6 @@ func TestInterpreter_MutateOption(t *testing.T) {
 }
 
 func TestInterpreter_SetQualifiedOption(t *testing.T) {
-	// TODO(algow): unskip when issue is complete
 	t.Skip("Handle imports for user-defined packages https://github.com/influxdata/flux/issues/2343")
 	externalPackage := interpreter.NewPackage("alert")
 	values.SetOption(externalPackage, "state", values.NewString("Warning"))
