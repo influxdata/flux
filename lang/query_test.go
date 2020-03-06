@@ -10,10 +10,11 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/runtime"
 )
 
 func runQuery(script string) (flux.Query, error) {
-	program, err := lang.Compile(script, time.Unix(0, 0))
+	program, err := lang.Compile(script, runtime.Default, time.Unix(0, 0))
 	if err != nil {
 		return nil, err
 	}

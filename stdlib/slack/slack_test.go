@@ -155,7 +155,7 @@ endpoint = slack.endpoint(url:url, token:token)(mapFn: (r) => {
 })
 
 csv.from(csv:data) |> endpoint()`
-			prog, err := lang.Compile(fluxString, time.Now(), lang.WithExtern(&ast.File{Body: []ast.Statement{
+			prog, err := lang.Compile(fluxString, runtime.Default, time.Now(), lang.WithExtern(&ast.File{Body: []ast.Statement{
 				&ast.VariableAssignment{
 					ID: &ast.Identifier{
 						Name: "url",

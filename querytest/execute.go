@@ -7,12 +7,13 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/runtime"
 )
 
 type Querier struct{}
 
 func (q *Querier) Query(ctx context.Context, w io.Writer, c flux.Compiler, d flux.Dialect) (int64, error) {
-	program, err := c.Compile(ctx)
+	program, err := c.Compile(ctx, runtime.Default)
 	if err != nil {
 		return 0, err
 	}

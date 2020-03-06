@@ -220,7 +220,7 @@ func (r *REPL) doQuery(ctx context.Context, spec *flux.Spec, deps flux.Dependenc
 		Spec: spec,
 	}
 
-	program, err := c.Compile(ctx)
+	program, err := c.Compile(ctx, runtime.Default)
 	if err != nil {
 		return err
 	}
