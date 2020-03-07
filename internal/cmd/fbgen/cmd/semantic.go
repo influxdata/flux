@@ -178,6 +178,12 @@ func doField(o types.Object, field *types.Var) ([]jen.Code, error) {
 			return nil, err
 		}
 		codes = append(codes, cs...)
+	case *types.Signature:
+		cs, err := doSignature(o, field)
+		if err != nil {
+			return nil, err
+		}
+		codes = append(codes, cs...)
 	default:
 		var err error
 		if codes, err = handleMissingf(codes, "unknown type kind: %#v", t); err != nil {
@@ -551,6 +557,23 @@ func doPointer(o types.Object, field *types.Var) ([]jen.Code, error) {
 		if cs, err = handleMissingf(cs, "unknown pointer elem type: %#v", t); err != nil {
 			return nil, err
 		}
+	}
+	return cs, nil
+}
+
+// doSignature returns a slice of Go code that populates a field in a Go semantic graph struct,
+// when the Go field type is a function.
+func doSignature(o types.Object, field *types.Var) ([]jen.Code, error) {
+	fieldForError := o.Name() + "." + field.Name()
+	var cs []jen.Code
+
+	if o.Name() == "Package" && field.Name() == "freeFn" {
+		return nil, nil
+	}
+
+	var err error
+	if cs, err = handleMissingf(cs, "unknown function field: %#v", fieldForError); err != nil {
+		return nil, err
 	}
 	return cs, nil
 }

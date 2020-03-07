@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/internal/fbsemantic"
+	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
@@ -67,6 +68,9 @@ var cmpOpts = []cmp.Option{
 	cmp.Transformer("", func(ty semantic.PolyType) int {
 		return 0
 	}),
+	cmp.Transformer("freeFn", func(func()) int {
+		return 0
+	}),
 }
 
 func TestDeserializeFromFlatBuffer(t *testing.T) {
@@ -97,7 +101,10 @@ func TestDeserializeFromFlatBuffer(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			got, err := semantic.DeserializeFromFlatBuffer(fb)
+			got, err := semantic.DeserializeFromFlatBuffer(&libflux.ManagedBuffer{
+				Buffer: fb,
+				Offset: 0,
+			})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -773,11 +780,11 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 			name: "binary expression",
 			fluxSrc: `
                 x = 1 * 2 / 3 - 1 + 7 % 8^9
-                lt = 1 < 3                
-                lte = 1 <= 3                
-                gt = 1 > 3                
-                gte = 1 >= 3                
-                eq = 1 == 3                
+                lt = 1 < 3
+                lte = 1 <= 3
+                gt = 1 > 3
+                gte = 1 >= 3
+                eq = 1 == 3
                 neq = 1 != 3
                 rem = "foo" =~ /foo/
                 renm = "food" !~ /foog/`,

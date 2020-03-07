@@ -146,6 +146,15 @@ type Package struct {
 
 	Package string
 	Files   []*File
+
+	freeFn func()
+}
+
+func (p *Package) Free() {
+	if p.freeFn != nil {
+		p.freeFn()
+		p.freeFn = nil
+	}
 }
 
 func (*Package) NodeType() string { return "Package" }

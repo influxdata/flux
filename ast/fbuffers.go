@@ -7,13 +7,14 @@ import (
 
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/influxdata/flux/ast/internal/fbast"
+	"github.com/influxdata/flux/libflux/go/libflux"
 )
 
 // DeserializeFromFlatBuffer takes the given byte slice
 // that is an AST flatbuffer and deserializes it to an AST package.
-func DeserializeFromFlatBuffer(buf []byte) *Package {
+func DeserializeFromFlatBuffer(mbuf *libflux.ManagedBuffer) *Package {
 	pkg := Package{}
-	return pkg.FromBuf(buf)
+	return pkg.FromBuf(mbuf.Buffer, mbuf.Offset)
 }
 
 func (p *Position) FromBuf(buf *fbast.Position) {
@@ -42,8 +43,8 @@ func (b *BaseNode) FromBuf(buf *fbast.BaseNode) {
 	}
 }
 
-func (p Package) FromBuf(buf []byte) *Package {
-	fbp := fbast.GetRootAsPackage(buf, 0)
+func (p Package) FromBuf(buf []byte, offset flatbuffers.UOffsetT) *Package {
+	fbp := fbast.GetRootAsPackage(buf, offset)
 	p.BaseNode.FromBuf(fbp.BaseNode(nil))
 	p.Path = string(fbp.Path())
 	p.Package = string(fbp.Package())

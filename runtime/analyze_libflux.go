@@ -19,9 +19,9 @@ func AnalyzePackage(astPkg *libflux.ASTPkg) (*semantic.Package, error) {
 		return nil, err
 	}
 	defer sem.Free()
-	bs, err := sem.MarshalFB()
+	mbuf, err := sem.MarshalFB()
 	if err != nil {
 		return nil, err
 	}
-	return semantic.DeserializeFromFlatBuffer(bs)
+	return semantic.DeserializeFromFlatBuffer(mbuf)
 }

@@ -53,7 +53,7 @@ func TestAnalyze(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			t.Logf("flatbuffer has %v bytes\n", len(fbBuf))
+			t.Logf("flatbuffer has %v bytes, offset %v.\n", len(fbBuf.Buffer), fbBuf.Offset)
 		})
 	}
 }

@@ -31,7 +31,7 @@ type ASTPkg struct {
 	ptr *C.struct_flux_ast_pkg_t
 }
 
-func (p *ASTPkg) MarshalJSON() ([]byte, error) {
+func (p *ASTPkg) ToJSON() (*ManagedBuffer, error) {
 	var buf C.struct_flux_buffer_t
 	if err := C.flux_ast_marshal_json(p.ptr, &buf); err != nil {
 		defer C.flux_free(unsafe.Pointer(err))
@@ -46,13 +46,10 @@ func (p *ASTPkg) MarshalJSON() ([]byte, error) {
 	// the compiler recognizes the possibility that p might
 	// be used again and prevents it from being garbage collected.
 	runtime.KeepAlive(p)
-	defer C.flux_free(buf.data)
-
-	data := C.GoBytes(buf.data, C.int(buf.len))
-	return data, nil
+	return newManagedBuffer(buf), nil
 }
 
-func (p *ASTPkg) MarshalFB() ([]byte, error) {
+func (p *ASTPkg) MarshalFB() (*ManagedBuffer, error) {
 	var buf C.struct_flux_buffer_t
 	if err := C.flux_ast_marshal_fb(p.ptr, &buf); err != nil {
 		defer C.flux_free(unsafe.Pointer(err))
@@ -67,10 +64,7 @@ func (p *ASTPkg) MarshalFB() ([]byte, error) {
 	// the compiler recognizes the possibility that p might
 	// be used again and prevents it from being garbage collected.
 	runtime.KeepAlive(p)
-	defer C.flux_free(buf.data)
-
-	data := C.GoBytes(buf.data, C.int(buf.len))
-	return data, nil
+	return newManagedBuffer(buf), nil
 }
 
 func (p *ASTPkg) Free() {
@@ -94,9 +88,8 @@ func (p *ASTPkg) String() string {
 // Parse will take a string and return a parsed source file.
 func Parse(s string) *ASTPkg {
 	cstr := C.CString(s)
-	defer C.free(unsafe.Pointer(cstr))
-
 	ptr := C.flux_parse(cstr)
+	C.free(unsafe.Pointer(cstr))
 	p := &ASTPkg{ptr: ptr}
 	runtime.SetFinalizer(p, free)
 	return p
