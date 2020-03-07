@@ -26,15 +26,15 @@ void test_ast() {
   struct flux_error_t *err = flux_ast_marshal_json(ast_pkg_foo, &buf);
   assert(err == NULL);
   printf("  json buffer is length %ld\n", buf.len);
-  flux_free(buf.data);
+  flux_free_bytes(buf.data);
 
   printf("Marshaling to FlatBuffer\n");
   err = flux_ast_marshal_fb(ast_pkg_foo, &buf);
   assert(err == NULL);
   printf("  FlatBuffer is length %ld\n", buf.len);
-  flux_free(buf.data);
+  flux_free_bytes(buf.data);
 
-  flux_free(ast_pkg_foo);
+  flux_free_ast_pkg(ast_pkg_foo);
   printf("\n");
 }
 
@@ -56,9 +56,9 @@ void test_semantic() {
     err = flux_semantic_marshal_fb(sem_pkg, &buf);
     assert(err == NULL);
     printf("  FlatBuffer is length %ld\n", buf.len);
-    flux_free(buf.data);
+    flux_free_bytes(buf.data);
 
-    flux_free(sem_pkg);
+    flux_free_semantic_pkg(sem_pkg);
   }
 
   {
@@ -73,8 +73,8 @@ void test_semantic() {
     assert(sem_pkg == NULL);
     const char* err_str = flux_error_str(err);
     printf("  error: %s\n", err_str);
-    flux_free(err_str);
-    flux_free(err);
+    flux_free_bytes(err_str);
+    flux_free_error(err);
   }
 
   printf("\n");

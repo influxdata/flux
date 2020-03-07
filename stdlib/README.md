@@ -13,7 +13,7 @@ Package names should be the same name as the directory.
 Test files may placed in the same directory as the packing using the `_test.flux` suffix on the file name.
 The test files must have a `_test` suffix for the package name and the prefix must match the name of the non test package.
 
-Because the above mirrors the Go pacakge structure it is common to also have `.go` file and `_test.go` files that mirror the `.flux` files.
+Because the above mirrors the Go package structure it is common to also have `.go` file and `_test.go` files that mirror the `.flux` files.
 
 
 A typical Flux package structure:
