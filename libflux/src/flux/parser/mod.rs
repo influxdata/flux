@@ -426,27 +426,33 @@ impl Parser {
         let t = self.expect(TOK_OPTION);
         let ident = self.parse_identifier();
         let assignment = self.parse_option_assignment_suffix(ident);
-        Statement::Option(Box::new(OptionStmt {
-            base: self.base_node_from_other_end(&t, assignment.base()),
-            assignment,
-        }))
+        match assignment {
+            Ok(assgn) => Statement::Option(Box::new(OptionStmt {
+                base: self.base_node_from_other_end(&t, assgn.base()),
+                assignment: assgn,
+            })),
+            Err(_) => Statement::Bad(BadStmt {
+                base: self.base_node_from_token(&t),
+                text: t.lit,
+            }),
+        }
     }
-    fn parse_option_assignment_suffix(&mut self, id: Identifier) -> Assignment {
+    fn parse_option_assignment_suffix(&mut self, id: Identifier) -> Result<Assignment, String> {
         let t = self.peek();
         match t.tok {
             TOK_ASSIGN => {
                 let init = self.parse_assign_statement();
-                Assignment::Variable(Box::new(VariableAssgn {
+                Ok(Assignment::Variable(Box::new(VariableAssgn {
                     base: self.base_node_from_others(&id.base, init.base()),
                     id,
                     init,
-                }))
+                })))
             }
             TOK_DOT => {
                 self.consume();
                 let prop = self.parse_identifier();
                 let init = self.parse_assign_statement();
-                Assignment::Member(Box::new(MemberAssgn {
+                Ok(Assignment::Member(Box::new(MemberAssgn {
                     base: self.base_node_from_others(&id.base, init.base()),
                     member: MemberExpr {
                         base: self.base_node_from_others(&id.base, &prop.base),
@@ -454,9 +460,9 @@ impl Parser {
                         property: PropertyKey::Identifier(prop),
                     },
                     init,
-                }))
+                })))
             }
-            _ => panic!("invalid option assignment suffix"),
+            _ => Err("invalid option assignment suffix".to_string()),
         }
     }
     fn parse_builtin_statement(&mut self) -> Statement {
