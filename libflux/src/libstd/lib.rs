@@ -1,6 +1,6 @@
 use flatbuffers;
 use flux::ast;
-use flux::ctypes::*;
+use flux::semantic;
 use flux::semantic::builtins::builtins;
 use flux::semantic::check;
 use flux::semantic::env::Environment;
@@ -23,24 +23,28 @@ pub fn fresher() -> Fresher {
     flatbuffers::get_root::<fb::Fresher>(buf).into()
 }
 
+/// flux_analyze is a C-compatible wrapper around the analyze() function below
+///
+/// Note that Box<T> is used to indicate we are receiving/returning a C pointer and also
+/// transferring ownership.
+///
 /// # Safety
 ///
 /// Ths function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
+#[allow(clippy::boxed_local)]
 pub unsafe extern "C" fn flux_analyze(
-    ast_pkg: *mut flux_ast_pkg_t,
-    out_sem_pkg: *mut *const flux_semantic_pkg_t,
-) -> *mut flux_error_t {
-    let ast_pkg = *Box::from_raw(ast_pkg as *mut ast::Package);
-    match analyze(ast_pkg) {
+    ast_pkg: Box<ast::Package>,
+    out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
+) -> Option<Box<flux::ErrorHandle>> {
+    match analyze(*ast_pkg) {
         Ok(sem_pkg) => {
-            let sem_pkg = Box::into_raw(Box::new(sem_pkg)) as *const flux_semantic_pkg_t;
-            *out_sem_pkg = sem_pkg;
-            std::ptr::null_mut()
+            *out_sem_pkg = Some(Box::new(sem_pkg));
+            None
         }
         Err(err) => {
             let errh = flux::ErrorHandle { err: Box::new(err) };
-            Box::into_raw(Box::new(errh)) as *mut flux_error_t
+            Some(Box::new(errh))
         }
     }
 }
