@@ -82,7 +82,7 @@ var get = values.NewFunction(
 		}
 
 		// Perform request
-		dc, reader, err := deps.HTTPClient()
+		dc, err := deps.HTTPClient()
 		if err != nil {
 			return nil, errors.Wrap(err, codes.Aborted, "missing client in http.get")
 		}
@@ -100,9 +100,7 @@ var get = values.NewFunction(
 			if err != nil {
 				return 0, nil, nil, err
 			}
-
-			r := reader(response.Body)
-			body, err := ioutil.ReadAll(r)
+			body, err := ioutil.ReadAll(response.Body)
 			_ = response.Body.Close()
 			if err != nil {
 				return 0, nil, nil, err

@@ -79,7 +79,7 @@ func init() {
 			}
 
 			// Perform request
-			dc, reader, err := deps.HTTPClient()
+			dc, err := deps.HTTPClient()
 			if err != nil {
 				return nil, errors.Wrap(err, codes.Aborted, "missing client in http.post")
 			}
@@ -96,8 +96,7 @@ func init() {
 				}
 
 				wc := iocounter.Writer{Writer: ioutil.Discard}
-				r := reader(response.Body)
-				_, _ = io.Copy(&wc, r)
+				_, _ = io.Copy(&wc, response.Body)
 				_ = response.Body.Close()
 				s.LogFields(
 					log.Int("statusCode", response.StatusCode),
