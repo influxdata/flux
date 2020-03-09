@@ -35,9 +35,10 @@ func defaultTestFunction(req *http.Request) *http.Response {
 
 func Default() flux.Deps {
 	var deps flux.Deps
-	deps.Deps.HTTPClient = &http.Client{
+
+	deps.Deps.HTTPDependencies = flux.NewHTTPDependenciesDefaultReader(&http.Client{
 		Transport: RoundTripFunc(defaultTestFunction),
-	}
+	})
 	deps.Deps.SecretService = &mock.SecretService{
 		"password": "mysecretpassword",
 		"token":    "mysecrettoken",

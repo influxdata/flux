@@ -90,7 +90,7 @@ http.post(url:"http://127.1.1.1/path/a/b/c", headers: {x:"a",y:"b",z:"c"}, data:
 `
 
 	deps := flux.NewDefaultDependencies()
-	deps.Deps.HTTPClient = http.DefaultClient
+	deps.Deps.HTTPDependencies = flux.NewHTTPDependenciesDefaultReader(http.DefaultClient)
 	deps.Deps.URLValidator = url.PrivateIPValidator{}
 	ctx := deps.Inject(context.Background())
 	_, _, err := flux.Eval(ctx, script, addFail)

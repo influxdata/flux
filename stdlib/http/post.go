@@ -18,10 +18,6 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 )
 
-// maxResponseBody is the maximum response body we will read before just discarding
-// the rest. This allows sockets to be reused.
-const maxResponseBody = 512 * 1024 // 512 KB
-
 func init() {
 	flux.RegisterPackageValue("http", "post", values.NewFunction(
 		"post",
@@ -83,7 +79,7 @@ func init() {
 			}
 
 			// Perform request
-			dc, err := deps.HTTPClient()
+			dc, reader, err := deps.HTTPClient()
 			if err != nil {
 				return nil, errors.Wrap(err, codes.Aborted, "missing client in http.post")
 			}
@@ -99,14 +95,9 @@ func init() {
 					return 0, err
 				}
 
-				// Read the response body but limit how much we will read.
-				// This is to allow a socket to be reused after it is closed.
 				wc := iocounter.Writer{Writer: ioutil.Discard}
-				r := io.LimitedReader{
-					R: response.Body,
-					N: maxResponseBody,
-				}
-				_, _ = io.Copy(&wc, &r)
+				r := reader(response.Body)
+				_, _ = io.Copy(&wc, r)
 				_ = response.Body.Close()
 				s.LogFields(
 					log.Int("statusCode", response.StatusCode),

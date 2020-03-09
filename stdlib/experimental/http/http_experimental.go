@@ -3,6 +3,11 @@ package http
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"time"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -10,16 +15,7 @@ import (
 	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"time"
 )
-
-// maxResponseBody is the maximum response body we will read before just discarding
-// the rest. This allows sockets to be reused.
-const maxResponseBody = 512 * 1024 // 512 KB
 
 // http get mirrors the http post originally completed for alerts & notifications
 var get = values.NewFunction(
@@ -31,7 +27,7 @@ var get = values.NewFunction(
 			"timeout": semantic.Duration,
 		},
 		Required: []string{"url"},
-		Return:   semantic.NewObjectPolyType(map[string]semantic.PolyType{"statusCode": semantic.Int, "headers": semantic.Object, "body": semantic.Bytes}, semantic.LabelSet{"status", "headers", "body"}, nil),
+		Return:   semantic.NewObjectPolyType(map[string]semantic.PolyType{"statusCode": semantic.Int, "headers": semantic.Object, "body": semantic.Bytes}, semantic.LabelSet{"statusCode", "headers", "body"}, nil),
 	}),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		// Get and validate URL
@@ -86,8 +82,7 @@ var get = values.NewFunction(
 		}
 
 		// Perform request
-		dc, err := deps.HTTPClient()
-
+		dc, reader, err := deps.HTTPClient()
 		if err != nil {
 			return nil, errors.Wrap(err, codes.Aborted, "missing client in http.get")
 		}
@@ -106,10 +101,8 @@ var get = values.NewFunction(
 				return 0, nil, nil, err
 			}
 
-			// Read the response body but limit how much we will read.
-			// Allows socket to be reused after it is closed. (Only reusable if response emptied)
-			limitedReader := &io.LimitedReader{R: response.Body, N: maxResponseBody}
-			body, err := ioutil.ReadAll(limitedReader)
+			r := reader(response.Body)
+			body, err := ioutil.ReadAll(r)
 			_ = response.Body.Close()
 			if err != nil {
 				return 0, nil, nil, err
@@ -140,11 +133,9 @@ func headerToObject(header http.Header) (headerObj values.Object) {
 			m[name] = values.New(onevalue)
 		}
 	}
-
 	return values.NewObjectWithValues(m)
 }
 
 func init() {
 	flux.RegisterPackageValue("experimental/http", "get", get)
-
 }
