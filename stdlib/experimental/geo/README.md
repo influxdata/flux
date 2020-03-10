@@ -41,11 +41,15 @@ Aggregate operations:
 - `groupByArea`
 - `asTracks`
 
+S2 geometry functions:
+- `s2CellIDToken`
+
 The package uses the following types:
 - `region` - depending on shape, it has the following named float values:
   - box - `minLat`, `maxLat`, `minLon`, `maxLon`
   - circle (cap) - `lat`, `lon`, `radius` (in decimal km)
-  - polygon - `points` field which is an array of objects with named float values `lat` and `lon`
+  - point - `lat`, `lon`
+  - polygon - `points` - array of points
 
 ### Function `gridFilter`
 
@@ -202,3 +206,19 @@ asTracks = (tables=<-, groupBy=["id","tid"], orderBy=["_time"]) =>
     |> group(columns: groupBy)
     |> sort(columns: orderBy)
 ```
+
+### Function `s2CellIDToken`
+
+Returns S2 cell ID token.
+Input parameters are:
+- `token` - source position token
+- `point` - source position coordinates
+- `level` - cell level of the target token 
+
+Either `token` or `point` must be specified.
+
+Example:
+```
+t = geo.s2CellIDToken(point: {lat: 40.51757813, lon: -73.65234375}, level: 10})
+```
+
