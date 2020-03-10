@@ -6,10 +6,14 @@
 
 void test_ast();
 void test_semantic();
+void test_semantic_analyzer();
+void test_env_stdlib();
 
 int main(int argc, char* argv[]) {
   test_ast();
   test_semantic();
+  test_semantic_analyzer();
+  test_env_stdlib();
   return 0;
 }
 
@@ -77,5 +81,57 @@ void test_semantic() {
     flux_free_error(err);
   }
 
+  printf("\n");
+}
+
+void test_semantic_analyzer() {
+  printf("Testing semantic analyzer...\n");
+
+  struct flux_semantic_analyzer_t *analyzer = flux_new_semantic_analyzer("main");
+
+  struct flux_ast_pkg_t *ast_pkg = NULL;
+  struct flux_semantic_pkg_t *sem_pkg = NULL;
+  struct flux_error_t *err = NULL;
+
+  printf("Parsing and analyzing \"x = 10\"\n");
+  ast_pkg = flux_parse("x = 10");
+  assert(ast_pkg != NULL);
+  err = flux_analyze_with(analyzer, ast_pkg, &sem_pkg);
+  assert(err == NULL);
+  assert(sem_pkg != NULL);
+  flux_free_semantic_pkg(sem_pkg);
+
+  printf("Parsing and analyzing \"y = x * x\"\n");
+  ast_pkg = flux_parse("y = x * x");
+  assert(ast_pkg != NULL);
+  sem_pkg = NULL;
+  err = flux_analyze_with(analyzer, ast_pkg, &sem_pkg);
+  assert(err == NULL);
+  assert(sem_pkg != NULL);
+  flux_free_semantic_pkg(sem_pkg);
+
+  printf("Parsing and analyzing \"z = a + y\" (expect failure)\n");
+  ast_pkg = flux_parse("z = a + y");
+  assert(ast_pkg != NULL);
+  sem_pkg = NULL;
+  err = flux_analyze_with(analyzer, ast_pkg, &sem_pkg);
+  assert(err != NULL);
+  assert(sem_pkg == NULL);
+  const char* err_str = flux_error_str(err);
+  printf("  error: %s\n", err_str);
+  flux_free_bytes(err_str);
+  flux_free_error(err);
+
+  flux_free_semantic_analyzer(analyzer);
+  printf("\n");
+}
+
+void test_env_stdlib() {
+  printf("Testing flux_get_env_stdlib");
+  struct flux_buffer_t buf;
+  flux_get_env_stdlib(&buf);
+  assert(buf.data != NULL);
+  printf("  got a buffer of size %ld\n", buf.len);
+  flux_free_bytes(buf.data);
   printf("\n");
 }
