@@ -219,6 +219,6 @@ Either `token` or `point` must be specified.
 
 Example:
 ```
-t = geo.s2CellIDToken(point: {lat: 40.51757813, lon: -73.65234375}, level: 10})
+t = geo.s2CellIDToken(point: {lat: 40.51757813, lon: -73.65234375}, level: 10)
 ```
 
