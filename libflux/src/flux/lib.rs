@@ -137,19 +137,18 @@ pub extern "C" fn flux_free_ast_pkg(_: Option<Box<ast::Package>>) {}
 #[no_mangle]
 pub unsafe extern "C" fn flux_parse_json(
     cstr: *mut c_char,
-    out_pkg: *mut *const flux_ast_pkg_t,
-) -> *mut flux_error_t {
+    out_pkg: *mut Option<Box<ast::Package>>,
+) -> Option<Box<ErrorHandle>> {
     let buf = CStr::from_ptr(cstr).to_bytes(); // Unsafe
     let res: Result<ast::Package, serde_json::error::Error> = serde_json::from_slice(buf);
     match res {
         Ok(pkg) => {
-            let pkg = Box::into_raw(Box::new(pkg)) as *const flux_ast_pkg_t;
-            *out_pkg = pkg;
-            std::ptr::null_mut()
+            *out_pkg = Some(Box::new(pkg));
+            None
         }
         Err(err) => {
             let errh = ErrorHandle { err: Box::new(err) };
-            Box::into_raw(Box::new(errh)) as *mut flux_error_t
+            Some(Box::new(errh))
         }
     }
 }
@@ -264,18 +263,18 @@ pub unsafe extern "C" fn flux_error_str(errh: *const ErrorHandle) -> CString {
 /// vector of an output ast::Package.
 #[no_mangle]
 pub unsafe extern "C" fn flux_merge_ast_pkgs(
-    out_pkg: *mut flux_ast_pkg_t,
-    in_pkg: *mut flux_ast_pkg_t,
-) -> *mut flux_error_t {
+    out_pkg: *mut ast::Package,
+    in_pkg: *mut ast::Package,
+) -> Option<Box<ErrorHandle>> {
     // Do not change ownership here so that Go maintains ownership of packages
-    let out_pkg = &mut *(out_pkg as *mut ast::Package);
-    let in_pkg = &mut *(in_pkg as *mut ast::Package);
+    let out_pkg = &mut *out_pkg;
+    let in_pkg = &mut *in_pkg;
 
     match merge_packages(out_pkg, in_pkg) {
-        None => std::ptr::null_mut(),
+        None => None,
         Some(err) => {
             let err_handle = ErrorHandle { err: Box::new(err) };
-            Box::into_raw(Box::new(err_handle)) as *mut flux_error_t
+            Some(Box::new(err_handle))
         }
     }
 }

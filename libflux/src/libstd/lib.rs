@@ -55,7 +55,7 @@ pub unsafe extern "C" fn flux_analyze(
     }
 }
 
-struct SemanticAnalyzer {
+pub struct SemanticAnalyzer {
     f: Fresher,
     env: Environment,
     imports: Environment,
@@ -125,36 +125,41 @@ impl SemanticAnalyzer {
     }
 }
 
+/// Create a new semantic analyzer.
+///
 /// # Safety
 ///
 /// Ths function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
 pub unsafe extern "C" fn flux_new_semantic_analyzer(
     cstr: *mut c_char,
-) -> *mut flux_semantic_analyzer_t {
+) -> Box<Result<SemanticAnalyzer, flux::Error>> {
     let buf = CStr::from_ptr(cstr).to_bytes(); // Unsafe
     let s = String::from_utf8(buf.to_vec()).unwrap();
-    let analyzer = Box::new(new_semantic_analyzer(&s));
-    Box::into_raw(analyzer) as *mut flux_semantic_analyzer_t
+    Box::new(new_semantic_analyzer(&s))
 }
+
+/// Free a previously allocated semantic analyzer
+#[no_mangle]
+pub extern "C" fn flux_free_semantic_analyzer(_: Option<Box<Result<SemanticAnalyzer, flux::Error>>>) {}
 
 /// # Safety
 ///
 /// Ths function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
 pub unsafe extern "C" fn flux_analyze_with(
-    analyzer: *mut flux_semantic_analyzer_t,
-    ast_pkg: *mut flux_ast_pkg_t,
-    out_sem_pkg: *mut *const flux_semantic_pkg_t,
-) -> *mut flux_error_t {
-    let ast_pkg = *Box::from_raw(ast_pkg as *mut ast::Package);
-    let analyzer = match &mut (*(analyzer as *mut Result<SemanticAnalyzer, flux::Error>)) {
+    analyzer: *mut Result<SemanticAnalyzer, flux::Error>,
+    ast_pkg: Box<ast::Package>,
+    out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
+) -> Option<Box<flux::ErrorHandle>> {
+    let ast_pkg = *ast_pkg;
+    let analyzer = match &mut *analyzer {
         Ok(a) => a,
         Err(err) => {
             let errh = flux::ErrorHandle {
                 err: Box::new(err.to_owned()),
             };
-            return Box::into_raw(Box::new(errh)) as *mut flux_error_t;
+            return Some(Box::new(errh))
         }
     };
 
@@ -162,12 +167,12 @@ pub unsafe extern "C" fn flux_analyze_with(
         Ok(sem_pkg) => sem_pkg,
         Err(err) => {
             let errh = flux::ErrorHandle { err: Box::new(err) };
-            return Box::into_raw(Box::new(errh)) as *mut flux_error_t;
+            return Some(Box::new(errh))
         }
     });
 
-    *out_sem_pkg = Box::into_raw(sem_pkg) as *const flux_semantic_pkg_t;
-    std::ptr::null_mut()
+    *out_sem_pkg = Some(sem_pkg);
+    None
 }
 
 /// analyze consumes the given AST package and returns a semantic package
