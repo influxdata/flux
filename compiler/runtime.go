@@ -77,6 +77,9 @@ func NewScope() Scope {
 	return ToScope(values.NewScope())
 }
 func ToScope(s values.Scope) Scope {
+	if s == nil {
+		return nil
+	}
 	return runtimeScope{s}
 }
 

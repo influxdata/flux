@@ -9,7 +9,7 @@ RUN apt-get update && \
     ruby \
     ca-certificates curl file \
     build-essential cmake \
-    autoconf automake autotools-dev libtool xutils-dev && \
+    autoconf automake autotools-dev libtool xutils-dev valgrind && \
     rm -rf /var/lib/apt/lists/*
 
 # Install ragel

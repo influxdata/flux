@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# usage: ./run.sh influxql query
+#        ./run.sh flux query
+
+if ! [ -f config.sh ]; then
+	echo "please create a config.sh that sets ORG, BUCKET and TOKEN"
+	exit 1;
+fi
+
+unset ORG BUCKET TOKEN
+. config.sh
+
+IFQL=`mktemp /tmp/tmp.XXXXX`
+FLUX=`mktemp /tmp/tmp.XXXXX`
+trap "rm -f $IFQL $FLUX" EXIT
+
+# outputs the input text which can either be literal code outputted as is, or
+# catted from @filename.
+input()
+{
+	if [ "${1:0:1}" = '@' ]; then
+		cat ${1:1}
+	else
+		echo ${1}
+	fi
+}
+
+if [ "$1" = influxql ]; then
+	input "$2" > $IFQL
+
+	if ! ./transpile $BUCKET < $IFQL >> $FLUX; then
+		rm $IFQL $FLUX
+		exit 1;
+	fi
+elif [ "$1" = flux ]; then
+	input "$2" > $FLUX
+fi
+
+echo sending query:
+cat $FLUX
+
+curl -s \
+	-H "Authorization: Token $TOKEN" \
+	-H "Content-Type: application/vnd.flux" \
+	"http://localhost:9999/api/v2/query?org=$ORG" \
+	--data-binary "@$FLUX"
+echo
+
+

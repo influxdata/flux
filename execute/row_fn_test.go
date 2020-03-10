@@ -173,7 +173,7 @@ func TestRowMapFn_Eval(t *testing.T) {
 	}
 }
 
-func TestRowPredicateFn_EvalRow(t *testing.T) {
+func testRowPredicateFn_EvalRow(t *testing.T, scope compiler.Scope) {
 	gt2F := func() (*execute.RowPredicateFn, error) {
 		pkg, err := runtime.AnalyzeSource(`(r) => r._value > 2.0`)
 		if err != nil {
@@ -182,7 +182,7 @@ func TestRowPredicateFn_EvalRow(t *testing.T) {
 
 		stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
 		fn := stmt.Expression.(*semantic.FunctionExpression)
-		return execute.NewRowPredicateFn(fn, nil)
+		return execute.NewRowPredicateFn(fn, scope)
 	}
 
 	testCases := []struct {
@@ -274,4 +274,9 @@ func TestRowPredicateFn_EvalRow(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRowPredicateFn_EvalRow(t *testing.T) {
+	testRowPredicateFn_EvalRow(t, prelude())
+	testRowPredicateFn_EvalRow(t, compiler.ToScope(nil))
 }

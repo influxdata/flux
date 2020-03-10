@@ -1,0 +1,313 @@
+lex 
+	ignore / '#' [^\n]* '\n' /
+	ignore /[ \t\n]+/
+
+	literal
+		`ALL           `ALTER         `ANY           `AS            `ASC           `BEGIN
+		`BY            `CREATE        `CONTINUOUS    `DATABASE      `DATABASES     `DEFAULT
+		`DELETE        `DESC          `DESTINATIONS  `DIAGNOSTICS   `DISTINCT      `DROP
+		`DURATION      `END           `EVERY         `EXPLAIN       `FIELD         `FOR
+		`FROM          `GRANT         `GRANTS        `GROUP         `GROUPS        `IN
+		`INF           `INSERT        `INTO          `KEY           `KEYS          `KILL
+		`LIMIT         `SHOW          `MEASUREMENT   `MEASUREMENTS  `NAME          `OFFSET
+		`ON            `ORDER         `PASSWORD      `POLICY        `POLICIES      `PRIVILEGES
+		`QUERIES       `QUERY         `READ          `REPLICATION   `RESAMPLE      `RETENTION
+		`REVOKE        `SELECT        `SERIES        `SET           `SHARD         `SHARDS
+		`SLIMIT        `SOFFSET       `STATS         `SUBSCRIPTION  `SUBSCRIPTIONS `TAG
+		`TO            `USER          `USERS         `VALUES        `WHERE         `WITH
+		`WRITE
+
+	literal
+		`AND `OR
+		`+ `- `* `/ `% `& `| `^
+		`= `!= `<> `< `<= `> `>= 
+		`=~ `!~
+		`. `: `( `) `, `;
+	
+	# Not sure if these are keywords, or just identifiers with a restriction.
+	literal `TRUE `FALSE
+
+	rl newline             / 0x0a /
+	rl unicode_char        / any - 0x0a /
+
+	rl ascii_letter        / "A" .. "Z" | "a" .. "z" /
+	rl letter              / ascii_letter | "_" /
+
+	token quoted_identifier   / '"' ( unicode_char unicode_char* ) :> '"' /
+	token unquoted_identifier / letter ( letter | digit )* /
+
+	# FIXME: int_lit does not allow "0" (both docs.influxdata.com and README.md).
+	# FIXME: docs.influxdata.com does not include +/-
+	token int_lit          / ( "0" | ( "1" .. "9" ) digit* ) /
+
+	token float_lit        / int_lit "." int_lit /
+
+	token string_lit       / "'" ( unicode_char )* :> "'" /
+
+	# missing: "µs"
+	rl duration_unit       / "ns" | "u" | "ms" | "s" | "m" | "h" | "d" | "w" /
+	token duration_lit     / int_lit duration_unit /
+end
+
+def identifier
+	[unquoted_identifier]
+|	[quoted_identifier]
+
+lex
+	rl regex_escaped_char / "\\" ( "/" | "\\") /
+	rl regex_unicode_value / ( any - "/" ) | regex_escaped_char /
+
+	token regex_tail
+		/ regex_unicode_value+ "/" /
+end
+
+# There are requirements on the contents of the time lit, based on Go's
+# date/time format. For now using the string lit, which is a superset of the
+# time literal.
+def time_lit
+	[string_lit]
+
+def bool_lit
+	[`TRUE] | [`FALSE]
+
+def regex_lit
+	[`/ regex_tail]
+
+def fields
+	[fields `, field]
+|	[field]
+
+def into_clause
+	[`INTO measurement]
+|	[`INTO back_ref]
+
+def from_clause
+	[`FROM measurements]
+
+def opt_where_clause
+	[where_clause]
+|	[]
+
+def where_clause
+	[`WHERE expr]
+
+# Missing fill(fill_option) -- not sure how to parse this. "fill" is not in the
+# keywords list. 
+def group_by_clause
+	[`GROUP `BY dimensions opt_fill]
+
+def order_by_clause
+	[`ORDER `BY sort_fields]
+
+def limit_clause
+	[`LIMIT int_lit]
+
+def offset_clause
+	[`OFFSET int_lit]
+
+def slimit_clause
+	[`SLIMIT int_lit]
+
+def soffset_clause
+	[`SOFFSET int_lit]
+
+# identifier = "tz"
+# DOC FIXME: 1. syntax not EBNF. Actually a function call.
+def timezone_clause
+	[identifier `( string_lit `)]
+
+def select_stmt
+	[`SELECT fields
+		into_clause? from_clause opt_where_clause
+		group_by_clause? order_by_clause? limit_clause?
+		offset_clause? slimit_clause? soffset_clause? timezone_clause?]
+
+#on_clause       = "ON" db_name .
+#
+#to_clause       = "TO" user_name .
+#
+#
+#with_measurement_clause = "WITH MEASUREMENT" ( "=" measurement | "=~" regex_lit ) .
+#
+#with_tag_clause = "WITH KEY" ( "=" tag_key | "!=" tag_key | "=~" regex_lit | "IN (" tag_keys ")"
+
+#
+# Expressions
+# FIXME: missing =~ and !~
+#
+def expr
+	[disjunction_expression]
+
+def OR [`OR]
+def AND [`AND]
+
+def disjunction_expression
+	[disjunction_expression OR conjunction_expression]
+|	[conjunction_expression]
+
+def conjunction_expression
+	[conjunction_expression AND comparison_expression]
+|	[comparison_expression]
+
+def comparison_expression
+	[comparison_expression comparison_operator additive_expression]
+|	[additive_expression]
+
+def comparison_operator
+	[`=] | [`!=] | [`<>] | [`<] | [`<=] | [`>] | [`>=] | [`=~] | [`!~]
+
+def additive_expression
+	[additive_expression additive_operator multiplicative_expression]
+|	[multiplicative_expression]
+
+def additive_operator
+	[`+] | [`-] | [`|] | [`^]
+
+def multiplicative_expression
+	[multiplicative_expression multiplicative_operator prefix_expression]
+|	[prefix_expression]
+
+def multiplicative_operator
+	[`*] | [`/] | [`%] | [`&] 
+
+def call_args
+	[call_args `, expr]
+|	[expr]
+
+def unary_op
+	[`-] | [`+] | []
+
+def prefix_expression
+	[unary_op unary_expr]
+|	[unary_expr]
+
+# seems to be missing function call.
+# DOC FIXME: spec seems to be missing function call.
+# FIXME: does not allow +/-
+def unary_expr
+	[`( expr `)]
+|	[identifier `( call_args? `)]
+|	[var_ref]
+|	[time_lit]
+|	[string_lit]
+|	[int_lit]
+|	[float_lit]
+|	[bool_lit]
+|	[duration_lit]
+|	[regex_lit]
+
+#
+# Other
+#
+
+def opt_alias
+	[`AS identifier]
+|	[]
+
+def back_ref
+	[policy_name `. `: `MEASUREMENT]
+|	[db_name `. policy_name? `. `: `MEASUREMENT ]
+
+def db_name
+	[identifier]
+
+# FIXME: does not allow *
+def dimension
+	[expr]
+|	[`*]
+
+def dimensions
+	[dimensions `, dimension]
+|	[dimension]
+
+def field_key
+	[identifier]
+
+def field
+	[expr opt_alias]
+
+# identfier = "fill"
+# DOC FIXME: 1. syntax not EBNF, needs to be optional. Actually a function call.
+def opt_fill
+	[identifier `( fill_option `)]
+|	[]
+
+# identifier = "null" | "none" | "previous" | "linear"
+def fill_option
+	[identifier] | [int_lit] | [float_lit]
+
+def host
+	[string_lit]
+
+def measurement
+	[measurement_name]
+|	[policy_name `. measurement_name]
+|	[db_name `. policy_name?  `. measurement_name]
+
+def measurements
+	[measurements `, measurement]
+|	[measurement]
+
+def measurement_name
+	[identifier]
+|	[regex_lit]
+
+#
+#password         = string_lit .
+#
+def policy_name
+	[identifier]
+#
+#privilege        = "ALL" [ "PRIVILEGES" ] | "READ" | "WRITE" .
+#
+#query_id         = int_lit .
+#
+#query_name       = identifier .
+#
+#retention_policy = identifier .
+#
+#retention_policy_option      = retention_policy_duration |
+#                               retention_policy_replication |
+#                               retention_policy_shard_group_duration |
+#                               "DEFAULT" .
+#
+#retention_policy_duration    = "DURATION" duration_lit .
+#
+#retention_policy_replication = "REPLICATION" int_lit .
+#
+#retention_policy_shard_group_duration = "SHARD DURATION" duration_lit .
+#
+#retention_policy_name = "NAME" identifier .
+#
+#series_id        = int_lit .
+#
+#shard_id         = int_lit .
+
+def opt_sort_dir
+	[`ASC]
+|	[`DESC]
+|	[]
+
+def sort_field
+	[field_key opt_sort_dir]
+
+def sort_fields
+	[sort_fields `, sort_field]
+|	[sort_field]
+
+#subscription_name = identifier .
+#
+#tag_key          = identifier .
+#
+#tag_keys         = tag_key { "," tag_key } .
+#
+#user_name        = identifier .
+
+def var_ref
+	[measurement]
+
+def item
+	[select_stmt `;]
+
+def influxql
+	[item*]

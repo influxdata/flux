@@ -75,6 +75,11 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in table object compilation")
 	}
+
+	if !lang.HaveExecutionDependencies(ctx) {
+		return nil, errors.New(codes.Invalid, "do not have an execution context for tableFind, if using the repl, try executing this code on the server using the InfluxDB API")
+	}
+
 	deps := lang.GetExecutionDependencies(ctx)
 	if p, ok := p.(lang.LoggingProgram); ok {
 		p.SetLogger(deps.Logger)
