@@ -24,6 +24,8 @@ export GO_GENERATE=go generate $(GO_ARGS)
 export GO_VET=env FLUX_PARSER_TYPE=rust GO111MODULE=on go vet $(GO_ARGS)
 export CARGO=cargo
 export CARGO_ARGS=
+export VALGRIND=valgrind
+export VALGRIND_ARGS=--leak-check=full --error-exitcode=1
 
 define go_deps
 	$(shell env GO111MODULE=on go list -f "{{range .GoFiles}} {{$$.Dir}}/{{.}}{{end}}" $(1))
@@ -175,7 +177,7 @@ libflux-wasm:
 	cd libflux/src/flux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev
 
 test-valgrind: $(LIBFLUX_MEMTEST_BIN)
-	valgrind --leak-check=full --error-exitcode=1 $^
+	LD_LIBRARY_PATH=$(PWD)/libflux/target/debug $(VALGRIND) $(VALGRIND_ARGS) $^
 
 LIBFLUX_MEMTEST_SOURCES=libflux/c/*.c
 $(LIBFLUX_MEMTEST_BIN): libflux $(LIBFLUX_MEMTEST_SOURCES)
