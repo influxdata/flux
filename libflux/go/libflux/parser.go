@@ -111,9 +111,9 @@ func ParseJSON(bs []byte) (*ASTPkg, error) {
 	var ptr *C.struct_flux_ast_pkg_t
 	err := C.flux_parse_json(cstr, &ptr)
 	if err != nil {
-		defer C.flux_free(unsafe.Pointer(err))
+		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free(unsafe.Pointer(cstr))
+		defer C.flux_free_bytes(cstr)
 
 		str := C.GoString(cstr)
 		return nil, errors.Newf(codes.Internal, "could not get handle from JSON AST: %v", str)
@@ -133,9 +133,9 @@ func MergePackages(outPkg *ASTPkg, inPkg *ASTPkg) error {
 	// This modifies outPkg in place
 	err := C.flux_merge_ast_pkgs(outPkg.ptr, inPkg.ptr)
 	if err != nil {
-		defer C.flux_free(unsafe.Pointer(err))
+		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free(unsafe.Pointer(cstr))
+		defer C.flux_free_bytes(cstr)
 
 		str := C.GoString(cstr)
 		return errors.Newf(codes.Internal, "failed to merge packages: %v", str)

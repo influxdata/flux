@@ -94,9 +94,9 @@ func (p *Analyzer) Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 		astPkg.ptr = nil
 	}()
 	if err := C.flux_analyze_with(p.ptr, astPkg.ptr, &semPkg); err != nil {
-		defer C.flux_free(unsafe.Pointer(err))
+		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free(unsafe.Pointer(cstr))
+		defer C.flux_free_bytes(cstr)
 
 		str := C.GoString(cstr)
 		return nil, errors.New(codes.Invalid, str)
@@ -111,7 +111,7 @@ func (p *Analyzer) Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 // Free frees the memory allocated by Rust for the semantic graph.
 func (p *Analyzer) Free() {
 	if p.ptr != nil {
-		C.flux_free(unsafe.Pointer(p.ptr))
+		C.flux_free_semantic_analyzer(p.ptr)
 	}
 	p.ptr = nil
 
@@ -125,6 +125,6 @@ func (p *Analyzer) Free() {
 func EnvStdlib() []byte {
 	var buf C.struct_flux_buffer_t
 	C.flux_get_env_stdlib(&buf)
-	defer C.flux_free(buf.data)
-	return C.GoBytes(buf.data, C.int(buf.len))
+	defer C.flux_free_bytes(buf.data)
+	return C.GoBytes(unsafe.Pointer(buf.data), C.int(buf.len))
 }

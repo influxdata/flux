@@ -16,17 +16,11 @@ pub mod semantic;
 use std::error;
 use std::ffi::*;
 use std::fmt;
-use std::os::raw::{c_char, c_void};
+use std::os::raw::c_char;
 
 use parser::Parser;
 
 pub use ast::DEFAULT_PACKAGE_NAME;
-
-#[allow(non_camel_case_types, missing_docs)]
-pub mod ctypes {
-    include!(concat!(env!("OUT_DIR"), "/ctypes.rs"));
-}
-use ctypes::*;
 
 /// An error handle designed to allow passing `Error` instances to library
 /// consumers across language boundaries.
@@ -82,6 +76,26 @@ impl From<semantic::check::Error> for Error {
     }
 }
 
+/// Frees a previously allocated error.
+///
+/// Note: we use the pattern described here: https://doc.rust-lang.org/std/boxed/index.html#memory-layout
+/// wherein a pointer where ownership is being transferred is modeled as a Box, and if it could be
+/// null, then it's wrapped in an Option.
+#[no_mangle]
+pub extern "C" fn flux_free_error(_err: Option<Box<ErrorHandle>>) {}
+
+/// Frees a pointer to characters.
+///
+/// # Safety
+///
+/// This function is unsafe because improper use may lead to
+/// memory problems. For example, a double-free may occur if the
+/// function is called twice on the same raw pointer.
+#[no_mangle]
+pub unsafe extern "C" fn flux_free_bytes(cstr: *mut c_char) {
+    Box::from_raw(cstr);
+}
+
 /// A buffer of flux source.
 #[repr(C)]
 pub struct flux_buffer_t {
@@ -91,19 +105,29 @@ pub struct flux_buffer_t {
     pub len: usize,
 }
 
+/// flux_parse parses a string containing Flux source code into an AST.
+///
 /// # Safety
 ///
 /// This function is unsafe because it dereferences a raw pointer passed
 /// in as a parameter. For example, if that pointer is NULL, undefined behavior
 /// could occur.
 #[no_mangle]
-pub unsafe extern "C" fn flux_parse(cstr: *mut c_char) -> *mut flux_ast_pkg_t {
-    let buf = CStr::from_ptr(cstr).to_bytes(); // Unsafe
+pub unsafe extern "C" fn flux_parse(cstr: *mut c_char) -> Box<ast::Package> {
+    let buf = CStr::from_ptr(cstr).to_bytes();
     let s = String::from_utf8(buf.to_vec()).unwrap();
     let mut p = Parser::new(&s);
     let pkg: ast::Package = p.parse_file(String::from("")).into();
-    Box::into_raw(Box::new(pkg)) as *mut flux_ast_pkg_t
+    Box::new(pkg)
 }
+
+/// Frees an AST package.
+///
+/// Note: we use the pattern described here: https://doc.rust-lang.org/std/boxed/index.html#memory-layout
+/// wherein a pointer where ownership is being transferred is modeled as a Box, and if it could be
+/// null, then it's wrapped in an Option.
+#[no_mangle]
+pub extern "C" fn flux_free_ast_pkg(_: Option<Box<ast::Package>>) {}
 
 /// # Safety
 ///
@@ -113,19 +137,18 @@ pub unsafe extern "C" fn flux_parse(cstr: *mut c_char) -> *mut flux_ast_pkg_t {
 #[no_mangle]
 pub unsafe extern "C" fn flux_parse_json(
     cstr: *mut c_char,
-    out_pkg: *mut *const flux_ast_pkg_t,
-) -> *mut flux_error_t {
+    out_pkg: *mut Option<Box<ast::Package>>,
+) -> Option<Box<ErrorHandle>> {
     let buf = CStr::from_ptr(cstr).to_bytes(); // Unsafe
     let res: Result<ast::Package, serde_json::error::Error> = serde_json::from_slice(buf);
     match res {
         Ok(pkg) => {
-            let pkg = Box::into_raw(Box::new(pkg)) as *const flux_ast_pkg_t;
-            *out_pkg = pkg;
-            std::ptr::null_mut()
+            *out_pkg = Some(Box::new(pkg));
+            None
         }
         Err(err) => {
             let errh = ErrorHandle { err: Box::new(err) };
-            Box::into_raw(Box::new(errh)) as *mut flux_error_t
+            Some(Box::new(errh))
         }
     }
 }
@@ -137,24 +160,25 @@ pub unsafe extern "C" fn flux_parse_json(
 /// could occur.
 #[no_mangle]
 pub unsafe extern "C" fn flux_ast_marshal_json(
-    ast_pkg: *mut flux_ast_pkg_t,
+    ast_pkg: *const ast::Package,
     buf: *mut flux_buffer_t,
-) -> *mut flux_error_t {
-    let ast_pkg = &*(ast_pkg as *mut ast::Package) as &ast::Package; // Unsafe
+) -> Option<Box<ErrorHandle>> {
+    let ast_pkg = &*ast_pkg;
     let data = match serde_json::to_vec(ast_pkg) {
         Ok(v) => v,
         Err(err) => {
             let errh = ErrorHandle { err: Box::new(err) };
-            return Box::into_raw(Box::new(errh)) as *mut flux_error_t;
+            return Some(Box::new(errh));
         }
     };
 
-    let buffer = &mut *buf; // Unsafe
-    buffer.len = data.len();
-    buffer.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
-    std::ptr::null_mut()
+    (*buf).len = data.len();
+    (*buf).data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
+    None
 }
 
+/// flux_ast_marshal_fb serializes the given AST package to a flatbuffer.
+///
 /// # Safety
 ///
 /// This function is unsafe because it takes a dereferences a raw pointer passed
@@ -162,27 +186,34 @@ pub unsafe extern "C" fn flux_ast_marshal_json(
 /// could occur.
 #[no_mangle]
 pub unsafe extern "C" fn flux_ast_marshal_fb(
-    ast: *mut flux_ast_pkg_t,
+    ast_pkg: *const ast::Package,
     buf: *mut flux_buffer_t,
-) -> *mut flux_error_t {
-    let pkg = &*(ast as *mut ast::Package) as &ast::Package; // Unsafe
-    let (mut vec, offset) = match ast::flatbuffers::serialize(&pkg) {
+) -> Option<Box<ErrorHandle>> {
+    let ast_pkg = &*ast_pkg;
+    let (mut vec, offset) = match ast::flatbuffers::serialize(ast_pkg) {
         Ok(vec_offset) => vec_offset,
         Err(err) => {
-            let err: Error = err.into();
-            let errh = ErrorHandle { err: Box::new(err) };
-            return Box::into_raw(Box::new(errh)) as *mut flux_error_t;
+            let errh = ErrorHandle {
+                err: Box::new(Error::from(err)),
+            };
+            return Some(Box::new(errh));
         }
     };
 
     // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
     let data = vec.split_off(offset);
-    let buffer = &mut *buf; // Unsafe
-    buffer.len = data.len();
-    buffer.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
-    std::ptr::null_mut()
+    (*buf).len = data.len();
+    (*buf).data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
+    None
 }
 
+/// Frees a semantic package.
+#[no_mangle]
+pub extern "C" fn flux_free_semantic_pkg(_: Option<Box<semantic::nodes::Package>>) {}
+
+/// flux_semantic_marshal_fb populates the supplied buffer with a FlatBuffers serialization
+/// of the given AST.
+///
 /// # Safety
 ///
 /// This function is unsafe because it takes a dereferences a raw pointer passed
@@ -190,46 +221,37 @@ pub unsafe extern "C" fn flux_ast_marshal_fb(
 /// could occur.
 #[no_mangle]
 pub unsafe extern "C" fn flux_semantic_marshal_fb(
-    ast: *mut flux_semantic_pkg_t,
+    sem_pkg: *const semantic::nodes::Package,
     buf: *mut flux_buffer_t,
-) -> *mut flux_error_t {
-    let pkg = &*(ast as *mut semantic::nodes::Package) as &semantic::nodes::Package; // Unsafe
-    let (mut vec, offset) = match semantic::flatbuffers::serialize(&pkg) {
+) -> Option<Box<ErrorHandle>> {
+    let sem_pkg = &*sem_pkg;
+    let (mut vec, offset) = match semantic::flatbuffers::serialize(sem_pkg) {
         Ok(vec_offset) => vec_offset,
         Err(err) => {
-            let err: Error = err.into();
-            let errh = ErrorHandle { err: Box::new(err) };
-            return Box::into_raw(Box::new(errh)) as *mut flux_error_t;
+            let errh = ErrorHandle {
+                err: Box::new(Error::from(err)),
+            };
+            return Some(Box::new(errh));
         }
     };
 
     // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
     let data = vec.split_off(offset);
-    let buffer = &mut *buf; // Unsafe
-    buffer.len = data.len();
-    buffer.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
-    std::ptr::null_mut()
+    (*buf).len = data.len();
+    (*buf).data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
+    None
 }
 
+/// flux_error_str returns the error message associated with the given error.
+///
 /// # Safety
 ///
 /// This function is unsafe because it dereferences a raw pointer passed as a
 /// parameter
 #[no_mangle]
-pub unsafe extern "C" fn flux_error_str(err: *mut flux_error_t) -> *mut c_char {
-    let e = &*(err as *mut ErrorHandle); // Unsafe
-    let s = CString::new(format!("{}", e.err)).unwrap();
-    s.into_raw()
-}
-
-/// # Safety
-///
-/// This function is unsafe because improper use may lead to memory problems.
-/// For example, a double-free may occur if the function is called twice on
-/// the same raw pointer.
-#[no_mangle]
-pub unsafe extern "C" fn flux_free(err: *mut c_void) {
-    Box::from_raw(err);
+pub unsafe extern "C" fn flux_error_str(errh: *const ErrorHandle) -> CString {
+    let errh = &*errh;
+    CString::new(format!("{}", errh.err)).unwrap()
 }
 
 /// # Safety
@@ -241,18 +263,18 @@ pub unsafe extern "C" fn flux_free(err: *mut c_void) {
 /// vector of an output ast::Package.
 #[no_mangle]
 pub unsafe extern "C" fn flux_merge_ast_pkgs(
-    out_pkg: *mut flux_ast_pkg_t,
-    in_pkg: *mut flux_ast_pkg_t,
-) -> *mut flux_error_t {
+    out_pkg: *mut ast::Package,
+    in_pkg: *mut ast::Package,
+) -> Option<Box<ErrorHandle>> {
     // Do not change ownership here so that Go maintains ownership of packages
-    let out_pkg = &mut *(out_pkg as *mut ast::Package);
-    let in_pkg = &mut *(in_pkg as *mut ast::Package);
+    let out_pkg = &mut *out_pkg;
+    let in_pkg = &mut *in_pkg;
 
     match merge_packages(out_pkg, in_pkg) {
-        None => std::ptr::null_mut(),
+        None => None,
         Some(err) => {
             let err_handle = ErrorHandle { err: Box::new(err) };
-            Box::into_raw(Box::new(err_handle)) as *mut flux_error_t
+            Some(Box::new(err_handle))
         }
     }
 }
