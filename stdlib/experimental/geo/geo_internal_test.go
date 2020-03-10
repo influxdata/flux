@@ -6,6 +6,6 @@ import "github.com/influxdata/flux/values"
 var Functions = map[string]values.Function{
 	"containsLatLon": generateContainsLatLonFunc(),
 	"getGrid":        generateGetGridFunc(),
-	"getParent":      generateGetParentFunc(),
 	"getLevel":       generateGetLevelFunc(),
+	"s2CellIDToken":  generateS2CellIDTokenFunc(),
 }

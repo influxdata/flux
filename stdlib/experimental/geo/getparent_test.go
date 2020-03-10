@@ -11,16 +11,16 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-func TestGetParent_NewQuery(t *testing.T) {
+func TestS2CellIDToken_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
 			Name:    "no args",
-			Raw:     `import "experimental/geo" geo.getParent()`,
+			Raw:     `import "experimental/geo" geo.s2CellIDToken()`,
 			WantErr: true, // missing required parameter(s)
 		},
 		{
 			Name:    "too few args",
-			Raw:     `import "experimental/geo" geo.getParent(token: "89c284")`,
+			Raw:     `import "experimental/geo" geo.s2CellIDToken(token: "89c284")`,
 			WantErr: true, // missing required parameter(s)
 		},
 	}
@@ -33,7 +33,7 @@ func TestGetParent_NewQuery(t *testing.T) {
 	}
 }
 
-func TestGetParent_Process(t *testing.T) {
+func TestS2CellIDToken_Process(t *testing.T) {
 	type point struct {
 		lat float64
 		lon float64
@@ -84,7 +84,7 @@ func TestGetParent_Process(t *testing.T) {
 
 	for _, tc := range testCases {
 		tc := tc
-		getGrid := geo.Functions["getParent"]
+		getGrid := geo.Functions["s2CellIDToken"]
 		var owv values.Object
 		if tc.token != "" {
 			owv = values.NewObjectWithValues(map[string]values.Value{

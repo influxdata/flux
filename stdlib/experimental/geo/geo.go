@@ -144,9 +144,9 @@ func generateGetGridFunc() values.Function {
 	)
 }
 
-func generateGetParentFunc() values.Function {
+func generateS2CellIDTokenFunc() values.Function {
 	return values.NewFunction(
-		"getParent",
+		"s2CellIDToken",
 		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
 			Parameters: map[string]semantic.PolyType{
 				"token": semantic.String,
@@ -311,9 +311,9 @@ func generateContainsLatLonFunc() values.Function {
 
 func init() {
 	flux.RegisterPackageValue("experimental/geo", "getGrid", generateGetGridFunc())
-	flux.RegisterPackageValue("experimental/geo", "getParent", generateGetParentFunc())
 	flux.RegisterPackageValue("experimental/geo", "getLevel", generateGetLevelFunc())
 	flux.RegisterPackageValue("experimental/geo", "containsLatLon", generateContainsLatLonFunc())
+	flux.RegisterPackageValue("experimental/geo", "s2CellIDToken", generateS2CellIDTokenFunc())
 }
 
 //
