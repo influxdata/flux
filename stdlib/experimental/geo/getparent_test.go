@@ -84,7 +84,7 @@ func TestS2CellIDToken_Process(t *testing.T) {
 
 	for _, tc := range testCases {
 		tc := tc
-		getGrid := geo.Functions["s2CellIDToken"]
+		s2CellIDToken := geo.Functions["s2CellIDToken"]
 		var owv values.Object
 		if tc.token != "" {
 			owv = values.NewObjectWithValues(map[string]values.Value{
@@ -100,7 +100,7 @@ func TestS2CellIDToken_Process(t *testing.T) {
 				"level": values.NewInt(tc.level),
 			})
 		}
-		result, err := getGrid.Call(context.Background(), owv)
+		result, err := s2CellIDToken.Call(context.Background(), owv)
 		if err != nil {
 			if !tc.wantErr {
 				t.Error(err.Error())
