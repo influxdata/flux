@@ -114,6 +114,7 @@ pub struct flux_buffer_t {
 /// could occur.
 #[no_mangle]
 pub unsafe extern "C" fn flux_parse(cstr: *mut c_char) -> Box<ast::Package> {
+    Box::leak(Box::new(5));
     let buf = CStr::from_ptr(cstr).to_bytes();
     let s = String::from_utf8(buf.to_vec()).unwrap();
     let mut p = Parser::new(&s);
