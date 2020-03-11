@@ -57,8 +57,8 @@ func TestGetLevel_Process(t *testing.T) {
 
 	for _, tc := range testCases {
 		tc := tc
-		getGrid := geo.Functions["getLevel"]
-		result, err := getGrid.Call(context.Background(),
+		getLevel := geo.Functions["getLevel"]
+		result, err := getLevel.Call(context.Background(),
 			values.NewObjectWithValues(map[string]values.Value{
 				"token": values.NewString(tc.token),
 			}),

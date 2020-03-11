@@ -11,11 +11,11 @@ builtin containsLatLon
 // Calculates grid (set of cell ID tokens) for given region and according to options.
 builtin getGrid
 
-// Finds parent cell ID token for given cell ID at specified level.
-builtin getParent
-
 // Returns level of specified cell ID token.
 builtin getLevel
+
+// Returns cell ID token for given cell or lat/lon point at specified level.
+builtin s2CellIDToken
 
 //
 // Flux
@@ -69,7 +69,7 @@ gridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel
         if _grid.level == _s2cellIDLevel then
           contains(value: r.s2_cell_id, set: _grid.set)
         else
-          contains(value: getParent(token: r.s2_cell_id, level: _grid.level), set: _grid.set)
+          contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)
       )
 }
 
@@ -119,7 +119,7 @@ groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {
       tables
         |> map(fn: (r) => ({
              r with
-               _s2_cell_id_xxx: getParent(point: {lat: r.lat, lon: r.lon}, level: level)
+               _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)
            }))
         |> rename(columns: { _s2_cell_id_xxx: newColumn })
   return
