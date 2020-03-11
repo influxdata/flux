@@ -19,10 +19,14 @@ export GO_GENERATE=go generate $(GO_ARGS)
 export GO_VET=env GO111MODULE=on go vet $(GO_ARGS)
 export CARGO=cargo
 export CARGO_ARGS=
+export VALGRIND=valgrind
+export VALGRIND_ARGS=--leak-check=full --error-exitcode=1
 
 define go_deps
 	$(shell env GO111MODULE=on go list -f "{{range .GoFiles}} {{$$.Dir}}/{{.}}{{end}}" $(1))
 endef
+
+LIBFLUX_MEMTEST_BIN=libflux/c/libflux_memory_tester
 
 default: build
 
@@ -79,6 +83,7 @@ build:
 clean:
 	rm -rf bin
 	cd libflux && $(CARGO) clean && rm -rf pkg
+	rm -f $(LIBFLUX_MEMTEST_BIN)
 
 cleangenerate:
 	rm -rf $(GENERATED_TARGETS)
@@ -132,6 +137,13 @@ libflux/scanner.c: libflux/src/flux/scanner/scanner.rl
 libflux-wasm:
 	cd libflux/src/flux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev
 
+test-valgrind: $(LIBFLUX_MEMTEST_BIN)
+	LD_LIBRARY_PATH=$(PWD)/libflux/target/debug $(VALGRIND) $(VALGRIND_ARGS) $^
+
+LIBFLUX_MEMTEST_SOURCES=libflux/c/*.c
+$(LIBFLUX_MEMTEST_BIN): libflux $(LIBFLUX_MEMTEST_SOURCES)
+	$(CC) -g -Wall -Werror $(LIBFLUX_MEMTEST_SOURCES) -I./libflux/include -L./libflux/target/debug -lflux -llibstd -o $@
+
 .PHONY: generate \
 	clean \
 	cleangenerate \
@@ -150,6 +162,7 @@ libflux-wasm:
 	test-rust \
 	test-race \
 	test-bench \
+	test-valgrind \
 	vet \
 	bench \
 	checkfmt \
