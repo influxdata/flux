@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/runtime"
@@ -277,6 +278,6 @@ func testRowPredicateFn_EvalRow(t *testing.T, scope compiler.Scope) {
 }
 
 func TestRowPredicateFn_EvalRow(t *testing.T) {
-	testRowPredicateFn_EvalRow(t, prelude())
+	testRowPredicateFn_EvalRow(t, compiler.NewScope())
 	testRowPredicateFn_EvalRow(t, compiler.ToScope(nil))
 }
