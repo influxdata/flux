@@ -15,11 +15,6 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-var pointT = semantic.NewObjectType([]semantic.PropertyType{
-	{Key: []byte("lat"), Value: semantic.BasicFloat},
-	{Key: []byte("lon"), Value: semantic.BasicFloat},
-})
-
 func generateGetGridFunc() values.Function {
 	getGridSignature := runtime.MustLookupBuiltinType("experimental/geo", "getGrid")
 	return values.NewFunction(
