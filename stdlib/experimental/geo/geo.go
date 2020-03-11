@@ -8,31 +8,23 @@ import (
 	"github.com/golang/geo/r1"
 	"github.com/golang/geo/s1"
 	"github.com/golang/geo/s2"
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
-var pointT = semantic.NewObjectPolyType(map[string]semantic.PolyType{
-	"lat": semantic.Float,
-	"lon": semantic.Float,
-}, nil, semantic.LabelSet{"lat", "lon"})
+var pointT = semantic.NewObjectType([]semantic.PropertyType{
+	{Key: []byte("lat"), Value: semantic.BasicFloat},
+	{Key: []byte("lon"), Value: semantic.BasicFloat},
+})
 
 func generateGetGridFunc() values.Function {
+	getGridSignature := runtime.MustLookupBuiltinType("experimental/geo", "getGrid")
 	return values.NewFunction(
 		"getGrid",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				"region":   semantic.Tvar(1),
-				"level":    semantic.Int,
-				"maxLevel": semantic.Int,
-				"minSize":  semantic.Int,
-				"maxSize":  semantic.Int,
-			},
-			Return: semantic.NewObjectPolyType(map[string]semantic.PolyType{"level": semantic.Int, "set": semantic.NewArrayPolyType(semantic.String)}, semantic.LabelSet{"level", "set"}, nil),
-		}),
+		getGridSignature,
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
 			regionArg, err := a.GetRequiredObject("region")
@@ -128,7 +120,7 @@ func generateGetGridFunc() values.Function {
 			}
 
 			levelVal := values.NewInt(-1)
-			setVal := values.NewArray(semantic.String)
+			setVal := values.NewArray(semantic.NewArrayType(semantic.BasicString))
 			if grid != nil {
 				levelVal = values.NewInt(int64(grid.getLevel()))
 				for _, hash := range grid.getSet() {
@@ -145,17 +137,10 @@ func generateGetGridFunc() values.Function {
 }
 
 func generateGetParentFunc() values.Function {
+	getParentSignature := runtime.MustLookupBuiltinType("experimental/geo", "getParent")
 	return values.NewFunction(
 		"getParent",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				"token": semantic.String,
-				"point": pointT,
-				"level": semantic.Int,
-			},
-			Required: semantic.LabelSet{"level"},
-			Return:   semantic.String,
-		}),
+		getParentSignature,
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
 
@@ -205,15 +190,10 @@ func generateGetParentFunc() values.Function {
 }
 
 func generateGetLevelFunc() values.Function {
+	getLevelSignature := runtime.MustLookupBuiltinType("experimental/geo", "getLevel")
 	return values.NewFunction(
 		"getLevel",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				"token": semantic.String,
-			},
-			Required: semantic.LabelSet{"token"},
-			Return:   semantic.Int,
-		}),
+		getLevelSignature,
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
 
@@ -229,17 +209,10 @@ func generateGetLevelFunc() values.Function {
 }
 
 func generateContainsLatLonFunc() values.Function {
+	containsLatLonSignature := runtime.MustLookupBuiltinType("experimental/geo", "containsLatLon")
 	return values.NewFunction(
 		"containsLatLon",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				"region": semantic.Tvar(1),
-				"lat":    semantic.Float,
-				"lon":    semantic.Float,
-			},
-			Required: semantic.LabelSet{"lat", "lon"},
-			Return:   semantic.Bool,
-		}),
+		containsLatLonSignature,
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
 			regionArg, err := a.GetRequiredObject("region")
@@ -310,10 +283,10 @@ func generateContainsLatLonFunc() values.Function {
 }
 
 func init() {
-	flux.RegisterPackageValue("experimental/geo", "getGrid", generateGetGridFunc())
-	flux.RegisterPackageValue("experimental/geo", "getParent", generateGetParentFunc())
-	flux.RegisterPackageValue("experimental/geo", "getLevel", generateGetLevelFunc())
-	flux.RegisterPackageValue("experimental/geo", "containsLatLon", generateContainsLatLonFunc())
+	runtime.RegisterPackageValue("experimental/geo", "getGrid", generateGetGridFunc())
+	runtime.RegisterPackageValue("experimental/geo", "getParent", generateGetParentFunc())
+	runtime.RegisterPackageValue("experimental/geo", "getLevel", generateGetLevelFunc())
+	runtime.RegisterPackageValue("experimental/geo", "containsLatLon", generateContainsLatLonFunc())
 }
 
 //

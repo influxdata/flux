@@ -11,6 +11,11 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
+var pointT = semantic.NewObjectType([]semantic.PropertyType{
+	{Key: []byte("lat"), Value: semantic.BasicFloat},
+	{Key: []byte("lon"), Value: semantic.BasicFloat},
+})
+
 func TestGetGrid_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
@@ -185,7 +190,7 @@ func TestGetGrid_Process(t *testing.T) {
 				"maxLevel": values.NewInt(int64(tc.maxLevel)),
 			})
 		} else if tc.polygon != nil {
-			array := values.NewArray(semantic.Object)
+			array := values.NewArray(semantic.NewArrayType(pointT))
 			for _, p := range *tc.polygon {
 				array.Append(values.NewObjectWithValues(map[string]values.Value{
 					"lat": values.NewFloat(p.lat),
@@ -216,7 +221,7 @@ func TestGetGrid_Process(t *testing.T) {
 //
 
 func gridToValue(level int, set []string) values.Value {
-	array := values.NewArray(semantic.String)
+	array := values.NewArray(semantic.NewArrayType(semantic.BasicString))
 	for _, s := range set {
 		array.Append(values.NewString(s))
 	}
