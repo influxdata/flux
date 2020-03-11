@@ -21,7 +21,7 @@ void test_ast() {
   printf("Testing AST functions...\n");
 
   printf("Parsing to AST\n");
-  struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("package foo\nx = 1 + 1");
+  struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + 1");
   assert(ast_pkg_foo !=  NULL);
 
   printf("Marshaling to JSON\n");
@@ -47,7 +47,7 @@ void test_semantic() {
 
   {
     printf("Parsing to AST\n");
-    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("package foo\nx = 1 + 1");
+    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + 1");
     assert(ast_pkg_foo !=  NULL);
 
     printf("Analyzing (expect success)\n");
@@ -67,7 +67,7 @@ void test_semantic() {
 
   {
     printf("Parsing to AST\n");
-    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("package foo\nx = 1 + 1.0");
+    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + 1.0");
     assert(ast_pkg_foo !=  NULL);
 
     printf("Analyzing (expect failure)\n");
@@ -94,7 +94,7 @@ void test_semantic_analyzer() {
   struct flux_error_t *err = NULL;
 
   printf("Parsing and analyzing \"x = 10\"\n");
-  ast_pkg = flux_parse("x = 10");
+  ast_pkg = flux_parse("test", "x = 10");
   assert(ast_pkg != NULL);
   err = flux_analyze_with(analyzer, ast_pkg, &sem_pkg);
   assert(err == NULL);
@@ -102,7 +102,7 @@ void test_semantic_analyzer() {
   flux_free_semantic_pkg(sem_pkg);
 
   printf("Parsing and analyzing \"y = x * x\"\n");
-  ast_pkg = flux_parse("y = x * x");
+  ast_pkg = flux_parse("test", "y = x * x");
   assert(ast_pkg != NULL);
   sem_pkg = NULL;
   err = flux_analyze_with(analyzer, ast_pkg, &sem_pkg);
@@ -111,7 +111,7 @@ void test_semantic_analyzer() {
   flux_free_semantic_pkg(sem_pkg);
 
   printf("Parsing and analyzing \"z = a + y\" (expect failure)\n");
-  ast_pkg = flux_parse("z = a + y");
+  ast_pkg = flux_parse("test", "z = a + y");
   assert(ast_pkg != NULL);
   sem_pkg = NULL;
   err = flux_analyze_with(analyzer, ast_pkg, &sem_pkg);
