@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 19,
 					Line:   5,
 				},
-				File:   "",
+				File:   "testutil.flux",
 				Source: "package testutil\n\nbuiltin fail\nbuiltin yield\nbuiltin makeRecord",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   3,
 					},
-					File:   "",
+					File:   "testutil.flux",
 					Source: "builtin fail",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   3,
 						},
-						File:   "",
+						File:   "testutil.flux",
 						Source: "fail",
 						Start: ast.Position{
 							Column: 9,
@@ -74,7 +74,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   4,
 					},
-					File:   "",
+					File:   "testutil.flux",
 					Source: "builtin yield",
 					Start: ast.Position{
 						Column: 1,
@@ -90,7 +90,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   4,
 						},
-						File:   "",
+						File:   "testutil.flux",
 						Source: "yield",
 						Start: ast.Position{
 							Column: 9,
@@ -108,7 +108,7 @@ var pkgAST = &ast.Package{
 						Column: 19,
 						Line:   5,
 					},
-					File:   "",
+					File:   "testutil.flux",
 					Source: "builtin makeRecord",
 					Start: ast.Position{
 						Column: 1,
@@ -124,7 +124,7 @@ var pkgAST = &ast.Package{
 							Column: 19,
 							Line:   5,
 						},
-						File:   "",
+						File:   "testutil.flux",
 						Source: "makeRecord",
 						Start: ast.Position{
 							Column: 9,
@@ -146,7 +146,7 @@ var pkgAST = &ast.Package{
 						Column: 17,
 						Line:   1,
 					},
-					File:   "",
+					File:   "testutil.flux",
 					Source: "package testutil",
 					Start: ast.Position{
 						Column: 1,
@@ -162,7 +162,7 @@ var pkgAST = &ast.Package{
 							Column: 17,
 							Line:   1,
 						},
-						File:   "",
+						File:   "testutil.flux",
 						Source: "testutil",
 						Start: ast.Position{
 							Column: 9,

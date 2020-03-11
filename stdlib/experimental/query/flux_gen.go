@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 32,
 					Line:   26,
 				},
-				File:   "",
+				File:   "from.flux",
 				Source: "package query\n\nfromRange = (bucket, start, stop=now()) =>\n    from(bucket: bucket)\n        |> range(start: start, stop: stop)\n\nfilterMeasurement = (table=<-, measurement) => table |> filter(fn: (r) => r._measurement == measurement)\n\nfilterFields = (table=<-, fields=[]) =>\n    if length(arr: fields) == 0 then\n        table\n    else\n        table |> filter(fn: (r) => contains(value: r._field, set: fields))\n\ninBucket = (\n    bucket,\n    measurement,\n    start,\n    stop=now(),\n    fields=[],\n    predicate=(r) => true\n) =>\n    fromRange(bucket: bucket, start: start, stop: stop)\n        |> filterMeasurement(measurement)\n        |> filter(fn: predicate)\n        |> filterFields(fields)",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 43,
 						Line:   5,
 					},
-					File:   "",
+					File:   "from.flux",
 					Source: "fromRange = (bucket, start, stop=now()) =>\n    from(bucket: bucket)\n        |> range(start: start, stop: stop)",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 10,
 							Line:   3,
 						},
-						File:   "",
+						File:   "from.flux",
 						Source: "fromRange",
 						Start: ast.Position{
 							Column: 1,
@@ -74,7 +74,7 @@ var pkgAST = &ast.Package{
 							Column: 43,
 							Line:   5,
 						},
-						File:   "",
+						File:   "from.flux",
 						Source: "(bucket, start, stop=now()) =>\n    from(bucket: bucket)\n        |> range(start: start, stop: stop)",
 						Start: ast.Position{
 							Column: 13,
@@ -92,7 +92,7 @@ var pkgAST = &ast.Package{
 										Column: 24,
 										Line:   4,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "bucket: bucket",
 									Start: ast.Position{
 										Column: 10,
@@ -108,7 +108,7 @@ var pkgAST = &ast.Package{
 											Column: 24,
 											Line:   4,
 										},
-										File:   "",
+										File:   "from.flux",
 										Source: "bucket: bucket",
 										Start: ast.Position{
 											Column: 10,
@@ -124,7 +124,7 @@ var pkgAST = &ast.Package{
 												Column: 16,
 												Line:   4,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "bucket",
 											Start: ast.Position{
 												Column: 10,
@@ -142,7 +142,7 @@ var pkgAST = &ast.Package{
 												Column: 24,
 												Line:   4,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "bucket",
 											Start: ast.Position{
 												Column: 18,
@@ -162,7 +162,7 @@ var pkgAST = &ast.Package{
 									Column: 25,
 									Line:   4,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "from(bucket: bucket)",
 								Start: ast.Position{
 									Column: 5,
@@ -178,7 +178,7 @@ var pkgAST = &ast.Package{
 										Column: 9,
 										Line:   4,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "from",
 									Start: ast.Position{
 										Column: 5,
@@ -196,7 +196,7 @@ var pkgAST = &ast.Package{
 								Column: 43,
 								Line:   5,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "from(bucket: bucket)\n        |> range(start: start, stop: stop)",
 							Start: ast.Position{
 								Column: 5,
@@ -213,7 +213,7 @@ var pkgAST = &ast.Package{
 										Column: 42,
 										Line:   5,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "start: start, stop: stop",
 									Start: ast.Position{
 										Column: 18,
@@ -229,7 +229,7 @@ var pkgAST = &ast.Package{
 											Column: 30,
 											Line:   5,
 										},
-										File:   "",
+										File:   "from.flux",
 										Source: "start: start",
 										Start: ast.Position{
 											Column: 18,
@@ -245,7 +245,7 @@ var pkgAST = &ast.Package{
 												Column: 23,
 												Line:   5,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "start",
 											Start: ast.Position{
 												Column: 18,
@@ -263,7 +263,7 @@ var pkgAST = &ast.Package{
 												Column: 30,
 												Line:   5,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "start",
 											Start: ast.Position{
 												Column: 25,
@@ -281,7 +281,7 @@ var pkgAST = &ast.Package{
 											Column: 42,
 											Line:   5,
 										},
-										File:   "",
+										File:   "from.flux",
 										Source: "stop: stop",
 										Start: ast.Position{
 											Column: 32,
@@ -297,7 +297,7 @@ var pkgAST = &ast.Package{
 												Column: 36,
 												Line:   5,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "stop",
 											Start: ast.Position{
 												Column: 32,
@@ -315,7 +315,7 @@ var pkgAST = &ast.Package{
 												Column: 42,
 												Line:   5,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "stop",
 											Start: ast.Position{
 												Column: 38,
@@ -335,7 +335,7 @@ var pkgAST = &ast.Package{
 									Column: 43,
 									Line:   5,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "range(start: start, stop: stop)",
 								Start: ast.Position{
 									Column: 12,
@@ -351,7 +351,7 @@ var pkgAST = &ast.Package{
 										Column: 17,
 										Line:   5,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "range",
 									Start: ast.Position{
 										Column: 12,
@@ -371,7 +371,7 @@ var pkgAST = &ast.Package{
 								Column: 20,
 								Line:   3,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "bucket",
 							Start: ast.Position{
 								Column: 14,
@@ -387,7 +387,7 @@ var pkgAST = &ast.Package{
 									Column: 20,
 									Line:   3,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "bucket",
 								Start: ast.Position{
 									Column: 14,
@@ -406,7 +406,7 @@ var pkgAST = &ast.Package{
 								Column: 27,
 								Line:   3,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "start",
 							Start: ast.Position{
 								Column: 22,
@@ -422,7 +422,7 @@ var pkgAST = &ast.Package{
 									Column: 27,
 									Line:   3,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "start",
 								Start: ast.Position{
 									Column: 22,
@@ -441,7 +441,7 @@ var pkgAST = &ast.Package{
 								Column: 39,
 								Line:   3,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "stop=now()",
 							Start: ast.Position{
 								Column: 29,
@@ -457,7 +457,7 @@ var pkgAST = &ast.Package{
 									Column: 33,
 									Line:   3,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "stop",
 								Start: ast.Position{
 									Column: 29,
@@ -476,7 +476,7 @@ var pkgAST = &ast.Package{
 									Column: 39,
 									Line:   3,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "now()",
 								Start: ast.Position{
 									Column: 34,
@@ -492,7 +492,7 @@ var pkgAST = &ast.Package{
 										Column: 37,
 										Line:   3,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "now",
 									Start: ast.Position{
 										Column: 34,
@@ -513,7 +513,7 @@ var pkgAST = &ast.Package{
 						Column: 105,
 						Line:   7,
 					},
-					File:   "",
+					File:   "from.flux",
 					Source: "filterMeasurement = (table=<-, measurement) => table |> filter(fn: (r) => r._measurement == measurement)",
 					Start: ast.Position{
 						Column: 1,
@@ -529,7 +529,7 @@ var pkgAST = &ast.Package{
 							Column: 18,
 							Line:   7,
 						},
-						File:   "",
+						File:   "from.flux",
 						Source: "filterMeasurement",
 						Start: ast.Position{
 							Column: 1,
@@ -547,7 +547,7 @@ var pkgAST = &ast.Package{
 							Column: 105,
 							Line:   7,
 						},
-						File:   "",
+						File:   "from.flux",
 						Source: "(table=<-, measurement) => table |> filter(fn: (r) => r._measurement == measurement)",
 						Start: ast.Position{
 							Column: 21,
@@ -564,7 +564,7 @@ var pkgAST = &ast.Package{
 									Column: 53,
 									Line:   7,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 48,
@@ -581,7 +581,7 @@ var pkgAST = &ast.Package{
 								Column: 105,
 								Line:   7,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "table |> filter(fn: (r) => r._measurement == measurement)",
 							Start: ast.Position{
 								Column: 48,
@@ -598,7 +598,7 @@ var pkgAST = &ast.Package{
 										Column: 104,
 										Line:   7,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "fn: (r) => r._measurement == measurement",
 									Start: ast.Position{
 										Column: 64,
@@ -614,7 +614,7 @@ var pkgAST = &ast.Package{
 											Column: 104,
 											Line:   7,
 										},
-										File:   "",
+										File:   "from.flux",
 										Source: "fn: (r) => r._measurement == measurement",
 										Start: ast.Position{
 											Column: 64,
@@ -630,7 +630,7 @@ var pkgAST = &ast.Package{
 												Column: 66,
 												Line:   7,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 64,
@@ -648,7 +648,7 @@ var pkgAST = &ast.Package{
 												Column: 104,
 												Line:   7,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "(r) => r._measurement == measurement",
 											Start: ast.Position{
 												Column: 68,
@@ -664,7 +664,7 @@ var pkgAST = &ast.Package{
 													Column: 104,
 													Line:   7,
 												},
-												File:   "",
+												File:   "from.flux",
 												Source: "r._measurement == measurement",
 												Start: ast.Position{
 													Column: 75,
@@ -680,7 +680,7 @@ var pkgAST = &ast.Package{
 														Column: 89,
 														Line:   7,
 													},
-													File:   "",
+													File:   "from.flux",
 													Source: "r._measurement",
 													Start: ast.Position{
 														Column: 75,
@@ -696,7 +696,7 @@ var pkgAST = &ast.Package{
 															Column: 76,
 															Line:   7,
 														},
-														File:   "",
+														File:   "from.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 75,
@@ -714,7 +714,7 @@ var pkgAST = &ast.Package{
 															Column: 89,
 															Line:   7,
 														},
-														File:   "",
+														File:   "from.flux",
 														Source: "_measurement",
 														Start: ast.Position{
 															Column: 77,
@@ -734,7 +734,7 @@ var pkgAST = &ast.Package{
 														Column: 104,
 														Line:   7,
 													},
-													File:   "",
+													File:   "from.flux",
 													Source: "measurement",
 													Start: ast.Position{
 														Column: 93,
@@ -753,7 +753,7 @@ var pkgAST = &ast.Package{
 													Column: 70,
 													Line:   7,
 												},
-												File:   "",
+												File:   "from.flux",
 												Source: "r",
 												Start: ast.Position{
 													Column: 69,
@@ -769,7 +769,7 @@ var pkgAST = &ast.Package{
 														Column: 70,
 														Line:   7,
 													},
-													File:   "",
+													File:   "from.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 69,
@@ -792,7 +792,7 @@ var pkgAST = &ast.Package{
 									Column: 105,
 									Line:   7,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "filter(fn: (r) => r._measurement == measurement)",
 								Start: ast.Position{
 									Column: 57,
@@ -808,7 +808,7 @@ var pkgAST = &ast.Package{
 										Column: 63,
 										Line:   7,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "filter",
 									Start: ast.Position{
 										Column: 57,
@@ -828,7 +828,7 @@ var pkgAST = &ast.Package{
 								Column: 30,
 								Line:   7,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 22,
@@ -844,7 +844,7 @@ var pkgAST = &ast.Package{
 									Column: 27,
 									Line:   7,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 22,
@@ -861,7 +861,7 @@ var pkgAST = &ast.Package{
 								Column: 30,
 								Line:   7,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 28,
@@ -877,7 +877,7 @@ var pkgAST = &ast.Package{
 								Column: 43,
 								Line:   7,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "measurement",
 							Start: ast.Position{
 								Column: 32,
@@ -893,7 +893,7 @@ var pkgAST = &ast.Package{
 									Column: 43,
 									Line:   7,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "measurement",
 								Start: ast.Position{
 									Column: 32,
@@ -914,7 +914,7 @@ var pkgAST = &ast.Package{
 						Column: 75,
 						Line:   13,
 					},
-					File:   "",
+					File:   "from.flux",
 					Source: "filterFields = (table=<-, fields=[]) =>\n    if length(arr: fields) == 0 then\n        table\n    else\n        table |> filter(fn: (r) => contains(value: r._field, set: fields))",
 					Start: ast.Position{
 						Column: 1,
@@ -930,7 +930,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   9,
 						},
-						File:   "",
+						File:   "from.flux",
 						Source: "filterFields",
 						Start: ast.Position{
 							Column: 1,
@@ -948,7 +948,7 @@ var pkgAST = &ast.Package{
 							Column: 75,
 							Line:   13,
 						},
-						File:   "",
+						File:   "from.flux",
 						Source: "(table=<-, fields=[]) =>\n    if length(arr: fields) == 0 then\n        table\n    else\n        table |> filter(fn: (r) => contains(value: r._field, set: fields))",
 						Start: ast.Position{
 							Column: 16,
@@ -966,7 +966,7 @@ var pkgAST = &ast.Package{
 										Column: 14,
 										Line:   13,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "table",
 									Start: ast.Position{
 										Column: 9,
@@ -983,7 +983,7 @@ var pkgAST = &ast.Package{
 									Column: 75,
 									Line:   13,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "table |> filter(fn: (r) => contains(value: r._field, set: fields))",
 								Start: ast.Position{
 									Column: 9,
@@ -1000,7 +1000,7 @@ var pkgAST = &ast.Package{
 											Column: 74,
 											Line:   13,
 										},
-										File:   "",
+										File:   "from.flux",
 										Source: "fn: (r) => contains(value: r._field, set: fields)",
 										Start: ast.Position{
 											Column: 25,
@@ -1016,7 +1016,7 @@ var pkgAST = &ast.Package{
 												Column: 74,
 												Line:   13,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "fn: (r) => contains(value: r._field, set: fields)",
 											Start: ast.Position{
 												Column: 25,
@@ -1032,7 +1032,7 @@ var pkgAST = &ast.Package{
 													Column: 27,
 													Line:   13,
 												},
-												File:   "",
+												File:   "from.flux",
 												Source: "fn",
 												Start: ast.Position{
 													Column: 25,
@@ -1050,7 +1050,7 @@ var pkgAST = &ast.Package{
 													Column: 74,
 													Line:   13,
 												},
-												File:   "",
+												File:   "from.flux",
 												Source: "(r) => contains(value: r._field, set: fields)",
 												Start: ast.Position{
 													Column: 29,
@@ -1067,7 +1067,7 @@ var pkgAST = &ast.Package{
 															Column: 73,
 															Line:   13,
 														},
-														File:   "",
+														File:   "from.flux",
 														Source: "value: r._field, set: fields",
 														Start: ast.Position{
 															Column: 45,
@@ -1083,7 +1083,7 @@ var pkgAST = &ast.Package{
 																Column: 60,
 																Line:   13,
 															},
-															File:   "",
+															File:   "from.flux",
 															Source: "value: r._field",
 															Start: ast.Position{
 																Column: 45,
@@ -1099,7 +1099,7 @@ var pkgAST = &ast.Package{
 																	Column: 50,
 																	Line:   13,
 																},
-																File:   "",
+																File:   "from.flux",
 																Source: "value",
 																Start: ast.Position{
 																	Column: 45,
@@ -1117,7 +1117,7 @@ var pkgAST = &ast.Package{
 																	Column: 60,
 																	Line:   13,
 																},
-																File:   "",
+																File:   "from.flux",
 																Source: "r._field",
 																Start: ast.Position{
 																	Column: 52,
@@ -1133,7 +1133,7 @@ var pkgAST = &ast.Package{
 																		Column: 53,
 																		Line:   13,
 																	},
-																	File:   "",
+																	File:   "from.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 52,
@@ -1151,7 +1151,7 @@ var pkgAST = &ast.Package{
 																		Column: 60,
 																		Line:   13,
 																	},
-																	File:   "",
+																	File:   "from.flux",
 																	Source: "_field",
 																	Start: ast.Position{
 																		Column: 54,
@@ -1170,7 +1170,7 @@ var pkgAST = &ast.Package{
 																Column: 73,
 																Line:   13,
 															},
-															File:   "",
+															File:   "from.flux",
 															Source: "set: fields",
 															Start: ast.Position{
 																Column: 62,
@@ -1186,7 +1186,7 @@ var pkgAST = &ast.Package{
 																	Column: 65,
 																	Line:   13,
 																},
-																File:   "",
+																File:   "from.flux",
 																Source: "set",
 																Start: ast.Position{
 																	Column: 62,
@@ -1204,7 +1204,7 @@ var pkgAST = &ast.Package{
 																	Column: 73,
 																	Line:   13,
 																},
-																File:   "",
+																File:   "from.flux",
 																Source: "fields",
 																Start: ast.Position{
 																	Column: 67,
@@ -1224,7 +1224,7 @@ var pkgAST = &ast.Package{
 														Column: 74,
 														Line:   13,
 													},
-													File:   "",
+													File:   "from.flux",
 													Source: "contains(value: r._field, set: fields)",
 													Start: ast.Position{
 														Column: 36,
@@ -1240,7 +1240,7 @@ var pkgAST = &ast.Package{
 															Column: 44,
 															Line:   13,
 														},
-														File:   "",
+														File:   "from.flux",
 														Source: "contains",
 														Start: ast.Position{
 															Column: 36,
@@ -1259,7 +1259,7 @@ var pkgAST = &ast.Package{
 														Column: 31,
 														Line:   13,
 													},
-													File:   "",
+													File:   "from.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 30,
@@ -1275,7 +1275,7 @@ var pkgAST = &ast.Package{
 															Column: 31,
 															Line:   13,
 														},
-														File:   "",
+														File:   "from.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 30,
@@ -1298,7 +1298,7 @@ var pkgAST = &ast.Package{
 										Column: 75,
 										Line:   13,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "filter(fn: (r) => contains(value: r._field, set: fields))",
 									Start: ast.Position{
 										Column: 18,
@@ -1314,7 +1314,7 @@ var pkgAST = &ast.Package{
 											Column: 24,
 											Line:   13,
 										},
-										File:   "",
+										File:   "from.flux",
 										Source: "filter",
 										Start: ast.Position{
 											Column: 18,
@@ -1333,7 +1333,7 @@ var pkgAST = &ast.Package{
 								Column: 75,
 								Line:   13,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "if length(arr: fields) == 0 then\n        table\n    else\n        table |> filter(fn: (r) => contains(value: r._field, set: fields))",
 							Start: ast.Position{
 								Column: 5,
@@ -1349,7 +1349,7 @@ var pkgAST = &ast.Package{
 									Column: 14,
 									Line:   11,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 9,
@@ -1367,7 +1367,7 @@ var pkgAST = &ast.Package{
 									Column: 32,
 									Line:   10,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "length(arr: fields) == 0",
 								Start: ast.Position{
 									Column: 8,
@@ -1384,7 +1384,7 @@ var pkgAST = &ast.Package{
 											Column: 26,
 											Line:   10,
 										},
-										File:   "",
+										File:   "from.flux",
 										Source: "arr: fields",
 										Start: ast.Position{
 											Column: 15,
@@ -1400,7 +1400,7 @@ var pkgAST = &ast.Package{
 												Column: 26,
 												Line:   10,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "arr: fields",
 											Start: ast.Position{
 												Column: 15,
@@ -1416,7 +1416,7 @@ var pkgAST = &ast.Package{
 													Column: 18,
 													Line:   10,
 												},
-												File:   "",
+												File:   "from.flux",
 												Source: "arr",
 												Start: ast.Position{
 													Column: 15,
@@ -1434,7 +1434,7 @@ var pkgAST = &ast.Package{
 													Column: 26,
 													Line:   10,
 												},
-												File:   "",
+												File:   "from.flux",
 												Source: "fields",
 												Start: ast.Position{
 													Column: 20,
@@ -1454,7 +1454,7 @@ var pkgAST = &ast.Package{
 										Column: 27,
 										Line:   10,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "length(arr: fields)",
 									Start: ast.Position{
 										Column: 8,
@@ -1470,7 +1470,7 @@ var pkgAST = &ast.Package{
 											Column: 14,
 											Line:   10,
 										},
-										File:   "",
+										File:   "from.flux",
 										Source: "length",
 										Start: ast.Position{
 											Column: 8,
@@ -1490,7 +1490,7 @@ var pkgAST = &ast.Package{
 										Column: 32,
 										Line:   10,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "0",
 									Start: ast.Position{
 										Column: 31,
@@ -1510,7 +1510,7 @@ var pkgAST = &ast.Package{
 								Column: 25,
 								Line:   9,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 17,
@@ -1526,7 +1526,7 @@ var pkgAST = &ast.Package{
 									Column: 22,
 									Line:   9,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 17,
@@ -1543,7 +1543,7 @@ var pkgAST = &ast.Package{
 								Column: 25,
 								Line:   9,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 23,
@@ -1559,7 +1559,7 @@ var pkgAST = &ast.Package{
 								Column: 36,
 								Line:   9,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "fields=[]",
 							Start: ast.Position{
 								Column: 27,
@@ -1575,7 +1575,7 @@ var pkgAST = &ast.Package{
 									Column: 33,
 									Line:   9,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "fields",
 								Start: ast.Position{
 									Column: 27,
@@ -1593,7 +1593,7 @@ var pkgAST = &ast.Package{
 									Column: 36,
 									Line:   9,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "[]",
 								Start: ast.Position{
 									Column: 34,
@@ -1613,7 +1613,7 @@ var pkgAST = &ast.Package{
 						Column: 32,
 						Line:   26,
 					},
-					File:   "",
+					File:   "from.flux",
 					Source: "inBucket = (\n    bucket,\n    measurement,\n    start,\n    stop=now(),\n    fields=[],\n    predicate=(r) => true\n) =>\n    fromRange(bucket: bucket, start: start, stop: stop)\n        |> filterMeasurement(measurement)\n        |> filter(fn: predicate)\n        |> filterFields(fields)",
 					Start: ast.Position{
 						Column: 1,
@@ -1629,7 +1629,7 @@ var pkgAST = &ast.Package{
 							Column: 9,
 							Line:   15,
 						},
-						File:   "",
+						File:   "from.flux",
 						Source: "inBucket",
 						Start: ast.Position{
 							Column: 1,
@@ -1647,7 +1647,7 @@ var pkgAST = &ast.Package{
 							Column: 32,
 							Line:   26,
 						},
-						File:   "",
+						File:   "from.flux",
 						Source: "(\n    bucket,\n    measurement,\n    start,\n    stop=now(),\n    fields=[],\n    predicate=(r) => true\n) =>\n    fromRange(bucket: bucket, start: start, stop: stop)\n        |> filterMeasurement(measurement)\n        |> filter(fn: predicate)\n        |> filterFields(fields)",
 						Start: ast.Position{
 							Column: 12,
@@ -1667,7 +1667,7 @@ var pkgAST = &ast.Package{
 												Column: 55,
 												Line:   23,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "bucket: bucket, start: start, stop: stop",
 											Start: ast.Position{
 												Column: 15,
@@ -1683,7 +1683,7 @@ var pkgAST = &ast.Package{
 													Column: 29,
 													Line:   23,
 												},
-												File:   "",
+												File:   "from.flux",
 												Source: "bucket: bucket",
 												Start: ast.Position{
 													Column: 15,
@@ -1699,7 +1699,7 @@ var pkgAST = &ast.Package{
 														Column: 21,
 														Line:   23,
 													},
-													File:   "",
+													File:   "from.flux",
 													Source: "bucket",
 													Start: ast.Position{
 														Column: 15,
@@ -1717,7 +1717,7 @@ var pkgAST = &ast.Package{
 														Column: 29,
 														Line:   23,
 													},
-													File:   "",
+													File:   "from.flux",
 													Source: "bucket",
 													Start: ast.Position{
 														Column: 23,
@@ -1735,7 +1735,7 @@ var pkgAST = &ast.Package{
 													Column: 43,
 													Line:   23,
 												},
-												File:   "",
+												File:   "from.flux",
 												Source: "start: start",
 												Start: ast.Position{
 													Column: 31,
@@ -1751,7 +1751,7 @@ var pkgAST = &ast.Package{
 														Column: 36,
 														Line:   23,
 													},
-													File:   "",
+													File:   "from.flux",
 													Source: "start",
 													Start: ast.Position{
 														Column: 31,
@@ -1769,7 +1769,7 @@ var pkgAST = &ast.Package{
 														Column: 43,
 														Line:   23,
 													},
-													File:   "",
+													File:   "from.flux",
 													Source: "start",
 													Start: ast.Position{
 														Column: 38,
@@ -1787,7 +1787,7 @@ var pkgAST = &ast.Package{
 													Column: 55,
 													Line:   23,
 												},
-												File:   "",
+												File:   "from.flux",
 												Source: "stop: stop",
 												Start: ast.Position{
 													Column: 45,
@@ -1803,7 +1803,7 @@ var pkgAST = &ast.Package{
 														Column: 49,
 														Line:   23,
 													},
-													File:   "",
+													File:   "from.flux",
 													Source: "stop",
 													Start: ast.Position{
 														Column: 45,
@@ -1821,7 +1821,7 @@ var pkgAST = &ast.Package{
 														Column: 55,
 														Line:   23,
 													},
-													File:   "",
+													File:   "from.flux",
 													Source: "stop",
 													Start: ast.Position{
 														Column: 51,
@@ -1841,7 +1841,7 @@ var pkgAST = &ast.Package{
 											Column: 56,
 											Line:   23,
 										},
-										File:   "",
+										File:   "from.flux",
 										Source: "fromRange(bucket: bucket, start: start, stop: stop)",
 										Start: ast.Position{
 											Column: 5,
@@ -1857,7 +1857,7 @@ var pkgAST = &ast.Package{
 												Column: 14,
 												Line:   23,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "fromRange",
 											Start: ast.Position{
 												Column: 5,
@@ -1875,7 +1875,7 @@ var pkgAST = &ast.Package{
 										Column: 42,
 										Line:   24,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "fromRange(bucket: bucket, start: start, stop: stop)\n        |> filterMeasurement(measurement)",
 									Start: ast.Position{
 										Column: 5,
@@ -1892,7 +1892,7 @@ var pkgAST = &ast.Package{
 												Column: 41,
 												Line:   24,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "measurement",
 											Start: ast.Position{
 												Column: 30,
@@ -1908,7 +1908,7 @@ var pkgAST = &ast.Package{
 													Column: 41,
 													Line:   24,
 												},
-												File:   "",
+												File:   "from.flux",
 												Source: "measurement",
 												Start: ast.Position{
 													Column: 30,
@@ -1924,7 +1924,7 @@ var pkgAST = &ast.Package{
 														Column: 41,
 														Line:   24,
 													},
-													File:   "",
+													File:   "from.flux",
 													Source: "measurement",
 													Start: ast.Position{
 														Column: 30,
@@ -1945,7 +1945,7 @@ var pkgAST = &ast.Package{
 											Column: 42,
 											Line:   24,
 										},
-										File:   "",
+										File:   "from.flux",
 										Source: "filterMeasurement(measurement)",
 										Start: ast.Position{
 											Column: 12,
@@ -1961,7 +1961,7 @@ var pkgAST = &ast.Package{
 												Column: 29,
 												Line:   24,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "filterMeasurement",
 											Start: ast.Position{
 												Column: 12,
@@ -1980,7 +1980,7 @@ var pkgAST = &ast.Package{
 									Column: 33,
 									Line:   25,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "fromRange(bucket: bucket, start: start, stop: stop)\n        |> filterMeasurement(measurement)\n        |> filter(fn: predicate)",
 								Start: ast.Position{
 									Column: 5,
@@ -1997,7 +1997,7 @@ var pkgAST = &ast.Package{
 											Column: 32,
 											Line:   25,
 										},
-										File:   "",
+										File:   "from.flux",
 										Source: "fn: predicate",
 										Start: ast.Position{
 											Column: 19,
@@ -2013,7 +2013,7 @@ var pkgAST = &ast.Package{
 												Column: 32,
 												Line:   25,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "fn: predicate",
 											Start: ast.Position{
 												Column: 19,
@@ -2029,7 +2029,7 @@ var pkgAST = &ast.Package{
 													Column: 21,
 													Line:   25,
 												},
-												File:   "",
+												File:   "from.flux",
 												Source: "fn",
 												Start: ast.Position{
 													Column: 19,
@@ -2047,7 +2047,7 @@ var pkgAST = &ast.Package{
 													Column: 32,
 													Line:   25,
 												},
-												File:   "",
+												File:   "from.flux",
 												Source: "predicate",
 												Start: ast.Position{
 													Column: 23,
@@ -2067,7 +2067,7 @@ var pkgAST = &ast.Package{
 										Column: 33,
 										Line:   25,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "filter(fn: predicate)",
 									Start: ast.Position{
 										Column: 12,
@@ -2083,7 +2083,7 @@ var pkgAST = &ast.Package{
 											Column: 18,
 											Line:   25,
 										},
-										File:   "",
+										File:   "from.flux",
 										Source: "filter",
 										Start: ast.Position{
 											Column: 12,
@@ -2102,7 +2102,7 @@ var pkgAST = &ast.Package{
 								Column: 32,
 								Line:   26,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "fromRange(bucket: bucket, start: start, stop: stop)\n        |> filterMeasurement(measurement)\n        |> filter(fn: predicate)\n        |> filterFields(fields)",
 							Start: ast.Position{
 								Column: 5,
@@ -2119,7 +2119,7 @@ var pkgAST = &ast.Package{
 										Column: 31,
 										Line:   26,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "fields",
 									Start: ast.Position{
 										Column: 25,
@@ -2135,7 +2135,7 @@ var pkgAST = &ast.Package{
 											Column: 31,
 											Line:   26,
 										},
-										File:   "",
+										File:   "from.flux",
 										Source: "fields",
 										Start: ast.Position{
 											Column: 25,
@@ -2151,7 +2151,7 @@ var pkgAST = &ast.Package{
 												Column: 31,
 												Line:   26,
 											},
-											File:   "",
+											File:   "from.flux",
 											Source: "fields",
 											Start: ast.Position{
 												Column: 25,
@@ -2172,7 +2172,7 @@ var pkgAST = &ast.Package{
 									Column: 32,
 									Line:   26,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "filterFields(fields)",
 								Start: ast.Position{
 									Column: 12,
@@ -2188,7 +2188,7 @@ var pkgAST = &ast.Package{
 										Column: 24,
 										Line:   26,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "filterFields",
 									Start: ast.Position{
 										Column: 12,
@@ -2208,7 +2208,7 @@ var pkgAST = &ast.Package{
 								Column: 11,
 								Line:   16,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "bucket",
 							Start: ast.Position{
 								Column: 5,
@@ -2224,7 +2224,7 @@ var pkgAST = &ast.Package{
 									Column: 11,
 									Line:   16,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "bucket",
 								Start: ast.Position{
 									Column: 5,
@@ -2243,7 +2243,7 @@ var pkgAST = &ast.Package{
 								Column: 16,
 								Line:   17,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "measurement",
 							Start: ast.Position{
 								Column: 5,
@@ -2259,7 +2259,7 @@ var pkgAST = &ast.Package{
 									Column: 16,
 									Line:   17,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "measurement",
 								Start: ast.Position{
 									Column: 5,
@@ -2278,7 +2278,7 @@ var pkgAST = &ast.Package{
 								Column: 10,
 								Line:   18,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "start",
 							Start: ast.Position{
 								Column: 5,
@@ -2294,7 +2294,7 @@ var pkgAST = &ast.Package{
 									Column: 10,
 									Line:   18,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "start",
 								Start: ast.Position{
 									Column: 5,
@@ -2313,7 +2313,7 @@ var pkgAST = &ast.Package{
 								Column: 15,
 								Line:   19,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "stop=now()",
 							Start: ast.Position{
 								Column: 5,
@@ -2329,7 +2329,7 @@ var pkgAST = &ast.Package{
 									Column: 9,
 									Line:   19,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "stop",
 								Start: ast.Position{
 									Column: 5,
@@ -2348,7 +2348,7 @@ var pkgAST = &ast.Package{
 									Column: 15,
 									Line:   19,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "now()",
 								Start: ast.Position{
 									Column: 10,
@@ -2364,7 +2364,7 @@ var pkgAST = &ast.Package{
 										Column: 13,
 										Line:   19,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "now",
 									Start: ast.Position{
 										Column: 10,
@@ -2383,7 +2383,7 @@ var pkgAST = &ast.Package{
 								Column: 14,
 								Line:   20,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "fields=[]",
 							Start: ast.Position{
 								Column: 5,
@@ -2399,7 +2399,7 @@ var pkgAST = &ast.Package{
 									Column: 11,
 									Line:   20,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "fields",
 								Start: ast.Position{
 									Column: 5,
@@ -2417,7 +2417,7 @@ var pkgAST = &ast.Package{
 									Column: 14,
 									Line:   20,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "[]",
 								Start: ast.Position{
 									Column: 12,
@@ -2435,7 +2435,7 @@ var pkgAST = &ast.Package{
 								Column: 26,
 								Line:   21,
 							},
-							File:   "",
+							File:   "from.flux",
 							Source: "predicate=(r) => true",
 							Start: ast.Position{
 								Column: 5,
@@ -2451,7 +2451,7 @@ var pkgAST = &ast.Package{
 									Column: 14,
 									Line:   21,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "predicate",
 								Start: ast.Position{
 									Column: 5,
@@ -2469,7 +2469,7 @@ var pkgAST = &ast.Package{
 									Column: 26,
 									Line:   21,
 								},
-								File:   "",
+								File:   "from.flux",
 								Source: "(r) => true",
 								Start: ast.Position{
 									Column: 15,
@@ -2485,7 +2485,7 @@ var pkgAST = &ast.Package{
 										Column: 26,
 										Line:   21,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "true",
 									Start: ast.Position{
 										Column: 22,
@@ -2503,7 +2503,7 @@ var pkgAST = &ast.Package{
 										Column: 17,
 										Line:   21,
 									},
-									File:   "",
+									File:   "from.flux",
 									Source: "r",
 									Start: ast.Position{
 										Column: 16,
@@ -2519,7 +2519,7 @@ var pkgAST = &ast.Package{
 											Column: 17,
 											Line:   21,
 										},
-										File:   "",
+										File:   "from.flux",
 										Source: "r",
 										Start: ast.Position{
 											Column: 16,
@@ -2546,7 +2546,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   1,
 					},
-					File:   "",
+					File:   "from.flux",
 					Source: "package query",
 					Start: ast.Position{
 						Column: 1,
@@ -2562,7 +2562,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   1,
 						},
-						File:   "",
+						File:   "from.flux",
 						Source: "query",
 						Start: ast.Position{
 							Column: 9,
