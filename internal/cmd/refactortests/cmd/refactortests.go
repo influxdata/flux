@@ -21,13 +21,14 @@ import (
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/runtime"
 	_ "github.com/influxdata/flux/stdlib" // Import the Flux standard library
 	"github.com/influxdata/flux/stdlib/testing"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	flux.FinalizeBuiltIns()
+	runtime.FinalizeBuiltIns()
 }
 
 // refactorCmd represents the refactortests command
@@ -177,7 +178,7 @@ func executeScript(pkg *ast.Package) (string, string, error) {
 	}
 
 	ctx := flux.NewDefaultDependencies().Inject(context.Background())
-	program, err := c.Compile(ctx)
+	program, err := c.Compile(ctx, runtime.Default)
 	if err != nil {
 		fmt.Println(ast.Format(testPkg))
 		return "", "", errors.Wrap(err, codes.Inherit, "error during compilation, check your script and retry")

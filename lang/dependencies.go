@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/influxdata/flux/memory"
-
 	"go.uber.org/zap"
 )
 
@@ -21,6 +20,10 @@ type ExecutionDependencies struct {
 
 func (d ExecutionDependencies) Inject(ctx context.Context) context.Context {
 	return context.WithValue(ctx, executionDependenciesKey, d)
+}
+
+func HaveExecutionDependencies(ctx context.Context) bool {
+	return ctx.Value(executionDependenciesKey) != nil
 }
 
 func GetExecutionDependencies(ctx context.Context) ExecutionDependencies {

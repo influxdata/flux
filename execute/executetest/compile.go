@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -22,14 +22,21 @@ var (
 func FunctionExpression(t testing.TB, source string) *semantic.FunctionExpression {
 	t.Helper()
 
-	if prelude == nil {
-		prelude = flux.Prelude()
-	}
 	if stdlib == nil {
-		stdlib = flux.StdLib()
+		stdlib = runtime.StdLib()
+	}
+	if prelude == nil {
+		prelude = values.NewScope()
+		for _, path := range []string{"universe", "influxdata/influxdb"} {
+			p, err := stdlib.ImportPackageObject(path)
+			if err != nil {
+				t.Fatalf("error importing prelude package %q: %s", path, err)
+			}
+			p.Range(prelude.Set)
+		}
 	}
 
-	pkg, err := semantic.AnalyzeSource(source)
+	pkg, err := runtime.AnalyzeSource(source)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

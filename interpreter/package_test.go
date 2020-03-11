@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/interpreter/interptest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -38,17 +38,16 @@ func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, err
 }
 
 func TestAccessNestedImport(t *testing.T) {
-	// TODO(algow): unskip when issue is complete
 	t.Skip("Handle imports for user-defined packages https://github.com/influxdata/flux/issues/2343")
 	// package a
 	// x = 0
-	packageA := interpreter.NewPackageWithValues("a", values.NewObjectWithValues(map[string]values.Value{
+	packageA := interpreter.NewPackageWithValues("a", "", values.NewObjectWithValues(map[string]values.Value{
 		"x": values.NewInt(0),
 	}))
 
 	// package b
 	// import "a"
-	packageB := interpreter.NewPackageWithValues("b", values.NewObjectWithValues(map[string]values.Value{
+	packageB := interpreter.NewPackageWithValues("b", "", values.NewObjectWithValues(map[string]values.Value{
 		"a": packageA,
 	}))
 
@@ -380,13 +379,12 @@ func TestInterpreter_MutateOption(t *testing.T) {
 		option planner.disableLogicalRules = ["dummyRule"]
 		planner.disableLogicalRules[0] == "dummyRule" or fail()
 `
-	if _, err := interptest.Eval(ctx, itrp, values.NewNestedScope(nil, pkg), flux.StdLib(), script); err != nil {
+	if _, err := interptest.Eval(ctx, itrp, values.NewNestedScope(nil, pkg), runtime.StdLib(), script); err != nil {
 		t.Fatalf("failed to evaluate package: %v", err)
 	}
 }
 
 func TestInterpreter_SetQualifiedOption(t *testing.T) {
-	// TODO(algow): unskip when issue is complete
 	t.Skip("Handle imports for user-defined packages https://github.com/influxdata/flux/issues/2343")
 	externalPackage := interpreter.NewPackage("alert")
 	values.SetOption(externalPackage, "state", values.NewString("Warning"))

@@ -15,9 +15,9 @@ type Node interface {
 	Location() ast.SourceLocation
 }
 
-type loc ast.SourceLocation
+type Loc ast.SourceLocation
 
-func (l loc) Location() ast.SourceLocation {
+func (l Loc) Location() ast.SourceLocation {
 	return ast.SourceLocation(l)
 }
 
@@ -142,7 +142,7 @@ func (n *StringLiteral) Key() string {
 }
 
 type Package struct {
-	loc
+	Loc
 
 	Package string
 	Files   []*File
@@ -168,7 +168,7 @@ func (p *Package) Copy() Node {
 }
 
 type File struct {
-	loc
+	Loc
 
 	Package *PackageClause
 	Imports []*ImportDeclaration
@@ -195,7 +195,7 @@ func (p *File) Copy() Node {
 }
 
 type PackageClause struct {
-	loc
+	Loc
 
 	Name *Identifier
 }
@@ -215,7 +215,7 @@ func (p *PackageClause) Copy() Node {
 }
 
 type ImportDeclaration struct {
-	loc
+	Loc
 
 	As   *Identifier
 	Path *StringLiteral
@@ -237,7 +237,7 @@ func (d *ImportDeclaration) Copy() Node {
 }
 
 type Block struct {
-	loc
+	Loc
 
 	Body []Statement
 }
@@ -266,7 +266,7 @@ func (s *Block) Copy() Node {
 }
 
 type OptionStatement struct {
-	loc
+	Loc
 
 	Assignment Assignment
 }
@@ -286,7 +286,7 @@ func (s *OptionStatement) Copy() Node {
 }
 
 type BuiltinStatement struct {
-	loc
+	Loc
 
 	ID *Identifier
 }
@@ -306,7 +306,7 @@ func (s *BuiltinStatement) Copy() Node {
 }
 
 type TestStatement struct {
-	loc
+	Loc
 
 	Assignment *NativeVariableAssignment
 }
@@ -326,7 +326,7 @@ func (s *TestStatement) Copy() Node {
 }
 
 type ExpressionStatement struct {
-	loc
+	Loc
 
 	Expression Expression
 }
@@ -346,7 +346,7 @@ func (s *ExpressionStatement) Copy() Node {
 }
 
 type ReturnStatement struct {
-	loc
+	Loc
 
 	Argument Expression
 }
@@ -366,7 +366,7 @@ func (s *ReturnStatement) Copy() Node {
 }
 
 type NativeVariableAssignment struct {
-	loc
+	Loc
 
 	Identifier *Identifier
 	Init       Expression
@@ -393,7 +393,7 @@ func (s *NativeVariableAssignment) Copy() Node {
 }
 
 type MemberAssignment struct {
-	loc
+	Loc
 
 	Member *MemberExpression
 	Init   Expression
@@ -419,7 +419,7 @@ func (s *MemberAssignment) Copy() Node {
 }
 
 type StringExpression struct {
-	loc
+	Loc
 
 	Parts []StringExpressionPart
 
@@ -457,7 +457,7 @@ func (*TextPart) stringPart()         {}
 func (*InterpolatedPart) stringPart() {}
 
 type TextPart struct {
-	loc
+	Loc
 	Value string
 }
 
@@ -474,7 +474,7 @@ func (p *TextPart) Copy() Node {
 }
 
 type InterpolatedPart struct {
-	loc
+	Loc
 	Expression Expression
 }
 
@@ -495,7 +495,7 @@ func (p *InterpolatedPart) Copy() Node {
 }
 
 type ArrayExpression struct {
-	loc
+	Loc
 
 	Elements []Expression
 
@@ -526,7 +526,7 @@ func (e *ArrayExpression) TypeOf() MonoType {
 
 // FunctionExpression represents the definition of a function
 type FunctionExpression struct {
-	loc
+	Loc
 
 	Defaults *ObjectExpression
 	Block    *FunctionBlock
@@ -556,7 +556,7 @@ func (e *FunctionExpression) TypeOf() MonoType {
 
 // FunctionBlock represents the function parameters and the function body.
 type FunctionBlock struct {
-	loc
+	Loc
 
 	Parameters *FunctionParameters
 	Body       Node
@@ -577,7 +577,7 @@ func (b *FunctionBlock) Copy() Node {
 
 // FunctionParameters represents the list of function parameters and which if any parameter is the pipe parameter.
 type FunctionParameters struct {
-	loc
+	Loc
 
 	List []*FunctionParameter
 	Pipe *Identifier
@@ -607,7 +607,7 @@ func (p *FunctionParameters) Copy() Node {
 
 // FunctionParameter represents a function parameter.
 type FunctionParameter struct {
-	loc
+	Loc
 
 	Key *Identifier
 }
@@ -627,7 +627,7 @@ func (p *FunctionParameter) Copy() Node {
 }
 
 type BinaryExpression struct {
-	loc
+	Loc
 
 	Operator ast.OperatorKind
 	Left     Expression
@@ -655,7 +655,7 @@ func (e *BinaryExpression) TypeOf() MonoType {
 }
 
 type CallExpression struct {
-	loc
+	Loc
 
 	Callee    Expression
 	Arguments *ObjectExpression
@@ -686,7 +686,7 @@ func (e *CallExpression) TypeOf() MonoType {
 }
 
 type ConditionalExpression struct {
-	loc
+	Loc
 
 	Test       Expression
 	Alternate  Expression
@@ -715,7 +715,7 @@ func (e *ConditionalExpression) TypeOf() MonoType {
 }
 
 type LogicalExpression struct {
-	loc
+	Loc
 
 	Operator ast.LogicalOperatorKind
 	Left     Expression
@@ -743,7 +743,7 @@ func (e *LogicalExpression) TypeOf() MonoType {
 }
 
 type MemberExpression struct {
-	loc
+	Loc
 
 	Object   Expression
 	Property string
@@ -769,7 +769,7 @@ func (e *MemberExpression) TypeOf() MonoType {
 }
 
 type IndexExpression struct {
-	loc
+	Loc
 
 	Array Expression
 	Index Expression
@@ -794,7 +794,7 @@ func (e *IndexExpression) TypeOf() MonoType {
 }
 
 type ObjectExpression struct {
-	loc
+	Loc
 
 	With       *IdentifierExpression
 	Properties []*Property
@@ -827,7 +827,7 @@ func (e *ObjectExpression) TypeOf() MonoType {
 }
 
 type UnaryExpression struct {
-	loc
+	Loc
 
 	Operator ast.OperatorKind
 	Argument Expression
@@ -853,7 +853,7 @@ func (e *UnaryExpression) TypeOf() MonoType {
 }
 
 type Property struct {
-	loc
+	Loc
 
 	Key   PropertyKey
 	Value Expression
@@ -874,7 +874,7 @@ func (p *Property) Copy() Node {
 }
 
 type IdentifierExpression struct {
-	loc
+	Loc
 
 	Name string
 
@@ -897,7 +897,7 @@ func (e *IdentifierExpression) TypeOf() MonoType {
 }
 
 type Identifier struct {
-	loc
+	Loc
 
 	Name string
 }
@@ -915,7 +915,7 @@ func (i *Identifier) Copy() Node {
 }
 
 type BooleanLiteral struct {
-	loc
+	Loc
 
 	Value bool
 
@@ -938,7 +938,7 @@ func (e *BooleanLiteral) TypeOf() MonoType {
 }
 
 type DateTimeLiteral struct {
-	loc
+	Loc
 
 	Value time.Time
 
@@ -961,7 +961,7 @@ func (e *DateTimeLiteral) TypeOf() MonoType {
 }
 
 type DurationLiteral struct {
-	loc
+	Loc
 
 	Values []ast.Duration
 
@@ -984,7 +984,7 @@ func (e *DurationLiteral) TypeOf() MonoType {
 }
 
 type IntegerLiteral struct {
-	loc
+	Loc
 
 	Value int64
 
@@ -1007,7 +1007,7 @@ func (e *IntegerLiteral) TypeOf() MonoType {
 }
 
 type FloatLiteral struct {
-	loc
+	Loc
 
 	Value float64
 
@@ -1030,7 +1030,7 @@ func (e *FloatLiteral) TypeOf() MonoType {
 }
 
 type RegexpLiteral struct {
-	loc
+	Loc
 
 	Value *regexp.Regexp
 
@@ -1055,7 +1055,7 @@ func (e *RegexpLiteral) TypeOf() MonoType {
 }
 
 type StringLiteral struct {
-	loc
+	Loc
 
 	Value string
 
@@ -1078,7 +1078,7 @@ func (e *StringLiteral) TypeOf() MonoType {
 }
 
 type UnsignedIntegerLiteral struct {
-	loc
+	Loc
 
 	Value uint64
 

@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/objects"
@@ -27,14 +28,14 @@ const (
 )
 
 func init() {
-	flux.RegisterPackageValue("universe", "tableFind", NewTableFindFunction())
-	flux.RegisterPackageValue("universe", "getColumn", NewGetColumnFunction())
-	flux.RegisterPackageValue("universe", "getRecord", NewGetRecordFunction())
+	runtime.RegisterPackageValue("universe", "tableFind", NewTableFindFunction())
+	runtime.RegisterPackageValue("universe", "getColumn", NewGetColumnFunction())
+	runtime.RegisterPackageValue("universe", "getRecord", NewGetRecordFunction())
 }
 
 func NewTableFindFunction() values.Value {
 	return values.NewFunction("tableFind",
-		semantic.MustLookupBuiltinType("universe", "tableFind"),
+		runtime.MustLookupBuiltinType("universe", "tableFind"),
 		tableFindCall,
 		false)
 }
@@ -74,6 +75,11 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in table object compilation")
 	}
+
+	if !lang.HaveExecutionDependencies(ctx) {
+		return nil, errors.New(codes.Invalid, "do not have an execution context for tableFind, if using the repl, try executing this code on the server using the InfluxDB API")
+	}
+
 	deps := lang.GetExecutionDependencies(ctx)
 	if p, ok := p.(lang.LoggingProgram); ok {
 		p.SetLogger(deps.Logger)
@@ -126,7 +132,7 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 
 func NewGetColumnFunction() values.Value {
 	return values.NewFunction("getColumn",
-		semantic.MustLookupBuiltinType("universe", "getColumn"),
+		runtime.MustLookupBuiltinType("universe", "getColumn"),
 		getColumnCall,
 		false)
 }
@@ -206,12 +212,12 @@ func arrayFromColumn(idx int, cr flux.ColReader) values.Array {
 			execute.PanicUnknownType(typ)
 		}
 	}
-	return values.NewArrayWithBacking(flux.SemanticType(typ), vsSlice)
+	return values.NewArrayWithBacking(semantic.NewArrayType(flux.SemanticType(typ)), vsSlice)
 }
 
 func NewGetRecordFunction() values.Value {
 	return values.NewFunction("getRecord",
-		semantic.MustLookupBuiltinType("universe", "getRecord"),
+		runtime.MustLookupBuiltinType("universe", "getRecord"),
 		getRecordCall,
 		false)
 }

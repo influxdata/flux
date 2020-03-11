@@ -9,7 +9,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 )
 
 const SkewKind = "skew"
@@ -19,9 +19,9 @@ type SkewOpSpec struct {
 }
 
 func init() {
-	skewSignature := semantic.MustLookupBuiltinType("universe", "skew")
+	skewSignature := runtime.MustLookupBuiltinType("universe", "skew")
 
-	flux.RegisterPackageValue("universe", SkewKind, flux.MustValue(flux.FunctionValue(SkewKind, createSkewOpSpec, skewSignature)))
+	runtime.RegisterPackageValue("universe", SkewKind, flux.MustValue(flux.FunctionValue(SkewKind, createSkewOpSpec, skewSignature)))
 	flux.RegisterOpSpec(SkewKind, newSkewOp)
 	plan.RegisterProcedureSpec(SkewKind, newSkewProcedure, SkewKind)
 	execute.RegisterTransformation(SkewKind, createSkewTransformation)

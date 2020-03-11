@@ -8,8 +8,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/semantic/semantictest"
 	"github.com/influxdata/flux/values"
@@ -116,7 +118,7 @@ func TestRowMapFn_Eval(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			pkg, err := semantic.AnalyzeSource(tc.f)
+			pkg, err := runtime.AnalyzeSource(tc.f)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
@@ -156,13 +158,10 @@ func TestRowMapFn_Eval(t *testing.T) {
 				for i := 0; i < cr.Len(); i++ {
 					obj, err := f.Eval(ctx, i, cr)
 					if err != nil {
-						// TODO(algow): determine correct type
-						got = append(got, nil)
-					} else {
-						got = append(got, obj)
+						return err
 					}
+					got = append(got, obj)
 				}
-
 				return nil
 			}); err != nil {
 				t.Fatal(err)
@@ -175,16 +174,16 @@ func TestRowMapFn_Eval(t *testing.T) {
 	}
 }
 
-func TestRowPredicateFn_EvalRow(t *testing.T) {
+func testRowPredicateFn_EvalRow(t *testing.T, scope compiler.Scope) {
 	gt2F := func() (*execute.RowPredicateFn, error) {
-		pkg, err := semantic.AnalyzeSource(`(r) => r._value > 2.0`)
+		pkg, err := runtime.AnalyzeSource(`(r) => r._value > 2.0`)
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err)
 		}
 
 		stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
 		fn := stmt.Expression.(*semantic.FunctionExpression)
-		return execute.NewRowPredicateFn(fn, nil)
+		return execute.NewRowPredicateFn(fn, scope)
 	}
 
 	testCases := []struct {
@@ -276,4 +275,9 @@ func TestRowPredicateFn_EvalRow(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRowPredicateFn_EvalRow(t *testing.T) {
+	testRowPredicateFn_EvalRow(t, compiler.NewScope())
+	testRowPredicateFn_EvalRow(t, compiler.ToScope(nil))
 }

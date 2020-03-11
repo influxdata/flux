@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -98,11 +97,6 @@ func (c Completer) FunctionSuggestion(name string) (FunctionSuggestion, error) {
 	}
 
 	return s, nil
-}
-
-// DefaultCompleter creates a completer with builtin scope
-func DefaultCompleter() Completer {
-	return NewCompleter(flux.Prelude())
 }
 
 func isFunction(v values.Value) bool {

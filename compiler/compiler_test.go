@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/compiler"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/semantic/semantictest"
 	"github.com/influxdata/flux/values"
@@ -393,7 +394,7 @@ func TestCompileAndEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			pkg, err := semantic.AnalyzeSource(tc.fn)
+			pkg, err := runtime.AnalyzeSource(tc.fn)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
@@ -420,5 +421,11 @@ func TestCompileAndEval(t *testing.T) {
 				t.Errorf("unexpected value -want/+got\n%s", cmp.Diff(tc.want, got, CmpOptions...))
 			}
 		})
+	}
+}
+
+func TestToScopeNil(t *testing.T) {
+	if compiler.ToScope(nil) != nil {
+		t.Fatal("ToScope made non-nil scope from a nil base")
 	}
 }

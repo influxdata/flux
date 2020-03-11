@@ -7,7 +7,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 )
 
 const ChangesKind = "changes"
@@ -15,9 +15,9 @@ const ChangesKind = "changes"
 type ChangesOpSpec struct{}
 
 func init() {
-	changesSignature := semantic.MustLookupBuiltinType("internal/promql", "changes")
+	changesSignature := runtime.MustLookupBuiltinType("internal/promql", "changes")
 
-	flux.RegisterPackageValue("internal/promql", ChangesKind, flux.MustValue(flux.FunctionValue(ChangesKind, createChangesOpSpec, changesSignature)))
+	runtime.RegisterPackageValue("internal/promql", ChangesKind, flux.MustValue(flux.FunctionValue(ChangesKind, createChangesOpSpec, changesSignature)))
 	flux.RegisterOpSpec(ChangesKind, newChangesOp)
 	plan.RegisterProcedureSpec(ChangesKind, newChangesProcedure, ChangesKind)
 	execute.RegisterTransformation(ChangesKind, createChangesTransformation)

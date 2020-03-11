@@ -1,8 +1,7 @@
 package libflux
 
-// #cgo CFLAGS: -I.
-// #cgo LDFLAGS: -L. -lflux
-// #include "flux.h"
+// #cgo pkg-config: flux
+// #include "influxdata/flux.h"
 // #include <stdlib.h>
 import "C"
 
@@ -14,8 +13,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 )
-
-//go:generate cp ../../include/influxdata/flux.h flux.h
 
 // freeable indicates a resource that has memory
 // allocated to it outside of Go and must be freed.
@@ -37,9 +34,9 @@ type ASTPkg struct {
 func (p *ASTPkg) MarshalJSON() ([]byte, error) {
 	var buf C.struct_flux_buffer_t
 	if err := C.flux_ast_marshal_json(p.ptr, &buf); err != nil {
-		defer C.flux_free(unsafe.Pointer(err))
+		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free(unsafe.Pointer(cstr))
+		defer C.flux_free_bytes(cstr)
 
 		str := C.GoString(cstr)
 		return nil, errors.Newf(codes.Internal, "could not marshal AST to JSON: %v", str)
@@ -49,18 +46,18 @@ func (p *ASTPkg) MarshalJSON() ([]byte, error) {
 	// the compiler recognizes the possibility that p might
 	// be used again and prevents it from being garbage collected.
 	runtime.KeepAlive(p)
-	defer C.flux_free(buf.data)
+	defer C.flux_free_bytes(buf.data)
 
-	data := C.GoBytes(buf.data, C.int(buf.len))
+	data := C.GoBytes(unsafe.Pointer(buf.data), C.int(buf.len))
 	return data, nil
 }
 
 func (p *ASTPkg) MarshalFB() ([]byte, error) {
 	var buf C.struct_flux_buffer_t
 	if err := C.flux_ast_marshal_fb(p.ptr, &buf); err != nil {
-		defer C.flux_free(unsafe.Pointer(err))
+		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free(unsafe.Pointer(cstr))
+		defer C.flux_free_bytes(cstr)
 
 		str := C.GoString(cstr)
 		return nil, errors.Newf(codes.Internal, "could not marshal AST to FlatBuffer: %v", str)
@@ -70,15 +67,15 @@ func (p *ASTPkg) MarshalFB() ([]byte, error) {
 	// the compiler recognizes the possibility that p might
 	// be used again and prevents it from being garbage collected.
 	runtime.KeepAlive(p)
-	defer C.flux_free(buf.data)
+	defer C.flux_free_bytes(buf.data)
 
-	data := C.GoBytes(buf.data, C.int(buf.len))
+	data := C.GoBytes(unsafe.Pointer(buf.data), C.int(buf.len))
 	return data, nil
 }
 
 func (p *ASTPkg) Free() {
 	if p.ptr != nil {
-		C.flux_free(unsafe.Pointer(p.ptr))
+		C.flux_free_ast_pkg(p.ptr)
 	}
 	p.ptr = nil
 
@@ -119,9 +116,9 @@ func ParseJSON(bs []byte) (*ASTPkg, error) {
 	var ptr *C.struct_flux_ast_pkg_t
 	err := C.flux_parse_json(cstr, &ptr)
 	if err != nil {
-		defer C.flux_free(unsafe.Pointer(err))
+		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free(unsafe.Pointer(cstr))
+		defer C.flux_free_bytes(cstr)
 
 		str := C.GoString(cstr)
 		return nil, errors.Newf(codes.Internal, "could not get handle from JSON AST: %v", str)
@@ -141,9 +138,9 @@ func MergePackages(outPkg *ASTPkg, inPkg *ASTPkg) error {
 	// This modifies outPkg in place
 	err := C.flux_merge_ast_pkgs(outPkg.ptr, inPkg.ptr)
 	if err != nil {
-		defer C.flux_free(unsafe.Pointer(err))
+		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free(unsafe.Pointer(cstr))
+		defer C.flux_free_bytes(cstr)
 
 		str := C.GoString(cstr)
 		return errors.Newf(codes.Internal, "failed to merge packages: %v", str)

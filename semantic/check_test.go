@@ -63,7 +63,7 @@ func TestOptionDeclarations(t *testing.T) {
 										Body: &Block{
 											Body: []Statement{
 												&OptionStatement{
-													loc: loc{
+													Loc: Loc{
 														Start: ast.Position{
 															Line:   3,
 															Column: 3,
@@ -119,7 +119,7 @@ func TestOptionDeclarations(t *testing.T) {
 															Body: &Block{
 																Body: []Statement{
 																	&OptionStatement{
-																		loc: loc{
+																		Loc: Loc{
 																			Start: ast.Position{
 																				Line:   4,
 																				Column: 5,
@@ -178,7 +178,7 @@ func TestOptionDeclarations(t *testing.T) {
 										Body: &Block{
 											Body: []Statement{
 												&OptionStatement{
-													loc: loc{
+													Loc: Loc{
 														Start: ast.Position{
 															Line:   4,
 															Column: 3,
@@ -354,7 +354,7 @@ func TestOptionDeclarations(t *testing.T) {
 										Body: &Block{
 											Body: []Statement{
 												&OptionStatement{
-													loc: loc{
+													Loc: Loc{
 														File: "g.flux",
 														Start: ast.Position{
 															Line:   4,
@@ -433,7 +433,7 @@ func TestOptionReAssignments(t *testing.T) {
 								},
 							},
 							&OptionStatement{
-								loc: loc{
+								Loc: Loc{
 									Start: ast.Position{
 										Line:   3,
 										Column: 1,
@@ -514,7 +514,7 @@ func TestOptionReAssignments(t *testing.T) {
 						},
 						Body: []Statement{
 							&OptionStatement{
-								loc: loc{
+								Loc: Loc{
 									File: "c.flux",
 									Start: ast.Position{
 										Line:   2,
@@ -654,7 +654,7 @@ func TestVarReAssignments(t *testing.T) {
 								Init:       &IntegerLiteral{Value: 0},
 							},
 							&NativeVariableAssignment{
-								loc: loc{
+								Loc: Loc{
 									Start: ast.Position{
 										Line:   3,
 										Column: 1,
@@ -694,7 +694,7 @@ func TestVarReAssignments(t *testing.T) {
 								},
 							},
 							&NativeVariableAssignment{
-								loc: loc{
+								Loc: Loc{
 									Start: ast.Position{
 										Line:   3,
 										Column: 1,
@@ -839,7 +839,7 @@ func TestVarReAssignments(t *testing.T) {
 													Init:       &IdentifierExpression{Name: "a"},
 												},
 												&NativeVariableAssignment{
-													loc: loc{
+													Loc: Loc{
 														Start: ast.Position{
 															Line:   6,
 															Column: 3,
@@ -905,7 +905,7 @@ func TestVarReAssignments(t *testing.T) {
 														Init:       &IdentifierExpression{Name: "a"},
 													},
 													&NativeVariableAssignment{
-														loc: loc{
+														Loc: Loc{
 															Start: ast.Position{
 																Line:   6,
 																Column: 3,
@@ -964,7 +964,7 @@ func TestVarReAssignments(t *testing.T) {
 										Body: &Block{
 											Body: []Statement{
 												&NativeVariableAssignment{
-													loc: loc{
+													Loc: Loc{
 														Start: ast.Position{
 															Line:   3,
 															Column: 3,
@@ -1085,7 +1085,7 @@ func TestVarReAssignments(t *testing.T) {
 								},
 							},
 							&NativeVariableAssignment{
-								loc: loc{
+								Loc: Loc{
 									Start: ast.Position{
 										Line:   11,
 										Column: 1,
@@ -1279,7 +1279,7 @@ func TestVarReAssignments(t *testing.T) {
 								},
 							},
 							&NativeVariableAssignment{
-								loc: loc{
+								Loc: Loc{
 									File: "d.flux",
 									Start: ast.Position{
 										Line:   8,
@@ -1414,7 +1414,7 @@ func TestOptionDependencies(t *testing.T) {
 								Assignment: &NativeVariableAssignment{
 									Identifier: &Identifier{Name: "b"},
 									Init: &IdentifierExpression{
-										loc: loc{
+										Loc: Loc{
 											Start: ast.Position{
 												Line:   3,
 												Column: 12,
@@ -1467,7 +1467,7 @@ func TestOptionDependencies(t *testing.T) {
 								Assignment: &NativeVariableAssignment{
 									Identifier: &Identifier{Name: "b"},
 									Init: &IdentifierExpression{
-										loc: loc{
+										Loc: Loc{
 											File: "b.flux",
 											Start: ast.Position{
 												Line:   2,
@@ -1584,7 +1584,7 @@ func TestOptionDependencies(t *testing.T) {
 									Init: &FunctionExpression{
 										Block: &FunctionBlock{
 											Body: &IdentifierExpression{
-												loc: loc{
+												Loc: Loc{
 													Start: ast.Position{
 														Line:   3,
 														Column: 18,
@@ -1635,7 +1635,7 @@ func TestOptionDependencies(t *testing.T) {
 												Callee: &FunctionExpression{
 													Block: &FunctionBlock{
 														Body: &IdentifierExpression{
-															loc: loc{
+															Loc: Loc{
 																Start: ast.Position{
 																	Line:   3,
 																	Column: 25,
@@ -1853,7 +1853,7 @@ func TestOptionDependencies(t *testing.T) {
 									Identifier: &Identifier{Name: "a"},
 									Init: &MemberExpression{
 										Object: &IdentifierExpression{
-											loc: loc{
+											Loc: Loc{
 												Start: ast.Position{
 													Line:   5,
 													Column: 12,
@@ -1929,7 +1929,7 @@ func TestOptionDependencies(t *testing.T) {
 								Assignment: &NativeVariableAssignment{
 									Identifier: &Identifier{Name: "b"},
 									Init: &IdentifierExpression{
-										loc: loc{
+										Loc: Loc{
 											Start: ast.Position{
 												Line:   9,
 												Column: 12,
@@ -2114,7 +2114,7 @@ func TestOptionDependencies(t *testing.T) {
 								Assignment: &NativeVariableAssignment{
 									Identifier: &Identifier{Name: "b"},
 									Init: &IdentifierExpression{
-										loc: loc{
+										Loc: Loc{
 											File: "b.flux",
 											Start: ast.Position{
 												Line:   2,

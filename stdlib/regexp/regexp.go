@@ -4,9 +4,9 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -18,7 +18,7 @@ func init() {
 	SpecialFns = map[string]values.Function{
 		"compile": values.NewFunction(
 			"compile",
-			semantic.MustLookupBuiltinType("regexp", "compile"),
+			runtime.MustLookupBuiltinType("regexp", "compile"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				if !ok {
@@ -38,7 +38,7 @@ func init() {
 		),
 		"quoteMeta": values.NewFunction(
 			"quoteMeta",
-			semantic.MustLookupBuiltinType("regexp", "quoteMeta"),
+			runtime.MustLookupBuiltinType("regexp", "quoteMeta"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				if !ok {
@@ -55,7 +55,7 @@ func init() {
 		),
 		"findString": values.NewFunction(
 			"findString",
-			semantic.MustLookupBuiltinType("regexp", "findString"),
+			runtime.MustLookupBuiltinType("regexp", "findString"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
@@ -73,7 +73,7 @@ func init() {
 		),
 		"findStringIndex": values.NewFunction(
 			"findStringIndex",
-			semantic.MustLookupBuiltinType("regexp", "findStringIndex"),
+			runtime.MustLookupBuiltinType("regexp", "findStringIndex"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
@@ -95,7 +95,7 @@ func init() {
 		),
 		"matchRegexpString": values.NewFunction(
 			"matchRegexpString",
-			semantic.MustLookupBuiltinType("regexp", "matchRegexpString"),
+			runtime.MustLookupBuiltinType("regexp", "matchRegexpString"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				v, ok := args.Get("v")
 				r, okk := args.Get("r")
@@ -113,7 +113,7 @@ func init() {
 		),
 		"replaceAllString": values.NewFunction(
 			"replaceAllString",
-			semantic.MustLookupBuiltinType("regexp", "replaceAllString"),
+			runtime.MustLookupBuiltinType("regexp", "replaceAllString"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				r, ok := args.Get("r")
 				v, okk := args.Get("v")
@@ -132,7 +132,7 @@ func init() {
 		),
 		"splitRegexp": values.NewFunction(
 			"splitRegexp",
-			semantic.MustLookupBuiltinType("regexp", "splitRegexp"),
+			runtime.MustLookupBuiltinType("regexp", "splitRegexp"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				r, ok := args.Get("r")
 				v, okk := args.Get("v")
@@ -155,7 +155,7 @@ func init() {
 		),
 		"getString": values.NewFunction(
 			"getString",
-			semantic.MustLookupBuiltinType("regexp", "getString"),
+			runtime.MustLookupBuiltinType("regexp", "getString"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				r, ok := args.Get("r")
 				if !ok {
@@ -172,12 +172,12 @@ func init() {
 		),
 	}
 
-	flux.RegisterPackageValue("regexp", "compile", SpecialFns["compile"])
-	flux.RegisterPackageValue("regexp", "quoteMeta", SpecialFns["quoteMeta"])
-	flux.RegisterPackageValue("regexp", "findString", SpecialFns["findString"])
-	flux.RegisterPackageValue("regexp", "findStringIndex", SpecialFns["findStringIndex"])
-	flux.RegisterPackageValue("regexp", "matchRegexpString", SpecialFns["matchRegexpString"])
-	flux.RegisterPackageValue("regexp", "replaceAllString", SpecialFns["replaceAllString"])
-	flux.RegisterPackageValue("regexp", "splitRegexp", SpecialFns["splitRegexp"])
-	flux.RegisterPackageValue("regexp", "getString", SpecialFns["getString"])
+	runtime.RegisterPackageValue("regexp", "compile", SpecialFns["compile"])
+	runtime.RegisterPackageValue("regexp", "quoteMeta", SpecialFns["quoteMeta"])
+	runtime.RegisterPackageValue("regexp", "findString", SpecialFns["findString"])
+	runtime.RegisterPackageValue("regexp", "findStringIndex", SpecialFns["findStringIndex"])
+	runtime.RegisterPackageValue("regexp", "matchRegexpString", SpecialFns["matchRegexpString"])
+	runtime.RegisterPackageValue("regexp", "replaceAllString", SpecialFns["replaceAllString"])
+	runtime.RegisterPackageValue("regexp", "splitRegexp", SpecialFns["splitRegexp"])
+	runtime.RegisterPackageValue("regexp", "getString", SpecialFns["getString"])
 }

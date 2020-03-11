@@ -127,16 +127,16 @@ func FromTableObject(ctx context.Context, to *flux.TableObject, now time.Time) (
 // FromScript returns a spec from a script expressed as a raw string.
 // This is duplicate logic for what happens when a flux.Program runs.
 // This function is used in tests that compare flux.Specs (e.g. in planner tests).
-func FromScript(ctx context.Context, now time.Time, script string) (*flux.Spec, error) {
+func FromScript(ctx context.Context, runtime flux.Runtime, now time.Time, script string) (*flux.Spec, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "parse")
-	astPkg, err := flux.Parse(script)
+	astPkg, err := runtime.Parse(script)
 	if err != nil {
 		return nil, err
 	}
 	s.Finish()
 
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-	sideEffects, scope, err := flux.EvalAST(cctx, astPkg, flux.SetNowOption(now))
+	sideEffects, scope, err := runtime.Eval(cctx, astPkg, flux.SetNowOption(now))
 	if err != nil {
 		return nil, err
 	}

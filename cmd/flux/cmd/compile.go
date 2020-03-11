@@ -8,6 +8,7 @@ import (
 
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/lang"
+	"github.com/influxdata/flux/runtime"
 	"github.com/spf13/cobra"
 )
 
@@ -45,7 +46,7 @@ func compile(cmd *cobra.Command, args []string) error {
 		Query: script,
 	}
 
-	spec, err := c.Compile(context.Background())
+	spec, err := c.Compile(context.Background(), runtime.Default)
 	if err != nil {
 		return err
 	}

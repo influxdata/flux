@@ -96,20 +96,21 @@ func Verbose(v bool) CompileOption {
 
 // Compile evaluates a Flux script producing a flux.Program.
 // now parameter must be non-zero, that is the default now time should be set before compiling.
-func Compile(q string, now time.Time, opts ...CompileOption) (*AstProgram, error) {
-	astPkg, err := flux.Parse(q)
+func Compile(q string, runtime flux.Runtime, now time.Time, opts ...CompileOption) (*AstProgram, error) {
+	astPkg, err := runtime.Parse(q)
 	if err != nil {
 		return nil, err
 	}
-	return CompileAST(astPkg, now, opts...), nil
+	return CompileAST(astPkg, runtime, now, opts...), nil
 }
 
 // CompileAST evaluates a Flux AST and produces a flux.Program.
 // now parameter must be non-zero, that is the default now time should be set before compiling.
-func CompileAST(astPkg *ast.Package, now time.Time, opts ...CompileOption) *AstProgram {
+func CompileAST(astPkg *ast.Package, runtime flux.Runtime, now time.Time, opts ...CompileOption) *AstProgram {
 	return &AstProgram{
 		Program: &Program{
-			opts: applyOptions(opts...),
+			Runtime: runtime,
+			opts:    applyOptions(opts...),
 		},
 		Ast: astPkg,
 		Now: now,
@@ -164,9 +165,9 @@ type FluxCompiler struct {
 	Query  string    `json:"query"`
 }
 
-func (c FluxCompiler) Compile(ctx context.Context) (flux.Program, error) {
+func (c FluxCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
 	// Ignore context, it will be provided upon Program Start.
-	return Compile(c.Query, c.Now, WithExtern(c.Extern))
+	return Compile(c.Query, runtime, c.Now, WithExtern(c.Extern))
 }
 
 func (c FluxCompiler) CompilerType() flux.CompilerType {
@@ -179,13 +180,13 @@ type ASTCompiler struct {
 	Now time.Time
 }
 
-func (c ASTCompiler) Compile(ctx context.Context) (flux.Program, error) {
+func (c ASTCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
 	now := c.Now
 	if now.IsZero() {
 		now = time.Now()
 	}
 	// Ignore context, it will be provided upon Program Start.
-	return CompileAST(c.AST, now), nil
+	return CompileAST(c.AST, runtime, now), nil
 }
 
 func (ASTCompiler) CompilerType() flux.CompilerType {
@@ -223,6 +224,7 @@ type LoggingProgram interface {
 type Program struct {
 	Logger   *zap.Logger
 	PlanSpec *plan.Spec
+	Runtime  flux.Runtime
 
 	opts *compileOptions
 }
@@ -295,7 +297,7 @@ type AstProgram struct {
 	Now time.Time
 }
 
-func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
+func (p *AstProgram) getSpec(ctx context.Context, runtime flux.Runtime, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
 	if p.opts == nil {
 		p.opts = defaultOptions()
 	}
@@ -313,7 +315,7 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 	}
 	ctx = deps.Inject(ctx)
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-	sideEffects, scope, err := flux.EvalAST(cctx, p.Ast, flux.SetNowOption(p.Now))
+	sideEffects, scope, err := runtime.Eval(cctx, p.Ast, flux.SetNowOption(p.Now))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -338,7 +340,7 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 }
 
 func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
-	sp, scope, err := p.getSpec(ctx, alloc)
+	sp, scope, err := p.getSpec(ctx, p.Runtime, alloc)
 	if err != nil {
 		return nil, err
 	}
@@ -437,7 +439,6 @@ func getRules(plannerPkg values.Object, optionName string) ([]string, error) {
 	rules := value.Array()
 	et, err := rules.Type().ElemType()
 	if err != nil {
-		//TODO (algow): correctly wrap error
 		return nil, err
 	}
 	if et.Nature() != semantic.String {
@@ -449,16 +450,4 @@ func getRules(plannerPkg values.Object, optionName string) ([]string, error) {
 		rs[i] = v.Str()
 	})
 	return rs, nil
-}
-
-// WalkIR applies the function `f` to each operation in the compiled spec.
-// WARNING: this function evaluates the AST using an unlimited allocator.
-// In case of dynamic queries this could lead to unexpected memory usage.
-func WalkIR(ctx context.Context, astPkg *ast.Package, f func(o *flux.Operation) error) error {
-	p := CompileAST(astPkg, time.Now())
-	if sp, _, err := p.getSpec(ctx, new(memory.Allocator)); err != nil {
-		return err
-	} else {
-		return sp.Walk(f)
-	}
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
@@ -27,7 +28,7 @@ func TestMap_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
@@ -53,7 +54,7 @@ func TestMap_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
@@ -80,7 +81,7 @@ func TestMap_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
@@ -113,7 +114,7 @@ func TestMap_NewQuery(t *testing.T) {
 }
 
 func TestMap_Process(t *testing.T) {
-	builtIns := flux.Prelude()
+	builtIns := runtime.Prelude()
 	testCases := []struct {
 		skip    string
 		name    string
@@ -152,17 +153,19 @@ func TestMap_Process(t *testing.T) {
 			}},
 		},
 		{
-			skip: "https://github.com/influxdata/flux/issues/2402",
 			name: `_value+5 custom scope`,
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Scope: func() values.Scope {
-						scope := builtIns.Nest(nil)
+						scope := values.NewScope()
 						scope.Set("x", values.NewFloat(5))
 						return scope
 					}(),
-					// This needs a custom scope...
-					// Fn: executetest.FunctionExpression(t, "(r) => ({_time: r._time, _value: r._value + x})"),
+					Fn: executetest.FunctionExpression(t, `
+x = 5.0
+f = (r) => ({_time: r._time, _value: r._value + x})
+f
+`),
 				},
 			},
 			data: []flux.Table{&executetest.Table{
@@ -618,7 +621,6 @@ func TestMap_Process(t *testing.T) {
 			wantErr: errors.New(`failed to evaluate map function: strconv.ParseFloat: parsing "foo": invalid syntax`),
 		},
 		{
-			skip: "map() panics on null values in algo-w branch: https://github.com/influxdata/flux/issues/2497",
 			name: `with null record`,
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
@@ -647,7 +649,6 @@ func TestMap_Process(t *testing.T) {
 			}},
 		},
 		{
-			skip: "map() panics on null values in algo-w branch: https://github.com/influxdata/flux/issues/2497",
 			name: `with null column`,
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
@@ -672,6 +673,35 @@ func TestMap_Process(t *testing.T) {
 				Data: [][]interface{}{
 					{1.0},
 					{6.0},
+				},
+			}},
+		},
+		{
+			name: `scoped labels different types`,
+			spec: &universe.MapProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Scope: builtIns,
+					Fn:    executetest.FunctionExpression(t, `(r) => ({r with _value: float(v: r._value + 1)})`),
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), int64(1)},
+					{execute.Time(2), int64(6)},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 2.0},
+					{execute.Time(2), 7.0},
 				},
 			}},
 		},

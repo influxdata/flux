@@ -142,7 +142,6 @@ func (v value) String() string {
 
 var (
 	// InvalidValue is a non nil value who's type is semantic.Invalid
-	// TODO (algow): create a invalid monotype
 	InvalidValue = value{}
 
 	// Null is an untyped nil value.

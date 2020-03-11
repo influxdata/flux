@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -20,8 +21,8 @@ import (
 const joinKind = "internal/promql.join"
 
 func init() {
-	signature := semantic.MustLookupBuiltinType("internal/promql", "join")
-	flux.RegisterPackageValue("internal/promql", "join", flux.MustValue(flux.FunctionValue("join", createJoinOpSpec, signature)))
+	signature := runtime.MustLookupBuiltinType("internal/promql", "join")
+	runtime.RegisterPackageValue("internal/promql", "join", flux.MustValue(flux.FunctionValue("join", createJoinOpSpec, signature)))
 	flux.RegisterOpSpec(joinKind, newJoinOp)
 	plan.RegisterProcedureSpec(joinKind, newMergeJoinProcedure, joinKind)
 	execute.RegisterTransformation(joinKind, createMergeJoinTransformation)

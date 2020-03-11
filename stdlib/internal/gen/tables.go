@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -27,8 +28,8 @@ type TablesOpSpec struct {
 }
 
 func init() {
-	tablesSignature := semantic.MustLookupBuiltinType("internal/gen", "tables")
-	flux.RegisterPackageValue("internal/gen", "tables", flux.MustValue(flux.FunctionValue(TablesKind, createTablesOpSpec, tablesSignature)))
+	tablesSignature := runtime.MustLookupBuiltinType("internal/gen", "tables")
+	runtime.RegisterPackageValue("internal/gen", "tables", flux.MustValue(flux.FunctionValue(TablesKind, createTablesOpSpec, tablesSignature)))
 	flux.RegisterOpSpec(TablesKind, newTablesOp)
 	plan.RegisterProcedureSpec(TablesKind, newTablesProcedure, TablesKind)
 	execute.RegisterSource(TablesKind, createTablesSource)

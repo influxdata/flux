@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 )
 
@@ -15,12 +14,12 @@ const (
 )
 
 func init() {
-	flux.RegisterPackageValue("experimental", addDurationTo, addDuration(addDurationTo))
-	flux.RegisterPackageValue("experimental", subtractDurationFrom, subDuration(subtractDurationFrom))
+	runtime.RegisterPackageValue("experimental", addDurationTo, addDuration(addDurationTo))
+	runtime.RegisterPackageValue("experimental", subtractDurationFrom, subDuration(subtractDurationFrom))
 }
 
 func addDuration(name string) values.Value {
-	tp := semantic.MustLookupBuiltinType("experimental", "addDuration")
+	tp := runtime.MustLookupBuiltinType("experimental", "addDuration")
 	fn := func(ctx context.Context, args values.Object) (values.Value, error) {
 		d, ok := args.Get("d")
 		if !ok {
@@ -36,7 +35,7 @@ func addDuration(name string) values.Value {
 }
 
 func subDuration(name string) values.Value {
-	tp := semantic.MustLookupBuiltinType("experimental", "subDuration")
+	tp := runtime.MustLookupBuiltinType("experimental", "subDuration")
 	fn := func(ctx context.Context, args values.Object) (values.Value, error) {
 		d, ok := args.Get("d")
 		if !ok {

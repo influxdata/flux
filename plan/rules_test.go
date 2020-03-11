@@ -10,7 +10,18 @@ import (
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 )
+
+func init() {
+	plan.RegisterLogicalRules(
+		influxdb.DefaultFromAttributes{
+			Org:  &influxdb.NameOrID{Name: "influxdata"},
+			Host: func(v string) *string { return &v }("http://localhost:9999"),
+		},
+	)
+}
 
 func TestRuleRegistration(t *testing.T) {
 	simpleRule := plantest.SimpleRule{}
@@ -20,7 +31,7 @@ func TestRuleRegistration(t *testing.T) {
 	plan.RegisterLogicalRules(&simpleRule)
 
 	now := time.Now().UTC()
-	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), now, `from(bucket: "telegraf") |> range(start: -5m)`)
+	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now, `from(bucket: "telegraf") |> range(start: -5m)`)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
 	}
@@ -43,8 +54,6 @@ func TestRuleRegistration(t *testing.T) {
 	// Test rule registration for the physical plan too.
 	simpleRule.SeenNodes = simpleRule.SeenNodes[0:0]
 	plan.RegisterPhysicalRules(&simpleRule)
-	// register a rule that merges from and range
-	plan.RegisterPhysicalRules(&plantest.MergeFromRangePhysicalRule{})
 
 	physicalPlanner := plan.NewPhysicalPlanner()
 	_, err = physicalPlanner.Plan(logicalPlanSpec)

@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -21,9 +22,9 @@ type ShiftOpSpec struct {
 }
 
 func init() {
-	shiftSignature := semantic.MustLookupBuiltinType("universe", "timeShift")
+	shiftSignature := runtime.MustLookupBuiltinType("universe", "timeShift")
 
-	flux.RegisterPackageValue("universe", ShiftKind, flux.MustValue(flux.FunctionValue(ShiftKind, createShiftOpSpec, shiftSignature)))
+	runtime.RegisterPackageValue("universe", ShiftKind, flux.MustValue(flux.FunctionValue(ShiftKind, createShiftOpSpec, shiftSignature)))
 	flux.RegisterOpSpec(ShiftKind, newShiftOp)
 	plan.RegisterProcedureSpec(ShiftKind, newShiftProcedure, ShiftKind)
 	execute.RegisterTransformation(ShiftKind, createShiftTransformation)

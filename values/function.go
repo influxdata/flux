@@ -15,9 +15,12 @@ type Function interface {
 	Call(ctx context.Context, args Object) (Value, error)
 }
 
-// NewFunction returns a new function value
+// NewFunction returns a new function value.
+// This function will panic if it is passed anything other than a function type.
 func NewFunction(name string, typ semantic.MonoType, call func(ctx context.Context, args Object) (Value, error), sideEffect bool) *function {
-	// TODO (algow): error if type is not a function type
+	if typ.Kind() != semantic.Fun {
+		panic("expected function type, but instead got " + typ.String())
+	}
 	return &function{
 		name:          name,
 		t:             typ,

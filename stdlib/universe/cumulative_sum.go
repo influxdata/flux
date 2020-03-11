@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -17,9 +18,9 @@ type CumulativeSumOpSpec struct {
 }
 
 func init() {
-	cumulativeSumSignature := semantic.MustLookupBuiltinType("universe", "cumulativeSum")
+	cumulativeSumSignature := runtime.MustLookupBuiltinType("universe", "cumulativeSum")
 
-	flux.RegisterPackageValue("universe", CumulativeSumKind, flux.MustValue(flux.FunctionValue(CumulativeSumKind, createCumulativeSumOpSpec, cumulativeSumSignature)))
+	runtime.RegisterPackageValue("universe", CumulativeSumKind, flux.MustValue(flux.FunctionValue(CumulativeSumKind, createCumulativeSumOpSpec, cumulativeSumSignature)))
 	flux.RegisterOpSpec(CumulativeSumKind, newCumulativeSumOp)
 	plan.RegisterProcedureSpec(CumulativeSumKind, newCumulativeSumProcedure, CumulativeSumKind)
 	execute.RegisterTransformation(CumulativeSumKind, createCumulativeSumTransformation)

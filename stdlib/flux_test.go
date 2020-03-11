@@ -12,11 +12,12 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib"
 )
 
 func init() {
-	flux.FinalizeBuiltIns()
+	runtime.FinalizeBuiltIns()
 }
 
 // list of end-to-end tests that are meant to be skipped and not run for various reasons
@@ -33,8 +34,6 @@ var skip = map[string]map[string]string{
 		"yield":                       "yield requires special test case (https://github.com/influxdata/flux/issues/535)",
 		"task_per_line":               "join produces inconsistent/racy results when table schemas do not match (https://github.com/influxdata/flux/issues/855)",
 		"integral_columns":            "aggregates changed to operate on just a single columnm.",
-
-		"dynamic_query": "todo(algow): find table functions",
 	},
 	"http": {
 		"http_endpoint": "need ability to test side effects in e2e tests: https://github.com/influxdata/flux/issues/1723)",
@@ -47,11 +46,6 @@ var skip = map[string]map[string]string{
 	"testing/pandas": {
 		"extract_regexp_findStringIndex": "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
 		"partition_strings_splitN":       "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
-	},
-	"testing/usage": {
-		"api":     "todo(algow): stalls",
-		"storage": "todo(algow): stalls",
-		"writes":  "todo(algow): stalls",
 	},
 }
 
@@ -162,7 +156,7 @@ func testFlux(t testing.TB, file *ast.File) flux.Statistics {
 }
 
 func doTestRun(t testing.TB, c flux.Compiler) flux.Statistics {
-	program, err := c.Compile(context.Background())
+	program, err := c.Compile(context.Background(), runtime.Default)
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}
@@ -192,7 +186,7 @@ func doTestRun(t testing.TB, c flux.Compiler) flux.Statistics {
 }
 
 func doTestInspect(t testing.TB, c flux.Compiler) flux.Statistics {
-	program, err := c.Compile(context.Background())
+	program, err := c.Compile(context.Background(), runtime.Default)
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}

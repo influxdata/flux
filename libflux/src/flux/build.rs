@@ -28,15 +28,6 @@ fn main() {
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write bindings!");
 
-    let ctypes = bindgen::Builder::default()
-        .header("../../include/influxdata/flux.h")
-        .generate()
-        .expect("Unable to generate c type bindings");
-
-    ctypes
-        .write_to_file(out_path.join("ctypes.rs"))
-        .expect("Couldn't write c type bindings!");
-
     copy("../../scanner.c", out_path.join("scanner.c")).expect("Could not copy scanner.c");
 
     // Compile generated scanner

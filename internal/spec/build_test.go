@@ -8,6 +8,7 @@ import (
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/internal/spec"
+	"github.com/influxdata/flux/runtime"
 )
 
 func Benchmark_FromScript(b *testing.B) {
@@ -35,7 +36,7 @@ check |> yield(name: "mean")
 	ctx := dependenciestest.Default().Inject(context.Background())
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		if _, err := spec.FromScript(ctx, time.Now(), query); err != nil {
+		if _, err := spec.FromScript(ctx, runtime.Default, time.Now(), query); err != nil {
 			b.Fatal(err)
 		}
 	}

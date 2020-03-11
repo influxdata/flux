@@ -2,7 +2,7 @@ package valuestest
 
 import (
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 )
 
@@ -35,5 +35,5 @@ var ScopeTransformer = cmp.Transformer("Scope", func(s values.Scope) *Comparable
 
 // Scope returns a scope that contains the prelude.
 func Scope() values.Scope {
-	return flux.Prelude()
+	return runtime.Prelude()
 }

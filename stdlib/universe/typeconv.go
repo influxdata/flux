@@ -8,34 +8,34 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/internal/parser"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 func init() {
-	flux.RegisterPackageValue("universe", "string", &stringConv{})
-	flux.RegisterPackageValue("universe", "int", &intConv{})
-	flux.RegisterPackageValue("universe", "uint", &uintConv{})
-	flux.RegisterPackageValue("universe", "float", &floatConv{})
-	flux.RegisterPackageValue("universe", "bool", &boolConv{})
-	flux.RegisterPackageValue("universe", "time", &timeConv{})
-	flux.RegisterPackageValue("universe", "duration", &durationConv{})
-	flux.RegisterPackageValue("universe", "bytes", bytes)
+	runtime.RegisterPackageValue("universe", "string", &stringConv{})
+	runtime.RegisterPackageValue("universe", "int", &intConv{})
+	runtime.RegisterPackageValue("universe", "uint", &uintConv{})
+	runtime.RegisterPackageValue("universe", "float", &floatConv{})
+	runtime.RegisterPackageValue("universe", "bool", &boolConv{})
+	runtime.RegisterPackageValue("universe", "time", &timeConv{})
+	runtime.RegisterPackageValue("universe", "duration", &durationConv{})
+	runtime.RegisterPackageValue("universe", "bytes", bytes)
 }
 
 var (
-	convBoolType     = semantic.MustLookupBuiltinType("universe", "bool")
-	convIntType      = semantic.MustLookupBuiltinType("universe", "int")
-	convUintType     = semantic.MustLookupBuiltinType("universe", "uint")
-	convFloatType    = semantic.MustLookupBuiltinType("universe", "float")
-	convStringType   = semantic.MustLookupBuiltinType("universe", "string")
-	convTimeType     = semantic.MustLookupBuiltinType("universe", "time")
-	convDurationType = semantic.MustLookupBuiltinType("universe", "duration")
-	convBytesType    = semantic.MustLookupBuiltinType("universe", "bytes")
+	convBoolType     = runtime.MustLookupBuiltinType("universe", "bool")
+	convIntType      = runtime.MustLookupBuiltinType("universe", "int")
+	convUintType     = runtime.MustLookupBuiltinType("universe", "uint")
+	convFloatType    = runtime.MustLookupBuiltinType("universe", "float")
+	convStringType   = runtime.MustLookupBuiltinType("universe", "string")
+	convTimeType     = runtime.MustLookupBuiltinType("universe", "time")
+	convDurationType = runtime.MustLookupBuiltinType("universe", "duration")
+	convBytesType    = runtime.MustLookupBuiltinType("universe", "bytes")
 )
 
 const (
@@ -573,11 +573,11 @@ func (c *timeConv) Call(ctx context.Context, args values.Object) (values.Value, 
 	}
 	switch v.Type().Nature() {
 	case semantic.String:
-		ast, err := parser.ParseTime(v.Str())
+		ts, err := parser.ParseTime(v.Str())
 		if err != nil {
 			return nil, err
 		}
-		t = values.Time(ast.Value.UnixNano())
+		t = values.Time(ts.UnixNano())
 	case semantic.Int:
 		t = values.Time(v.Int())
 	case semantic.UInt:

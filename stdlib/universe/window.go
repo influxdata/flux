@@ -8,7 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 )
 
@@ -27,11 +27,11 @@ type WindowOpSpec struct {
 var infinityVar = values.NewDuration(values.ConvertDuration(math.MaxInt64))
 
 func init() {
-	windowSignature := semantic.MustLookupBuiltinType("universe", "window")
+	windowSignature := runtime.MustLookupBuiltinType("universe", "window")
 
-	flux.RegisterPackageValue("universe", WindowKind, flux.MustValue(flux.FunctionValue(WindowKind, createWindowOpSpec, windowSignature)))
+	runtime.RegisterPackageValue("universe", WindowKind, flux.MustValue(flux.FunctionValue(WindowKind, createWindowOpSpec, windowSignature)))
 	flux.RegisterOpSpec(WindowKind, newWindowOp)
-	flux.RegisterPackageValue("universe", "inf", infinityVar)
+	runtime.RegisterPackageValue("universe", "inf", infinityVar)
 	plan.RegisterProcedureSpec(WindowKind, newWindowProcedure, WindowKind)
 	plan.RegisterPhysicalRules(WindowTriggerPhysicalRule{})
 	execute.RegisterTransformation(WindowKind, createWindowTransformation)

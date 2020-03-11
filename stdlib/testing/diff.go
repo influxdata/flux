@@ -13,7 +13,8 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
+	"gonum.org/v1/gonum/floats"
 )
 
 const DiffKind = "diff"
@@ -27,9 +28,9 @@ func (s *DiffOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-	diffSignature := semantic.MustLookupBuiltinType("testing", "diff")
+	diffSignature := runtime.MustLookupBuiltinType("testing", "diff")
 
-	flux.RegisterPackageValue("testing", "diff", flux.MustValue(flux.FunctionValue(DiffKind, createDiffOpSpec, diffSignature)))
+	runtime.RegisterPackageValue("testing", "diff", flux.MustValue(flux.FunctionValue(DiffKind, createDiffOpSpec, diffSignature)))
 	flux.RegisterOpSpec(DiffKind, newDiffOp)
 	plan.RegisterProcedureSpec(DiffKind, newDiffProcedure, DiffKind)
 	execute.RegisterTransformation(DiffKind, createDiffTransformation)
@@ -460,6 +461,27 @@ func (t *DiffTransformation) diff(key flux.GroupKey, want, got *tableBuffer) err
 	return nil
 }
 
+// Arbitrary floating point tolerance
+const tolerance float64 = 1e-25
+
+// The maximum number of floating point values that are allowed
+// to lie between two float64s and still be considered equal.
+const ulp uint = 2
+
+func equalFloats(a, b, tolerance float64, ulp uint) bool {
+	// If sufficiently close, then move on.
+	// This avoids situations close to zero.
+	if floats.EqualWithinAbs(a, b, tolerance) {
+		return true
+	}
+	// If not sufficiently close, both floats
+	// must be within ulp steps of each other.
+	if !floats.EqualWithinULP(a, b, ulp) {
+		return false
+	}
+	return true
+}
+
 func (t *DiffTransformation) rowEqual(want, got *tableBuffer, i int) bool {
 	if len(want.columns) != len(got.columns) {
 		return false
@@ -480,7 +502,7 @@ func (t *DiffTransformation) rowEqual(want, got *tableBuffer, i int) bool {
 		switch wantCol.Type {
 		case flux.TFloat:
 			want, got := wantCol.Values.(*array.Float64), gotCol.Values.(*array.Float64)
-			if want.Value(i) != got.Value(i) {
+			if !equalFloats(want.Value(i), got.Value(i), tolerance, ulp) {
 				return false
 			}
 		case flux.TInt:

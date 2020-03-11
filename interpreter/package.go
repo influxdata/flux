@@ -18,6 +18,9 @@ type Package struct {
 	// name is the name of the package.
 	name string
 
+	// path is the canonical import path that is used to import this package.
+	path string
+
 	// object contains the object properties of this package.
 	object values.Object
 
@@ -26,16 +29,17 @@ type Package struct {
 	sideEffects []SideEffect
 }
 
-func NewPackageWithValues(name string, obj values.Object) *Package {
+func NewPackageWithValues(name, path string, obj values.Object) *Package {
 	return &Package{
 		name:   name,
+		path:   path,
 		object: obj,
 	}
 }
 
 func NewPackage(name string) *Package {
 	obj := values.NewObject(semantic.NewObjectType(nil))
-	return NewPackageWithValues(name, obj)
+	return NewPackageWithValues(name, "", obj)
 }
 
 func (p *Package) Copy() *Package {
@@ -50,9 +54,17 @@ func (p *Package) Copy() *Package {
 		sideEffects: sideEffects,
 	}
 }
+
+// Name returns the package name.
 func (p *Package) Name() string {
 	return p.name
 }
+
+// Path returns the canonical import path for this package.
+func (p *Package) Path() string {
+	return p.path
+}
+
 func (p *Package) SideEffects() []SideEffect {
 	return p.sideEffects
 }

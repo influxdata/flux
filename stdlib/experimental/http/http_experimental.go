@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
@@ -25,7 +26,7 @@ const maxResponseBody = 512 * 1024 // 512 KB
 // http get mirrors the http post originally completed for alerts & notifications
 var get = values.NewFunction(
 	"get",
-	semantic.MustLookupBuiltinType("experimental/http", "get"),
+	runtime.MustLookupBuiltinType("experimental/http", "get"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		// Get and validate URL
 		uV, ok := args.Get("url")
@@ -138,6 +139,6 @@ func headerToObject(header http.Header) (headerObj values.Object) {
 }
 
 func init() {
-	flux.RegisterPackageValue("experimental/http", "get", get)
+	runtime.RegisterPackageValue("experimental/http", "get", get)
 
 }

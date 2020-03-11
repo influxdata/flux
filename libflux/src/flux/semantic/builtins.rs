@@ -53,6 +53,12 @@ pub fn builtins() -> Builtins<'static> {
             "experimental/bigtable" => maplit::hashmap! {
                      "from" => "forall [t0] where t0: Row (token: string, project: string, instance: string, table: string) -> [t0]",
             },
+            "experimental/geo" => maplit::hashmap! {
+                     "containsLatLon" => "forall [t0] where t0: Row (region: t0, lat: float, lon: float) -> bool",
+                     "getGrid" => "forall [t0] where t0: Row (region: t0, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int) -> {level: int | set: [string]}",
+                     "getParent" => "forall [] (?token: string, ?point: {lat: float | lon: float}, level: int) -> string",
+                     "getLevel" => "forall [] (token: string) -> int",
+            },
             "experimental/http" => maplit::hashmap! {
                 "get" => r#"
                     forall [t0, t1] where t0: Row, t1: Row (
@@ -124,7 +130,14 @@ pub fn builtins() -> Builtins<'static> {
             "influxdata/influxdb" => maplit::hashmap! {
                 // This is a one-or-the-other parameters function
                 // https://github.com/influxdata/flux/issues/1659
-                "from" => "forall [t0, t1] (?bucket: string, ?bucketID: string) -> [{_measurement: string | _field: string | _time: time | _value: t0 | t1}]",
+                "from" => r#"forall [t0, t1] (
+                    ?bucket: string,
+                    ?bucketID: string,
+                    ?org: string,
+                    ?orgID: string,
+                    ?host: string,
+                    ?token: string
+                ) -> [{_measurement: string | _field: string | _time: time | _value: t0 | t1}]"#,
                 // exactly one of (bucket, bucketID) must be specified
                 // exactly one of (org, orgID) must be specified
                 // https://github.com/influxdata/flux/issues/1660
@@ -175,6 +188,13 @@ pub fn builtins() -> Builtins<'static> {
                 "timestamp" => "forall [t0] (<-tables: [{_value: float | t0}]) -> [{_value: float | t0}]",
                 "promqlYear" => "forall [] (timestamp: float) -> float",
                 "join" => "forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (left: [t0], right: [t1], fn: (left: t0, right: t1) -> t2) -> [t2]",
+            },
+            "internal/testutil" => maplit::hashmap! {
+                "fail" => "forall [] () -> bool",
+                "yield" => r#"
+                    forall [t0] (<-v: t0) -> t0
+                "#,
+                "makeRecord" => "forall [t0, t1] where t0: Row, t1: Row (o: t0) -> t1",
             },
             "json" => maplit::hashmap! {
                 "encode" => "forall [t0] (v: t0) -> bytes",
@@ -336,7 +356,7 @@ pub fn builtins() -> Builtins<'static> {
                 "splitAfter" => "forall [] (v: string, t: string) -> [string]",
                 "splitN" => "forall [] (v: string, t: string, n: int) -> [string]",
                 "splitAfterN" => "forall [] (v: string, t: string, i: int) -> [string]",
-                "joinStr" => "forall [] (arr: [string], v: string) -> {}",
+                "joinStr" => "forall [] (arr: [string], v: string) -> string",
                 "strlen" => "forall [] (v: string) -> int",
                 "substring" => "forall [] (v: string, start: int, end: int) -> string",
             },

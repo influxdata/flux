@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -23,9 +24,9 @@ type MapOpSpec struct {
 }
 
 func init() {
-	mapSignature := semantic.MustLookupBuiltinType("universe", "map")
+	mapSignature := runtime.MustLookupBuiltinType("universe", "map")
 
-	flux.RegisterPackageValue("universe", MapKind, flux.MustValue(flux.FunctionValue(MapKind, createMapOpSpec, mapSignature)))
+	runtime.RegisterPackageValue("universe", MapKind, flux.MustValue(flux.FunctionValue(MapKind, createMapOpSpec, mapSignature)))
 	flux.RegisterOpSpec(MapKind, newMapOp)
 	plan.RegisterProcedureSpec(MapKind, newMapProcedure, MapKind)
 	execute.RegisterTransformation(MapKind, createMapTransformation)
@@ -239,6 +240,29 @@ func (t *mapTransformation) createSchema(b execute.TableBuilder, m values.Object
 		}
 	}
 
+	returnType := t.fn.Type()
+
+	numProps, err := returnType.NumProperties()
+	if err != nil {
+		return err
+	}
+
+	props := make(map[string]semantic.Nature, numProps)
+	// Deduplicate the properties in the return type.
+	// Scan properties in reverse order to ensure we only
+	// add visible properties to the list.
+	for i := numProps - 1; i >= 0; i-- {
+		prop, err := returnType.RowProperty(i)
+		if err != nil {
+			return err
+		}
+		typ, err := prop.TypeOf()
+		if err != nil {
+			return err
+		}
+		props[prop.Name()] = typ.Nature()
+	}
+
 	// Add columns from function in sorted order.
 	n, err := m.Type().NumProperties()
 	if err != nil {
@@ -260,14 +284,22 @@ func (t *mapTransformation) createSchema(b execute.TableBuilder, m values.Object
 			continue
 		}
 
-		n, ok := m.Get(k)
+		v, ok := m.Get(k)
 		if !ok {
 			continue
 		}
 
+		nature := v.Type().Nature()
+
+		if kind, ok := props[k]; ok && kind != semantic.Invalid {
+			nature = kind
+		}
+		if nature == semantic.Invalid {
+			continue
+		}
 		if _, err := b.AddCol(flux.ColMeta{
 			Label: k,
-			Type:  execute.ConvertFromKind(n.Type().Nature()),
+			Type:  execute.ConvertFromKind(nature),
 		}); err != nil {
 			return err
 		}
