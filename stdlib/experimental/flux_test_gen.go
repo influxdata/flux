@@ -20,7 +20,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 95,
 					Line:   45,
 				},
-				File:   "",
+				File:   "group_test.flux",
 				Source: "package experimental_test\n\nimport \"experimental\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string\n#group,false,false,false,false,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,name\n,,0,2018-05-22T19:53:26Z,15204688,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:36Z,15204894,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:46Z,15205102,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:56Z,15205226,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:06Z,15205499,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:26Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:36Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:46Z,672,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:56Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,dateTime:RFC3339,long\n#group,false,false,true,true,true,true,true,true,false,false\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,host,name,_time,_value\n,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk0,2018-05-22T19:54:16Z,15205755\n,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk2,2018-05-22T19:53:46Z,672\n\"\n\nt_group = (table=<-) =>\n\ttable\n\t\t|> range(start: 2018-05-22T19:53:26Z)\n\t\t|> filter(fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\"))\n\t\t|> experimental.group(mode: \"extend\", columns: [\"name\"])\n\t\t|> max()\n\ntest _group = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})",
 				Start: ast.Position{
 					Column: 1,
@@ -37,7 +37,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   6,
 						},
-						File:   "",
+						File:   "group_test.flux",
 						Source: "now = () => (2030-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 8,
@@ -53,7 +53,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   6,
 							},
-							File:   "",
+							File:   "group_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
@@ -71,7 +71,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   6,
 							},
-							File:   "",
+							File:   "group_test.flux",
 							Source: "() => (2030-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 14,
@@ -87,7 +87,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   6,
 								},
-								File:   "",
+								File:   "group_test.flux",
 								Source: "(2030-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 20,
@@ -103,7 +103,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   6,
 									},
-									File:   "",
+									File:   "group_test.flux",
 									Source: "2030-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 21,
@@ -124,7 +124,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   6,
 					},
-					File:   "",
+					File:   "group_test.flux",
 					Source: "option now = () => (2030-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
@@ -140,7 +140,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   25,
 					},
-					File:   "",
+					File:   "group_test.flux",
 					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string\n#group,false,false,false,false,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,name\n,,0,2018-05-22T19:53:26Z,15204688,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:36Z,15204894,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:46Z,15205102,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:56Z,15205226,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:06Z,15205499,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:26Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:36Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:46Z,672,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:56Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -156,7 +156,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "",
+						File:   "group_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
@@ -174,7 +174,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   25,
 						},
-						File:   "",
+						File:   "group_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string\n#group,false,false,false,false,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,name\n,,0,2018-05-22T19:53:26Z,15204688,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:36Z,15204894,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:46Z,15205102,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:56Z,15205226,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:06Z,15205499,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:26Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:36Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:46Z,672,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:53:56Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2\n,,0,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2\n\"",
 						Start: ast.Position{
 							Column: 10,
@@ -192,7 +192,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   34,
 					},
-					File:   "",
+					File:   "group_test.flux",
 					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,dateTime:RFC3339,long\n#group,false,false,true,true,true,true,true,true,false,false\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,host,name,_time,_value\n,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk0,2018-05-22T19:54:16Z,15205755\n,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk2,2018-05-22T19:53:46Z,672\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -208,7 +208,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   27,
 						},
-						File:   "",
+						File:   "group_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
@@ -226,7 +226,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   34,
 						},
-						File:   "",
+						File:   "group_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,dateTime:RFC3339,long\n#group,false,false,true,true,true,true,true,true,false,false\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,host,name,_time,_value\n,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk0,2018-05-22T19:54:16Z,15205755\n,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk2,2018-05-22T19:53:46Z,672\n\"",
 						Start: ast.Position{
 							Column: 11,
@@ -244,7 +244,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 11,
 						Line:   42,
 					},
-					File:   "",
+					File:   "group_test.flux",
 					Source: "t_group = (table=<-) =>\n\ttable\n\t\t|> range(start: 2018-05-22T19:53:26Z)\n\t\t|> filter(fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\"))\n\t\t|> experimental.group(mode: \"extend\", columns: [\"name\"])\n\t\t|> max()",
 					Start: ast.Position{
 						Column: 1,
@@ -260,7 +260,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   36,
 						},
-						File:   "",
+						File:   "group_test.flux",
 						Source: "t_group",
 						Start: ast.Position{
 							Column: 1,
@@ -278,7 +278,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 11,
 							Line:   42,
 						},
-						File:   "",
+						File:   "group_test.flux",
 						Source: "(table=<-) =>\n\ttable\n\t\t|> range(start: 2018-05-22T19:53:26Z)\n\t\t|> filter(fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\"))\n\t\t|> experimental.group(mode: \"extend\", columns: [\"name\"])\n\t\t|> max()",
 						Start: ast.Position{
 							Column: 11,
@@ -298,7 +298,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 7,
 												Line:   37,
 											},
-											File:   "",
+											File:   "group_test.flux",
 											Source: "table",
 											Start: ast.Position{
 												Column: 2,
@@ -315,7 +315,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 40,
 											Line:   38,
 										},
-										File:   "",
+										File:   "group_test.flux",
 										Source: "table\n\t\t|> range(start: 2018-05-22T19:53:26Z)",
 										Start: ast.Position{
 											Column: 2,
@@ -332,7 +332,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 39,
 													Line:   38,
 												},
-												File:   "",
+												File:   "group_test.flux",
 												Source: "start: 2018-05-22T19:53:26Z",
 												Start: ast.Position{
 													Column: 12,
@@ -348,7 +348,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 39,
 														Line:   38,
 													},
-													File:   "",
+													File:   "group_test.flux",
 													Source: "start: 2018-05-22T19:53:26Z",
 													Start: ast.Position{
 														Column: 12,
@@ -364,7 +364,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 17,
 															Line:   38,
 														},
-														File:   "",
+														File:   "group_test.flux",
 														Source: "start",
 														Start: ast.Position{
 															Column: 12,
@@ -382,7 +382,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 39,
 															Line:   38,
 														},
-														File:   "",
+														File:   "group_test.flux",
 														Source: "2018-05-22T19:53:26Z",
 														Start: ast.Position{
 															Column: 19,
@@ -402,7 +402,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 40,
 												Line:   38,
 											},
-											File:   "",
+											File:   "group_test.flux",
 											Source: "range(start: 2018-05-22T19:53:26Z)",
 											Start: ast.Position{
 												Column: 6,
@@ -418,7 +418,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 11,
 													Line:   38,
 												},
-												File:   "",
+												File:   "group_test.flux",
 												Source: "range",
 												Start: ast.Position{
 													Column: 6,
@@ -437,7 +437,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 59,
 										Line:   40,
 									},
-									File:   "",
+									File:   "group_test.flux",
 									Source: "table\n\t\t|> range(start: 2018-05-22T19:53:26Z)\n\t\t|> filter(fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\"))",
 									Start: ast.Position{
 										Column: 2,
@@ -454,7 +454,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 58,
 												Line:   40,
 											},
-											File:   "",
+											File:   "group_test.flux",
 											Source: "fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\")",
 											Start: ast.Position{
 												Column: 13,
@@ -470,7 +470,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 58,
 													Line:   40,
 												},
-												File:   "",
+												File:   "group_test.flux",
 												Source: "fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\")",
 												Start: ast.Position{
 													Column: 13,
@@ -486,7 +486,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 15,
 														Line:   39,
 													},
-													File:   "",
+													File:   "group_test.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 13,
@@ -504,7 +504,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 58,
 														Line:   40,
 													},
-													File:   "",
+													File:   "group_test.flux",
 													Source: "(r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\")",
 													Start: ast.Position{
 														Column: 17,
@@ -520,7 +520,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 58,
 															Line:   40,
 														},
-														File:   "",
+														File:   "group_test.flux",
 														Source: "(r._measurement == \"diskio\" and r._field == \"io_time\")",
 														Start: ast.Position{
 															Column: 4,
@@ -536,7 +536,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 57,
 																Line:   40,
 															},
-															File:   "",
+															File:   "group_test.flux",
 															Source: "r._measurement == \"diskio\" and r._field == \"io_time\"",
 															Start: ast.Position{
 																Column: 5,
@@ -552,7 +552,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 31,
 																	Line:   40,
 																},
-																File:   "",
+																File:   "group_test.flux",
 																Source: "r._measurement == \"diskio\"",
 																Start: ast.Position{
 																	Column: 5,
@@ -568,7 +568,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 19,
 																		Line:   40,
 																	},
-																	File:   "",
+																	File:   "group_test.flux",
 																	Source: "r._measurement",
 																	Start: ast.Position{
 																		Column: 5,
@@ -584,7 +584,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 6,
 																			Line:   40,
 																		},
-																		File:   "",
+																		File:   "group_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 5,
@@ -602,7 +602,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 19,
 																			Line:   40,
 																		},
-																		File:   "",
+																		File:   "group_test.flux",
 																		Source: "_measurement",
 																		Start: ast.Position{
 																			Column: 7,
@@ -622,7 +622,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 31,
 																		Line:   40,
 																	},
-																	File:   "",
+																	File:   "group_test.flux",
 																	Source: "\"diskio\"",
 																	Start: ast.Position{
 																		Column: 23,
@@ -642,7 +642,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 57,
 																	Line:   40,
 																},
-																File:   "",
+																File:   "group_test.flux",
 																Source: "r._field == \"io_time\"",
 																Start: ast.Position{
 																	Column: 36,
@@ -658,7 +658,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 44,
 																		Line:   40,
 																	},
-																	File:   "",
+																	File:   "group_test.flux",
 																	Source: "r._field",
 																	Start: ast.Position{
 																		Column: 36,
@@ -674,7 +674,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 37,
 																			Line:   40,
 																		},
-																		File:   "",
+																		File:   "group_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 36,
@@ -692,7 +692,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 44,
 																			Line:   40,
 																		},
-																		File:   "",
+																		File:   "group_test.flux",
 																		Source: "_field",
 																		Start: ast.Position{
 																			Column: 38,
@@ -712,7 +712,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 57,
 																		Line:   40,
 																	},
-																	File:   "",
+																	File:   "group_test.flux",
 																	Source: "\"io_time\"",
 																	Start: ast.Position{
 																		Column: 48,
@@ -733,7 +733,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 19,
 															Line:   39,
 														},
-														File:   "",
+														File:   "group_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 18,
@@ -749,7 +749,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 19,
 																Line:   39,
 															},
-															File:   "",
+															File:   "group_test.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 18,
@@ -772,7 +772,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 59,
 											Line:   40,
 										},
-										File:   "",
+										File:   "group_test.flux",
 										Source: "filter(fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\"))",
 										Start: ast.Position{
 											Column: 6,
@@ -788,7 +788,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 12,
 												Line:   39,
 											},
-											File:   "",
+											File:   "group_test.flux",
 											Source: "filter",
 											Start: ast.Position{
 												Column: 6,
@@ -807,7 +807,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 59,
 									Line:   41,
 								},
-								File:   "",
+								File:   "group_test.flux",
 								Source: "table\n\t\t|> range(start: 2018-05-22T19:53:26Z)\n\t\t|> filter(fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\"))\n\t\t|> experimental.group(mode: \"extend\", columns: [\"name\"])",
 								Start: ast.Position{
 									Column: 2,
@@ -824,7 +824,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 58,
 											Line:   41,
 										},
-										File:   "",
+										File:   "group_test.flux",
 										Source: "mode: \"extend\", columns: [\"name\"]",
 										Start: ast.Position{
 											Column: 25,
@@ -840,7 +840,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 39,
 												Line:   41,
 											},
-											File:   "",
+											File:   "group_test.flux",
 											Source: "mode: \"extend\"",
 											Start: ast.Position{
 												Column: 25,
@@ -856,7 +856,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 29,
 													Line:   41,
 												},
-												File:   "",
+												File:   "group_test.flux",
 												Source: "mode",
 												Start: ast.Position{
 													Column: 25,
@@ -874,7 +874,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 39,
 													Line:   41,
 												},
-												File:   "",
+												File:   "group_test.flux",
 												Source: "\"extend\"",
 												Start: ast.Position{
 													Column: 31,
@@ -892,7 +892,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 58,
 												Line:   41,
 											},
-											File:   "",
+											File:   "group_test.flux",
 											Source: "columns: [\"name\"]",
 											Start: ast.Position{
 												Column: 41,
@@ -908,7 +908,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 48,
 													Line:   41,
 												},
-												File:   "",
+												File:   "group_test.flux",
 												Source: "columns",
 												Start: ast.Position{
 													Column: 41,
@@ -926,7 +926,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 58,
 													Line:   41,
 												},
-												File:   "",
+												File:   "group_test.flux",
 												Source: "[\"name\"]",
 												Start: ast.Position{
 													Column: 50,
@@ -942,7 +942,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 57,
 														Line:   41,
 													},
-													File:   "",
+													File:   "group_test.flux",
 													Source: "\"name\"",
 													Start: ast.Position{
 														Column: 51,
@@ -963,7 +963,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 59,
 										Line:   41,
 									},
-									File:   "",
+									File:   "group_test.flux",
 									Source: "experimental.group(mode: \"extend\", columns: [\"name\"])",
 									Start: ast.Position{
 										Column: 6,
@@ -979,7 +979,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 24,
 											Line:   41,
 										},
-										File:   "",
+										File:   "group_test.flux",
 										Source: "experimental.group",
 										Start: ast.Position{
 											Column: 6,
@@ -995,7 +995,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 18,
 												Line:   41,
 											},
-											File:   "",
+											File:   "group_test.flux",
 											Source: "experimental",
 											Start: ast.Position{
 												Column: 6,
@@ -1013,7 +1013,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 24,
 												Line:   41,
 											},
-											File:   "",
+											File:   "group_test.flux",
 											Source: "group",
 											Start: ast.Position{
 												Column: 19,
@@ -1033,7 +1033,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   42,
 							},
-							File:   "",
+							File:   "group_test.flux",
 							Source: "table\n\t\t|> range(start: 2018-05-22T19:53:26Z)\n\t\t|> filter(fn: (r) =>\n\t\t\t(r._measurement == \"diskio\" and r._field == \"io_time\"))\n\t\t|> experimental.group(mode: \"extend\", columns: [\"name\"])\n\t\t|> max()",
 							Start: ast.Position{
 								Column: 2,
@@ -1050,7 +1050,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 11,
 									Line:   42,
 								},
-								File:   "",
+								File:   "group_test.flux",
 								Source: "max()",
 								Start: ast.Position{
 									Column: 6,
@@ -1066,7 +1066,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 9,
 										Line:   42,
 									},
-									File:   "",
+									File:   "group_test.flux",
 									Source: "max",
 									Start: ast.Position{
 										Column: 6,
@@ -1086,7 +1086,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 20,
 								Line:   36,
 							},
-							File:   "",
+							File:   "group_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 12,
@@ -1102,7 +1102,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 17,
 									Line:   36,
 								},
-								File:   "",
+								File:   "group_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 12,
@@ -1119,7 +1119,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 20,
 								Line:   36,
 							},
-							File:   "",
+							File:   "group_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 18,
@@ -1138,7 +1138,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 95,
 							Line:   45,
 						},
-						File:   "",
+						File:   "group_test.flux",
 						Source: "_group = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})",
 						Start: ast.Position{
 							Column: 6,
@@ -1154,7 +1154,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 12,
 								Line:   44,
 							},
-							File:   "",
+							File:   "group_test.flux",
 							Source: "_group",
 							Start: ast.Position{
 								Column: 6,
@@ -1172,7 +1172,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 95,
 								Line:   45,
 							},
-							File:   "",
+							File:   "group_test.flux",
 							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})",
 							Start: ast.Position{
 								Column: 15,
@@ -1188,7 +1188,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 95,
 									Line:   45,
 								},
-								File:   "",
+								File:   "group_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})",
 								Start: ast.Position{
 									Column: 2,
@@ -1204,7 +1204,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 94,
 										Line:   45,
 									},
-									File:   "",
+									File:   "group_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group}",
 									Start: ast.Position{
 										Column: 3,
@@ -1220,7 +1220,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 43,
 											Line:   45,
 										},
-										File:   "",
+										File:   "group_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
@@ -1236,7 +1236,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 9,
 												Line:   45,
 											},
-											File:   "",
+											File:   "group_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 4,
@@ -1255,7 +1255,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 42,
 													Line:   45,
 												},
-												File:   "",
+												File:   "group_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 31,
@@ -1271,7 +1271,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 42,
 														Line:   45,
 													},
-													File:   "",
+													File:   "group_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 31,
@@ -1287,7 +1287,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 34,
 															Line:   45,
 														},
-														File:   "",
+														File:   "group_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 31,
@@ -1305,7 +1305,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 42,
 															Line:   45,
 														},
-														File:   "",
+														File:   "group_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 36,
@@ -1325,7 +1325,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 43,
 												Line:   45,
 											},
-											File:   "",
+											File:   "group_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
@@ -1341,7 +1341,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   45,
 												},
-												File:   "",
+												File:   "group_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 11,
@@ -1357,7 +1357,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 18,
 														Line:   45,
 													},
-													File:   "",
+													File:   "group_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
@@ -1375,7 +1375,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   45,
 													},
-													File:   "",
+													File:   "group_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 19,
@@ -1395,7 +1395,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 80,
 											Line:   45,
 										},
-										File:   "",
+										File:   "group_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
@@ -1411,7 +1411,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 49,
 												Line:   45,
 											},
-											File:   "",
+											File:   "group_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 45,
@@ -1430,7 +1430,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 79,
 													Line:   45,
 												},
-												File:   "",
+												File:   "group_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 67,
@@ -1446,7 +1446,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 79,
 														Line:   45,
 													},
-													File:   "",
+													File:   "group_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 67,
@@ -1462,7 +1462,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 70,
 															Line:   45,
 														},
-														File:   "",
+														File:   "group_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 67,
@@ -1480,7 +1480,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 79,
 															Line:   45,
 														},
-														File:   "",
+														File:   "group_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 72,
@@ -1500,7 +1500,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 80,
 												Line:   45,
 											},
-											File:   "",
+											File:   "group_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
@@ -1516,7 +1516,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 66,
 													Line:   45,
 												},
-												File:   "",
+												File:   "group_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 51,
@@ -1532,7 +1532,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 58,
 														Line:   45,
 													},
-													File:   "",
+													File:   "group_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 51,
@@ -1550,7 +1550,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 66,
 														Line:   45,
 													},
-													File:   "",
+													File:   "group_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 59,
@@ -1570,7 +1570,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 93,
 											Line:   45,
 										},
-										File:   "",
+										File:   "group_test.flux",
 										Source: "fn: t_group",
 										Start: ast.Position{
 											Column: 82,
@@ -1586,7 +1586,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 84,
 												Line:   45,
 											},
-											File:   "",
+											File:   "group_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 82,
@@ -1604,7 +1604,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 93,
 												Line:   45,
 											},
-											File:   "",
+											File:   "group_test.flux",
 											Source: "t_group",
 											Start: ast.Position{
 												Column: 86,
@@ -1628,7 +1628,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 95,
 						Line:   45,
 					},
-					File:   "",
+					File:   "group_test.flux",
 					Source: "test _group = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})",
 					Start: ast.Position{
 						Column: 1,
@@ -1646,7 +1646,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 22,
 						Line:   3,
 					},
-					File:   "",
+					File:   "group_test.flux",
 					Source: "import \"experimental\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1662,7 +1662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 22,
 							Line:   3,
 						},
-						File:   "",
+						File:   "group_test.flux",
 						Source: "\"experimental\"",
 						Start: ast.Position{
 							Column: 8,
@@ -1681,7 +1681,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "",
+					File:   "group_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1697,7 +1697,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "",
+						File:   "group_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -1718,7 +1718,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 26,
 						Line:   1,
 					},
-					File:   "",
+					File:   "group_test.flux",
 					Source: "package experimental_test",
 					Start: ast.Position{
 						Column: 1,
@@ -1734,7 +1734,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 26,
 							Line:   1,
 						},
-						File:   "",
+						File:   "group_test.flux",
 						Source: "experimental_test",
 						Start: ast.Position{
 							Column: 9,
@@ -1753,7 +1753,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 93,
 					Line:   184,
 				},
-				File:   "",
+				File:   "set_test.flux",
 				Source: "package experimental_test\n\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,string,string,string,dateTime:RFC3339,boolean\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:13:30Z,false\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:13:40Z,true\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:13:50Z,false\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:14:00Z,false\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:14:10Z,true\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:14:20Z,true\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:13:30Z,false\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:13:40Z,true\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:13:50Z,false\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:14:00Z,true\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:14:10Z,true\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:14:20Z,true\n\n#datatype,string,long,string,string,string,dateTime:RFC3339,double\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:13:30Z,-61.68790887989735\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:13:40Z,-6.3173755351186465\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:13:50Z,-26.049728557657513\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:14:00Z,114.285955884979\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:14:10Z,16.140262630578995\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:14:20Z,29.50336437998469\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:13:30Z,7.940387008821781\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:13:40Z,49.460104214779086\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:13:50Z,-36.564150808873954\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:14:00Z,34.319039251798635\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:14:10Z,79.27019811403116\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:14:20Z,41.91029522104053\n\n#datatype,string,long,string,string,string,dateTime:RFC3339,long\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:13:30Z,-44\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:13:40Z,-25\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:13:50Z,46\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:14:00Z,-2\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:14:10Z,-14\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:14:20Z,-53\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:13:30Z,17\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:13:40Z,-44\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:13:50Z,-99\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:14:00Z,-85\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:14:10Z,18\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:14:20Z,99\n\n#datatype,string,long,string,string,string,dateTime:RFC3339,string\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:13:30Z,xRbS\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:13:40Z,PtTh\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:13:50Z,ZjN2je\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:14:00Z,YZNBh\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:14:10Z,pu08\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:14:20Z,ixlOdT\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:13:30Z,YqV\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:13:40Z,GjbWF\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:13:50Z,GiX1Bb\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:14:00Z,DQCZXZ\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:14:10Z,atopRR2\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:14:20Z,TNKKB\n\n#datatype,string,long,string,string,string,dateTime:RFC3339,unsignedLong\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:13:30Z,84\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:13:40Z,52\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:13:50Z,23\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:14:00Z,62\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:14:10Z,22\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:14:20Z,78\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:13:30Z,79\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:13:40Z,33\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:13:50Z,97\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:00Z,90\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:10Z,96\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:20Z,10\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,boolean\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:30Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:40Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:50Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:00Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:10Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:20Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:30Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:40Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:50Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:00Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:10Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:20Z,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,double\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:30Z,-61.68790887989735\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:40Z,-6.3173755351186465\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:50Z,-26.049728557657513\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:00Z,114.285955884979\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:10Z,16.140262630578995\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:20Z,29.50336437998469\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:30Z,7.940387008821781\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:40Z,49.460104214779086\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:50Z,-36.564150808873954\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:00Z,34.319039251798635\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:10Z,79.27019811403116\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:20Z,41.91029522104053\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,long\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:30Z,-44\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:40Z,-25\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:50Z,46\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:00Z,-2\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:10Z,-14\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:20Z,-53\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:30Z,17\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:40Z,-44\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:50Z,-99\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:00Z,-85\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:10Z,18\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:20Z,99\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,string\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:30Z,xRbS\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:40Z,PtTh\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:50Z,ZjN2je\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:00Z,YZNBh\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:10Z,pu08\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:20Z,ixlOdT\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:30Z,YqV\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:40Z,GjbWF\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:50Z,GiX1Bb\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:00Z,DQCZXZ\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:10Z,atopRR2\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:20Z,TNKKB\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,unsignedLong\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:30Z,84\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:40Z,52\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:50Z,23\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:00Z,62\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:10Z,22\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:20Z,78\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:30Z,79\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:40Z,33\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:50Z,97\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:00Z,90\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:10Z,96\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:20Z,10\n\"\n\nt_set = (table=<-) =>\n\ttable\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> experimental.set(o:{t0: \"server01\"})\n\ntest _set = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_set})",
 				Start: ast.Position{
 					Column: 1,
@@ -1770,7 +1770,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   6,
 						},
-						File:   "",
+						File:   "set_test.flux",
 						Source: "now = () => (2030-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 8,
@@ -1786,7 +1786,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   6,
 							},
-							File:   "",
+							File:   "set_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
@@ -1804,7 +1804,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   6,
 							},
-							File:   "",
+							File:   "set_test.flux",
 							Source: "() => (2030-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 14,
@@ -1820,7 +1820,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   6,
 								},
-								File:   "",
+								File:   "set_test.flux",
 								Source: "(2030-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 20,
@@ -1836,7 +1836,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   6,
 									},
-									File:   "",
+									File:   "set_test.flux",
 									Source: "2030-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 21,
@@ -1857,7 +1857,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   6,
 					},
-					File:   "",
+					File:   "set_test.flux",
 					Source: "option now = () => (2030-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
@@ -1873,7 +1873,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   93,
 					},
-					File:   "",
+					File:   "set_test.flux",
 					Source: "inData = \"\n#datatype,string,long,string,string,string,dateTime:RFC3339,boolean\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:13:30Z,false\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:13:40Z,true\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:13:50Z,false\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:14:00Z,false\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:14:10Z,true\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:14:20Z,true\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:13:30Z,false\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:13:40Z,true\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:13:50Z,false\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:14:00Z,true\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:14:10Z,true\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:14:20Z,true\n\n#datatype,string,long,string,string,string,dateTime:RFC3339,double\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:13:30Z,-61.68790887989735\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:13:40Z,-6.3173755351186465\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:13:50Z,-26.049728557657513\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:14:00Z,114.285955884979\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:14:10Z,16.140262630578995\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:14:20Z,29.50336437998469\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:13:30Z,7.940387008821781\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:13:40Z,49.460104214779086\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:13:50Z,-36.564150808873954\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:14:00Z,34.319039251798635\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:14:10Z,79.27019811403116\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:14:20Z,41.91029522104053\n\n#datatype,string,long,string,string,string,dateTime:RFC3339,long\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:13:30Z,-44\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:13:40Z,-25\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:13:50Z,46\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:14:00Z,-2\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:14:10Z,-14\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:14:20Z,-53\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:13:30Z,17\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:13:40Z,-44\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:13:50Z,-99\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:14:00Z,-85\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:14:10Z,18\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:14:20Z,99\n\n#datatype,string,long,string,string,string,dateTime:RFC3339,string\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:13:30Z,xRbS\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:13:40Z,PtTh\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:13:50Z,ZjN2je\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:14:00Z,YZNBh\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:14:10Z,pu08\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:14:20Z,ixlOdT\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:13:30Z,YqV\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:13:40Z,GjbWF\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:13:50Z,GiX1Bb\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:14:00Z,DQCZXZ\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:14:10Z,atopRR2\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:14:20Z,TNKKB\n\n#datatype,string,long,string,string,string,dateTime:RFC3339,unsignedLong\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:13:30Z,84\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:13:40Z,52\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:13:50Z,23\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:14:00Z,62\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:14:10Z,22\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:14:20Z,78\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:13:30Z,79\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:13:40Z,33\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:13:50Z,97\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:00Z,90\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:10Z,96\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:20Z,10\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1889,7 +1889,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "",
+						File:   "set_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
@@ -1907,7 +1907,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   93,
 						},
-						File:   "",
+						File:   "set_test.flux",
 						Source: "\"\n#datatype,string,long,string,string,string,dateTime:RFC3339,boolean\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:13:30Z,false\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:13:40Z,true\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:13:50Z,false\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:14:00Z,false\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:14:10Z,true\n,,0,thmWJ,GK1Ji,SbkiNS9,2018-12-19T22:14:20Z,true\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:13:30Z,false\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:13:40Z,true\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:13:50Z,false\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:14:00Z,true\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:14:10Z,true\n,,1,thmWJ,GK1Ji,gpmhNEw,2018-12-19T22:14:20Z,true\n\n#datatype,string,long,string,string,string,dateTime:RFC3339,double\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:13:30Z,-61.68790887989735\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:13:40Z,-6.3173755351186465\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:13:50Z,-26.049728557657513\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:14:00Z,114.285955884979\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:14:10Z,16.140262630578995\n,,2,thmWJ,c9wjx7r,SbkiNS9,2018-12-19T22:14:20Z,29.50336437998469\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:13:30Z,7.940387008821781\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:13:40Z,49.460104214779086\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:13:50Z,-36.564150808873954\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:14:00Z,34.319039251798635\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:14:10Z,79.27019811403116\n,,3,thmWJ,c9wjx7r,gpmhNEw,2018-12-19T22:14:20Z,41.91029522104053\n\n#datatype,string,long,string,string,string,dateTime:RFC3339,long\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:13:30Z,-44\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:13:40Z,-25\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:13:50Z,46\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:14:00Z,-2\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:14:10Z,-14\n,,4,thmWJ,iUcIq,SbkiNS9,2018-12-19T22:14:20Z,-53\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:13:30Z,17\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:13:40Z,-44\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:13:50Z,-99\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:14:00Z,-85\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:14:10Z,18\n,,5,thmWJ,iUcIq,gpmhNEw,2018-12-19T22:14:20Z,99\n\n#datatype,string,long,string,string,string,dateTime:RFC3339,string\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:13:30Z,xRbS\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:13:40Z,PtTh\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:13:50Z,ZjN2je\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:14:00Z,YZNBh\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:14:10Z,pu08\n,,6,thmWJ,urO72,SbkiNS9,2018-12-19T22:14:20Z,ixlOdT\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:13:30Z,YqV\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:13:40Z,GjbWF\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:13:50Z,GiX1Bb\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:14:00Z,DQCZXZ\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:14:10Z,atopRR2\n,,7,thmWJ,urO72,gpmhNEw,2018-12-19T22:14:20Z,TNKKB\n\n#datatype,string,long,string,string,string,dateTime:RFC3339,unsignedLong\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:13:30Z,84\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:13:40Z,52\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:13:50Z,23\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:14:00Z,62\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:14:10Z,22\n,,8,thmWJ,zmk1YWi,SbkiNS9,2018-12-19T22:14:20Z,78\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:13:30Z,79\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:13:40Z,33\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:13:50Z,97\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:00Z,90\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:10Z,96\n,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:20Z,10\n\"",
 						Start: ast.Position{
 							Column: 10,
@@ -1925,7 +1925,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   176,
 					},
-					File:   "",
+					File:   "set_test.flux",
 					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,boolean\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:30Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:40Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:50Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:00Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:10Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:20Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:30Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:40Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:50Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:00Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:10Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:20Z,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,double\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:30Z,-61.68790887989735\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:40Z,-6.3173755351186465\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:50Z,-26.049728557657513\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:00Z,114.285955884979\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:10Z,16.140262630578995\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:20Z,29.50336437998469\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:30Z,7.940387008821781\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:40Z,49.460104214779086\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:50Z,-36.564150808873954\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:00Z,34.319039251798635\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:10Z,79.27019811403116\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:20Z,41.91029522104053\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,long\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:30Z,-44\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:40Z,-25\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:50Z,46\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:00Z,-2\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:10Z,-14\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:20Z,-53\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:30Z,17\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:40Z,-44\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:50Z,-99\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:00Z,-85\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:10Z,18\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:20Z,99\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,string\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:30Z,xRbS\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:40Z,PtTh\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:50Z,ZjN2je\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:00Z,YZNBh\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:10Z,pu08\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:20Z,ixlOdT\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:30Z,YqV\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:40Z,GjbWF\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:50Z,GiX1Bb\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:00Z,DQCZXZ\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:10Z,atopRR2\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:20Z,TNKKB\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,unsignedLong\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:30Z,84\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:40Z,52\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:50Z,23\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:00Z,62\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:10Z,22\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:20Z,78\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:30Z,79\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:40Z,33\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:50Z,97\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:00Z,90\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:10Z,96\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:20Z,10\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1941,7 +1941,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   95,
 						},
-						File:   "",
+						File:   "set_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
@@ -1959,7 +1959,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   176,
 						},
-						File:   "",
+						File:   "set_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,boolean\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:30Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:40Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:50Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:00Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:10Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:20Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:30Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:40Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:13:50Z,false\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:00Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:10Z,true\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,GK1Ji,server01,2018-12-19T22:14:20Z,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,double\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:30Z,-61.68790887989735\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:40Z,-6.3173755351186465\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:50Z,-26.049728557657513\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:00Z,114.285955884979\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:10Z,16.140262630578995\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:20Z,29.50336437998469\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:30Z,7.940387008821781\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:40Z,49.460104214779086\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:13:50Z,-36.564150808873954\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:00Z,34.319039251798635\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:10Z,79.27019811403116\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,c9wjx7r,server01,2018-12-19T22:14:20Z,41.91029522104053\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,long\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:30Z,-44\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:40Z,-25\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:50Z,46\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:00Z,-2\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:10Z,-14\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:20Z,-53\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:30Z,17\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:40Z,-44\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:13:50Z,-99\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:00Z,-85\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:10Z,18\n,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,iUcIq,server01,2018-12-19T22:14:20Z,99\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,string\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:30Z,xRbS\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:40Z,PtTh\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:50Z,ZjN2je\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:00Z,YZNBh\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:10Z,pu08\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:20Z,ixlOdT\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:30Z,YqV\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:40Z,GjbWF\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:13:50Z,GiX1Bb\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:00Z,DQCZXZ\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:10Z,atopRR2\n,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,urO72,server01,2018-12-19T22:14:20Z,TNKKB\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,unsignedLong\n#group,false,false,true,true,true,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,t0,_time,_value\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:30Z,84\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:40Z,52\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:50Z,23\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:00Z,62\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:10Z,22\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:20Z,78\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:30Z,79\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:40Z,33\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:13:50Z,97\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:00Z,90\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:10Z,96\n,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:20Z,10\n\"",
 						Start: ast.Position{
 							Column: 11,
@@ -1977,7 +1977,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   181,
 					},
-					File:   "",
+					File:   "set_test.flux",
 					Source: "t_set = (table=<-) =>\n\ttable\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> experimental.set(o:{t0: \"server01\"})",
 					Start: ast.Position{
 						Column: 1,
@@ -1993,7 +1993,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 6,
 							Line:   178,
 						},
-						File:   "",
+						File:   "set_test.flux",
 						Source: "t_set",
 						Start: ast.Position{
 							Column: 1,
@@ -2011,7 +2011,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   181,
 						},
-						File:   "",
+						File:   "set_test.flux",
 						Source: "(table=<-) =>\n\ttable\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> experimental.set(o:{t0: \"server01\"})",
 						Start: ast.Position{
 							Column: 9,
@@ -2029,7 +2029,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 7,
 										Line:   179,
 									},
-									File:   "",
+									File:   "set_test.flux",
 									Source: "table",
 									Start: ast.Position{
 										Column: 2,
@@ -2046,7 +2046,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 40,
 									Line:   180,
 								},
-								File:   "",
+								File:   "set_test.flux",
 								Source: "table\n\t\t|> range(start: 2018-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 2,
@@ -2063,7 +2063,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 39,
 											Line:   180,
 										},
-										File:   "",
+										File:   "set_test.flux",
 										Source: "start: 2018-01-01T00:00:00Z",
 										Start: ast.Position{
 											Column: 12,
@@ -2079,7 +2079,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 39,
 												Line:   180,
 											},
-											File:   "",
+											File:   "set_test.flux",
 											Source: "start: 2018-01-01T00:00:00Z",
 											Start: ast.Position{
 												Column: 12,
@@ -2095,7 +2095,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 17,
 													Line:   180,
 												},
-												File:   "",
+												File:   "set_test.flux",
 												Source: "start",
 												Start: ast.Position{
 													Column: 12,
@@ -2113,7 +2113,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 39,
 													Line:   180,
 												},
-												File:   "",
+												File:   "set_test.flux",
 												Source: "2018-01-01T00:00:00Z",
 												Start: ast.Position{
 													Column: 19,
@@ -2133,7 +2133,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 40,
 										Line:   180,
 									},
-									File:   "",
+									File:   "set_test.flux",
 									Source: "range(start: 2018-01-01T00:00:00Z)",
 									Start: ast.Position{
 										Column: 6,
@@ -2149,7 +2149,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 11,
 											Line:   180,
 										},
-										File:   "",
+										File:   "set_test.flux",
 										Source: "range",
 										Start: ast.Position{
 											Column: 6,
@@ -2168,7 +2168,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   181,
 							},
-							File:   "",
+							File:   "set_test.flux",
 							Source: "table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> experimental.set(o:{t0: \"server01\"})",
 							Start: ast.Position{
 								Column: 2,
@@ -2185,7 +2185,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   181,
 									},
-									File:   "",
+									File:   "set_test.flux",
 									Source: "o:{t0: \"server01\"}",
 									Start: ast.Position{
 										Column: 23,
@@ -2201,7 +2201,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 41,
 											Line:   181,
 										},
-										File:   "",
+										File:   "set_test.flux",
 										Source: "o:{t0: \"server01\"}",
 										Start: ast.Position{
 											Column: 23,
@@ -2217,7 +2217,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 24,
 												Line:   181,
 											},
-											File:   "",
+											File:   "set_test.flux",
 											Source: "o",
 											Start: ast.Position{
 												Column: 23,
@@ -2235,7 +2235,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 41,
 												Line:   181,
 											},
-											File:   "",
+											File:   "set_test.flux",
 											Source: "{t0: \"server01\"}",
 											Start: ast.Position{
 												Column: 25,
@@ -2251,7 +2251,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 40,
 													Line:   181,
 												},
-												File:   "",
+												File:   "set_test.flux",
 												Source: "t0: \"server01\"",
 												Start: ast.Position{
 													Column: 26,
@@ -2267,7 +2267,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 28,
 														Line:   181,
 													},
-													File:   "",
+													File:   "set_test.flux",
 													Source: "t0",
 													Start: ast.Position{
 														Column: 26,
@@ -2285,7 +2285,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 40,
 														Line:   181,
 													},
-													File:   "",
+													File:   "set_test.flux",
 													Source: "\"server01\"",
 													Start: ast.Position{
 														Column: 30,
@@ -2308,7 +2308,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   181,
 								},
-								File:   "",
+								File:   "set_test.flux",
 								Source: "experimental.set(o:{t0: \"server01\"})",
 								Start: ast.Position{
 									Column: 6,
@@ -2324,7 +2324,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 22,
 										Line:   181,
 									},
-									File:   "",
+									File:   "set_test.flux",
 									Source: "experimental.set",
 									Start: ast.Position{
 										Column: 6,
@@ -2340,7 +2340,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 18,
 											Line:   181,
 										},
-										File:   "",
+										File:   "set_test.flux",
 										Source: "experimental",
 										Start: ast.Position{
 											Column: 6,
@@ -2358,7 +2358,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 22,
 											Line:   181,
 										},
-										File:   "",
+										File:   "set_test.flux",
 										Source: "set",
 										Start: ast.Position{
 											Column: 19,
@@ -2379,7 +2379,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 18,
 								Line:   178,
 							},
-							File:   "",
+							File:   "set_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 10,
@@ -2395,7 +2395,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 15,
 									Line:   178,
 								},
-								File:   "",
+								File:   "set_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 10,
@@ -2412,7 +2412,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 18,
 								Line:   178,
 							},
-							File:   "",
+							File:   "set_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 16,
@@ -2431,7 +2431,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 93,
 							Line:   184,
 						},
-						File:   "",
+						File:   "set_test.flux",
 						Source: "_set = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_set})",
 						Start: ast.Position{
 							Column: 6,
@@ -2447,7 +2447,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 10,
 								Line:   183,
 							},
-							File:   "",
+							File:   "set_test.flux",
 							Source: "_set",
 							Start: ast.Position{
 								Column: 6,
@@ -2465,7 +2465,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 93,
 								Line:   184,
 							},
-							File:   "",
+							File:   "set_test.flux",
 							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_set})",
 							Start: ast.Position{
 								Column: 13,
@@ -2481,7 +2481,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 93,
 									Line:   184,
 								},
-								File:   "",
+								File:   "set_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_set})",
 								Start: ast.Position{
 									Column: 2,
@@ -2497,7 +2497,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 92,
 										Line:   184,
 									},
-									File:   "",
+									File:   "set_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_set}",
 									Start: ast.Position{
 										Column: 3,
@@ -2513,7 +2513,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 43,
 											Line:   184,
 										},
-										File:   "",
+										File:   "set_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
@@ -2529,7 +2529,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 9,
 												Line:   184,
 											},
-											File:   "",
+											File:   "set_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 4,
@@ -2548,7 +2548,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 42,
 													Line:   184,
 												},
-												File:   "",
+												File:   "set_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 31,
@@ -2564,7 +2564,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 42,
 														Line:   184,
 													},
-													File:   "",
+													File:   "set_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 31,
@@ -2580,7 +2580,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 34,
 															Line:   184,
 														},
-														File:   "",
+														File:   "set_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 31,
@@ -2598,7 +2598,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 42,
 															Line:   184,
 														},
-														File:   "",
+														File:   "set_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 36,
@@ -2618,7 +2618,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 43,
 												Line:   184,
 											},
-											File:   "",
+											File:   "set_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
@@ -2634,7 +2634,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   184,
 												},
-												File:   "",
+												File:   "set_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 11,
@@ -2650,7 +2650,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 18,
 														Line:   184,
 													},
-													File:   "",
+													File:   "set_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
@@ -2668,7 +2668,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   184,
 													},
-													File:   "",
+													File:   "set_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 19,
@@ -2688,7 +2688,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 80,
 											Line:   184,
 										},
-										File:   "",
+										File:   "set_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
@@ -2704,7 +2704,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 49,
 												Line:   184,
 											},
-											File:   "",
+											File:   "set_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 45,
@@ -2723,7 +2723,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 79,
 													Line:   184,
 												},
-												File:   "",
+												File:   "set_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 67,
@@ -2739,7 +2739,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 79,
 														Line:   184,
 													},
-													File:   "",
+													File:   "set_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 67,
@@ -2755,7 +2755,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 70,
 															Line:   184,
 														},
-														File:   "",
+														File:   "set_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 67,
@@ -2773,7 +2773,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 79,
 															Line:   184,
 														},
-														File:   "",
+														File:   "set_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 72,
@@ -2793,7 +2793,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 80,
 												Line:   184,
 											},
-											File:   "",
+											File:   "set_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
@@ -2809,7 +2809,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 66,
 													Line:   184,
 												},
-												File:   "",
+												File:   "set_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 51,
@@ -2825,7 +2825,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 58,
 														Line:   184,
 													},
-													File:   "",
+													File:   "set_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 51,
@@ -2843,7 +2843,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 66,
 														Line:   184,
 													},
-													File:   "",
+													File:   "set_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 59,
@@ -2863,7 +2863,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 91,
 											Line:   184,
 										},
-										File:   "",
+										File:   "set_test.flux",
 										Source: "fn: t_set",
 										Start: ast.Position{
 											Column: 82,
@@ -2879,7 +2879,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 84,
 												Line:   184,
 											},
-											File:   "",
+											File:   "set_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 82,
@@ -2897,7 +2897,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 91,
 												Line:   184,
 											},
-											File:   "",
+											File:   "set_test.flux",
 											Source: "t_set",
 											Start: ast.Position{
 												Column: 86,
@@ -2921,7 +2921,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 93,
 						Line:   184,
 					},
-					File:   "",
+					File:   "set_test.flux",
 					Source: "test _set = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_set})",
 					Start: ast.Position{
 						Column: 1,
@@ -2939,7 +2939,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   3,
 					},
-					File:   "",
+					File:   "set_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -2955,7 +2955,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   3,
 						},
-						File:   "",
+						File:   "set_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -2974,7 +2974,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 22,
 						Line:   4,
 					},
-					File:   "",
+					File:   "set_test.flux",
 					Source: "import \"experimental\"",
 					Start: ast.Position{
 						Column: 1,
@@ -2990,7 +2990,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 22,
 							Line:   4,
 						},
-						File:   "",
+						File:   "set_test.flux",
 						Source: "\"experimental\"",
 						Start: ast.Position{
 							Column: 8,
@@ -3011,7 +3011,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 26,
 						Line:   1,
 					},
-					File:   "",
+					File:   "set_test.flux",
 					Source: "package experimental_test",
 					Start: ast.Position{
 						Column: 1,
@@ -3027,7 +3027,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 26,
 							Line:   1,
 						},
-						File:   "",
+						File:   "set_test.flux",
 						Source: "experimental_test",
 						Start: ast.Position{
 							Column: 9,

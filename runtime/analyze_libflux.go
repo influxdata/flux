@@ -8,7 +8,7 @@ import (
 // AnalyzeSource parses and analyzes the given Flux source,
 // using libflux.
 func AnalyzeSource(fluxSrc string) (*semantic.Package, error) {
-	ast := libflux.Parse(fluxSrc)
+	ast := libflux.ParseString(fluxSrc)
 	return AnalyzePackage(ast)
 }
 

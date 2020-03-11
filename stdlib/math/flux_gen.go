@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 11,
 					Line:   84,
 				},
-				File:   "",
+				File:   "math.flux",
 				Source: "package math\n\n// builtin constants\nbuiltin pi\nbuiltin e\nbuiltin phi\nbuiltin sqrt2\nbuiltin sqrte\nbuiltin sqrtpi\nbuiltin sqrtphi\nbuiltin ln2\nbuiltin log2e\nbuiltin ln10\nbuiltin log10e\nbuiltin maxfloat\nbuiltin smallestNonzeroFloat\nbuiltin maxint\nbuiltin minint\nbuiltin maxuint\n\n// builtin functions\nbuiltin abs\nbuiltin acos\nbuiltin acosh\nbuiltin asin\nbuiltin asinh\nbuiltin atan\nbuiltin atan2\nbuiltin atanh\nbuiltin cbrt\nbuiltin ceil\nbuiltin copysign\nbuiltin cos\nbuiltin cosh\nbuiltin dim\nbuiltin erf\nbuiltin erfc\nbuiltin erfcinv\nbuiltin erfinv\nbuiltin exp\nbuiltin exp2\nbuiltin expm1\nbuiltin float64bits\nbuiltin float64frombits\nbuiltin floor\nbuiltin frexp\nbuiltin gamma\nbuiltin hypot\nbuiltin ilogb\nbuiltin mInf\nbuiltin isInf\nbuiltin isNaN\nbuiltin j0\nbuiltin j1\nbuiltin jn\nbuiltin ldexp\nbuiltin lgamma\nbuiltin log\nbuiltin log10\nbuiltin log1p\nbuiltin log2\nbuiltin logb\nbuiltin mMax\nbuiltin mMin\nbuiltin mod\nbuiltin modf\nbuiltin NaN\nbuiltin nextafter\nbuiltin pow\nbuiltin pow10\nbuiltin remainder\nbuiltin round\nbuiltin roundtoeven\nbuiltin signbit\nbuiltin sin\nbuiltin sincos\nbuiltin sinh\nbuiltin sqrt\nbuiltin tan\nbuiltin tanh\nbuiltin trunc\nbuiltin y0\nbuiltin y1\nbuiltin yn",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 11,
 						Line:   4,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin pi",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 11,
 							Line:   4,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "pi",
 						Start: ast.Position{
 							Column: 9,
@@ -74,7 +74,7 @@ var pkgAST = &ast.Package{
 						Column: 10,
 						Line:   5,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin e",
 					Start: ast.Position{
 						Column: 1,
@@ -90,7 +90,7 @@ var pkgAST = &ast.Package{
 							Column: 10,
 							Line:   5,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "e",
 						Start: ast.Position{
 							Column: 9,
@@ -108,7 +108,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   6,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin phi",
 					Start: ast.Position{
 						Column: 1,
@@ -124,7 +124,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   6,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "phi",
 						Start: ast.Position{
 							Column: 9,
@@ -142,7 +142,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   7,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin sqrt2",
 					Start: ast.Position{
 						Column: 1,
@@ -158,7 +158,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   7,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "sqrt2",
 						Start: ast.Position{
 							Column: 9,
@@ -176,7 +176,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   8,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin sqrte",
 					Start: ast.Position{
 						Column: 1,
@@ -192,7 +192,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   8,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "sqrte",
 						Start: ast.Position{
 							Column: 9,
@@ -210,7 +210,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   9,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin sqrtpi",
 					Start: ast.Position{
 						Column: 1,
@@ -226,7 +226,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   9,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "sqrtpi",
 						Start: ast.Position{
 							Column: 9,
@@ -244,7 +244,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   10,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin sqrtphi",
 					Start: ast.Position{
 						Column: 1,
@@ -260,7 +260,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   10,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "sqrtphi",
 						Start: ast.Position{
 							Column: 9,
@@ -278,7 +278,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   11,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin ln2",
 					Start: ast.Position{
 						Column: 1,
@@ -294,7 +294,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   11,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "ln2",
 						Start: ast.Position{
 							Column: 9,
@@ -312,7 +312,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   12,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin log2e",
 					Start: ast.Position{
 						Column: 1,
@@ -328,7 +328,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   12,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "log2e",
 						Start: ast.Position{
 							Column: 9,
@@ -346,7 +346,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   13,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin ln10",
 					Start: ast.Position{
 						Column: 1,
@@ -362,7 +362,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   13,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "ln10",
 						Start: ast.Position{
 							Column: 9,
@@ -380,7 +380,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   14,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin log10e",
 					Start: ast.Position{
 						Column: 1,
@@ -396,7 +396,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   14,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "log10e",
 						Start: ast.Position{
 							Column: 9,
@@ -414,7 +414,7 @@ var pkgAST = &ast.Package{
 						Column: 17,
 						Line:   15,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin maxfloat",
 					Start: ast.Position{
 						Column: 1,
@@ -430,7 +430,7 @@ var pkgAST = &ast.Package{
 							Column: 17,
 							Line:   15,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "maxfloat",
 						Start: ast.Position{
 							Column: 9,
@@ -448,7 +448,7 @@ var pkgAST = &ast.Package{
 						Column: 29,
 						Line:   16,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin smallestNonzeroFloat",
 					Start: ast.Position{
 						Column: 1,
@@ -464,7 +464,7 @@ var pkgAST = &ast.Package{
 							Column: 29,
 							Line:   16,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "smallestNonzeroFloat",
 						Start: ast.Position{
 							Column: 9,
@@ -482,7 +482,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   17,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin maxint",
 					Start: ast.Position{
 						Column: 1,
@@ -498,7 +498,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   17,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "maxint",
 						Start: ast.Position{
 							Column: 9,
@@ -516,7 +516,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   18,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin minint",
 					Start: ast.Position{
 						Column: 1,
@@ -532,7 +532,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   18,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "minint",
 						Start: ast.Position{
 							Column: 9,
@@ -550,7 +550,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   19,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin maxuint",
 					Start: ast.Position{
 						Column: 1,
@@ -566,7 +566,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   19,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "maxuint",
 						Start: ast.Position{
 							Column: 9,
@@ -584,7 +584,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   22,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin abs",
 					Start: ast.Position{
 						Column: 1,
@@ -600,7 +600,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   22,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "abs",
 						Start: ast.Position{
 							Column: 9,
@@ -618,7 +618,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   23,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin acos",
 					Start: ast.Position{
 						Column: 1,
@@ -634,7 +634,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   23,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "acos",
 						Start: ast.Position{
 							Column: 9,
@@ -652,7 +652,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   24,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin acosh",
 					Start: ast.Position{
 						Column: 1,
@@ -668,7 +668,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   24,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "acosh",
 						Start: ast.Position{
 							Column: 9,
@@ -686,7 +686,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   25,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin asin",
 					Start: ast.Position{
 						Column: 1,
@@ -702,7 +702,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   25,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "asin",
 						Start: ast.Position{
 							Column: 9,
@@ -720,7 +720,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   26,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin asinh",
 					Start: ast.Position{
 						Column: 1,
@@ -736,7 +736,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   26,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "asinh",
 						Start: ast.Position{
 							Column: 9,
@@ -754,7 +754,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   27,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin atan",
 					Start: ast.Position{
 						Column: 1,
@@ -770,7 +770,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   27,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "atan",
 						Start: ast.Position{
 							Column: 9,
@@ -788,7 +788,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   28,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin atan2",
 					Start: ast.Position{
 						Column: 1,
@@ -804,7 +804,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   28,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "atan2",
 						Start: ast.Position{
 							Column: 9,
@@ -822,7 +822,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   29,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin atanh",
 					Start: ast.Position{
 						Column: 1,
@@ -838,7 +838,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   29,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "atanh",
 						Start: ast.Position{
 							Column: 9,
@@ -856,7 +856,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   30,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin cbrt",
 					Start: ast.Position{
 						Column: 1,
@@ -872,7 +872,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   30,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "cbrt",
 						Start: ast.Position{
 							Column: 9,
@@ -890,7 +890,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   31,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin ceil",
 					Start: ast.Position{
 						Column: 1,
@@ -906,7 +906,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   31,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "ceil",
 						Start: ast.Position{
 							Column: 9,
@@ -924,7 +924,7 @@ var pkgAST = &ast.Package{
 						Column: 17,
 						Line:   32,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin copysign",
 					Start: ast.Position{
 						Column: 1,
@@ -940,7 +940,7 @@ var pkgAST = &ast.Package{
 							Column: 17,
 							Line:   32,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "copysign",
 						Start: ast.Position{
 							Column: 9,
@@ -958,7 +958,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   33,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin cos",
 					Start: ast.Position{
 						Column: 1,
@@ -974,7 +974,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   33,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "cos",
 						Start: ast.Position{
 							Column: 9,
@@ -992,7 +992,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   34,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin cosh",
 					Start: ast.Position{
 						Column: 1,
@@ -1008,7 +1008,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   34,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "cosh",
 						Start: ast.Position{
 							Column: 9,
@@ -1026,7 +1026,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   35,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin dim",
 					Start: ast.Position{
 						Column: 1,
@@ -1042,7 +1042,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   35,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "dim",
 						Start: ast.Position{
 							Column: 9,
@@ -1060,7 +1060,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   36,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin erf",
 					Start: ast.Position{
 						Column: 1,
@@ -1076,7 +1076,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   36,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "erf",
 						Start: ast.Position{
 							Column: 9,
@@ -1094,7 +1094,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   37,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin erfc",
 					Start: ast.Position{
 						Column: 1,
@@ -1110,7 +1110,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   37,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "erfc",
 						Start: ast.Position{
 							Column: 9,
@@ -1128,7 +1128,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   38,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin erfcinv",
 					Start: ast.Position{
 						Column: 1,
@@ -1144,7 +1144,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   38,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "erfcinv",
 						Start: ast.Position{
 							Column: 9,
@@ -1162,7 +1162,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   39,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin erfinv",
 					Start: ast.Position{
 						Column: 1,
@@ -1178,7 +1178,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   39,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "erfinv",
 						Start: ast.Position{
 							Column: 9,
@@ -1196,7 +1196,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   40,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin exp",
 					Start: ast.Position{
 						Column: 1,
@@ -1212,7 +1212,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   40,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "exp",
 						Start: ast.Position{
 							Column: 9,
@@ -1230,7 +1230,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   41,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin exp2",
 					Start: ast.Position{
 						Column: 1,
@@ -1246,7 +1246,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   41,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "exp2",
 						Start: ast.Position{
 							Column: 9,
@@ -1264,7 +1264,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   42,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin expm1",
 					Start: ast.Position{
 						Column: 1,
@@ -1280,7 +1280,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   42,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "expm1",
 						Start: ast.Position{
 							Column: 9,
@@ -1298,7 +1298,7 @@ var pkgAST = &ast.Package{
 						Column: 20,
 						Line:   43,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin float64bits",
 					Start: ast.Position{
 						Column: 1,
@@ -1314,7 +1314,7 @@ var pkgAST = &ast.Package{
 							Column: 20,
 							Line:   43,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "float64bits",
 						Start: ast.Position{
 							Column: 9,
@@ -1332,7 +1332,7 @@ var pkgAST = &ast.Package{
 						Column: 24,
 						Line:   44,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin float64frombits",
 					Start: ast.Position{
 						Column: 1,
@@ -1348,7 +1348,7 @@ var pkgAST = &ast.Package{
 							Column: 24,
 							Line:   44,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "float64frombits",
 						Start: ast.Position{
 							Column: 9,
@@ -1366,7 +1366,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   45,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin floor",
 					Start: ast.Position{
 						Column: 1,
@@ -1382,7 +1382,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   45,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "floor",
 						Start: ast.Position{
 							Column: 9,
@@ -1400,7 +1400,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   46,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin frexp",
 					Start: ast.Position{
 						Column: 1,
@@ -1416,7 +1416,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   46,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "frexp",
 						Start: ast.Position{
 							Column: 9,
@@ -1434,7 +1434,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   47,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin gamma",
 					Start: ast.Position{
 						Column: 1,
@@ -1450,7 +1450,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   47,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "gamma",
 						Start: ast.Position{
 							Column: 9,
@@ -1468,7 +1468,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   48,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin hypot",
 					Start: ast.Position{
 						Column: 1,
@@ -1484,7 +1484,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   48,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "hypot",
 						Start: ast.Position{
 							Column: 9,
@@ -1502,7 +1502,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   49,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin ilogb",
 					Start: ast.Position{
 						Column: 1,
@@ -1518,7 +1518,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   49,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "ilogb",
 						Start: ast.Position{
 							Column: 9,
@@ -1536,7 +1536,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   50,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin mInf",
 					Start: ast.Position{
 						Column: 1,
@@ -1552,7 +1552,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   50,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "mInf",
 						Start: ast.Position{
 							Column: 9,
@@ -1570,7 +1570,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   51,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin isInf",
 					Start: ast.Position{
 						Column: 1,
@@ -1586,7 +1586,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   51,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "isInf",
 						Start: ast.Position{
 							Column: 9,
@@ -1604,7 +1604,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   52,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin isNaN",
 					Start: ast.Position{
 						Column: 1,
@@ -1620,7 +1620,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   52,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "isNaN",
 						Start: ast.Position{
 							Column: 9,
@@ -1638,7 +1638,7 @@ var pkgAST = &ast.Package{
 						Column: 11,
 						Line:   53,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin j0",
 					Start: ast.Position{
 						Column: 1,
@@ -1654,7 +1654,7 @@ var pkgAST = &ast.Package{
 							Column: 11,
 							Line:   53,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "j0",
 						Start: ast.Position{
 							Column: 9,
@@ -1672,7 +1672,7 @@ var pkgAST = &ast.Package{
 						Column: 11,
 						Line:   54,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin j1",
 					Start: ast.Position{
 						Column: 1,
@@ -1688,7 +1688,7 @@ var pkgAST = &ast.Package{
 							Column: 11,
 							Line:   54,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "j1",
 						Start: ast.Position{
 							Column: 9,
@@ -1706,7 +1706,7 @@ var pkgAST = &ast.Package{
 						Column: 11,
 						Line:   55,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin jn",
 					Start: ast.Position{
 						Column: 1,
@@ -1722,7 +1722,7 @@ var pkgAST = &ast.Package{
 							Column: 11,
 							Line:   55,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "jn",
 						Start: ast.Position{
 							Column: 9,
@@ -1740,7 +1740,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   56,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin ldexp",
 					Start: ast.Position{
 						Column: 1,
@@ -1756,7 +1756,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   56,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "ldexp",
 						Start: ast.Position{
 							Column: 9,
@@ -1774,7 +1774,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   57,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin lgamma",
 					Start: ast.Position{
 						Column: 1,
@@ -1790,7 +1790,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   57,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "lgamma",
 						Start: ast.Position{
 							Column: 9,
@@ -1808,7 +1808,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   58,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin log",
 					Start: ast.Position{
 						Column: 1,
@@ -1824,7 +1824,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   58,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "log",
 						Start: ast.Position{
 							Column: 9,
@@ -1842,7 +1842,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   59,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin log10",
 					Start: ast.Position{
 						Column: 1,
@@ -1858,7 +1858,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   59,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "log10",
 						Start: ast.Position{
 							Column: 9,
@@ -1876,7 +1876,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   60,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin log1p",
 					Start: ast.Position{
 						Column: 1,
@@ -1892,7 +1892,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   60,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "log1p",
 						Start: ast.Position{
 							Column: 9,
@@ -1910,7 +1910,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   61,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin log2",
 					Start: ast.Position{
 						Column: 1,
@@ -1926,7 +1926,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   61,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "log2",
 						Start: ast.Position{
 							Column: 9,
@@ -1944,7 +1944,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   62,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin logb",
 					Start: ast.Position{
 						Column: 1,
@@ -1960,7 +1960,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   62,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "logb",
 						Start: ast.Position{
 							Column: 9,
@@ -1978,7 +1978,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   63,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin mMax",
 					Start: ast.Position{
 						Column: 1,
@@ -1994,7 +1994,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   63,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "mMax",
 						Start: ast.Position{
 							Column: 9,
@@ -2012,7 +2012,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   64,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin mMin",
 					Start: ast.Position{
 						Column: 1,
@@ -2028,7 +2028,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   64,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "mMin",
 						Start: ast.Position{
 							Column: 9,
@@ -2046,7 +2046,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   65,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin mod",
 					Start: ast.Position{
 						Column: 1,
@@ -2062,7 +2062,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   65,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "mod",
 						Start: ast.Position{
 							Column: 9,
@@ -2080,7 +2080,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   66,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin modf",
 					Start: ast.Position{
 						Column: 1,
@@ -2096,7 +2096,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   66,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "modf",
 						Start: ast.Position{
 							Column: 9,
@@ -2114,7 +2114,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   67,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin NaN",
 					Start: ast.Position{
 						Column: 1,
@@ -2130,7 +2130,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   67,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "NaN",
 						Start: ast.Position{
 							Column: 9,
@@ -2148,7 +2148,7 @@ var pkgAST = &ast.Package{
 						Column: 18,
 						Line:   68,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin nextafter",
 					Start: ast.Position{
 						Column: 1,
@@ -2164,7 +2164,7 @@ var pkgAST = &ast.Package{
 							Column: 18,
 							Line:   68,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "nextafter",
 						Start: ast.Position{
 							Column: 9,
@@ -2182,7 +2182,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   69,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin pow",
 					Start: ast.Position{
 						Column: 1,
@@ -2198,7 +2198,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   69,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "pow",
 						Start: ast.Position{
 							Column: 9,
@@ -2216,7 +2216,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   70,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin pow10",
 					Start: ast.Position{
 						Column: 1,
@@ -2232,7 +2232,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   70,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "pow10",
 						Start: ast.Position{
 							Column: 9,
@@ -2250,7 +2250,7 @@ var pkgAST = &ast.Package{
 						Column: 18,
 						Line:   71,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin remainder",
 					Start: ast.Position{
 						Column: 1,
@@ -2266,7 +2266,7 @@ var pkgAST = &ast.Package{
 							Column: 18,
 							Line:   71,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "remainder",
 						Start: ast.Position{
 							Column: 9,
@@ -2284,7 +2284,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   72,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin round",
 					Start: ast.Position{
 						Column: 1,
@@ -2300,7 +2300,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   72,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "round",
 						Start: ast.Position{
 							Column: 9,
@@ -2318,7 +2318,7 @@ var pkgAST = &ast.Package{
 						Column: 20,
 						Line:   73,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin roundtoeven",
 					Start: ast.Position{
 						Column: 1,
@@ -2334,7 +2334,7 @@ var pkgAST = &ast.Package{
 							Column: 20,
 							Line:   73,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "roundtoeven",
 						Start: ast.Position{
 							Column: 9,
@@ -2352,7 +2352,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   74,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin signbit",
 					Start: ast.Position{
 						Column: 1,
@@ -2368,7 +2368,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   74,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "signbit",
 						Start: ast.Position{
 							Column: 9,
@@ -2386,7 +2386,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   75,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin sin",
 					Start: ast.Position{
 						Column: 1,
@@ -2402,7 +2402,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   75,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "sin",
 						Start: ast.Position{
 							Column: 9,
@@ -2420,7 +2420,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   76,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin sincos",
 					Start: ast.Position{
 						Column: 1,
@@ -2436,7 +2436,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   76,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "sincos",
 						Start: ast.Position{
 							Column: 9,
@@ -2454,7 +2454,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   77,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin sinh",
 					Start: ast.Position{
 						Column: 1,
@@ -2470,7 +2470,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   77,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "sinh",
 						Start: ast.Position{
 							Column: 9,
@@ -2488,7 +2488,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   78,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin sqrt",
 					Start: ast.Position{
 						Column: 1,
@@ -2504,7 +2504,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   78,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "sqrt",
 						Start: ast.Position{
 							Column: 9,
@@ -2522,7 +2522,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   79,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin tan",
 					Start: ast.Position{
 						Column: 1,
@@ -2538,7 +2538,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   79,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "tan",
 						Start: ast.Position{
 							Column: 9,
@@ -2556,7 +2556,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   80,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin tanh",
 					Start: ast.Position{
 						Column: 1,
@@ -2572,7 +2572,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   80,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "tanh",
 						Start: ast.Position{
 							Column: 9,
@@ -2590,7 +2590,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   81,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin trunc",
 					Start: ast.Position{
 						Column: 1,
@@ -2606,7 +2606,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   81,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "trunc",
 						Start: ast.Position{
 							Column: 9,
@@ -2624,7 +2624,7 @@ var pkgAST = &ast.Package{
 						Column: 11,
 						Line:   82,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin y0",
 					Start: ast.Position{
 						Column: 1,
@@ -2640,7 +2640,7 @@ var pkgAST = &ast.Package{
 							Column: 11,
 							Line:   82,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "y0",
 						Start: ast.Position{
 							Column: 9,
@@ -2658,7 +2658,7 @@ var pkgAST = &ast.Package{
 						Column: 11,
 						Line:   83,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin y1",
 					Start: ast.Position{
 						Column: 1,
@@ -2674,7 +2674,7 @@ var pkgAST = &ast.Package{
 							Column: 11,
 							Line:   83,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "y1",
 						Start: ast.Position{
 							Column: 9,
@@ -2692,7 +2692,7 @@ var pkgAST = &ast.Package{
 						Column: 11,
 						Line:   84,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "builtin yn",
 					Start: ast.Position{
 						Column: 1,
@@ -2708,7 +2708,7 @@ var pkgAST = &ast.Package{
 							Column: 11,
 							Line:   84,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "yn",
 						Start: ast.Position{
 							Column: 9,
@@ -2730,7 +2730,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   1,
 					},
-					File:   "",
+					File:   "math.flux",
 					Source: "package math",
 					Start: ast.Position{
 						Column: 1,
@@ -2746,7 +2746,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   1,
 						},
-						File:   "",
+						File:   "math.flux",
 						Source: "math",
 						Start: ast.Position{
 							Column: 9,

@@ -32,7 +32,7 @@ func TestAnalyze(t *testing.T) {
 	for _, tc := range tcs {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			ast := libflux.Parse(tc.flx)
+			ast := libflux.ParseString(tc.flx)
 			defer ast.Free()
 
 			sem, err := libflux.Analyze(ast)

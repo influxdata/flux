@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 15,
 					Line:   3,
 				},
-				File:   "",
+				File:   "gen.flux",
 				Source: "package gen\n\nbuiltin tables",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 15,
 						Line:   3,
 					},
-					File:   "",
+					File:   "gen.flux",
 					Source: "builtin tables",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 15,
 							Line:   3,
 						},
-						File:   "",
+						File:   "gen.flux",
 						Source: "tables",
 						Start: ast.Position{
 							Column: 9,
@@ -78,7 +78,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   1,
 					},
-					File:   "",
+					File:   "gen.flux",
 					Source: "package gen",
 					Start: ast.Position{
 						Column: 1,
@@ -94,7 +94,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   1,
 						},
-						File:   "",
+						File:   "gen.flux",
 						Source: "gen",
 						Start: ast.Position{
 							Column: 9,

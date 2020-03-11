@@ -33,9 +33,9 @@ void flux_free_bytes(const char *);
 // flux_ast_pkg_t is the AST representation of a flux query as a package.
 struct flux_ast_pkg_t;
 
-// flux_parse will take in a string and return the AST representation
-// of the query.
-struct flux_ast_pkg_t *flux_parse(const char *);
+// flux_parse will take in a file name string and a source string then
+// return the AST representation of the query.
+struct flux_ast_pkg_t *flux_parse(const char *file_name, const char *flux_source);
 
 // flux_free_ast_pkg will release the memory associated with the given pointer.
 void flux_free_ast_pkg(struct flux_ast_pkg_t *);

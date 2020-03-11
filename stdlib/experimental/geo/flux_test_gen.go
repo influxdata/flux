@@ -20,7 +20,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 98,
 					Line:   170,
 				},
-				File:   "",
+				File:   "asTracks_test.flux",
 				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,40.762662,89c258c,lat,bikes,end,vehicleB\n,,0,2019-11-10T21:17:47Z,40.762424,89c258c,lat,bikes,end,vehicleB\n,,1,2019-11-10T11:07:12Z,40.762096,89c258c,lat,bikes,start,vehicleB\n,,1,2019-11-10T21:16:00Z,40.763126,89c258c,lat,bikes,start,vehicleB\n,,2,2019-11-10T11:07:35Z,40.762225,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:38Z,40.762247,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:43Z,40.762331,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:48Z,40.762408,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:52Z,40.762484,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:08:01Z,40.762597,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:08:16Z,40.762574,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:06Z,40.76309,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:18Z,40.763036,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:31Z,40.763006,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:48Z,40.762904,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:08Z,40.762836,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:23Z,40.762736,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:36Z,40.762469,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:46Z,40.762418,89c258c,lat,bikes,via,vehicleB\n,,3,2019-11-10T11:08:34Z,-73.967971,89c258c,lon,bikes,end,vehicleB\n,,3,2019-11-10T21:17:47Z,-73.965583,89c258c,lon,bikes,end,vehicleB\n,,4,2019-11-10T11:07:12Z,-73.967104,89c258c,lon,bikes,start,vehicleB\n,,4,2019-11-10T21:16:00Z,-73.966333,89c258c,lon,bikes,start,vehicleB\n,,5,2019-11-10T11:07:35Z,-73.967081,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:38Z,-73.967129,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:43Z,-73.967261,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:48Z,-73.967422,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:52Z,-73.967542,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:08:01Z,-73.967718,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:08:16Z,-73.967803,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:06Z,-73.966254,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:18Z,-73.966091,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:31Z,-73.965889,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:48Z,-73.96573,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:08Z,-73.965721,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:23Z,-73.965801,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:36Z,-73.96559,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:46Z,-73.965579,89c258c,lon,bikes,via,vehicleB\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,1573384032,89c258c,tid,bikes,end,vehicleB\n,,6,2019-11-10T21:17:47Z,1573420560,89c258c,tid,bikes,end,vehicleB\n,,7,2019-11-10T11:07:12Z,1573384032,89c258c,tid,bikes,start,vehicleB\n,,7,2019-11-10T21:16:00Z,1573420560,89c258c,tid,bikes,start,vehicleB\n,,8,2019-11-10T11:07:35Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:38Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:43Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:48Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:52Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:08:01Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:08:16Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:06Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:18Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:31Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:48Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:08Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:23Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:36Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:46Z,1573420560,89c258c,tid,bikes,via,vehicleB\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,9,2019-11-20T10:17:17Z,40.700344,89e82cc,lat,bikes,start,vehicleA\n,,10,2019-11-20T10:17:18Z,40.700348,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:24Z,40.700397,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:26Z,40.700413,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:32Z,40.700474,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:35Z,40.700481,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:42Z,40.700459,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:47Z,40.700455,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:54Z,40.700542,89e82cc,lat,bikes,via,vehicleA\n,,11,2019-11-20T10:17:17Z,-73.324814,89e82cc,lon,bikes,start,vehicleA\n,,12,2019-11-20T10:17:18Z,-73.324799,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:24Z,-73.324699,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:26Z,-73.324638,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:32Z,-73.324471,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:35Z,-73.324371,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:42Z,-73.324181,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:47Z,-73.323982,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:54Z,-73.323769,89e82cc,lon,bikes,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,13,2019-11-20T10:17:17Z,1574245037,89e82cc,tid,bikes,start,vehicleA\n,,14,2019-11-20T10:17:18Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:24Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:26Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:32Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:35Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:42Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:47Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:54Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,15,2019-11-20T10:18:00Z,40.700684,89e82d4,lat,bikes,end,vehicleA\n,,16,2019-11-20T10:18:00Z,-73.323692,89e82d4,lon,bikes,end,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,17,2019-11-20T10:18:00Z,1574245037,89e82d4,tid,bikes,end,vehicleA\n\"\n\noutData = \"\n#group,false,false,false,false,false,false,true,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double,long,double\n#default,_result,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,id,lat,tid,lon\n,,0,2019-11-20T10:17:17Z,89e82cc,bikes,start,vehicleA,40.700344,1574245037,-73.324814\n,,0,2019-11-20T10:17:18Z,89e82cc,bikes,via,vehicleA,40.700348,1574245037,-73.324799\n,,0,2019-11-20T10:17:24Z,89e82cc,bikes,via,vehicleA,40.700397,1574245037,-73.324699\n,,0,2019-11-20T10:17:26Z,89e82cc,bikes,via,vehicleA,40.700413,1574245037,-73.324638\n,,0,2019-11-20T10:17:32Z,89e82cc,bikes,via,vehicleA,40.700474,1574245037,-73.324471\n,,0,2019-11-20T10:17:35Z,89e82cc,bikes,via,vehicleA,40.700481,1574245037,-73.324371\n,,0,2019-11-20T10:17:42Z,89e82cc,bikes,via,vehicleA,40.700459,1574245037,-73.324181\n,,0,2019-11-20T10:17:47Z,89e82cc,bikes,via,vehicleA,40.700455,1574245037,-73.323982\n,,0,2019-11-20T10:17:54Z,89e82cc,bikes,via,vehicleA,40.700542,1574245037,-73.323769\n,,0,2019-11-20T10:18:00Z,89e82d4,bikes,end,vehicleA,40.700684,1574245037,-73.323692\n,,1,2019-11-10T11:07:12Z,89c258c,bikes,start,vehicleB,40.762096,1573384032,-73.967104\n,,1,2019-11-10T11:07:35Z,89c258c,bikes,via,vehicleB,40.762225,1573384032,-73.967081\n,,1,2019-11-10T11:07:38Z,89c258c,bikes,via,vehicleB,40.762247,1573384032,-73.967129\n,,1,2019-11-10T11:07:43Z,89c258c,bikes,via,vehicleB,40.762331,1573384032,-73.967261\n,,1,2019-11-10T11:07:48Z,89c258c,bikes,via,vehicleB,40.762408,1573384032,-73.967422\n,,1,2019-11-10T11:07:52Z,89c258c,bikes,via,vehicleB,40.762484,1573384032,-73.967542\n,,1,2019-11-10T11:08:01Z,89c258c,bikes,via,vehicleB,40.762597,1573384032,-73.967718\n,,1,2019-11-10T11:08:16Z,89c258c,bikes,via,vehicleB,40.762574,1573384032,-73.967803\n,,1,2019-11-10T11:08:34Z,89c258c,bikes,end,vehicleB,40.762662,1573384032,-73.967971\n,,2,2019-11-10T21:16:00Z,89c258c,bikes,start,vehicleB,40.763126,1573420560,-73.966333\n,,2,2019-11-10T21:16:06Z,89c258c,bikes,via,vehicleB,40.76309,1573420560,-73.966254\n,,2,2019-11-10T21:16:18Z,89c258c,bikes,via,vehicleB,40.763036,1573420560,-73.966091\n,,2,2019-11-10T21:16:31Z,89c258c,bikes,via,vehicleB,40.763006,1573420560,-73.965889\n,,2,2019-11-10T21:16:48Z,89c258c,bikes,via,vehicleB,40.762904,1573420560,-73.96573\n,,2,2019-11-10T21:17:08Z,89c258c,bikes,via,vehicleB,40.762836,1573420560,-73.965721\n,,2,2019-11-10T21:17:23Z,89c258c,bikes,via,vehicleB,40.762736,1573420560,-73.965801\n,,2,2019-11-10T21:17:36Z,89c258c,bikes,via,vehicleB,40.762469,1573420560,-73.96559\n,,2,2019-11-10T21:17:46Z,89c258c,bikes,via,vehicleB,40.762418,1573420560,-73.965579\n,,2,2019-11-10T21:17:47Z,89c258c,bikes,end,vehicleB,40.762424,1573420560,-73.965583\n\"\n\nt_asTracks = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows(correlationKey: [\"id\", \"_time\"])\n    |> geo.asTracks()\n    |> drop(columns: [\"_start\", \"_stop\"])\ntest _asTracks = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
 				Start: ast.Position{
 					Column: 1,
@@ -37,7 +37,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   6,
 						},
-						File:   "",
+						File:   "asTracks_test.flux",
 						Source: "now = () => (2030-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 8,
@@ -53,7 +53,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   6,
 							},
-							File:   "",
+							File:   "asTracks_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
@@ -71,7 +71,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   6,
 							},
-							File:   "",
+							File:   "asTracks_test.flux",
 							Source: "() => (2030-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 14,
@@ -87,7 +87,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   6,
 								},
-								File:   "",
+								File:   "asTracks_test.flux",
 								Source: "(2030-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 20,
@@ -103,7 +103,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   6,
 									},
-									File:   "",
+									File:   "asTracks_test.flux",
 									Source: "2030-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 21,
@@ -124,7 +124,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   6,
 					},
-					File:   "",
+					File:   "asTracks_test.flux",
 					Source: "option now = () => (2030-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
@@ -140,7 +140,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   125,
 					},
-					File:   "",
+					File:   "asTracks_test.flux",
 					Source: "inData = \"\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,40.762662,89c258c,lat,bikes,end,vehicleB\n,,0,2019-11-10T21:17:47Z,40.762424,89c258c,lat,bikes,end,vehicleB\n,,1,2019-11-10T11:07:12Z,40.762096,89c258c,lat,bikes,start,vehicleB\n,,1,2019-11-10T21:16:00Z,40.763126,89c258c,lat,bikes,start,vehicleB\n,,2,2019-11-10T11:07:35Z,40.762225,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:38Z,40.762247,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:43Z,40.762331,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:48Z,40.762408,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:52Z,40.762484,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:08:01Z,40.762597,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:08:16Z,40.762574,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:06Z,40.76309,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:18Z,40.763036,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:31Z,40.763006,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:48Z,40.762904,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:08Z,40.762836,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:23Z,40.762736,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:36Z,40.762469,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:46Z,40.762418,89c258c,lat,bikes,via,vehicleB\n,,3,2019-11-10T11:08:34Z,-73.967971,89c258c,lon,bikes,end,vehicleB\n,,3,2019-11-10T21:17:47Z,-73.965583,89c258c,lon,bikes,end,vehicleB\n,,4,2019-11-10T11:07:12Z,-73.967104,89c258c,lon,bikes,start,vehicleB\n,,4,2019-11-10T21:16:00Z,-73.966333,89c258c,lon,bikes,start,vehicleB\n,,5,2019-11-10T11:07:35Z,-73.967081,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:38Z,-73.967129,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:43Z,-73.967261,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:48Z,-73.967422,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:52Z,-73.967542,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:08:01Z,-73.967718,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:08:16Z,-73.967803,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:06Z,-73.966254,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:18Z,-73.966091,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:31Z,-73.965889,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:48Z,-73.96573,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:08Z,-73.965721,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:23Z,-73.965801,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:36Z,-73.96559,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:46Z,-73.965579,89c258c,lon,bikes,via,vehicleB\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,1573384032,89c258c,tid,bikes,end,vehicleB\n,,6,2019-11-10T21:17:47Z,1573420560,89c258c,tid,bikes,end,vehicleB\n,,7,2019-11-10T11:07:12Z,1573384032,89c258c,tid,bikes,start,vehicleB\n,,7,2019-11-10T21:16:00Z,1573420560,89c258c,tid,bikes,start,vehicleB\n,,8,2019-11-10T11:07:35Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:38Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:43Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:48Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:52Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:08:01Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:08:16Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:06Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:18Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:31Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:48Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:08Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:23Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:36Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:46Z,1573420560,89c258c,tid,bikes,via,vehicleB\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,9,2019-11-20T10:17:17Z,40.700344,89e82cc,lat,bikes,start,vehicleA\n,,10,2019-11-20T10:17:18Z,40.700348,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:24Z,40.700397,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:26Z,40.700413,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:32Z,40.700474,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:35Z,40.700481,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:42Z,40.700459,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:47Z,40.700455,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:54Z,40.700542,89e82cc,lat,bikes,via,vehicleA\n,,11,2019-11-20T10:17:17Z,-73.324814,89e82cc,lon,bikes,start,vehicleA\n,,12,2019-11-20T10:17:18Z,-73.324799,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:24Z,-73.324699,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:26Z,-73.324638,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:32Z,-73.324471,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:35Z,-73.324371,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:42Z,-73.324181,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:47Z,-73.323982,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:54Z,-73.323769,89e82cc,lon,bikes,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,13,2019-11-20T10:17:17Z,1574245037,89e82cc,tid,bikes,start,vehicleA\n,,14,2019-11-20T10:17:18Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:24Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:26Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:32Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:35Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:42Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:47Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:54Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,15,2019-11-20T10:18:00Z,40.700684,89e82d4,lat,bikes,end,vehicleA\n,,16,2019-11-20T10:18:00Z,-73.323692,89e82d4,lon,bikes,end,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,17,2019-11-20T10:18:00Z,1574245037,89e82d4,tid,bikes,end,vehicleA\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -156,7 +156,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "",
+						File:   "asTracks_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
@@ -174,7 +174,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   125,
 						},
-						File:   "",
+						File:   "asTracks_test.flux",
 						Source: "\"\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,0,2019-11-10T11:08:34Z,40.762662,89c258c,lat,bikes,end,vehicleB\n,,0,2019-11-10T21:17:47Z,40.762424,89c258c,lat,bikes,end,vehicleB\n,,1,2019-11-10T11:07:12Z,40.762096,89c258c,lat,bikes,start,vehicleB\n,,1,2019-11-10T21:16:00Z,40.763126,89c258c,lat,bikes,start,vehicleB\n,,2,2019-11-10T11:07:35Z,40.762225,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:38Z,40.762247,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:43Z,40.762331,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:48Z,40.762408,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:07:52Z,40.762484,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:08:01Z,40.762597,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T11:08:16Z,40.762574,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:06Z,40.76309,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:18Z,40.763036,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:31Z,40.763006,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:16:48Z,40.762904,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:08Z,40.762836,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:23Z,40.762736,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:36Z,40.762469,89c258c,lat,bikes,via,vehicleB\n,,2,2019-11-10T21:17:46Z,40.762418,89c258c,lat,bikes,via,vehicleB\n,,3,2019-11-10T11:08:34Z,-73.967971,89c258c,lon,bikes,end,vehicleB\n,,3,2019-11-10T21:17:47Z,-73.965583,89c258c,lon,bikes,end,vehicleB\n,,4,2019-11-10T11:07:12Z,-73.967104,89c258c,lon,bikes,start,vehicleB\n,,4,2019-11-10T21:16:00Z,-73.966333,89c258c,lon,bikes,start,vehicleB\n,,5,2019-11-10T11:07:35Z,-73.967081,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:38Z,-73.967129,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:43Z,-73.967261,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:48Z,-73.967422,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:07:52Z,-73.967542,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:08:01Z,-73.967718,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T11:08:16Z,-73.967803,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:06Z,-73.966254,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:18Z,-73.966091,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:31Z,-73.965889,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:16:48Z,-73.96573,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:08Z,-73.965721,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:23Z,-73.965801,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:36Z,-73.96559,89c258c,lon,bikes,via,vehicleB\n,,5,2019-11-10T21:17:46Z,-73.965579,89c258c,lon,bikes,via,vehicleB\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,6,2019-11-10T11:08:34Z,1573384032,89c258c,tid,bikes,end,vehicleB\n,,6,2019-11-10T21:17:47Z,1573420560,89c258c,tid,bikes,end,vehicleB\n,,7,2019-11-10T11:07:12Z,1573384032,89c258c,tid,bikes,start,vehicleB\n,,7,2019-11-10T21:16:00Z,1573420560,89c258c,tid,bikes,start,vehicleB\n,,8,2019-11-10T11:07:35Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:38Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:43Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:48Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:07:52Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:08:01Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T11:08:16Z,1573384032,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:06Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:18Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:31Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:16:48Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:08Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:23Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:36Z,1573420560,89c258c,tid,bikes,via,vehicleB\n,,8,2019-11-10T21:17:46Z,1573420560,89c258c,tid,bikes,via,vehicleB\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,9,2019-11-20T10:17:17Z,40.700344,89e82cc,lat,bikes,start,vehicleA\n,,10,2019-11-20T10:17:18Z,40.700348,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:24Z,40.700397,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:26Z,40.700413,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:32Z,40.700474,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:35Z,40.700481,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:42Z,40.700459,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:47Z,40.700455,89e82cc,lat,bikes,via,vehicleA\n,,10,2019-11-20T10:17:54Z,40.700542,89e82cc,lat,bikes,via,vehicleA\n,,11,2019-11-20T10:17:17Z,-73.324814,89e82cc,lon,bikes,start,vehicleA\n,,12,2019-11-20T10:17:18Z,-73.324799,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:24Z,-73.324699,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:26Z,-73.324638,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:32Z,-73.324471,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:35Z,-73.324371,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:42Z,-73.324181,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:47Z,-73.323982,89e82cc,lon,bikes,via,vehicleA\n,,12,2019-11-20T10:17:54Z,-73.323769,89e82cc,lon,bikes,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,13,2019-11-20T10:17:17Z,1574245037,89e82cc,tid,bikes,start,vehicleA\n,,14,2019-11-20T10:17:18Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:24Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:26Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:32Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:35Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:42Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:47Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n,,14,2019-11-20T10:17:54Z,1574245037,89e82cc,tid,bikes,via,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,15,2019-11-20T10:18:00Z,40.700684,89e82d4,lat,bikes,end,vehicleA\n,,16,2019-11-20T10:18:00Z,-73.323692,89e82d4,lon,bikes,end,vehicleA\n\n#group,false,false,false,false,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string\n#default,_result,,,,,,,,\n,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id\n,,17,2019-11-20T10:18:00Z,1574245037,89e82d4,tid,bikes,end,vehicleA\n\"",
 						Start: ast.Position{
 							Column: 10,
@@ -192,7 +192,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   161,
 					},
-					File:   "",
+					File:   "asTracks_test.flux",
 					Source: "outData = \"\n#group,false,false,false,false,false,false,true,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double,long,double\n#default,_result,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,id,lat,tid,lon\n,,0,2019-11-20T10:17:17Z,89e82cc,bikes,start,vehicleA,40.700344,1574245037,-73.324814\n,,0,2019-11-20T10:17:18Z,89e82cc,bikes,via,vehicleA,40.700348,1574245037,-73.324799\n,,0,2019-11-20T10:17:24Z,89e82cc,bikes,via,vehicleA,40.700397,1574245037,-73.324699\n,,0,2019-11-20T10:17:26Z,89e82cc,bikes,via,vehicleA,40.700413,1574245037,-73.324638\n,,0,2019-11-20T10:17:32Z,89e82cc,bikes,via,vehicleA,40.700474,1574245037,-73.324471\n,,0,2019-11-20T10:17:35Z,89e82cc,bikes,via,vehicleA,40.700481,1574245037,-73.324371\n,,0,2019-11-20T10:17:42Z,89e82cc,bikes,via,vehicleA,40.700459,1574245037,-73.324181\n,,0,2019-11-20T10:17:47Z,89e82cc,bikes,via,vehicleA,40.700455,1574245037,-73.323982\n,,0,2019-11-20T10:17:54Z,89e82cc,bikes,via,vehicleA,40.700542,1574245037,-73.323769\n,,0,2019-11-20T10:18:00Z,89e82d4,bikes,end,vehicleA,40.700684,1574245037,-73.323692\n,,1,2019-11-10T11:07:12Z,89c258c,bikes,start,vehicleB,40.762096,1573384032,-73.967104\n,,1,2019-11-10T11:07:35Z,89c258c,bikes,via,vehicleB,40.762225,1573384032,-73.967081\n,,1,2019-11-10T11:07:38Z,89c258c,bikes,via,vehicleB,40.762247,1573384032,-73.967129\n,,1,2019-11-10T11:07:43Z,89c258c,bikes,via,vehicleB,40.762331,1573384032,-73.967261\n,,1,2019-11-10T11:07:48Z,89c258c,bikes,via,vehicleB,40.762408,1573384032,-73.967422\n,,1,2019-11-10T11:07:52Z,89c258c,bikes,via,vehicleB,40.762484,1573384032,-73.967542\n,,1,2019-11-10T11:08:01Z,89c258c,bikes,via,vehicleB,40.762597,1573384032,-73.967718\n,,1,2019-11-10T11:08:16Z,89c258c,bikes,via,vehicleB,40.762574,1573384032,-73.967803\n,,1,2019-11-10T11:08:34Z,89c258c,bikes,end,vehicleB,40.762662,1573384032,-73.967971\n,,2,2019-11-10T21:16:00Z,89c258c,bikes,start,vehicleB,40.763126,1573420560,-73.966333\n,,2,2019-11-10T21:16:06Z,89c258c,bikes,via,vehicleB,40.76309,1573420560,-73.966254\n,,2,2019-11-10T21:16:18Z,89c258c,bikes,via,vehicleB,40.763036,1573420560,-73.966091\n,,2,2019-11-10T21:16:31Z,89c258c,bikes,via,vehicleB,40.763006,1573420560,-73.965889\n,,2,2019-11-10T21:16:48Z,89c258c,bikes,via,vehicleB,40.762904,1573420560,-73.96573\n,,2,2019-11-10T21:17:08Z,89c258c,bikes,via,vehicleB,40.762836,1573420560,-73.965721\n,,2,2019-11-10T21:17:23Z,89c258c,bikes,via,vehicleB,40.762736,1573420560,-73.965801\n,,2,2019-11-10T21:17:36Z,89c258c,bikes,via,vehicleB,40.762469,1573420560,-73.96559\n,,2,2019-11-10T21:17:46Z,89c258c,bikes,via,vehicleB,40.762418,1573420560,-73.965579\n,,2,2019-11-10T21:17:47Z,89c258c,bikes,end,vehicleB,40.762424,1573420560,-73.965583\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -208,7 +208,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   127,
 						},
-						File:   "",
+						File:   "asTracks_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
@@ -226,7 +226,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   161,
 						},
-						File:   "",
+						File:   "asTracks_test.flux",
 						Source: "\"\n#group,false,false,false,false,false,false,true,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double,long,double\n#default,_result,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,id,lat,tid,lon\n,,0,2019-11-20T10:17:17Z,89e82cc,bikes,start,vehicleA,40.700344,1574245037,-73.324814\n,,0,2019-11-20T10:17:18Z,89e82cc,bikes,via,vehicleA,40.700348,1574245037,-73.324799\n,,0,2019-11-20T10:17:24Z,89e82cc,bikes,via,vehicleA,40.700397,1574245037,-73.324699\n,,0,2019-11-20T10:17:26Z,89e82cc,bikes,via,vehicleA,40.700413,1574245037,-73.324638\n,,0,2019-11-20T10:17:32Z,89e82cc,bikes,via,vehicleA,40.700474,1574245037,-73.324471\n,,0,2019-11-20T10:17:35Z,89e82cc,bikes,via,vehicleA,40.700481,1574245037,-73.324371\n,,0,2019-11-20T10:17:42Z,89e82cc,bikes,via,vehicleA,40.700459,1574245037,-73.324181\n,,0,2019-11-20T10:17:47Z,89e82cc,bikes,via,vehicleA,40.700455,1574245037,-73.323982\n,,0,2019-11-20T10:17:54Z,89e82cc,bikes,via,vehicleA,40.700542,1574245037,-73.323769\n,,0,2019-11-20T10:18:00Z,89e82d4,bikes,end,vehicleA,40.700684,1574245037,-73.323692\n,,1,2019-11-10T11:07:12Z,89c258c,bikes,start,vehicleB,40.762096,1573384032,-73.967104\n,,1,2019-11-10T11:07:35Z,89c258c,bikes,via,vehicleB,40.762225,1573384032,-73.967081\n,,1,2019-11-10T11:07:38Z,89c258c,bikes,via,vehicleB,40.762247,1573384032,-73.967129\n,,1,2019-11-10T11:07:43Z,89c258c,bikes,via,vehicleB,40.762331,1573384032,-73.967261\n,,1,2019-11-10T11:07:48Z,89c258c,bikes,via,vehicleB,40.762408,1573384032,-73.967422\n,,1,2019-11-10T11:07:52Z,89c258c,bikes,via,vehicleB,40.762484,1573384032,-73.967542\n,,1,2019-11-10T11:08:01Z,89c258c,bikes,via,vehicleB,40.762597,1573384032,-73.967718\n,,1,2019-11-10T11:08:16Z,89c258c,bikes,via,vehicleB,40.762574,1573384032,-73.967803\n,,1,2019-11-10T11:08:34Z,89c258c,bikes,end,vehicleB,40.762662,1573384032,-73.967971\n,,2,2019-11-10T21:16:00Z,89c258c,bikes,start,vehicleB,40.763126,1573420560,-73.966333\n,,2,2019-11-10T21:16:06Z,89c258c,bikes,via,vehicleB,40.76309,1573420560,-73.966254\n,,2,2019-11-10T21:16:18Z,89c258c,bikes,via,vehicleB,40.763036,1573420560,-73.966091\n,,2,2019-11-10T21:16:31Z,89c258c,bikes,via,vehicleB,40.763006,1573420560,-73.965889\n,,2,2019-11-10T21:16:48Z,89c258c,bikes,via,vehicleB,40.762904,1573420560,-73.96573\n,,2,2019-11-10T21:17:08Z,89c258c,bikes,via,vehicleB,40.762836,1573420560,-73.965721\n,,2,2019-11-10T21:17:23Z,89c258c,bikes,via,vehicleB,40.762736,1573420560,-73.965801\n,,2,2019-11-10T21:17:36Z,89c258c,bikes,via,vehicleB,40.762469,1573420560,-73.96559\n,,2,2019-11-10T21:17:46Z,89c258c,bikes,via,vehicleB,40.762418,1573420560,-73.965579\n,,2,2019-11-10T21:17:47Z,89c258c,bikes,end,vehicleB,40.762424,1573420560,-73.965583\n\"",
 						Start: ast.Position{
 							Column: 11,
@@ -244,7 +244,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   168,
 					},
-					File:   "",
+					File:   "asTracks_test.flux",
 					Source: "t_asTracks = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows(correlationKey: [\"id\", \"_time\"])\n    |> geo.asTracks()\n    |> drop(columns: [\"_start\", \"_stop\"])",
 					Start: ast.Position{
 						Column: 1,
@@ -260,7 +260,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 11,
 							Line:   163,
 						},
-						File:   "",
+						File:   "asTracks_test.flux",
 						Source: "t_asTracks",
 						Start: ast.Position{
 							Column: 1,
@@ -278,7 +278,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   168,
 						},
-						File:   "",
+						File:   "asTracks_test.flux",
 						Source: "(table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows(correlationKey: [\"id\", \"_time\"])\n    |> geo.asTracks()\n    |> drop(columns: [\"_start\", \"_stop\"])",
 						Start: ast.Position{
 							Column: 14,
@@ -298,7 +298,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 8,
 												Line:   164,
 											},
-											File:   "",
+											File:   "asTracks_test.flux",
 											Source: "table",
 											Start: ast.Position{
 												Column: 3,
@@ -315,7 +315,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 42,
 											Line:   165,
 										},
-										File:   "",
+										File:   "asTracks_test.flux",
 										Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)",
 										Start: ast.Position{
 											Column: 3,
@@ -332,7 +332,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 41,
 													Line:   165,
 												},
-												File:   "",
+												File:   "asTracks_test.flux",
 												Source: "start: 2019-11-01T00:00:00Z",
 												Start: ast.Position{
 													Column: 14,
@@ -348,7 +348,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 41,
 														Line:   165,
 													},
-													File:   "",
+													File:   "asTracks_test.flux",
 													Source: "start: 2019-11-01T00:00:00Z",
 													Start: ast.Position{
 														Column: 14,
@@ -364,7 +364,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 19,
 															Line:   165,
 														},
-														File:   "",
+														File:   "asTracks_test.flux",
 														Source: "start",
 														Start: ast.Position{
 															Column: 14,
@@ -382,7 +382,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 41,
 															Line:   165,
 														},
-														File:   "",
+														File:   "asTracks_test.flux",
 														Source: "2019-11-01T00:00:00Z",
 														Start: ast.Position{
 															Column: 21,
@@ -402,7 +402,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 42,
 												Line:   165,
 											},
-											File:   "",
+											File:   "asTracks_test.flux",
 											Source: "range(start: 2019-11-01T00:00:00Z)",
 											Start: ast.Position{
 												Column: 8,
@@ -418,7 +418,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 13,
 													Line:   165,
 												},
-												File:   "",
+												File:   "asTracks_test.flux",
 												Source: "range",
 												Start: ast.Position{
 													Column: 8,
@@ -437,7 +437,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 51,
 										Line:   166,
 									},
-									File:   "",
+									File:   "asTracks_test.flux",
 									Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows(correlationKey: [\"id\", \"_time\"])",
 									Start: ast.Position{
 										Column: 3,
@@ -454,7 +454,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 50,
 												Line:   166,
 											},
-											File:   "",
+											File:   "asTracks_test.flux",
 											Source: "correlationKey: [\"id\", \"_time\"]",
 											Start: ast.Position{
 												Column: 19,
@@ -470,7 +470,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 50,
 													Line:   166,
 												},
-												File:   "",
+												File:   "asTracks_test.flux",
 												Source: "correlationKey: [\"id\", \"_time\"]",
 												Start: ast.Position{
 													Column: 19,
@@ -486,7 +486,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 33,
 														Line:   166,
 													},
-													File:   "",
+													File:   "asTracks_test.flux",
 													Source: "correlationKey",
 													Start: ast.Position{
 														Column: 19,
@@ -504,7 +504,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 50,
 														Line:   166,
 													},
-													File:   "",
+													File:   "asTracks_test.flux",
 													Source: "[\"id\", \"_time\"]",
 													Start: ast.Position{
 														Column: 35,
@@ -520,7 +520,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 40,
 															Line:   166,
 														},
-														File:   "",
+														File:   "asTracks_test.flux",
 														Source: "\"id\"",
 														Start: ast.Position{
 															Column: 36,
@@ -537,7 +537,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 49,
 															Line:   166,
 														},
-														File:   "",
+														File:   "asTracks_test.flux",
 														Source: "\"_time\"",
 														Start: ast.Position{
 															Column: 42,
@@ -558,7 +558,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 51,
 											Line:   166,
 										},
-										File:   "",
+										File:   "asTracks_test.flux",
 										Source: "geo.toRows(correlationKey: [\"id\", \"_time\"])",
 										Start: ast.Position{
 											Column: 8,
@@ -574,7 +574,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 18,
 												Line:   166,
 											},
-											File:   "",
+											File:   "asTracks_test.flux",
 											Source: "geo.toRows",
 											Start: ast.Position{
 												Column: 8,
@@ -590,7 +590,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 11,
 													Line:   166,
 												},
-												File:   "",
+												File:   "asTracks_test.flux",
 												Source: "geo",
 												Start: ast.Position{
 													Column: 8,
@@ -608,7 +608,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 18,
 													Line:   166,
 												},
-												File:   "",
+												File:   "asTracks_test.flux",
 												Source: "toRows",
 												Start: ast.Position{
 													Column: 12,
@@ -628,7 +628,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 22,
 									Line:   167,
 								},
-								File:   "",
+								File:   "asTracks_test.flux",
 								Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows(correlationKey: [\"id\", \"_time\"])\n    |> geo.asTracks()",
 								Start: ast.Position{
 									Column: 3,
@@ -645,7 +645,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 22,
 										Line:   167,
 									},
-									File:   "",
+									File:   "asTracks_test.flux",
 									Source: "geo.asTracks()",
 									Start: ast.Position{
 										Column: 8,
@@ -661,7 +661,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 20,
 											Line:   167,
 										},
-										File:   "",
+										File:   "asTracks_test.flux",
 										Source: "geo.asTracks",
 										Start: ast.Position{
 											Column: 8,
@@ -677,7 +677,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 11,
 												Line:   167,
 											},
-											File:   "",
+											File:   "asTracks_test.flux",
 											Source: "geo",
 											Start: ast.Position{
 												Column: 8,
@@ -695,7 +695,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 20,
 												Line:   167,
 											},
-											File:   "",
+											File:   "asTracks_test.flux",
 											Source: "asTracks",
 											Start: ast.Position{
 												Column: 12,
@@ -715,7 +715,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   168,
 							},
-							File:   "",
+							File:   "asTracks_test.flux",
 							Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows(correlationKey: [\"id\", \"_time\"])\n    |> geo.asTracks()\n    |> drop(columns: [\"_start\", \"_stop\"])",
 							Start: ast.Position{
 								Column: 3,
@@ -732,7 +732,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   168,
 									},
-									File:   "",
+									File:   "asTracks_test.flux",
 									Source: "columns: [\"_start\", \"_stop\"]",
 									Start: ast.Position{
 										Column: 13,
@@ -748,7 +748,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 41,
 											Line:   168,
 										},
-										File:   "",
+										File:   "asTracks_test.flux",
 										Source: "columns: [\"_start\", \"_stop\"]",
 										Start: ast.Position{
 											Column: 13,
@@ -764,7 +764,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 20,
 												Line:   168,
 											},
-											File:   "",
+											File:   "asTracks_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
@@ -782,7 +782,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 41,
 												Line:   168,
 											},
-											File:   "",
+											File:   "asTracks_test.flux",
 											Source: "[\"_start\", \"_stop\"]",
 											Start: ast.Position{
 												Column: 22,
@@ -798,7 +798,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 31,
 													Line:   168,
 												},
-												File:   "",
+												File:   "asTracks_test.flux",
 												Source: "\"_start\"",
 												Start: ast.Position{
 													Column: 23,
@@ -815,7 +815,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 40,
 													Line:   168,
 												},
-												File:   "",
+												File:   "asTracks_test.flux",
 												Source: "\"_stop\"",
 												Start: ast.Position{
 													Column: 33,
@@ -836,7 +836,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   168,
 								},
-								File:   "",
+								File:   "asTracks_test.flux",
 								Source: "drop(columns: [\"_start\", \"_stop\"])",
 								Start: ast.Position{
 									Column: 8,
@@ -852,7 +852,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 12,
 										Line:   168,
 									},
-									File:   "",
+									File:   "asTracks_test.flux",
 									Source: "drop",
 									Start: ast.Position{
 										Column: 8,
@@ -872,7 +872,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 23,
 								Line:   163,
 							},
-							File:   "",
+							File:   "asTracks_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 15,
@@ -888,7 +888,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 20,
 									Line:   163,
 								},
-								File:   "",
+								File:   "asTracks_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 15,
@@ -905,7 +905,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 23,
 								Line:   163,
 							},
-							File:   "",
+							File:   "asTracks_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 21,
@@ -924,7 +924,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 98,
 							Line:   170,
 						},
-						File:   "",
+						File:   "asTracks_test.flux",
 						Source: "_asTracks = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
 						Start: ast.Position{
 							Column: 6,
@@ -940,7 +940,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 15,
 								Line:   169,
 							},
-							File:   "",
+							File:   "asTracks_test.flux",
 							Source: "_asTracks",
 							Start: ast.Position{
 								Column: 6,
@@ -958,7 +958,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 98,
 								Line:   170,
 							},
-							File:   "",
+							File:   "asTracks_test.flux",
 							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
 							Start: ast.Position{
 								Column: 18,
@@ -974,7 +974,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 98,
 									Line:   170,
 								},
-								File:   "",
+								File:   "asTracks_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
 								Start: ast.Position{
 									Column: 2,
@@ -990,7 +990,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 97,
 										Line:   170,
 									},
-									File:   "",
+									File:   "asTracks_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks}",
 									Start: ast.Position{
 										Column: 3,
@@ -1006,7 +1006,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 43,
 											Line:   170,
 										},
-										File:   "",
+										File:   "asTracks_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
@@ -1022,7 +1022,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 9,
 												Line:   170,
 											},
-											File:   "",
+											File:   "asTracks_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 4,
@@ -1041,7 +1041,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 42,
 													Line:   170,
 												},
-												File:   "",
+												File:   "asTracks_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 31,
@@ -1057,7 +1057,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 42,
 														Line:   170,
 													},
-													File:   "",
+													File:   "asTracks_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 31,
@@ -1073,7 +1073,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 34,
 															Line:   170,
 														},
-														File:   "",
+														File:   "asTracks_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 31,
@@ -1091,7 +1091,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 42,
 															Line:   170,
 														},
-														File:   "",
+														File:   "asTracks_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 36,
@@ -1111,7 +1111,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 43,
 												Line:   170,
 											},
-											File:   "",
+											File:   "asTracks_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
@@ -1127,7 +1127,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   170,
 												},
-												File:   "",
+												File:   "asTracks_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 11,
@@ -1143,7 +1143,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 18,
 														Line:   170,
 													},
-													File:   "",
+													File:   "asTracks_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
@@ -1161,7 +1161,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   170,
 													},
-													File:   "",
+													File:   "asTracks_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 19,
@@ -1181,7 +1181,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 80,
 											Line:   170,
 										},
-										File:   "",
+										File:   "asTracks_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
@@ -1197,7 +1197,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 49,
 												Line:   170,
 											},
-											File:   "",
+											File:   "asTracks_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 45,
@@ -1216,7 +1216,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 79,
 													Line:   170,
 												},
-												File:   "",
+												File:   "asTracks_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 67,
@@ -1232,7 +1232,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 79,
 														Line:   170,
 													},
-													File:   "",
+													File:   "asTracks_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 67,
@@ -1248,7 +1248,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 70,
 															Line:   170,
 														},
-														File:   "",
+														File:   "asTracks_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 67,
@@ -1266,7 +1266,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 79,
 															Line:   170,
 														},
-														File:   "",
+														File:   "asTracks_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 72,
@@ -1286,7 +1286,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 80,
 												Line:   170,
 											},
-											File:   "",
+											File:   "asTracks_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
@@ -1302,7 +1302,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 66,
 													Line:   170,
 												},
-												File:   "",
+												File:   "asTracks_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 51,
@@ -1318,7 +1318,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 58,
 														Line:   170,
 													},
-													File:   "",
+													File:   "asTracks_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 51,
@@ -1336,7 +1336,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 66,
 														Line:   170,
 													},
-													File:   "",
+													File:   "asTracks_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 59,
@@ -1356,7 +1356,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 96,
 											Line:   170,
 										},
-										File:   "",
+										File:   "asTracks_test.flux",
 										Source: "fn: t_asTracks",
 										Start: ast.Position{
 											Column: 82,
@@ -1372,7 +1372,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 84,
 												Line:   170,
 											},
-											File:   "",
+											File:   "asTracks_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 82,
@@ -1390,7 +1390,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 96,
 												Line:   170,
 											},
-											File:   "",
+											File:   "asTracks_test.flux",
 											Source: "t_asTracks",
 											Start: ast.Position{
 												Column: 86,
@@ -1414,7 +1414,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 98,
 						Line:   170,
 					},
-					File:   "",
+					File:   "asTracks_test.flux",
 					Source: "test _asTracks = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})",
 					Start: ast.Position{
 						Column: 1,
@@ -1432,7 +1432,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 26,
 						Line:   3,
 					},
-					File:   "",
+					File:   "asTracks_test.flux",
 					Source: "import \"experimental/geo\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1448,7 +1448,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 26,
 							Line:   3,
 						},
-						File:   "",
+						File:   "asTracks_test.flux",
 						Source: "\"experimental/geo\"",
 						Start: ast.Position{
 							Column: 8,
@@ -1467,7 +1467,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "",
+					File:   "asTracks_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1483,7 +1483,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "",
+						File:   "asTracks_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -1504,7 +1504,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   1,
 					},
-					File:   "",
+					File:   "asTracks_test.flux",
 					Source: "package geo_test",
 					Start: ast.Position{
 						Column: 1,
@@ -1520,7 +1520,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   1,
 						},
-						File:   "",
+						File:   "asTracks_test.flux",
 						Source: "geo_test",
 						Start: ast.Position{
 							Column: 9,
@@ -1539,7 +1539,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 109,
 					Line:   219,
 				},
-				File:   "",
+				File:   "filterRowsNotStrict_test.flux",
 				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"\n\noutData = \"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,lat\n,,3,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245\n\"\n\nt_filterRowsNotStrict = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: false)\n    |> drop(columns: [\"_start\", \"_stop\"])\ntest _filterRowsNotStrict = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsNotStrict})",
 				Start: ast.Position{
 					Column: 1,
@@ -1556,7 +1556,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   6,
 						},
-						File:   "",
+						File:   "filterRowsNotStrict_test.flux",
 						Source: "now = () => (2030-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 8,
@@ -1572,7 +1572,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   6,
 							},
-							File:   "",
+							File:   "filterRowsNotStrict_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
@@ -1590,7 +1590,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   6,
 							},
-							File:   "",
+							File:   "filterRowsNotStrict_test.flux",
 							Source: "() => (2030-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 14,
@@ -1606,7 +1606,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   6,
 								},
-								File:   "",
+								File:   "filterRowsNotStrict_test.flux",
 								Source: "(2030-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 20,
@@ -1622,7 +1622,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   6,
 									},
-									File:   "",
+									File:   "filterRowsNotStrict_test.flux",
 									Source: "2030-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 21,
@@ -1643,7 +1643,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   6,
 					},
-					File:   "",
+					File:   "filterRowsNotStrict_test.flux",
 					Source: "option now = () => (2030-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
@@ -1659,7 +1659,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   185,
 					},
-					File:   "",
+					File:   "filterRowsNotStrict_test.flux",
 					Source: "inData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1675,7 +1675,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "",
+						File:   "filterRowsNotStrict_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
@@ -1693,7 +1693,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   185,
 						},
-						File:   "",
+						File:   "filterRowsNotStrict_test.flux",
 						Source: "\"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"",
 						Start: ast.Position{
 							Column: 10,
@@ -1711,7 +1711,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   211,
 					},
-					File:   "",
+					File:   "filterRowsNotStrict_test.flux",
 					Source: "outData = \"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,lat\n,,3,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1727,7 +1727,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   187,
 						},
-						File:   "",
+						File:   "filterRowsNotStrict_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
@@ -1745,7 +1745,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   211,
 						},
-						File:   "",
+						File:   "filterRowsNotStrict_test.flux",
 						Source: "\"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,lat\n,,3,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245\n\"",
 						Start: ast.Position{
 							Column: 11,
@@ -1763,7 +1763,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   217,
 					},
-					File:   "",
+					File:   "filterRowsNotStrict_test.flux",
 					Source: "t_filterRowsNotStrict = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: false)\n    |> drop(columns: [\"_start\", \"_stop\"])",
 					Start: ast.Position{
 						Column: 1,
@@ -1779,7 +1779,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 22,
 							Line:   213,
 						},
-						File:   "",
+						File:   "filterRowsNotStrict_test.flux",
 						Source: "t_filterRowsNotStrict",
 						Start: ast.Position{
 							Column: 1,
@@ -1797,7 +1797,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   217,
 						},
-						File:   "",
+						File:   "filterRowsNotStrict_test.flux",
 						Source: "(table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: false)\n    |> drop(columns: [\"_start\", \"_stop\"])",
 						Start: ast.Position{
 							Column: 25,
@@ -1816,7 +1816,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 8,
 											Line:   214,
 										},
-										File:   "",
+										File:   "filterRowsNotStrict_test.flux",
 										Source: "table",
 										Start: ast.Position{
 											Column: 3,
@@ -1833,7 +1833,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 42,
 										Line:   215,
 									},
-									File:   "",
+									File:   "filterRowsNotStrict_test.flux",
 									Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)",
 									Start: ast.Position{
 										Column: 3,
@@ -1850,7 +1850,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 41,
 												Line:   215,
 											},
-											File:   "",
+											File:   "filterRowsNotStrict_test.flux",
 											Source: "start: 2019-11-01T00:00:00Z",
 											Start: ast.Position{
 												Column: 14,
@@ -1866,7 +1866,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 41,
 													Line:   215,
 												},
-												File:   "",
+												File:   "filterRowsNotStrict_test.flux",
 												Source: "start: 2019-11-01T00:00:00Z",
 												Start: ast.Position{
 													Column: 14,
@@ -1882,7 +1882,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 19,
 														Line:   215,
 													},
-													File:   "",
+													File:   "filterRowsNotStrict_test.flux",
 													Source: "start",
 													Start: ast.Position{
 														Column: 14,
@@ -1900,7 +1900,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 41,
 														Line:   215,
 													},
-													File:   "",
+													File:   "filterRowsNotStrict_test.flux",
 													Source: "2019-11-01T00:00:00Z",
 													Start: ast.Position{
 														Column: 21,
@@ -1920,7 +1920,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 42,
 											Line:   215,
 										},
-										File:   "",
+										File:   "filterRowsNotStrict_test.flux",
 										Source: "range(start: 2019-11-01T00:00:00Z)",
 										Start: ast.Position{
 											Column: 8,
@@ -1936,7 +1936,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 13,
 												Line:   215,
 											},
-											File:   "",
+											File:   "filterRowsNotStrict_test.flux",
 											Source: "range",
 											Start: ast.Position{
 												Column: 8,
@@ -1955,7 +1955,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 94,
 									Line:   216,
 								},
-								File:   "",
+								File:   "filterRowsNotStrict_test.flux",
 								Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: false)",
 								Start: ast.Position{
 									Column: 3,
@@ -1972,7 +1972,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 93,
 											Line:   216,
 										},
-										File:   "",
+										File:   "filterRowsNotStrict_test.flux",
 										Source: "region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: false",
 										Start: ast.Position{
 											Column: 23,
@@ -1988,7 +1988,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 78,
 												Line:   216,
 											},
-											File:   "",
+											File:   "filterRowsNotStrict_test.flux",
 											Source: "region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}",
 											Start: ast.Position{
 												Column: 23,
@@ -2004,7 +2004,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 29,
 													Line:   216,
 												},
-												File:   "",
+												File:   "filterRowsNotStrict_test.flux",
 												Source: "region",
 												Start: ast.Position{
 													Column: 23,
@@ -2022,7 +2022,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 78,
 													Line:   216,
 												},
-												File:   "",
+												File:   "filterRowsNotStrict_test.flux",
 												Source: "{lat: 40.7090214, lon: -73.61846, radius: 15.0}",
 												Start: ast.Position{
 													Column: 31,
@@ -2038,7 +2038,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 47,
 														Line:   216,
 													},
-													File:   "",
+													File:   "filterRowsNotStrict_test.flux",
 													Source: "lat: 40.7090214",
 													Start: ast.Position{
 														Column: 32,
@@ -2054,7 +2054,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 35,
 															Line:   216,
 														},
-														File:   "",
+														File:   "filterRowsNotStrict_test.flux",
 														Source: "lat",
 														Start: ast.Position{
 															Column: 32,
@@ -2072,7 +2072,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 47,
 															Line:   216,
 														},
-														File:   "",
+														File:   "filterRowsNotStrict_test.flux",
 														Source: "40.7090214",
 														Start: ast.Position{
 															Column: 37,
@@ -2090,7 +2090,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 63,
 														Line:   216,
 													},
-													File:   "",
+													File:   "filterRowsNotStrict_test.flux",
 													Source: "lon: -73.61846",
 													Start: ast.Position{
 														Column: 49,
@@ -2106,7 +2106,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 52,
 															Line:   216,
 														},
-														File:   "",
+														File:   "filterRowsNotStrict_test.flux",
 														Source: "lon",
 														Start: ast.Position{
 															Column: 49,
@@ -2125,7 +2125,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 63,
 																Line:   216,
 															},
-															File:   "",
+															File:   "filterRowsNotStrict_test.flux",
 															Source: "73.61846",
 															Start: ast.Position{
 																Column: 55,
@@ -2142,7 +2142,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 63,
 															Line:   216,
 														},
-														File:   "",
+														File:   "filterRowsNotStrict_test.flux",
 														Source: "-73.61846",
 														Start: ast.Position{
 															Column: 54,
@@ -2160,7 +2160,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 77,
 														Line:   216,
 													},
-													File:   "",
+													File:   "filterRowsNotStrict_test.flux",
 													Source: "radius: 15.0",
 													Start: ast.Position{
 														Column: 65,
@@ -2176,7 +2176,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 71,
 															Line:   216,
 														},
-														File:   "",
+														File:   "filterRowsNotStrict_test.flux",
 														Source: "radius",
 														Start: ast.Position{
 															Column: 65,
@@ -2194,7 +2194,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 77,
 															Line:   216,
 														},
-														File:   "",
+														File:   "filterRowsNotStrict_test.flux",
 														Source: "15.0",
 														Start: ast.Position{
 															Column: 73,
@@ -2215,7 +2215,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 93,
 												Line:   216,
 											},
-											File:   "",
+											File:   "filterRowsNotStrict_test.flux",
 											Source: "strict: false",
 											Start: ast.Position{
 												Column: 80,
@@ -2231,7 +2231,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 86,
 													Line:   216,
 												},
-												File:   "",
+												File:   "filterRowsNotStrict_test.flux",
 												Source: "strict",
 												Start: ast.Position{
 													Column: 80,
@@ -2249,7 +2249,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 93,
 													Line:   216,
 												},
-												File:   "",
+												File:   "filterRowsNotStrict_test.flux",
 												Source: "false",
 												Start: ast.Position{
 													Column: 88,
@@ -2269,7 +2269,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 94,
 										Line:   216,
 									},
-									File:   "",
+									File:   "filterRowsNotStrict_test.flux",
 									Source: "geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: false)",
 									Start: ast.Position{
 										Column: 8,
@@ -2285,7 +2285,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 22,
 											Line:   216,
 										},
-										File:   "",
+										File:   "filterRowsNotStrict_test.flux",
 										Source: "geo.filterRows",
 										Start: ast.Position{
 											Column: 8,
@@ -2301,7 +2301,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 11,
 												Line:   216,
 											},
-											File:   "",
+											File:   "filterRowsNotStrict_test.flux",
 											Source: "geo",
 											Start: ast.Position{
 												Column: 8,
@@ -2319,7 +2319,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 22,
 												Line:   216,
 											},
-											File:   "",
+											File:   "filterRowsNotStrict_test.flux",
 											Source: "filterRows",
 											Start: ast.Position{
 												Column: 12,
@@ -2339,7 +2339,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   217,
 							},
-							File:   "",
+							File:   "filterRowsNotStrict_test.flux",
 							Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: false)\n    |> drop(columns: [\"_start\", \"_stop\"])",
 							Start: ast.Position{
 								Column: 3,
@@ -2356,7 +2356,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   217,
 									},
-									File:   "",
+									File:   "filterRowsNotStrict_test.flux",
 									Source: "columns: [\"_start\", \"_stop\"]",
 									Start: ast.Position{
 										Column: 13,
@@ -2372,7 +2372,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 41,
 											Line:   217,
 										},
-										File:   "",
+										File:   "filterRowsNotStrict_test.flux",
 										Source: "columns: [\"_start\", \"_stop\"]",
 										Start: ast.Position{
 											Column: 13,
@@ -2388,7 +2388,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 20,
 												Line:   217,
 											},
-											File:   "",
+											File:   "filterRowsNotStrict_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
@@ -2406,7 +2406,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 41,
 												Line:   217,
 											},
-											File:   "",
+											File:   "filterRowsNotStrict_test.flux",
 											Source: "[\"_start\", \"_stop\"]",
 											Start: ast.Position{
 												Column: 22,
@@ -2422,7 +2422,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 31,
 													Line:   217,
 												},
-												File:   "",
+												File:   "filterRowsNotStrict_test.flux",
 												Source: "\"_start\"",
 												Start: ast.Position{
 													Column: 23,
@@ -2439,7 +2439,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 40,
 													Line:   217,
 												},
-												File:   "",
+												File:   "filterRowsNotStrict_test.flux",
 												Source: "\"_stop\"",
 												Start: ast.Position{
 													Column: 33,
@@ -2460,7 +2460,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   217,
 								},
-								File:   "",
+								File:   "filterRowsNotStrict_test.flux",
 								Source: "drop(columns: [\"_start\", \"_stop\"])",
 								Start: ast.Position{
 									Column: 8,
@@ -2476,7 +2476,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 12,
 										Line:   217,
 									},
-									File:   "",
+									File:   "filterRowsNotStrict_test.flux",
 									Source: "drop",
 									Start: ast.Position{
 										Column: 8,
@@ -2496,7 +2496,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 34,
 								Line:   213,
 							},
-							File:   "",
+							File:   "filterRowsNotStrict_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 26,
@@ -2512,7 +2512,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 31,
 									Line:   213,
 								},
-								File:   "",
+								File:   "filterRowsNotStrict_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 26,
@@ -2529,7 +2529,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 34,
 								Line:   213,
 							},
-							File:   "",
+							File:   "filterRowsNotStrict_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 32,
@@ -2548,7 +2548,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 109,
 							Line:   219,
 						},
-						File:   "",
+						File:   "filterRowsNotStrict_test.flux",
 						Source: "_filterRowsNotStrict = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsNotStrict})",
 						Start: ast.Position{
 							Column: 6,
@@ -2564,7 +2564,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 26,
 								Line:   218,
 							},
-							File:   "",
+							File:   "filterRowsNotStrict_test.flux",
 							Source: "_filterRowsNotStrict",
 							Start: ast.Position{
 								Column: 6,
@@ -2582,7 +2582,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 109,
 								Line:   219,
 							},
-							File:   "",
+							File:   "filterRowsNotStrict_test.flux",
 							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsNotStrict})",
 							Start: ast.Position{
 								Column: 29,
@@ -2598,7 +2598,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 109,
 									Line:   219,
 								},
-								File:   "",
+								File:   "filterRowsNotStrict_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsNotStrict})",
 								Start: ast.Position{
 									Column: 2,
@@ -2614,7 +2614,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 108,
 										Line:   219,
 									},
-									File:   "",
+									File:   "filterRowsNotStrict_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsNotStrict}",
 									Start: ast.Position{
 										Column: 3,
@@ -2630,7 +2630,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 43,
 											Line:   219,
 										},
-										File:   "",
+										File:   "filterRowsNotStrict_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
@@ -2646,7 +2646,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 9,
 												Line:   219,
 											},
-											File:   "",
+											File:   "filterRowsNotStrict_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 4,
@@ -2665,7 +2665,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 42,
 													Line:   219,
 												},
-												File:   "",
+												File:   "filterRowsNotStrict_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 31,
@@ -2681,7 +2681,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 42,
 														Line:   219,
 													},
-													File:   "",
+													File:   "filterRowsNotStrict_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 31,
@@ -2697,7 +2697,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 34,
 															Line:   219,
 														},
-														File:   "",
+														File:   "filterRowsNotStrict_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 31,
@@ -2715,7 +2715,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 42,
 															Line:   219,
 														},
-														File:   "",
+														File:   "filterRowsNotStrict_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 36,
@@ -2735,7 +2735,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 43,
 												Line:   219,
 											},
-											File:   "",
+											File:   "filterRowsNotStrict_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
@@ -2751,7 +2751,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   219,
 												},
-												File:   "",
+												File:   "filterRowsNotStrict_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 11,
@@ -2767,7 +2767,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 18,
 														Line:   219,
 													},
-													File:   "",
+													File:   "filterRowsNotStrict_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
@@ -2785,7 +2785,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   219,
 													},
-													File:   "",
+													File:   "filterRowsNotStrict_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 19,
@@ -2805,7 +2805,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 80,
 											Line:   219,
 										},
-										File:   "",
+										File:   "filterRowsNotStrict_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
@@ -2821,7 +2821,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 49,
 												Line:   219,
 											},
-											File:   "",
+											File:   "filterRowsNotStrict_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 45,
@@ -2840,7 +2840,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 79,
 													Line:   219,
 												},
-												File:   "",
+												File:   "filterRowsNotStrict_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 67,
@@ -2856,7 +2856,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 79,
 														Line:   219,
 													},
-													File:   "",
+													File:   "filterRowsNotStrict_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 67,
@@ -2872,7 +2872,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 70,
 															Line:   219,
 														},
-														File:   "",
+														File:   "filterRowsNotStrict_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 67,
@@ -2890,7 +2890,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 79,
 															Line:   219,
 														},
-														File:   "",
+														File:   "filterRowsNotStrict_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 72,
@@ -2910,7 +2910,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 80,
 												Line:   219,
 											},
-											File:   "",
+											File:   "filterRowsNotStrict_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
@@ -2926,7 +2926,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 66,
 													Line:   219,
 												},
-												File:   "",
+												File:   "filterRowsNotStrict_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 51,
@@ -2942,7 +2942,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 58,
 														Line:   219,
 													},
-													File:   "",
+													File:   "filterRowsNotStrict_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 51,
@@ -2960,7 +2960,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 66,
 														Line:   219,
 													},
-													File:   "",
+													File:   "filterRowsNotStrict_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 59,
@@ -2980,7 +2980,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 107,
 											Line:   219,
 										},
-										File:   "",
+										File:   "filterRowsNotStrict_test.flux",
 										Source: "fn: t_filterRowsNotStrict",
 										Start: ast.Position{
 											Column: 82,
@@ -2996,7 +2996,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 84,
 												Line:   219,
 											},
-											File:   "",
+											File:   "filterRowsNotStrict_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 82,
@@ -3014,7 +3014,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 107,
 												Line:   219,
 											},
-											File:   "",
+											File:   "filterRowsNotStrict_test.flux",
 											Source: "t_filterRowsNotStrict",
 											Start: ast.Position{
 												Column: 86,
@@ -3038,7 +3038,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 109,
 						Line:   219,
 					},
-					File:   "",
+					File:   "filterRowsNotStrict_test.flux",
 					Source: "test _filterRowsNotStrict = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsNotStrict})",
 					Start: ast.Position{
 						Column: 1,
@@ -3056,7 +3056,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 26,
 						Line:   3,
 					},
-					File:   "",
+					File:   "filterRowsNotStrict_test.flux",
 					Source: "import \"experimental/geo\"",
 					Start: ast.Position{
 						Column: 1,
@@ -3072,7 +3072,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 26,
 							Line:   3,
 						},
-						File:   "",
+						File:   "filterRowsNotStrict_test.flux",
 						Source: "\"experimental/geo\"",
 						Start: ast.Position{
 							Column: 8,
@@ -3091,7 +3091,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "",
+					File:   "filterRowsNotStrict_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -3107,7 +3107,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "",
+						File:   "filterRowsNotStrict_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -3128,7 +3128,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   1,
 					},
-					File:   "",
+					File:   "filterRowsNotStrict_test.flux",
 					Source: "package geo_test",
 					Start: ast.Position{
 						Column: 1,
@@ -3144,7 +3144,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   1,
 						},
-						File:   "",
+						File:   "filterRowsNotStrict_test.flux",
 						Source: "geo_test",
 						Start: ast.Position{
 							Column: 9,
@@ -3163,7 +3163,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 106,
 					Line:   213,
 				},
-				File:   "",
+				File:   "filterRowsStrict_test.flux",
 				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"\n\noutData = \"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\"\n\nt_filterRowsStrict = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)\n    |> drop(columns: [\"_start\", \"_stop\"])\ntest _filterRowsStrict = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsStrict})",
 				Start: ast.Position{
 					Column: 1,
@@ -3180,7 +3180,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   6,
 						},
-						File:   "",
+						File:   "filterRowsStrict_test.flux",
 						Source: "now = () => (2030-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 8,
@@ -3196,7 +3196,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   6,
 							},
-							File:   "",
+							File:   "filterRowsStrict_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
@@ -3214,7 +3214,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   6,
 							},
-							File:   "",
+							File:   "filterRowsStrict_test.flux",
 							Source: "() => (2030-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 14,
@@ -3230,7 +3230,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   6,
 								},
-								File:   "",
+								File:   "filterRowsStrict_test.flux",
 								Source: "(2030-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 20,
@@ -3246,7 +3246,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   6,
 									},
-									File:   "",
+									File:   "filterRowsStrict_test.flux",
 									Source: "2030-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 21,
@@ -3267,7 +3267,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   6,
 					},
-					File:   "",
+					File:   "filterRowsStrict_test.flux",
 					Source: "option now = () => (2030-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
@@ -3283,7 +3283,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   185,
 					},
-					File:   "",
+					File:   "filterRowsStrict_test.flux",
 					Source: "inData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -3299,7 +3299,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "",
+						File:   "filterRowsStrict_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
@@ -3317,7 +3317,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   185,
 						},
-						File:   "",
+						File:   "filterRowsStrict_test.flux",
 						Source: "\"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"",
 						Start: ast.Position{
 							Column: 10,
@@ -3335,7 +3335,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   205,
 					},
-					File:   "",
+					File:   "filterRowsStrict_test.flux",
 					Source: "outData = \"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -3351,7 +3351,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   187,
 						},
-						File:   "",
+						File:   "filterRowsStrict_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
@@ -3369,7 +3369,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   205,
 						},
-						File:   "",
+						File:   "filterRowsStrict_test.flux",
 						Source: "\"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\"",
 						Start: ast.Position{
 							Column: 11,
@@ -3387,7 +3387,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   211,
 					},
-					File:   "",
+					File:   "filterRowsStrict_test.flux",
 					Source: "t_filterRowsStrict = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)\n    |> drop(columns: [\"_start\", \"_stop\"])",
 					Start: ast.Position{
 						Column: 1,
@@ -3403,7 +3403,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 19,
 							Line:   207,
 						},
-						File:   "",
+						File:   "filterRowsStrict_test.flux",
 						Source: "t_filterRowsStrict",
 						Start: ast.Position{
 							Column: 1,
@@ -3421,7 +3421,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   211,
 						},
-						File:   "",
+						File:   "filterRowsStrict_test.flux",
 						Source: "(table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)\n    |> drop(columns: [\"_start\", \"_stop\"])",
 						Start: ast.Position{
 							Column: 22,
@@ -3440,7 +3440,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 8,
 											Line:   208,
 										},
-										File:   "",
+										File:   "filterRowsStrict_test.flux",
 										Source: "table",
 										Start: ast.Position{
 											Column: 3,
@@ -3457,7 +3457,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 42,
 										Line:   209,
 									},
-									File:   "",
+									File:   "filterRowsStrict_test.flux",
 									Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)",
 									Start: ast.Position{
 										Column: 3,
@@ -3474,7 +3474,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 41,
 												Line:   209,
 											},
-											File:   "",
+											File:   "filterRowsStrict_test.flux",
 											Source: "start: 2019-11-01T00:00:00Z",
 											Start: ast.Position{
 												Column: 14,
@@ -3490,7 +3490,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 41,
 													Line:   209,
 												},
-												File:   "",
+												File:   "filterRowsStrict_test.flux",
 												Source: "start: 2019-11-01T00:00:00Z",
 												Start: ast.Position{
 													Column: 14,
@@ -3506,7 +3506,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 19,
 														Line:   209,
 													},
-													File:   "",
+													File:   "filterRowsStrict_test.flux",
 													Source: "start",
 													Start: ast.Position{
 														Column: 14,
@@ -3524,7 +3524,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 41,
 														Line:   209,
 													},
-													File:   "",
+													File:   "filterRowsStrict_test.flux",
 													Source: "2019-11-01T00:00:00Z",
 													Start: ast.Position{
 														Column: 21,
@@ -3544,7 +3544,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 42,
 											Line:   209,
 										},
-										File:   "",
+										File:   "filterRowsStrict_test.flux",
 										Source: "range(start: 2019-11-01T00:00:00Z)",
 										Start: ast.Position{
 											Column: 8,
@@ -3560,7 +3560,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 13,
 												Line:   209,
 											},
-											File:   "",
+											File:   "filterRowsStrict_test.flux",
 											Source: "range",
 											Start: ast.Position{
 												Column: 8,
@@ -3579,7 +3579,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 93,
 									Line:   210,
 								},
-								File:   "",
+								File:   "filterRowsStrict_test.flux",
 								Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)",
 								Start: ast.Position{
 									Column: 3,
@@ -3596,7 +3596,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 92,
 											Line:   210,
 										},
-										File:   "",
+										File:   "filterRowsStrict_test.flux",
 										Source: "region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true",
 										Start: ast.Position{
 											Column: 23,
@@ -3612,7 +3612,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 78,
 												Line:   210,
 											},
-											File:   "",
+											File:   "filterRowsStrict_test.flux",
 											Source: "region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}",
 											Start: ast.Position{
 												Column: 23,
@@ -3628,7 +3628,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 29,
 													Line:   210,
 												},
-												File:   "",
+												File:   "filterRowsStrict_test.flux",
 												Source: "region",
 												Start: ast.Position{
 													Column: 23,
@@ -3646,7 +3646,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 78,
 													Line:   210,
 												},
-												File:   "",
+												File:   "filterRowsStrict_test.flux",
 												Source: "{lat: 40.7090214, lon: -73.61846, radius: 15.0}",
 												Start: ast.Position{
 													Column: 31,
@@ -3662,7 +3662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 47,
 														Line:   210,
 													},
-													File:   "",
+													File:   "filterRowsStrict_test.flux",
 													Source: "lat: 40.7090214",
 													Start: ast.Position{
 														Column: 32,
@@ -3678,7 +3678,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 35,
 															Line:   210,
 														},
-														File:   "",
+														File:   "filterRowsStrict_test.flux",
 														Source: "lat",
 														Start: ast.Position{
 															Column: 32,
@@ -3696,7 +3696,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 47,
 															Line:   210,
 														},
-														File:   "",
+														File:   "filterRowsStrict_test.flux",
 														Source: "40.7090214",
 														Start: ast.Position{
 															Column: 37,
@@ -3714,7 +3714,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 63,
 														Line:   210,
 													},
-													File:   "",
+													File:   "filterRowsStrict_test.flux",
 													Source: "lon: -73.61846",
 													Start: ast.Position{
 														Column: 49,
@@ -3730,7 +3730,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 52,
 															Line:   210,
 														},
-														File:   "",
+														File:   "filterRowsStrict_test.flux",
 														Source: "lon",
 														Start: ast.Position{
 															Column: 49,
@@ -3749,7 +3749,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 63,
 																Line:   210,
 															},
-															File:   "",
+															File:   "filterRowsStrict_test.flux",
 															Source: "73.61846",
 															Start: ast.Position{
 																Column: 55,
@@ -3766,7 +3766,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 63,
 															Line:   210,
 														},
-														File:   "",
+														File:   "filterRowsStrict_test.flux",
 														Source: "-73.61846",
 														Start: ast.Position{
 															Column: 54,
@@ -3784,7 +3784,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 77,
 														Line:   210,
 													},
-													File:   "",
+													File:   "filterRowsStrict_test.flux",
 													Source: "radius: 15.0",
 													Start: ast.Position{
 														Column: 65,
@@ -3800,7 +3800,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 71,
 															Line:   210,
 														},
-														File:   "",
+														File:   "filterRowsStrict_test.flux",
 														Source: "radius",
 														Start: ast.Position{
 															Column: 65,
@@ -3818,7 +3818,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 77,
 															Line:   210,
 														},
-														File:   "",
+														File:   "filterRowsStrict_test.flux",
 														Source: "15.0",
 														Start: ast.Position{
 															Column: 73,
@@ -3839,7 +3839,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 92,
 												Line:   210,
 											},
-											File:   "",
+											File:   "filterRowsStrict_test.flux",
 											Source: "strict: true",
 											Start: ast.Position{
 												Column: 80,
@@ -3855,7 +3855,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 86,
 													Line:   210,
 												},
-												File:   "",
+												File:   "filterRowsStrict_test.flux",
 												Source: "strict",
 												Start: ast.Position{
 													Column: 80,
@@ -3873,7 +3873,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 92,
 													Line:   210,
 												},
-												File:   "",
+												File:   "filterRowsStrict_test.flux",
 												Source: "true",
 												Start: ast.Position{
 													Column: 88,
@@ -3893,7 +3893,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 93,
 										Line:   210,
 									},
-									File:   "",
+									File:   "filterRowsStrict_test.flux",
 									Source: "geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)",
 									Start: ast.Position{
 										Column: 8,
@@ -3909,7 +3909,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 22,
 											Line:   210,
 										},
-										File:   "",
+										File:   "filterRowsStrict_test.flux",
 										Source: "geo.filterRows",
 										Start: ast.Position{
 											Column: 8,
@@ -3925,7 +3925,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 11,
 												Line:   210,
 											},
-											File:   "",
+											File:   "filterRowsStrict_test.flux",
 											Source: "geo",
 											Start: ast.Position{
 												Column: 8,
@@ -3943,7 +3943,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 22,
 												Line:   210,
 											},
-											File:   "",
+											File:   "filterRowsStrict_test.flux",
 											Source: "filterRows",
 											Start: ast.Position{
 												Column: 12,
@@ -3963,7 +3963,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   211,
 							},
-							File:   "",
+							File:   "filterRowsStrict_test.flux",
 							Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)\n    |> drop(columns: [\"_start\", \"_stop\"])",
 							Start: ast.Position{
 								Column: 3,
@@ -3980,7 +3980,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   211,
 									},
-									File:   "",
+									File:   "filterRowsStrict_test.flux",
 									Source: "columns: [\"_start\", \"_stop\"]",
 									Start: ast.Position{
 										Column: 13,
@@ -3996,7 +3996,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 41,
 											Line:   211,
 										},
-										File:   "",
+										File:   "filterRowsStrict_test.flux",
 										Source: "columns: [\"_start\", \"_stop\"]",
 										Start: ast.Position{
 											Column: 13,
@@ -4012,7 +4012,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 20,
 												Line:   211,
 											},
-											File:   "",
+											File:   "filterRowsStrict_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
@@ -4030,7 +4030,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 41,
 												Line:   211,
 											},
-											File:   "",
+											File:   "filterRowsStrict_test.flux",
 											Source: "[\"_start\", \"_stop\"]",
 											Start: ast.Position{
 												Column: 22,
@@ -4046,7 +4046,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 31,
 													Line:   211,
 												},
-												File:   "",
+												File:   "filterRowsStrict_test.flux",
 												Source: "\"_start\"",
 												Start: ast.Position{
 													Column: 23,
@@ -4063,7 +4063,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 40,
 													Line:   211,
 												},
-												File:   "",
+												File:   "filterRowsStrict_test.flux",
 												Source: "\"_stop\"",
 												Start: ast.Position{
 													Column: 33,
@@ -4084,7 +4084,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   211,
 								},
-								File:   "",
+								File:   "filterRowsStrict_test.flux",
 								Source: "drop(columns: [\"_start\", \"_stop\"])",
 								Start: ast.Position{
 									Column: 8,
@@ -4100,7 +4100,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 12,
 										Line:   211,
 									},
-									File:   "",
+									File:   "filterRowsStrict_test.flux",
 									Source: "drop",
 									Start: ast.Position{
 										Column: 8,
@@ -4120,7 +4120,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 31,
 								Line:   207,
 							},
-							File:   "",
+							File:   "filterRowsStrict_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 23,
@@ -4136,7 +4136,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 28,
 									Line:   207,
 								},
-								File:   "",
+								File:   "filterRowsStrict_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 23,
@@ -4153,7 +4153,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 31,
 								Line:   207,
 							},
-							File:   "",
+							File:   "filterRowsStrict_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 29,
@@ -4172,7 +4172,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 106,
 							Line:   213,
 						},
-						File:   "",
+						File:   "filterRowsStrict_test.flux",
 						Source: "_filterRowsStrict = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsStrict})",
 						Start: ast.Position{
 							Column: 6,
@@ -4188,7 +4188,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 23,
 								Line:   212,
 							},
-							File:   "",
+							File:   "filterRowsStrict_test.flux",
 							Source: "_filterRowsStrict",
 							Start: ast.Position{
 								Column: 6,
@@ -4206,7 +4206,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 106,
 								Line:   213,
 							},
-							File:   "",
+							File:   "filterRowsStrict_test.flux",
 							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsStrict})",
 							Start: ast.Position{
 								Column: 26,
@@ -4222,7 +4222,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 106,
 									Line:   213,
 								},
-								File:   "",
+								File:   "filterRowsStrict_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsStrict})",
 								Start: ast.Position{
 									Column: 2,
@@ -4238,7 +4238,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 105,
 										Line:   213,
 									},
-									File:   "",
+									File:   "filterRowsStrict_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsStrict}",
 									Start: ast.Position{
 										Column: 3,
@@ -4254,7 +4254,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 43,
 											Line:   213,
 										},
-										File:   "",
+										File:   "filterRowsStrict_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
@@ -4270,7 +4270,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 9,
 												Line:   213,
 											},
-											File:   "",
+											File:   "filterRowsStrict_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 4,
@@ -4289,7 +4289,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 42,
 													Line:   213,
 												},
-												File:   "",
+												File:   "filterRowsStrict_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 31,
@@ -4305,7 +4305,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 42,
 														Line:   213,
 													},
-													File:   "",
+													File:   "filterRowsStrict_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 31,
@@ -4321,7 +4321,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 34,
 															Line:   213,
 														},
-														File:   "",
+														File:   "filterRowsStrict_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 31,
@@ -4339,7 +4339,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 42,
 															Line:   213,
 														},
-														File:   "",
+														File:   "filterRowsStrict_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 36,
@@ -4359,7 +4359,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 43,
 												Line:   213,
 											},
-											File:   "",
+											File:   "filterRowsStrict_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
@@ -4375,7 +4375,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   213,
 												},
-												File:   "",
+												File:   "filterRowsStrict_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 11,
@@ -4391,7 +4391,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 18,
 														Line:   213,
 													},
-													File:   "",
+													File:   "filterRowsStrict_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
@@ -4409,7 +4409,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   213,
 													},
-													File:   "",
+													File:   "filterRowsStrict_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 19,
@@ -4429,7 +4429,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 80,
 											Line:   213,
 										},
-										File:   "",
+										File:   "filterRowsStrict_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
@@ -4445,7 +4445,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 49,
 												Line:   213,
 											},
-											File:   "",
+											File:   "filterRowsStrict_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 45,
@@ -4464,7 +4464,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 79,
 													Line:   213,
 												},
-												File:   "",
+												File:   "filterRowsStrict_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 67,
@@ -4480,7 +4480,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 79,
 														Line:   213,
 													},
-													File:   "",
+													File:   "filterRowsStrict_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 67,
@@ -4496,7 +4496,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 70,
 															Line:   213,
 														},
-														File:   "",
+														File:   "filterRowsStrict_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 67,
@@ -4514,7 +4514,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 79,
 															Line:   213,
 														},
-														File:   "",
+														File:   "filterRowsStrict_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 72,
@@ -4534,7 +4534,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 80,
 												Line:   213,
 											},
-											File:   "",
+											File:   "filterRowsStrict_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
@@ -4550,7 +4550,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 66,
 													Line:   213,
 												},
-												File:   "",
+												File:   "filterRowsStrict_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 51,
@@ -4566,7 +4566,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 58,
 														Line:   213,
 													},
-													File:   "",
+													File:   "filterRowsStrict_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 51,
@@ -4584,7 +4584,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 66,
 														Line:   213,
 													},
-													File:   "",
+													File:   "filterRowsStrict_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 59,
@@ -4604,7 +4604,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 104,
 											Line:   213,
 										},
-										File:   "",
+										File:   "filterRowsStrict_test.flux",
 										Source: "fn: t_filterRowsStrict",
 										Start: ast.Position{
 											Column: 82,
@@ -4620,7 +4620,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 84,
 												Line:   213,
 											},
-											File:   "",
+											File:   "filterRowsStrict_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 82,
@@ -4638,7 +4638,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 104,
 												Line:   213,
 											},
-											File:   "",
+											File:   "filterRowsStrict_test.flux",
 											Source: "t_filterRowsStrict",
 											Start: ast.Position{
 												Column: 86,
@@ -4662,7 +4662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 106,
 						Line:   213,
 					},
-					File:   "",
+					File:   "filterRowsStrict_test.flux",
 					Source: "test _filterRowsStrict = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsStrict})",
 					Start: ast.Position{
 						Column: 1,
@@ -4680,7 +4680,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 26,
 						Line:   3,
 					},
-					File:   "",
+					File:   "filterRowsStrict_test.flux",
 					Source: "import \"experimental/geo\"",
 					Start: ast.Position{
 						Column: 1,
@@ -4696,7 +4696,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 26,
 							Line:   3,
 						},
-						File:   "",
+						File:   "filterRowsStrict_test.flux",
 						Source: "\"experimental/geo\"",
 						Start: ast.Position{
 							Column: 8,
@@ -4715,7 +4715,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "",
+					File:   "filterRowsStrict_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -4731,7 +4731,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "",
+						File:   "filterRowsStrict_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -4752,7 +4752,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   1,
 					},
-					File:   "",
+					File:   "filterRowsStrict_test.flux",
 					Source: "package geo_test",
 					Start: ast.Position{
 						Column: 1,
@@ -4768,7 +4768,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   1,
 						},
-						File:   "",
+						File:   "filterRowsStrict_test.flux",
 						Source: "geo_test",
 						Start: ast.Position{
 							Column: 9,
@@ -4787,7 +4787,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 100,
 					Line:   221,
 				},
-				File:   "",
+				File:   "gridFilterLevel_test.flux",
 				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"\n\noutData = \"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,lat\n,,3,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245\n\"\n\n// grid level 9 is still fine enough not to cover large area so we only get Long Island points\nt_gridFilter = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, level: 9)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> drop(columns: [\"_start\", \"_stop\"])\ntest _gridFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
 				Start: ast.Position{
 					Column: 1,
@@ -4804,7 +4804,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   6,
 						},
-						File:   "",
+						File:   "gridFilterLevel_test.flux",
 						Source: "now = () => (2030-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 8,
@@ -4820,7 +4820,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   6,
 							},
-							File:   "",
+							File:   "gridFilterLevel_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
@@ -4838,7 +4838,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   6,
 							},
-							File:   "",
+							File:   "gridFilterLevel_test.flux",
 							Source: "() => (2030-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 14,
@@ -4854,7 +4854,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   6,
 								},
-								File:   "",
+								File:   "gridFilterLevel_test.flux",
 								Source: "(2030-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 20,
@@ -4870,7 +4870,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   6,
 									},
-									File:   "",
+									File:   "gridFilterLevel_test.flux",
 									Source: "2030-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 21,
@@ -4891,7 +4891,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   6,
 					},
-					File:   "",
+					File:   "gridFilterLevel_test.flux",
 					Source: "option now = () => (2030-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
@@ -4907,7 +4907,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   185,
 					},
-					File:   "",
+					File:   "gridFilterLevel_test.flux",
 					Source: "inData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -4923,7 +4923,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "",
+						File:   "gridFilterLevel_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
@@ -4941,7 +4941,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   185,
 						},
-						File:   "",
+						File:   "gridFilterLevel_test.flux",
 						Source: "\"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"",
 						Start: ast.Position{
 							Column: 10,
@@ -4959,7 +4959,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   211,
 					},
-					File:   "",
+					File:   "gridFilterLevel_test.flux",
 					Source: "outData = \"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,lat\n,,3,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -4975,7 +4975,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   187,
 						},
-						File:   "",
+						File:   "gridFilterLevel_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
@@ -4993,7 +4993,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   211,
 						},
-						File:   "",
+						File:   "gridFilterLevel_test.flux",
 						Source: "\"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,lat\n,,3,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245\n\"",
 						Start: ast.Position{
 							Column: 11,
@@ -5011,7 +5011,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   219,
 					},
-					File:   "",
+					File:   "gridFilterLevel_test.flux",
 					Source: "t_gridFilter = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, level: 9)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> drop(columns: [\"_start\", \"_stop\"])",
 					Start: ast.Position{
 						Column: 1,
@@ -5027,7 +5027,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 13,
 							Line:   214,
 						},
-						File:   "",
+						File:   "gridFilterLevel_test.flux",
 						Source: "t_gridFilter",
 						Start: ast.Position{
 							Column: 1,
@@ -5045,7 +5045,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   219,
 						},
-						File:   "",
+						File:   "gridFilterLevel_test.flux",
 						Source: "(table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, level: 9)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> drop(columns: [\"_start\", \"_stop\"])",
 						Start: ast.Position{
 							Column: 16,
@@ -5065,7 +5065,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 8,
 												Line:   215,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "table",
 											Start: ast.Position{
 												Column: 3,
@@ -5082,7 +5082,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 42,
 											Line:   216,
 										},
-										File:   "",
+										File:   "gridFilterLevel_test.flux",
 										Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)",
 										Start: ast.Position{
 											Column: 3,
@@ -5099,7 +5099,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 41,
 													Line:   216,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "start: 2019-11-01T00:00:00Z",
 												Start: ast.Position{
 													Column: 14,
@@ -5115,7 +5115,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 41,
 														Line:   216,
 													},
-													File:   "",
+													File:   "gridFilterLevel_test.flux",
 													Source: "start: 2019-11-01T00:00:00Z",
 													Start: ast.Position{
 														Column: 14,
@@ -5131,7 +5131,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 19,
 															Line:   216,
 														},
-														File:   "",
+														File:   "gridFilterLevel_test.flux",
 														Source: "start",
 														Start: ast.Position{
 															Column: 14,
@@ -5149,7 +5149,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 41,
 															Line:   216,
 														},
-														File:   "",
+														File:   "gridFilterLevel_test.flux",
 														Source: "2019-11-01T00:00:00Z",
 														Start: ast.Position{
 															Column: 21,
@@ -5169,7 +5169,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 42,
 												Line:   216,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "range(start: 2019-11-01T00:00:00Z)",
 											Start: ast.Position{
 												Column: 8,
@@ -5185,7 +5185,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 13,
 													Line:   216,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "range",
 												Start: ast.Position{
 													Column: 8,
@@ -5204,7 +5204,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 89,
 										Line:   217,
 									},
-									File:   "",
+									File:   "gridFilterLevel_test.flux",
 									Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, level: 9)",
 									Start: ast.Position{
 										Column: 3,
@@ -5221,7 +5221,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 88,
 												Line:   217,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, level: 9",
 											Start: ast.Position{
 												Column: 23,
@@ -5237,7 +5237,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 78,
 													Line:   217,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}",
 												Start: ast.Position{
 													Column: 23,
@@ -5253,7 +5253,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 29,
 														Line:   217,
 													},
-													File:   "",
+													File:   "gridFilterLevel_test.flux",
 													Source: "region",
 													Start: ast.Position{
 														Column: 23,
@@ -5271,7 +5271,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 78,
 														Line:   217,
 													},
-													File:   "",
+													File:   "gridFilterLevel_test.flux",
 													Source: "{lat: 40.7090214, lon: -73.61846, radius: 15.0}",
 													Start: ast.Position{
 														Column: 31,
@@ -5287,7 +5287,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 47,
 															Line:   217,
 														},
-														File:   "",
+														File:   "gridFilterLevel_test.flux",
 														Source: "lat: 40.7090214",
 														Start: ast.Position{
 															Column: 32,
@@ -5303,7 +5303,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 35,
 																Line:   217,
 															},
-															File:   "",
+															File:   "gridFilterLevel_test.flux",
 															Source: "lat",
 															Start: ast.Position{
 																Column: 32,
@@ -5321,7 +5321,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 47,
 																Line:   217,
 															},
-															File:   "",
+															File:   "gridFilterLevel_test.flux",
 															Source: "40.7090214",
 															Start: ast.Position{
 																Column: 37,
@@ -5339,7 +5339,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 63,
 															Line:   217,
 														},
-														File:   "",
+														File:   "gridFilterLevel_test.flux",
 														Source: "lon: -73.61846",
 														Start: ast.Position{
 															Column: 49,
@@ -5355,7 +5355,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 52,
 																Line:   217,
 															},
-															File:   "",
+															File:   "gridFilterLevel_test.flux",
 															Source: "lon",
 															Start: ast.Position{
 																Column: 49,
@@ -5374,7 +5374,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 63,
 																	Line:   217,
 																},
-																File:   "",
+																File:   "gridFilterLevel_test.flux",
 																Source: "73.61846",
 																Start: ast.Position{
 																	Column: 55,
@@ -5391,7 +5391,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 63,
 																Line:   217,
 															},
-															File:   "",
+															File:   "gridFilterLevel_test.flux",
 															Source: "-73.61846",
 															Start: ast.Position{
 																Column: 54,
@@ -5409,7 +5409,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 77,
 															Line:   217,
 														},
-														File:   "",
+														File:   "gridFilterLevel_test.flux",
 														Source: "radius: 15.0",
 														Start: ast.Position{
 															Column: 65,
@@ -5425,7 +5425,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 71,
 																Line:   217,
 															},
-															File:   "",
+															File:   "gridFilterLevel_test.flux",
 															Source: "radius",
 															Start: ast.Position{
 																Column: 65,
@@ -5443,7 +5443,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 77,
 																Line:   217,
 															},
-															File:   "",
+															File:   "gridFilterLevel_test.flux",
 															Source: "15.0",
 															Start: ast.Position{
 																Column: 73,
@@ -5464,7 +5464,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 88,
 													Line:   217,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "level: 9",
 												Start: ast.Position{
 													Column: 80,
@@ -5480,7 +5480,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 85,
 														Line:   217,
 													},
-													File:   "",
+													File:   "gridFilterLevel_test.flux",
 													Source: "level",
 													Start: ast.Position{
 														Column: 80,
@@ -5498,7 +5498,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 88,
 														Line:   217,
 													},
-													File:   "",
+													File:   "gridFilterLevel_test.flux",
 													Source: "9",
 													Start: ast.Position{
 														Column: 87,
@@ -5518,7 +5518,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 89,
 											Line:   217,
 										},
-										File:   "",
+										File:   "gridFilterLevel_test.flux",
 										Source: "geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, level: 9)",
 										Start: ast.Position{
 											Column: 8,
@@ -5534,7 +5534,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 22,
 												Line:   217,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "geo.gridFilter",
 											Start: ast.Position{
 												Column: 8,
@@ -5550,7 +5550,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 11,
 													Line:   217,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "geo",
 												Start: ast.Position{
 													Column: 8,
@@ -5568,7 +5568,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 22,
 													Line:   217,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "gridFilter",
 												Start: ast.Position{
 													Column: 12,
@@ -5588,7 +5588,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 77,
 									Line:   218,
 								},
-								File:   "",
+								File:   "gridFilterLevel_test.flux",
 								Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, level: 9)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")",
 								Start: ast.Position{
 									Column: 3,
@@ -5605,7 +5605,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 76,
 											Line:   218,
 										},
-										File:   "",
+										File:   "gridFilterLevel_test.flux",
 										Source: "rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\"",
 										Start: ast.Position{
 											Column: 14,
@@ -5621,7 +5621,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 30,
 												Line:   218,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "rowKey:[\"_time\"]",
 											Start: ast.Position{
 												Column: 14,
@@ -5637,7 +5637,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 20,
 													Line:   218,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "rowKey",
 												Start: ast.Position{
 													Column: 14,
@@ -5655,7 +5655,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   218,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "[\"_time\"]",
 												Start: ast.Position{
 													Column: 21,
@@ -5671,7 +5671,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 29,
 														Line:   218,
 													},
-													File:   "",
+													File:   "gridFilterLevel_test.flux",
 													Source: "\"_time\"",
 													Start: ast.Position{
 														Column: 22,
@@ -5690,7 +5690,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 53,
 												Line:   218,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "columnKey: [\"_field\"]",
 											Start: ast.Position{
 												Column: 32,
@@ -5706,7 +5706,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 41,
 													Line:   218,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "columnKey",
 												Start: ast.Position{
 													Column: 32,
@@ -5724,7 +5724,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 53,
 													Line:   218,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "[\"_field\"]",
 												Start: ast.Position{
 													Column: 43,
@@ -5740,7 +5740,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 52,
 														Line:   218,
 													},
-													File:   "",
+													File:   "gridFilterLevel_test.flux",
 													Source: "\"_field\"",
 													Start: ast.Position{
 														Column: 44,
@@ -5759,7 +5759,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 76,
 												Line:   218,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "valueColumn: \"_value\"",
 											Start: ast.Position{
 												Column: 55,
@@ -5775,7 +5775,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 66,
 													Line:   218,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "valueColumn",
 												Start: ast.Position{
 													Column: 55,
@@ -5793,7 +5793,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 76,
 													Line:   218,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "\"_value\"",
 												Start: ast.Position{
 													Column: 68,
@@ -5813,7 +5813,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 77,
 										Line:   218,
 									},
-									File:   "",
+									File:   "gridFilterLevel_test.flux",
 									Source: "pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")",
 									Start: ast.Position{
 										Column: 8,
@@ -5829,7 +5829,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 13,
 											Line:   218,
 										},
-										File:   "",
+										File:   "gridFilterLevel_test.flux",
 										Source: "pivot",
 										Start: ast.Position{
 											Column: 8,
@@ -5848,7 +5848,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   219,
 							},
-							File:   "",
+							File:   "gridFilterLevel_test.flux",
 							Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, level: 9)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> drop(columns: [\"_start\", \"_stop\"])",
 							Start: ast.Position{
 								Column: 3,
@@ -5865,7 +5865,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   219,
 									},
-									File:   "",
+									File:   "gridFilterLevel_test.flux",
 									Source: "columns: [\"_start\", \"_stop\"]",
 									Start: ast.Position{
 										Column: 13,
@@ -5881,7 +5881,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 41,
 											Line:   219,
 										},
-										File:   "",
+										File:   "gridFilterLevel_test.flux",
 										Source: "columns: [\"_start\", \"_stop\"]",
 										Start: ast.Position{
 											Column: 13,
@@ -5897,7 +5897,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 20,
 												Line:   219,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
@@ -5915,7 +5915,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 41,
 												Line:   219,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "[\"_start\", \"_stop\"]",
 											Start: ast.Position{
 												Column: 22,
@@ -5931,7 +5931,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 31,
 													Line:   219,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "\"_start\"",
 												Start: ast.Position{
 													Column: 23,
@@ -5948,7 +5948,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 40,
 													Line:   219,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "\"_stop\"",
 												Start: ast.Position{
 													Column: 33,
@@ -5969,7 +5969,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   219,
 								},
-								File:   "",
+								File:   "gridFilterLevel_test.flux",
 								Source: "drop(columns: [\"_start\", \"_stop\"])",
 								Start: ast.Position{
 									Column: 8,
@@ -5985,7 +5985,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 12,
 										Line:   219,
 									},
-									File:   "",
+									File:   "gridFilterLevel_test.flux",
 									Source: "drop",
 									Start: ast.Position{
 										Column: 8,
@@ -6005,7 +6005,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 25,
 								Line:   214,
 							},
-							File:   "",
+							File:   "gridFilterLevel_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 17,
@@ -6021,7 +6021,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 22,
 									Line:   214,
 								},
-								File:   "",
+								File:   "gridFilterLevel_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 17,
@@ -6038,7 +6038,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 25,
 								Line:   214,
 							},
-							File:   "",
+							File:   "gridFilterLevel_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 23,
@@ -6057,7 +6057,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 100,
 							Line:   221,
 						},
-						File:   "",
+						File:   "gridFilterLevel_test.flux",
 						Source: "_gridFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
 						Start: ast.Position{
 							Column: 6,
@@ -6073,7 +6073,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 17,
 								Line:   220,
 							},
-							File:   "",
+							File:   "gridFilterLevel_test.flux",
 							Source: "_gridFilter",
 							Start: ast.Position{
 								Column: 6,
@@ -6091,7 +6091,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 100,
 								Line:   221,
 							},
-							File:   "",
+							File:   "gridFilterLevel_test.flux",
 							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
 							Start: ast.Position{
 								Column: 20,
@@ -6107,7 +6107,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 100,
 									Line:   221,
 								},
-								File:   "",
+								File:   "gridFilterLevel_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
 								Start: ast.Position{
 									Column: 2,
@@ -6123,7 +6123,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 99,
 										Line:   221,
 									},
-									File:   "",
+									File:   "gridFilterLevel_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter}",
 									Start: ast.Position{
 										Column: 3,
@@ -6139,7 +6139,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 43,
 											Line:   221,
 										},
-										File:   "",
+										File:   "gridFilterLevel_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
@@ -6155,7 +6155,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 9,
 												Line:   221,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 4,
@@ -6174,7 +6174,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 42,
 													Line:   221,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 31,
@@ -6190,7 +6190,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 42,
 														Line:   221,
 													},
-													File:   "",
+													File:   "gridFilterLevel_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 31,
@@ -6206,7 +6206,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 34,
 															Line:   221,
 														},
-														File:   "",
+														File:   "gridFilterLevel_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 31,
@@ -6224,7 +6224,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 42,
 															Line:   221,
 														},
-														File:   "",
+														File:   "gridFilterLevel_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 36,
@@ -6244,7 +6244,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 43,
 												Line:   221,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
@@ -6260,7 +6260,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   221,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 11,
@@ -6276,7 +6276,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 18,
 														Line:   221,
 													},
-													File:   "",
+													File:   "gridFilterLevel_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
@@ -6294,7 +6294,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   221,
 													},
-													File:   "",
+													File:   "gridFilterLevel_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 19,
@@ -6314,7 +6314,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 80,
 											Line:   221,
 										},
-										File:   "",
+										File:   "gridFilterLevel_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
@@ -6330,7 +6330,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 49,
 												Line:   221,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 45,
@@ -6349,7 +6349,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 79,
 													Line:   221,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 67,
@@ -6365,7 +6365,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 79,
 														Line:   221,
 													},
-													File:   "",
+													File:   "gridFilterLevel_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 67,
@@ -6381,7 +6381,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 70,
 															Line:   221,
 														},
-														File:   "",
+														File:   "gridFilterLevel_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 67,
@@ -6399,7 +6399,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 79,
 															Line:   221,
 														},
-														File:   "",
+														File:   "gridFilterLevel_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 72,
@@ -6419,7 +6419,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 80,
 												Line:   221,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
@@ -6435,7 +6435,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 66,
 													Line:   221,
 												},
-												File:   "",
+												File:   "gridFilterLevel_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 51,
@@ -6451,7 +6451,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 58,
 														Line:   221,
 													},
-													File:   "",
+													File:   "gridFilterLevel_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 51,
@@ -6469,7 +6469,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 66,
 														Line:   221,
 													},
-													File:   "",
+													File:   "gridFilterLevel_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 59,
@@ -6489,7 +6489,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 98,
 											Line:   221,
 										},
-										File:   "",
+										File:   "gridFilterLevel_test.flux",
 										Source: "fn: t_gridFilter",
 										Start: ast.Position{
 											Column: 82,
@@ -6505,7 +6505,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 84,
 												Line:   221,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 82,
@@ -6523,7 +6523,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 98,
 												Line:   221,
 											},
-											File:   "",
+											File:   "gridFilterLevel_test.flux",
 											Source: "t_gridFilter",
 											Start: ast.Position{
 												Column: 86,
@@ -6547,7 +6547,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 100,
 						Line:   221,
 					},
-					File:   "",
+					File:   "gridFilterLevel_test.flux",
 					Source: "test _gridFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
 					Start: ast.Position{
 						Column: 1,
@@ -6565,7 +6565,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 26,
 						Line:   3,
 					},
-					File:   "",
+					File:   "gridFilterLevel_test.flux",
 					Source: "import \"experimental/geo\"",
 					Start: ast.Position{
 						Column: 1,
@@ -6581,7 +6581,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 26,
 							Line:   3,
 						},
-						File:   "",
+						File:   "gridFilterLevel_test.flux",
 						Source: "\"experimental/geo\"",
 						Start: ast.Position{
 							Column: 8,
@@ -6600,7 +6600,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "",
+					File:   "gridFilterLevel_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -6616,7 +6616,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "",
+						File:   "gridFilterLevel_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -6637,7 +6637,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   1,
 					},
-					File:   "",
+					File:   "gridFilterLevel_test.flux",
 					Source: "package geo_test",
 					Start: ast.Position{
 						Column: 1,
@@ -6653,7 +6653,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   1,
 						},
-						File:   "",
+						File:   "gridFilterLevel_test.flux",
 						Source: "geo_test",
 						Start: ast.Position{
 							Column: 9,
@@ -6672,7 +6672,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 100,
 					Line:   220,
 				},
-				File:   "",
+				File:   "gridFilter_test.flux",
 				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"\n\noutData = \"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,lat\n,,3,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245\n\"\n\nt_gridFilter = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0})\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> drop(columns: [\"_start\", \"_stop\"])\ntest _gridFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
 				Start: ast.Position{
 					Column: 1,
@@ -6689,7 +6689,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   6,
 						},
-						File:   "",
+						File:   "gridFilter_test.flux",
 						Source: "now = () => (2030-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 8,
@@ -6705,7 +6705,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   6,
 							},
-							File:   "",
+							File:   "gridFilter_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
@@ -6723,7 +6723,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   6,
 							},
-							File:   "",
+							File:   "gridFilter_test.flux",
 							Source: "() => (2030-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 14,
@@ -6739,7 +6739,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   6,
 								},
-								File:   "",
+								File:   "gridFilter_test.flux",
 								Source: "(2030-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 20,
@@ -6755,7 +6755,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   6,
 									},
-									File:   "",
+									File:   "gridFilter_test.flux",
 									Source: "2030-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 21,
@@ -6776,7 +6776,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   6,
 					},
-					File:   "",
+					File:   "gridFilter_test.flux",
 					Source: "option now = () => (2030-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
@@ -6792,7 +6792,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   185,
 					},
-					File:   "",
+					File:   "gridFilter_test.flux",
 					Source: "inData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -6808,7 +6808,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "",
+						File:   "gridFilter_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
@@ -6826,7 +6826,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   185,
 						},
-						File:   "",
+						File:   "gridFilter_test.flux",
 						Source: "\"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"",
 						Start: ast.Position{
 							Column: 10,
@@ -6844,7 +6844,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   211,
 					},
-					File:   "",
+					File:   "gridFilter_test.flux",
 					Source: "outData = \"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,lat\n,,3,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -6860,7 +6860,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   187,
 						},
-						File:   "",
+						File:   "gridFilter_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
@@ -6878,7 +6878,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   211,
 						},
-						File:   "",
+						File:   "gridFilter_test.flux",
 						Source: "\"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,lat\n,,3,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245\n\"",
 						Start: ast.Position{
 							Column: 11,
@@ -6896,7 +6896,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   218,
 					},
-					File:   "",
+					File:   "gridFilter_test.flux",
 					Source: "t_gridFilter = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0})\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> drop(columns: [\"_start\", \"_stop\"])",
 					Start: ast.Position{
 						Column: 1,
@@ -6912,7 +6912,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 13,
 							Line:   213,
 						},
-						File:   "",
+						File:   "gridFilter_test.flux",
 						Source: "t_gridFilter",
 						Start: ast.Position{
 							Column: 1,
@@ -6930,7 +6930,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   218,
 						},
-						File:   "",
+						File:   "gridFilter_test.flux",
 						Source: "(table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0})\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> drop(columns: [\"_start\", \"_stop\"])",
 						Start: ast.Position{
 							Column: 16,
@@ -6950,7 +6950,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 8,
 												Line:   214,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "table",
 											Start: ast.Position{
 												Column: 3,
@@ -6967,7 +6967,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 42,
 											Line:   215,
 										},
-										File:   "",
+										File:   "gridFilter_test.flux",
 										Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)",
 										Start: ast.Position{
 											Column: 3,
@@ -6984,7 +6984,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 41,
 													Line:   215,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "start: 2019-11-01T00:00:00Z",
 												Start: ast.Position{
 													Column: 14,
@@ -7000,7 +7000,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 41,
 														Line:   215,
 													},
-													File:   "",
+													File:   "gridFilter_test.flux",
 													Source: "start: 2019-11-01T00:00:00Z",
 													Start: ast.Position{
 														Column: 14,
@@ -7016,7 +7016,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 19,
 															Line:   215,
 														},
-														File:   "",
+														File:   "gridFilter_test.flux",
 														Source: "start",
 														Start: ast.Position{
 															Column: 14,
@@ -7034,7 +7034,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 41,
 															Line:   215,
 														},
-														File:   "",
+														File:   "gridFilter_test.flux",
 														Source: "2019-11-01T00:00:00Z",
 														Start: ast.Position{
 															Column: 21,
@@ -7054,7 +7054,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 42,
 												Line:   215,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "range(start: 2019-11-01T00:00:00Z)",
 											Start: ast.Position{
 												Column: 8,
@@ -7070,7 +7070,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 13,
 													Line:   215,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "range",
 												Start: ast.Position{
 													Column: 8,
@@ -7089,7 +7089,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 79,
 										Line:   216,
 									},
-									File:   "",
+									File:   "gridFilter_test.flux",
 									Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0})",
 									Start: ast.Position{
 										Column: 3,
@@ -7106,7 +7106,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 78,
 												Line:   216,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}",
 											Start: ast.Position{
 												Column: 23,
@@ -7122,7 +7122,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 78,
 													Line:   216,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}",
 												Start: ast.Position{
 													Column: 23,
@@ -7138,7 +7138,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 29,
 														Line:   216,
 													},
-													File:   "",
+													File:   "gridFilter_test.flux",
 													Source: "region",
 													Start: ast.Position{
 														Column: 23,
@@ -7156,7 +7156,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 78,
 														Line:   216,
 													},
-													File:   "",
+													File:   "gridFilter_test.flux",
 													Source: "{lat: 40.7090214, lon: -73.61846, radius: 15.0}",
 													Start: ast.Position{
 														Column: 31,
@@ -7172,7 +7172,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 47,
 															Line:   216,
 														},
-														File:   "",
+														File:   "gridFilter_test.flux",
 														Source: "lat: 40.7090214",
 														Start: ast.Position{
 															Column: 32,
@@ -7188,7 +7188,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 35,
 																Line:   216,
 															},
-															File:   "",
+															File:   "gridFilter_test.flux",
 															Source: "lat",
 															Start: ast.Position{
 																Column: 32,
@@ -7206,7 +7206,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 47,
 																Line:   216,
 															},
-															File:   "",
+															File:   "gridFilter_test.flux",
 															Source: "40.7090214",
 															Start: ast.Position{
 																Column: 37,
@@ -7224,7 +7224,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 63,
 															Line:   216,
 														},
-														File:   "",
+														File:   "gridFilter_test.flux",
 														Source: "lon: -73.61846",
 														Start: ast.Position{
 															Column: 49,
@@ -7240,7 +7240,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 52,
 																Line:   216,
 															},
-															File:   "",
+															File:   "gridFilter_test.flux",
 															Source: "lon",
 															Start: ast.Position{
 																Column: 49,
@@ -7259,7 +7259,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 63,
 																	Line:   216,
 																},
-																File:   "",
+																File:   "gridFilter_test.flux",
 																Source: "73.61846",
 																Start: ast.Position{
 																	Column: 55,
@@ -7276,7 +7276,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 63,
 																Line:   216,
 															},
-															File:   "",
+															File:   "gridFilter_test.flux",
 															Source: "-73.61846",
 															Start: ast.Position{
 																Column: 54,
@@ -7294,7 +7294,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 77,
 															Line:   216,
 														},
-														File:   "",
+														File:   "gridFilter_test.flux",
 														Source: "radius: 15.0",
 														Start: ast.Position{
 															Column: 65,
@@ -7310,7 +7310,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 71,
 																Line:   216,
 															},
-															File:   "",
+															File:   "gridFilter_test.flux",
 															Source: "radius",
 															Start: ast.Position{
 																Column: 65,
@@ -7328,7 +7328,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 77,
 																Line:   216,
 															},
-															File:   "",
+															File:   "gridFilter_test.flux",
 															Source: "15.0",
 															Start: ast.Position{
 																Column: 73,
@@ -7351,7 +7351,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 79,
 											Line:   216,
 										},
-										File:   "",
+										File:   "gridFilter_test.flux",
 										Source: "geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0})",
 										Start: ast.Position{
 											Column: 8,
@@ -7367,7 +7367,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 22,
 												Line:   216,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "geo.gridFilter",
 											Start: ast.Position{
 												Column: 8,
@@ -7383,7 +7383,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 11,
 													Line:   216,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "geo",
 												Start: ast.Position{
 													Column: 8,
@@ -7401,7 +7401,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 22,
 													Line:   216,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "gridFilter",
 												Start: ast.Position{
 													Column: 12,
@@ -7421,7 +7421,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 77,
 									Line:   217,
 								},
-								File:   "",
+								File:   "gridFilter_test.flux",
 								Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0})\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")",
 								Start: ast.Position{
 									Column: 3,
@@ -7438,7 +7438,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 76,
 											Line:   217,
 										},
-										File:   "",
+										File:   "gridFilter_test.flux",
 										Source: "rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\"",
 										Start: ast.Position{
 											Column: 14,
@@ -7454,7 +7454,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 30,
 												Line:   217,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "rowKey:[\"_time\"]",
 											Start: ast.Position{
 												Column: 14,
@@ -7470,7 +7470,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 20,
 													Line:   217,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "rowKey",
 												Start: ast.Position{
 													Column: 14,
@@ -7488,7 +7488,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   217,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "[\"_time\"]",
 												Start: ast.Position{
 													Column: 21,
@@ -7504,7 +7504,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 29,
 														Line:   217,
 													},
-													File:   "",
+													File:   "gridFilter_test.flux",
 													Source: "\"_time\"",
 													Start: ast.Position{
 														Column: 22,
@@ -7523,7 +7523,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 53,
 												Line:   217,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "columnKey: [\"_field\"]",
 											Start: ast.Position{
 												Column: 32,
@@ -7539,7 +7539,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 41,
 													Line:   217,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "columnKey",
 												Start: ast.Position{
 													Column: 32,
@@ -7557,7 +7557,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 53,
 													Line:   217,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "[\"_field\"]",
 												Start: ast.Position{
 													Column: 43,
@@ -7573,7 +7573,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 52,
 														Line:   217,
 													},
-													File:   "",
+													File:   "gridFilter_test.flux",
 													Source: "\"_field\"",
 													Start: ast.Position{
 														Column: 44,
@@ -7592,7 +7592,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 76,
 												Line:   217,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "valueColumn: \"_value\"",
 											Start: ast.Position{
 												Column: 55,
@@ -7608,7 +7608,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 66,
 													Line:   217,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "valueColumn",
 												Start: ast.Position{
 													Column: 55,
@@ -7626,7 +7626,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 76,
 													Line:   217,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "\"_value\"",
 												Start: ast.Position{
 													Column: 68,
@@ -7646,7 +7646,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 77,
 										Line:   217,
 									},
-									File:   "",
+									File:   "gridFilter_test.flux",
 									Source: "pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")",
 									Start: ast.Position{
 										Column: 8,
@@ -7662,7 +7662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 13,
 											Line:   217,
 										},
-										File:   "",
+										File:   "gridFilter_test.flux",
 										Source: "pivot",
 										Start: ast.Position{
 											Column: 8,
@@ -7681,7 +7681,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   218,
 							},
-							File:   "",
+							File:   "gridFilter_test.flux",
 							Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.gridFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0})\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> drop(columns: [\"_start\", \"_stop\"])",
 							Start: ast.Position{
 								Column: 3,
@@ -7698,7 +7698,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   218,
 									},
-									File:   "",
+									File:   "gridFilter_test.flux",
 									Source: "columns: [\"_start\", \"_stop\"]",
 									Start: ast.Position{
 										Column: 13,
@@ -7714,7 +7714,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 41,
 											Line:   218,
 										},
-										File:   "",
+										File:   "gridFilter_test.flux",
 										Source: "columns: [\"_start\", \"_stop\"]",
 										Start: ast.Position{
 											Column: 13,
@@ -7730,7 +7730,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 20,
 												Line:   218,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
@@ -7748,7 +7748,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 41,
 												Line:   218,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "[\"_start\", \"_stop\"]",
 											Start: ast.Position{
 												Column: 22,
@@ -7764,7 +7764,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 31,
 													Line:   218,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "\"_start\"",
 												Start: ast.Position{
 													Column: 23,
@@ -7781,7 +7781,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 40,
 													Line:   218,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "\"_stop\"",
 												Start: ast.Position{
 													Column: 33,
@@ -7802,7 +7802,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   218,
 								},
-								File:   "",
+								File:   "gridFilter_test.flux",
 								Source: "drop(columns: [\"_start\", \"_stop\"])",
 								Start: ast.Position{
 									Column: 8,
@@ -7818,7 +7818,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 12,
 										Line:   218,
 									},
-									File:   "",
+									File:   "gridFilter_test.flux",
 									Source: "drop",
 									Start: ast.Position{
 										Column: 8,
@@ -7838,7 +7838,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 25,
 								Line:   213,
 							},
-							File:   "",
+							File:   "gridFilter_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 17,
@@ -7854,7 +7854,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 22,
 									Line:   213,
 								},
-								File:   "",
+								File:   "gridFilter_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 17,
@@ -7871,7 +7871,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 25,
 								Line:   213,
 							},
-							File:   "",
+							File:   "gridFilter_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 23,
@@ -7890,7 +7890,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 100,
 							Line:   220,
 						},
-						File:   "",
+						File:   "gridFilter_test.flux",
 						Source: "_gridFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
 						Start: ast.Position{
 							Column: 6,
@@ -7906,7 +7906,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 17,
 								Line:   219,
 							},
-							File:   "",
+							File:   "gridFilter_test.flux",
 							Source: "_gridFilter",
 							Start: ast.Position{
 								Column: 6,
@@ -7924,7 +7924,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 100,
 								Line:   220,
 							},
-							File:   "",
+							File:   "gridFilter_test.flux",
 							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
 							Start: ast.Position{
 								Column: 20,
@@ -7940,7 +7940,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 100,
 									Line:   220,
 								},
-								File:   "",
+								File:   "gridFilter_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
 								Start: ast.Position{
 									Column: 2,
@@ -7956,7 +7956,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 99,
 										Line:   220,
 									},
-									File:   "",
+									File:   "gridFilter_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter}",
 									Start: ast.Position{
 										Column: 3,
@@ -7972,7 +7972,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 43,
 											Line:   220,
 										},
-										File:   "",
+										File:   "gridFilter_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
@@ -7988,7 +7988,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 9,
 												Line:   220,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 4,
@@ -8007,7 +8007,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 42,
 													Line:   220,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 31,
@@ -8023,7 +8023,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 42,
 														Line:   220,
 													},
-													File:   "",
+													File:   "gridFilter_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 31,
@@ -8039,7 +8039,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 34,
 															Line:   220,
 														},
-														File:   "",
+														File:   "gridFilter_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 31,
@@ -8057,7 +8057,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 42,
 															Line:   220,
 														},
-														File:   "",
+														File:   "gridFilter_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 36,
@@ -8077,7 +8077,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 43,
 												Line:   220,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
@@ -8093,7 +8093,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   220,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 11,
@@ -8109,7 +8109,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 18,
 														Line:   220,
 													},
-													File:   "",
+													File:   "gridFilter_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
@@ -8127,7 +8127,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   220,
 													},
-													File:   "",
+													File:   "gridFilter_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 19,
@@ -8147,7 +8147,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 80,
 											Line:   220,
 										},
-										File:   "",
+										File:   "gridFilter_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
@@ -8163,7 +8163,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 49,
 												Line:   220,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 45,
@@ -8182,7 +8182,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 79,
 													Line:   220,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 67,
@@ -8198,7 +8198,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 79,
 														Line:   220,
 													},
-													File:   "",
+													File:   "gridFilter_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 67,
@@ -8214,7 +8214,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 70,
 															Line:   220,
 														},
-														File:   "",
+														File:   "gridFilter_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 67,
@@ -8232,7 +8232,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 79,
 															Line:   220,
 														},
-														File:   "",
+														File:   "gridFilter_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 72,
@@ -8252,7 +8252,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 80,
 												Line:   220,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
@@ -8268,7 +8268,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 66,
 													Line:   220,
 												},
-												File:   "",
+												File:   "gridFilter_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 51,
@@ -8284,7 +8284,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 58,
 														Line:   220,
 													},
-													File:   "",
+													File:   "gridFilter_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 51,
@@ -8302,7 +8302,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 66,
 														Line:   220,
 													},
-													File:   "",
+													File:   "gridFilter_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 59,
@@ -8322,7 +8322,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 98,
 											Line:   220,
 										},
-										File:   "",
+										File:   "gridFilter_test.flux",
 										Source: "fn: t_gridFilter",
 										Start: ast.Position{
 											Column: 82,
@@ -8338,7 +8338,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 84,
 												Line:   220,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 82,
@@ -8356,7 +8356,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 98,
 												Line:   220,
 											},
-											File:   "",
+											File:   "gridFilter_test.flux",
 											Source: "t_gridFilter",
 											Start: ast.Position{
 												Column: 86,
@@ -8380,7 +8380,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 100,
 						Line:   220,
 					},
-					File:   "",
+					File:   "gridFilter_test.flux",
 					Source: "test _gridFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_gridFilter})",
 					Start: ast.Position{
 						Column: 1,
@@ -8398,7 +8398,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 26,
 						Line:   3,
 					},
-					File:   "",
+					File:   "gridFilter_test.flux",
 					Source: "import \"experimental/geo\"",
 					Start: ast.Position{
 						Column: 1,
@@ -8414,7 +8414,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 26,
 							Line:   3,
 						},
-						File:   "",
+						File:   "gridFilter_test.flux",
 						Source: "\"experimental/geo\"",
 						Start: ast.Position{
 							Column: 8,
@@ -8433,7 +8433,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "",
+					File:   "gridFilter_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -8449,7 +8449,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "",
+						File:   "gridFilter_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -8470,7 +8470,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   1,
 					},
-					File:   "",
+					File:   "gridFilter_test.flux",
 					Source: "package geo_test",
 					Start: ast.Position{
 						Column: 1,
@@ -8486,7 +8486,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   1,
 						},
-						File:   "",
+						File:   "gridFilter_test.flux",
 						Source: "geo_test",
 						Start: ast.Position{
 							Column: 9,
@@ -8505,7 +8505,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 101,
 					Line:   209,
 				},
-				File:   "",
+				File:   "groupByArea_test.flux",
 				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"\n\noutData = \"\n#group,false,false,false,true,false,false,false,false,false,false,false,false\n#datatype,string,long,string,string,string,string,dateTime:RFC3339,double,double,double,long,double\n#default,_result,,,,,,,,,,,\n,result,table,s2_cell_id,ci9,_measurement,_pt,_time,dist,lat,lon,tid,tip\n,,0,89c2594,89c25c,taxi,end,2019-11-01T00:07:18.082153551Z,1.2,40.7122,-73.951332,1572566409947779410,0\n,,0,89c25b4,89c25c,taxi,end,2019-11-01T00:07:41.235010051Z,1.3,40.671928,-73.962692,1572566426666145821,1.75\n,,0,89c25bc,89c25c,taxi,start,2019-11-01T00:00:09.94777941Z,,40.712173,-73.963913,1572566409947779410,\n,,0,89c25bc,89c25c,taxi,start,2019-11-01T00:00:26.666145821Z,,40.688564,-73.965881,1572566426666145821,\n,,1,89c261c,89c264,taxi,end,2019-11-01T13:41:59.331776148Z,1.3,40.725647,-73.752579,1572615165632969758,0\n,,1,89c2624,89c264,taxi,end,2019-11-01T00:33:07.54916732Z,9.7,40.728077,-73.716583,1572567458287113937,5\n,,1,89c2624,89c264,taxi,start,2019-11-01T13:32:45.632969758Z,,40.733585,-73.737175,1572615165632969758,\n,,1,89c2664,89c264,taxi,start,2019-11-01T00:17:38.287113937Z,,40.645245,-73.776665,1572567458287113937,\n\"\n\nt_groupByArea = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows()\n    |> geo.groupByArea(newColumn: \"ci9\", level: 9)\n    |> drop(columns: [\"_start\", \"_stop\"])\ntest _groupByArea = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea})",
 				Start: ast.Position{
 					Column: 1,
@@ -8522,7 +8522,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   6,
 						},
-						File:   "",
+						File:   "groupByArea_test.flux",
 						Source: "now = () => (2030-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 8,
@@ -8538,7 +8538,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   6,
 							},
-							File:   "",
+							File:   "groupByArea_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
@@ -8556,7 +8556,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   6,
 							},
-							File:   "",
+							File:   "groupByArea_test.flux",
 							Source: "() => (2030-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 14,
@@ -8572,7 +8572,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   6,
 								},
-								File:   "",
+								File:   "groupByArea_test.flux",
 								Source: "(2030-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 20,
@@ -8588,7 +8588,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   6,
 									},
-									File:   "",
+									File:   "groupByArea_test.flux",
 									Source: "2030-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 21,
@@ -8609,7 +8609,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   6,
 					},
-					File:   "",
+					File:   "groupByArea_test.flux",
 					Source: "option now = () => (2030-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
@@ -8625,7 +8625,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   185,
 					},
-					File:   "",
+					File:   "groupByArea_test.flux",
 					Source: "inData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -8641,7 +8641,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "",
+						File:   "groupByArea_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
@@ -8659,7 +8659,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   185,
 						},
-						File:   "",
+						File:   "groupByArea_test.flux",
 						Source: "\"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"",
 						Start: ast.Position{
 							Column: 10,
@@ -8677,7 +8677,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   200,
 					},
-					File:   "",
+					File:   "groupByArea_test.flux",
 					Source: "outData = \"\n#group,false,false,false,true,false,false,false,false,false,false,false,false\n#datatype,string,long,string,string,string,string,dateTime:RFC3339,double,double,double,long,double\n#default,_result,,,,,,,,,,,\n,result,table,s2_cell_id,ci9,_measurement,_pt,_time,dist,lat,lon,tid,tip\n,,0,89c2594,89c25c,taxi,end,2019-11-01T00:07:18.082153551Z,1.2,40.7122,-73.951332,1572566409947779410,0\n,,0,89c25b4,89c25c,taxi,end,2019-11-01T00:07:41.235010051Z,1.3,40.671928,-73.962692,1572566426666145821,1.75\n,,0,89c25bc,89c25c,taxi,start,2019-11-01T00:00:09.94777941Z,,40.712173,-73.963913,1572566409947779410,\n,,0,89c25bc,89c25c,taxi,start,2019-11-01T00:00:26.666145821Z,,40.688564,-73.965881,1572566426666145821,\n,,1,89c261c,89c264,taxi,end,2019-11-01T13:41:59.331776148Z,1.3,40.725647,-73.752579,1572615165632969758,0\n,,1,89c2624,89c264,taxi,end,2019-11-01T00:33:07.54916732Z,9.7,40.728077,-73.716583,1572567458287113937,5\n,,1,89c2624,89c264,taxi,start,2019-11-01T13:32:45.632969758Z,,40.733585,-73.737175,1572615165632969758,\n,,1,89c2664,89c264,taxi,start,2019-11-01T00:17:38.287113937Z,,40.645245,-73.776665,1572567458287113937,\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -8693,7 +8693,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   187,
 						},
-						File:   "",
+						File:   "groupByArea_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
@@ -8711,7 +8711,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   200,
 						},
-						File:   "",
+						File:   "groupByArea_test.flux",
 						Source: "\"\n#group,false,false,false,true,false,false,false,false,false,false,false,false\n#datatype,string,long,string,string,string,string,dateTime:RFC3339,double,double,double,long,double\n#default,_result,,,,,,,,,,,\n,result,table,s2_cell_id,ci9,_measurement,_pt,_time,dist,lat,lon,tid,tip\n,,0,89c2594,89c25c,taxi,end,2019-11-01T00:07:18.082153551Z,1.2,40.7122,-73.951332,1572566409947779410,0\n,,0,89c25b4,89c25c,taxi,end,2019-11-01T00:07:41.235010051Z,1.3,40.671928,-73.962692,1572566426666145821,1.75\n,,0,89c25bc,89c25c,taxi,start,2019-11-01T00:00:09.94777941Z,,40.712173,-73.963913,1572566409947779410,\n,,0,89c25bc,89c25c,taxi,start,2019-11-01T00:00:26.666145821Z,,40.688564,-73.965881,1572566426666145821,\n,,1,89c261c,89c264,taxi,end,2019-11-01T13:41:59.331776148Z,1.3,40.725647,-73.752579,1572615165632969758,0\n,,1,89c2624,89c264,taxi,end,2019-11-01T00:33:07.54916732Z,9.7,40.728077,-73.716583,1572567458287113937,5\n,,1,89c2624,89c264,taxi,start,2019-11-01T13:32:45.632969758Z,,40.733585,-73.737175,1572615165632969758,\n,,1,89c2664,89c264,taxi,start,2019-11-01T00:17:38.287113937Z,,40.645245,-73.776665,1572567458287113937,\n\"",
 						Start: ast.Position{
 							Column: 11,
@@ -8729,7 +8729,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   207,
 					},
-					File:   "",
+					File:   "groupByArea_test.flux",
 					Source: "t_groupByArea = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows()\n    |> geo.groupByArea(newColumn: \"ci9\", level: 9)\n    |> drop(columns: [\"_start\", \"_stop\"])",
 					Start: ast.Position{
 						Column: 1,
@@ -8745,7 +8745,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   202,
 						},
-						File:   "",
+						File:   "groupByArea_test.flux",
 						Source: "t_groupByArea",
 						Start: ast.Position{
 							Column: 1,
@@ -8763,7 +8763,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   207,
 						},
-						File:   "",
+						File:   "groupByArea_test.flux",
 						Source: "(table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows()\n    |> geo.groupByArea(newColumn: \"ci9\", level: 9)\n    |> drop(columns: [\"_start\", \"_stop\"])",
 						Start: ast.Position{
 							Column: 17,
@@ -8783,7 +8783,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 8,
 												Line:   203,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "table",
 											Start: ast.Position{
 												Column: 3,
@@ -8800,7 +8800,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 42,
 											Line:   204,
 										},
-										File:   "",
+										File:   "groupByArea_test.flux",
 										Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)",
 										Start: ast.Position{
 											Column: 3,
@@ -8817,7 +8817,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 41,
 													Line:   204,
 												},
-												File:   "",
+												File:   "groupByArea_test.flux",
 												Source: "start: 2019-11-01T00:00:00Z",
 												Start: ast.Position{
 													Column: 14,
@@ -8833,7 +8833,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 41,
 														Line:   204,
 													},
-													File:   "",
+													File:   "groupByArea_test.flux",
 													Source: "start: 2019-11-01T00:00:00Z",
 													Start: ast.Position{
 														Column: 14,
@@ -8849,7 +8849,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 19,
 															Line:   204,
 														},
-														File:   "",
+														File:   "groupByArea_test.flux",
 														Source: "start",
 														Start: ast.Position{
 															Column: 14,
@@ -8867,7 +8867,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 41,
 															Line:   204,
 														},
-														File:   "",
+														File:   "groupByArea_test.flux",
 														Source: "2019-11-01T00:00:00Z",
 														Start: ast.Position{
 															Column: 21,
@@ -8887,7 +8887,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 42,
 												Line:   204,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "range(start: 2019-11-01T00:00:00Z)",
 											Start: ast.Position{
 												Column: 8,
@@ -8903,7 +8903,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 13,
 													Line:   204,
 												},
-												File:   "",
+												File:   "groupByArea_test.flux",
 												Source: "range",
 												Start: ast.Position{
 													Column: 8,
@@ -8922,7 +8922,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 20,
 										Line:   205,
 									},
-									File:   "",
+									File:   "groupByArea_test.flux",
 									Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows()",
 									Start: ast.Position{
 										Column: 3,
@@ -8939,7 +8939,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 20,
 											Line:   205,
 										},
-										File:   "",
+										File:   "groupByArea_test.flux",
 										Source: "geo.toRows()",
 										Start: ast.Position{
 											Column: 8,
@@ -8955,7 +8955,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 18,
 												Line:   205,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "geo.toRows",
 											Start: ast.Position{
 												Column: 8,
@@ -8971,7 +8971,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 11,
 													Line:   205,
 												},
-												File:   "",
+												File:   "groupByArea_test.flux",
 												Source: "geo",
 												Start: ast.Position{
 													Column: 8,
@@ -8989,7 +8989,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 18,
 													Line:   205,
 												},
-												File:   "",
+												File:   "groupByArea_test.flux",
 												Source: "toRows",
 												Start: ast.Position{
 													Column: 12,
@@ -9009,7 +9009,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 51,
 									Line:   206,
 								},
-								File:   "",
+								File:   "groupByArea_test.flux",
 								Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows()\n    |> geo.groupByArea(newColumn: \"ci9\", level: 9)",
 								Start: ast.Position{
 									Column: 3,
@@ -9026,7 +9026,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 50,
 											Line:   206,
 										},
-										File:   "",
+										File:   "groupByArea_test.flux",
 										Source: "newColumn: \"ci9\", level: 9",
 										Start: ast.Position{
 											Column: 24,
@@ -9042,7 +9042,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 40,
 												Line:   206,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "newColumn: \"ci9\"",
 											Start: ast.Position{
 												Column: 24,
@@ -9058,7 +9058,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   206,
 												},
-												File:   "",
+												File:   "groupByArea_test.flux",
 												Source: "newColumn",
 												Start: ast.Position{
 													Column: 24,
@@ -9076,7 +9076,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 40,
 													Line:   206,
 												},
-												File:   "",
+												File:   "groupByArea_test.flux",
 												Source: "\"ci9\"",
 												Start: ast.Position{
 													Column: 35,
@@ -9094,7 +9094,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 50,
 												Line:   206,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "level: 9",
 											Start: ast.Position{
 												Column: 42,
@@ -9110,7 +9110,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 47,
 													Line:   206,
 												},
-												File:   "",
+												File:   "groupByArea_test.flux",
 												Source: "level",
 												Start: ast.Position{
 													Column: 42,
@@ -9128,7 +9128,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 50,
 													Line:   206,
 												},
-												File:   "",
+												File:   "groupByArea_test.flux",
 												Source: "9",
 												Start: ast.Position{
 													Column: 49,
@@ -9148,7 +9148,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 51,
 										Line:   206,
 									},
-									File:   "",
+									File:   "groupByArea_test.flux",
 									Source: "geo.groupByArea(newColumn: \"ci9\", level: 9)",
 									Start: ast.Position{
 										Column: 8,
@@ -9164,7 +9164,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 23,
 											Line:   206,
 										},
-										File:   "",
+										File:   "groupByArea_test.flux",
 										Source: "geo.groupByArea",
 										Start: ast.Position{
 											Column: 8,
@@ -9180,7 +9180,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 11,
 												Line:   206,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "geo",
 											Start: ast.Position{
 												Column: 8,
@@ -9198,7 +9198,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 23,
 												Line:   206,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "groupByArea",
 											Start: ast.Position{
 												Column: 12,
@@ -9218,7 +9218,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   207,
 							},
-							File:   "",
+							File:   "groupByArea_test.flux",
 							Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.toRows()\n    |> geo.groupByArea(newColumn: \"ci9\", level: 9)\n    |> drop(columns: [\"_start\", \"_stop\"])",
 							Start: ast.Position{
 								Column: 3,
@@ -9235,7 +9235,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   207,
 									},
-									File:   "",
+									File:   "groupByArea_test.flux",
 									Source: "columns: [\"_start\", \"_stop\"]",
 									Start: ast.Position{
 										Column: 13,
@@ -9251,7 +9251,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 41,
 											Line:   207,
 										},
-										File:   "",
+										File:   "groupByArea_test.flux",
 										Source: "columns: [\"_start\", \"_stop\"]",
 										Start: ast.Position{
 											Column: 13,
@@ -9267,7 +9267,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 20,
 												Line:   207,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
@@ -9285,7 +9285,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 41,
 												Line:   207,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "[\"_start\", \"_stop\"]",
 											Start: ast.Position{
 												Column: 22,
@@ -9301,7 +9301,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 31,
 													Line:   207,
 												},
-												File:   "",
+												File:   "groupByArea_test.flux",
 												Source: "\"_start\"",
 												Start: ast.Position{
 													Column: 23,
@@ -9318,7 +9318,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 40,
 													Line:   207,
 												},
-												File:   "",
+												File:   "groupByArea_test.flux",
 												Source: "\"_stop\"",
 												Start: ast.Position{
 													Column: 33,
@@ -9339,7 +9339,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   207,
 								},
-								File:   "",
+								File:   "groupByArea_test.flux",
 								Source: "drop(columns: [\"_start\", \"_stop\"])",
 								Start: ast.Position{
 									Column: 8,
@@ -9355,7 +9355,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 12,
 										Line:   207,
 									},
-									File:   "",
+									File:   "groupByArea_test.flux",
 									Source: "drop",
 									Start: ast.Position{
 										Column: 8,
@@ -9375,7 +9375,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 26,
 								Line:   202,
 							},
-							File:   "",
+							File:   "groupByArea_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 18,
@@ -9391,7 +9391,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 23,
 									Line:   202,
 								},
-								File:   "",
+								File:   "groupByArea_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 18,
@@ -9408,7 +9408,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 26,
 								Line:   202,
 							},
-							File:   "",
+							File:   "groupByArea_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 24,
@@ -9427,7 +9427,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 101,
 							Line:   209,
 						},
-						File:   "",
+						File:   "groupByArea_test.flux",
 						Source: "_groupByArea = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea})",
 						Start: ast.Position{
 							Column: 6,
@@ -9443,7 +9443,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 18,
 								Line:   208,
 							},
-							File:   "",
+							File:   "groupByArea_test.flux",
 							Source: "_groupByArea",
 							Start: ast.Position{
 								Column: 6,
@@ -9461,7 +9461,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 101,
 								Line:   209,
 							},
-							File:   "",
+							File:   "groupByArea_test.flux",
 							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea})",
 							Start: ast.Position{
 								Column: 21,
@@ -9477,7 +9477,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 101,
 									Line:   209,
 								},
-								File:   "",
+								File:   "groupByArea_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea})",
 								Start: ast.Position{
 									Column: 2,
@@ -9493,7 +9493,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 100,
 										Line:   209,
 									},
-									File:   "",
+									File:   "groupByArea_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea}",
 									Start: ast.Position{
 										Column: 3,
@@ -9509,7 +9509,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 43,
 											Line:   209,
 										},
-										File:   "",
+										File:   "groupByArea_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
@@ -9525,7 +9525,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 9,
 												Line:   209,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 4,
@@ -9544,7 +9544,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 42,
 													Line:   209,
 												},
-												File:   "",
+												File:   "groupByArea_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 31,
@@ -9560,7 +9560,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 42,
 														Line:   209,
 													},
-													File:   "",
+													File:   "groupByArea_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 31,
@@ -9576,7 +9576,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 34,
 															Line:   209,
 														},
-														File:   "",
+														File:   "groupByArea_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 31,
@@ -9594,7 +9594,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 42,
 															Line:   209,
 														},
-														File:   "",
+														File:   "groupByArea_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 36,
@@ -9614,7 +9614,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 43,
 												Line:   209,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
@@ -9630,7 +9630,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   209,
 												},
-												File:   "",
+												File:   "groupByArea_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 11,
@@ -9646,7 +9646,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 18,
 														Line:   209,
 													},
-													File:   "",
+													File:   "groupByArea_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
@@ -9664,7 +9664,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   209,
 													},
-													File:   "",
+													File:   "groupByArea_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 19,
@@ -9684,7 +9684,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 80,
 											Line:   209,
 										},
-										File:   "",
+										File:   "groupByArea_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
@@ -9700,7 +9700,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 49,
 												Line:   209,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 45,
@@ -9719,7 +9719,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 79,
 													Line:   209,
 												},
-												File:   "",
+												File:   "groupByArea_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 67,
@@ -9735,7 +9735,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 79,
 														Line:   209,
 													},
-													File:   "",
+													File:   "groupByArea_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 67,
@@ -9751,7 +9751,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 70,
 															Line:   209,
 														},
-														File:   "",
+														File:   "groupByArea_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 67,
@@ -9769,7 +9769,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 79,
 															Line:   209,
 														},
-														File:   "",
+														File:   "groupByArea_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 72,
@@ -9789,7 +9789,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 80,
 												Line:   209,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
@@ -9805,7 +9805,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 66,
 													Line:   209,
 												},
-												File:   "",
+												File:   "groupByArea_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 51,
@@ -9821,7 +9821,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 58,
 														Line:   209,
 													},
-													File:   "",
+													File:   "groupByArea_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 51,
@@ -9839,7 +9839,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 66,
 														Line:   209,
 													},
-													File:   "",
+													File:   "groupByArea_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 59,
@@ -9859,7 +9859,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 99,
 											Line:   209,
 										},
-										File:   "",
+										File:   "groupByArea_test.flux",
 										Source: "fn: t_groupByArea",
 										Start: ast.Position{
 											Column: 82,
@@ -9875,7 +9875,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 84,
 												Line:   209,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 82,
@@ -9893,7 +9893,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 99,
 												Line:   209,
 											},
-											File:   "",
+											File:   "groupByArea_test.flux",
 											Source: "t_groupByArea",
 											Start: ast.Position{
 												Column: 86,
@@ -9917,7 +9917,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 101,
 						Line:   209,
 					},
-					File:   "",
+					File:   "groupByArea_test.flux",
 					Source: "test _groupByArea = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea})",
 					Start: ast.Position{
 						Column: 1,
@@ -9935,7 +9935,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 26,
 						Line:   3,
 					},
-					File:   "",
+					File:   "groupByArea_test.flux",
 					Source: "import \"experimental/geo\"",
 					Start: ast.Position{
 						Column: 1,
@@ -9951,7 +9951,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 26,
 							Line:   3,
 						},
-						File:   "",
+						File:   "groupByArea_test.flux",
 						Source: "\"experimental/geo\"",
 						Start: ast.Position{
 							Column: 8,
@@ -9970,7 +9970,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "",
+					File:   "groupByArea_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -9986,7 +9986,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "",
+						File:   "groupByArea_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -10007,7 +10007,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   1,
 					},
-					File:   "",
+					File:   "groupByArea_test.flux",
 					Source: "package geo_test",
 					Start: ast.Position{
 						Column: 1,
@@ -10023,7 +10023,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   1,
 						},
-						File:   "",
+						File:   "groupByArea_test.flux",
 						Source: "geo_test",
 						Start: ast.Position{
 							Column: 9,
@@ -10042,7 +10042,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 102,
 					Line:   214,
 				},
-				File:   "",
+				File:   "strictFilter_test.flux",
 				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"\n\noutData = \"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\"\n\nt_strictFilter = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> geo.strictFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0})\n    |> drop(columns: [\"_start\", \"_stop\"])\ntest _strictFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_strictFilter})",
 				Start: ast.Position{
 					Column: 1,
@@ -10059,7 +10059,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   6,
 						},
-						File:   "",
+						File:   "strictFilter_test.flux",
 						Source: "now = () => (2030-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 8,
@@ -10075,7 +10075,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   6,
 							},
-							File:   "",
+							File:   "strictFilter_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
@@ -10093,7 +10093,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   6,
 							},
-							File:   "",
+							File:   "strictFilter_test.flux",
 							Source: "() => (2030-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 14,
@@ -10109,7 +10109,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   6,
 								},
-								File:   "",
+								File:   "strictFilter_test.flux",
 								Source: "(2030-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 20,
@@ -10125,7 +10125,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   6,
 									},
-									File:   "",
+									File:   "strictFilter_test.flux",
 									Source: "2030-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 21,
@@ -10146,7 +10146,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   6,
 					},
-					File:   "",
+					File:   "strictFilter_test.flux",
 					Source: "option now = () => (2030-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
@@ -10162,7 +10162,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   185,
 					},
-					File:   "",
+					File:   "strictFilter_test.flux",
 					Source: "inData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -10178,7 +10178,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "",
+						File:   "strictFilter_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
@@ -10196,7 +10196,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   185,
 						},
-						File:   "",
+						File:   "strictFilter_test.flux",
 						Source: "\"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"",
 						Start: ast.Position{
 							Column: 10,
@@ -10214,7 +10214,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   205,
 					},
-					File:   "",
+					File:   "strictFilter_test.flux",
 					Source: "outData = \"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -10230,7 +10230,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   187,
 						},
-						File:   "",
+						File:   "strictFilter_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
@@ -10248,7 +10248,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   205,
 						},
-						File:   "",
+						File:   "strictFilter_test.flux",
 						Source: "\"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\"",
 						Start: ast.Position{
 							Column: 11,
@@ -10266,7 +10266,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   212,
 					},
-					File:   "",
+					File:   "strictFilter_test.flux",
 					Source: "t_strictFilter = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> geo.strictFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0})\n    |> drop(columns: [\"_start\", \"_stop\"])",
 					Start: ast.Position{
 						Column: 1,
@@ -10282,7 +10282,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 15,
 							Line:   207,
 						},
-						File:   "",
+						File:   "strictFilter_test.flux",
 						Source: "t_strictFilter",
 						Start: ast.Position{
 							Column: 1,
@@ -10300,7 +10300,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   212,
 						},
-						File:   "",
+						File:   "strictFilter_test.flux",
 						Source: "(table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> geo.strictFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0})\n    |> drop(columns: [\"_start\", \"_stop\"])",
 						Start: ast.Position{
 							Column: 18,
@@ -10320,7 +10320,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 8,
 												Line:   208,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "table",
 											Start: ast.Position{
 												Column: 3,
@@ -10337,7 +10337,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 42,
 											Line:   209,
 										},
-										File:   "",
+										File:   "strictFilter_test.flux",
 										Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)",
 										Start: ast.Position{
 											Column: 3,
@@ -10354,7 +10354,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 41,
 													Line:   209,
 												},
-												File:   "",
+												File:   "strictFilter_test.flux",
 												Source: "start: 2019-11-01T00:00:00Z",
 												Start: ast.Position{
 													Column: 14,
@@ -10370,7 +10370,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 41,
 														Line:   209,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "start: 2019-11-01T00:00:00Z",
 													Start: ast.Position{
 														Column: 14,
@@ -10386,7 +10386,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 19,
 															Line:   209,
 														},
-														File:   "",
+														File:   "strictFilter_test.flux",
 														Source: "start",
 														Start: ast.Position{
 															Column: 14,
@@ -10404,7 +10404,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 41,
 															Line:   209,
 														},
-														File:   "",
+														File:   "strictFilter_test.flux",
 														Source: "2019-11-01T00:00:00Z",
 														Start: ast.Position{
 															Column: 21,
@@ -10424,7 +10424,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 42,
 												Line:   209,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "range(start: 2019-11-01T00:00:00Z)",
 											Start: ast.Position{
 												Column: 8,
@@ -10440,7 +10440,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 13,
 													Line:   209,
 												},
-												File:   "",
+												File:   "strictFilter_test.flux",
 												Source: "range",
 												Start: ast.Position{
 													Column: 8,
@@ -10459,7 +10459,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 77,
 										Line:   210,
 									},
-									File:   "",
+									File:   "strictFilter_test.flux",
 									Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")",
 									Start: ast.Position{
 										Column: 3,
@@ -10476,7 +10476,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 76,
 												Line:   210,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\"",
 											Start: ast.Position{
 												Column: 14,
@@ -10492,7 +10492,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   210,
 												},
-												File:   "",
+												File:   "strictFilter_test.flux",
 												Source: "rowKey:[\"_time\"]",
 												Start: ast.Position{
 													Column: 14,
@@ -10508,7 +10508,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 20,
 														Line:   210,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "rowKey",
 													Start: ast.Position{
 														Column: 14,
@@ -10526,7 +10526,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   210,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "[\"_time\"]",
 													Start: ast.Position{
 														Column: 21,
@@ -10542,7 +10542,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 29,
 															Line:   210,
 														},
-														File:   "",
+														File:   "strictFilter_test.flux",
 														Source: "\"_time\"",
 														Start: ast.Position{
 															Column: 22,
@@ -10561,7 +10561,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 53,
 													Line:   210,
 												},
-												File:   "",
+												File:   "strictFilter_test.flux",
 												Source: "columnKey: [\"_field\"]",
 												Start: ast.Position{
 													Column: 32,
@@ -10577,7 +10577,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 41,
 														Line:   210,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "columnKey",
 													Start: ast.Position{
 														Column: 32,
@@ -10595,7 +10595,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 53,
 														Line:   210,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "[\"_field\"]",
 													Start: ast.Position{
 														Column: 43,
@@ -10611,7 +10611,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 52,
 															Line:   210,
 														},
-														File:   "",
+														File:   "strictFilter_test.flux",
 														Source: "\"_field\"",
 														Start: ast.Position{
 															Column: 44,
@@ -10630,7 +10630,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 76,
 													Line:   210,
 												},
-												File:   "",
+												File:   "strictFilter_test.flux",
 												Source: "valueColumn: \"_value\"",
 												Start: ast.Position{
 													Column: 55,
@@ -10646,7 +10646,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 66,
 														Line:   210,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "valueColumn",
 													Start: ast.Position{
 														Column: 55,
@@ -10664,7 +10664,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 76,
 														Line:   210,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "\"_value\"",
 													Start: ast.Position{
 														Column: 68,
@@ -10684,7 +10684,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 77,
 											Line:   210,
 										},
-										File:   "",
+										File:   "strictFilter_test.flux",
 										Source: "pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")",
 										Start: ast.Position{
 											Column: 8,
@@ -10700,7 +10700,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 13,
 												Line:   210,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "pivot",
 											Start: ast.Position{
 												Column: 8,
@@ -10719,7 +10719,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 81,
 									Line:   211,
 								},
-								File:   "",
+								File:   "strictFilter_test.flux",
 								Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> geo.strictFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0})",
 								Start: ast.Position{
 									Column: 3,
@@ -10736,7 +10736,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 80,
 											Line:   211,
 										},
-										File:   "",
+										File:   "strictFilter_test.flux",
 										Source: "region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}",
 										Start: ast.Position{
 											Column: 25,
@@ -10752,7 +10752,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 80,
 												Line:   211,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}",
 											Start: ast.Position{
 												Column: 25,
@@ -10768,7 +10768,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 31,
 													Line:   211,
 												},
-												File:   "",
+												File:   "strictFilter_test.flux",
 												Source: "region",
 												Start: ast.Position{
 													Column: 25,
@@ -10786,7 +10786,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 80,
 													Line:   211,
 												},
-												File:   "",
+												File:   "strictFilter_test.flux",
 												Source: "{lat: 40.7090214, lon: -73.61846, radius: 15.0}",
 												Start: ast.Position{
 													Column: 33,
@@ -10802,7 +10802,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 49,
 														Line:   211,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "lat: 40.7090214",
 													Start: ast.Position{
 														Column: 34,
@@ -10818,7 +10818,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 37,
 															Line:   211,
 														},
-														File:   "",
+														File:   "strictFilter_test.flux",
 														Source: "lat",
 														Start: ast.Position{
 															Column: 34,
@@ -10836,7 +10836,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 49,
 															Line:   211,
 														},
-														File:   "",
+														File:   "strictFilter_test.flux",
 														Source: "40.7090214",
 														Start: ast.Position{
 															Column: 39,
@@ -10854,7 +10854,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 65,
 														Line:   211,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "lon: -73.61846",
 													Start: ast.Position{
 														Column: 51,
@@ -10870,7 +10870,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 54,
 															Line:   211,
 														},
-														File:   "",
+														File:   "strictFilter_test.flux",
 														Source: "lon",
 														Start: ast.Position{
 															Column: 51,
@@ -10889,7 +10889,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 65,
 																Line:   211,
 															},
-															File:   "",
+															File:   "strictFilter_test.flux",
 															Source: "73.61846",
 															Start: ast.Position{
 																Column: 57,
@@ -10906,7 +10906,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 65,
 															Line:   211,
 														},
-														File:   "",
+														File:   "strictFilter_test.flux",
 														Source: "-73.61846",
 														Start: ast.Position{
 															Column: 56,
@@ -10924,7 +10924,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 79,
 														Line:   211,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "radius: 15.0",
 													Start: ast.Position{
 														Column: 67,
@@ -10940,7 +10940,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 73,
 															Line:   211,
 														},
-														File:   "",
+														File:   "strictFilter_test.flux",
 														Source: "radius",
 														Start: ast.Position{
 															Column: 67,
@@ -10958,7 +10958,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 79,
 															Line:   211,
 														},
-														File:   "",
+														File:   "strictFilter_test.flux",
 														Source: "15.0",
 														Start: ast.Position{
 															Column: 75,
@@ -10981,7 +10981,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 81,
 										Line:   211,
 									},
-									File:   "",
+									File:   "strictFilter_test.flux",
 									Source: "geo.strictFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0})",
 									Start: ast.Position{
 										Column: 8,
@@ -10997,7 +10997,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 24,
 											Line:   211,
 										},
-										File:   "",
+										File:   "strictFilter_test.flux",
 										Source: "geo.strictFilter",
 										Start: ast.Position{
 											Column: 8,
@@ -11013,7 +11013,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 11,
 												Line:   211,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "geo",
 											Start: ast.Position{
 												Column: 8,
@@ -11031,7 +11031,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 24,
 												Line:   211,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "strictFilter",
 											Start: ast.Position{
 												Column: 12,
@@ -11051,7 +11051,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   212,
 							},
-							File:   "",
+							File:   "strictFilter_test.flux",
 							Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> geo.strictFilter(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0})\n    |> drop(columns: [\"_start\", \"_stop\"])",
 							Start: ast.Position{
 								Column: 3,
@@ -11068,7 +11068,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   212,
 									},
-									File:   "",
+									File:   "strictFilter_test.flux",
 									Source: "columns: [\"_start\", \"_stop\"]",
 									Start: ast.Position{
 										Column: 13,
@@ -11084,7 +11084,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 41,
 											Line:   212,
 										},
-										File:   "",
+										File:   "strictFilter_test.flux",
 										Source: "columns: [\"_start\", \"_stop\"]",
 										Start: ast.Position{
 											Column: 13,
@@ -11100,7 +11100,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 20,
 												Line:   212,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
@@ -11118,7 +11118,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 41,
 												Line:   212,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "[\"_start\", \"_stop\"]",
 											Start: ast.Position{
 												Column: 22,
@@ -11134,7 +11134,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 31,
 													Line:   212,
 												},
-												File:   "",
+												File:   "strictFilter_test.flux",
 												Source: "\"_start\"",
 												Start: ast.Position{
 													Column: 23,
@@ -11151,7 +11151,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 40,
 													Line:   212,
 												},
-												File:   "",
+												File:   "strictFilter_test.flux",
 												Source: "\"_stop\"",
 												Start: ast.Position{
 													Column: 33,
@@ -11172,7 +11172,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   212,
 								},
-								File:   "",
+								File:   "strictFilter_test.flux",
 								Source: "drop(columns: [\"_start\", \"_stop\"])",
 								Start: ast.Position{
 									Column: 8,
@@ -11188,7 +11188,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 12,
 										Line:   212,
 									},
-									File:   "",
+									File:   "strictFilter_test.flux",
 									Source: "drop",
 									Start: ast.Position{
 										Column: 8,
@@ -11208,7 +11208,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 27,
 								Line:   207,
 							},
-							File:   "",
+							File:   "strictFilter_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 19,
@@ -11224,7 +11224,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 24,
 									Line:   207,
 								},
-								File:   "",
+								File:   "strictFilter_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 19,
@@ -11241,7 +11241,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 27,
 								Line:   207,
 							},
-							File:   "",
+							File:   "strictFilter_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 25,
@@ -11260,7 +11260,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 102,
 							Line:   214,
 						},
-						File:   "",
+						File:   "strictFilter_test.flux",
 						Source: "_strictFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_strictFilter})",
 						Start: ast.Position{
 							Column: 6,
@@ -11276,7 +11276,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 19,
 								Line:   213,
 							},
-							File:   "",
+							File:   "strictFilter_test.flux",
 							Source: "_strictFilter",
 							Start: ast.Position{
 								Column: 6,
@@ -11294,7 +11294,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 102,
 								Line:   214,
 							},
-							File:   "",
+							File:   "strictFilter_test.flux",
 							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_strictFilter})",
 							Start: ast.Position{
 								Column: 22,
@@ -11310,7 +11310,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 102,
 									Line:   214,
 								},
-								File:   "",
+								File:   "strictFilter_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_strictFilter})",
 								Start: ast.Position{
 									Column: 2,
@@ -11326,7 +11326,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 101,
 										Line:   214,
 									},
-									File:   "",
+									File:   "strictFilter_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_strictFilter}",
 									Start: ast.Position{
 										Column: 3,
@@ -11342,7 +11342,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 43,
 											Line:   214,
 										},
-										File:   "",
+										File:   "strictFilter_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
@@ -11358,7 +11358,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 9,
 												Line:   214,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 4,
@@ -11377,7 +11377,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 42,
 													Line:   214,
 												},
-												File:   "",
+												File:   "strictFilter_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 31,
@@ -11393,7 +11393,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 42,
 														Line:   214,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 31,
@@ -11409,7 +11409,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 34,
 															Line:   214,
 														},
-														File:   "",
+														File:   "strictFilter_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 31,
@@ -11427,7 +11427,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 42,
 															Line:   214,
 														},
-														File:   "",
+														File:   "strictFilter_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 36,
@@ -11447,7 +11447,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 43,
 												Line:   214,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
@@ -11463,7 +11463,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   214,
 												},
-												File:   "",
+												File:   "strictFilter_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 11,
@@ -11479,7 +11479,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 18,
 														Line:   214,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
@@ -11497,7 +11497,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   214,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 19,
@@ -11517,7 +11517,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 80,
 											Line:   214,
 										},
-										File:   "",
+										File:   "strictFilter_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
@@ -11533,7 +11533,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 49,
 												Line:   214,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 45,
@@ -11552,7 +11552,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 79,
 													Line:   214,
 												},
-												File:   "",
+												File:   "strictFilter_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 67,
@@ -11568,7 +11568,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 79,
 														Line:   214,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 67,
@@ -11584,7 +11584,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 70,
 															Line:   214,
 														},
-														File:   "",
+														File:   "strictFilter_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 67,
@@ -11602,7 +11602,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 79,
 															Line:   214,
 														},
-														File:   "",
+														File:   "strictFilter_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 72,
@@ -11622,7 +11622,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 80,
 												Line:   214,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
@@ -11638,7 +11638,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 66,
 													Line:   214,
 												},
-												File:   "",
+												File:   "strictFilter_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 51,
@@ -11654,7 +11654,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 58,
 														Line:   214,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 51,
@@ -11672,7 +11672,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 66,
 														Line:   214,
 													},
-													File:   "",
+													File:   "strictFilter_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 59,
@@ -11692,7 +11692,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 100,
 											Line:   214,
 										},
-										File:   "",
+										File:   "strictFilter_test.flux",
 										Source: "fn: t_strictFilter",
 										Start: ast.Position{
 											Column: 82,
@@ -11708,7 +11708,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 84,
 												Line:   214,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 82,
@@ -11726,7 +11726,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 100,
 												Line:   214,
 											},
-											File:   "",
+											File:   "strictFilter_test.flux",
 											Source: "t_strictFilter",
 											Start: ast.Position{
 												Column: 86,
@@ -11750,7 +11750,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 102,
 						Line:   214,
 					},
-					File:   "",
+					File:   "strictFilter_test.flux",
 					Source: "test _strictFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_strictFilter})",
 					Start: ast.Position{
 						Column: 1,
@@ -11768,7 +11768,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 26,
 						Line:   3,
 					},
-					File:   "",
+					File:   "strictFilter_test.flux",
 					Source: "import \"experimental/geo\"",
 					Start: ast.Position{
 						Column: 1,
@@ -11784,7 +11784,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 26,
 							Line:   3,
 						},
-						File:   "",
+						File:   "strictFilter_test.flux",
 						Source: "\"experimental/geo\"",
 						Start: ast.Position{
 							Column: 8,
@@ -11803,7 +11803,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   4,
 					},
-					File:   "",
+					File:   "strictFilter_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -11819,7 +11819,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   4,
 						},
-						File:   "",
+						File:   "strictFilter_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -11840,7 +11840,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   1,
 					},
-					File:   "",
+					File:   "strictFilter_test.flux",
 					Source: "package geo_test",
 					Start: ast.Position{
 						Column: 1,
@@ -11856,7 +11856,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   1,
 						},
-						File:   "",
+						File:   "strictFilter_test.flux",
 						Source: "geo_test",
 						Start: ast.Position{
 							Column: 9,

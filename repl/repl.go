@@ -197,7 +197,7 @@ func (r *REPL) executeLine(t string) error {
 }
 
 func (r *REPL) analyzeLine(t string) (*semantic.Package, error) {
-	pkg, err := r.analyzer.Analyze(libflux.Parse(t))
+	pkg, err := r.analyzer.Analyze(libflux.ParseString(t))
 	if err != nil {
 		return nil, err
 	}

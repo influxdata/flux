@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 11,
 					Line:   4,
 				},
-				File:   "",
+				File:   "sql.flux",
 				Source: "package sql\n\nbuiltin from\nbuiltin to",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 13,
 						Line:   3,
 					},
-					File:   "",
+					File:   "sql.flux",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 13,
 							Line:   3,
 						},
-						File:   "",
+						File:   "sql.flux",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
@@ -74,7 +74,7 @@ var pkgAST = &ast.Package{
 						Column: 11,
 						Line:   4,
 					},
-					File:   "",
+					File:   "sql.flux",
 					Source: "builtin to",
 					Start: ast.Position{
 						Column: 1,
@@ -90,7 +90,7 @@ var pkgAST = &ast.Package{
 							Column: 11,
 							Line:   4,
 						},
-						File:   "",
+						File:   "sql.flux",
 						Source: "to",
 						Start: ast.Position{
 							Column: 9,
@@ -112,7 +112,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   1,
 					},
-					File:   "",
+					File:   "sql.flux",
 					Source: "package sql",
 					Start: ast.Position{
 						Column: 1,
@@ -128,7 +128,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   1,
 						},
-						File:   "",
+						File:   "sql.flux",
 						Source: "sql",
 						Start: ast.Position{
 							Column: 9,

@@ -91,12 +91,17 @@ func (p *ASTPkg) String() string {
 	return fmt.Sprintf("%p", p.ptr)
 }
 
-// Parse will take a string and return a parsed source file.
-func Parse(s string) *ASTPkg {
-	cstr := C.CString(s)
-	defer C.free(unsafe.Pointer(cstr))
+func ParseString(src string) *ASTPkg {
+	return Parse("", src)
+}
 
-	ptr := C.flux_parse(cstr)
+// Parse will take a filename and source string and return a parsed source file.
+func Parse(fname string, src string) *ASTPkg {
+	csrc := C.CString(src)
+	defer C.free(unsafe.Pointer(csrc))
+	cfname := C.CString(fname)
+	defer C.free(unsafe.Pointer(cfname))
+	ptr := C.flux_parse(cfname, csrc)
 	p := &ASTPkg{ptr: ptr}
 	runtime.SetFinalizer(p, free)
 	return p

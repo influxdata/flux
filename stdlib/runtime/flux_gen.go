@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 16,
 					Line:   3,
 				},
-				File:   "",
+				File:   "runtime.flux",
 				Source: "package runtime\n\nbuiltin version",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   3,
 					},
-					File:   "",
+					File:   "runtime.flux",
 					Source: "builtin version",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   3,
 						},
-						File:   "",
+						File:   "runtime.flux",
 						Source: "version",
 						Start: ast.Position{
 							Column: 9,
@@ -78,7 +78,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   1,
 					},
-					File:   "",
+					File:   "runtime.flux",
 					Source: "package runtime",
 					Start: ast.Position{
 						Column: 1,
@@ -94,7 +94,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   1,
 						},
-						File:   "",
+						File:   "runtime.flux",
 						Source: "runtime",
 						Start: ast.Position{
 							Column: 9,

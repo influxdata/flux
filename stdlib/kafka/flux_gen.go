@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 11,
 					Line:   3,
 				},
-				File:   "",
+				File:   "kafka.flux",
 				Source: "package kafka\n\nbuiltin to",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 11,
 						Line:   3,
 					},
-					File:   "",
+					File:   "kafka.flux",
 					Source: "builtin to",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 11,
 							Line:   3,
 						},
-						File:   "",
+						File:   "kafka.flux",
 						Source: "to",
 						Start: ast.Position{
 							Column: 9,
@@ -78,7 +78,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   1,
 					},
-					File:   "",
+					File:   "kafka.flux",
 					Source: "package kafka",
 					Start: ast.Position{
 						Column: 1,
@@ -94,7 +94,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   1,
 						},
-						File:   "",
+						File:   "kafka.flux",
 						Source: "kafka",
 						Start: ast.Position{
 							Column: 9,

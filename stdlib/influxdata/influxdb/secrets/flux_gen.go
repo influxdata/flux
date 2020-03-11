@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 12,
 					Line:   3,
 				},
-				File:   "",
+				File:   "secrets.flux",
 				Source: "package secrets\n\nbuiltin get",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 12,
 						Line:   3,
 					},
-					File:   "",
+					File:   "secrets.flux",
 					Source: "builtin get",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 12,
 							Line:   3,
 						},
-						File:   "",
+						File:   "secrets.flux",
 						Source: "get",
 						Start: ast.Position{
 							Column: 9,
@@ -78,7 +78,7 @@ var pkgAST = &ast.Package{
 						Column: 16,
 						Line:   1,
 					},
-					File:   "",
+					File:   "secrets.flux",
 					Source: "package secrets",
 					Start: ast.Position{
 						Column: 1,
@@ -94,7 +94,7 @@ var pkgAST = &ast.Package{
 							Column: 16,
 							Line:   1,
 						},
-						File:   "",
+						File:   "secrets.flux",
 						Source: "secrets",
 						Start: ast.Position{
 							Column: 9,

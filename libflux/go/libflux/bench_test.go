@@ -74,13 +74,13 @@ func BenchmarkRustParse(b *testing.B) {
 }
 
 func ParseReturnHandle(fluxFile string) error {
-	p := libflux.Parse(fluxFile)
+	p := libflux.ParseString(fluxFile)
 	p.Free()
 	return nil
 }
 
 func ParseReturnJSON(fluxFile string) error {
-	p := libflux.Parse(fluxFile)
+	p := libflux.ParseString(fluxFile)
 	defer p.Free()
 	if _, err := p.MarshalJSON(); err != nil {
 		return err
@@ -89,7 +89,7 @@ func ParseReturnJSON(fluxFile string) error {
 }
 
 func ParseAndDeserializeJSON(fluxFile string) error {
-	p := libflux.Parse(fluxFile)
+	p := libflux.ParseString(fluxFile)
 	defer p.Free()
 	bs, err := p.MarshalJSON()
 	if err != nil {
@@ -105,7 +105,7 @@ func ParseAndDeserializeJSON(fluxFile string) error {
 }
 
 func ParseAndReturnFB(fluxFile string) error {
-	p := libflux.Parse(fluxFile)
+	p := libflux.ParseString(fluxFile)
 	defer p.Free()
 	if _, err := p.MarshalFB(); err != nil {
 		return err
@@ -115,7 +115,7 @@ func ParseAndReturnFB(fluxFile string) error {
 }
 
 func ParseAndDeserializeFB(fluxFile string) error {
-	p := libflux.Parse(fluxFile)
+	p := libflux.ParseString(fluxFile)
 	defer p.Free()
 	bs, err := p.MarshalFB()
 	if err != nil {
