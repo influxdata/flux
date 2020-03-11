@@ -1,6 +1,5 @@
 package libflux
 
-// #cgo pkg-config: flux
 // #include "influxdata/flux.h"
 // #include <stdlib.h>
 import "C"
