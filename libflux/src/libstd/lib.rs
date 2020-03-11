@@ -141,12 +141,16 @@ pub unsafe extern "C" fn flux_new_semantic_analyzer(
 
 /// Free a previously allocated semantic analyzer
 #[no_mangle]
-pub extern "C" fn flux_free_semantic_analyzer(_: Option<Box<Result<SemanticAnalyzer, flux::Error>>>) {}
+pub extern "C" fn flux_free_semantic_analyzer(
+    _: Option<Box<Result<SemanticAnalyzer, flux::Error>>>,
+) {
+}
 
 /// # Safety
 ///
 /// Ths function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
+#[allow(clippy::boxed_local)]
 pub unsafe extern "C" fn flux_analyze_with(
     analyzer: *mut Result<SemanticAnalyzer, flux::Error>,
     ast_pkg: Box<ast::Package>,
@@ -159,7 +163,7 @@ pub unsafe extern "C" fn flux_analyze_with(
             let errh = flux::ErrorHandle {
                 err: Box::new(err.to_owned()),
             };
-            return Some(Box::new(errh))
+            return Some(Box::new(errh));
         }
     };
 
@@ -167,7 +171,7 @@ pub unsafe extern "C" fn flux_analyze_with(
         Ok(sem_pkg) => sem_pkg,
         Err(err) => {
             let errh = flux::ErrorHandle { err: Box::new(err) };
-            return Some(Box::new(errh))
+            return Some(Box::new(errh));
         }
     });
 

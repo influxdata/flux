@@ -127,7 +127,7 @@ void test_semantic_analyzer() {
 }
 
 void test_env_stdlib() {
-  printf("Testing flux_get_env_stdlib");
+  printf("Testing flux_get_env_stdlib\n");
   struct flux_buffer_t buf;
   flux_get_env_stdlib(&buf);
   assert(buf.data != NULL);
