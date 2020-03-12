@@ -69,7 +69,7 @@ jobs:
       - image: quay.io/influxdb/flux-build:latest
     environment:
       GOPATH: /tmp/go
-      GOFLAGS: -p=8
+      GOFLAGS: -p=1
       GO111MODULE: 'on' # must be quoted to force string type instead of boolean type
     steps:
       - checkout
