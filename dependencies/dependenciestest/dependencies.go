@@ -35,6 +35,7 @@ func defaultTestFunction(req *http.Request) *http.Response {
 
 func Default() flux.Deps {
 	var deps flux.Deps
+
 	deps.Deps.HTTPClient = &http.Client{
 		Transport: RoundTripFunc(defaultTestFunction),
 	}

@@ -2,7 +2,6 @@ package flux
 
 import (
 	"context"
-
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/http"
@@ -10,6 +9,8 @@ import (
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/internal/errors"
 )
+
+var _ Dependencies = (*Deps)(nil)
 
 // Dependency is an interface that must be implemented by every injectable dependency.
 // On Inject, the dependency is injected into the context and the resulting one is returned.
@@ -88,7 +89,7 @@ func GetDependencies(ctx context.Context) Dependencies {
 func NewDefaultDependencies() Deps {
 	return Deps{
 		Deps: WrappedDeps{
-			HTTPClient: http.NewDefaultClient(),
+			HTTPClient: http.NewLimitedDefaultClient(),
 			// Default to having no filesystem, no secrets, and no url validation (always pass).
 			FilesystemService: nil,
 			SecretService:     secret.EmptySecretService{},

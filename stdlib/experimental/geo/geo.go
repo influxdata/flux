@@ -131,10 +131,10 @@ func generateGetGridFunc() values.Function {
 	)
 }
 
-func generateGetParentFunc() values.Function {
-	getParentSignature := runtime.MustLookupBuiltinType("experimental/geo", "getParent")
+func generateS2CellIDTokenFunc() values.Function {
+	getParentSignature := runtime.MustLookupBuiltinType("experimental/geo", "s2CellIDToken")
 	return values.NewFunction(
-		"getParent",
+		"s2CellIDToken",
 		getParentSignature,
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
@@ -279,9 +279,9 @@ func generateContainsLatLonFunc() values.Function {
 
 func init() {
 	runtime.RegisterPackageValue("experimental/geo", "getGrid", generateGetGridFunc())
-	runtime.RegisterPackageValue("experimental/geo", "getParent", generateGetParentFunc())
 	runtime.RegisterPackageValue("experimental/geo", "getLevel", generateGetLevelFunc())
 	runtime.RegisterPackageValue("experimental/geo", "containsLatLon", generateContainsLatLonFunc())
+	runtime.RegisterPackageValue("experimental/geo", "s2CellIDToken", generateS2CellIDTokenFunc())
 }
 
 //

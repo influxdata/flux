@@ -3,7 +3,6 @@ package http
 import (
 	"context"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -18,10 +17,6 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
 )
-
-// maxResponseBody is the maximum response body we will read before just discarding
-// the rest. This allows sockets to be reused.
-const maxResponseBody = 512 * 1024 // 512 KB
 
 // http get mirrors the http post originally completed for alerts & notifications
 var get = values.NewFunction(
@@ -81,7 +76,6 @@ var get = values.NewFunction(
 
 		// Perform request
 		dc, err := deps.HTTPClient()
-
 		if err != nil {
 			return nil, errors.Wrap(err, codes.Aborted, "missing client in http.get")
 		}
@@ -99,11 +93,7 @@ var get = values.NewFunction(
 			if err != nil {
 				return 0, nil, nil, err
 			}
-
-			// Read the response body but limit how much we will read.
-			// Allows socket to be reused after it is closed. (Only reusable if response emptied)
-			limitedReader := &io.LimitedReader{R: response.Body, N: maxResponseBody}
-			body, err := ioutil.ReadAll(limitedReader)
+			body, err := ioutil.ReadAll(response.Body)
 			_ = response.Body.Close()
 			if err != nil {
 				return 0, nil, nil, err
@@ -134,7 +124,6 @@ func headerToObject(header http.Header) (headerObj values.Object) {
 			m[name] = values.New(onevalue)
 		}
 	}
-
 	return values.NewObjectWithValues(m)
 }
 

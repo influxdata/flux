@@ -115,7 +115,7 @@ func TestContainsLatLon_Process(t *testing.T) {
 
 	for _, tc := range testCases {
 		tc := tc
-		getGrid := geo.Functions["containsLatLon"]
+		containsLatLon := geo.Functions["containsLatLon"]
 		var owv values.Object
 		if tc.box != nil {
 			owv = values.NewObjectWithValues(map[string]values.Value{
@@ -154,7 +154,7 @@ func TestContainsLatLon_Process(t *testing.T) {
 				"lon": values.NewFloat(tc.lon),
 			})
 		}
-		result, err := getGrid.Call(context.Background(), owv)
+		result, err := containsLatLon.Call(context.Background(), owv)
 		if err != nil {
 			t.Error(err.Error())
 		} else if tc.want != result.Bool() {
