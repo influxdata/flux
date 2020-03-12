@@ -118,29 +118,32 @@ c = 3`)
 			name:    "packages clauses don't match",
 			outPkg:  barPkg,
 			inPkg:   fooPkg,
-			wantErr: errors.New("failed to merge packages: file's package clause: foo does not match package output package clause: bar"),
+			wantErr: errors.New(`failed to merge packages: file's package clause: "foo" does not match package output package clause: "bar"`),
 		},
 		{
 			name:    "input package has no package clause",
 			outPkg:  barPkg,
 			inPkg:   noClausePkg,
-			wantErr: errors.New("failed to merge packages: current file does not have a package clause"),
+			wantErr: errors.New(`failed to merge packages: current file does not have a package clause, but output package has package clause "bar"`),
 		},
 		{
 			name:    "output package has no package clause",
 			outPkg:  noClausePkg,
 			inPkg:   fooPkg,
-			wantErr: errors.New("failed to merge packages: output package does not have a package clause"),
+			wantErr: errors.New(`failed to merge packages: output package does not have a package clause, but current file has package clause "foo"`),
 		},
 	}
 
 	for _, testCase := range testCases {
-		gotErr := libflux.MergePackages(testCase.outPkg, testCase.inPkg)
-		if gotErr == nil {
-			t.Fatal("\nGot no error, expected:", testCase.wantErr, "\ngot: \n", gotErr)
-		}
-		if diff := cmp.Diff(testCase.wantErr.Error(), gotErr.Error()); diff != "" {
-			t.Fatalf("unexpected error: -want/+got: %v", diff)
-		}
+		testCase := testCase
+		t.Run(testCase.name, func(t *testing.T) {
+			gotErr := libflux.MergePackages(testCase.outPkg, testCase.inPkg)
+			if gotErr == nil {
+				t.Fatal("\nGot no error, expected:", testCase.wantErr, "\ngot: \n", gotErr)
+			}
+			if diff := cmp.Diff(testCase.wantErr.Error(), gotErr.Error()); diff != "" {
+				t.Fatalf("unexpected error: -want/+got: %v", diff)
+			}
+		})
 	}
 }
