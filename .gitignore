@@ -14,4 +14,5 @@ target
 /libflux/pkg
 /libflux/site/node_modules
 /libflux/.cache
+/libflux/go/libflux/hack.gen.go
 /release-notes.txt

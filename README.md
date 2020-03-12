@@ -59,9 +59,15 @@ $ go build ./cmd/flux
 $ ./flux repl
 ```
 
-If you create or change any flux functions, you will need to rebuild the stdlib:
+If you modify any Rust code, you will need to force Go to rebuild the library.
+
 ```
-$ go generate ./stdlib
+$ go generate ./libflux/go/libflux
+```
+
+If you create or change any flux functions, you will need to rebuild the stdlib and inform Go that it must rebuild libflux:
+```
+$ go generate ./stdlib ./libflux/go/libflux
 ```
 
 Your new Flux's code should be formatted to coexist nicely with the existing codebase with go fmt.  For example, if you add code to stdlib/universe:
