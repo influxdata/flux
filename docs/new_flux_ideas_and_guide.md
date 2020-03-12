@@ -360,8 +360,8 @@ However, The difference is that select returns specific rows, rather than a summ
 examples:
 
 ```
-@my_data.h2o_temperature{location, state, bottom_degrees, surface_degrees, _time > -3h}
-    |> select({min(bottom_degrees)}, by: [])
+@my_data.h2o_temperature{location, state, bottom_degrees, surface_degrees, time > -3h}
+    |> select(fn: min("bottom_degrees"), by: [])
 ```
 
 | location | state | bottom_degrees | surface_degrees | time
@@ -374,31 +374,12 @@ we've pulled in two records. We pull in two records because both of those have t
 value of `40`, which is the min for all records in that time. Notice also that `time` is the same value as those 
 individual records, which you don't see in calls to `aggregate`.
 
-If you pass in multiple columns, they are used as secondary selectors (kind of like sorting by multiple columns) 
-for example: 
-
-```
-@my_data.h2o_temperature{location, state, bottom_degrees, surface_degrees, _time > -3h}
-    |> select({min(bottom_degrees), max(surface_degrees)})
-```
-
-produces:
-| location | state | bottom_degrees | surface_degrees | time
-| --- | --- | --- | --- | --- |
-| puget_sound | WA | 40 | 55 | 2020-02-22T17:10 |
-
-Or calling `select` with `{min(bottom_degrees), min(surface_degrees)}` produces: 
-
-| location | state | bottom_degrees | surface_degrees | time
-| --- | --- | --- | --- | --- |
-| puget_sound | WA | 40 | 54 | 2020-02-22T17:40 |
-
 You can also select in groups based on time or by other columns, just like you can with `aggregate`. Here's 
 an example using time grouping and inserting the time window for associated row selections:
 
 ```
 @my_data.h2o_temperature{location, state, bottom_degrees, _time > -3h}
-    |> selector({max(bottom_degrees), by: ["state"], window: 1h, windowColumn: "window")
+    |> selector(fn: max(bottom_degrees), by: ["state"], window: 1h, windowColumn: "window")
 
 // if you include window_column, the result will put the window timestamp for each selected row in that column
 ```
@@ -425,8 +406,8 @@ which block of time the selector was working across.
 
 The following functions can be used in the **Selector Predicate Block**: `first`, `last`, `min`, `max`, `top`, `bottom`
 
-#### Calling Aggregates and Selectors without Aggregate or Select
-The `aggregate` and `select` functions provide a shorthand for computing based on multiple columns. However, the 
+#### Calling Aggregates without the Aggregate function
+The `aggregate` function provides a shorthand for computing multiple aggregates at a time. However, the 
 functions passed in can also be called on tables. For example:
 
 ```
@@ -440,13 +421,15 @@ functions passed in can also be called on tables. For example:
 @my_data.h2o_temperature{time > -3h} |> mean(by: ["location"], window: 1h)
 ``` 
 
+Selectors can only be called with the `select` function.
+
 #### Count, Distinct, and CountDistinct
 The `count` function is an aggregate while the `distinct` function is a selector. The `countDistinct` function is 
 a helper function that will combine operations for you.
  
 ```
 @my_data.h2o_temperature{state, time > -3h}
-    |> select({distinct(state)}, time: 1h, windowColumn: "time")
+    |> select(fn: distinct(state), window: 1h, windowColumn: "time")
 ```
 
 Would return the following result
@@ -465,9 +448,9 @@ per hour:
 
 ```
 @my_data.h2o_temperature{state, time > -3h}
-    |> select({distinct(state)}, time: 1h)
+    |> select(fn: distinct(state), window: 1h)
     |> timeShift(-1m)
-    |> aggregate({count(state)}, time: 1h)
+    |> count("state", window: 1h)
 ```
 
 Would produce:
@@ -611,7 +594,7 @@ the max for the given grouping and time window. If used in a selector, it will r
 max value for the grouping and window.
 
 ```
-max = (table, column) => {}
+max = (table, column, by = [], window = 0) => {}
 ``` 
 
 ### Min
@@ -620,21 +603,21 @@ the min for the given grouping and time window. If used in a selector, it will r
 min value for the grouping and window.
 
 ```
-min = (table, column) => {}
+min = (table, column, by = [], window = 0) => {}
 ``` 
 
 ### Mean
 Mean is an aggregate function (so it can only be used as an argument to `aggregate`).
 
 ```
-mean = (table, column) => {}
+mean = (table, column, by = [], window = 0) => {}
 ```
 
 ### Count
 Count is an aggregate function (so it can only be used as an argument to `aggregate`).
 
 ```
-count = (table, column) => {}
+count = (table, column, by = [], window = 0) => {}
 ```
 
 ### Top
@@ -643,7 +626,7 @@ The top function is passed into `select` to produce the top n rows per grouping 
 ```
 // notice that top takes a view, which is what the selector function sends to it. Top can only be 
 // used as an argument to selector. N is the number of results you'd like
-top = (table, column_name, n) => {}
+top = (table, column, n) => {}
 ```
 
 ### Sort
@@ -711,13 +694,9 @@ Filter will filter a result set to the requested columns and records matching th
 filter = (table, fn) => {}
 
 // calling it
-data |> filter({foo == "bar"}) // will return all columns in data, but only rows matching criteria
+data |> filter(fn: (r) => r.foo == "bar") // will return all columns in data, but only rows where the value of foo is bar
 
-data |> filter({foo == "bar" and time > -3h and time < -1h}) // will return only rows in specified time range
-
-data |> filter({foo, colA, foo == "bar"}) // will return only the foo, colA and system columns
-
-data |> filter(fn: {foo == "bar"}) // example calling with explicit parameter named
+data |> filter({fn: (r) => r.foo == "bar" and r.time > -3h and r.time < -1h) // will return only rows in specified time range
 ```
 
 ### Drop
