@@ -313,7 +313,7 @@ enough to unique identify a series.
 Say we wanted to get a summary per state: 
 
 ```
-@my_data.h2o_temperature{location, state, bottom_degrees, _time > -3h}
+@my_data.h2o_temperature{location, state, bottom_degrees, time > -3h}
     |> aggregate({min(bottom_degrees), max(bottom_degrees), mean(bottom_degrees)}, by: ["state"]) 
 ```
 
@@ -378,7 +378,7 @@ You can also select in groups based on time or by other columns, just like you c
 an example using time grouping and inserting the time window for associated row selections:
 
 ```
-@my_data.h2o_temperature{location, state, bottom_degrees, _time > -3h}
+@my_data.h2o_temperature{location, state, bottom_degrees, time > -3h}
     |> selector(fn: max(bottom_degrees), by: ["state"], window: 1h, windowColumn: "window")
 
 // if you include window_column, the result will put the window timestamp for each selected row in that column
@@ -717,7 +717,7 @@ Keep will keep only the specified columns in the table, while keeping any system
 keep = (table, columns) => {}
 
 // calling it
-data |> keep(["foo", "_time"])
+data |> keep(["foo", "time"])
 ```
 
 ### Rename
@@ -948,7 +948,7 @@ Finally, let's look at how we can get the last value for each series in a measur
 `state == "CA"`,  but only if that value appears in the last five minutes:
 
 ```
-@my_data.h2o_temperature{location, state, surface_degrees, state == "CA" and _time > -5m}
+@my_data.h2o_temperature{location, state, surface_degrees, state == "CA" and time > -5m}
   |> select(fn: last, by: ["_key"]) 
 ```
 
@@ -966,7 +966,7 @@ this: `select(last)`.
 
 We expect the result set to look like this:
 
-| location | state| surface_degrees | _key | _time |
+| location | state| surface_degrees | _key | time |
 | --- | --- | --- | --- | --- |
 | coyote_creek | CA | 50.2 | location=coyote_creek,state=CA | 1600756160 |
 | santa_monica | CA | 63.6 | location=santa_monica,state=CA | 1600756160 |
@@ -980,6 +980,6 @@ from(bucket: "my_data", measurement: "h2o_temperature", columns: ["location", "s
     |> select(fn: last, by: ["_key"])
 ```
 
-The `range` function operates explicitly on the `_time` column to limit results.
+The `range` function operates explicitly on the `time` column to limit results.
 Generally it's preferred to use the shortcut syntax when possible, but showing what the full translation to Flux 
 functions has hopefully served as a gentle introduction to Flux functional concepts.
