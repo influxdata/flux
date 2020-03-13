@@ -1,4 +1,5 @@
-# Set up the Data Explorer
+# 9 Minutes to Flux
+## Set up the Data Explorer
 Open InfluxDB 2.0 Cloud, and use the left hand navigation to open the Data Explorer.
 
 ![data explorer left nav](images/image1.png?raw=true)
@@ -24,7 +25,7 @@ Data is now loaded into the data explorer, and we can start transforming it.
 ![ready](images/image5.png?raw=true)
 
 
-# The Flux Data Model
+## The Flux Data Model
 Stream of Tables
 The data that we are working with is sensor data from various weather stations taken over a period of a few weeks. There are multiple measurements taken from multiple locations.
 
@@ -145,7 +146,7 @@ Now notice that there are still the same number of tables as before, but each ta
 |         |       |1    |2019-09-02T12:44:00Z|2020-03-05T22:10:01.711964667Z|degrees                       |average_temperature           |santa_monica|80.08708627238198  |
 
 
-## Changing Group Keys
+### Changing Group Keys
 Some functions may change the tables in the stream. For example, keep() and drop() go through each table and keep or drop columns. If you drop columns that are part of the group key, then the stream will be adjusted. 
 
 For example, if we drop the location column:
@@ -230,7 +231,7 @@ Notice that the tables column is different, because Flux is no longer grouping o
 |         |       |0    |2019-09-17T16:00:00Z|2020-03-05T22:10:01.711964667Z|2019-09-17T21:36:00Z          |83                            |degrees|average_temperature|
 |         |       |0    |2019-09-17T16:00:00Z|2020-03-05T22:10:01.711964667Z|2019-09-17T21:42:00Z          |85                            |degrees|average_temperature|
 
-# Operating on Rows
+## Operating on Rows
 In addition to being able to operate on tables, with Flux you can also operate on each row. For example.
 Execute a Function on Each Row
 Using map() you can execute a function on each row. For example, we can add a new column with the temperatures converted to celsius:
@@ -347,7 +348,7 @@ csv.from(url: "https://influx-testdata.s3.amazonaws.com/noaa.csv")
 |         |       |0    |degrees     |average_temperature|1920-03-05T22:10:01.711964667Z|2020-03-05T22:10:01.711964667Z|2019-08-17T09:36:00Z|85                 |29.444444444444443|coyote_creek|
 | ...       |
 
-# Windowing
+## Windowing
 It is often useful to create a stream of tables grouped by a specific time period, for example, by day:
 ```flux
 import "experimental/csv"
