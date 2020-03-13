@@ -143,7 +143,7 @@ join(tables: {mean: means, reading: latest}, on: ["location"])
 |         |       |1    |80.20451339915374|85                 |4.79548660084626              |santa_monica                  |
 
 # Convert Results to JSON and Post to an Endpoint
-Use json.encode() and http.post(). The follow will make a separate http call for each record.
+Use json.encode() and http.post(). The following will make a separate http call for each record.
 
 ```
 import "http"
