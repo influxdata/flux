@@ -1,6 +1,6 @@
 # Set up the Data Explorer
 Open InfluxDB 2.0 Cloud, and use the left hand navigation to open the Data Explorer.
-
+![data explorer left nav](images/imgage1.png?raw=true)
 
 Click the Script Editor button to open the Flux editor.
 
