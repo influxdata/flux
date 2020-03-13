@@ -5,8 +5,10 @@ Open InfluxDB 2.0 Cloud, and use the left hand navigation to open the Data Explo
 
 Click the Script Editor button to open the Flux editor.
 
+![script editor button](images/image2.png?raw=true)
 
 Use the switch to switch to the raw data view.
+![raw data view](images/image3.png?raw=true)
 
 Paste the following code into the script editor, and click submit.
 
@@ -15,7 +17,12 @@ import "experimental/csv"
 csv.from(url: "https://influx-testdata.s3.amazonaws.com/noaa.csv")
 ```
 
+![copy query](images/image4.png?raw=true)
+
 Data is now loaded into the data explorer, and we can start transforming it.
+
+![ready](images/image5.png?raw=true)
+
 
 # The Flux Data Model
 Stream of Tables
