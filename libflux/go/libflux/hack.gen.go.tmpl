@@ -1,0 +1,14 @@
+package libflux
+
+// const int FLUX_BUILD_TIMESTAMP = {{.}};
+import "C"
+
+// This is a hack to ensure that libflux gets rebuilt.
+// To rebuild libflux, run go generate on this package
+// and it will output a file with a constant that causes
+// the build output to change. This forces Go to recompile
+// the package and then libflux takes care of the rest.
+// The file this generates is never intended to be checked
+// in and isn't meant to be part of the final build product
+// except when compiling flux from source.
+// This attribute should not be used in any code.
