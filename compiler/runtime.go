@@ -92,8 +92,6 @@ func eval(ctx context.Context, e Evaluator, scope Scope) (values.Value, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// values.CheckKind(v.PolyType().Nature(), e.Type().Nature())
 	return v, nil
 }
 
@@ -115,7 +113,6 @@ func (e *blockEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, e
 			return nil, err
 		}
 	}
-	// values.CheckKind(e.value.Type().Nature(), e.Type().Nature())
 	return e.value, nil
 }
 
@@ -257,7 +254,6 @@ func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 	if err != nil {
 		return nil, err
 	}
-	values.CheckKind(l.Type().Nature(), e.t.Nature())
 
 	switch e.operator {
 	case ast.AndOperator:
@@ -378,7 +374,6 @@ func (e *unaryEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, e
 	if err != nil {
 		return nil, err
 	}
-	// values.CheckKind(ret.Type().Nature(), e.t.Nature())
 	return ret, nil
 }
 
@@ -497,19 +492,6 @@ func (e *identifierEvaluator) Type() semantic.MonoType {
 
 func (e *identifierEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
 	v := scope.Get(e.name)
-	// Note this check pattern is slightly different than
-	// the usual one:
-	//
-	//     CheckKind(v.Type().Nature(), e.t.Nature())
-	//                  ^
-	//
-	// This is because variables hold polytypes that might
-	// be universally quantified with one or more type
-	// variables. Hence we must check the Nature of this
-	// value's **polytype** as this value will return an
-	// invalid monotype.
-	//
-	// values.CheckKind(v.Type().Nature(), e.t.Nature())
 	return v, nil
 }
 
@@ -529,7 +511,6 @@ func (e *memberEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, 
 		return nil, err
 	}
 	v, _ := o.Object().Get(e.property)
-	// values.CheckKind(v.PolyType().Nature(), e.t.Nature())
 	return v, nil
 }
 
