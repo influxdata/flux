@@ -26,7 +26,7 @@ Data is now loaded into the data explorer, and we can start transforming it.
 
 
 ## The Flux Data Model
-Stream of Tables
+### Stream of Tables
 The data that we are working with is sensor data from various weather stations taken over a period of a few weeks. There are multiple measurements taken from multiple locations.
 
 In order to understand the data, you must first understand the Flux data model. In Flux, you work with *streams* of tables. A stream of tables is a collection of tables where each table represents a logical grouping of data. What this means in practice, is that when you run a query, you get back a set of tables to work with, not just one giant table. 
