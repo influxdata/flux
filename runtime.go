@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -12,11 +11,18 @@ import (
 
 // Runtime encapsulates the operations supported by the flux runtime.
 type Runtime interface {
-	// Parse parses a Flux script and produces an ast.Package.
-	Parse(flux string) (*ast.Package, error)
+	// Parse parses a Flux script and produces a handle to an AST.
+	Parse(flux string) (ASTHandle, error)
+
+	// JSONToHandle takes JSON data and returns an AST handle.
+	JSONToHandle(json []byte) (ASTHandle, error)
+
+	// MargePackages removes all the files from src and appends them to the list
+	// of files in dst.
+	MergePackages(dst, src ASTHandle) error
 
 	// Eval accepts a Flux AST and evaluates it to produce a set of side effects (as a slice of values) and a scope.
-	Eval(ctx context.Context, astPkg *ast.Package, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error)
+	Eval(ctx context.Context, astPkg ASTHandle, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error)
 
 	// IsPreludePackage will return if the named package is part
 	// of the prelude for this runtime.
@@ -25,6 +31,11 @@ type Runtime interface {
 	// LookupBuiltinType returns the type of the builtin value for a given
 	// Flux stdlib package. Returns an error if lookup fails.
 	LookupBuiltinType(pkg, name string) (semantic.MonoType, error)
+}
+
+type ASTHandle interface {
+	ASTHandle()
+	GetError() error
 }
 
 // ScopeMutator is any function that mutates the scope of an identifier.

@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	_ "github.com/influxdata/flux/builtin"
 	_ "github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
@@ -206,41 +205,32 @@ endpoint = pagerduty.endpoint(url:url)(mapFn: (r) => {
 
 csv.from(csv:data) |> endpoint()
 `
-
-			prog, err := lang.Compile(fluxString, runtime.Default, time.Now(), lang.WithExtern(&ast.File{Body: []ast.Statement{
-				&ast.VariableAssignment{
-					ID: &ast.Identifier{
-						Name: "url",
-					},
-					Init: &ast.StringLiteral{
-						Value: tc.pagerdutyURL,
-					},
-				},
-				&ast.VariableAssignment{
-					ID: &ast.Identifier{
-						Name: "data",
-					},
-					Init: &ast.StringLiteral{
-						Value: `#datatype,string,string,string,string,string,string,string,string,string,string,string,string,string,long
+			rt := runtime.Default
+			extern := `
+url = "` + tc.pagerdutyURL + `"
+data = "
+#datatype,string,string,string,string,string,string,string,string,string,string,string,string,string,long
 #group,false,false,false,true,false,false,false,false,false,false,false,true,true,true
 #default,_result,,,,,,,,,,,,,
 ,result,,froutingKey,qclient,qclientURL,wclass,wgroup,wlevel,wsource,wsummary,wtimestamp,name,otherGroupKey,groupKey2
 ,,,` + strings.Join([]string{
-							tc.routingKey,
-							tc.client,
-							tc.clientURL,
-							tc.class,
-							tc.group,
-							tc.level,
-							tc.source,
-							tc.summary,
-							tc.timestamp,
-							tc.name,
-							tc.otherGroupKey,
-							"0"}, ","),
-					},
-				},
-			}}))
+				tc.routingKey,
+				tc.client,
+				tc.clientURL,
+				tc.class,
+				tc.group,
+				tc.level,
+				tc.source,
+				tc.summary,
+				tc.timestamp,
+				tc.name,
+				tc.otherGroupKey,
+				"0"}, ",") + `"`
+			extHdl, err := rt.Parse(extern)
+			if err != nil {
+				t.Fatal(err)
+			}
+			prog, err := lang.Compile(fluxString, runtime.Default, time.Now(), lang.WithExtern(extHdl))
 
 			if err != nil {
 				t.Error(err)

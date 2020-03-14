@@ -43,30 +43,31 @@ func TestFluxCompiler(t *testing.T) {
 	ctx := context.Background()
 
 	for _, tc := range []struct {
-		name   string
-		now    time.Time
-		extern *ast.File
-		q      string
-		err    string
+		name        string
+		now         time.Time
+		extern      *ast.File
+		q           string
+		compilerErr string
+		startErr    string
 	}{
 		{
 			name: "simple",
 			q:    `from(bucket: "foo") |> range(start: -5m)`,
 		},
 		{
-			name: "syntax error",
-			q:    `t={]`,
-			err:  "expected RBRACE",
+			name:        "syntax error",
+			q:           `t={]`,
+			compilerErr: "expected RBRACE",
 		},
 		{
-			name: "type error",
-			q:    `t=0 t.s`,
-			err:  "type error: @1:5-1:6",
+			name:     "type error",
+			q:        `t=0 t.s`,
+			startErr: "type error: @1:5-1:6",
 		},
 		{
-			name: "from with no streaming data",
-			q:    `x = from(bucket: "foo") |> range(start: -5m)`,
-			err:  "no streaming data",
+			name:     "from with no streaming data",
+			q:        `x = from(bucket: "foo") |> range(start: -5m)`,
+			startErr: "no streaming data",
 		},
 		{
 			name: "from with yield",
@@ -103,7 +104,7 @@ func TestFluxCompiler(t *testing.T) {
 			q: `twentySeven = twentyFive + 2
 				twentySeven
 				from(bucket: "foo") |> range(start: -5m)`,
-			err: "undeclared variable twentyFive",
+			startErr: "undeclared variable twentyFive",
 		},
 		{
 			name: "with now",
@@ -113,9 +114,20 @@ func TestFluxCompiler(t *testing.T) {
 	} {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			var extern json.RawMessage
+			if tc.extern != nil {
+				pkg := &ast.Package{
+					Files: []*ast.File{tc.extern},
+				}
+				var err error
+				extern, err = json.Marshal(pkg)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
 			c := lang.FluxCompiler{
 				Now:    tc.now,
-				Extern: tc.extern,
+				Extern: extern,
 				Query:  tc.q,
 			}
 
@@ -135,14 +147,16 @@ func TestFluxCompiler(t *testing.T) {
 
 			program, err := c.Compile(ctx, runtime.Default)
 			if err != nil {
-				if tc.err != "" {
-					if !strings.Contains(err.Error(), tc.err) {
-						t.Fatalf(`expected query to error with "%v" but got "%v"`, tc.err, err)
+				if tc.compilerErr != "" {
+					if !strings.Contains(err.Error(), tc.compilerErr) {
+						t.Fatalf(`expected query to error with "%v" but got "%v"`, tc.compilerErr, err)
 					} else {
 						return
 					}
 				}
 				t.Fatalf("failed to compile AST: %v", err)
+			} else if tc.compilerErr != "" {
+				t.Fatalf("expected query to error with %q, but got no error", tc.compilerErr)
 			}
 
 			astProg := program.(*lang.AstProgram)
@@ -152,12 +166,12 @@ func TestFluxCompiler(t *testing.T) {
 
 			// we need to start the program to get compile errors derived from AST evaluation
 			ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
-			if _, err = program.Start(ctx, &memory.Allocator{}); tc.err == "" && err != nil {
+			if _, err = program.Start(ctx, &memory.Allocator{}); tc.startErr == "" && err != nil {
 				t.Errorf("expected query %q to start successfully but got error %v", tc.q, err)
-			} else if tc.err != "" && err == nil {
+			} else if tc.startErr != "" && err == nil {
 				t.Errorf("expected query %q to start with error but got no error", tc.q)
-			} else if tc.err != "" && err != nil && !strings.Contains(err.Error(), tc.err) {
-				t.Errorf(`expected query to error with "%v" but got "%v"`, tc.err, err)
+			} else if tc.startErr != "" && err != nil && !strings.Contains(err.Error(), tc.startErr) {
+				t.Errorf(`expected query to error with "%v" but got "%v"`, tc.startErr, err)
 			}
 		})
 	}
@@ -229,7 +243,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 			},
 		},
 		{
-			name: "prepend file",
+			name: "extern",
 			file: &ast.File{
 				Body: []ast.Statement{
 					&ast.OptionStatement{
@@ -263,16 +277,39 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 			},
 		},
 	}
+	rt := runtime.Default
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			astPkg, err := runtime.Parse(tc.script)
+			astPkg, err := rt.Parse(tc.script)
 			if err != nil {
 				t.Fatalf("failed to parse script: %v", err)
 			}
+			var jsonPkg json.RawMessage
+			jsonPkg, err = parser.HandleToJSON(astPkg)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// The JSON produced by Rust does not escape characters like ">", but
+			// Go does, so we need to use HTMLEscape to make the roundtrip the same.
+			var buf bytes.Buffer
+			json.HTMLEscape(&buf, jsonPkg)
+			jsonPkg = buf.Bytes()
 
 			c := lang.ASTCompiler{
-				AST: astPkg,
+				AST: jsonPkg,
 				Now: tc.now,
+			}
+
+			if tc.file != nil {
+				pkg := &ast.Package{
+					Files: []*ast.File{tc.file},
+				}
+				bs, err := json.Marshal(&pkg)
+				if err != nil {
+					t.Fatal(err)
+				}
+				c.Extern = bs
 			}
 
 			// serialize and deserialize and make sure they are equal
@@ -287,10 +324,6 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 			}
 			if diff := cmp.Diff(c, cc); diff != "" {
 				t.Errorf("compiler serialized/deserialized does not match: -want/+got:\n%v", diff)
-			}
-
-			if tc.file != nil {
-				c.PrependFile(tc.file)
 			}
 
 			program, err := c.Compile(context.Background(), runtime.Default)
@@ -650,7 +683,9 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 					if err != nil {
 						t.Fatal(err)
 					}
-					astPkg.Files = append(astPkg.Files, otherPkg.Files...)
+					if err := runtime.MergePackages(astPkg, otherPkg); err != nil {
+						t.Fatal(err)
+					}
 				}
 			}
 

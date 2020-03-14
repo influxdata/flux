@@ -2,12 +2,12 @@ package lang
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -48,7 +48,7 @@ type CompileOption func(*compileOptions)
 type compileOptions struct {
 	verbose bool
 
-	extern *ast.File
+	extern flux.ASTHandle
 
 	planOptions struct {
 		logical  []plan.LogicalOption
@@ -66,7 +66,7 @@ func WithPhysPlanOpts(popts ...plan.PhysicalOption) CompileOption {
 		o.planOptions.physical = append(o.planOptions.physical, popts...)
 	}
 }
-func WithExtern(extern *ast.File) CompileOption {
+func WithExtern(extern flux.ASTHandle) CompileOption {
 	return func(o *compileOptions) {
 		o.extern = extern
 	}
@@ -104,9 +104,9 @@ func Compile(q string, runtime flux.Runtime, now time.Time, opts ...CompileOptio
 	return CompileAST(astPkg, runtime, now, opts...), nil
 }
 
-// CompileAST evaluates a Flux AST and produces a flux.Program.
+// CompileAST evaluates a Flux handle to an AST and produces a flux.Program.
 // now parameter must be non-zero, that is the default now time should be set before compiling.
-func CompileAST(astPkg *ast.Package, runtime flux.Runtime, now time.Time, opts ...CompileOption) *AstProgram {
+func CompileAST(astPkg flux.ASTHandle, runtime flux.Runtime, now time.Time, opts ...CompileOption) *AstProgram {
 	return &AstProgram{
 		Program: &Program{
 			Runtime: runtime,
@@ -161,23 +161,31 @@ func buildPlan(ctx context.Context, spec *flux.Spec, opts *compileOptions) (*pla
 // FluxCompiler compiles a Flux script into a spec.
 type FluxCompiler struct {
 	Now    time.Time
-	Extern *ast.File `json:"extern"`
-	Query  string    `json:"query"`
+	Extern json.RawMessage `json:"extern,omitempty"`
+	Query  string          `json:"query"`
 }
 
 func (c FluxCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
 	// Ignore context, it will be provided upon Program Start.
-	return Compile(c.Query, runtime, c.Now, WithExtern(c.Extern))
+	if c.Extern != nil {
+		hdl, err := runtime.JSONToHandle(c.Extern)
+		if err != nil {
+			return nil, err
+		}
+		return Compile(c.Query, runtime, c.Now, WithExtern(hdl))
+	}
+	return Compile(c.Query, runtime, c.Now)
 }
 
 func (c FluxCompiler) CompilerType() flux.CompilerType {
 	return FluxCompilerType
 }
 
-// ASTCompiler implements Compiler by producing a Spec from an AST.
+// ASTCompiler implements Compiler by producing a Program from an AST.
 type ASTCompiler struct {
-	AST *ast.Package `json:"ast"`
-	Now time.Time
+	Extern json.RawMessage `json:"extern,omitempty"`
+	AST    json.RawMessage `json:"ast"`
+	Now    time.Time
 }
 
 func (c ASTCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
@@ -185,17 +193,27 @@ func (c ASTCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Pr
 	if now.IsZero() {
 		now = time.Now()
 	}
+	hdl, err := runtime.JSONToHandle(c.AST)
+	if err != nil {
+		return nil, err
+	}
+	if err := hdl.GetError(); err != nil {
+		return nil, err
+	}
+
 	// Ignore context, it will be provided upon Program Start.
-	return CompileAST(c.AST, runtime, now), nil
+	if c.Extern != nil {
+		extHdl, err := runtime.JSONToHandle(c.Extern)
+		if err != nil {
+			return nil, err
+		}
+		return CompileAST(hdl, runtime, now, WithExtern(extHdl)), nil
+	}
+	return CompileAST(hdl, runtime, now), nil
 }
 
 func (ASTCompiler) CompilerType() flux.CompilerType {
 	return ASTCompilerType
-}
-
-// PrependFile prepends a file onto the compiler's list of package files.
-func (c *ASTCompiler) PrependFile(file *ast.File) {
-	c.AST.Files = append([]*ast.File{file}, c.AST.Files...)
 }
 
 // TableObjectCompiler compiles a TableObject into an executable flux.Program.
@@ -293,7 +311,7 @@ func (p *Program) readMetadata(q *query, metaCh <-chan flux.Metadata) {
 type AstProgram struct {
 	*Program
 
-	Ast *ast.Package
+	Ast flux.ASTHandle
 	Now time.Time
 }
 
@@ -305,7 +323,12 @@ func (p *AstProgram) getSpec(ctx context.Context, runtime flux.Runtime, alloc *m
 		p.Now = time.Now()
 	}
 	if p.opts.extern != nil {
-		p.Ast.Files = append([]*ast.File{p.opts.extern}, p.Ast.Files...)
+		extern := p.opts.extern
+		if err := runtime.MergePackages(extern, p.Ast); err != nil {
+			return nil, nil, err
+		}
+		p.Ast = extern
+		p.opts.extern = nil
 	}
 	// The program must inject execution dependencies to make it available
 	// to function calls during the evaluation phase (see `tableFind`).
@@ -364,12 +387,11 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 }
 
 func (p *AstProgram) updateOpts(scope values.Scope) error {
-	n := getPlannerPkgName(p.Ast)
-	if n == "" {
-		// No import for 'planner'. Nothing to update.
+	pkg, ok := getPlannerPkg(scope)
+	if !ok {
 		return nil
 	}
-	lo, po, err := getPlanOptions(scope, n)
+	lo, po, err := getPlanOptions(pkg)
 	if err != nil {
 		return err
 	}
@@ -382,28 +404,24 @@ func (p *AstProgram) updateOpts(scope values.Scope) error {
 	return nil
 }
 
-func getPlannerPkgName(pkg *ast.Package) string {
-	for _, f := range pkg.Files {
-		for _, imp := range f.Imports {
-			if path := imp.Path.Value; path == "planner" {
-				name := path
-				if alias := imp.As; alias != nil {
-					name = alias.Name
-				}
-				return name
+func getPlannerPkg(scope values.Scope) (values.Package, bool) {
+	found := false
+	var foundPkg values.Package
+	scope.Range(func(k string, v values.Value) {
+		if found {
+			return
+		}
+		if pkg, ok := v.(values.Package); ok {
+			if pkg.Name() == "planner" {
+				found = true
+				foundPkg = pkg
 			}
 		}
-	}
-	return ""
+	})
+	return foundPkg, found
 }
 
-func getPlanOptions(scope values.Scope, pkgName string) (plan.LogicalOption, plan.PhysicalOption, error) {
-	// find the 'planner' package
-	plannerPkg, ok := scope.Lookup(pkgName)
-	if !ok {
-		// No import for planner, this is useless.
-		return nil, nil, nil
-	}
+func getPlanOptions(plannerPkg values.Package) (plan.LogicalOption, plan.PhysicalOption, error) {
 	if plannerPkg.Type().Nature() != semantic.Object {
 		// No import for planner, this is useless.
 		return nil, nil, nil

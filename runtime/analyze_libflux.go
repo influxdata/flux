@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/influxdata/flux/semantic"
 )
@@ -12,9 +13,10 @@ func AnalyzeSource(fluxSrc string) (*semantic.Package, error) {
 	return AnalyzePackage(ast)
 }
 
-func AnalyzePackage(astPkg *libflux.ASTPkg) (*semantic.Package, error) {
-	defer astPkg.Free()
-	sem, err := libflux.Analyze(astPkg)
+func AnalyzePackage(astPkg flux.ASTHandle) (*semantic.Package, error) {
+	hdl := astPkg.(*libflux.ASTPkg)
+	defer hdl.Free()
+	sem, err := libflux.Analyze(hdl)
 	if err != nil {
 		return nil, err
 	}

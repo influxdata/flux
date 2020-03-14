@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
@@ -9,7 +10,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/libflux/go/libflux"
-	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -26,8 +26,16 @@ type runtime struct {
 	finalized bool
 }
 
-func (r *runtime) Parse(flux string) (*ast.Package, error) {
+func (r *runtime) Parse(flux string) (flux.ASTHandle, error) {
 	return Parse(flux)
+}
+
+func (r *runtime) JSONToHandle(json []byte) (flux.ASTHandle, error) {
+	return libflux.ParseJSON(json)
+}
+
+func (r *runtime) MergePackages(dst, src flux.ASTHandle) error {
+	return MergePackages(dst, src)
 }
 
 func (r *runtime) IsPreludePackage(pkg string) bool {
@@ -61,12 +69,15 @@ func (r *runtime) RegisterPackage(pkg *ast.Package) error {
 		return errors.Wrapf(err, codes.Inherit, "failed to parse builtin package %q", pkg.Path)
 	}
 
-	ap, err := parser.ToHandle(pkg)
+	bs, err := json.Marshal(pkg)
 	if err != nil {
 		return err
 	}
-
-	root, err := AnalyzePackage(ap)
+	hdl, err := r.JSONToHandle(bs)
+	if err != nil {
+		return err
+	}
+	root, err := AnalyzePackage(hdl)
 	if err != nil {
 		return err
 	}
@@ -118,16 +129,8 @@ func (r *runtime) Prelude() values.Scope {
 	return scope
 }
 
-func (r *runtime) Eval(ctx context.Context, astPkg *ast.Package, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
-	h, err := parser.ToHandle(astPkg)
-	if err != nil {
-		return nil, nil, err
-	}
-	return r.evalHandle(ctx, h, opts...)
-}
-
-func (r *runtime) evalHandle(ctx context.Context, h *libflux.ASTPkg, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
-	semPkg, err := AnalyzePackage(h)
+func (r *runtime) Eval(ctx context.Context, astPkg flux.ASTHandle, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+	semPkg, err := AnalyzePackage(astPkg)
 	if err != nil {
 		return nil, nil, err
 	}
