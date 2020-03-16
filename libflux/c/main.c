@@ -20,26 +20,44 @@ int main(int argc, char* argv[]) {
 void test_ast() {
   printf("Testing AST functions...\n");
 
-  printf("Parsing to AST\n");
-  struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + 1");
-  assert(ast_pkg_foo !=  NULL);
+  {
+    printf("Parsing to AST (expect success)\n");
+    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + 1");
+    assert(ast_pkg_foo !=  NULL);
 
-  printf("Marshaling to JSON\n");
-  struct flux_buffer_t buf;
-  // it's unclear how to test errors returned by serialization
-  struct flux_error_t *err = flux_ast_marshal_json(ast_pkg_foo, &buf);
-  assert(err == NULL);
-  printf("  json buffer is length %ld\n", buf.len);
-  flux_free_bytes(buf.data);
+    struct flux_error_t* err = flux_ast_get_error(ast_pkg_foo);
+    assert(err == NULL);
 
-  printf("Marshaling to FlatBuffer\n");
-  err = flux_ast_marshal_fb(ast_pkg_foo, &buf);
-  assert(err == NULL);
-  printf("  FlatBuffer is length %ld\n", buf.len);
-  flux_free_bytes(buf.data);
+    printf("Marshaling to JSON\n");
+    struct flux_buffer_t buf;
+    // it's unclear how to test errors returned by serialization
+    err = flux_ast_marshal_json(ast_pkg_foo, &buf);
+    assert(err == NULL);
+    printf("  json buffer is length %ld\n", buf.len);
+    flux_free_bytes(buf.data);
 
-  flux_free_ast_pkg(ast_pkg_foo);
-  printf("\n");
+    printf("Marshaling to FlatBuffer\n");
+    err = flux_ast_marshal_fb(ast_pkg_foo, &buf);
+    assert(err == NULL);
+    printf("  FlatBuffer is length %ld\n", buf.len);
+    flux_free_bytes(buf.data);
+
+    flux_free_ast_pkg(ast_pkg_foo);
+  }
+  {
+    printf("Parsing to AST (expect failure)\n");
+    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "x = 1 + / 1");
+    assert(ast_pkg_foo !=  NULL);
+
+    struct flux_error_t* err = flux_ast_get_error(ast_pkg_foo);
+    assert(err != NULL);
+    const char* err_str = flux_error_str(err);
+    printf("  error: %s\n", err_str);
+    flux_free_bytes(err_str);
+    flux_free_error(err);
+    flux_free_ast_pkg(ast_pkg_foo);
+    printf("\n");
+  }
 }
 
 void test_semantic() {

@@ -30,6 +30,18 @@ type ASTPkg struct {
 	ptr *C.struct_flux_ast_pkg_t
 }
 
+// GetError will return the first error in the AST, if any
+func (p ASTPkg) GetError() error {
+	if err := C.flux_ast_get_error(p.ptr); err != nil {
+		defer C.flux_free_error(err)
+		cstr := C.flux_error_str(err)
+		defer C.flux_free_bytes(cstr)
+		str := C.GoString(cstr)
+		return errors.Newf(codes.Invalid, str)
+	}
+	return nil
+}
+
 func (p *ASTPkg) MarshalJSON() ([]byte, error) {
 	var buf C.struct_flux_buffer_t
 	if err := C.flux_ast_marshal_json(p.ptr, &buf); err != nil {
