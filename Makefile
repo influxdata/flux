@@ -180,7 +180,7 @@ build-wasm:
 	cd libflux/src/flux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata
 
 publish-wasm: build-wasm
-	cd libflux/src/flux/pkg && npm publish
+	cd libflux/src/flux/pkg && npm publish --access public
 
 test-valgrind: $(LIBFLUX_MEMTEST_BIN)
 	LD_LIBRARY_PATH=$(PWD)/libflux/target/debug $(VALGRIND) $(VALGRIND_ARGS) $^
