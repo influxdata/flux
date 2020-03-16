@@ -286,24 +286,41 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
 /// clauses match and merges the files from the input package into the output package. If
 /// package clauses fail validation then an option with an Error is returned.
 pub fn merge_packages(out_pkg: &mut ast::Package, in_pkg: &mut ast::Package) -> Option<Error> {
-    let pkg_clause = match &out_pkg.files[0].package {
-        Some(clause) => &clause.name.name,
-        None => return Some(Error::from("output package does not have a package clause")),
+    let out_pkg_clause = match &out_pkg.files[0].package {
+        Some(clause) => Some(&clause.name.name),
+        None => None,
     };
 
     // Check that all input files have a package clause that matches the output package.
     for file in &in_pkg.files {
         let file_clause = match &file.package {
-            Some(clause) => &clause.name.name,
-            None => return Some(Error::from("current file does not have a package clause")),
+            Some(clause) => Some(&clause.name.name),
+            None => None,
         };
 
-        if pkg_clause != file_clause {
-            return Some(Error::from(format!(
-                "file's package clause: {} does not match package output package clause: {}",
-                file_clause, pkg_clause
-            )));
-        }
+        match (out_pkg_clause, file_clause) {
+            (Some(out_name), Some(in_name)) => {
+                if out_name != in_name {
+                    return Some(Error::from(format!(
+                        r#"file's package clause: "{}" does not match package output package clause: "{}""#,
+                        in_name, out_name
+                    )));
+                }
+            }
+            (None, Some(in_name)) => {
+                return Some(Error::from(format!(
+                    r#"output package does not have a package clause, but current file has package clause "{}""#,
+                    in_name
+                )))
+            }
+            (Some(out_name), None) => {
+                return Some(Error::from(format!(
+                    r#"current file does not have a package clause, but output package has package clause "{}""#,
+                    out_name
+                )))
+            }
+            (None, None) => (),
+        };
     }
     out_pkg.files.append(&mut in_pkg.files);
     None
@@ -381,8 +398,8 @@ mod tests {
             files: vec![out_file.clone()],
         };
         let got_err = merge_packages(&mut out_pkg, &mut in_pkg).unwrap().msg;
-        let want_err = "output package does not have a package clause";
-        assert_eq!(want_err, got_err.to_string());
+        let want_err = r#"output package does not have a package clause, but current file has package clause "foo""#;
+        assert_eq!(got_err.to_string(), want_err);
     }
 
     #[test]
@@ -405,7 +422,30 @@ mod tests {
             files: vec![out_file.clone()],
         };
         let got_err = merge_packages(&mut out_pkg, &mut in_pkg).unwrap().msg;
-        let want_err = "current file does not have a package clause";
-        assert_eq!(want_err, got_err.to_string());
+        let want_err = r#"current file does not have a package clause, but output package has package clause "foo""#;
+        assert_eq!(got_err.to_string(), want_err);
+    }
+
+    #[test]
+    fn ok_no_pkg_clauses() {
+        let in_script = "a = 100\n";
+        let out_script = "b = a * a\n";
+        let in_file = crate::parser::parse_string("test", in_script);
+        let out_file = crate::parser::parse_string("test", out_script);
+        let mut in_pkg = ast::Package {
+            base: Default::default(),
+            path: "./test".to_string(),
+            package: "foo".to_string(),
+            files: vec![in_file.clone()],
+        };
+        let mut out_pkg = ast::Package {
+            base: Default::default(),
+            path: "./test".to_string(),
+            package: "foo".to_string(),
+            files: vec![out_file.clone()],
+        };
+        let result = merge_packages(&mut out_pkg, &mut in_pkg);
+        assert!(result.is_none());
+        assert_eq!(2, out_pkg.files.len());
     }
 }
