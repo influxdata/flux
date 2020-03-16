@@ -1,4 +1,4 @@
-package influxdb_test
+package v1_test
 
 import (
 	"net/url"
@@ -10,35 +10,39 @@ import (
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb/internal/testutil"
+	v1 "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"
 )
 
-func TestBuckets_NewQuery(t *testing.T) {
+func TestDatabases_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
-			Name: "buckets no args",
-			Raw:  `buckets()`,
+			Name: "databases no args",
+			Raw: `import "influxdata/influxdb/v1"
+v1.databases()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID:   "buckets0",
-						Spec: &influxdb.BucketsOpSpec{},
+						ID:   "databases0",
+						Spec: &v1.DatabasesOpSpec{},
 					},
 				},
 			},
 		},
 		{
-			Name:    "buckets unexpected arg",
-			Raw:     `buckets(chicken:"what is this?")`,
+			Name: "databases unexpected arg",
+			Raw: `import "influxdata/influxdb/v1"
+v1.databases(chicken:"what is this?")`,
 			WantErr: true,
 		},
 		{
-			Name: "buckets with host and token",
-			Raw:  `buckets(host: "http://localhost:9999", token: "mytoken")`,
+			Name: "databases with host and token",
+			Raw: `import "influxdata/influxdb/v1"
+v1.databases(host: "http://localhost:9999", token: "mytoken")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "buckets0",
-						Spec: &influxdb.BucketsOpSpec{
+						ID: "databases0",
+						Spec: &v1.DatabasesOpSpec{
 							Host:  stringPtr("http://localhost:9999"),
 							Token: stringPtr("mytoken"),
 						},
@@ -47,13 +51,14 @@ func TestBuckets_NewQuery(t *testing.T) {
 			},
 		},
 		{
-			Name: "buckets with org",
-			Raw:  `buckets(org: "influxdata")`,
+			Name: "databases with org",
+			Raw: `import "influxdata/influxdb/v1"
+v1.databases(org: "influxdata")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "buckets0",
-						Spec: &influxdb.BucketsOpSpec{
+						ID: "databases0",
+						Spec: &v1.DatabasesOpSpec{
 							Org: &influxdb.NameOrID{Name: "influxdata"},
 						},
 					},
@@ -61,13 +66,14 @@ func TestBuckets_NewQuery(t *testing.T) {
 			},
 		},
 		{
-			Name: "buckets with org id",
-			Raw:  `buckets(orgID: "97aa81cc0e247dc4")`,
+			Name: "databases with org id",
+			Raw: `import "influxdata/influxdb/v1"
+v1.databases(orgID: "97aa81cc0e247dc4")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID: "buckets0",
-						Spec: &influxdb.BucketsOpSpec{
+						ID: "databases0",
+						Spec: &v1.DatabasesOpSpec{
 							Org: &influxdb.NameOrID{ID: "97aa81cc0e247dc4"},
 						},
 					},
@@ -84,32 +90,33 @@ func TestBuckets_NewQuery(t *testing.T) {
 	}
 }
 
-func TestBuckets_Run(t *testing.T) {
+func TestDatabases_Run(t *testing.T) {
 	defaultTablesFn := func() []*executetest.Table {
 		return []*executetest.Table{{
 			KeyCols: []string{"organizationID"},
 			ColMeta: []flux.ColMeta{
 				{Label: "organizationID", Type: flux.TString},
-				{Label: "name", Type: flux.TString},
-				{Label: "id", Type: flux.TString},
+				{Label: "databaseName", Type: flux.TString},
 				{Label: "retentionPolicy", Type: flux.TString},
 				{Label: "retentionPeriod", Type: flux.TInt},
+				{Label: "default", Type: flux.TBool},
+				{Label: "bucketID", Type: flux.TString},
 			},
 			Data: [][]interface{}{
-				{"97aa81cc0e247dc4", "telegraf", "1e01ac57da723035", nil, int64(0)},
+				{"97aa81cc0e247dc4", "telegraf", "autogen", int64(0), true, "1e01ac57da723035"},
 			},
 		}}
 	}
 
 	for _, tt := range []struct {
 		name string
-		spec *influxdb.BucketsRemoteProcedureSpec
+		spec *v1.DatabasesRemoteProcedureSpec
 		want testutil.Want
 	}{
 		{
 			name: "basic query",
-			spec: &influxdb.BucketsRemoteProcedureSpec{
-				BucketsProcedureSpec: &influxdb.BucketsProcedureSpec{
+			spec: &v1.DatabasesRemoteProcedureSpec{
+				DatabasesProcedureSpec: &v1.DatabasesProcedureSpec{
 					Org:   &influxdb.NameOrID{Name: "influxdata"},
 					Token: stringPtr("mytoken"),
 				},
@@ -125,10 +132,16 @@ func TestBuckets_Run(t *testing.T) {
 						Package: &ast.PackageClause{
 							Name: &ast.Identifier{Name: "main"},
 						},
+						Imports: []*ast.ImportDeclaration{{
+							Path: &ast.StringLiteral{Value: "influxdata/influxdb/v1"},
+						}},
 						Body: []ast.Statement{
 							&ast.ExpressionStatement{
 								Expression: &ast.CallExpression{
-									Callee: &ast.Identifier{Name: "buckets"},
+									Callee: &ast.MemberExpression{
+										Object:   &ast.Identifier{Name: "v1"},
+										Property: &ast.Identifier{Name: "databases"},
+									},
 								},
 							},
 						},
@@ -144,29 +157,33 @@ func TestBuckets_Run(t *testing.T) {
 	}
 }
 
-func TestBuckets_Run_Errors(t *testing.T) {
-	testutil.RunSourceErrorTestHelper(t, &influxdb.BucketsRemoteProcedureSpec{
-		BucketsProcedureSpec: &influxdb.BucketsProcedureSpec{
+func TestDatabases_Run_Errors(t *testing.T) {
+	testutil.RunSourceErrorTestHelper(t, &v1.DatabasesRemoteProcedureSpec{
+		DatabasesProcedureSpec: &v1.DatabasesProcedureSpec{
 			Org:   &influxdb.NameOrID{Name: "influxdata"},
 			Token: stringPtr("mytoken"),
 		},
 	})
 }
 
-func TestBuckets_URLValidator(t *testing.T) {
-	testutil.RunSourceURLValidatorTestHelper(t, &influxdb.BucketsRemoteProcedureSpec{
-		BucketsProcedureSpec: &influxdb.BucketsProcedureSpec{
+func TestDatabases_URLValidator(t *testing.T) {
+	testutil.RunSourceURLValidatorTestHelper(t, &v1.DatabasesRemoteProcedureSpec{
+		DatabasesProcedureSpec: &v1.DatabasesProcedureSpec{
 			Org:   &influxdb.NameOrID{Name: "influxdata"},
 			Token: stringPtr("mytoken"),
 		},
 	})
 }
 
-func TestBuckets_HTTPClient(t *testing.T) {
-	testutil.RunSourceHTTPClientTestHelper(t, &influxdb.BucketsRemoteProcedureSpec{
-		BucketsProcedureSpec: &influxdb.BucketsProcedureSpec{
+func TestDatabases_HTTPClient(t *testing.T) {
+	testutil.RunSourceHTTPClientTestHelper(t, &v1.DatabasesRemoteProcedureSpec{
+		DatabasesProcedureSpec: &v1.DatabasesProcedureSpec{
 			Org:   &influxdb.NameOrID{Name: "influxdata"},
 			Token: stringPtr("mytoken"),
 		},
 	})
+}
+
+func stringPtr(v string) *string {
+	return &v
 }

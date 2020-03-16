@@ -4,22 +4,13 @@
 package influxdb
 
 import (
-	"bytes"
-	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"net/url"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
@@ -63,7 +54,7 @@ func init() {
 func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	spec := new(FromOpSpec)
 
-	if b, ok, err := getNameOrID(args, "bucket", "bucketID"); err != nil {
+	if b, ok, err := GetNameOrID(args, "bucket", "bucketID"); err != nil {
 		return nil, err
 	} else if !ok {
 		return nil, errors.New(codes.Invalid, "must specify only one of bucket or bucketID")
@@ -71,7 +62,7 @@ func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		spec.Bucket = b
 	}
 
-	if o, ok, err := getNameOrID(args, "org", "orgID"); err != nil {
+	if o, ok, err := GetNameOrID(args, "org", "orgID"); err != nil {
 		return nil, err
 	} else if ok {
 		spec.Org = &o
@@ -91,7 +82,7 @@ func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	return spec, nil
 }
 
-func getNameOrID(args flux.Arguments, nameParam, idParam string) (NameOrID, bool, error) {
+func GetNameOrID(args flux.Arguments, nameParam, idParam string) (NameOrID, bool, error) {
 	name, nameOk, err := args.GetString(nameParam)
 	if err != nil {
 		return NameOrID{}, false, err
@@ -115,6 +106,8 @@ func newFromOp() flux.OperationSpec {
 func (s *FromOpSpec) Kind() flux.OperationKind {
 	return FromKind
 }
+
+var _ ProcedureSpec = (*FromProcedureSpec)(nil)
 
 type FromProcedureSpec struct {
 	plan.DefaultCost
@@ -148,6 +141,13 @@ func (s *FromProcedureSpec) Copy() plan.ProcedureSpec {
 	*ns = *s
 	return ns
 }
+
+func (s *FromProcedureSpec) SetOrg(org *NameOrID)   { s.Org = org }
+func (s *FromProcedureSpec) SetHost(host *string)   { s.Host = host }
+func (s *FromProcedureSpec) SetToken(token *string) { s.Token = token }
+func (s *FromProcedureSpec) GetOrg() *NameOrID      { return s.Org }
+func (s *FromProcedureSpec) GetHost() *string       { return s.Host }
+func (s *FromProcedureSpec) GetToken() *string      { return s.Token }
 
 func (s *FromProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
 	// This condition should never be met.
@@ -205,163 +205,17 @@ func (s *FromRemoteProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
 	return nil
 }
 
-type source struct {
-	id      execute.DatasetID
-	spec    *FromRemoteProcedureSpec
-	deps    flux.Dependencies
-	mem     *memory.Allocator
-	ts      execute.TransformationSet
-	imports map[string]*ast.ImportDeclaration
-}
-
 func createFromSource(ps plan.ProcedureSpec, id execute.DatasetID, a execute.Administration) (execute.Source, error) {
 	spec := ps.(*FromRemoteProcedureSpec)
 	if spec.Range == nil {
 		return nil, errors.Newf(codes.Invalid, "bounds must be set")
 	}
-
-	// These parameters are only required for the remote influxdb
-	// source. If running flux within influxdb, these aren't
-	// required.
-	if spec.Org == nil {
-		return nil, errors.Newf(codes.Invalid, "org must be set")
-	}
-
-	deps := flux.GetDependencies(a.Context())
-	s := &source{
-		id:   id,
-		spec: spec,
-		deps: deps,
-		mem:  a.Allocator(),
-	}
-
-	if err := s.validateHost(*spec.Host); err != nil {
-		return nil, err
-	}
-	return s, nil
+	return CreateSource(id, spec, a)
 }
 
-func (s *source) AddTransformation(t execute.Transformation) {
-	s.ts = append(s.ts, t)
-}
-
-func (s *source) Run(ctx context.Context) {
-	err := s.run(ctx)
-	s.ts.Finish(s.id, err)
-}
-
-func (s *source) run(ctx context.Context) error {
-	req, err := s.newRequest(ctx)
-	if err != nil {
-		return err
-	}
-
-	client, err := s.deps.HTTPClient()
-	if err != nil {
-		return err
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	} else if resp.StatusCode != 200 {
-		data, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return errors.Newf(codes.Invalid, "error when reading response body: %s", err)
-		}
-		return s.parseError(data)
-	}
-	return s.processResults(resp.Body)
-}
-
-func (s *source) validateHost(host string) error {
-	validator, err := s.deps.URLValidator()
-	if err != nil {
-		return err
-	}
-
-	u, err := url.Parse(host)
-	if err != nil {
-		return err
-	}
-	return validator.Validate(u)
-}
-
-func (s *source) newRequest(ctx context.Context) (*http.Request, error) {
-	u, err := url.Parse(*s.spec.Host)
-	if err != nil {
-		return nil, err
-	}
-	u.Path += "/api/v2/query"
-	u.RawQuery = func() string {
-		params := make(url.Values)
-		if s.spec.Org.ID != "" {
-			params.Set("orgID", s.spec.Org.ID)
-		} else {
-			params.Set("org", s.spec.Org.Name)
-		}
-		return params.Encode()
-	}()
-
-	// Validate that the produced url is allowed.
-	urlv, err := s.deps.URLValidator()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := urlv.Validate(u); err != nil {
-		return nil, err
-	}
-
-	body, err := s.newRequestBody()
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", u.String(), bytes.NewReader(body))
-	if err != nil {
-		return nil, err
-	}
-	if s.spec.Token != nil {
-		req.Header.Set("Authorization", "Token "+*s.spec.Token)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	return req.WithContext(ctx), nil
-}
-
-func (s *source) newRequestBody() ([]byte, error) {
-	var req struct {
-		AST     *ast.Package `json:"ast"`
-		Dialect struct {
-			Header         bool     `json:"header"`
-			DateTimeFormat string   `json:"dateTimeFormat"`
-			Annotations    []string `json:"annotations"`
-		} `json:"dialect"`
-	}
-	// Build the query. This needs to be done first to build
-	// up the list of imports.
-	query := s.buildQuery()
-	req.AST = &ast.Package{
-		Package: "main",
-		Files: []*ast.File{{
-			Package: &ast.PackageClause{
-				Name: &ast.Identifier{Name: "main"},
-			},
-			Imports: s.getImports(),
-			Name:    "query.flux",
-			Body: []ast.Statement{
-				&ast.ExpressionStatement{Expression: query},
-			},
-		}},
-	}
-	req.Dialect.Header = true
-	req.Dialect.DateTimeFormat = "RFC3339Nano"
-	req.Dialect.Annotations = []string{"group", "datatype", "default"}
-	return json.Marshal(req)
-}
-
-func (s *source) buildQuery() ast.Expression {
-	expr := &ast.PipeExpression{
+func (s *FromRemoteProcedureSpec) BuildQuery() *ast.File {
+	imports := make(map[string]*ast.ImportDeclaration)
+	query := &ast.PipeExpression{
 		Argument: &ast.CallExpression{
 			Callee:    &ast.Identifier{Name: "from"},
 			Arguments: []ast.Expression{s.fromArgs()},
@@ -371,30 +225,46 @@ func (s *source) buildQuery() ast.Expression {
 			Arguments: []ast.Expression{s.rangeArgs()},
 		},
 	}
-	for _, ps := range s.spec.Transformations {
-		expr = &ast.PipeExpression{
-			Argument: expr,
-			Call:     s.toAST(ps),
+	for _, ps := range s.Transformations {
+		query = &ast.PipeExpression{
+			Argument: query,
+			Call:     s.toAST(ps, imports),
 		}
 	}
-	return expr
+	file := &ast.File{
+		Package: &ast.PackageClause{
+			Name: &ast.Identifier{Name: "main"},
+		},
+		Name: "query.flux",
+		Body: []ast.Statement{
+			&ast.ExpressionStatement{Expression: query},
+		},
+	}
+
+	if len(imports) > 0 {
+		file.Imports = make([]*ast.ImportDeclaration, 0, len(imports))
+		for _, decl := range imports {
+			file.Imports = append(file.Imports, decl)
+		}
+	}
+	return file
 }
 
-func (s *source) fromArgs() *ast.ObjectExpression {
+func (s *FromRemoteProcedureSpec) fromArgs() *ast.ObjectExpression {
 	var arg ast.Property
-	if s.spec.Bucket.ID != "" {
+	if s.Bucket.ID != "" {
 		arg.Key = &ast.Identifier{Name: "bucketID"}
-		arg.Value = &ast.StringLiteral{Value: s.spec.Bucket.ID}
+		arg.Value = &ast.StringLiteral{Value: s.Bucket.ID}
 	} else {
 		arg.Key = &ast.Identifier{Name: "bucket"}
-		arg.Value = &ast.StringLiteral{Value: s.spec.Bucket.Name}
+		arg.Value = &ast.StringLiteral{Value: s.Bucket.Name}
 	}
 	return &ast.ObjectExpression{
 		Properties: []*ast.Property{&arg},
 	}
 }
 
-func (s *source) rangeArgs() *ast.ObjectExpression {
+func (s *FromRemoteProcedureSpec) rangeArgs() *ast.ObjectExpression {
 	toLiteral := func(t flux.Time) ast.Expression {
 		if t.IsRelative {
 			// TODO(jsternberg): This seems wrong. Relative should be a values.Duration
@@ -417,58 +287,27 @@ func (s *source) rangeArgs() *ast.ObjectExpression {
 	args := make([]*ast.Property, 0, 2)
 	args = append(args, &ast.Property{
 		Key:   &ast.Identifier{Name: "start"},
-		Value: toLiteral(s.spec.Range.Bounds.Start),
+		Value: toLiteral(s.Range.Bounds.Start),
 	})
-	if stop := s.spec.Range.Bounds.Stop; !stop.IsZero() && !(stop.IsRelative && stop.Relative == 0) {
+	if stop := s.Range.Bounds.Stop; !stop.IsZero() && !(stop.IsRelative && stop.Relative == 0) {
 		args = append(args, &ast.Property{
 			Key:   &ast.Identifier{Name: "stop"},
-			Value: toLiteral(s.spec.Range.Bounds.Stop),
+			Value: toLiteral(s.Range.Bounds.Stop),
 		})
 	}
 	return &ast.ObjectExpression{Properties: args}
 }
 
-func (s *source) processResults(r io.ReadCloser) error {
-	defer func() { _ = r.Close() }()
-
-	config := csv.ResultDecoderConfig{Allocator: s.mem}
-	dec := csv.NewMultiResultDecoder(config)
-	results, err := dec.Decode(r)
-	if err != nil {
-		return err
-	}
-	defer results.Release()
-
-	for results.More() {
-		res := results.Next()
-		if err := res.Tables().Do(func(table flux.Table) error {
-			return s.ts.Process(s.id, table)
-		}); err != nil {
-			return err
-		}
-	}
-	results.Release()
-	return results.Err()
-}
-
-func (s *source) parseError(p []byte) error {
-	var e interface{}
-	if err := json.Unmarshal(p, &e); err != nil {
-		return err
-	}
-	return handleError(e)
-}
-
-func (s *source) toAST(spec plan.ProcedureSpec) *ast.CallExpression {
+func (s *FromRemoteProcedureSpec) toAST(spec plan.ProcedureSpec, imports map[string]*ast.ImportDeclaration) *ast.CallExpression {
 	switch spec := spec.(type) {
 	case *universe.FilterProcedureSpec:
-		return s.filterToAST(spec)
+		return s.filterToAST(spec, imports)
 	default:
 		panic(fmt.Sprintf("unable to convert procedure spec of type %T to ast", spec))
 	}
 }
 
-func (s *source) filterToAST(spec *universe.FilterProcedureSpec) *ast.CallExpression {
+func (s *FromRemoteProcedureSpec) filterToAST(spec *universe.FilterProcedureSpec, imports map[string]*ast.ImportDeclaration) *ast.CallExpression {
 	// Iterate through the scope and include any imports.
 	spec.Fn.Scope.Range(func(k string, v values.Value) {
 		pkg, ok := v.(values.Package)
@@ -480,7 +319,7 @@ func (s *source) filterToAST(spec *universe.FilterProcedureSpec) *ast.CallExpres
 		if pkgpath == "" {
 			return
 		}
-		s.includeImport(k, pkgpath)
+		s.includeImport(imports, k, pkgpath)
 	})
 
 	fn := semantic.ToAST(spec.Fn.Fn).(ast.Expression)
@@ -502,31 +341,16 @@ func (s *source) filterToAST(spec *universe.FilterProcedureSpec) *ast.CallExpres
 	}
 }
 
-func (s *source) includeImport(name, path string) {
+func (s *FromRemoteProcedureSpec) includeImport(imports map[string]*ast.ImportDeclaration, name, path string) {
 	// Look to see if we have already included an import
 	// with this name.
-	if _, ok := s.imports[name]; ok {
+	if _, ok := imports[name]; ok {
 		return
 	}
 
-	if s.imports == nil {
-		s.imports = make(map[string]*ast.ImportDeclaration)
-	}
 	decl := &ast.ImportDeclaration{
 		Path: &ast.StringLiteral{Value: path},
 		As:   &ast.Identifier{Name: name},
 	}
-	s.imports[name] = decl
-}
-
-func (s *source) getImports() []*ast.ImportDeclaration {
-	if len(s.imports) == 0 {
-		return nil
-	}
-
-	decls := make([]*ast.ImportDeclaration, 0, len(s.imports))
-	for _, decl := range s.imports {
-		decls = append(decls, decl)
-	}
-	return decls
+	imports[name] = decl
 }
