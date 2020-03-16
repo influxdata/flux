@@ -80,6 +80,27 @@ func (p MergeRemoteFilterRule) Rewrite(node plan.Node) (plan.Node, bool, error) 
 	return n, true, nil
 }
 
+type BucketsRemoteRule struct{}
+
+func (p BucketsRemoteRule) Name() string {
+	return "influxdata/influxdb.BucketsRemoteRule"
+}
+
+func (p BucketsRemoteRule) Pattern() plan.Pattern {
+	return plan.Pat(BucketsKind)
+}
+
+func (p BucketsRemoteRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
+	spec := node.ProcedureSpec().(*BucketsProcedureSpec)
+	if spec.Host == nil {
+		return node, false, nil
+	}
+
+	return plan.CreatePhysicalNode("bucketsRemote", &BucketsRemoteProcedureSpec{
+		BucketsProcedureSpec: spec,
+	}), true, nil
+}
+
 // DefaultFromAttributes is used to inject default attributes
 // for the various from attributes.
 //
@@ -96,22 +117,26 @@ func (d DefaultFromAttributes) Name() string {
 }
 
 func (d DefaultFromAttributes) Pattern() plan.Pattern {
-	return plan.Pat(FromKind)
+	return plan.Any()
 }
 
 func (d DefaultFromAttributes) Rewrite(n plan.Node) (plan.Node, bool, error) {
-	spec := n.ProcedureSpec().(*FromProcedureSpec)
+	spec, ok := n.ProcedureSpec().(ProcedureSpec)
+	if !ok {
+		return n, false, nil
+	}
+
 	changed := false
-	if spec.Org == nil && d.Org != nil {
-		spec.Org = d.Org
+	if spec.GetOrg() == nil && d.Org != nil {
+		spec.SetOrg(d.Org)
 		changed = true
 	}
-	if spec.Token == nil && d.Token != nil {
-		spec.Token = d.Token
+	if spec.GetToken() == nil && d.Token != nil {
+		spec.SetToken(d.Token)
 		changed = true
 	}
-	if spec.Host == nil && d.Host != nil {
-		spec.Host = d.Host
+	if spec.GetHost() == nil && d.Host != nil {
+		spec.SetHost(d.Host)
 		changed = true
 	}
 	return n, changed, nil

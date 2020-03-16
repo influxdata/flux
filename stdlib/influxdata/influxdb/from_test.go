@@ -1,29 +1,20 @@
 package influxdb_test
 
 import (
-	"context"
-	"encoding/json"
-	"io"
-	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/csv"
-	urldeps "github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb/internal/testutil"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/valuestest"
@@ -139,12 +130,6 @@ func TestFrom_NewQuery(t *testing.T) {
 }
 
 func TestFrom_Run(t *testing.T) {
-	type want struct {
-		params url.Values
-		ast    *ast.Package
-		tables func() []*executetest.Table
-	}
-
 	defaultTablesFn := func() []*executetest.Table {
 		return []*executetest.Table{{
 			KeyCols: []string{"_measurement", "_field"},
@@ -168,7 +153,7 @@ func TestFrom_Run(t *testing.T) {
 	for _, tt := range []struct {
 		name string
 		spec *influxdb.FromRemoteProcedureSpec
-		want want
+		want testutil.Want
 	}{
 		{
 			name: "basic query",
@@ -190,11 +175,11 @@ func TestFrom_Run(t *testing.T) {
 					},
 				},
 			},
-			want: want{
-				params: url.Values{
+			want: testutil.Want{
+				Params: url.Values{
 					"org": []string{"influxdata"},
 				},
-				ast: &ast.Package{
+				Ast: &ast.Package{
 					Package: "main",
 					Files: []*ast.File{{
 						Name: "query.flux",
@@ -240,7 +225,7 @@ func TestFrom_Run(t *testing.T) {
 						},
 					}},
 				},
-				tables: defaultTablesFn,
+				Tables: defaultTablesFn,
 			},
 		},
 		{
@@ -263,11 +248,11 @@ func TestFrom_Run(t *testing.T) {
 					},
 				},
 			},
-			want: want{
-				params: url.Values{
+			want: testutil.Want{
+				Params: url.Values{
 					"orgID": []string{"97aa81cc0e247dc4"},
 				},
-				ast: &ast.Package{
+				Ast: &ast.Package{
 					Package: "main",
 					Files: []*ast.File{{
 						Name: "query.flux",
@@ -313,7 +298,7 @@ func TestFrom_Run(t *testing.T) {
 						},
 					}},
 				},
-				tables: defaultTablesFn,
+				Tables: defaultTablesFn,
 			},
 		},
 		{
@@ -335,11 +320,11 @@ func TestFrom_Run(t *testing.T) {
 					},
 				},
 			},
-			want: want{
-				params: url.Values{
+			want: testutil.Want{
+				Params: url.Values{
 					"org": []string{"influxdata"},
 				},
-				ast: &ast.Package{
+				Ast: &ast.Package{
 					Package: "main",
 					Files: []*ast.File{{
 						Name: "query.flux",
@@ -388,7 +373,7 @@ func TestFrom_Run(t *testing.T) {
 						},
 					}},
 				},
-				tables: defaultTablesFn,
+				Tables: defaultTablesFn,
 			},
 		},
 		{
@@ -419,11 +404,11 @@ func TestFrom_Run(t *testing.T) {
 					},
 				},
 			},
-			want: want{
-				params: url.Values{
+			want: testutil.Want{
+				Params: url.Values{
 					"org": []string{"influxdata"},
 				},
-				ast: &ast.Package{
+				Ast: &ast.Package{
 					Package: "main",
 					Files: []*ast.File{{
 						Name: "query.flux",
@@ -502,7 +487,7 @@ func TestFrom_Run(t *testing.T) {
 						},
 					}},
 				},
-				tables: defaultTablesFn,
+				Tables: defaultTablesFn,
 			},
 		},
 		{
@@ -534,11 +519,11 @@ func TestFrom_Run(t *testing.T) {
 					},
 				},
 			},
-			want: want{
-				params: url.Values{
+			want: testutil.Want{
+				Params: url.Values{
 					"org": []string{"influxdata"},
 				},
-				ast: &ast.Package{
+				Ast: &ast.Package{
 					Package: "main",
 					Files: []*ast.File{{
 						Name: "query.flux",
@@ -621,7 +606,7 @@ func TestFrom_Run(t *testing.T) {
 						},
 					}},
 				},
-				tables: defaultTablesFn,
+				Tables: defaultTablesFn,
 			},
 		},
 		{
@@ -670,11 +655,11 @@ import "math"
 					},
 				},
 			},
-			want: want{
-				params: url.Values{
+			want: testutil.Want{
+				Params: url.Values{
 					"org": []string{"influxdata"},
 				},
-				ast: &ast.Package{
+				Ast: &ast.Package{
 					Package: "main",
 					Files: []*ast.File{{
 						Name: "query.flux",
@@ -766,230 +751,42 @@ import "math"
 						},
 					}},
 				},
-				tables: defaultTablesFn,
+				Tables: defaultTablesFn,
 			},
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if want, got := "/api/v2/query", r.URL.Path; want != got {
-					t.Errorf("unexpected query path -want/+got:\n- %q\n+ %q", want, got)
-				}
-				if want, got := tt.want.params, r.URL.Query(); !cmp.Equal(want, got) {
-					t.Errorf("unexpected query params -want/+got:\n%s", cmp.Diff(want, got))
-				}
-				if want, got := "application/json", r.Header.Get("Content-Type"); want != got {
-					t.Errorf("unexpected query content type -want/+got:\n- %q\n+ %q", want, got)
-					return
-				}
-
-				var req struct {
-					AST     *ast.Package `json:"ast"`
-					Dialect struct {
-						Header         bool     `json:"header"`
-						DateTimeFormat string   `json:"dateTimeFormat"`
-						Annotations    []string `json:"annotations"`
-					} `json:"dialect"`
-				}
-				if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-					t.Errorf("client did not send json: %s", err)
-					return
-				}
-
-				if want, got := tt.want.ast, req.AST; !cmp.Equal(want, got) {
-					t.Errorf("unexpected ast in request body -want/+got:\n%s", cmp.Diff(want, got))
-				}
-
-				w.Header().Add("Content-Type", "text/csv")
-				results := flux.NewSliceResultIterator([]flux.Result{
-					&executetest.Result{
-						Nm:   "_result",
-						Tbls: tt.want.tables(),
-					},
-				})
-				enc := csv.NewMultiResultEncoder(csv.ResultEncoderConfig{
-					Annotations: req.Dialect.Annotations,
-					NoHeader:    !req.Dialect.Header,
-					Delimiter:   ',',
-				})
-				if _, err := enc.Encode(w, results); err != nil {
-					t.Errorf("error encoding results: %s", err)
-				}
-			}))
-			defer server.Close()
-
-			spec := tt.spec.Copy().(*influxdb.FromRemoteProcedureSpec)
-			spec.Host = stringPtr(server.URL)
-
-			deps := flux.NewDefaultDependencies()
-			ctx := deps.Inject(context.Background())
-			store := executetest.NewDataStore()
-			s, err := influxdb.CreateSource(ctx, spec)
-			if err != nil {
-				t.Fatal(err)
-			}
-			s.AddTransformation(store)
-			s.Run(context.Background())
-
-			if err := store.Err(); err != nil {
-				t.Fatal(err)
-			}
-
-			got, err := executetest.TablesFromCache(store)
-			if err != nil {
-				t.Fatal(err)
-			}
-			executetest.NormalizeTables(got)
-
-			want := tt.want.tables()
-			executetest.NormalizeTables(want)
-
-			if !cmp.Equal(want, got) {
-				t.Errorf("unexpected tables returned from server -want/+got:\n%s", cmp.Diff(want, got))
-			}
+			testutil.RunSourceTestHelper(t, tt.spec, tt.want)
 		})
 	}
 }
 
 func TestFrom_Run_Errors(t *testing.T) {
-	for _, tt := range []struct {
-		name string
-		fn   func(w http.ResponseWriter)
-		want error
-	}{
-		{
-			name: "internal error",
-			fn: func(w http.ResponseWriter) {
-				w.WriteHeader(http.StatusInternalServerError)
-				_, _ = io.WriteString(w, `{"code":"internal error","message":"An internal error has occurred"}`)
-			},
-			want: errors.New(codes.Internal, "An internal error has occurred"),
+	testutil.RunSourceErrorTestHelper(t, &influxdb.FromRemoteProcedureSpec{
+		FromProcedureSpec: &influxdb.FromProcedureSpec{
+			Org:    &influxdb.NameOrID{Name: "influxdata"},
+			Bucket: influxdb.NameOrID{Name: "telegraf"},
+			Token:  stringPtr("mytoken"),
 		},
-		{
-			name: "not found",
-			fn: func(w http.ResponseWriter) {
-				w.WriteHeader(http.StatusNotFound)
-				_, _ = io.WriteString(w, `{"code":"not found","message":"bucket not found"}`)
-			},
-			want: errors.New(codes.NotFound, "bucket not found"),
-		},
-		{
-			name: "invalid",
-			fn: func(w http.ResponseWriter) {
-				w.WriteHeader(http.StatusBadRequest)
-				_, _ = io.WriteString(w, `{"code":"invalid","message":"query was invalid"}`)
-			},
-			want: errors.New(codes.Invalid, "query was invalid"),
-		},
-		{
-			name: "unavailable",
-			fn: func(w http.ResponseWriter) {
-				w.WriteHeader(http.StatusServiceUnavailable)
-				_, _ = io.WriteString(w, `{"code":"unavailable","message":"service unavailable"}`)
-			},
-			want: errors.New(codes.Unavailable, "service unavailable"),
-		},
-		{
-			name: "forbidden",
-			fn: func(w http.ResponseWriter) {
-				w.WriteHeader(http.StatusForbidden)
-				_, _ = io.WriteString(w, `{"code":"forbidden","message":"user does not have access to bucket"}`)
-			},
-			want: errors.New(codes.PermissionDenied, "user does not have access to bucket"),
-		},
-		{
-			name: "unauthorized",
-			fn: func(w http.ResponseWriter) {
-				w.WriteHeader(http.StatusUnauthorized)
-				_, _ = io.WriteString(w, `{"code":"unauthorized","message":"credentials required"}`)
-			},
-			want: errors.New(codes.Unauthenticated, "credentials required"),
-		},
-		{
-			name: "nested influxdb error",
-			fn: func(w http.ResponseWriter) {
-				w.WriteHeader(http.StatusBadRequest)
-				_, _ = io.WriteString(w, `{"code":"invalid","message":"query was invalid","error":{"code":"not found","message":"resource not found"}}`)
-			},
-			want: errors.Wrap(
-				errors.New(codes.NotFound, "resource not found"),
-				codes.Invalid,
-				"query was invalid",
-			),
-		},
-		{
-			name: "nested internal error",
-			fn: func(w http.ResponseWriter) {
-				w.WriteHeader(http.StatusBadRequest)
-				_, _ = io.WriteString(w, `{"code":"invalid","message":"query was invalid","error":"internal error"}`)
-			},
-			want: errors.Wrap(
-				errors.New(codes.Unknown, "internal error"),
-				codes.Invalid,
-				"query was invalid",
-			),
-		},
-	} {
-		t.Run(tt.name, func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				tt.fn(w)
-			}))
-			defer server.Close()
-
-			spec := &influxdb.FromRemoteProcedureSpec{
-				FromProcedureSpec: &influxdb.FromProcedureSpec{
-					Org:    &influxdb.NameOrID{Name: "influxdata"},
-					Bucket: influxdb.NameOrID{Name: "telegraf"},
-					Host:   stringPtr(server.URL),
-					Token:  stringPtr("mytoken"),
+		Range: &universe.RangeProcedureSpec{
+			Bounds: flux.Bounds{
+				Start: flux.Time{
+					IsRelative: true,
+					Relative:   -time.Minute,
 				},
-				Range: &universe.RangeProcedureSpec{
-					Bounds: flux.Bounds{
-						Start: flux.Time{
-							IsRelative: true,
-							Relative:   -time.Minute,
-						},
-						Stop: flux.Time{
-							IsRelative: true,
-						},
-					},
+				Stop: flux.Time{
+					IsRelative: true,
 				},
-			}
-
-			deps := flux.NewDefaultDependencies()
-			ctx := deps.Inject(context.Background())
-			store := executetest.NewDataStore()
-			s, err := influxdb.CreateSource(ctx, spec)
-			if err != nil {
-				t.Fatal(err)
-			}
-			s.AddTransformation(store)
-			s.Run(context.Background())
-
-			got := store.Err()
-			if got == nil {
-				t.Fatal("expected error")
-			}
-			want := tt.want
-
-			if !cmp.Equal(want, got) {
-				t.Errorf("unexpected error:\n%s", cmp.Diff(want, got))
-			}
-		})
-	}
+			},
+		},
+	})
 }
 
 func TestFrom_URLValidator(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t.Error("received unexpected request")
-	}))
-	defer server.Close()
-
-	spec := &influxdb.FromRemoteProcedureSpec{
+	testutil.RunSourceURLValidatorTestHelper(t, &influxdb.FromRemoteProcedureSpec{
 		FromProcedureSpec: &influxdb.FromProcedureSpec{
 			Org:    &influxdb.NameOrID{Name: "influxdata"},
 			Bucket: influxdb.NameOrID{Name: "telegraf"},
-			Host:   stringPtr(server.URL),
 			Token:  stringPtr("mytoken"),
 		},
 		Range: &universe.RangeProcedureSpec{
@@ -1003,27 +800,14 @@ func TestFrom_URLValidator(t *testing.T) {
 				},
 			},
 		},
-	}
-
-	deps := flux.NewDefaultDependencies()
-	deps.Deps.URLValidator = urldeps.PrivateIPValidator{}
-	ctx := deps.Inject(context.Background())
-	if _, err := influxdb.CreateSource(ctx, spec); err == nil {
-		t.Fatal("expected error")
-	}
+	})
 }
 
 func TestFrom_HTTPClient(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(""))
-	}))
-	defer server.Close()
-
-	spec := &influxdb.FromRemoteProcedureSpec{
+	testutil.RunSourceHTTPClientTestHelper(t, &influxdb.FromRemoteProcedureSpec{
 		FromProcedureSpec: &influxdb.FromProcedureSpec{
 			Org:    &influxdb.NameOrID{Name: "influxdata"},
 			Bucket: influxdb.NameOrID{Name: "telegraf"},
-			Host:   stringPtr(server.URL),
 			Token:  stringPtr("mytoken"),
 		},
 		Range: &universe.RangeProcedureSpec{
@@ -1037,29 +821,7 @@ func TestFrom_HTTPClient(t *testing.T) {
 				},
 			},
 		},
-	}
-
-	counter := &RequestCounter{}
-	deps := flux.NewDefaultDependencies()
-	deps.Deps.HTTPClient = &http.Client{
-		Transport: counter,
-	}
-	ctx := deps.Inject(context.Background())
-	store := executetest.NewDataStore()
-	s, err := influxdb.CreateSource(ctx, spec)
-	if err != nil {
-		t.Fatal(err)
-	}
-	s.AddTransformation(store)
-	s.Run(context.Background())
-
-	if err := store.Err(); err != nil {
-		t.Fatal(err)
-	}
-
-	if counter.Count == 0 {
-		t.Error("custom http client was not used")
-	}
+	})
 }
 
 func stringPtr(v string) *string {
@@ -1072,13 +834,4 @@ func mustParseTime(v string) time.Time {
 		panic(err)
 	}
 	return t
-}
-
-type RequestCounter struct {
-	Count int
-}
-
-func (r *RequestCounter) RoundTrip(req *http.Request) (*http.Response, error) {
-	r.Count++
-	return http.DefaultTransport.RoundTrip(req)
 }

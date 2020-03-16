@@ -117,7 +117,12 @@ pub fn builtins() -> Builtins<'static> {
                 // https://github.com/influxdata/flux/issues/2250
                 "json" => "forall [t0] where t0: Row (?json: string, ?file: string) -> [t0]",
                 "databases" => r#"
-                    forall [] () -> [{
+                    forall [] (
+                        ?org: string,
+                        ?orgID: string,
+                        ?host: string,
+                        ?token: string
+                    ) -> [{
                         organizationID: string |
                         databaseName: string |
                         retentionPolicy: string |
@@ -157,7 +162,12 @@ pub fn builtins() -> Builtins<'static> {
                     ) -> [t0]
                 "#,
                 "buckets" => r#"
-                    forall [] () -> [{
+                    forall [] (
+                        ?org: string,
+                        ?orgID: string,
+                        ?host: string,
+                        ?token: string
+                    ) -> [{
                         name: string |
                         id: string |
                         organizationID: string |
