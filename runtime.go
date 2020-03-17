@@ -33,8 +33,14 @@ type Runtime interface {
 	LookupBuiltinType(pkg, name string) (semantic.MonoType, error)
 }
 
+// ASTHandle is an opaque type that represents an abstract syntax tree.
 type ASTHandle interface {
+	// ASTHandle is a no-op method whose purpose is to avoid types unintentionally
+	// implementing this interface.
 	ASTHandle()
+
+	// GetError will return the first error encountered when parsing Flux source code,
+	// if any.
 	GetError() error
 }
 
