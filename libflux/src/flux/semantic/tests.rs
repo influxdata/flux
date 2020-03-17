@@ -39,7 +39,7 @@ use crate::parser::parse_string;
 use colored::*;
 
 fn parse_program(src: &str) -> ast::Package {
-    let file = parse_string("program", src);
+    let file = parse_string("", src);
 
     ast::Package {
         base: file.base.clone(),
@@ -258,6 +258,34 @@ macro_rules! test_infer_err {
                     .fold(String::new(), |acc, (name, poly)| acc
                         + &format!("\t{}: {}\n", name, poly))
             )
+        }
+    }};
+}
+
+/// The test_error_msg! macro generates test cases for checking the error
+/// messages produced by the type checker.
+///
+/// # Example
+///
+/// ```
+/// #[test]
+/// test_error_msg! {
+///     src: r#"
+///         1 + "1"
+///     "#,
+///     err: "type error: @2:17-2:20 int != string",
+/// }
+/// ```
+///
+macro_rules! test_error_msg {
+    ( src: $src:expr $(,)?, err: $err:expr $(,)? ) => {{
+        match infer_types($src, HashMap::new(), HashMap::new(), None) {
+            Err(e) => {
+                if e.to_string() != $err {
+                    panic!("\n\nexpected error:\n\t{}\n\ngot error:\n\t{}\n\n", $err, e)
+                }
+            }
+            Ok(_) => panic!("expected error, instead program passed type checking"),
         }
     }};
 }
@@ -3209,5 +3237,99 @@ fn function_default_arguments_and_pipes() {
             "y" => "forall [] int",
             "v" => "forall [] {r: string | s: float}",
         ],
+    }
+}
+#[test]
+fn test_error_messages() {
+    test_error_msg! {
+        src: r#"
+            1 + "1"
+        "#,
+        // Location points to right expression expression
+        err: "type error: @2:17-2:20 int != string",
+    }
+    test_error_msg! {
+        src: r#"
+            -"s"
+        "#,
+        // Location points to argument of unary expression
+        err: "type error: @2:14-2:17 string is not Negatable",
+    }
+    test_error_msg! {
+        src: r#"
+            1h + 2h
+        "#,
+        // Location points to entire binary expression
+        err: "type error: @2:13-2:20 duration is not Addable",
+    }
+    test_error_msg! {
+        src: r#"
+            bob = "Bob"
+            joe = 0
+            "Hey ${bob} it's me ${joe}!"
+        "#,
+        // Location points to second interpolated expression
+        err: "type error: @4:35-4:38 int != string",
+    }
+    test_error_msg! {
+        src: r#"
+            if 0 then "a" else "b"
+        "#,
+        // Location points to if expression
+        err: "type error: @2:16-2:17 int != bool",
+    }
+    test_error_msg! {
+        src: r#"
+            if exists 0 then 0 else "b"
+        "#,
+        // Location points to else expression
+        err: "type error: @2:37-2:40 int != string",
+    }
+    test_error_msg! {
+        src: r#"
+            [1, "2"]
+        "#,
+        // Location points to second element of array
+        err: "type error: @2:17-2:20 string != int",
+    }
+    test_error_msg! {
+        src: r#"
+            a = [1, 2, 3]
+            a[1.1]
+        "#,
+        // Location points to expression representing the index
+        err: "type error: @3:15-3:18 float != int",
+    }
+    test_error_msg! {
+        src: r#"
+            a = [1, 2, 3]
+            a[1] + 1.1
+        "#,
+        // Location points to right expression
+        err: "type error: @3:20-3:23 int != float",
+    }
+    test_error_msg! {
+        src: r#"
+            a = [1, 2, 3]
+            a.x
+        "#,
+        // Location points to the identifier a
+        err: "type error: @3:13-3:14 [int] != {x:t6 | t8}",
+    }
+    test_error_msg! {
+        src: r#"
+            f = (x, y) => x - y
+            f(x: "x", y: "y")
+        "#,
+        // Location points to entire call expression
+        err: "type error: @3:13-3:30 @argument x: string is not Subtractable",
+    }
+    test_error_msg! {
+        src: r#"
+            f = (r) => r.a
+            f(r: {b: 1})
+        "#,
+        // Location points to entire call expression
+        err: "type error: @3:13-3:25 @argument r: {a:t12 | t11} != {b:int | {}}",
     }
 }
