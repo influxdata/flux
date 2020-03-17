@@ -21,6 +21,9 @@ from(bucket: "telegraf")
 	|> mean()
 `
 	ast := libflux.ParseString(text)
+	if err := ast.GetError(); err != nil {
+		t.Fatal(err)
+	}
 
 	jsonBuf, err := ast.MarshalJSON()
 	if err != nil {
@@ -35,6 +38,20 @@ from(bucket: "telegraf")
 	fmt.Printf("flatbuffer has %v bytes\n", len(fbBuf))
 
 	ast.Free()
+}
+
+func TestASTPkg_GetError(t *testing.T) {
+	src := `x = 1 + / 3`
+	ast := libflux.ParseString(src)
+	defer ast.Free()
+	err := ast.GetError()
+	if err == nil {
+		t.Fatal("expected parse error, got none")
+	}
+	if want, got := "error at @1:9-1:10: invalid expression: invalid token for primary expression: DIV", err.Error(); want != got {
+		t.Error("unexpected parse error; -want/+got:\n ", cmp.Diff(want, got))
+	}
+
 }
 
 func TestMergePackages(t *testing.T) {

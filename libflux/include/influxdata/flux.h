@@ -37,6 +37,9 @@ struct flux_ast_pkg_t;
 // return the AST representation of the query.
 struct flux_ast_pkg_t *flux_parse(const char *file_name, const char *flux_source);
 
+// flux_ast_get_error will return the first error in the AST, if any.
+struct flux_error_t *flux_ast_get_error(struct flux_ast_pkg_t *);
+
 // flux_free_ast_pkg will release the memory associated with the given pointer.
 void flux_free_ast_pkg(struct flux_ast_pkg_t *);
 

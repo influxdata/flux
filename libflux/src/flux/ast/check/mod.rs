@@ -20,6 +20,10 @@ pub fn check(node: walk::Node) -> Vec<Error> {
                     location: n.base.location.clone(),
                     message: format!("invalid statement: {}", n.text),
                 }),
+                walk::Node::BadExpr(n) => errors.push(Error {
+                    location: n.base.location.clone(),
+                    message: format!("invalid expression: {}", n.text),
+                }),
                 walk::Node::ObjectExpr(n) => {
                     let mut has_implicit = false;
                     let mut has_explicit = false;
@@ -70,6 +74,8 @@ impl fmt::Display for Error {
         write!(f, "error at {}: {}", self.location, self.message)
     }
 }
+
+impl std::error::Error for Error {}
 
 #[cfg(test)]
 mod tests;

@@ -24,17 +24,36 @@ fn test_object_check() {
 }
 
 #[test]
-fn test_bad_expr() {
-    let file = parse_string("bad_expr_test", "a = 1\nb = \nc=2");
+fn test_bad_stmt() {
+    let file = parse_string("bad_stmt_test", "a = 1\nb = \nc=2");
     let got = check(walk::Node::File(&file));
     let want = vec![Error {
         location: SourceLocation {
-            file: Some(String::from("bad_expr_test")),
+            file: Some(String::from("bad_stmt_test")),
             start: Position { line: 3, column: 2 },
             end: Position { line: 3, column: 3 },
             source: Some(String::from("=")),
         },
         message: String::from("invalid statement: ="),
+    }];
+    assert_eq!(want, got);
+}
+
+#[test]
+fn test_bad_expr() {
+    let file = parse_string("bad_expr_test", "a = 3 + / 10");
+    let got = check(walk::Node::File(&file));
+    let want = vec![Error {
+        location: SourceLocation {
+            file: Some(String::from("bad_expr_test")),
+            start: Position { line: 1, column: 9 },
+            end: Position {
+                line: 1,
+                column: 10,
+            },
+            source: Some(String::from("/")),
+        },
+        message: String::from("invalid expression: invalid token for primary expression: DIV"),
     }];
     assert_eq!(want, got);
 }

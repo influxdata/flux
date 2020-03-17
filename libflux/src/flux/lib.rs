@@ -124,6 +124,25 @@ pub unsafe extern "C" fn flux_parse(
     Box::new(pkg)
 }
 
+/// flux_ast_get_error returns the first error in the given AST.
+///
+/// # Safety
+///
+/// This funtion is unsafe because it dereferences a raw pointer.
+#[no_mangle]
+pub unsafe extern "C" fn flux_ast_get_error(
+    ast_pkg: *const ast::Package,
+) -> Option<Box<ErrorHandle>> {
+    let ast_pkg = ast::walk::Node::Package(&*ast_pkg);
+    let mut errs = ast::check::check(ast_pkg);
+    if !errs.is_empty() {
+        let err = Vec::remove(&mut errs, 0);
+        Some(Box::new(ErrorHandle { err: Box::new(err) }))
+    } else {
+        None
+    }
+}
+
 /// Frees an AST package.
 ///
 /// Note: we use the pattern described here: https://doc.rust-lang.org/std/boxed/index.html#memory-layout
@@ -328,7 +347,7 @@ pub fn merge_packages(out_pkg: &mut ast::Package, in_pkg: &mut ast::Package) -> 
 
 #[cfg(test)]
 mod tests {
-    use crate::{ast, merge_packages};
+    use crate::{ast, flux_ast_get_error, merge_packages};
 
     #[test]
     fn ok_merge_multi_file() {
@@ -447,5 +466,16 @@ mod tests {
         let result = merge_packages(&mut out_pkg, &mut in_pkg);
         assert!(result.is_none());
         assert_eq!(2, out_pkg.files.len());
+    }
+
+    #[test]
+    fn test_ast_get_error() {
+        let ast = crate::parser::parse_string("test", "x = 3 + / 10 - \"");
+        let ast = Box::into_raw(Box::new(ast.into()));
+        let errh = unsafe { flux_ast_get_error(ast) };
+        assert_eq!(
+            "error at test@1:9-1:10: invalid expression: invalid token for primary expression: DIV",
+            format!("{}", errh.unwrap().err)
+        );
     }
 }
