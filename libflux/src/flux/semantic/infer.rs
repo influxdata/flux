@@ -1,3 +1,4 @@
+use crate::ast::SourceLocation;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::sub::{Substitutable, Substitution};
@@ -16,8 +17,8 @@ use std::ops;
 //
 #[derive(Debug, PartialEq)]
 pub enum Constraint {
-    Kind(MonoType, Kind),
-    Equal(MonoType, MonoType),
+    Kind(MonoType, Kind, SourceLocation),
+    Equal(MonoType, MonoType, SourceLocation),
 }
 
 #[derive(Debug, PartialEq)]
@@ -70,16 +71,26 @@ pub fn solve(
     cons.0
         .iter()
         .try_fold(Substitution::empty(), |sub, constraint| match constraint {
-            Constraint::Kind(monotype, kind) => {
+            Constraint::Kind(monotype, kind, loc) => {
                 // Apply the current substitution to the type, then constrain
-                let s = monotype.clone().apply(&sub).constrain(*kind, with)?;
+                let s = match monotype.clone().apply(&sub).constrain(*kind, with) {
+                    Err(e) => Err(Error {
+                        msg: format!("type error: {} {}", loc, e),
+                    }),
+                    Ok(s) => Ok(s),
+                }?;
                 Ok(sub.merge(s))
             }
-            Constraint::Equal(first, second) => {
+            Constraint::Equal(first, second, loc) => {
                 // Apply the current substitution to the constraint, then unify
                 let l = first.clone().apply(&sub);
                 let r = second.clone().apply(&sub);
-                let s = l.unify(r, with, fresher)?;
+                let s = match l.unify(r, with, fresher) {
+                    Err(e) => Err(Error {
+                        msg: format!("type error: {} {}", loc, e),
+                    }),
+                    Ok(s) => Ok(s),
+                }?;
                 Ok(sub.merge(s))
             }
         })
@@ -114,7 +125,11 @@ pub fn generalize(env: &Environment, with: &HashMap<Tvar, Vec<Kind>>, t: MonoTyp
 //
 // Instantiation is what allows for polymorphic function specialization
 // based on the context in which a function is called.
-pub fn instantiate(poly: PolyType, f: &mut Fresher) -> (MonoType, Constraints) {
+pub fn instantiate(
+    poly: PolyType,
+    f: &mut Fresher,
+    loc: SourceLocation,
+) -> (MonoType, Constraints) {
     // Substitute fresh type variables for all quantified variables
     let sub: Substitution = poly
         .vars
@@ -129,37 +144,10 @@ pub fn instantiate(poly: PolyType, f: &mut Fresher) -> (MonoType, Constraints) {
         .fold(Constraints::empty(), |cons, (tv, kinds)| {
             cons + kinds
                 .into_iter()
-                .map(|kind| Constraint::Kind(sub.apply(tv), kind))
+                .map(|kind| Constraint::Kind(sub.apply(tv), kind, loc.clone()))
                 .collect::<Vec<Constraint>>()
                 .into()
         });
     // Instantiate monotype using new fresh type variables
     (poly.expr.apply(&sub), constraints)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::semantic::types::Tvar;
-
-    #[test]
-    fn add_constraints() {
-        let c0 = Constraints(vec![
-            Constraint::Equal(MonoType::Var(Tvar(0)), MonoType::Var(Tvar(1))),
-            Constraint::Kind(MonoType::Var(Tvar(1)), Kind::Addable),
-        ]);
-        let c1 = Constraints(vec![
-            Constraint::Equal(MonoType::Var(Tvar(2)), MonoType::Var(Tvar(3))),
-            Constraint::Kind(MonoType::Var(Tvar(3)), Kind::Divisible),
-        ]);
-        assert_eq!(
-            c0 + c1,
-            Constraints(vec![
-                Constraint::Equal(MonoType::Var(Tvar(0)), MonoType::Var(Tvar(1))),
-                Constraint::Kind(MonoType::Var(Tvar(1)), Kind::Addable),
-                Constraint::Equal(MonoType::Var(Tvar(2)), MonoType::Var(Tvar(3))),
-                Constraint::Kind(MonoType::Var(Tvar(3)), Kind::Divisible),
-            ])
-        );
-    }
 }

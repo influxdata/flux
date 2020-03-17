@@ -244,7 +244,16 @@ fn build_row<S: ::std::hash::BuildHasher>(
     let mut cons = Constraints::empty();
 
     for (name, poly) in from {
-        let (ty, constraints) = infer::instantiate(poly.clone(), f);
+        let (ty, constraints) = infer::instantiate(
+            poly.clone(),
+            f,
+            ast::SourceLocation {
+                file: None,
+                start: ast::Position::default(),
+                end: ast::Position::default(),
+                source: None,
+            },
+        );
         r = Row::Extension {
             head: Property { k: name, v: ty },
             tail: MonoType::Row(Box::new(r)),
