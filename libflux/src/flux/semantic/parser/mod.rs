@@ -1,4 +1,9 @@
-use std::{collections::HashMap, iter::Peekable, slice::Iter, str::Chars};
+use std::{
+    collections::{BTreeMap, HashMap},
+    iter::Peekable,
+    slice::Iter,
+    str::Chars,
+};
 
 use crate::semantic::types::{Array, Function, Kind, MonoType, PolyType, Property, Row, Tvar};
 
@@ -502,8 +507,8 @@ impl Parser<'_> {
         self.next();
         let mut token = self.next();
 
-        let mut req_args = HashMap::new();
-        let mut opt_args = HashMap::new();
+        let mut req_args = BTreeMap::new();
+        let mut opt_args = BTreeMap::new();
         let mut pipe_arg = None;
         let mut need_comma = false;
         loop {
@@ -701,7 +706,7 @@ mod tests {
     fn parse_primitives_test() {
         let parse_text = "forall [t0] (x: t0, y: float) -> t0";
 
-        let mut req_args = HashMap::new();
+        let mut req_args = BTreeMap::new();
         req_args.insert("x".to_string(), MonoType::Var(Tvar(0)));
         req_args.insert("y".to_string(), MonoType::Float);
 
@@ -710,7 +715,7 @@ mod tests {
             cons: HashMap::new(),
             expr: MonoType::Fun(Box::new(Function {
                 req: req_args,
-                opt: HashMap::new(),
+                opt: BTreeMap::new(),
                 pipe: None,
                 retn: MonoType::Var(Tvar(0)),
             })),
@@ -963,10 +968,10 @@ mod tests {
         kinds.push(Kind::Subtractable);
         bounds.insert(Tvar(12), kinds);
 
-        let mut req_arg = HashMap::new();
+        let mut req_arg = BTreeMap::new();
         req_arg.insert("x".to_string(), MonoType::Var(Tvar(12)));
 
-        let mut opt_arg = HashMap::new();
+        let mut opt_arg = BTreeMap::new();
         opt_arg.insert("y".to_string(), MonoType::Int);
 
         let pipe_arg = Some(Property {
@@ -995,7 +1000,7 @@ mod tests {
         kinds.push(Kind::Subtractable);
         bounds.insert(Tvar(0), kinds);
 
-        let mut req_arg = HashMap::new();
+        let mut req_arg = BTreeMap::new();
         req_arg.insert("x".to_string(), MonoType::Var(Tvar(0)));
 
         let output = PolyType {
@@ -1003,7 +1008,7 @@ mod tests {
             cons: bounds,
             expr: MonoType::Fun(Box::new(Function {
                 req: req_arg,
-                opt: HashMap::new(),
+                opt: BTreeMap::new(),
                 pipe: None,
                 retn: MonoType::Var(Tvar(0)),
             })),
@@ -1024,10 +1029,10 @@ mod tests {
         kinds.push(Kind::Subtractable);
         bounds.insert(Tvar(10), kinds);
 
-        let mut req_args = HashMap::new();
+        let mut req_args = BTreeMap::new();
         req_args.insert("x".to_string(), MonoType::Var(Tvar(1)));
 
-        let mut opt_args = HashMap::new();
+        let mut opt_args = BTreeMap::new();
         opt_args.insert("y".to_string(), MonoType::Var(Tvar(10)));
 
         let output = PolyType {
@@ -1060,8 +1065,8 @@ mod tests {
             vars: vec![Tvar(0)],
             cons: bounds,
             expr: MonoType::Fun(Box::new(Function {
-                req: HashMap::new(),
-                opt: HashMap::new(),
+                req: BTreeMap::new(),
+                opt: BTreeMap::new(),
                 pipe: pipe_arg,
                 retn: MonoType::Var(Tvar(0)),
             })),
@@ -1086,8 +1091,8 @@ mod tests {
             vars: vec![Tvar(0), Tvar(1)],
             cons: bounds,
             expr: MonoType::Fun(Box::new(Function {
-                req: HashMap::new(),
-                opt: HashMap::new(),
+                req: BTreeMap::new(),
+                opt: BTreeMap::new(),
                 pipe: pipe_arg,
                 retn: MonoType::Var(Tvar(0)),
             })),
@@ -1097,12 +1102,12 @@ mod tests {
 
         let text = "forall [] (_p1: int, ?p_2: int, <-_p3: string) -> int";
         let req = {
-            let mut m = HashMap::new();
+            let mut m = BTreeMap::new();
             m.insert("_p1".to_string(), MonoType::Int);
             m
         };
         let opt = {
-            let mut m = HashMap::new();
+            let mut m = BTreeMap::new();
             m.insert("p_2".to_string(), MonoType::Int);
             m
         };
@@ -1127,8 +1132,8 @@ mod tests {
             vars: vec![],
             cons: HashMap::new(),
             expr: MonoType::Fun(Box::new(Function {
-                req: HashMap::new(),
-                opt: HashMap::new(),
+                req: BTreeMap::new(),
+                opt: BTreeMap::new(),
                 pipe: None,
                 retn: MonoType::Bytes,
             })),

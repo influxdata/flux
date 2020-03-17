@@ -125,7 +125,7 @@ pub fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Error {
-    msg: String,
+    pub msg: String,
 }
 
 impl fmt::Display for Error {
@@ -144,14 +144,14 @@ impl Error {
         S: fmt::Display,
     {
         Error {
-            msg: format!("cannot unify {} with {}", t, with),
+            msg: format!("{} != {}", t, with),
         }
     }
     // An error can occur if we constrain a type with a kind to
     // which it does not belong.
     fn cannot_constrain<T: fmt::Display>(t: &T, with: Kind) -> Error {
         Error {
-            msg: format!("{} is not of kind {}", t, with,),
+            msg: format!("{} is not {}", t, with,),
         }
     }
     // An error can occur if we attempt to unify a type variable
@@ -159,6 +159,31 @@ impl Error {
     fn occurs_check<T: fmt::Display>(tv: Tvar, t: T) -> Error {
         Error {
             msg: format!("type variable {} occurs in {}", tv, t),
+        }
+    }
+    fn inconsistent_pipe_arguments(l: &str, r: &str) -> Error {
+        Error {
+            msg: format!("pipe arguments have two different names - {} and {}", l, r),
+        }
+    }
+    fn missing_pipe_argument() -> Error {
+        Error {
+            msg: String::from("functions have different number of pipe arguments"),
+        }
+    }
+    fn missing_required_argument(name: &str) -> Error {
+        Error {
+            msg: format!("missing required argument {}", name),
+        }
+    }
+    fn cannot_unify_argument(name: &str, msg: &str) -> Error {
+        Error {
+            msg: format!("@argument {}: {}", name, msg),
+        }
+    }
+    fn cannot_unify_return(msg: &str) -> Error {
+        Error {
+            msg: format!("return type: {}", msg),
         }
     }
 }
@@ -690,7 +715,7 @@ impl Row {
         cons: &mut TvarKinds,
         fresher: &mut Fresher,
     ) -> Result<Substitution, Error> {
-        match (self, with) {
+        match (self.clone(), with.clone()) {
             (Row::Empty, Row::Empty) => Ok(Substitution::empty()),
             (
                 Row::Extension {
@@ -704,33 +729,37 @@ impl Row {
             ) => {
                 if l == r {
                     if a != b {
-                        let l = Row::Extension {
-                            head: Property { k: a, v: t },
-                            tail: MonoType::Var(l),
-                        };
-                        let r = Row::Extension {
-                            head: Property { k: b, v: u },
-                            tail: MonoType::Var(r),
-                        };
-                        Err(Error::cannot_unify(&l, &r))
+                        Err(Error::cannot_unify(&self, &with))
                     } else {
-                        t.unify(u, cons, fresher)
+                        match t.unify(u, cons, fresher) {
+                            Err(_) => Err(Error::cannot_unify(&self, &with)),
+                            Ok(sub) => Ok(sub),
+                        }
                     }
                 } else if a == b {
                     let lv = MonoType::Var(l);
                     let rv = MonoType::Var(r);
-                    let sub = t.unify(u, cons, fresher)?;
-                    apply_then_unify(lv, rv, sub, cons, fresher)
+                    let sub = match t.unify(u, cons, fresher) {
+                        Err(_) => Err(Error::cannot_unify(&self, &with)),
+                        Ok(sub) => Ok(sub),
+                    }?;
+                    match apply_then_unify(lv, rv, sub, cons, fresher) {
+                        Err(_) => Err(Error::cannot_unify(&self, &with)),
+                        Ok(sub) => Ok(sub),
+                    }
                 } else {
                     let var = fresher.fresh();
-                    let sub = l.unify(
+                    let sub = match l.unify(
                         MonoType::from(Row::Extension {
                             head: Property { k: b, v: u },
                             tail: MonoType::Var(var),
                         }),
                         cons,
-                    )?;
-                    apply_then_unify(
+                    ) {
+                        Err(_) => Err(Error::cannot_unify(&self, &with)),
+                        Ok(sub) => Ok(sub),
+                    }?;
+                    match apply_then_unify(
                         MonoType::Var(r),
                         MonoType::from(Row::Extension {
                             head: Property { k: a, v: t },
@@ -739,7 +768,10 @@ impl Row {
                         sub,
                         cons,
                         fresher,
-                    )
+                    ) {
+                        Err(_) => Err(Error::cannot_unify(&self, &with)),
+                        Ok(sub) => Ok(sub),
+                    }
                 }
             }
             (
@@ -753,19 +785,28 @@ impl Row {
                 },
             ) => {
                 if a == b {
-                    let sub = t.unify(u, cons, fresher)?;
-                    apply_then_unify(l, r, sub, cons, fresher)
+                    let sub = match t.unify(u, cons, fresher) {
+                        Err(_) => Err(Error::cannot_unify(&self, &with)),
+                        Ok(sub) => Ok(sub),
+                    }?;
+                    match apply_then_unify(l, r, sub, cons, fresher) {
+                        Err(_) => Err(Error::cannot_unify(&self, &with)),
+                        Ok(sub) => Ok(sub),
+                    }
                 } else {
                     let var = fresher.fresh();
-                    let sub = l.unify(
+                    let sub = match l.unify(
                         MonoType::from(Row::Extension {
                             head: Property { k: b, v: u },
                             tail: MonoType::Var(var),
                         }),
                         cons,
                         fresher,
-                    )?;
-                    apply_then_unify(
+                    ) {
+                        Err(_) => Err(Error::cannot_unify(&self, &with)),
+                        Ok(sub) => Ok(sub),
+                    }?;
+                    match apply_then_unify(
                         r,
                         MonoType::from(Row::Extension {
                             head: Property { k: a, v: t },
@@ -774,7 +815,10 @@ impl Row {
                         sub,
                         cons,
                         fresher,
-                    )
+                    ) {
+                        Err(_) => Err(Error::cannot_unify(&self, &with)),
+                        Ok(sub) => Ok(sub),
+                    }
                 }
             }
             (Row::Empty, Row::Extension { head, tail }) => Err(Error::cannot_unify(
@@ -882,8 +926,8 @@ impl MaxTvar for Property {
 //
 #[derive(Debug, Clone, PartialEq)]
 pub struct Function {
-    pub req: HashMap<String, MonoType>,
-    pub opt: HashMap<String, MonoType>,
+    pub req: BTreeMap<String, MonoType>,
+    pub opt: BTreeMap<String, MonoType>,
     pub pipe: Option<Property>,
     pub retn: MonoType,
 }
@@ -952,6 +996,16 @@ impl<T: Substitutable> Substitutable for HashMap<String, T> {
     }
 }
 
+impl<T: Substitutable> Substitutable for BTreeMap<String, T> {
+    fn apply(self, sub: &Substitution) -> Self {
+        self.into_iter().map(|(k, v)| (k, v.apply(sub))).collect()
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        self.values()
+            .fold(Vec::new(), |vars, t| union(vars, t.free_vars()))
+    }
+}
+
 impl<T: Substitutable> Substitutable for Option<T> {
     fn apply(self, sub: &Substitution) -> Self {
         match self {
@@ -988,6 +1042,14 @@ impl Substitutable for Function {
 }
 
 impl<U, T: MaxTvar, S: ::std::hash::BuildHasher> MaxTvar for HashMap<U, T, S> {
+    fn max_tvar(&self) -> Tvar {
+        self.iter()
+            .map(|(_, t)| t.max_tvar())
+            .fold(Tvar(0), |max, tv| if tv > max { tv } else { max })
+    }
+}
+
+impl<U, T: MaxTvar> MaxTvar for BTreeMap<U, T> {
     fn max_tvar(&self) -> Tvar {
         self.iter()
             .map(|(_, t)| t.max_tvar())
@@ -1059,8 +1121,6 @@ impl Function {
         // Some aliasing for coherence with the doc.
         let mut f = self;
         let mut g = with;
-        // Pre-compute error while f and g are not consumed.
-        let err = Error::cannot_unify(&f, &g);
         // Fix pipe arguments:
         // Make them required arguments with the correct name.
         match (f.pipe, g.pipe) {
@@ -1068,7 +1128,7 @@ impl Function {
             (Some(fp), Some(gp)) => {
                 if fp.k != "<-" && gp.k != "<-" && fp.k != gp.k {
                     // Both are named and the name differs, fail unification.
-                    return Err(err);
+                    return Err(Error::inconsistent_pipe_arguments(&fp.k, &gp.k));
                 } else {
                     // At least one is unnamed or they are both named with the same name.
                     // This means they should match. Enforce this condition by inserting
@@ -1082,7 +1142,7 @@ impl Function {
                 if fp.k == "<-" {
                     // The pipe argument is unnamed and g does not have one.
                     // Fail unification.
-                    return Err(err);
+                    return Err(Error::missing_pipe_argument());
                 } else {
                     // This is a named argument, simply put it into the required ones.
                     f.req.insert(fp.k, fp.v);
@@ -1093,7 +1153,7 @@ impl Function {
                 if gp.k == "<-" {
                     // The pipe argument is unnamed and f does not have one.
                     // Fail unification.
-                    return Err(err);
+                    return Err(Error::missing_pipe_argument());
                 } else {
                     // This is a named argument, simply put it into the required ones.
                     g.req.insert(gp.k, gp.v);
@@ -1103,37 +1163,49 @@ impl Function {
             (None, None) => (),
         }
         // Now that f has not been consumed yet, check that every required argument in g is in f too.
-        for (arg_name, _) in g.req.iter() {
-            if !f.req.contains_key(arg_name) && !f.opt.contains_key(arg_name) {
-                return Err(err);
+        for (name, _) in g.req.iter() {
+            if !f.req.contains_key(name) && !f.opt.contains_key(name) {
+                return Err(Error::missing_required_argument(name));
             }
         }
         let mut sub = Substitution::empty();
         // Unify f's required arguments.
-        for (arg_name, f_arg_type) in f.req.into_iter() {
-            if let Some(g_arg_type) = g.req.remove(&arg_name) {
+        for (name, t) in f.req.into_iter() {
+            if let Some(ty) = g.req.remove(&name) {
                 // The required argument is in g's required arguments.
-                sub = apply_then_unify(f_arg_type, g_arg_type, sub, cons, fresh)?;
-            } else if let Some(g_arg_type) = g.opt.remove(&arg_name) {
+                sub = match apply_then_unify(t, ty, sub, cons, fresh) {
+                    Err(e) => Err(Error::cannot_unify_argument(&name, &e.to_string())),
+                    Ok(sub) => Ok(sub),
+                }?;
+            } else if let Some(ty) = g.opt.remove(&name) {
                 // The required argument is in g's optional arguments.
-                sub = apply_then_unify(f_arg_type, g_arg_type, sub, cons, fresh)?;
+                sub = match apply_then_unify(t, ty, sub, cons, fresh) {
+                    Err(e) => Err(Error::cannot_unify_argument(&name, &e.to_string())),
+                    Ok(sub) => Ok(sub),
+                }?;
             } else {
-                return Err(err);
+                return Err(Error::missing_required_argument(&name));
             }
         }
         // Unify f's optional arguments.
-        for (arg_name, f_arg_type) in f.opt.into_iter() {
-            if let Some(g_arg_type) = g.req.remove(&arg_name) {
-                // The optional argument is in g's required arguments.
-                sub = apply_then_unify(f_arg_type, g_arg_type, sub, cons, fresh)?;
-            } else if let Some(g_arg_type) = g.opt.remove(&arg_name) {
-                // The optional argument is in g's optional arguments.
-                sub = apply_then_unify(f_arg_type, g_arg_type, sub, cons, fresh)?;
+        for (name, ty) in f.opt.into_iter() {
+            if let Some(gty) = g.req.remove(&name) {
+                sub = match apply_then_unify(ty, gty, sub, cons, fresh) {
+                    Err(e) => Err(Error::cannot_unify_argument(&name, &e.to_string())),
+                    Ok(sub) => Ok(sub),
+                }?;
+            } else if let Some(gty) = g.opt.remove(&name) {
+                sub = match apply_then_unify(ty, gty, sub, cons, fresh) {
+                    Err(e) => Err(Error::cannot_unify_argument(&name, &e.to_string())),
+                    Ok(sub) => Ok(sub),
+                }?;
             }
         }
         // Unify return types.
-        sub = apply_then_unify(f.retn, g.retn, sub, cons, fresh)?;
-        Ok(sub)
+        match apply_then_unify(f.retn, g.retn, sub, cons, fresh) {
+            Err(e) => Err(Error::cannot_unify_return(&e.to_string())),
+            Ok(sub) => Ok(sub),
+        }
     }
 
     fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
@@ -1290,8 +1362,8 @@ mod tests {
         assert_eq!(
             "() -> int",
             Function {
-                req: HashMap::new(),
-                opt: HashMap::new(),
+                req: BTreeMap::new(),
+                opt: BTreeMap::new(),
                 pipe: None,
                 retn: MonoType::Int,
             }
@@ -1300,8 +1372,8 @@ mod tests {
         assert_eq!(
             "(<-:int) -> int",
             Function {
-                req: HashMap::new(),
-                opt: HashMap::new(),
+                req: BTreeMap::new(),
+                opt: BTreeMap::new(),
                 pipe: Some(Property {
                     k: String::from("<-"),
                     v: MonoType::Int,
@@ -1313,8 +1385,8 @@ mod tests {
         assert_eq!(
             "(<-a:int) -> int",
             Function {
-                req: HashMap::new(),
-                opt: HashMap::new(),
+                req: BTreeMap::new(),
+                opt: BTreeMap::new(),
                 pipe: Some(Property {
                     k: String::from("a"),
                     v: MonoType::Int,
@@ -1326,11 +1398,11 @@ mod tests {
         assert_eq!(
             "(<-:int, a:int, b:int) -> int",
             Function {
-                req: maplit::hashmap! {
+                req: maplit::btreemap! {
                     String::from("a") => MonoType::Int,
                     String::from("b") => MonoType::Int,
                 },
-                opt: HashMap::new(),
+                opt: BTreeMap::new(),
                 pipe: Some(Property {
                     k: String::from("<-"),
                     v: MonoType::Int,
@@ -1342,8 +1414,8 @@ mod tests {
         assert_eq!(
             "(<-:int, ?a:int, ?b:int) -> int",
             Function {
-                req: HashMap::new(),
-                opt: maplit::hashmap! {
+                req: BTreeMap::new(),
+                opt: maplit::btreemap! {
                     String::from("a") => MonoType::Int,
                     String::from("b") => MonoType::Int,
                 },
@@ -1358,11 +1430,11 @@ mod tests {
         assert_eq!(
             "(<-:int, a:int, b:int, ?c:int, ?d:int) -> int",
             Function {
-                req: maplit::hashmap! {
+                req: maplit::btreemap! {
                     String::from("a") => MonoType::Int,
                     String::from("b") => MonoType::Int,
                 },
-                opt: maplit::hashmap! {
+                opt: maplit::btreemap! {
                     String::from("c") => MonoType::Int,
                     String::from("d") => MonoType::Int,
                 },
@@ -1377,10 +1449,10 @@ mod tests {
         assert_eq!(
             "(a:int, ?b:bool) -> int",
             Function {
-                req: maplit::hashmap! {
+                req: maplit::btreemap! {
                     String::from("a") => MonoType::Int,
                 },
-                opt: maplit::hashmap! {
+                opt: maplit::btreemap! {
                     String::from("b") => MonoType::Bool,
                 },
                 pipe: None,
@@ -1391,11 +1463,11 @@ mod tests {
         assert_eq!(
             "(<-a:int, b:int, c:int, ?d:bool) -> int",
             Function {
-                req: maplit::hashmap! {
+                req: maplit::btreemap! {
                     String::from("b") => MonoType::Int,
                     String::from("c") => MonoType::Int,
                 },
-                opt: maplit::hashmap! {
+                opt: maplit::btreemap! {
                     String::from("d") => MonoType::Bool,
                 },
                 pipe: Some(Property {
@@ -1425,10 +1497,10 @@ mod tests {
                 vars: vec![Tvar(0)],
                 cons: HashMap::new(),
                 expr: MonoType::Fun(Box::new(Function {
-                    req: maplit::hashmap! {
+                    req: maplit::btreemap! {
                         String::from("x") => MonoType::Var(Tvar(0)),
                     },
-                    opt: HashMap::new(),
+                    opt: BTreeMap::new(),
                     pipe: None,
                     retn: MonoType::Var(Tvar(0)),
                 })),
@@ -1441,11 +1513,11 @@ mod tests {
                 vars: vec![Tvar(0), Tvar(1)],
                 cons: HashMap::new(),
                 expr: MonoType::Fun(Box::new(Function {
-                    req: maplit::hashmap! {
+                    req: maplit::btreemap! {
                         String::from("x") => MonoType::Var(Tvar(0)),
                         String::from("y") => MonoType::Var(Tvar(1)),
                     },
-                    opt: HashMap::new(),
+                    opt: BTreeMap::new(),
                     pipe: None,
                     retn: MonoType::Row(Box::new(Row::Extension {
                         head: Property {
@@ -1470,11 +1542,11 @@ mod tests {
                 vars: vec![Tvar(0)],
                 cons: maplit::hashmap! {Tvar(0) => vec![Kind::Addable]},
                 expr: MonoType::Fun(Box::new(Function {
-                    req: maplit::hashmap! {
+                    req: maplit::btreemap! {
                         String::from("a") => MonoType::Var(Tvar(0)),
                         String::from("b") => MonoType::Var(Tvar(0)),
                     },
-                    opt: HashMap::new(),
+                    opt: BTreeMap::new(),
                     pipe: None,
                     retn: MonoType::Var(Tvar(0)),
                 })),
@@ -1490,11 +1562,11 @@ mod tests {
                     Tvar(1) => vec![Kind::Divisible],
                 },
                 expr: MonoType::Fun(Box::new(Function {
-                    req: maplit::hashmap! {
+                    req: maplit::btreemap! {
                         String::from("x") => MonoType::Var(Tvar(0)),
                         String::from("y") => MonoType::Var(Tvar(1)),
                     },
-                    opt: HashMap::new(),
+                    opt: BTreeMap::new(),
                     pipe: None,
                     retn: MonoType::Row(Box::new(Row::Extension {
                         head: Property {
@@ -1522,11 +1594,11 @@ mod tests {
                     Tvar(1) => vec![Kind::Addable, Kind::Divisible],
                 },
                 expr: MonoType::Fun(Box::new(Function {
-                    req: maplit::hashmap! {
+                    req: maplit::btreemap! {
                         String::from("x") => MonoType::Var(Tvar(0)),
                         String::from("y") => MonoType::Var(Tvar(1)),
                     },
-                    opt: HashMap::new(),
+                    opt: BTreeMap::new(),
                     pipe: None,
                     retn: MonoType::Row(Box::new(Row::Extension {
                         head: Property {
@@ -1808,10 +1880,7 @@ mod tests {
                 &mut Fresher::default(),
             )
             .unwrap_err();
-        assert_eq!(
-            err.to_string(),
-            String::from("cannot unify int with string"),
-        );
+        assert_eq!(err.to_string(), String::from("int != string"),);
     }
     #[test]
     fn unify_tvars() {
@@ -1913,11 +1982,11 @@ mod tests {
         // (a: int, b: int) -> int
         let call_type = Function {
             // all arguments are required in a function call.
-            req: maplit::hashmap! {
+            req: maplit::btreemap! {
                 "a".to_string() => MonoType::Int,
                 "b".to_string() => MonoType::Int,
             },
-            opt: maplit::hashmap! {},
+            opt: maplit::btreemap! {},
             pipe: None,
             retn: MonoType::Int,
         };

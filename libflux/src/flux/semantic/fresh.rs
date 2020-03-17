@@ -67,6 +67,22 @@ impl<T: Hash + Ord + Eq + Fresh, S> Fresh for HashMap<T, S> {
     }
 }
 
+impl<T: Fresh> Fresh for BTreeMap<String, T> {
+    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
+        self.into_iter()
+            .map(|(s, t)| (s, t.fresh(f, sub)))
+            .collect::<Self>()
+    }
+}
+
+impl<T: Hash + Ord + Eq + Fresh, S> Fresh for BTreeMap<T, S> {
+    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
+        self.into_iter()
+            .map(|(t, s)| (t.fresh(f, sub), s))
+            .collect::<Self>()
+    }
+}
+
 impl<T: Fresh> Fresh for Box<T> {
     fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
         Box::new((*self).fresh(f, sub))

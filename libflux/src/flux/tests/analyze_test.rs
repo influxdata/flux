@@ -4,7 +4,7 @@ use flux::semantic::nodes::*;
 use flux::semantic::types::{Function, MonoType, Tvar};
 use flux::semantic::walk::{walk_mut, NodeMut};
 use maplit;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use pretty_assertions::assert_eq;
 
@@ -21,26 +21,26 @@ f(a: s)
     )
     .unwrap();
     let f_type = Function {
-        req: maplit::hashmap! {
+        req: maplit::btreemap! {
             "a".to_string() => MonoType::Var(Tvar(4)),
         },
-        opt: HashMap::new(),
+        opt: BTreeMap::new(),
         pipe: None,
         retn: MonoType::Var(Tvar(4)),
     };
     let f_call_int_type = Function {
-        req: maplit::hashmap! {
+        req: maplit::btreemap! {
             "a".to_string() => MonoType::Int,
         },
-        opt: HashMap::new(),
+        opt: BTreeMap::new(),
         pipe: None,
         retn: MonoType::Int,
     };
     let f_call_string_type = Function {
-        req: maplit::hashmap! {
+        req: maplit::btreemap! {
             "a".to_string() => MonoType::String,
         },
-        opt: HashMap::new(),
+        opt: BTreeMap::new(),
         pipe: None,
         retn: MonoType::String,
     };
