@@ -1362,6 +1362,1163 @@ var pkgAST = &ast.Package{
 				Name: "aggregate",
 			},
 		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 2,
+					Line:   16,
+				},
+				File:   "count.flux",
+				Source: "package aggregate\n\nimport \"experimental\"\n\ncountDistinctByTag = (tables=<-, measurement=\"\", tag) =>{\n\tfiltered = if measurement == \"\" then tables else tables\n\t\t|> filter(fn: (r) => r._measurement == measurement)\n\t\n\treturn \n\t\tfiltered\n\t\t\t|> keep(columns: [tag])\n  \t\t\t|> limit(n: 1)\n  \t\t\t|> group()\n  \t\t\t|> count(column: tag)\n\n}",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   16,
+					},
+					File:   "count.flux",
+					Source: "countDistinctByTag = (tables=<-, measurement=\"\", tag) =>{\n\tfiltered = if measurement == \"\" then tables else tables\n\t\t|> filter(fn: (r) => r._measurement == measurement)\n\t\n\treturn \n\t\tfiltered\n\t\t\t|> keep(columns: [tag])\n  \t\t\t|> limit(n: 1)\n  \t\t\t|> group()\n  \t\t\t|> count(column: tag)\n\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 19,
+							Line:   5,
+						},
+						File:   "count.flux",
+						Source: "countDistinctByTag",
+						Start: ast.Position{
+							Column: 1,
+							Line:   5,
+						},
+					},
+				},
+				Name: "countDistinctByTag",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   16,
+						},
+						File:   "count.flux",
+						Source: "(tables=<-, measurement=\"\", tag) =>{\n\tfiltered = if measurement == \"\" then tables else tables\n\t\t|> filter(fn: (r) => r._measurement == measurement)\n\t\n\treturn \n\t\tfiltered\n\t\t\t|> keep(columns: [tag])\n  \t\t\t|> limit(n: 1)\n  \t\t\t|> group()\n  \t\t\t|> count(column: tag)\n\n}",
+						Start: ast.Position{
+							Column: 22,
+							Line:   5,
+						},
+					},
+				},
+				Body: &ast.Block{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   16,
+							},
+							File:   "count.flux",
+							Source: "{\n\tfiltered = if measurement == \"\" then tables else tables\n\t\t|> filter(fn: (r) => r._measurement == measurement)\n\t\n\treturn \n\t\tfiltered\n\t\t\t|> keep(columns: [tag])\n  \t\t\t|> limit(n: 1)\n  \t\t\t|> group()\n  \t\t\t|> count(column: tag)\n\n}",
+							Start: ast.Position{
+								Column: 57,
+								Line:   5,
+							},
+						},
+					},
+					Body: []ast.Statement{&ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 54,
+									Line:   7,
+								},
+								File:   "count.flux",
+								Source: "filtered = if measurement == \"\" then tables else tables\n\t\t|> filter(fn: (r) => r._measurement == measurement)",
+								Start: ast.Position{
+									Column: 2,
+									Line:   6,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 10,
+										Line:   6,
+									},
+									File:   "count.flux",
+									Source: "filtered",
+									Start: ast.Position{
+										Column: 2,
+										Line:   6,
+									},
+								},
+							},
+							Name: "filtered",
+						},
+						Init: &ast.ConditionalExpression{
+							Alternate: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 57,
+												Line:   6,
+											},
+											File:   "count.flux",
+											Source: "tables",
+											Start: ast.Position{
+												Column: 51,
+												Line:   6,
+											},
+										},
+									},
+									Name: "tables",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 54,
+											Line:   7,
+										},
+										File:   "count.flux",
+										Source: "tables\n\t\t|> filter(fn: (r) => r._measurement == measurement)",
+										Start: ast.Position{
+											Column: 51,
+											Line:   6,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 53,
+													Line:   7,
+												},
+												File:   "count.flux",
+												Source: "fn: (r) => r._measurement == measurement",
+												Start: ast.Position{
+													Column: 13,
+													Line:   7,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 53,
+														Line:   7,
+													},
+													File:   "count.flux",
+													Source: "fn: (r) => r._measurement == measurement",
+													Start: ast.Position{
+														Column: 13,
+														Line:   7,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 15,
+															Line:   7,
+														},
+														File:   "count.flux",
+														Source: "fn",
+														Start: ast.Position{
+															Column: 13,
+															Line:   7,
+														},
+													},
+												},
+												Name: "fn",
+											},
+											Value: &ast.FunctionExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 53,
+															Line:   7,
+														},
+														File:   "count.flux",
+														Source: "(r) => r._measurement == measurement",
+														Start: ast.Position{
+															Column: 17,
+															Line:   7,
+														},
+													},
+												},
+												Body: &ast.BinaryExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 53,
+																Line:   7,
+															},
+															File:   "count.flux",
+															Source: "r._measurement == measurement",
+															Start: ast.Position{
+																Column: 24,
+																Line:   7,
+															},
+														},
+													},
+													Left: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 38,
+																	Line:   7,
+																},
+																File:   "count.flux",
+																Source: "r._measurement",
+																Start: ast.Position{
+																	Column: 24,
+																	Line:   7,
+																},
+															},
+														},
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 25,
+																		Line:   7,
+																	},
+																	File:   "count.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 24,
+																		Line:   7,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 38,
+																		Line:   7,
+																	},
+																	File:   "count.flux",
+																	Source: "_measurement",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   7,
+																	},
+																},
+															},
+															Name: "_measurement",
+														},
+													},
+													Operator: 17,
+													Right: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 53,
+																	Line:   7,
+																},
+																File:   "count.flux",
+																Source: "measurement",
+																Start: ast.Position{
+																	Column: 42,
+																	Line:   7,
+																},
+															},
+														},
+														Name: "measurement",
+													},
+												},
+												Params: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 19,
+																Line:   7,
+															},
+															File:   "count.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 18,
+																Line:   7,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 19,
+																	Line:   7,
+																},
+																File:   "count.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 18,
+																	Line:   7,
+																},
+															},
+														},
+														Name: "r",
+													},
+													Value: nil,
+												}},
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 54,
+												Line:   7,
+											},
+											File:   "count.flux",
+											Source: "filter(fn: (r) => r._measurement == measurement)",
+											Start: ast.Position{
+												Column: 6,
+												Line:   7,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 12,
+													Line:   7,
+												},
+												File:   "count.flux",
+												Source: "filter",
+												Start: ast.Position{
+													Column: 6,
+													Line:   7,
+												},
+											},
+										},
+										Name: "filter",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 54,
+										Line:   7,
+									},
+									File:   "count.flux",
+									Source: "if measurement == \"\" then tables else tables\n\t\t|> filter(fn: (r) => r._measurement == measurement)",
+									Start: ast.Position{
+										Column: 13,
+										Line:   6,
+									},
+								},
+							},
+							Consequent: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   6,
+										},
+										File:   "count.flux",
+										Source: "tables",
+										Start: ast.Position{
+											Column: 39,
+											Line:   6,
+										},
+									},
+								},
+								Name: "tables",
+							},
+							Test: &ast.BinaryExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   6,
+										},
+										File:   "count.flux",
+										Source: "measurement == \"\"",
+										Start: ast.Position{
+											Column: 16,
+											Line:   6,
+										},
+									},
+								},
+								Left: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 27,
+												Line:   6,
+											},
+											File:   "count.flux",
+											Source: "measurement",
+											Start: ast.Position{
+												Column: 16,
+												Line:   6,
+											},
+										},
+									},
+									Name: "measurement",
+								},
+								Operator: 17,
+								Right: &ast.StringLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   6,
+											},
+											File:   "count.flux",
+											Source: "\"\"",
+											Start: ast.Position{
+												Column: 31,
+												Line:   6,
+											},
+										},
+									},
+									Value: "",
+								},
+							},
+						},
+					}, &ast.ReturnStatement{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 11,
+														Line:   10,
+													},
+													File:   "count.flux",
+													Source: "filtered",
+													Start: ast.Position{
+														Column: 3,
+														Line:   10,
+													},
+												},
+											},
+											Name: "filtered",
+										},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 27,
+													Line:   11,
+												},
+												File:   "count.flux",
+												Source: "filtered\n\t\t\t|> keep(columns: [tag])",
+												Start: ast.Position{
+													Column: 3,
+													Line:   10,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 26,
+															Line:   11,
+														},
+														File:   "count.flux",
+														Source: "columns: [tag]",
+														Start: ast.Position{
+															Column: 12,
+															Line:   11,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 26,
+																Line:   11,
+															},
+															File:   "count.flux",
+															Source: "columns: [tag]",
+															Start: ast.Position{
+																Column: 12,
+																Line:   11,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 19,
+																	Line:   11,
+																},
+																File:   "count.flux",
+																Source: "columns",
+																Start: ast.Position{
+																	Column: 12,
+																	Line:   11,
+																},
+															},
+														},
+														Name: "columns",
+													},
+													Value: &ast.ArrayExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 26,
+																	Line:   11,
+																},
+																File:   "count.flux",
+																Source: "[tag]",
+																Start: ast.Position{
+																	Column: 21,
+																	Line:   11,
+																},
+															},
+														},
+														Elements: []ast.Expression{&ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 25,
+																		Line:   11,
+																	},
+																	File:   "count.flux",
+																	Source: "tag",
+																	Start: ast.Position{
+																		Column: 22,
+																		Line:   11,
+																	},
+																},
+															},
+															Name: "tag",
+														}},
+													},
+												}},
+												With: nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 27,
+														Line:   11,
+													},
+													File:   "count.flux",
+													Source: "keep(columns: [tag])",
+													Start: ast.Position{
+														Column: 7,
+														Line:   11,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 11,
+															Line:   11,
+														},
+														File:   "count.flux",
+														Source: "keep",
+														Start: ast.Position{
+															Column: 7,
+															Line:   11,
+														},
+													},
+												},
+												Name: "keep",
+											},
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   12,
+											},
+											File:   "count.flux",
+											Source: "filtered\n\t\t\t|> keep(columns: [tag])\n  \t\t\t|> limit(n: 1)",
+											Start: ast.Position{
+												Column: 3,
+												Line:   10,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 19,
+														Line:   12,
+													},
+													File:   "count.flux",
+													Source: "n: 1",
+													Start: ast.Position{
+														Column: 15,
+														Line:   12,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 19,
+															Line:   12,
+														},
+														File:   "count.flux",
+														Source: "n: 1",
+														Start: ast.Position{
+															Column: 15,
+															Line:   12,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 16,
+																Line:   12,
+															},
+															File:   "count.flux",
+															Source: "n",
+															Start: ast.Position{
+																Column: 15,
+																Line:   12,
+															},
+														},
+													},
+													Name: "n",
+												},
+												Value: &ast.IntegerLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 19,
+																Line:   12,
+															},
+															File:   "count.flux",
+															Source: "1",
+															Start: ast.Position{
+																Column: 18,
+																Line:   12,
+															},
+														},
+													},
+													Value: int64(1),
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 20,
+													Line:   12,
+												},
+												File:   "count.flux",
+												Source: "limit(n: 1)",
+												Start: ast.Position{
+													Column: 9,
+													Line:   12,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 14,
+														Line:   12,
+													},
+													File:   "count.flux",
+													Source: "limit",
+													Start: ast.Position{
+														Column: 9,
+														Line:   12,
+													},
+												},
+											},
+											Name: "limit",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 16,
+											Line:   13,
+										},
+										File:   "count.flux",
+										Source: "filtered\n\t\t\t|> keep(columns: [tag])\n  \t\t\t|> limit(n: 1)\n  \t\t\t|> group()",
+										Start: ast.Position{
+											Column: 3,
+											Line:   10,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: nil,
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   13,
+											},
+											File:   "count.flux",
+											Source: "group()",
+											Start: ast.Position{
+												Column: 9,
+												Line:   13,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   13,
+												},
+												File:   "count.flux",
+												Source: "group",
+												Start: ast.Position{
+													Column: 9,
+													Line:   13,
+												},
+											},
+										},
+										Name: "group",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 27,
+										Line:   14,
+									},
+									File:   "count.flux",
+									Source: "filtered\n\t\t\t|> keep(columns: [tag])\n  \t\t\t|> limit(n: 1)\n  \t\t\t|> group()\n  \t\t\t|> count(column: tag)",
+									Start: ast.Position{
+										Column: 3,
+										Line:   10,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 26,
+												Line:   14,
+											},
+											File:   "count.flux",
+											Source: "column: tag",
+											Start: ast.Position{
+												Column: 15,
+												Line:   14,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 26,
+													Line:   14,
+												},
+												File:   "count.flux",
+												Source: "column: tag",
+												Start: ast.Position{
+													Column: 15,
+													Line:   14,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   14,
+													},
+													File:   "count.flux",
+													Source: "column",
+													Start: ast.Position{
+														Column: 15,
+														Line:   14,
+													},
+												},
+											},
+											Name: "column",
+										},
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 26,
+														Line:   14,
+													},
+													File:   "count.flux",
+													Source: "tag",
+													Start: ast.Position{
+														Column: 23,
+														Line:   14,
+													},
+												},
+											},
+											Name: "tag",
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 27,
+											Line:   14,
+										},
+										File:   "count.flux",
+										Source: "count(column: tag)",
+										Start: ast.Position{
+											Column: 9,
+											Line:   14,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   14,
+											},
+											File:   "count.flux",
+											Source: "count",
+											Start: ast.Position{
+												Column: 9,
+												Line:   14,
+											},
+										},
+									},
+									Name: "count",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 27,
+									Line:   14,
+								},
+								File:   "count.flux",
+								Source: "return \n\t\tfiltered\n\t\t\t|> keep(columns: [tag])\n  \t\t\t|> limit(n: 1)\n  \t\t\t|> group()\n  \t\t\t|> count(column: tag)",
+								Start: ast.Position{
+									Column: 2,
+									Line:   9,
+								},
+							},
+						},
+					}},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   5,
+							},
+							File:   "count.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 23,
+								Line:   5,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   5,
+								},
+								File:   "count.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 23,
+									Line:   5,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   5,
+							},
+							File:   "count.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 30,
+								Line:   5,
+							},
+						},
+					}},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 48,
+								Line:   5,
+							},
+							File:   "count.flux",
+							Source: "measurement=\"\"",
+							Start: ast.Position{
+								Column: 34,
+								Line:   5,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 45,
+									Line:   5,
+								},
+								File:   "count.flux",
+								Source: "measurement",
+								Start: ast.Position{
+									Column: 34,
+									Line:   5,
+								},
+							},
+						},
+						Name: "measurement",
+					},
+					Value: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 48,
+									Line:   5,
+								},
+								File:   "count.flux",
+								Source: "\"\"",
+								Start: ast.Position{
+									Column: 46,
+									Line:   5,
+								},
+							},
+						},
+						Value: "",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 53,
+								Line:   5,
+							},
+							File:   "count.flux",
+							Source: "tag",
+							Start: ast.Position{
+								Column: 50,
+								Line:   5,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 53,
+									Line:   5,
+								},
+								File:   "count.flux",
+								Source: "tag",
+								Start: ast.Position{
+									Column: 50,
+									Line:   5,
+								},
+							},
+						},
+						Name: "tag",
+					},
+					Value: nil,
+				}},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   3,
+					},
+					File:   "count.flux",
+					Source: "import \"experimental\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   3,
+						},
+						File:   "count.flux",
+						Source: "\"experimental\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "count.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 18,
+						Line:   1,
+					},
+					File:   "count.flux",
+					Source: "package aggregate",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 18,
+							Line:   1,
+						},
+						File:   "count.flux",
+						Source: "aggregate",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "aggregate",
+			},
+		},
 	}},
 	Package: "aggregate",
 	Path:    "experimental/aggregate",
