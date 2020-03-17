@@ -1,28 +1,27 @@
 FROM golang:1.13
 
-ENV PATH="/root/.cargo/bin:${PATH}"
+ENV PATH="/root/.cargo/bin:$GOPATH/bin:${PATH}"
 ENV GO111MODULE=on
 ENV CGO_ENABLED=1
 
-COPY . /go/src/github.com/influxdata/flux
-WORKDIR /go/src/github.com/influxdata/flux
+ENV CC_FOR_LINUX_ARM=arm-linux-gnueabihf-gcc
+ENV CC_FOR_LINUX_ARM64=aarch64-linux-gnu-gcc
+ENV CC_FOR_LINUX_386=i686-linux-gnu-gcc
+ENV CC_FOR_LINUX_AMD64=gcc
+ENV CARGO_TARGET_I686_UNKNOWN_LINUX_GNU=i686-linux-gnu-gcc
+ENV CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=gcc
+ENV CARGO_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+ENV CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
 
 # Install common packages
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
         clang \
-        gcc-arm-linux-gnueabihf \
-        gcc-arm-linux-gnueabi \
-        gcc-aarch64-linux-gnu \
-        gcc-i686-linux-gnu && \
+        gcc-arm-linux-gnueabihf libc6-dev-armhf-cross \
+        gcc-aarch64-linux-gnu libc6-dev-arm64-cross \
+        gcc-i686-linux-gnu libc6-dev-i386-cross && \
     rm -rf /var/lib/apt/lists/*
 RUN curl https://sh.rustup.rs -sSf | \
     sh -s -- --default-toolchain stable -y
-
-RUN cd libflux && cargo build
-RUN go build \
-        -ldflags '-extldflags "-fno-PIC -static"' \
-        -buildmode pie \
-        -tags 'libflux static_build' \
-        -o flux \
-        .
+RUN rustup target add aarch64-unknown-linux-gnu arm-unknown-linux-gnueabihf armv7-unknown-linux-gnueabihf i686-unknown-linux-gnu
