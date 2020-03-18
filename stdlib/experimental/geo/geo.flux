@@ -1,6 +1,8 @@
 // Provides functions for geographic location filtering and grouping based on S2 cells.
 package geo
 
+import "experimental"
+
 //
 // None of the builtin functions are intended to be used by end users.
 //
@@ -48,6 +50,30 @@ toRows = (tables=<-, correlationKey=["_time"]) =>
       valueColumn: "_value"
     )
 
+// Shapes data to meet the requirements of the geo package.
+// Renames fields containing latitude and longitude values to lat and lon.
+// Pivots values to row-wise sets.
+// Generates an s2_cell_id tag for each reach using lat and lon values.
+// Adds the s2_cell_id column to the group key.
+shapeData = (tables=<-, latField, lonField, level, correlationKey=["_time"]) =>
+  tables
+    |> map(fn: (r) => ({ r with
+        _field:
+          if r._field == latField then "lat"
+          else if r._field == lonField then "lon"
+          else r._field
+      })
+    )
+    |> toRows(correlationKey: correlationKey)
+    |> map(fn: (r) => ({ r with
+        s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)
+      })
+    )
+    |> experimental.group(
+      columns: ["s2_cell_id"],
+      mode: "extend"
+    )
+
 //
 // Filtering functions
 //
@@ -82,12 +108,22 @@ strictFilter = (tables=<-, region) =>
     )
 
 // Two-phase filtering by speficied region.
+// Checks to see if data is already pivoted and contains a lat column.
 // Returns rows of fields correlated by `correlationKey`.
 filterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, correlationKey=["_time"], strict=true) => {
-  _rows =
+  _columns =
     tables
-      |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)
-      |> toRows(correlationKey)
+      |> columns()
+      |> tableFind(fn: (key) => true )
+      |> getColumn(column: "_value")
+  _rows =
+    if contains(value: "lat", set: _columns) then
+      tables
+        |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)
+    else
+      tables
+        |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)
+        |> toRows(correlationKey)
   _result =
     if strict then
       _rows
