@@ -105,7 +105,10 @@ func createFromCSVSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 	if !ok {
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", prSpec)
 	}
+	return CreateSource(spec, dsid, a)
+}
 
+func CreateSource(spec *FromCSVProcedureSpec, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
 	csvText := spec.CSV
 	// if spec.File non-empty then spec.CSV is empty
 	if spec.File != "" {
