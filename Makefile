@@ -77,7 +77,7 @@ internal/scanner/scanner.gen.go: internal/scanner/gen.go internal/scanner/scanne
 libflux: $(LIBFLUX_GENERATED_TARGETS)
 	cd libflux && $(CARGO) build $(CARGO_ARGS)
 
-build:
+build: libflux-go
 	$(GO_BUILD) ./...
 
 clean:
@@ -110,22 +110,22 @@ staticcheck:
 
 test: test-go test-rust
 
-test-go:
+test-go: libflux-go
 	$(GO_TEST) $(GO_TEST_FLAGS) ./...
 
 test-rust:
 	cd libflux && $(CARGO) test $(CARGO_ARGS) && $(CARGO) clippy $(CARGO_ARGS) -- -Dclippy::all
 
-test-race:
+test-race: libflux-go
 	$(GO_TEST) -race -count=1 ./...
 
-test-bench:
+test-bench: libflux-go
 	$(GO_TEST) -run=NONE -bench=. -benchtime=1x ./...
 
-vet: libflux
+vet: libflux-go
 	$(GO_VET) ./...
 
-bench:
+bench: libflux-go
 	$(GO_TEST) -bench=. -run=^$$ ./...
 
 release:
@@ -133,6 +133,11 @@ release:
 
 libflux/scanner.c: libflux/src/flux/scanner/scanner.rl
 	ragel -C -o libflux/scanner.c libflux/src/flux/scanner/scanner.rl
+
+# This target generates a file that forces the go libflux wrapper
+# to recompile which forces pkg-config to run again.
+libflux-go:
+	$(GO_GENERATE) ./libflux/go/libflux
 
 libflux-wasm:
 	cd libflux/src/flux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev
@@ -150,6 +155,7 @@ $(LIBFLUX_MEMTEST_BIN): libflux $(LIBFLUX_MEMTEST_SOURCES)
 	build \
 	default \
 	libflux \
+	libflux-go \
 	libflux-wasm \
 	fmt \
 	checkfmt \
