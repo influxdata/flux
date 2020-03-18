@@ -165,10 +165,16 @@ type FluxCompiler struct {
 	Query  string          `json:"query"`
 }
 
+func wrapFileJSONInPkg(bs []byte) []byte {
+	return []byte(fmt.Sprintf(
+		`{"type":"Package","package":"main","files":[%s]}`,
+		string(bs)))
+}
+
 func (c FluxCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
 	// Ignore context, it will be provided upon Program Start.
 	if c.Extern != nil {
-		hdl, err := runtime.JSONToHandle(c.Extern)
+		hdl, err := runtime.JSONToHandle(wrapFileJSONInPkg(c.Extern))
 		if err != nil {
 			return nil, err
 		}
@@ -203,7 +209,7 @@ func (c ASTCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Pr
 
 	// Ignore context, it will be provided upon Program Start.
 	if c.Extern != nil {
-		extHdl, err := runtime.JSONToHandle(c.Extern)
+		extHdl, err := runtime.JSONToHandle(wrapFileJSONInPkg(c.Extern))
 		if err != nil {
 			return nil, err
 		}

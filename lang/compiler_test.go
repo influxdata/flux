@@ -116,11 +116,8 @@ func TestFluxCompiler(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			var extern json.RawMessage
 			if tc.extern != nil {
-				pkg := &ast.Package{
-					Files: []*ast.File{tc.extern},
-				}
 				var err error
-				extern, err = json.Marshal(pkg)
+				extern, err = json.Marshal(tc.extern)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -302,10 +299,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 			}
 
 			if tc.file != nil {
-				pkg := &ast.Package{
-					Files: []*ast.File{tc.file},
-				}
-				bs, err := json.Marshal(&pkg)
+				bs, err := json.Marshal(tc.file)
 				if err != nil {
 					t.Fatal(err)
 				}
