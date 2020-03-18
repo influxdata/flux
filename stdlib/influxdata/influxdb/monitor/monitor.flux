@@ -20,14 +20,29 @@ from = (start, stop=now(), fn=(r) => true) =>
         |> filter(fn: fn)
         |> v1.fieldsAsCols()
 
-// StateChanges takes a stream of tables, fromLevel, and toLevel and returns
-// a stream of tables where status has gone from fromLevel to toLevel.
-//
-// StateChanges only operates on data with data containing r._measurement == "statuses"
-// and where r._level exists.
-stateChanges = (fromLevel="any", toLevel, tables=<-) => {
+// levels describing the result of a check
+levelOK = "ok"
+levelInfo = "info"
+levelWarn = "warn"
+levelCrit = "crit"
+levelUnknown = "unknown"
+
+_stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
+    otherLevelFilter = if toLevel == "any" or fromLevel == "any" then (r) => false
+                   else (r) => r._level != toLevel and r._level != fromLevel
+    
+    otherStatuses = tables
+        |> filter(fn: otherLevelFilter)
+        |> map(fn: (r) => ({r with level_value: -10}))
+        |> duplicate(column: "_level", as: "l2")
+        |> drop(columns: ["_level"])
+        |> rename(columns: {"l2": "_level"})
+        
+    toLevelFilter = if toLevel == "any" then (r) => r._level != fromLevel and exists r._level
+                   else (r) => r._level == toLevel
+    
     toStatuses = tables
-        |> filter(fn: (r) => r._level == toLevel and r._measurement == "statuses")
+        |> filter(fn: toLevelFilter)
         |> map(fn: (r) => ({r with level_value: 1}))
         |> duplicate(column: "_level", as: "l2")
         |> drop(columns: ["_level"])
@@ -43,14 +58,43 @@ stateChanges = (fromLevel="any", toLevel, tables=<-) => {
         |> drop(columns: ["_level"])
         |> rename(columns: {"l2": "_level"})
 
-     allStatuses = union(tables: [toStatuses, fromStatuses])
-        |> sort(columns: ["_time"])
+     allStatuses = union(tables: [toStatuses, fromStatuses, otherStatuses])
+        |> sort(columns: ["_time"], desc: false)
 
     return allStatuses
         |> difference(columns: ["level_value"])
-        |> filter(fn: (r) => r.level_value > 0)
+        |> filter(fn: (r) => r.level_value == 1)
         |> drop(columns: ["level_value"])
         |> experimental.group(mode: "extend", columns: ["_level"])
+}
+
+// stateChangesOnly takes a stream of tables that contains a _level column and
+// returns a stream of tables where each record in a table represents a state change
+// of the _level column.
+stateChangesOnly = (tables=<-) => {
+    return tables
+        |> duplicate(column: "_level", as: "l2")
+        |> drop(columns: ["_level"])
+        |> rename(columns: {"l2": "_level"})
+        |> map(fn: (r) => ({r with level_value: if r._level == levelCrit then 4
+                                                else if r._level == levelWarn then 3
+                                                else if r._level == levelInfo then 2
+                                                else if r._level == levelOK then 1
+                                                else 0}))
+        |> difference(columns: ["level_value"])
+        |> yield(name: "foo")
+        |> filter(fn: (r) => r.level_value != 0)
+        |> drop(columns: ["level_value"])
+        |> experimental.group(mode: "extend", columns: ["_level"])
+}
+
+// StateChanges takes a stream of tables, fromLevel, and toLevel and returns
+// a stream of tables where status has gone from fromLevel to toLevel.
+//
+// StateChanges only operates on data with data where r._level exists.
+stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
+    return if fromLevel == "any" and toLevel == "any" then tables |> stateChangesOnly()
+           else tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)
 }
 
 // Notify will call the endpoint and log the results.
@@ -81,13 +125,6 @@ logs = (start, stop=now(), fn) =>
 deadman = (t, tables=<-) => tables
     |> max(column: "_time")
     |> map(fn: (r) => ( {r with dead: r._time < t} ))
-
-// levels describing the result of a check
-levelOK = "ok"
-levelInfo = "info"
-levelWarn = "warn"
-levelCrit = "crit"
-levelUnknown = "unknown"
 
 // Check performs a check against its input using the given ok, info, warn and crit functions
 // and writes the result to a system bucket.
