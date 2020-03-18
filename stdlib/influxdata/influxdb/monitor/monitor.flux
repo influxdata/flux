@@ -32,6 +32,7 @@ stateChanges = (fromLevel="any", toLevel, tables=<-) => {
         |> duplicate(column: "_level", as: "l2")
         |> drop(columns: ["_level"])
         |> rename(columns: {"l2": "_level"})
+        |> drop(columns: ["_start", "_stop"])
 
     levelFilter = if fromLevel == "any" then (r) => r._level != toLevel and exists r._level
                    else (r) => r._level == fromLevel
@@ -42,6 +43,7 @@ stateChanges = (fromLevel="any", toLevel, tables=<-) => {
         |> duplicate(column: "_level", as: "l2")
         |> drop(columns: ["_level"])
         |> rename(columns: {"l2": "_level"})
+        |> drop(columns: ["_start", "_stop"])
 
      allStatuses = union(tables: [toStatuses, fromStatuses])
         |> sort(columns: ["_time"])
