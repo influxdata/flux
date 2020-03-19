@@ -6,17 +6,23 @@ use std::str;
 #[cfg(test)]
 use pretty_assertions::assert_eq;
 
-fn format_helper(golden: &str) {
-    let file = Parser::new(golden).parse_file("".to_string());
-    let mut fmt = Formatter::new(golden.len());
+fn format_helper(expected: &str) {
+    let file = Parser::new(expected).parse_file("".to_string());
+    let mut fmt = Formatter::default();
     fmt.format_file(&file, true);
-    let (ouput, _) = fmt.output();
-    assert_eq!(golden, ouput);
+    let output = fmt.output().unwrap();
+    assert_eq!(expected, output);
+}
+
+fn assert_format(script: &str, expected: &str) {
+    let output = format(script.to_string()).unwrap();
+    assert_eq!(expected, output);
 }
 
 #[test]
 fn binary_op() {
     format_helper("1 + 1 - 2");
+    assert_format("1 +  1 - 2", "1 + 1 - 2");
     format_helper("1 * 1 / 2");
     format_helper("2 ^ 4");
     format_helper("1 * (1 / 2)");
@@ -24,6 +30,11 @@ fn binary_op() {
 
 #[test]
 fn funcs() {
+    assert_format(
+        r#"(r) =>
+    (r.user ==     "user1")"#,
+        "(r) =>\n\t(r.user == \"user1\")",
+    );
     format_helper(
         r#"(r) =>
 	(r.user == "user1")"#,
