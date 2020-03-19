@@ -37,6 +37,7 @@ where `id` (or any other source identifying) tag is no present.
 - `strictFilter`
 - `toRows`
 - `filterRows`
+- `shapeData`
 
 **Aggregate operations:**
 - `groupByArea`
@@ -56,7 +57,7 @@ where `id` (or any other source identifying) tag is no present.
 
 The `gridFilter` filters data by specified region.
 It calculates grid of tokens that overlays specified region and then uses `s2_cell_id`
-to filteragainst the set.
+to filter against the set.
 The grid cells always overlay the region, therefore result may contain data with
 latitude and/or longitude outside the region.
 
