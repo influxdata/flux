@@ -5,7 +5,7 @@ use crate::semantic::env::Environment;
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 
 use flatbuffers;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use crate::semantic::fresh::Fresher;
 
@@ -189,8 +189,8 @@ impl From<fb::Prop<'_>> for Option<Property> {
 impl From<fb::Fun<'_>> for Option<Function> {
     fn from(t: fb::Fun) -> Option<Function> {
         let args = t.args()?;
-        let mut req = HashMap::new();
-        let mut opt = HashMap::new();
+        let mut req = BTreeMap::new();
+        let mut opt = BTreeMap::new();
         let mut pipe = None;
         for i in 0..args.len() {
             match args.get(i).into() {

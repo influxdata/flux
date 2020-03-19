@@ -20,7 +20,7 @@ func TestAnalyzeSource(t *testing.T) {
 		{
 			name: "failure",
 			flx:  `x = 10 + "foo"`,
-			err:  errors.New("cannot unify int with string"),
+			err:  errors.New("type error: @1:10-1:15 int != string"),
 		},
 	}
 	for _, tc := range tcs {

@@ -893,7 +893,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 		{
 			name:    "exists operator",
 			fluxSrc: `e = exists {foo: 30}.bar`,
-			err:     errors.New("cannot unify {{}} with {bar:t0 | t1}"),
+			err:     errors.New("type error: @1:12-1:21 {foo:int | {}} != {bar:t0 | t1}"),
 		},
 		{
 			name:    "exists operator with tvar",
