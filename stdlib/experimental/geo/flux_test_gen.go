@@ -3160,6 +3160,1630 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
+					Column: 107,
+					Line:   74,
+				},
+				File:   "filterRowsPivoted_test.flux",
+				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,tid,dist,lon,lat,tip\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,89c2594,taxi,end,1572566409947779410,1.2,-73.951332,40.7122,0\n\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,double,long,double,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,lat,lon,tid,tip,dist\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,89c25b4,taxi,end,40.671928,-73.962692,1572566426666145821,1.75,1.3\n\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,true,true,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,89c25bc,taxi,start,40.712173,-73.963913,1572566409947779410\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,89c25bc,taxi,start,40.688564,-73.965881,1572566426666145821\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\n#group,false,false,true,true,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long,double,double\n#default,_result,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,tid,lon,lat\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245\n\"\n\noutData = \"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\"\n\nt_filterRowsPivoted = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)\n    |> drop(columns: [\"_start\", \"_stop\"])\ntest _filterRowsPivoted = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsPivoted})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "filterRowsPivoted_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "filterRowsPivoted_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "filterRowsPivoted_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "filterRowsPivoted_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   46,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "inData = \"\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,tid,dist,lon,lat,tip\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,89c2594,taxi,end,1572566409947779410,1.2,-73.951332,40.7122,0\n\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,double,long,double,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,lat,lon,tid,tip,dist\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,89c25b4,taxi,end,40.671928,-73.962692,1572566426666145821,1.75,1.3\n\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,true,true,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,89c25bc,taxi,start,40.712173,-73.963913,1572566409947779410\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,89c25bc,taxi,start,40.688564,-73.965881,1572566426666145821\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\n#group,false,false,true,true,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long,double,double\n#default,_result,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,tid,lon,lat\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   46,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "\"\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,tid,dist,lon,lat,tip\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,89c2594,taxi,end,1572566409947779410,1.2,-73.951332,40.7122,0\n\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,double,long,double,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,lat,lon,tid,tip,dist\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,89c25b4,taxi,end,40.671928,-73.962692,1572566426666145821,1.75,1.3\n\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,true,true,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,89c25bc,taxi,start,40.712173,-73.963913,1572566409947779410\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,89c25bc,taxi,start,40.688564,-73.965881,1572566426666145821\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\n#group,false,false,true,true,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long,double,double\n#default,_result,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,tid,lon,lat\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,tid,dist,lon,lat,tip\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,89c2594,taxi,end,1572566409947779410,1.2,-73.951332,40.7122,0\n\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,double,long,double,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,lat,lon,tid,tip,dist\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,89c25b4,taxi,end,40.671928,-73.962692,1572566426666145821,1.75,1.3\n\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,true,true,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,true,true,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,89c25bc,taxi,start,40.712173,-73.963913,1572566409947779410\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,89c25bc,taxi,start,40.688564,-73.965881,1572566426666145821\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\n#group,false,false,true,true,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long,double,double\n#default,_result,,,,,,,,,,\n,result,table,_start,_stop,_time,s2_cell_id,_measurement,_pt,tid,lon,lat\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,89c2664,taxi,start,1572567458287113937,-73.776665,40.645245\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   66,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "outData = \"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   48,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   48,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   48,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   66,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "\"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   48,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   72,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "t_filterRowsPivoted = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)\n    |> drop(columns: [\"_start\", \"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   68,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   68,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "t_filterRowsPivoted",
+						Start: ast.Position{
+							Column: 1,
+							Line:   68,
+						},
+					},
+				},
+				Name: "t_filterRowsPivoted",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   72,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "(table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)\n    |> drop(columns: [\"_start\", \"_stop\"])",
+						Start: ast.Position{
+							Column: 23,
+							Line:   68,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 8,
+											Line:   69,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "table",
+										Start: ast.Position{
+											Column: 3,
+											Line:   69,
+										},
+									},
+								},
+								Name: "table",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   70,
+									},
+									File:   "filterRowsPivoted_test.flux",
+									Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)",
+									Start: ast.Position{
+										Column: 3,
+										Line:   69,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   70,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "start: 2019-11-01T00:00:00Z",
+											Start: ast.Position{
+												Column: 14,
+												Line:   70,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   70,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "start: 2019-11-01T00:00:00Z",
+												Start: ast.Position{
+													Column: 14,
+													Line:   70,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 19,
+														Line:   70,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 14,
+														Line:   70,
+													},
+												},
+											},
+											Name: "start",
+										},
+										Value: &ast.DateTimeLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   70,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "2019-11-01T00:00:00Z",
+													Start: ast.Position{
+														Column: 21,
+														Line:   70,
+													},
+												},
+											},
+											Value: parser.MustParseTime("2019-11-01T00:00:00Z"),
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   70,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "range(start: 2019-11-01T00:00:00Z)",
+										Start: ast.Position{
+											Column: 8,
+											Line:   70,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   70,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "range",
+											Start: ast.Position{
+												Column: 8,
+												Line:   70,
+											},
+										},
+									},
+									Name: "range",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 93,
+									Line:   71,
+								},
+								File:   "filterRowsPivoted_test.flux",
+								Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)",
+								Start: ast.Position{
+									Column: 3,
+									Line:   69,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 92,
+											Line:   71,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true",
+										Start: ast.Position{
+											Column: 23,
+											Line:   71,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 78,
+												Line:   71,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}",
+											Start: ast.Position{
+												Column: 23,
+												Line:   71,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   71,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "region",
+												Start: ast.Position{
+													Column: 23,
+													Line:   71,
+												},
+											},
+										},
+										Name: "region",
+									},
+									Value: &ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 78,
+													Line:   71,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "{lat: 40.7090214, lon: -73.61846, radius: 15.0}",
+												Start: ast.Position{
+													Column: 31,
+													Line:   71,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 47,
+														Line:   71,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "lat: 40.7090214",
+													Start: ast.Position{
+														Column: 32,
+														Line:   71,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 35,
+															Line:   71,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "lat",
+														Start: ast.Position{
+															Column: 32,
+															Line:   71,
+														},
+													},
+												},
+												Name: "lat",
+											},
+											Value: &ast.FloatLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 47,
+															Line:   71,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "40.7090214",
+														Start: ast.Position{
+															Column: 37,
+															Line:   71,
+														},
+													},
+												},
+												Value: 40.7090214,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 63,
+														Line:   71,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "lon: -73.61846",
+													Start: ast.Position{
+														Column: 49,
+														Line:   71,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 52,
+															Line:   71,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "lon",
+														Start: ast.Position{
+															Column: 49,
+															Line:   71,
+														},
+													},
+												},
+												Name: "lon",
+											},
+											Value: &ast.UnaryExpression{
+												Argument: &ast.FloatLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 63,
+																Line:   71,
+															},
+															File:   "filterRowsPivoted_test.flux",
+															Source: "73.61846",
+															Start: ast.Position{
+																Column: 55,
+																Line:   71,
+															},
+														},
+													},
+													Value: 73.61846,
+												},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 63,
+															Line:   71,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "-73.61846",
+														Start: ast.Position{
+															Column: 54,
+															Line:   71,
+														},
+													},
+												},
+												Operator: 6,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 77,
+														Line:   71,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "radius: 15.0",
+													Start: ast.Position{
+														Column: 65,
+														Line:   71,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 71,
+															Line:   71,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "radius",
+														Start: ast.Position{
+															Column: 65,
+															Line:   71,
+														},
+													},
+												},
+												Name: "radius",
+											},
+											Value: &ast.FloatLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 77,
+															Line:   71,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "15.0",
+														Start: ast.Position{
+															Column: 73,
+															Line:   71,
+														},
+													},
+												},
+												Value: 15.0,
+											},
+										}},
+										With: nil,
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 92,
+												Line:   71,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "strict: true",
+											Start: ast.Position{
+												Column: 80,
+												Line:   71,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 86,
+													Line:   71,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "strict",
+												Start: ast.Position{
+													Column: 80,
+													Line:   71,
+												},
+											},
+										},
+										Name: "strict",
+									},
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 92,
+													Line:   71,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "true",
+												Start: ast.Position{
+													Column: 88,
+													Line:   71,
+												},
+											},
+										},
+										Name: "true",
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 93,
+										Line:   71,
+									},
+									File:   "filterRowsPivoted_test.flux",
+									Source: "geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)",
+									Start: ast.Position{
+										Column: 8,
+										Line:   71,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 22,
+											Line:   71,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "geo.filterRows",
+										Start: ast.Position{
+											Column: 8,
+											Line:   71,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   71,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "geo",
+											Start: ast.Position{
+												Column: 8,
+												Line:   71,
+											},
+										},
+									},
+									Name: "geo",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 22,
+												Line:   71,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "filterRows",
+											Start: ast.Position{
+												Column: 12,
+												Line:   71,
+											},
+										},
+									},
+									Name: "filterRows",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   72,
+							},
+							File:   "filterRowsPivoted_test.flux",
+							Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)\n    |> drop(columns: [\"_start\", \"_stop\"])",
+							Start: ast.Position{
+								Column: 3,
+								Line:   69,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   72,
+									},
+									File:   "filterRowsPivoted_test.flux",
+									Source: "columns: [\"_start\", \"_stop\"]",
+									Start: ast.Position{
+										Column: 13,
+										Line:   72,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 41,
+											Line:   72,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "columns: [\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 13,
+											Line:   72,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   72,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 13,
+												Line:   72,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   72,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "[\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 22,
+												Line:   72,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   72,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "\"_start\"",
+												Start: ast.Position{
+													Column: 23,
+													Line:   72,
+												},
+											},
+										},
+										Value: "_start",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 40,
+													Line:   72,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "\"_stop\"",
+												Start: ast.Position{
+													Column: 33,
+													Line:   72,
+												},
+											},
+										},
+										Value: "_stop",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   72,
+								},
+								File:   "filterRowsPivoted_test.flux",
+								Source: "drop(columns: [\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 8,
+									Line:   72,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   72,
+									},
+									File:   "filterRowsPivoted_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 8,
+										Line:   72,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   68,
+							},
+							File:   "filterRowsPivoted_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 24,
+								Line:   68,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   68,
+								},
+								File:   "filterRowsPivoted_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 24,
+									Line:   68,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   68,
+							},
+							File:   "filterRowsPivoted_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 30,
+								Line:   68,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 107,
+							Line:   74,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "_filterRowsPivoted = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsPivoted})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   73,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   73,
+							},
+							File:   "filterRowsPivoted_test.flux",
+							Source: "_filterRowsPivoted",
+							Start: ast.Position{
+								Column: 6,
+								Line:   73,
+							},
+						},
+					},
+					Name: "_filterRowsPivoted",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 107,
+								Line:   74,
+							},
+							File:   "filterRowsPivoted_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsPivoted})",
+							Start: ast.Position{
+								Column: 27,
+								Line:   73,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 107,
+									Line:   74,
+								},
+								File:   "filterRowsPivoted_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsPivoted})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   74,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 106,
+										Line:   74,
+									},
+									File:   "filterRowsPivoted_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsPivoted}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   74,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   74,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   74,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   74,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   74,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   74,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   74,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   74,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   74,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   74,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   74,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   74,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   74,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   74,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   74,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   74,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   74,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   74,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   74,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   74,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   74,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   74,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   74,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   74,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   74,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   74,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   74,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   74,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   74,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   74,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   74,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   74,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   74,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   74,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   74,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   74,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   74,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   74,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   74,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   74,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   74,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 105,
+											Line:   74,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "fn: t_filterRowsPivoted",
+										Start: ast.Position{
+											Column: 82,
+											Line:   74,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   74,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   74,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 105,
+												Line:   74,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "t_filterRowsPivoted",
+											Start: ast.Position{
+												Column: 86,
+												Line:   74,
+											},
+										},
+									},
+									Name: "t_filterRowsPivoted",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 107,
+						Line:   74,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "test _filterRowsPivoted = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsPivoted})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   73,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   3,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "import \"experimental/geo\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   3,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "\"experimental/geo\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental/geo",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "filterRowsPivoted_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   1,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "package geo_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   1,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "geo_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "geo_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
 					Column: 106,
 					Line:   213,
 				},

@@ -84,10 +84,19 @@ strictFilter = (tables=<-, region) =>
 // Two-phase filtering by speficied region.
 // Returns rows of fields correlated by `correlationKey`.
 filterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, correlationKey=["_time"], strict=true) => {
-  _rows =
+  _columns =
     tables
-      |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)
-      |> toRows(correlationKey)
+      |> columns()
+      |> tableFind(fn: (key) => true )
+      |> getColumn(column: "_value")
+  _rows =
+    if contains(value: "lat", set: _columns) then
+      tables
+        |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)
+    else
+      tables
+        |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)
+        |> toRows(correlationKey)
   _result =
     if strict then
       _rows
