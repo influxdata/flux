@@ -89,7 +89,7 @@ jobs:
 
   release:
     docker:
-      - image: circleci/golang:1.12
+      - image: quay.io/influxdb/flux-build:latest
     environment:
       GOCACHE: /tmp/go-cache
       GOFLAGS: -p=8
@@ -105,10 +105,16 @@ jobs:
                 --commit-url https://github.com/influxdata/flux/commit \
                 -o release-notes.txt
       - run:
+          name: Install pkg-config
+          command: go build -o /go/bin/pkg-config github.com/influxdata/pkg-config
+      - run:
+          # Parallelism for goreleaser must be set to 1 so it doesn't
+          # attempt to invoke pkg-config, which invokes cargo,
+          # for multiple targets at the same time.
           name: Perform release
           command: |
             ./gotool.sh github.com/goreleaser/goreleaser release \
-                --rm-dist --release-notes release-notes.txt
+                --rm-dist -p 1 --release-notes release-notes.txt
 
 workflows:
   version: 2
