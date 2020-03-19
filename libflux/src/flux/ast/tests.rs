@@ -3,6 +3,89 @@
 use super::*;
 use chrono::TimeZone;
 
+/// ast_with_every_kind_of_node returns an AST that contains
+/// every kind of node, which can be useful for testing.
+pub fn ast_with_every_kind_of_node() -> Package {
+    let f = vec![
+        crate::parser::parse_string(
+            "test1",
+            r#"
+package mypkg
+import "my_other_pkg"
+import "yet_another_pkg"
+option now = () => (2030-01-01T00:00:00Z)
+option foo.bar = "baz"
+builtin foo
+
+# // bad stmt
+
+test aggregate_window_empty = () => ({
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    fn: (table=<-) =>
+        table
+            |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
+            |> aggregateWindow(every: 30s, fn: sum),
+})
+"#,
+        ),
+        crate::parser::parse_string(
+            "test2",
+            r#"
+a
+
+arr = [0, 1, 2]
+f = (i) => i
+ff = (i=<-, j) => {
+  k = i + j
+  return k
+}
+b = z and y
+b = z or y
+o = {red: "red", "blue": 30}
+m = o.red
+i = arr[0]
+n = 10 - 5 + 10
+n = 10 / 5 * 10
+m = 13 % 3
+p = 2^10
+b = 10 < 30
+b = 10 <= 30
+b = 10 > 30
+b = 10 >= 30
+eq = 10 == 10
+neq = 11 != 10
+b = not false
+e = exists o.red
+tables |> f()
+fncall = id(v: 20)
+fncall2 = foo(v: 20, w: "bar")
+v = if true then 70.0 else 140.0
+ans = "the answer is ${v}"
+paren = (1)
+
+i = 1
+f = 1.0
+s = "foo"
+d = 10s
+b = true
+dt = 2030-01-01T00:00:00Z
+re =~ /foo/
+re !~ /foo/
+bad_expr = 3 * / 1
+"#,
+        ),
+    ];
+    Package {
+        base: BaseNode {
+            ..BaseNode::default()
+        },
+        path: String::from("./"),
+        package: String::from("test"),
+        files: f,
+    }
+}
+
 /*
 {
     name: "string interpolation",
@@ -259,7 +342,7 @@ fn test_json_file() {
 */
 #[test]
 fn test_json_block() {
-    let n = Block {
+    let n = FunctionBody::Block(Block {
         base: BaseNode::default(),
         body: vec![Statement::Expr(ExprStmt {
             base: BaseNode::default(),
@@ -268,13 +351,13 @@ fn test_json_block() {
                 value: "hello".to_string(),
             }),
         })],
-    };
+    });
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
         r#"{"type":"Block","body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"hello"}}]}"#
     );
-    let deserialized: Block = serde_json::from_str(serialized.as_str()).unwrap();
+    let deserialized: FunctionBody = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
 }
 /*
@@ -839,7 +922,7 @@ fn test_json_arrow_function_expression() {
 */
 #[test]
 fn test_json_binary_expression() {
-    let n = BinaryExpr {
+    let n = Expression::Binary(Box::new(BinaryExpr {
         base: BaseNode::default(),
         operator: Operator::AdditionOperator,
         left: Expression::StringLit(StringLit {
@@ -850,13 +933,13 @@ fn test_json_binary_expression() {
             base: BaseNode::default(),
             value: "world".to_string(),
         }),
-    };
+    }));
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
         r#"{"type":"BinaryExpression","operator":"+","left":{"type":"StringLiteral","value":"hello"},"right":{"type":"StringLiteral","value":"world"}}"#
     );
-    let deserialized: BinaryExpr = serde_json::from_str(serialized.as_str()).unwrap();
+    let deserialized: Expression = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
 }
 /*
@@ -871,20 +954,20 @@ fn test_json_binary_expression() {
 */
 #[test]
 fn test_json_unary_expression() {
-    let n = UnaryExpr {
+    let n = Expression::Unary(Box::new(UnaryExpr {
         base: BaseNode::default(),
         operator: Operator::NotOperator,
         argument: Expression::Boolean(BooleanLit {
             base: BaseNode::default(),
             value: true,
         }),
-    };
+    }));
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
         r#"{"type":"UnaryExpression","operator":"not","argument":{"type":"BooleanLiteral","value":true}}"#
     );
-    let deserialized: UnaryExpr = serde_json::from_str(serialized.as_str()).unwrap();
+    let deserialized: Expression = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
 }
 /*
@@ -1428,4 +1511,36 @@ fn test_object_expression_with_source_locations_and_errors() {
     // TODO(affo): leaving proper error deserialization for the future.
     // let deserialized: ObjectExpr = serde_json::from_str(serialized.as_str()).unwrap();
     // assert_eq!(deserialized, n)
+}
+
+#[test]
+fn test_json_bad_statement() {
+    let n = Statement::Bad(BadStmt {
+        base: BaseNode::default(),
+        text: String::from("this is bad"),
+    });
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(
+        serialized,
+        r#"{"type":"BadStatement","text":"this is bad"}"#
+    );
+    let deserialized: Statement = serde_json::from_str(serialized.as_str()).unwrap();
+    assert_eq!(deserialized, n)
+}
+
+#[test]
+fn test_ast_json_roundtrip() {
+    let ast = ast_with_every_kind_of_node();
+    let serialized = match serde_json::to_string(&ast) {
+        Ok(str) => str,
+        Err(e) => panic!(format!("error serializing JSON: {}", e)),
+    };
+    let roundtrip_ast: Package = match serde_json::from_str(serialized.as_str()) {
+        Ok(ast) => {
+            println!("successfully deserialized AST");
+            ast
+        }
+        Err(e) => panic!(format!("error deserializing JSON: {}", e)),
+    };
+    assert_eq!(ast, roundtrip_ast);
 }

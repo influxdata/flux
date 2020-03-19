@@ -416,7 +416,7 @@ pub struct Block {
 // BadStmt is a placeholder for statements for which no correct statement nodes
 // can be created.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(rename = "BadStatement", tag = "type")]
+#[serde(rename = "BadStatement")]
 pub struct BadStmt {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
@@ -737,7 +737,7 @@ impl<'de> Deserialize<'de> for Operator {
 // BinaryExpr use binary operators act on two operands in an expression.
 // BinaryExpr includes relational and arithmetic operators
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(rename = "BinaryExpression", tag = "type")]
+#[serde(rename = "BinaryExpression")]
 pub struct BinaryExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
@@ -750,7 +750,7 @@ pub struct BinaryExpr {
 
 // UnaryExpr use operators act on a single operand in an expression.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(rename = "UnaryExpression", tag = "type")]
+#[serde(rename = "UnaryExpression")]
 pub struct UnaryExpr {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
