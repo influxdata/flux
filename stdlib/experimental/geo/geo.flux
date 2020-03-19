@@ -113,7 +113,7 @@ strictFilter = (tables=<-, region) =>
 filterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, correlationKey=["_time"], strict=true) => {
   _columns =
     tables
-      |> columns()
+      |> columns(column: "_value")
       |> tableFind(fn: (key) => true )
       |> getColumn(column: "_value")
   _rows =
