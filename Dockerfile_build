@@ -5,6 +5,8 @@ FROM golang:1.12
 # Install common packages
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
+    gcc-arm-linux-gnueabihf libc6-dev-armhf-cross \
+    gcc-aarch64-linux-gnu libc6-dev-arm64-cross \
     libtinfo5 \
     ruby \
     ca-certificates curl file \
@@ -48,6 +50,7 @@ RUN curl -SL http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ub
     | tar -xJC . && \
     mv clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04 clang_8.0.0
 
+COPY xcc.sh /usr/local/bin/xcc
 ENV PATH="/go/clang_8.0.0/bin:${PATH}" \
     LD_LIBRARY_PATH="/clang_8.0.0/lib:${LD_LIBRARY_PATH}" \
     CC=clang
@@ -67,6 +70,16 @@ RUN curl https://sh.rustup.rs -sSf | \
     sh -s -- --default-toolchain stable -y
 ENV PATH="$HOME/.cargo/bin:${PATH}"
 RUN rustup component add rustfmt
+
+# Install additional Rust targets
+ENV CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=gcc
+ENV CARGO_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+ENV CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+RUN rustup target add \
+    aarch64-unknown-linux-gnu \
+    arm-unknown-linux-gnueabihf \
+    armv7-unknown-linux-gnueabihf
 
 # Install wasm-pack and sccache
 RUN cargo install wasm-pack sccache
