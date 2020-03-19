@@ -1,8 +1,32 @@
 #![allow(missing_docs)]
-use crate::ast::{self, walk::Node};
+use crate::ast::{self, walk::Node, File};
+use crate::parser::parse_string;
 use crate::Error;
 
 use chrono::SecondsFormat;
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub fn format_from_js_file(js_file: JsValue) -> String {
+    if let Ok(file) = js_file.into_serde::<File>() {
+        if let Ok(converted) = convert_to_string(&file) {
+            return converted;
+        }
+    }
+    "".to_string()
+}
+
+pub fn convert_to_string(file: &File) -> Result<String, String> {
+    let mut formatter = Formatter::default();
+    formatter.format_file(file, true);
+    formatter.output()
+}
+
+pub fn format(contents: String) -> Result<String, String> {
+    let file = parse_string("", contents.as_str());
+
+    convert_to_string(&file)
+}
 
 pub struct Formatter {
     builder: String,
@@ -10,23 +34,24 @@ pub struct Formatter {
     err: Option<Error>,
 }
 
-impl Formatter {
-    // giving too much capacity can significantly boost the performance
-    // see https://github.com/hoodie/concatenation_benchmarks-rs
-    pub fn new(cap: usize) -> Formatter {
+impl Default for Formatter {
+    fn default() -> Self {
         Formatter {
-            builder: String::with_capacity(cap),
+            builder: String::new(),
             indentation: 0,
             err: None,
         }
     }
+}
 
+impl Formatter {
     // returns the final string and error msg
-    pub fn output(&self) -> (&str, &str) {
+    pub fn output(&self) -> Result<String, String> {
         if let Some(err) = &self.err {
-            return ("", &err.msg);
+            return Err(err.msg.clone());
         }
-        (&self.builder, "")
+
+        Ok(self.builder.clone())
     }
 
     fn write_string(&mut self, s: &str) {
@@ -58,7 +83,7 @@ impl Formatter {
         self.write_rune('\n')
     }
 
-    pub fn format_file(&mut self, n: &ast::File, include_pkg: bool) {
+    pub fn format_file(&mut self, n: &File, include_pkg: bool) {
         let sep = '\n';
         if let Some(pkg) = &n.package {
             if include_pkg && !pkg.name.name.is_empty() {
