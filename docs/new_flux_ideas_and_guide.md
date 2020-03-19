@@ -189,7 +189,7 @@ You can limit the results returned in the query by specifying filtering criteria
 Here's an example that filters based on the location:
 
 ```
-@my_data.h2o_temperature{location, surface_degrees, time, state == "CA"}
+@my_data.h2o_temperature{location, surface_degrees, time, (r) => r.state == "CA"}
 ```
 
 | location | state | surface_degrees | time |
@@ -201,11 +201,15 @@ Note that `state` is returned in the result because it was listed in the filter 
 logic to match criteria like:
 
 ```
-@my_data.h2o_temperature{location, surface_degrees, time, location == "coyote_creek" OR location == "puget_sound"}
+@my_data.h2o_temperature{location, surface_degrees, time, (r) => r.location == "coyote_creek" or r.location == "puget_sound"}
 ```
 
 See that while the column names are separated by commas, the filter criteria is separated by the different matching 
 clauses.
+
+The `(r) => r.state == "CA"` syntax is the syntax for creating a function in Flux, a filter predicate is naturally a function we write is as such in the _Column Filter Predicate_ block.
+The syntax is read as a function that takes a single argument `r`  and the function body follows the `=>`.
+In this case the function returns a boolean value for whether the record's `state` is equal to `"CA"`.
 
 
 #### Matching Critera
@@ -226,10 +230,10 @@ The regex and in operators are probably the trickiest ones to work with, so here
 // this is a comment because it has // before it
 
 // status is a tag and this will match any stats between 200 and 500
-@my_data.http_requests{status =~ /[2-5][0-9][0-9]/}
+@my_data.http_requests{(r) => r.status =~ /[2-5][0-9][0-9]/}
 
 // will match states in the array
-@my_data.h2o_temperature{state in ["CA", "WA"]}
+@my_data.h2o_temperature{(r) => r.state in ["CA", "WA"]}
 ```
 
 ### Aggregate, Select, Transform and Group Data
@@ -276,7 +280,7 @@ definition, we'd expect to get 1 row per series in the dataset (assuming that we
 columns in the resulting table. Here's the query:
 
 ```
-@my_data.h2o_temperature{bottom_degrees, time > -3h}
+@my_data.h2o_temperature{bottom_degrees, (r) => r.time > -3h}
     |> aggregate({min(bottom_degrees), max(bottom_degrees), mean(bottom_degrees)}) 
 ```
 
@@ -297,7 +301,7 @@ which are the two tags that we have for data in the `h20_measurements` measureme
 the aggregate and we can then group by those columns:
 
 ```
-@my_data.h2o_temperature{location, state, bottom_degrees, time > -3h}
+@my_data.h2o_temperature{location, state, bottom_degrees, (r) => r.time > -3h}
     |> aggregate({min(bottom_degrees), max(bottom_degrees), mean(bottom_degrees)}, by: ["location", "state"]) 
 ```
 
@@ -313,7 +317,7 @@ enough to unique identify a series.
 Say we wanted to get a summary per state: 
 
 ```
-@my_data.h2o_temperature{location, state, bottom_degrees, time > -3h}
+@my_data.h2o_temperature{location, state, bottom_degrees, (r) => r.time > -3h}
     |> aggregate({min(bottom_degrees), max(bottom_degrees), mean(bottom_degrees)}, by: ["state"]) 
 ```
 
@@ -329,7 +333,7 @@ The aggregate function can window the data by time intervals. For example, if we
 the last three hours:
 
 ```
-@my_data.h2o_temperature{location, bottom_degrees, time > -3h}
+@my_data.h2o_temperature{location, bottom_degrees, (r) => r.time > -3h}
     |> aggregate({min(bottom_degrees), max(bottom_degrees), mean(bottom_degrees)}, by: ["location"], window: 1h) 
 ```
 
@@ -360,7 +364,7 @@ However, The difference is that select returns specific rows, rather than a summ
 examples:
 
 ```
-@my_data.h2o_temperature{location, state, bottom_degrees, surface_degrees, time > -3h}
+@my_data.h2o_temperature{location, state, bottom_degrees, surface_degrees, (r) => r.time > -3h}
     |> select(fn: min("bottom_degrees"), by: [])
 ```
 
@@ -378,7 +382,7 @@ You can also select in groups based on time or by other columns, just like you c
 an example using time grouping and inserting the time window for associated row selections:
 
 ```
-@my_data.h2o_temperature{location, state, bottom_degrees, time > -3h}
+@my_data.h2o_temperature{location, state, bottom_degrees, (r) => r.time > -3h}
     |> selector(fn: max(bottom_degrees), by: ["state"], window: 1h, windowColumn: "window")
 
 // if you include window_column, the result will put the window timestamp for each selected row in that column
@@ -418,7 +422,7 @@ functions passed in can also be called on tables. For example:
 @my_data.h2o_temperature |> last(by: ["location"])
 
 // get the average for each hour for each location
-@my_data.h2o_temperature{time > -3h} |> mean(by: ["location"], window: 1h)
+@my_data.h2o_temperature{(r) => r.time > -3h} |> mean(by: ["location"], window: 1h)
 ``` 
 
 Selectors can only be called with the `select` function.
@@ -428,7 +432,7 @@ The `count` function is an aggregate while the `distinct` function is a selector
 a helper function that will combine operations for you.
  
 ```
-@my_data.h2o_temperature{state, time > -3h}
+@my_data.h2o_temperature{state, (r) => r.time > -3h}
     |> select(fn: distinct(state), window: 1h, windowColumn: "time")
 ```
 
@@ -447,7 +451,7 @@ name for where we put the window markers for each distinct state. You could then
 per hour:
 
 ```
-@my_data.h2o_temperature{state, time > -3h}
+@my_data.h2o_temperature{state, (r) => r.time > -3h}
     |> select(fn: distinct(state), window: 1h)
     |> timeShift(-1m)
     |> count("state", window: 1h)
@@ -468,7 +472,7 @@ All of this is encapsulated by the `countDistinct` function. For example, if we 
 distinct locations that reported in each sate for each hour in the last three hours.
 
 ```
-@my_data.h2o_temperature{location, state, bottom_degrees, time > -3h}
+@my_data.h2o_temperature{location, state, bottom_degrees, (r) => r.time > -3h}
     |> countDistinct(location, by: ["state"], window: 1h)
 ```
 
@@ -481,14 +485,14 @@ example:
 @my_data.h2o_temperature{location, state, bottom_degrees as degrees, top_degrees, time}
 
 // or renaming columns in an aggregate:
-@my_data.h2o_temperature{bottom_degrees, time > -1h}
+@my_data.h2o_temperature{bottom_degrees, (r) => r.time > -1h}
     |> aggregate({min(bottom_degrees) as min, max(bottom_degrees) as max})
 ```
 
 Here are some examples of doing math and introducing the concept of variables:
 
 ```
-temps = @my_data.h2o_temperature{bottom_degrees, surface_degrees, time, location == "coyote_creek"}
+temps = @my_data.h2o_temperature{bottom_degrees, surface_degrees, time, (r) => r.location == "coyote_creek"}
 
 // do some math and return a new table with an addition column. Note that as is required on the end. Resulting
 // table will have all the columns of the previous on and this new one
@@ -506,8 +510,8 @@ The above example shows assigning a result set to a variable so that it can be u
 can also use this construction to do implicit joins across tables. Here's a made up example:
 
 ```
-foo_data = @my_data.foo{value as foo_val, and time > -1h}
-bar_data = @my_data.bar{value as bar_val, and time > -1h}
+foo_data = @my_data.foo{value as foo_val, (r) => r.time > -1h}
+bar_data = @my_data.bar{value as bar_val, (r) => r.time > -1h}
 
 foo_data.foo_val - bar_data.bar_val as difference_to_bar
 ```
@@ -535,7 +539,7 @@ top_temps = @my_data.h2o_temperature{surface_degrees, location}
     |> selector({top(surface_degrees, 10)})
 
 // now get the last hour of data for those 10 locations
-@my_data.h2o_temperature{location in top_temps.location and time > -1h}
+@my_data.h2o_temperature{(r) => r.location in top_temps.location and r.time > -1h}
 ```
 
 ## Function Reference for Test
@@ -743,7 +747,7 @@ histograms and many more.
 Here's an example of the basic graph call:
 
 ```
-@my_data.cpu{host, usage_system, usage_user, time, cpu == "cpu-total" AND time > -1h}
+@my_data.cpu{host, usage_system, usage_user, time, (r) => r.cpu == "cpu-total" and r.time > -1h}
     |> graph(yCols: ["usage_system", "usage_user"], xCol: "time", by: ["host"])
 ```
 
@@ -898,18 +902,18 @@ To show calling another function, let's look at getting the last value, but only
 `CA`:
 
 ```
-@my_data.h2o_temperature{location, surface_degrees, state == "CA"}
+@my_data.h2o_temperature{location, surface_degrees, (r) => r.state == "CA"}
 // will map to this Flux functional code
 from(bucket: "my_data", measurement: "h2o_temperature", columns: ["location", "state", "surface_degrees"])
-    |> filter({state == "CA"})
+    |> filter((r) => r.state == "CA")
 ```
 
 We've introduced a number of new concepts here. From the top line, we can see that the last part of the **Column 
-Filter Predicate** is a matcher of `state == "CA"`. Matchers like this are always the last argument in the filter
-predicate. They can be any boolean expression and can be nested like `(location == "platte_river" or location == 
-"cherry_creek") and state == "CO"`. Notice also that in our shortcut syntax on the top line, we left `state` out 
+Filter Predicate** is a matcher of `(r) => r.state == "CA"`. Matchers like this are always the last argument in the filter
+predicate. They can be any boolean expression and can be nested like `(r) => (r.location == "platte_river" or r.location == 
+"cherry_creek") and r.state == "CO"`. Notice also that in our shortcut syntax on the top line, we left `state` out 
 of the list of columns that we want in the result, but that columns is still brought in because the matcher 
-`state == "CA"` tells Flux to include it. That's why we see `state` included in the list of columns in our call
+`r.state == "CA"` tells Flux to include it. That's why we see `state` included in the list of columns in our call
 to `from` (it has to be included for the call to `filter` to work). 
 
 In the matcher part of the filter predicate, the column identifier is always on the left hand side. This can
@@ -921,34 +925,20 @@ call to `from` and send that as the first argument into the `filter` function. T
 be a one-liner (everything on a single line), but it's idiomatic to split function calls up on separate lines. 
 
 Another thing to note on the functional translation is how we're passing the filter predicate to the `filter` 
-function. It's passed as a positional argument `{state == "CA"}` The following would be equivalent ways to get 
+function. It's passed as a positional argument `(r) => r.state == "CA"` The following would be equivalent ways to get 
 the same thing:
 
 ```
 from(bucket: "my_data", measurement: "h2o_temperature", columns: ["location", "state", "surface_degrees"])
-    |> filter(fn: {state == "CA"})
-
-// is the same as
-from(bucket: "my_data", measurement: "h2o_temperature")
-    |> filter(fn: {"location", "surface_degrees", state == "CA"})
-// Because columns is an optional argument to from and if left out, all columns will be included. We can
-// also see that the filter predicate block includes the columns to filter down to
-
-// is the same as
-from(bucket: "my_data", measurement: "h2o_temperature", columns: ["location", "state", "surface_degrees"])
     |> filter(fn: (r) => r.state == "CA")
-// in this case, we're not passing a filter predicate block, but instead an anonymous function, which
-// won't change the columns in the result, rather it will only specify which rows to include
-```
 
-The last example shows Flux' anonymous function syntax. Don't worry if it looks strange to you, we'll come back 
-to it later.
+```
 
 Finally, let's look at how we can get the last value for each series in a measurement where the series must have
-`state == "CA"`,  but only if that value appears in the last five minutes:
+`(r) => r.state == "CA"`,  but only if that value appears in the last five minutes:
 
 ```
-@my_data.h2o_temperature{location, state, surface_degrees, state == "CA" and time > -5m}
+@my_data.h2o_temperature{location, state, surface_degrees, (r) => r.state == "CA" and r.time > -5m}
   |> select(fn: last, by: ["_key"]) 
 ```
 
