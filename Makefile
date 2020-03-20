@@ -153,7 +153,9 @@ test-valgrind: $(LIBFLUX_MEMTEST_BIN)
 
 LIBFLUX_MEMTEST_SOURCES=libflux/c/*.c
 $(LIBFLUX_MEMTEST_BIN): libflux $(LIBFLUX_MEMTEST_SOURCES)
-	$(CC) -g -Wall -Werror $(LIBFLUX_MEMTEST_SOURCES) -I./libflux/include -L./libflux/target/debug -lflux -llibstd -o $@
+	$(CC) -g -Wall -Werror $(LIBFLUX_MEMTEST_SOURCES) -I./libflux/include \
+		./libflux/target/debug/libflux.a ./libflux/target/debug/liblibstd.a \
+		-o $@ -lpthread -ldl
 
 .PHONY: generate \
 	clean \
