@@ -5,7 +5,6 @@ use crate::semantic::env::Environment;
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 
 use flatbuffers;
-use std::collections::{BTreeMap, HashMap};
 
 use crate::semantic::fresh::Fresher;
 
@@ -15,10 +14,13 @@ use crate::semantic::types::{
     Function,
     Kind,
     MonoType,
+    MonoTypeMap,
     PolyType,
+    PolyTypeMap,
     Property,
     Row,
     Tvar,
+    TvarKinds,
 };
 
 impl From<fb::Fresher<'_>> for Fresher {
@@ -30,7 +32,7 @@ impl From<fb::Fresher<'_>> for Fresher {
 impl From<fb::TypeEnvironment<'_>> for Option<Environment> {
     fn from(env: fb::TypeEnvironment) -> Option<Environment> {
         let env = env.assignments()?;
-        let mut types = HashMap::new();
+        let mut types = PolyTypeMap::new();
         for i in 0..env.len() {
             let assignment: Option<(String, PolyType)> = env.get(i).into();
             let (id, ty) = assignment?;
@@ -56,7 +58,7 @@ impl From<fb::PolyType<'_>> for Option<PolyType> {
             vars.push(v.get(i).into());
         }
         let c = t.cons()?;
-        let mut cons = HashMap::new();
+        let mut cons = TvarKinds::new();
         for i in 0..c.len() {
             let constraint: Option<(Tvar, Kind)> = c.get(i).into();
             let (tv, kind) = constraint?;
@@ -189,8 +191,8 @@ impl From<fb::Prop<'_>> for Option<Property> {
 impl From<fb::Fun<'_>> for Option<Function> {
     fn from(t: fb::Fun) -> Option<Function> {
         let args = t.args()?;
-        let mut req = BTreeMap::new();
-        let mut opt = BTreeMap::new();
+        let mut req = MonoTypeMap::new();
+        let mut opt = MonoTypeMap::new();
         let mut pipe = None;
         for i in 0..args.len() {
             match args.get(i).into() {
@@ -551,9 +553,8 @@ fn build_arg<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use maplit;
-
     use crate::semantic::parser;
+    use crate::semantic::types::SemanticMap;
 
     #[rustfmt::skip]
     use crate::semantic::flatbuffers::semantic_generated::fbsemantic::{
@@ -587,7 +588,7 @@ mod tests {
         let a = parser::parse("forall [] bool").unwrap();
         let b = parser::parse("forall [] time").unwrap();
 
-        let want: Environment = maplit::hashmap! {
+        let want: Environment = semantic_map! {
             String::from("a") => a,
             String::from("b") => b,
         }

@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::fs;
 use std::io;
 use std::path::PathBuf;
@@ -17,11 +17,16 @@ use crate::semantic::nodes::infer_file;
 use crate::semantic::parser::parse;
 use crate::semantic::sub::Substitutable;
 use crate::semantic::types;
-use crate::semantic::types::{MaxTvar, MonoType, PolyType, Property, Row, Tvar};
+use crate::semantic::types::{
+    MaxTvar, MonoType, PolyType, PolyTypeMap, PolyTypeMapMap, Property, Row, SemanticMap, Tvar,
+    TvarKinds,
+};
 
 use walkdir::WalkDir;
 
 const PRELUDE: [&str; 2] = ["universe", "influxdata/influxdb"];
+
+type AstFileMap = SemanticMap<String, ast::File>;
 
 #[derive(Debug, PartialEq)]
 pub struct Error {
@@ -69,14 +74,7 @@ impl From<&str> for Error {
 #[allow(clippy::type_complexity)]
 // Infer the types of the standard library returning two importers, one for the prelude
 // and one for the standard library, as well as a type variable fresher.
-pub fn infer_stdlib() -> Result<
-    (
-        HashMap<String, PolyType>,
-        HashMap<String, PolyType>,
-        Fresher,
-    ),
-    Error,
-> {
+pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher), Error> {
     let (builtins, mut f) = builtin_types()?;
 
     let files = file_map(parse_flux_files("../../../stdlib")?);
@@ -88,9 +86,9 @@ pub fn infer_stdlib() -> Result<
 }
 
 #[allow(clippy::type_complexity)]
-fn builtin_types() -> Result<(HashMap<String, HashMap<String, PolyType>>, Fresher), Error> {
+fn builtin_types() -> Result<(PolyTypeMapMap, Fresher), Error> {
     let mut tv = Tvar(0);
-    let mut ty = HashMap::new();
+    let mut ty = PolyTypeMapMap::new();
     for (path, values) in builtins().iter() {
         for (name, expr) in values {
             let expr = parse(expr)?;
@@ -101,7 +99,7 @@ fn builtin_types() -> Result<(HashMap<String, HashMap<String, PolyType>>, Freshe
             }
 
             ty.entry((*path).to_string())
-                .or_insert_with(HashMap::new)
+                .or_insert_with(PolyTypeMap::new)
                 .insert((*name).to_string(), expr);
         }
     }
@@ -111,13 +109,13 @@ fn builtin_types() -> Result<(HashMap<String, HashMap<String, PolyType>>, Freshe
 #[allow(clippy::type_complexity)]
 fn infer_pre<I: Importer>(
     f: &mut Fresher,
-    files: &HashMap<String, ast::File>,
-    builtin: &HashMap<String, I>,
-) -> Result<(HashMap<String, PolyType>, HashMap<String, PolyType>), Error> {
-    let mut prelude = HashMap::new();
-    let mut imports = HashMap::new();
+    files: &AstFileMap,
+    builtin: &SemanticMap<String, I>,
+) -> Result<(PolyTypeMap, PolyTypeMap), Error> {
+    let mut prelude = PolyTypeMap::new();
+    let mut imports = PolyTypeMap::new();
     for name in &PRELUDE {
-        let (types, importer) = infer_pkg(name, f, files, builtin, HashMap::new(), imports)?;
+        let (types, importer) = infer_pkg(name, f, files, builtin, PolyTypeMap::new(), imports)?;
         for (k, v) in types {
             prelude.insert(k, v);
         }
@@ -129,11 +127,11 @@ fn infer_pre<I: Importer>(
 #[allow(clippy::type_complexity)]
 fn infer_std<I: Importer>(
     f: &mut Fresher,
-    files: &HashMap<String, ast::File>,
-    builtin: &HashMap<String, I>,
-    prelude: HashMap<String, PolyType>,
-    mut imports: HashMap<String, PolyType>,
-) -> Result<HashMap<String, PolyType>, Error> {
+    files: &AstFileMap,
+    builtin: &SemanticMap<String, I>,
+    prelude: PolyTypeMap,
+    mut imports: PolyTypeMap,
+) -> Result<PolyTypeMap, Error> {
     for (path, _) in files.iter() {
         if imports.contains_key(path) {
             continue;
@@ -167,8 +165,8 @@ fn parse_flux_files(path: &str) -> io::Result<Vec<ast::File>> {
 }
 
 // Associates an import path with each file
-fn file_map(files: Vec<ast::File>) -> HashMap<String, ast::File> {
-    files.into_iter().fold(HashMap::new(), |mut acc, file| {
+fn file_map(files: Vec<ast::File>) -> AstFileMap {
+    files.into_iter().fold(AstFileMap::new(), |mut acc, file| {
         let name = file.name.rsplitn(2, '/').collect::<Vec<&str>>()[1].to_string();
         acc.insert(name, file);
         acc
@@ -189,7 +187,7 @@ fn imports(file: &ast::File) -> Vec<&str> {
 #[allow(clippy::type_complexity)]
 fn dependencies<'a>(
     name: &'a str,
-    pkgs: &'a HashMap<String, ast::File>,
+    pkgs: &'a AstFileMap,
     mut deps: Vec<&'a str>,
     mut seen: HashSet<&'a str>,
     mut done: HashSet<&'a str>,
@@ -222,12 +220,9 @@ fn dependencies<'a>(
 }
 
 // Constructs a polytype, or more specifically a generic row type, from a hash map
-pub fn build_polytype<S: ::std::hash::BuildHasher>(
-    from: HashMap<String, PolyType, S>,
-    f: &mut Fresher,
-) -> Result<PolyType, Error> {
+pub fn build_polytype(from: PolyTypeMap, f: &mut Fresher) -> Result<PolyType, Error> {
     let (r, cons) = build_row(from, f);
-    let mut kinds = HashMap::new();
+    let mut kinds = TvarKinds::new();
     let sub = infer::solve(&cons, &mut kinds, f)?;
     Ok(infer::generalize(
         &Environment::empty(),
@@ -236,10 +231,7 @@ pub fn build_polytype<S: ::std::hash::BuildHasher>(
     ))
 }
 
-fn build_row<S: ::std::hash::BuildHasher>(
-    from: HashMap<String, PolyType, S>,
-    f: &mut Fresher,
-) -> (Row, Constraints) {
+fn build_row(from: PolyTypeMap, f: &mut Fresher) -> (Row, Constraints) {
     let mut r = Row::Empty;
     let mut cons = Constraints::empty();
 
@@ -268,16 +260,16 @@ fn build_row<S: ::std::hash::BuildHasher>(
 //
 #[allow(clippy::type_complexity)]
 fn infer_pkg<I: Importer>(
-    name: &str,                         // name of package to infer
-    f: &mut Fresher,                    // type variable fresher
-    files: &HashMap<String, ast::File>, // files available for inference
-    builtin: &HashMap<String, I>,       // builtin types
-    prelude: HashMap<String, PolyType>, // prelude types
-    imports: HashMap<String, PolyType>, // types available for import
+    name: &str,                       // name of package to infer
+    f: &mut Fresher,                  // type variable fresher
+    files: &AstFileMap,               // files available for inference
+    builtin: &SemanticMap<String, I>, // builtin types
+    prelude: PolyTypeMap,             // prelude types
+    imports: PolyTypeMap,             // types available for import
 ) -> Result<
     (
-        HashMap<String, PolyType>, // inferred types
-        HashMap<String, PolyType>, // types available for import (possibly updated)
+        PolyTypeMap, // inferred types
+        PolyTypeMap, // types available for import (possibly updated)
     ),
     Error,
 > {
@@ -376,13 +368,13 @@ mod tests {
 
             z = b.y
         "#;
-        let files = maplit::hashmap! {
+        let files = semantic_map! {
             String::from("a") => parse_string("a.flux", a),
             String::from("b") => parse_string("b.flux", b),
             String::from("c") => parse_string("c.flux", c),
         };
-        let builtins = maplit::hashmap! {
-            String::from("b") => Environment::from(maplit::hashmap! {
+        let builtins = semantic_map! {
+            String::from("b") => Environment::from(semantic_map! {
                 String::from("x") => parse("forall [] int")?,
             }),
         };
@@ -391,11 +383,11 @@ mod tests {
             &mut Fresher::from(1),
             &files,
             &builtins,
-            HashMap::new(),
-            HashMap::new(),
+            PolyTypeMap::new(),
+            PolyTypeMap::new(),
         )?;
 
-        let want = maplit::hashmap! {
+        let want = semantic_map! {
             String::from("z") => parse("forall [] int")?,
         };
         if want != types {
@@ -407,7 +399,7 @@ mod tests {
             });
         }
 
-        let want = maplit::hashmap! {
+        let want = semantic_map! {
             String::from("a") => parse("forall [t0] {f: (x: t0) -> t0}")?,
             String::from("b") => parse("forall [] {x: int | y: int}")?,
         };
@@ -445,7 +437,7 @@ mod tests {
         let b = r#"
             import "a"
         "#;
-        let files = maplit::hashmap! {
+        let files = semantic_map! {
             String::from("a") => parse_string("a.flux", a),
             String::from("b") => parse_string("b.flux", b),
         };

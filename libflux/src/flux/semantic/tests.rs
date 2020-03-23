@@ -31,7 +31,7 @@ use crate::semantic::import::Importer;
 use crate::semantic::nodes;
 use crate::semantic::parser::parse;
 use crate::semantic::sub::Substitutable;
-use crate::semantic::types::{MaxTvar, MonoType, PolyType};
+use crate::semantic::types::{MaxTvar, MonoType, PolyType, PolyTypeMap, SemanticMap};
 
 use crate::ast;
 use crate::parser::parse_string;
@@ -65,7 +65,7 @@ fn validate(t: PolyType) -> Result<PolyType, String> {
     return Ok(t);
 }
 
-fn parse_map(m: HashMap<&str, &str>) -> HashMap<String, PolyType> {
+fn parse_map(m: HashMap<&str, &str>) -> PolyTypeMap {
     m.into_iter()
         .map(|(name, expr)| {
             let init = parse(expr).expect(format!("failed to parse {}", name).as_str());
@@ -91,7 +91,7 @@ fn infer_types(
     want: Option<HashMap<&str, &str>>,
 ) -> Result<Environment, nodes::Error> {
     // Parse polytype expressions in external packages.
-    let imports: HashMap<&str, HashMap<String, PolyType>> = imp
+    let imports: SemanticMap<&str, SemanticMap<String, PolyType>> = imp
         .into_iter()
         .map(|(path, pkg)| (path, parse_map(pkg)))
         .collect();
@@ -292,7 +292,7 @@ macro_rules! test_error_msg {
 
 macro_rules! map {
     ($( $key: expr => $val: expr ),*$(,)?) => {{
-         let mut map = ::std::collections::HashMap::new();
+         let mut map = HashMap::new();
          $( map.insert($key, $val); )*
          map
     }}
@@ -300,7 +300,7 @@ macro_rules! map {
 
 macro_rules! package {
     ($( $key: expr => $val: expr ),*$(,)?) => {{
-         let mut map = ::std::collections::HashMap::new();
+         let mut map = HashMap::new();
          $( map.insert($key, $val); )*
          map
     }}

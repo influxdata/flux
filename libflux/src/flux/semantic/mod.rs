@@ -5,6 +5,8 @@ mod import;
 
 mod infer;
 
+#[macro_use]
+pub mod types;
 pub mod bootstrap;
 pub mod check;
 pub mod env;
@@ -12,7 +14,6 @@ pub mod fresh;
 pub mod nodes;
 pub mod parser;
 pub mod sub;
-pub mod types;
 pub mod walk;
 
 #[cfg(test)]

@@ -1,7 +1,6 @@
 use crate::semantic::import::Importer;
 use crate::semantic::sub::{Substitutable, Substitution};
-use crate::semantic::types::{union, PolyType, Tvar};
-use std::collections::HashMap;
+use crate::semantic::types::{union, PolyType, PolyTypeMap, Tvar};
 
 // A type environment maps program identifiers to their polymorphic types.
 //
@@ -12,7 +11,7 @@ use std::collections::HashMap;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Environment {
     pub parent: Option<Box<Environment>>,
-    pub values: HashMap<String, PolyType>,
+    pub values: PolyTypeMap,
 }
 
 impl Substitutable for Environment {
@@ -43,8 +42,8 @@ impl Importer for Environment {
 }
 
 // Derive a type environment from a hash map
-impl From<HashMap<String, PolyType>> for Environment {
-    fn from(bindings: HashMap<String, PolyType>) -> Environment {
+impl From<PolyTypeMap> for Environment {
+    fn from(bindings: PolyTypeMap) -> Environment {
         Environment {
             parent: None,
             values: bindings,
@@ -56,7 +55,7 @@ impl Environment {
     pub fn empty() -> Environment {
         Environment {
             parent: None,
-            values: HashMap::new(),
+            values: PolyTypeMap::new(),
         }
     }
     // The following clippy lint is ignored due to taking a `Self` type as the
@@ -67,7 +66,7 @@ impl Environment {
     pub fn new(from: Self) -> Environment {
         Environment {
             parent: Some(Box::new(from)),
-            values: HashMap::new(),
+            values: PolyTypeMap::new(),
         }
     }
     pub fn lookup(&self, v: &str) -> Option<&PolyType> {

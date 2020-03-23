@@ -18,13 +18,12 @@ use crate::semantic::{
     import::Importer,
     infer::{Constraint, Constraints},
     sub::{Substitutable, Substitution},
-    types::{Array, Function, Kind, MonoType, PolyType, Tvar},
+    types::{Array, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar, TvarKinds},
 };
 
 use chrono::prelude::DateTime;
 use chrono::FixedOffset;
 use derivative::Derivative;
-use std::collections::{BTreeMap, HashMap};
 use std::fmt;
 use std::vec::Vec;
 
@@ -270,7 +269,7 @@ where
     S: Importer,
 {
     let (env, cons) = pkg.infer(env, f, importer, builtins)?;
-    Ok((env, infer::solve(&cons, &mut HashMap::new(), f)?))
+    Ok((env, infer::solve(&cons, &mut TvarKinds::new(), f)?))
 }
 
 pub fn infer_file<T, S>(
@@ -514,7 +513,7 @@ pub struct ExprStmt {
 impl ExprStmt {
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
         let (env, cons) = self.expression.infer(env, f)?;
-        let sub = infer::solve(&cons, &mut HashMap::new(), f)?;
+        let sub = infer::solve(&cons, &mut TvarKinds::new(), f)?;
         Ok((env.apply(&sub), cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -548,7 +547,7 @@ pub struct VariableAssgn {
     vars: Vec<Tvar>,
 
     #[derivative(PartialEq = "ignore")]
-    cons: HashMap<Tvar, Vec<Kind>>,
+    cons: TvarKinds,
 
     pub loc: ast::SourceLocation,
 
@@ -560,7 +559,7 @@ impl VariableAssgn {
     pub fn new(id: Identifier, init: Expression, loc: ast::SourceLocation) -> VariableAssgn {
         VariableAssgn {
             vars: Vec::new(),
-            cons: HashMap::new(),
+            cons: TvarKinds::new(),
             loc,
             id,
             init,
@@ -585,7 +584,7 @@ impl VariableAssgn {
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
         let (env, constraints) = self.init.infer(env, f)?;
 
-        let mut kinds = HashMap::new();
+        let mut kinds = TvarKinds::new();
         let sub = infer::solve(&constraints, &mut kinds, f)?;
 
         // Apply substitution to the type environment
@@ -763,10 +762,10 @@ impl FunctionExpr {
     fn infer(&mut self, mut env: Environment, f: &mut Fresher) -> Result {
         let mut cons = Constraints::empty();
         let mut pipe = None;
-        let mut req = BTreeMap::new();
-        let mut opt = BTreeMap::new();
+        let mut req = MonoTypeMap::new();
+        let mut opt = MonoTypeMap::new();
         // This params will build the nested env when inferring the function body.
-        let mut params = HashMap::new();
+        let mut params = PolyTypeMap::new();
         for param in &mut self.params {
             match param.default {
                 Some(ref mut e) => {
@@ -778,7 +777,7 @@ impl FunctionExpr {
                     // is the one of the default value ("1" in "a=1").
                     let typ = PolyType {
                         vars: Vec::new(),
-                        cons: HashMap::new(),
+                        cons: TvarKinds::new(),
                         expr: e.type_of().clone(),
                     };
                     params.insert(id.clone(), typ);
@@ -792,7 +791,7 @@ impl FunctionExpr {
                     let ftvar = f.fresh();
                     let typ = PolyType {
                         vars: Vec::new(),
-                        cons: HashMap::new(),
+                        cons: TvarKinds::new(),
                         expr: MonoType::Var(ftvar),
                     };
                     params.insert(id.clone(), typ.clone());
@@ -1210,7 +1209,7 @@ impl CallExpr {
         // update the environment and the constraints, and use the inferred types to
         // build the fields of the type for this call expression.
         let (mut env, mut cons) = self.callee.infer(env, f)?;
-        let mut req = BTreeMap::new();
+        let mut req = MonoTypeMap::new();
         let mut pipe = None;
         for Property {
             key: ref mut id,
@@ -1237,7 +1236,7 @@ impl CallExpr {
         cons.add(Constraint::Equal(
             self.callee.type_of().clone(),
             MonoType::Fun(Box::new(Function {
-                opt: BTreeMap::new(),
+                opt: MonoTypeMap::new(),
                 req,
                 pipe,
                 // The return type of a function call is the type of the call itself.
@@ -1851,7 +1850,6 @@ mod tests {
     use crate::ast;
     use crate::semantic::types::{MonoType, Tvar};
     use crate::semantic::walk::{walk, Node};
-    use maplit::hashmap;
     use std::rc::Rc;
 
     #[test]
@@ -2079,7 +2077,7 @@ mod tests {
                 ],
             }],
         };
-        let sub: Substitution = hashmap! {
+        let sub: Substitution = semantic_map! {
             Tvar(0) => MonoType::Int,
             Tvar(1) => MonoType::Int,
             Tvar(2) => MonoType::Int,

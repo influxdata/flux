@@ -2,8 +2,7 @@ use crate::ast::SourceLocation;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::sub::{Substitutable, Substitution};
-use crate::semantic::types::{minus, Error, Kind, MonoType, PolyType, Tvar};
-use std::collections::HashMap;
+use crate::semantic::types::{minus, Error, Kind, MonoType, PolyType, SubstitutionMap, TvarKinds};
 use std::ops;
 
 // Type constraints are produced during type inference and come
@@ -65,7 +64,7 @@ impl From<Constraint> for Constraints {
 // Solve a set of type constraints
 pub fn solve(
     cons: &Constraints,
-    with: &mut HashMap<Tvar, Vec<Kind>>,
+    with: &mut TvarKinds,
     fresher: &mut Fresher,
 ) -> Result<Substitution, Error> {
     cons.0
@@ -104,9 +103,9 @@ pub fn solve(
 // quantified if has not already been quantified another type in the
 // type environment.
 //
-pub fn generalize(env: &Environment, with: &HashMap<Tvar, Vec<Kind>>, t: MonoType) -> PolyType {
+pub fn generalize(env: &Environment, with: &TvarKinds, t: MonoType) -> PolyType {
     let vars = minus(&env.free_vars(), t.free_vars());
-    let mut cons = HashMap::new();
+    let mut cons = TvarKinds::new();
     for (tv, kinds) in with {
         if vars.contains(tv) {
             cons.insert(*tv, kinds.to_owned());
@@ -135,7 +134,7 @@ pub fn instantiate(
         .vars
         .into_iter()
         .map(|tv| (tv, MonoType::Var(f.fresh())))
-        .collect::<HashMap<Tvar, MonoType>>()
+        .collect::<SubstitutionMap>()
         .into();
     // Generate constraints for the new fresh type variables
     let constraints = poly
