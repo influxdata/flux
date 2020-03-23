@@ -12,6 +12,7 @@ use std::rc::Rc;
 // OptionMap maps the name of a Flux option (including an optional package qualifier)
 // to its corresponding option statement.
 type OptionMap<'a> = HashMap<(Option<&'a str>, &'a str), &'a nodes::OptionStmt>;
+type VariableAssignMap<'a> = HashMap<&'a str, Option<&'a nodes::VariableAssgn>>;
 
 /// This function checks a semantic graph, looking for errors.
 ///
@@ -87,7 +88,7 @@ fn check_option_stmts(pkg: &nodes::Package) -> Result<OptionMap, Error> {
         }
     }
 
-    let mut opts = HashMap::new();
+    let mut opts = OptionMap::new();
     for o in opt_stmts {
         let name = get_option_name(o)?;
         if opts.contains_key(&name) {
@@ -127,7 +128,7 @@ fn get_option_name(o: &nodes::OptionStmt) -> Result<(Option<&str>, &str), Error>
 fn check_vars<'a>(pkg: &'a nodes::Package, opts: &'a OptionMap) -> Result<(), Error> {
     let mut v = VarVisitor {
         opts,
-        vars_stack: vec![HashMap::new()],
+        vars_stack: vec![VariableAssignMap::new()],
         in_option: false,
         err: None,
     };
@@ -143,7 +144,7 @@ struct VarVisitor<'a> {
     opts: &'a OptionMap<'a>,
     /// a stack of maps showing which variables are currently in scope
     /// (the last item in the Vec is the most nested scope)
-    vars_stack: Vec<HashMap<&'a str, Option<&'a nodes::VariableAssgn>>>,
+    vars_stack: Vec<VariableAssignMap<'a>>,
     in_option: bool,
     err: Option<Error>,
 }
@@ -161,7 +162,7 @@ impl<'a> walk::Visitor<'a> for VarVisitor<'a> {
                 // These can only be inside option statements
                 self.in_option = false;
             }
-            walk::Node::FunctionExpr(_) => self.vars_stack.push(HashMap::new()),
+            walk::Node::FunctionExpr(_) => self.vars_stack.push(VariableAssignMap::new()),
             walk::Node::FunctionParameter(fp) => {
                 let name = fp.key.name.as_str();
                 self.vars_stack.last_mut().unwrap().insert(name, None);
@@ -200,7 +201,7 @@ impl<'a> walk::Visitor<'a> for VarVisitor<'a> {
 fn check_option_dependencies(opts: &OptionMap) -> Result<(), Error> {
     let mut v = OptionDepVisitor {
         opts,
-        vars_stack: vec![HashMap::new()],
+        vars_stack: vec![VariableAssignMap::new()],
         bad_id: None,
     };
     for &o in opts.values() {
@@ -227,7 +228,7 @@ fn check_option_dependencies(opts: &OptionMap) -> Result<(), Error> {
 
 struct OptionDepVisitor<'a> {
     opts: &'a OptionMap<'a>,
-    vars_stack: Vec<HashMap<&'a str, Option<&'a nodes::VariableAssgn>>>,
+    vars_stack: Vec<VariableAssignMap<'a>>,
     bad_id: Option<&'a nodes::IdentifierExpr>,
 }
 
@@ -238,7 +239,7 @@ impl<'a> walk::Visitor<'a> for OptionDepVisitor<'a> {
         }
 
         match *node {
-            Node::FunctionExpr(_) => self.vars_stack.push(HashMap::new()),
+            Node::FunctionExpr(_) => self.vars_stack.push(VariableAssignMap::new()),
             Node::FunctionParameter(fp) => {
                 let name = fp.key.name.as_str();
                 self.vars_stack.last_mut().unwrap().insert(name, None);

@@ -1,10 +1,8 @@
 use flux::ast;
 use flux::semantic::convert_source;
 use flux::semantic::nodes::*;
-use flux::semantic::types::{Function, MonoType, Tvar};
+use flux::semantic::types::{Function, MonoType, SemanticMap, Tvar};
 use flux::semantic::walk::{walk_mut, NodeMut};
-use maplit;
-use std::collections::BTreeMap;
 
 use pretty_assertions::assert_eq;
 
@@ -21,26 +19,26 @@ f(a: s)
     )
     .unwrap();
     let f_type = Function {
-        req: maplit::btreemap! {
+        req: flux::semantic_map! {
             "a".to_string() => MonoType::Var(Tvar(4)),
         },
-        opt: BTreeMap::new(),
+        opt: SemanticMap::new(),
         pipe: None,
         retn: MonoType::Var(Tvar(4)),
     };
     let f_call_int_type = Function {
-        req: maplit::btreemap! {
+        req: flux::semantic_map! {
             "a".to_string() => MonoType::Int,
         },
-        opt: BTreeMap::new(),
+        opt: SemanticMap::new(),
         pipe: None,
         retn: MonoType::Int,
     };
     let f_call_string_type = Function {
-        req: maplit::btreemap! {
+        req: flux::semantic_map! {
             "a".to_string() => MonoType::String,
         },
-        opt: BTreeMap::new(),
+        opt: SemanticMap::new(),
         pipe: None,
         retn: MonoType::String,
     };

@@ -1,24 +1,25 @@
 use crate::semantic::fresh::{Fresh, Fresher};
 use crate::semantic::import::Importer;
 use crate::semantic::parser::parse;
-use maplit::hashmap;
-use std::collections::hash_map::Iter;
-use std::collections::HashMap;
+use crate::semantic::types::{PolyTypeMap, SemanticMap, SemanticMapIter, TvarMap};
+
+type BuiltinsMapValue<'a> = SemanticMap<&'a str, &'a str>;
+type BuiltinsMap<'a> = SemanticMap<&'a str, SemanticMap<&'a str, &'a str>>;
 
 pub struct Builtins<'a> {
-    pkgs: HashMap<&'a str, HashMap<&'a str, &'a str>>,
+    pkgs: BuiltinsMap<'a>,
 }
 
 impl<'a> Builtins<'a> {
-    pub fn iter(&'a self) -> Iter<&'a str, HashMap<&'a str, &'a str>> {
+    pub fn iter(&'a self) -> SemanticMapIter<&'a str, BuiltinsMapValue<'a>> {
         self.pkgs.iter()
     }
 
     pub fn importer_for(&'a self, pkgpath: &str, f: &mut Fresher) -> impl Importer {
-        let mut h = HashMap::new();
+        let mut h = PolyTypeMap::new();
         if let Some(values) = self.pkgs.get(pkgpath) {
             for (name, expr) in values {
-                let pty = parse(expr).unwrap().fresh(f, &mut HashMap::new());
+                let pty = parse(expr).unwrap().fresh(f, &mut TvarMap::new());
                 h.insert((*name).to_string(), pty);
             }
         }
@@ -28,13 +29,13 @@ impl<'a> Builtins<'a> {
 
 pub fn builtins() -> Builtins<'static> {
     Builtins {
-        pkgs: hashmap! {
-            "csv" => maplit::hashmap! {
+        pkgs: semantic_map! {
+            "csv" => semantic_map! {
                 // This is a "provide exactly one argument" function
                 // https://github.com/influxdata/flux/issues/2249
                 "from" => "forall [t0] where t0: Row (?csv: string, ?file: string) -> [t0]",
             },
-            "date" => maplit::hashmap! {
+            "date" => semantic_map! {
                  "second" => "forall [] (t: time) -> int",
                  "minute" => "forall [] (t: time) -> int",
                  "hour" => "forall [] (t: time) -> int",
@@ -50,16 +51,16 @@ pub fn builtins() -> Builtins<'static> {
                  "nanosecond" => "forall [] (t: time) -> int",
                  "truncate" => "forall [] (t: time, unit: duration) -> time",
             },
-            "experimental/bigtable" => maplit::hashmap! {
+            "experimental/bigtable" => semantic_map! {
                      "from" => "forall [t0] where t0: Row (token: string, project: string, instance: string, table: string) -> [t0]",
             },
-            "experimental/geo" => maplit::hashmap! {
+            "experimental/geo" => semantic_map! {
                      "containsLatLon" => "forall [t0] where t0: Row (region: t0, lat: float, lon: float) -> bool",
                      "getGrid" => "forall [t0] where t0: Row (region: t0, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int) -> {level: int | set: [string]}",
                      "getLevel" => "forall [] (token: string) -> int",
                      "s2CellIDToken" => "forall [] (?token: string, ?point: {lat: float | lon: float}, level: int) -> string",
             },
-            "experimental/http" => maplit::hashmap! {
+            "experimental/http" => semantic_map! {
                 "get" => r#"
                     forall [t0, t1] where t0: Row, t1: Row (
                         url: string,
@@ -68,7 +69,7 @@ pub fn builtins() -> Builtins<'static> {
                     ) -> {statusCode: int | body: bytes | headers: t1}
                 "#,
             },
-            "experimental/mqtt" => maplit::hashmap! {
+            "experimental/mqtt" => semantic_map! {
                 "to" => r#"
                     forall [t0, t1] where t0: Row, t1: Row (
                         <-tables: [t0],
@@ -87,10 +88,10 @@ pub fn builtins() -> Builtins<'static> {
                     ) -> [t1]
                 "#,
             },
-            "experimental/prometheus" => maplit::hashmap! {
+            "experimental/prometheus" => semantic_map! {
                 "scrape" => "forall [t0] where t0: Row (url: string) -> [t0]",
             },
-            "experimental" => maplit::hashmap! {
+            "experimental" => semantic_map! {
                  "addDuration" => "forall [] (d: duration, to: time) -> time",
                  "subDuration" => "forall [] (d: duration, from: time) -> time",
                  "group" => "forall [t0] where t0: Row (<-tables: [t0], mode: string, columns: [string]) -> [t0]",
@@ -102,17 +103,17 @@ pub fn builtins() -> Builtins<'static> {
                  // https://github.com/influxdata/flux/issues/1660
                  "to" => "forall [t0] where t0: Row (<-tables: [t0], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) -> [t0]",
             },
-            "generate" => maplit::hashmap! {
+            "generate" => semantic_map! {
                 "from" => "forall [] (start: time, stop: time, count: int, fn: (n: int) -> int) -> [{ _start: time | _stop: time | _time: time | _value:int }]",
             },
-            "http" => maplit::hashmap! {
+            "http" => semantic_map! {
                 "post" => "forall [t0] where t0: Row (url: string, ?headers: t0, ?data: bytes) -> int",
                 "basicAuth" => "forall [] (u: string, p: string) -> string",
             },
-            "influxdata/influxdb/secrets" => maplit::hashmap! {
+            "influxdata/influxdb/secrets" => semantic_map! {
                 "get" => "forall [] (key: string) -> string",
             },
-            "influxdata/influxdb/v1" => maplit::hashmap! {
+            "influxdata/influxdb/v1" => semantic_map! {
                 // exactly one of json and file must be specified
                 // https://github.com/influxdata/flux/issues/2250
                 "json" => "forall [t0] where t0: Row (?json: string, ?file: string) -> [t0]",
@@ -132,7 +133,7 @@ pub fn builtins() -> Builtins<'static> {
                     }]
                 "#,
             },
-            "influxdata/influxdb" => maplit::hashmap! {
+            "influxdata/influxdb" => semantic_map! {
                 // This is a one-or-the-other parameters function
                 // https://github.com/influxdata/flux/issues/1659
                 "from" => r#"forall [t0, t1] (
@@ -176,10 +177,10 @@ pub fn builtins() -> Builtins<'static> {
                     }]
                 "#,
             },
-            "internal/gen" => maplit::hashmap! {
+            "internal/gen" => semantic_map! {
                 "tables" => "forall [t0] (n: int, tags: [{name: string | cardinality: int}]) -> [{_time: time | _value: float | t0}]",
             },
-            "internal/promql" => maplit::hashmap! {
+            "internal/promql" => semantic_map! {
                 "changes" => "forall [t0, t1] (<-tables: [{_value: float | t0}]) -> [{_value: float | t1}]",
                 "promqlDayOfMonth" => "forall [] (timestamp: float) -> float",
                 "promqlDayOfWeek" => "forall [] (timestamp: float) -> float",
@@ -199,17 +200,17 @@ pub fn builtins() -> Builtins<'static> {
                 "promqlYear" => "forall [] (timestamp: float) -> float",
                 "join" => "forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (left: [t0], right: [t1], fn: (left: t0, right: t1) -> t2) -> [t2]",
             },
-            "internal/testutil" => maplit::hashmap! {
+            "internal/testutil" => semantic_map! {
                 "fail" => "forall [] () -> bool",
                 "yield" => r#"
                     forall [t0] (<-v: t0) -> t0
                 "#,
                 "makeRecord" => "forall [t0, t1] where t0: Row, t1: Row (o: t0) -> t1",
             },
-            "json" => maplit::hashmap! {
+            "json" => semantic_map! {
                 "encode" => "forall [t0] (v: t0) -> bytes",
             },
-            "kafka" => maplit::hashmap! {
+            "kafka" => semantic_map! {
                 "to" => r#"
                     forall [t0] where t0: Row (
                         <-tables: [t0],
@@ -223,7 +224,7 @@ pub fn builtins() -> Builtins<'static> {
                         ?valueColumns: [string]
                     ) -> [t0]"#,
             },
-            "math" => maplit::hashmap! {
+            "math" => semantic_map! {
                 "pi" => "forall [] float",
                 "e" => "forall [] float",
                 "phi" => "forall [] float",
@@ -307,10 +308,10 @@ pub fn builtins() -> Builtins<'static> {
                 "ldexp" => "forall [] (frac: float, exp: int) -> float",
                 "pow10" => "forall [] (n: int) -> float",
             },
-            "pagerduty" => maplit::hashmap! {
+            "pagerduty" => semantic_map! {
                 "dedupKey" => "forall [t0] (<-tables: [t0]) -> [{_pagerdutyDedupKey: string | t0}]",
             },
-            "regexp" => maplit::hashmap! {
+            "regexp" => semantic_map! {
                 "compile" => "forall [] (v: string) -> regexp",
                 "quoteMeta" => "forall [] (v: string) -> string",
                 "findString" => "forall [] (r: regexp, v: string) -> string",
@@ -320,20 +321,20 @@ pub fn builtins() -> Builtins<'static> {
                 "splitRegexp" => "forall [] (r: regexp, v: string, i: int) -> [string]",
                 "getString" => "forall [] (r: regexp) -> string",
             },
-            "runtime" => maplit::hashmap! {
+            "runtime" => semantic_map! {
                 "version" => "forall [] () -> string",
             },
-            "slack" => maplit::hashmap! {
+            "slack" => semantic_map! {
                 "validateColorString" => "forall [] (color: string) -> string",
             },
-            "socket" => maplit::hashmap! {
+            "socket" => semantic_map! {
                 "from" => "forall [t0] (url: string, ?decoder: string) -> [t0]",
             },
-            "sql" => maplit::hashmap! {
+            "sql" => semantic_map! {
                 "from" => "forall [t0] (driverName: string, dataSourceName: string, query: string) -> [t0]",
                 "to" => "forall [t0] (<-tables: [t0], driverName: string, dataSourceName: string, table: string, ?batchSize: int) -> [t0]",
             },
-            "strings" => maplit::hashmap! {
+            "strings" => semantic_map! {
                 "title" => "forall [] (v: string) -> string",
                 "toUpper" => "forall [] (v: string) -> string",
                 "toLower" => "forall [] (v: string) -> string",
@@ -370,15 +371,15 @@ pub fn builtins() -> Builtins<'static> {
                 "strlen" => "forall [] (v: string) -> int",
                 "substring" => "forall [] (v: string, start: int, end: int) -> string",
             },
-            "system" => maplit::hashmap! {
+            "system" => semantic_map! {
                 "time" => "forall [] () -> time",
             },
-            "testing" => maplit::hashmap! {
+            "testing" => semantic_map! {
                 "assertEquals" => "forall [t0] (name: string, <-got: [t0], want: [t0]) -> [t0]",
                 "assertEmpty" => "forall [t0] (<-tables: [t0]) -> [t0]",
                 "diff" => "forall [t0] (<-got: [t0], want: [t0], ?verbose: bool) -> [{_diff: string | t0}]",
             },
-            "universe" => maplit::hashmap! {
+            "universe" => semantic_map! {
                 "bool" => "forall [t0] (v: t0) -> bool",
                 "bytes" => "forall [t0] (v: t0) -> bytes",
                 "chandeMomentumOscillator" => r#"

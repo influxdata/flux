@@ -1,11 +1,8 @@
-use std::{
-    collections::{BTreeMap, HashMap},
-    iter::Peekable,
-    slice::Iter,
-    str::Chars,
-};
+use std::{iter::Peekable, slice::Iter, str::Chars};
 
-use crate::semantic::types::{Array, Function, Kind, MonoType, PolyType, Property, Row, Tvar};
+use crate::semantic::types::{
+    Array, Function, Kind, MonoType, MonoTypeMap, PolyType, Property, Row, Tvar, TvarKinds,
+};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 // TokenType holds all possible TokenType values
@@ -293,7 +290,7 @@ impl Parser<'_> {
             self.next(); // move to where
             self.parse_constraints()?
         } else {
-            HashMap::new()
+            TvarKinds::new()
         };
 
         Ok(PolyType {
@@ -343,8 +340,8 @@ impl Parser<'_> {
     }
 
     // parse_contraints parses a list of constraints for each type_var that has contraints
-    fn parse_constraints(&mut self) -> Result<HashMap<Tvar, Vec<Kind>>, &'static str> {
-        let mut cons_map = HashMap::new();
+    fn parse_constraints(&mut self) -> Result<TvarKinds, &'static str> {
+        let mut cons_map = TvarKinds::new();
 
         loop {
             let next_token = self.peek();
@@ -507,8 +504,8 @@ impl Parser<'_> {
         self.next();
         let mut token = self.next();
 
-        let mut req_args = BTreeMap::new();
-        let mut opt_args = BTreeMap::new();
+        let mut req_args = MonoTypeMap::new();
+        let mut opt_args = MonoTypeMap::new();
         let mut pipe_arg = None;
         let mut need_comma = false;
         loop {
@@ -696,7 +693,7 @@ mod tests {
         assert_eq!(
             Ok(PolyType {
                 vars: vec![Tvar(0)],
-                cons: maplit::hashmap! {Tvar(0) => vec![Kind::Addable]},
+                cons: semantic_map! {Tvar(0) => vec![Kind::Addable]},
                 expr: MonoType::Var(Tvar(0)),
             }),
             parse(expr)
@@ -706,16 +703,16 @@ mod tests {
     fn parse_primitives_test() {
         let parse_text = "forall [t0] (x: t0, y: float) -> t0";
 
-        let mut req_args = BTreeMap::new();
+        let mut req_args = MonoTypeMap::new();
         req_args.insert("x".to_string(), MonoType::Var(Tvar(0)));
         req_args.insert("y".to_string(), MonoType::Float);
 
         let output = PolyType {
             vars: vec![Tvar(0)],
-            cons: HashMap::new(),
+            cons: TvarKinds::new(),
             expr: MonoType::Fun(Box::new(Function {
                 req: req_args,
-                opt: BTreeMap::new(),
+                opt: MonoTypeMap::new(),
                 pipe: None,
                 retn: MonoType::Var(Tvar(0)),
             })),
@@ -724,7 +721,7 @@ mod tests {
 
         let parse_text = "forall [t0] where t0: Comparable bool";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Comparable);
@@ -740,7 +737,7 @@ mod tests {
         let parse_text =
             "forall [t1] where t1: Addable + Subtractable + Comparable + Divisible float";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Addable);
@@ -759,7 +756,7 @@ mod tests {
 
         let parse_text = "forall [t10] where t10: Comparable + Nullable regexp";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Comparable);
@@ -777,7 +774,7 @@ mod tests {
         let text = "forall [t0] uint";
         let output = PolyType {
             vars: vec![Tvar(0)],
-            cons: HashMap::new(),
+            cons: TvarKinds::new(),
             expr: MonoType::Uint,
         };
 
@@ -785,7 +782,7 @@ mod tests {
 
         let text = "forall [t0] where t0: Comparable bool";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Comparable);
@@ -801,7 +798,7 @@ mod tests {
 
         let text = "forall [t1] where t1: Addable + Subtractable int";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Addable);
@@ -818,7 +815,7 @@ mod tests {
 
         let text =
             "forall [t0, t1] where t0: Equatable + Nullable, t1: Addable + Subtractable string";
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Equatable);
@@ -841,7 +838,7 @@ mod tests {
         let text = "forall [] bytes";
         let output = PolyType {
             vars: vec![],
-            cons: HashMap::new(),
+            cons: TvarKinds::new(),
             expr: MonoType::Bytes,
         };
         assert_eq!(Ok(output), parse(text));
@@ -851,7 +848,7 @@ mod tests {
     fn parse_array_test() {
         let parse_text = "forall [t0, t1] where t0: Comparable + Equatable + Nullable, t1: Comparable + Equatable + Nullable [uint]";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Comparable);
@@ -875,7 +872,7 @@ mod tests {
 
         let parse_text = "forall [t0, t1, t2, t3, t4] where t0: Addable, t1: Addable + Subtractable, t2: Addable + Subtractable + Divisible [[time]]";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Addable);
@@ -904,7 +901,7 @@ mod tests {
 
         let text = "forall [t0] where t0: Comparable + Equatable [uint]";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Comparable);
@@ -921,7 +918,7 @@ mod tests {
 
         let text = "forall [t0] where t0: Addable + Divisible [[duration]]";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Addable);
@@ -945,7 +942,7 @@ mod tests {
 
         let output = PolyType {
             vars: vec![Tvar(0)],
-            cons: HashMap::new(),
+            cons: TvarKinds::new(),
             expr: MonoType::Arr(Box::new(Array(MonoType::Row(Box::new(Row::Extension {
                 head: Property {
                     k: "foo".to_string(),
@@ -962,16 +959,16 @@ mod tests {
         let parse_text =
             "forall [t12] where t12: Subtractable (x: t12, ?y: int, <-var: float) -> t12";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Subtractable);
         bounds.insert(Tvar(12), kinds);
 
-        let mut req_arg = BTreeMap::new();
+        let mut req_arg = MonoTypeMap::new();
         req_arg.insert("x".to_string(), MonoType::Var(Tvar(12)));
 
-        let mut opt_arg = BTreeMap::new();
+        let mut opt_arg = MonoTypeMap::new();
         opt_arg.insert("y".to_string(), MonoType::Int);
 
         let pipe_arg = Some(Property {
@@ -994,13 +991,13 @@ mod tests {
 
         let text = "forall [t0] where t0: Subtractable (x: t0) -> t0";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Subtractable);
         bounds.insert(Tvar(0), kinds);
 
-        let mut req_arg = BTreeMap::new();
+        let mut req_arg = MonoTypeMap::new();
         req_arg.insert("x".to_string(), MonoType::Var(Tvar(0)));
 
         let output = PolyType {
@@ -1008,7 +1005,7 @@ mod tests {
             cons: bounds,
             expr: MonoType::Fun(Box::new(Function {
                 req: req_arg,
-                opt: BTreeMap::new(),
+                opt: MonoTypeMap::new(),
                 pipe: None,
                 retn: MonoType::Var(Tvar(0)),
             })),
@@ -1019,7 +1016,7 @@ mod tests {
         let text =
             "forall [t1, t10, t100] where t1: Addable, t10: Subtractable (x: t1, ?y: t10) -> t100";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
 
         let mut kinds = Vec::new();
         kinds.push(Kind::Addable);
@@ -1029,10 +1026,10 @@ mod tests {
         kinds.push(Kind::Subtractable);
         bounds.insert(Tvar(10), kinds);
 
-        let mut req_args = BTreeMap::new();
+        let mut req_args = MonoTypeMap::new();
         req_args.insert("x".to_string(), MonoType::Var(Tvar(1)));
 
-        let mut opt_args = BTreeMap::new();
+        let mut opt_args = MonoTypeMap::new();
         opt_args.insert("y".to_string(), MonoType::Var(Tvar(10)));
 
         let output = PolyType {
@@ -1050,7 +1047,7 @@ mod tests {
 
         let text = "forall [t0] where t0: Nullable (<-x: t0) -> t0";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Nullable);
@@ -1065,8 +1062,8 @@ mod tests {
             vars: vec![Tvar(0)],
             cons: bounds,
             expr: MonoType::Fun(Box::new(Function {
-                req: BTreeMap::new(),
-                opt: BTreeMap::new(),
+                req: MonoTypeMap::new(),
+                opt: MonoTypeMap::new(),
                 pipe: pipe_arg,
                 retn: MonoType::Var(Tvar(0)),
             })),
@@ -1076,7 +1073,7 @@ mod tests {
 
         let text = "forall [t0, t1] where t0: Comparable (<-: t0) -> t0";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Comparable);
@@ -1091,8 +1088,8 @@ mod tests {
             vars: vec![Tvar(0), Tvar(1)],
             cons: bounds,
             expr: MonoType::Fun(Box::new(Function {
-                req: BTreeMap::new(),
-                opt: BTreeMap::new(),
+                req: MonoTypeMap::new(),
+                opt: MonoTypeMap::new(),
                 pipe: pipe_arg,
                 retn: MonoType::Var(Tvar(0)),
             })),
@@ -1102,12 +1099,12 @@ mod tests {
 
         let text = "forall [] (_p1: int, ?p_2: int, <-_p3: string) -> int";
         let req = {
-            let mut m = BTreeMap::new();
+            let mut m = MonoTypeMap::new();
             m.insert("_p1".to_string(), MonoType::Int);
             m
         };
         let opt = {
-            let mut m = BTreeMap::new();
+            let mut m = MonoTypeMap::new();
             m.insert("p_2".to_string(), MonoType::Int);
             m
         };
@@ -1117,7 +1114,7 @@ mod tests {
         });
         let output = PolyType {
             vars: vec![],
-            cons: HashMap::new(),
+            cons: TvarKinds::new(),
             expr: MonoType::Fun(Box::new(Function {
                 req,
                 opt,
@@ -1130,10 +1127,10 @@ mod tests {
         let text = "forall [] () -> bytes";
         let output = PolyType {
             vars: vec![],
-            cons: HashMap::new(),
+            cons: TvarKinds::new(),
             expr: MonoType::Fun(Box::new(Function {
-                req: BTreeMap::new(),
-                opt: BTreeMap::new(),
+                req: MonoTypeMap::new(),
+                opt: MonoTypeMap::new(),
                 pipe: None,
                 retn: MonoType::Bytes,
             })),
@@ -1147,7 +1144,7 @@ mod tests {
         assert_eq!(
             Ok(PolyType {
                 vars: vec![Tvar(0)],
-                cons: HashMap::new(),
+                cons: TvarKinds::new(),
                 expr: MonoType::Row(Box::new(Row::Extension {
                     head: Property {
                         k: "a".to_string(),
@@ -1170,7 +1167,7 @@ mod tests {
     fn parse_row_test() {
         let parse_text = "   forall [t1, t2] where t1: Nullable, t2: Comparable {test: t1 | testAgain: bool | testLast: [uint]} ";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
         kinds.push(Kind::Nullable);
         bounds.insert(Tvar(1), kinds);
@@ -1207,7 +1204,7 @@ mod tests {
 
         let text = "forall [t0] where t0: Nullable {}";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Nullable);
@@ -1223,7 +1220,7 @@ mod tests {
 
         let text = "forall [t0] where t0: Comparable {a: int | b: string | c: bool}";
 
-        let mut bounds = HashMap::new();
+        let mut bounds = TvarKinds::new();
         let mut kinds = Vec::new();
 
         kinds.push(Kind::Comparable);
@@ -1259,7 +1256,7 @@ mod tests {
 
         let output = PolyType {
             vars: vec![],
-            cons: HashMap::new(),
+            cons: TvarKinds::new(),
             expr: MonoType::Row(Box::new(Row::Extension {
                 head: Property {
                     k: "_label".to_string(),

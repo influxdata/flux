@@ -7,11 +7,24 @@ use std::{
     fmt,
 };
 
+// For use in generics where the specific type of map is not not mentioned.
+pub type SemanticMap<K, V> = BTreeMap<K, V>;
+pub type SemanticMapIter<'a, K, V> = std::collections::btree_map::Iter<'a, K, V>;
+
 #[derive(Debug, Clone)]
 pub struct PolyType {
     pub vars: Vec<Tvar>,
-    pub cons: HashMap<Tvar, Vec<Kind>>,
+    pub cons: TvarKinds,
     pub expr: MonoType,
+}
+
+pub type PolyTypeMap = SemanticMap<String, PolyType>;
+pub type PolyTypeMapMap = SemanticMap<String, SemanticMap<String, PolyType>>;
+
+#[macro_export]
+/// Alias the maplit literal construction macro so we can specify the type here.
+macro_rules! semantic_map {
+    ( $($x:tt)* ) => ( maplit::btreemap!( $($x)* ) );
 }
 
 impl fmt::Display for PolyType {
@@ -46,8 +59,8 @@ impl PartialEq for PolyType {
         let mut f = Fresher::from(max + 1);
         let mut g = Fresher::from(max + 1);
 
-        let mut a = self.clone().fresh(&mut f, &mut HashMap::new());
-        let mut b = poly.clone().fresh(&mut g, &mut HashMap::new());
+        let mut a = self.clone().fresh(&mut f, &mut TvarMap::new());
+        let mut b = poly.clone().fresh(&mut g, &mut TvarMap::new());
 
         a.vars.sort();
         b.vars.sort();
@@ -90,7 +103,7 @@ impl MaxTvar for PolyType {
 }
 
 impl PolyType {
-    fn display_constraints(cons: &HashMap<Tvar, Vec<Kind>>) -> String {
+    fn display_constraints(cons: &TvarKinds) -> String {
         cons.iter()
             // A BTree produces a sorted iterator for
             // deterministic display output
@@ -232,9 +245,6 @@ impl cmp::PartialOrd for Kind {
     }
 }
 
-// TvarKinds is a map from type variables to their constraining kinds.
-type TvarKinds = HashMap<Tvar, Vec<Kind>>;
-
 // MonoType represents a specific named type
 #[derive(Debug, Clone, PartialEq)]
 pub enum MonoType {
@@ -252,6 +262,10 @@ pub enum MonoType {
     Row(Box<Row>),
     Fun(Box<Function>),
 }
+
+pub type MonoTypeMap = SemanticMap<String, MonoType>;
+pub type MonoTypeVecMap = SemanticMap<String, Vec<MonoType>>;
+type RefMonoTypeVecMap<'a> = HashMap<&'a String, Vec<&'a MonoType>>;
 
 impl fmt::Display for MonoType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -456,6 +470,11 @@ impl MonoType {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Tvar(pub u64);
 
+// TvarKinds is a map from type variables to their constraining kinds.
+pub type TvarKinds = SemanticMap<Tvar, Vec<Kind>>;
+pub type TvarMap = SemanticMap<Tvar, Tvar>;
+pub type SubstitutionMap = SemanticMap<Tvar, MonoType>;
+
 impl fmt::Display for Tvar {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "t{}", self.0)
@@ -507,12 +526,12 @@ impl Tvar {
             cons.insert(tv, kinds);
         }
         Ok(Substitution::from(
-            maplit::hashmap! {self => MonoType::Var(tv)},
+            semantic_map! {self => MonoType::Var(tv)},
         ))
     }
 
     fn unify_with_type(self, t: MonoType, cons: &mut TvarKinds) -> Result<Substitution, Error> {
-        let sub = Substitution::from(maplit::hashmap! {self => t.clone()});
+        let sub = Substitution::from(semantic_map! {self => t.clone()});
         match cons.remove(&self) {
             None => Ok(sub),
             Some(kinds) => Ok(sub.merge(kinds.into_iter().try_fold(
@@ -613,7 +632,7 @@ impl fmt::Display for Row {
 
 impl cmp::PartialEq for Row {
     fn eq(mut self: &Self, mut other: &Self) -> bool {
-        let mut a = HashMap::new();
+        let mut a = RefMonoTypeVecMap::new();
         let t = loop {
             match self {
                 Row::Empty => break None,
@@ -634,7 +653,7 @@ impl cmp::PartialEq for Row {
                 _ => return false,
             }
         };
-        let mut b = HashMap::new();
+        let mut b = RefMonoTypeVecMap::new();
         let v = loop {
             match other {
                 Row::Empty => break None,
@@ -926,8 +945,8 @@ impl MaxTvar for Property {
 //
 #[derive(Debug, Clone, PartialEq)]
 pub struct Function {
-    pub req: BTreeMap<String, MonoType>,
-    pub opt: BTreeMap<String, MonoType>,
+    pub req: MonoTypeMap,
+    pub opt: MonoTypeMap,
     pub pipe: Option<Property>,
     pub retn: MonoType,
 }
@@ -986,17 +1005,7 @@ impl fmt::Display for Function {
 }
 
 #[allow(clippy::implicit_hasher)]
-impl<T: Substitutable> Substitutable for HashMap<String, T> {
-    fn apply(self, sub: &Substitution) -> Self {
-        self.into_iter().map(|(k, v)| (k, v.apply(sub))).collect()
-    }
-    fn free_vars(&self) -> Vec<Tvar> {
-        self.values()
-            .fold(Vec::new(), |vars, t| union(vars, t.free_vars()))
-    }
-}
-
-impl<T: Substitutable> Substitutable for BTreeMap<String, T> {
+impl<T: Substitutable> Substitutable for SemanticMap<String, T> {
     fn apply(self, sub: &Substitution) -> Self {
         self.into_iter().map(|(k, v)| (k, v.apply(sub))).collect()
     }
@@ -1041,15 +1050,7 @@ impl Substitutable for Function {
     }
 }
 
-impl<U, T: MaxTvar, S: ::std::hash::BuildHasher> MaxTvar for HashMap<U, T, S> {
-    fn max_tvar(&self) -> Tvar {
-        self.iter()
-            .map(|(_, t)| t.max_tvar())
-            .fold(Tvar(0), |max, tv| if tv > max { tv } else { max })
-    }
-}
-
-impl<U, T: MaxTvar> MaxTvar for BTreeMap<U, T> {
+impl<U, T: MaxTvar> MaxTvar for SemanticMap<U, T> {
     fn max_tvar(&self) -> Tvar {
         self.iter()
             .map(|(_, t)| t.max_tvar())
@@ -1362,8 +1363,8 @@ mod tests {
         assert_eq!(
             "() -> int",
             Function {
-                req: BTreeMap::new(),
-                opt: BTreeMap::new(),
+                req: MonoTypeMap::new(),
+                opt: MonoTypeMap::new(),
                 pipe: None,
                 retn: MonoType::Int,
             }
@@ -1372,8 +1373,8 @@ mod tests {
         assert_eq!(
             "(<-:int) -> int",
             Function {
-                req: BTreeMap::new(),
-                opt: BTreeMap::new(),
+                req: MonoTypeMap::new(),
+                opt: MonoTypeMap::new(),
                 pipe: Some(Property {
                     k: String::from("<-"),
                     v: MonoType::Int,
@@ -1385,8 +1386,8 @@ mod tests {
         assert_eq!(
             "(<-a:int) -> int",
             Function {
-                req: BTreeMap::new(),
-                opt: BTreeMap::new(),
+                req: MonoTypeMap::new(),
+                opt: MonoTypeMap::new(),
                 pipe: Some(Property {
                     k: String::from("a"),
                     v: MonoType::Int,
@@ -1398,11 +1399,11 @@ mod tests {
         assert_eq!(
             "(<-:int, a:int, b:int) -> int",
             Function {
-                req: maplit::btreemap! {
+                req: semantic_map! {
                     String::from("a") => MonoType::Int,
                     String::from("b") => MonoType::Int,
                 },
-                opt: BTreeMap::new(),
+                opt: MonoTypeMap::new(),
                 pipe: Some(Property {
                     k: String::from("<-"),
                     v: MonoType::Int,
@@ -1414,8 +1415,8 @@ mod tests {
         assert_eq!(
             "(<-:int, ?a:int, ?b:int) -> int",
             Function {
-                req: BTreeMap::new(),
-                opt: maplit::btreemap! {
+                req: MonoTypeMap::new(),
+                opt: semantic_map! {
                     String::from("a") => MonoType::Int,
                     String::from("b") => MonoType::Int,
                 },
@@ -1430,11 +1431,11 @@ mod tests {
         assert_eq!(
             "(<-:int, a:int, b:int, ?c:int, ?d:int) -> int",
             Function {
-                req: maplit::btreemap! {
+                req: semantic_map! {
                     String::from("a") => MonoType::Int,
                     String::from("b") => MonoType::Int,
                 },
-                opt: maplit::btreemap! {
+                opt: semantic_map! {
                     String::from("c") => MonoType::Int,
                     String::from("d") => MonoType::Int,
                 },
@@ -1449,10 +1450,10 @@ mod tests {
         assert_eq!(
             "(a:int, ?b:bool) -> int",
             Function {
-                req: maplit::btreemap! {
+                req: semantic_map! {
                     String::from("a") => MonoType::Int,
                 },
-                opt: maplit::btreemap! {
+                opt: semantic_map! {
                     String::from("b") => MonoType::Bool,
                 },
                 pipe: None,
@@ -1463,11 +1464,11 @@ mod tests {
         assert_eq!(
             "(<-a:int, b:int, c:int, ?d:bool) -> int",
             Function {
-                req: maplit::btreemap! {
+                req: semantic_map! {
                     String::from("b") => MonoType::Int,
                     String::from("c") => MonoType::Int,
                 },
-                opt: maplit::btreemap! {
+                opt: semantic_map! {
                     String::from("d") => MonoType::Bool,
                 },
                 pipe: Some(Property {
@@ -1486,7 +1487,7 @@ mod tests {
             "forall [] int",
             PolyType {
                 vars: Vec::new(),
-                cons: HashMap::new(),
+                cons: TvarKinds::new(),
                 expr: MonoType::Int,
             }
             .to_string(),
@@ -1495,12 +1496,12 @@ mod tests {
             "forall [t0] (x:t0) -> t0",
             PolyType {
                 vars: vec![Tvar(0)],
-                cons: HashMap::new(),
+                cons: TvarKinds::new(),
                 expr: MonoType::Fun(Box::new(Function {
-                    req: maplit::btreemap! {
+                    req: semantic_map! {
                         String::from("x") => MonoType::Var(Tvar(0)),
                     },
-                    opt: BTreeMap::new(),
+                    opt: MonoTypeMap::new(),
                     pipe: None,
                     retn: MonoType::Var(Tvar(0)),
                 })),
@@ -1511,13 +1512,13 @@ mod tests {
             "forall [t0, t1] (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
-                cons: HashMap::new(),
+                cons: TvarKinds::new(),
                 expr: MonoType::Fun(Box::new(Function {
-                    req: maplit::btreemap! {
+                    req: semantic_map! {
                         String::from("x") => MonoType::Var(Tvar(0)),
                         String::from("y") => MonoType::Var(Tvar(1)),
                     },
-                    opt: BTreeMap::new(),
+                    opt: MonoTypeMap::new(),
                     pipe: None,
                     retn: MonoType::Row(Box::new(Row::Extension {
                         head: Property {
@@ -1540,13 +1541,13 @@ mod tests {
             "forall [t0] where t0:Addable (a:t0, b:t0) -> t0",
             PolyType {
                 vars: vec![Tvar(0)],
-                cons: maplit::hashmap! {Tvar(0) => vec![Kind::Addable]},
+                cons: semantic_map! {Tvar(0) => vec![Kind::Addable]},
                 expr: MonoType::Fun(Box::new(Function {
-                    req: maplit::btreemap! {
+                    req: semantic_map! {
                         String::from("a") => MonoType::Var(Tvar(0)),
                         String::from("b") => MonoType::Var(Tvar(0)),
                     },
-                    opt: BTreeMap::new(),
+                    opt: MonoTypeMap::new(),
                     pipe: None,
                     retn: MonoType::Var(Tvar(0)),
                 })),
@@ -1557,16 +1558,16 @@ mod tests {
             "forall [t0, t1] where t0:Addable, t1:Divisible (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
-                cons: maplit::hashmap! {
+                cons: semantic_map! {
                     Tvar(0) => vec![Kind::Addable],
                     Tvar(1) => vec![Kind::Divisible],
                 },
                 expr: MonoType::Fun(Box::new(Function {
-                    req: maplit::btreemap! {
+                    req: semantic_map! {
                         String::from("x") => MonoType::Var(Tvar(0)),
                         String::from("y") => MonoType::Var(Tvar(1)),
                     },
-                    opt: BTreeMap::new(),
+                    opt: MonoTypeMap::new(),
                     pipe: None,
                     retn: MonoType::Row(Box::new(Row::Extension {
                         head: Property {
@@ -1589,16 +1590,16 @@ mod tests {
             "forall [t0, t1] where t0:Comparable + Equatable, t1:Addable + Divisible (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
-                cons: maplit::hashmap! {
+                cons: semantic_map! {
                     Tvar(0) => vec![Kind::Comparable, Kind::Equatable],
                     Tvar(1) => vec![Kind::Addable, Kind::Divisible],
                 },
                 expr: MonoType::Fun(Box::new(Function {
-                    req: maplit::btreemap! {
+                    req: semantic_map! {
                         String::from("x") => MonoType::Var(Tvar(0)),
                         String::from("y") => MonoType::Var(Tvar(1)),
                     },
-                    opt: BTreeMap::new(),
+                    opt: MonoTypeMap::new(),
                     pipe: None,
                     retn: MonoType::Row(Box::new(Row::Extension {
                         head: Property {
@@ -1830,7 +1831,11 @@ mod tests {
     #[test]
     fn unify_ints() {
         let sub = MonoType::Int
-            .unify(MonoType::Int, &mut HashMap::new(), &mut Fresher::default())
+            .unify(
+                MonoType::Int,
+                &mut TvarKinds::new(),
+                &mut Fresher::default(),
+            )
             .unwrap();
         assert_eq!(sub, Substitution::empty());
     }
@@ -1846,16 +1851,16 @@ mod tests {
             Kind::Nullable,
         ];
         for c in allowable_cons {
-            let sub = MonoType::Int.constrain(c, &mut HashMap::new());
+            let sub = MonoType::Int.constrain(c, &mut TvarKinds::new());
             assert_eq!(Ok(Substitution::empty()), sub);
         }
 
-        let sub = MonoType::Int.constrain(Kind::Row, &mut HashMap::new());
+        let sub = MonoType::Int.constrain(Kind::Row, &mut TvarKinds::new());
         assert_eq!(Err(Error::cannot_constrain(&MonoType::Int, Kind::Row)), sub);
     }
     #[test]
     fn constrain_rows() {
-        let sub = Row::Empty.constrain(Kind::Row, &mut HashMap::new());
+        let sub = Row::Empty.constrain(Kind::Row, &mut TvarKinds::new());
         assert_eq!(Ok(Substitution::empty()), sub);
 
         let unallowable_cons = vec![
@@ -1867,7 +1872,7 @@ mod tests {
             Kind::Nullable,
         ];
         for c in unallowable_cons {
-            let sub = Row::Empty.constrain(c, &mut HashMap::new());
+            let sub = Row::Empty.constrain(c, &mut TvarKinds::new());
             assert_eq!(Err(Error::cannot_constrain(&Row::Empty, c)), sub);
         }
     }
@@ -1876,7 +1881,7 @@ mod tests {
         let err = MonoType::Int
             .unify(
                 MonoType::String,
-                &mut HashMap::new(),
+                &mut TvarKinds::new(),
                 &mut Fresher::default(),
             )
             .unwrap_err();
@@ -1887,28 +1892,28 @@ mod tests {
         let sub = MonoType::Var(Tvar(0))
             .unify(
                 MonoType::Var(Tvar(1)),
-                &mut HashMap::new(),
+                &mut TvarKinds::new(),
                 &mut Fresher::default(),
             )
             .unwrap();
         assert_eq!(
             sub,
-            Substitution::from(maplit::hashmap! {Tvar(0) => MonoType::Var(Tvar(1))}),
+            Substitution::from(semantic_map! {Tvar(0) => MonoType::Var(Tvar(1))}),
         );
     }
     #[test]
     fn unify_constrained_tvars() {
-        let mut cons = maplit::hashmap! {Tvar(0) => vec![Kind::Addable, Kind::Divisible]};
+        let mut cons = semantic_map! {Tvar(0) => vec![Kind::Addable, Kind::Divisible]};
         let sub = MonoType::Var(Tvar(0))
             .unify(MonoType::Var(Tvar(1)), &mut cons, &mut Fresher::default())
             .unwrap();
         assert_eq!(
             sub,
-            Substitution::from(maplit::hashmap! {Tvar(0) => MonoType::Var(Tvar(1))})
+            Substitution::from(semantic_map! {Tvar(0) => MonoType::Var(Tvar(1))})
         );
         assert_eq!(
             cons,
-            maplit::hashmap! {Tvar(1) => vec![Kind::Addable, Kind::Divisible]},
+            semantic_map! {Tvar(1) => vec![Kind::Addable, Kind::Divisible]},
         );
     }
     #[test]
@@ -1982,11 +1987,11 @@ mod tests {
         // (a: int, b: int) -> int
         let call_type = Function {
             // all arguments are required in a function call.
-            req: maplit::btreemap! {
+            req: semantic_map! {
                 "a".to_string() => MonoType::Int,
                 "b".to_string() => MonoType::Int,
             },
-            opt: maplit::btreemap! {},
+            opt: semantic_map! {},
             pipe: None,
             retn: MonoType::Int,
         };
@@ -2001,10 +2006,10 @@ mod tests {
                 .unwrap();
             assert_eq!(
                 sub,
-                Substitution::from(maplit::hashmap! {Tvar(0) => MonoType::Int})
+                Substitution::from(semantic_map! {Tvar(0) => MonoType::Int})
             );
             // the constraint on t0 gets removed.
-            assert_eq!(cons, maplit::hashmap! {Tvar(1) => vec![Kind::Divisible]});
+            assert_eq!(cons, semantic_map! {Tvar(1) => vec![Kind::Divisible]});
         } else {
             panic!("the monotype under examination is not a function");
         }
@@ -2033,14 +2038,14 @@ mod tests {
             let sub = f.unify(*g, &mut cons, &mut Fresher::default()).unwrap();
             assert_eq!(
                 sub,
-                Substitution::from(maplit::hashmap! {
+                Substitution::from(semantic_map! {
                     Tvar(0) => MonoType::Var(Tvar(2)),
                     Tvar(1) => MonoType::Float,
                 })
             );
             // t0 is equal to t2 and t2 is Addable, so we only need one constraint on t2;
             // t1 ended up being a float, so we do not need any kind constraint on it.
-            assert_eq!(cons, maplit::hashmap! {Tvar(2) => vec![Kind::Addable]});
+            assert_eq!(cons, semantic_map! {Tvar(2) => vec![Kind::Addable]});
         } else {
             panic!("the monotypes under examination are not functions");
         }
@@ -2069,13 +2074,13 @@ mod tests {
             let sub = f.unify(*g, &mut cons, &mut Fresher::default()).unwrap();
             assert_eq!(
                 sub,
-                Substitution::from(maplit::hashmap! {
+                Substitution::from(semantic_map! {
                     Tvar(0) => MonoType::Int,
                     Tvar(1) => MonoType::Float,
                 })
             );
             // we know everything about tvars, there is no constraint.
-            assert_eq!(cons, maplit::hashmap! {});
+            assert_eq!(cons, semantic_map! {});
         } else {
             panic!("the monotypes under examination are not functions");
         }

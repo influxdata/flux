@@ -1,5 +1,7 @@
-use crate::semantic::types::{Array, Function, MonoType, PolyType, Property, Row, Tvar};
-use std::collections::{BTreeMap, HashMap};
+use crate::semantic::types::{
+    Array, Function, MonoType, MonoTypeVecMap, PolyType, Property, Row, SemanticMap, Tvar, TvarMap,
+};
+use std::collections::BTreeMap;
 use std::hash::Hash;
 
 // Fresher returns incrementing type variables
@@ -27,17 +29,17 @@ impl Default for Fresher {
 }
 
 pub trait Fresh {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self;
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self;
 }
 
 impl<T: Fresh> Fresh for Vec<T> {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         self.into_iter().map(|t| t.fresh(f, sub)).collect::<Self>()
     }
 }
 
 impl<T: Fresh> Fresh for Option<T> {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         match self {
             None => None,
             Some(t) => Some(t.fresh(f, sub)),
@@ -46,8 +48,8 @@ impl<T: Fresh> Fresh for Option<T> {
 }
 
 #[allow(clippy::implicit_hasher)]
-impl<T: Fresh> Fresh for HashMap<String, T> {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
+impl<T: Fresh> Fresh for SemanticMap<String, T> {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         self.into_iter()
             .collect::<BTreeMap<String, T>>()
             .into_iter()
@@ -57,8 +59,8 @@ impl<T: Fresh> Fresh for HashMap<String, T> {
 }
 
 #[allow(clippy::implicit_hasher)]
-impl<T: Hash + Ord + Eq + Fresh, S> Fresh for HashMap<T, S> {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
+impl<T: Hash + Ord + Eq + Fresh, S> Fresh for SemanticMap<T, S> {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         self.into_iter()
             .collect::<BTreeMap<T, S>>()
             .into_iter()
@@ -67,30 +69,14 @@ impl<T: Hash + Ord + Eq + Fresh, S> Fresh for HashMap<T, S> {
     }
 }
 
-impl<T: Fresh> Fresh for BTreeMap<String, T> {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
-        self.into_iter()
-            .map(|(s, t)| (s, t.fresh(f, sub)))
-            .collect::<Self>()
-    }
-}
-
-impl<T: Hash + Ord + Eq + Fresh, S> Fresh for BTreeMap<T, S> {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
-        self.into_iter()
-            .map(|(t, s)| (t.fresh(f, sub), s))
-            .collect::<Self>()
-    }
-}
-
 impl<T: Fresh> Fresh for Box<T> {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         Box::new((*self).fresh(f, sub))
     }
 }
 
 impl Fresh for PolyType {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         let expr = self.expr.fresh(f, sub);
         let vars = self.vars.fresh(f, sub);
         let cons = self.cons.fresh(f, sub);
@@ -99,7 +85,7 @@ impl Fresh for PolyType {
 }
 
 impl Fresh for MonoType {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         match self {
             MonoType::Var(tvr) => MonoType::Var(tvr.fresh(f, sub)),
             MonoType::Arr(arr) => MonoType::Arr(arr.fresh(f, sub)),
@@ -111,20 +97,20 @@ impl Fresh for MonoType {
 }
 
 impl Fresh for Tvar {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         *sub.entry(self).or_insert_with(|| f.fresh())
     }
 }
 
 impl Fresh for Array {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         Array(self.0.fresh(f, sub))
     }
 }
 
 impl Fresh for Row {
-    fn fresh(mut self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
-        let mut props = HashMap::new();
+    fn fresh(mut self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
+        let mut props = MonoTypeVecMap::new();
         let mut extends = false;
         let mut tv = Tvar(0);
         loop {
@@ -183,7 +169,7 @@ impl Fresh for Row {
 }
 
 impl Fresh for Property {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         Property {
             k: self.k,
             v: self.v.fresh(f, sub),
@@ -192,7 +178,7 @@ impl Fresh for Property {
 }
 
 impl Fresh for Function {
-    fn fresh(self, f: &mut Fresher, sub: &mut HashMap<Tvar, Tvar>) -> Self {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         Function {
             req: self.req.fresh(f, sub),
             opt: self.opt.fresh(f, sub),
