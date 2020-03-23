@@ -560,14 +560,12 @@ func (itrp *Interpreter) doCall(ctx context.Context, call *semantic.CallExpressi
 	f := callee.Function()
 
 	// Check if the function is an interpFunction and rebind it.
-	// if af, ok := f.(function); ok {
-	// 	af, err = itrp.mutateFunctionScope(af)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	af.itrp = itrp
-	// 	f = af
-	// }
+	// This is needed so that any side effects produced when
+	// calling this function are bound to the correct interpreter.
+	if af, ok := f.(function); ok {
+		af.itrp = itrp
+		f = af
+	}
 
 	// Call the function
 	value, err := f.Call(ctx, argObj)
@@ -625,16 +623,6 @@ func (itrp *Interpreter) doArguments(ctx context.Context, args *semantic.ObjectE
 			if err != nil {
 				return err
 			}
-			// This is a bit of a hack, but we know that functions cannot escape the iterpreter
-			// except as arguments to functions.
-			// As such we ensure the function passed out is aware of all option mutations.
-			// if f, ok := value.(function); ok {
-			// 	f, err := itrp.mutateFunctionScope(f)
-			// 	if err != nil {
-			// 		return err
-			// 	}
-			// 	value = f
-			// }
 			set(p.Key.Key(), value)
 		}
 
