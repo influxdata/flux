@@ -30,6 +30,9 @@ type ASTPkg struct {
 	ptr *C.struct_flux_ast_pkg_t
 }
 
+// ASTHandle makes sure that this type implements the flux.ASTHandle interface.
+func (p ASTPkg) ASTHandle() {}
+
 // GetError will return the first error in the AST, if any
 func (p ASTPkg) GetError() error {
 	if err := C.flux_ast_get_error(p.ptr); err != nil {

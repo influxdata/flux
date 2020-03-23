@@ -3,6 +3,7 @@ package stdlib_test
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -118,7 +119,11 @@ func benchEndToEnd(b *testing.B, pkgs []*ast.Package) {
 					if reason, ok := skip[pkgpath][name]; ok {
 						b.Skip(reason)
 					}
-					c := &lang.ASTCompiler{AST: pkg}
+					bs, err := json.Marshal(pkg)
+					if err != nil {
+						b.Fatal(err)
+					}
+					c := &lang.ASTCompiler{AST: bs}
 
 					b.ResetTimer()
 					b.ReportAllocs()
@@ -140,7 +145,11 @@ func benchEndToEnd(b *testing.B, pkgs []*ast.Package) {
 func testFlux(t testing.TB, file *ast.File) flux.Statistics {
 	pkg := makeTestPackage(file)
 	pkg.Files = append(pkg.Files, stdlib.TestingRunCalls(pkg))
-	c := lang.ASTCompiler{AST: pkg}
+	bs, err := json.Marshal(pkg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := lang.ASTCompiler{AST: bs}
 
 	// testing.run
 	stats := doTestRun(t, c)
@@ -149,7 +158,11 @@ func testFlux(t testing.TB, file *ast.File) flux.Statistics {
 	if t.Failed() {
 		// Rerun the test case using testing.inspect
 		pkg.Files[len(pkg.Files)-1] = stdlib.TestingInspectCalls(pkg)
-		c := lang.ASTCompiler{AST: pkg}
+		bs, err := json.Marshal(pkg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		c := lang.ASTCompiler{AST: bs}
 		stats = doTestInspect(t, c)
 	}
 	return stats

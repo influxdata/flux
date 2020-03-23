@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	_ "github.com/influxdata/flux/builtin"
 	_ "github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
@@ -155,36 +154,20 @@ endpoint = slack.endpoint(url:url, token:token)(mapFn: (r) => {
 })
 
 csv.from(csv:data) |> endpoint()`
-			prog, err := lang.Compile(fluxString, runtime.Default, time.Now(), lang.WithExtern(&ast.File{Body: []ast.Statement{
-				&ast.VariableAssignment{
-					ID: &ast.Identifier{
-						Name: "url",
-					},
-					Init: &ast.StringLiteral{
-						Value: tc.URL,
-					},
-				},
-				&ast.VariableAssignment{
-					ID: &ast.Identifier{
-						Name: "token",
-					},
-					Init: &ast.StringLiteral{
-						Value: tc.token,
-					},
-				},
-				&ast.VariableAssignment{
-					ID: &ast.Identifier{
-						Name: "data",
-					},
-					Init: &ast.StringLiteral{
-						Value: `#datatype,string,string,string,string,string
+			extern := `
+url = "` + tc.URL + `"
+token = "` + tc.token + `"
+data = "
+#datatype,string,string,string,string,string
 #group,false,false,false,false,false
 #default,_result,,,,
 ,result,,qchannel,qtext,wcolor
-,,,` + strings.Join([]string{tc.channel, tc.text, tc.color}, ","),
-					},
-				},
-			}}))
+,,,` + strings.Join([]string{tc.channel, tc.text, tc.color}, ",") + `"`
+			extHdl, err := runtime.Default.Parse(extern)
+			if err != nil {
+				t.Fatal(err)
+			}
+			prog, err := lang.Compile(fluxString, runtime.Default, time.Now(), lang.WithExtern(extHdl))
 			if err != nil {
 				t.Fatal(err)
 			}

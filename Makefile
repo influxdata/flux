@@ -66,7 +66,7 @@ libflux/src/flux/semantic/flatbuffers/semantic_generated.rs: internal/fbsemantic
 ast/asttest/cmpopts.go: ast/ast.go ast/asttest/gen.go $$(call go_deps,./internal/cmd/cmpgen)
 	$(GO_GENERATE) ./ast/asttest
 
-stdlib/packages.go: $(STDLIB_SOURCES) $(LIBFLUX_GENERATED_TARGETS)
+stdlib/packages.go: $(STDLIB_SOURCES) $(LIBFLUX_GENERATED_TARGETS) internal/fbsemantic/semantic_generated.go semantic/flatbuffers_gen.go
 	$(GO_GENERATE) ./stdlib
 
 internal/scanner/unicode.rl: internal/scanner/unicode2ragel.rb

@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
@@ -43,13 +44,24 @@ func Prelude() values.Scope {
 
 // Eval accepts a Flux script and evaluates it to produce a set of side effects (as a slice of values) and a scope.
 func Eval(ctx context.Context, flux string, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
-	h := parser.ParseToHandle([]byte(flux))
-	return Default.evalHandle(ctx, h, opts...)
+	h, err := parser.ParseToHandle([]byte(flux))
+	if err != nil {
+		return nil, nil, err
+	}
+	return Default.Eval(ctx, h, opts...)
 }
 
 // EvalAST accepts a Flux AST and evaluates it to produce a set of side effects (as a slice of values) and a scope.
 func EvalAST(ctx context.Context, astPkg *ast.Package, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
-	return Default.Eval(ctx, astPkg, opts...)
+	bs, err := json.Marshal(astPkg)
+	if err != nil {
+		return nil, nil, err
+	}
+	hdl, err := Default.JSONToHandle(bs)
+	if err != nil {
+		return nil, nil, err
+	}
+	return Default.Eval(ctx, hdl, opts...)
 }
 
 // EvalOptions is like EvalAST, but only evaluates options.
