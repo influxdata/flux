@@ -350,10 +350,37 @@ func (RemoveTrivialFilterRule) Rewrite(filterNode plan.Node) (plan.Node, bool, e
 		filterSpec.Fn.Fn.Block.Body == nil {
 		return filterNode, false, nil
 	}
-	if boolean, ok := filterSpec.Fn.Fn.Block.Body.(*semantic.BooleanLiteral); !ok || !boolean.Value {
+
+	if bodyExpr, ok := getFunctionBodyExpr(filterSpec.Fn.Fn.Block); !ok {
+		// Not an expression.
+		return filterNode, false, nil
+	} else if expr, ok := bodyExpr.(*semantic.BooleanLiteral); !ok || !expr.Value {
+		// Either not a boolean at all, or evaluates to false.
 		return filterNode, false, nil
 	}
 
 	anyNode := filterNode.Predecessors()[0]
 	return anyNode, true, nil
+}
+
+// getFunctionBodyExpr will return the return value expression from
+// the function block. This will only return an expression if there
+// is exactly one expression in the block. It will return false
+// as the second argument if the statement is more complex.
+func getFunctionBodyExpr(fn *semantic.FunctionBlock) (semantic.Expression, bool) {
+	switch e := fn.Body.(type) {
+	case *semantic.Block:
+		if len(e.Body) != 1 {
+			return nil, false
+		}
+		returnExpr, ok := e.Body[0].(*semantic.ReturnStatement)
+		if !ok {
+			return nil, false
+		}
+		return returnExpr.Argument, true
+	case semantic.Expression:
+		return e, true
+	default:
+		return nil, false
+	}
 }
