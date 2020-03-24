@@ -43,12 +43,13 @@ func TestFluxCompiler(t *testing.T) {
 	ctx := context.Background()
 
 	for _, tc := range []struct {
-		name        string
-		now         time.Time
-		extern      *ast.File
-		q           string
-		compilerErr string
-		startErr    string
+		name         string
+		now          time.Time
+		extern       *ast.File
+		q            string
+		jsonCompiler []byte
+		compilerErr  string
+		startErr     string
 	}{
 		{
 			name: "simple",
@@ -111,23 +112,43 @@ func TestFluxCompiler(t *testing.T) {
 			now:  time.Unix(1000, 0),
 			q:    `from(bucket: "foo") |> range(start: -5m)`,
 		},
+		{
+			name: "extern that uses null keyword",
+			now:  parser.MustParseTime("2020-03-24T14:24:46.15933241Z").Value,
+			jsonCompiler: []byte(`
+{
+    "Now": "2020-03-24T14:24:46.15933241Z",
+    "extern": null,
+    "query": "from(bucket: \"apps\")\n  |> range(start: -30s)\n  |> filter(fn: (r) => r._measurement == \"query_control_queueing_active\")\n  |> filter(fn: (r) => r._field == \"gauge\")\n  |> filter(fn: (r) => r.env == \"acc\")\n  |> group(columns: [\"host\"])\n  |> last()\n  |> group()\n  |> mean()\n  // Rename \"_value\" to \"metricValue\" for properly unmarshaling the result.\n  |> rename(columns: {_value: \"metricvalue\"})\n  |> keep(columns: [\"metricvalue\"])\n"
+}`),
+		},
 	} {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			var extern json.RawMessage
-			if tc.extern != nil {
-				var err error
-				extern, err = json.Marshal(tc.extern)
-				if err != nil {
-					t.Fatal(err)
+			var c lang.FluxCompiler
+			{
+				if tc.q != "" {
+					var extern json.RawMessage
+					if tc.extern != nil {
+						var err error
+						extern, err = json.Marshal(tc.extern)
+						if err != nil {
+							t.Fatal(err)
+						}
+					}
+					c = lang.FluxCompiler{
+						Now:    tc.now,
+						Extern: extern,
+						Query:  tc.q,
+					}
+				} else if len(tc.jsonCompiler) > 0 {
+					if err := json.Unmarshal(tc.jsonCompiler, &c); err != nil {
+						t.Fatal(err)
+					}
+				} else {
+					t.Fatal("expected either a query, or a jsonCompiler in test case")
 				}
 			}
-			c := lang.FluxCompiler{
-				Now:    tc.now,
-				Extern: extern,
-				Query:  tc.q,
-			}
-
 			// serialize and deserialize and make sure they are equal
 			bs, err := json.Marshal(c)
 			if err != nil {
@@ -190,11 +211,13 @@ func TestCompilationError(t *testing.T) {
 
 func TestASTCompiler(t *testing.T) {
 	testcases := []struct {
-		name   string
-		now    time.Time
-		file   *ast.File
-		script string
-		want   plantest.PlanSpec
+		name         string
+		now          time.Time
+		file         *ast.File
+		script       string
+		jsonCompiler []byte
+		want         plantest.PlanSpec
+		startErr     string
 	}{
 		{
 			name: "override now time using now option",
@@ -273,39 +296,93 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				Now:       parser.MustParseTime("2018-10-10T00:00:00Z").Value,
 			},
 		},
+		{
+			name:     "simple case",
+			now:      parser.MustParseTime("2018-10-10T00:00:00Z").Value,
+			script:   `x = 1`,
+			startErr: "no streaming data",
+		},
+		{
+			name: "json compiler with null keyword",
+			jsonCompiler: []byte(`
+{
+  "extern": null,
+  "ast": {
+    "type": "Package",
+    "package": "main",
+    "files": [
+      {
+        "type": "File",
+        "metadata": "parser-type=rust",
+        "package": null,
+        "imports": [],
+        "body": [
+          {
+            "type": "VariableAssignment",
+            "id": {
+              "name": "x"
+            },
+            "init": {
+              "type": "IntegerLiteral",
+              "value": "1"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "Now": "2018-10-10T00:00:00Z"
+}
+`),
+			startErr: "no streaming data",
+		},
 	}
 	rt := runtime.Default
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			astPkg, err := rt.Parse(tc.script)
-			if err != nil {
-				t.Fatalf("failed to parse script: %v", err)
-			}
-			var jsonPkg json.RawMessage
-			jsonPkg, err = parser.HandleToJSON(astPkg)
-			if err != nil {
-				t.Fatal(err)
-			}
+			var c lang.ASTCompiler
+			{
+				if tc.script != "" {
+					astPkg, err := rt.Parse(tc.script)
+					if err != nil {
+						t.Fatalf("failed to parse script: %v", err)
+					}
+					var jsonPkg json.RawMessage
+					jsonPkg, err = parser.HandleToJSON(astPkg)
+					if err != nil {
+						t.Fatal(err)
+					}
 
-			// The JSON produced by Rust does not escape characters like ">", but
-			// Go does, so we need to use HTMLEscape to make the roundtrip the same.
-			var buf bytes.Buffer
-			json.HTMLEscape(&buf, jsonPkg)
-			jsonPkg = buf.Bytes()
+					// The JSON produced by Rust does not escape characters like ">", but
+					// Go does, so we need to use HTMLEscape to make the roundtrip the same.
+					var buf bytes.Buffer
+					json.HTMLEscape(&buf, jsonPkg)
+					jsonPkg = buf.Bytes()
 
-			c := lang.ASTCompiler{
-				AST: jsonPkg,
-				Now: tc.now,
-			}
+					c = lang.ASTCompiler{
+						AST: jsonPkg,
+						Now: tc.now,
+					}
 
-			if tc.file != nil {
-				bs, err := json.Marshal(tc.file)
-				if err != nil {
-					t.Fatal(err)
+					if tc.file != nil {
+						bs, err := json.Marshal(tc.file)
+						if err != nil {
+							t.Fatal(err)
+						}
+						c.Extern = bs
+					}
+				} else if len(tc.jsonCompiler) > 0 {
+					var bb bytes.Buffer
+					if err := json.Compact(&bb, tc.jsonCompiler); err != nil {
+						t.Fatal(err)
+					}
+					if err := json.Unmarshal(bb.Bytes(), &c); err != nil {
+						t.Fatal(err)
+					}
+				} else {
+					t.Fatal("expected either script of jsonCompiler in test case")
 				}
-				c.Extern = bs
 			}
-
 			// serialize and deserialize and make sure they are equal
 			bs, err := json.Marshal(c)
 			if err != nil {
@@ -327,7 +404,15 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 			ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
 			// we need to start the program to get compile errors derived from AST evaluation
 			if _, err := program.Start(ctx, &memory.Allocator{}); err != nil {
-				t.Fatalf("failed to start program: %v", err)
+				if tc.startErr == "" {
+					t.Fatalf("failed to start program: %v", err)
+				} else {
+					// We expect an error, did we get the right one?
+					if !strings.Contains(err.Error(), tc.startErr) {
+						t.Fatalf("expected to get an error containing %q but got %q", tc.startErr, err.Error())
+					}
+					return
+				}
 			}
 
 			got := program.(*lang.AstProgram).PlanSpec
