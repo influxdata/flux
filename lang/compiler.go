@@ -173,7 +173,7 @@ func wrapFileJSONInPkg(bs []byte) []byte {
 
 func (c FluxCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
 	// Ignore context, it will be provided upon Program Start.
-	if c.Extern != nil {
+	if c.Extern != nil && string(c.Extern) != "null" {
 		hdl, err := runtime.JSONToHandle(wrapFileJSONInPkg(c.Extern))
 		if err != nil {
 			return nil, err
@@ -208,7 +208,7 @@ func (c ASTCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Pr
 	}
 
 	// Ignore context, it will be provided upon Program Start.
-	if c.Extern != nil {
+	if c.Extern != nil && string(c.Extern) != "null" {
 		extHdl, err := runtime.JSONToHandle(wrapFileJSONInPkg(c.Extern))
 		if err != nil {
 			return nil, err
