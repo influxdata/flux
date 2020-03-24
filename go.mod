@@ -18,7 +18,7 @@ require (
 	github.com/google/go-cmp v0.3.0
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e
-	github.com/influxdata/pkg-config v0.1.1
+	github.com/influxdata/pkg-config v0.1.1-one-crate
 	github.com/influxdata/promql/v2 v2.12.0
 	github.com/influxdata/tdigest v0.0.0-20181121200506-bf2b5ad3c0a9
 	github.com/lib/pq v1.0.0
