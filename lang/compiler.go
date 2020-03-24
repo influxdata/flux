@@ -171,9 +171,19 @@ func wrapFileJSONInPkg(bs []byte) []byte {
 		string(bs)))
 }
 
+func IsNonNullJSON(bs json.RawMessage) bool {
+	if len(bs) == 0 {
+		return false
+	}
+	if len(bs) == 4 && string(bs) == "null" {
+		return false
+	}
+	return true
+}
+
 func (c FluxCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
 	// Ignore context, it will be provided upon Program Start.
-	if c.Extern != nil && string(c.Extern) != "null" {
+	if IsNonNullJSON(c.Extern) {
 		hdl, err := runtime.JSONToHandle(wrapFileJSONInPkg(c.Extern))
 		if err != nil {
 			return nil, err
@@ -208,7 +218,7 @@ func (c ASTCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Pr
 	}
 
 	// Ignore context, it will be provided upon Program Start.
-	if c.Extern != nil && string(c.Extern) != "null" {
+	if IsNonNullJSON(c.Extern) {
 		extHdl, err := runtime.JSONToHandle(wrapFileJSONInPkg(c.Extern))
 		if err != nil {
 			return nil, err
