@@ -43,23 +43,23 @@ GENERATED_TARGETS = \
 	$(LIBFLUX_GENERATED_TARGETS)
 
 LIBFLUX_GENERATED_TARGETS = \
-	libflux/src/flux/ast/flatbuffers/ast_generated.rs \
-	libflux/src/flux/semantic/flatbuffers/semantic_generated.rs \
+	libflux/src/core/ast/flatbuffers/ast_generated.rs \
+	libflux/src/core/semantic/flatbuffers/semantic_generated.rs \
 	libflux/scanner.c
 
 generate: $(GENERATED_TARGETS)
 
 ast/internal/fbast/ast_generated.go: ast/ast.fbs
 	$(GO_GENERATE) ./ast
-libflux/src/flux/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
-	flatc --rust -o libflux/src/flux/ast/flatbuffers ast/ast.fbs && rustfmt $@
+libflux/src/core/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
+	flatc --rust -o libflux/src/core/ast/flatbuffers ast/ast.fbs && rustfmt $@
 
 internal/fbsemantic/semantic_generated.go: internal/fbsemantic/semantic.fbs
 	$(GO_GENERATE) ./internal/fbsemantic
 semantic/flatbuffers_gen.go: semantic/graph.go internal/cmd/fbgen/cmd/semantic.go internal/fbsemantic/semantic_generated.go
 	$(GO_GENERATE) ./semantic
-libflux/src/flux/semantic/flatbuffers/semantic_generated.rs: internal/fbsemantic/semantic.fbs
-	flatc --rust -o libflux/src/flux/semantic/flatbuffers internal/fbsemantic/semantic.fbs && rustfmt $@
+libflux/src/core/semantic/flatbuffers/semantic_generated.rs: internal/fbsemantic/semantic.fbs
+	flatc --rust -o libflux/src/core/semantic/flatbuffers internal/fbsemantic/semantic.fbs && rustfmt $@
 
 # Force a second expansion to happen so the call to go_deps works correctly.
 .SECONDEXPANSION:
@@ -131,8 +131,8 @@ bench: libflux-go
 release:
 	./release.sh
 
-libflux/scanner.c: libflux/src/flux/scanner/scanner.rl
-	ragel -C -o libflux/scanner.c libflux/src/flux/scanner/scanner.rl
+libflux/scanner.c: libflux/src/core/scanner/scanner.rl
+	ragel -C -o libflux/scanner.c libflux/src/core/scanner/scanner.rl
 
 # This target generates a file that forces the go libflux wrapper
 # to recompile which forces pkg-config to run again.
@@ -154,7 +154,7 @@ test-valgrind: $(LIBFLUX_MEMTEST_BIN)
 LIBFLUX_MEMTEST_SOURCES=libflux/c/*.c
 $(LIBFLUX_MEMTEST_BIN): libflux $(LIBFLUX_MEMTEST_SOURCES)
 	$(CC) -g -Wall -Werror $(LIBFLUX_MEMTEST_SOURCES) -I./libflux/include \
-		./libflux/target/debug/libflux.a ./libflux/target/debug/liblibstd.a \
+		./libflux/target/debug/libflux.a \
 		-o $@ -lpthread -ldl
 
 .PHONY: generate \

@@ -270,8 +270,8 @@ impl<'a> NodeMut<'a> {
 /// A Visitor that mutate node types:
 ///
 /// ```
-/// use flux::semantic::walk::{NodeMut, VisitorMut};
-/// use flux::semantic::types::*;
+/// use core::semantic::walk::{NodeMut, VisitorMut};
+/// use core::semantic::types::*;
 ///
 /// struct TypeMutator {}
 ///
