@@ -196,7 +196,7 @@ func TestHandleToJSON(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := `{"type":"Package","package":"main","files":[{"type":"File","location":{"file":"","start":{"line":1,"column":1},"end":{"line":1,"column":6},"source":"x = 0"},"metadata":"parser-type=rust","package":null,"imports":[],"body":[{"type":"VariableAssignment","location":{"file":"","start":{"line":1,"column":1},"end":{"line":1,"column":6},"source":"x = 0"},"id":{"location":{"file":"","start":{"line":1,"column":1},"end":{"line":1,"column":2},"source":"x"},"name":"x"},"init":{"type":"IntegerLiteral","location":{"file":"","start":{"line":1,"column":5},"end":{"line":1,"column":6},"source":"0"},"value":"0"}}]}]}`
+	want := `{"type":"Package","package":"main","files":[{"type":"File","location":{"start":{"line":1,"column":1},"end":{"line":1,"column":6},"source":"x = 0"},"metadata":"parser-type=rust","package":null,"imports":[],"body":[{"type":"VariableAssignment","location":{"start":{"line":1,"column":1},"end":{"line":1,"column":6},"source":"x = 0"},"id":{"location":{"start":{"line":1,"column":1},"end":{"line":1,"column":2},"source":"x"},"name":"x"},"init":{"type":"IntegerLiteral","location":{"start":{"line":1,"column":5},"end":{"line":1,"column":6},"source":"0"},"value":"0"}}]}]}`
 	if want, got := want, string(json); want != got {
 		t.Errorf("unexpected JSON: -want/+got:\n%v", cmp.Diff(want, got))
 	}

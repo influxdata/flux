@@ -43,6 +43,7 @@ ff = (i=<-, j) => {
 b = z and y
 b = z or y
 o = {red: "red", "blue": 30}
+empty_obj = {}
 m = o.red
 i = arr[0]
 n = 10 - 5 + 10
@@ -60,6 +61,8 @@ e = exists o.red
 tables |> f()
 fncall = id(v: 20)
 fncall2 = foo(v: 20, w: "bar")
+fncall_short_form_arg(arg)
+fncall_short_form_args(arg0, arg1)
 v = if true then 70.0 else 140.0
 ans = "the answer is ${v}"
 paren = (1)
