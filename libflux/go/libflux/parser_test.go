@@ -1,14 +1,17 @@
 package libflux_test
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/asttest"
+	goparser "github.com/influxdata/flux/internal/parser"
+	"github.com/influxdata/flux/internal/token"
 	"github.com/influxdata/flux/libflux/go/libflux"
 )
 
@@ -162,5 +165,155 @@ c = 3`)
 				t.Fatalf("unexpected error: -want/+got: %v", diff)
 			}
 		})
+	}
+}
+
+func TestASTPkg_MarshalJSON(t *testing.T) {
+	testCases := []struct {
+		name     string
+		fluxFile string
+	}{
+		{
+			name: "simple",
+			fluxFile: `
+import "foo"
+x = foo.y
+`,
+		},
+		{
+			name: "every AST node 1",
+			fluxFile: `
+package mypkg
+import "my_other_pkg"
+import "yet_another_pkg"
+option now = () => (2030-01-01T00:00:00Z)
+option foo.bar = "baz"
+builtin foo
+
+# // bad stmt
+
+test aggregate_window_empty = () => ({
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    fn: (table=<-) =>
+        table
+            |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
+            |> aggregateWindow(every: 30s, fn: sum),
+})
+`,
+		},
+		{
+			name: "every AST node 2",
+			fluxFile: `
+a
+
+arr = [0, 1, 2]
+f = (i) => i
+ff = (i=<-, j) => {
+  k = i + j
+  return k
+}
+b = z and y
+b = z or y
+o = {red: "red", "blue": 30}
+empty_obj = {}
+m = o.red
+i = arr[0]
+n = 10 - 5 + 10
+n = 10 / 5 * 10
+m = 13 % 3
+p = 2^10
+b = 10 < 30
+b = 10 <= 30
+b = 10 > 30
+b = 10 >= 30
+eq = 10 == 10
+neq = 11 != 10
+b = not false
+e = exists o.red
+tables |> f()
+fncall = id(v: 20)
+fncall2 = foo(v: 20, w: "bar")
+fncall_short_form_arg(arg)
+fncall_short_form_args(arg0, arg1)
+v = if true then 70.0 else 140.0
+ans = "the answer is ${v}"
+paren = (1)
+
+i = 1
+f = 1.0
+s = "foo"
+d = 10s
+b = true
+dt = 2030-01-01T00:00:00Z
+re =~ /foo/
+re !~ /foo/
+`,
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			// src -> rust AST -> rustJSONA -> Go AST -> goJSON -> Rust AST -> rustJSONB
+			// Compare rustJSONA and rustJSONB
+
+			astPkgA := libflux.ParseString(tc.fluxFile)
+			rustJSONA, err := astPkgA.MarshalJSON()
+			if err != nil {
+				t.Fatal(err)
+			}
+			var goAST ast.Package
+			if err := json.Unmarshal(rustJSONA, &goAST); err != nil {
+				t.Fatal(err)
+			}
+			goJSON, err := json.Marshal(&goAST)
+			if err != nil {
+				t.Fatal(err)
+			}
+			astPkgB, err := libflux.ParseJSON(goJSON)
+			if err != nil {
+				t.Fatal(err)
+			}
+			rustJSONB, err := astPkgB.MarshalJSON()
+			if err != nil {
+				t.Fatal(err)
+			}
+			compareIndentedJSON(t, rustJSONA, rustJSONB)
+
+			// Following test can be removed when Go parser is retired and completely unused
+			// src --go-parse--> Go AST -> JSON -> Rust AST
+
+			var tok token.File
+			goASTFile := goparser.ParseFile(&tok, []byte(tc.fluxFile))
+			goAST = ast.Package{
+				Files: []*ast.File{
+					goASTFile,
+				},
+			}
+			goJSON, err = json.Marshal(&goAST)
+			if err != nil {
+				t.Fatal(err)
+			}
+			goJSON = mustIndent(t, goJSON)
+			if _, err := libflux.ParseJSON(goJSON); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
+func mustIndent(t *testing.T, bs []byte) []byte {
+	t.Helper()
+	var bb bytes.Buffer
+	if err := json.Indent(&bb, bs, "", "    "); err != nil {
+		t.Fatalf("could not indent: %v", err)
+	}
+	return bb.Bytes()
+}
+
+func compareIndentedJSON(t *testing.T, jsonA, jsonB []byte) {
+	t.Helper()
+	if diff := cmp.Diff(string(mustIndent(t, jsonA)), string(mustIndent(t, jsonB))); diff != "" {
+		t.Errorf("JSON A and JSON B differed; -a/+b:\n%v", diff)
 	}
 }

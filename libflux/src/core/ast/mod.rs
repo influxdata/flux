@@ -64,9 +64,11 @@ impl Default for Position {
 // SourceLocation represents the location of a node in the AST
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 pub struct SourceLocation {
-    pub file: Option<String>,   // File is the optional file name.
-    pub start: Position,        // Start is the location in the source the node starts.
-    pub end: Position,          // End is the location in the source the node ends.
+    #[serde(skip_serializing_if = "skip_string_option")]
+    pub file: Option<String>, // File is the optional file name.
+    pub start: Position, // Start is the location in the source the node starts.
+    pub end: Position,   // End is the location in the source the node ends.
+    #[serde(skip_serializing_if = "skip_string_option")]
     pub source: Option<String>, // Source is optional raw source.
 }
 
@@ -74,6 +76,10 @@ impl SourceLocation {
     pub fn is_valid(&self) -> bool {
         self.start.is_valid() && self.end.is_valid()
     }
+}
+
+fn skip_string_option(opt_str: &Option<String>) -> bool {
+    opt_str.is_none() || opt_str.as_ref().unwrap().is_empty()
 }
 
 impl fmt::Display for SourceLocation {
@@ -862,6 +868,7 @@ pub struct ObjectExpr {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub with: Option<Identifier>,
+    #[serde(deserialize_with = "deserialize_default_from_null")]
     pub properties: Vec<Property>,
 }
 
