@@ -2,6 +2,7 @@ package testing
 
 import (
 	"bytes"
+	"math"
 	"sort"
 	"sync"
 
@@ -105,13 +106,19 @@ type DiffTransformation struct {
 	mu sync.Mutex
 
 	wantID, gotID execute.DatasetID
-	finished      map[execute.DatasetID]bool
+	parentState   map[execute.DatasetID]*diffParentState
 
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 	alloc *memory.Allocator
 
 	inputCache *execute.GroupLookup
+}
+
+type diffParentState struct {
+	mark       execute.Time
+	processing execute.Time
+	finished   bool
 }
 
 type tableBuffer struct {
@@ -288,14 +295,17 @@ func createDiffTransformation(id execute.DatasetID, mode execute.AccumulationMod
 }
 
 func NewDiffTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *DiffProcedureSpec, wantID, gotID execute.DatasetID, a *memory.Allocator) *DiffTransformation {
+	parentState := make(map[execute.DatasetID]*diffParentState)
+	parentState[wantID] = new(diffParentState)
+	parentState[gotID] = new(diffParentState)
 	return &DiffTransformation{
-		wantID:     wantID,
-		gotID:      gotID,
-		d:          d,
-		cache:      cache,
-		inputCache: execute.NewGroupLookup(),
-		finished:   make(map[execute.DatasetID]bool, 2),
-		alloc:      a,
+		wantID:      wantID,
+		gotID:       gotID,
+		d:           d,
+		cache:       cache,
+		inputCache:  execute.NewGroupLookup(),
+		parentState: parentState,
+		alloc:       a,
 	}
 }
 
@@ -310,7 +320,7 @@ func (t *DiffTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 	// If one of the tables finished with an error, it is possible
 	// to prematurely declare the other table as finished so we
 	// don't do more work on something that failed anyway.
-	if t.finished[id] {
+	if t.parentState[id].finished {
 		tbl.Done()
 		return nil
 	}
@@ -328,7 +338,7 @@ func (t *DiffTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		// We did not find an entry. If the other table has
 		// not been finished, we need to store this table
 		// for later usage.
-		if len(t.finished) != 1 || !t.finished[id] {
+		if !t.parentState[id].finished {
 			t.inputCache.Set(tbl.Key(), want)
 			return nil
 		}
@@ -582,51 +592,67 @@ func (t *DiffTransformation) appendRow(builder execute.TableBuilder, i, diffIdx 
 func (t *DiffTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	return t.d.UpdateWatermark(mark)
+
+	t.parentState[id].mark = mark
+
+	min := execute.Time(math.MaxInt64)
+	for _, state := range t.parentState {
+		if state.mark < min {
+			min = state.mark
+		}
+	}
+
+	return t.d.UpdateWatermark(min)
 }
 
 func (t *DiffTransformation) UpdateProcessingTime(id execute.DatasetID, mark execute.Time) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	return t.d.UpdateProcessingTime(mark)
+
+	t.parentState[id].processing = mark
+
+	min := execute.Time(math.MaxInt64)
+	for _, state := range t.parentState {
+		if state.processing < min {
+			min = state.processing
+		}
+	}
+
+	return t.d.UpdateProcessingTime(min)
 }
 
 func (t *DiffTransformation) Finish(id execute.DatasetID, err error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	if t.finished[id] {
-		return
-	}
-	t.finished[id] = true
+	t.parentState[id].finished = true
 
-	// An error occurred upstream which makes all of our work needless.
-	// Declare both of the ids as finished and flush the table builder.
 	if err != nil {
-		t.finished[t.wantID] = true
-		t.finished[t.gotID] = true
 		t.d.Finish(err)
-		return
-	} else if len(t.finished) < 2 {
-		// Both parents need to finish before we flush out the remainder.
-		return
 	}
 
-	// There will be no more tables so any tables we have should
-	// have a table created with a diff for every line since all
-	// of them are missing.
-	t.inputCache.Range(func(key flux.GroupKey, value interface{}) {
-		if err != nil {
-			return
-		}
+	finished := true
+	for _, state := range t.parentState {
+		finished = finished && state.finished
+	}
 
-		var got, want *tableBuffer
-		if obj := value.(*tableBuffer); obj.id == t.wantID {
-			want, got = obj, &tableBuffer{}
-		} else {
-			want, got = &tableBuffer{}, obj
-		}
-		err = t.diff(key, want, got)
-	})
-	t.d.Finish(err)
+	if finished {
+		// There will be no more tables so any tables we have should
+		// have a table created with a diff for every line since all
+		// of them are missing.
+		t.inputCache.Range(func(key flux.GroupKey, value interface{}) {
+			if err != nil {
+				return
+			}
+
+			var got, want *tableBuffer
+			if obj := value.(*tableBuffer); obj.id == t.wantID {
+				want, got = obj, &tableBuffer{}
+			} else {
+				want, got = &tableBuffer{}, obj
+			}
+			err = t.diff(key, want, got)
+		})
+		t.d.Finish(err)
+	}
 }
