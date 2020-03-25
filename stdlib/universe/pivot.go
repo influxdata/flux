@@ -622,6 +622,11 @@ func (t *pivotTransformation2) UpdateProcessingTime(id execute.DatasetID, mark e
 }
 
 func (t *pivotTransformation2) Finish(id execute.DatasetID, err error) {
+	// Inform the downstream dataset that we are finished.
+	// Wrap this in a function so that we do not capture the err variable.
+	// https://play.golang.org/p/QXns3c8s76f
+	defer func() { t.d.Finish(err) }()
+
 	t.groups.Range(func(key flux.GroupKey, value interface{}) {
 		if err != nil {
 			return
@@ -636,17 +641,15 @@ func (t *pivotTransformation2) Finish(id execute.DatasetID, err error) {
 		if err = t.d.Process(tbl); err != nil {
 			return
 		}
-		if err = t.d.UpdateWatermark(t.watermark); err != nil {
-			return
-		}
-		if err = t.d.UpdateProcessingTime(t.processing); err != nil {
-			return
-		}
 	})
 	t.groups.Clear()
 
-	// Inform the downstream dataset that we are finished.
-	t.d.Finish(err)
+	if err = t.d.UpdateWatermark(t.watermark); err != nil {
+		return
+	}
+	if err = t.d.UpdateProcessingTime(t.processing); err != nil {
+		return
+	}
 }
 
 type pivotTableBuffer struct {
