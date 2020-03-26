@@ -6,7 +6,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/repl"
 	"github.com/influxdata/flux/runtime"
@@ -44,6 +46,20 @@ func TestEval(t *testing.T) {
 			want: []values.Value{
 				values.NewString("str + ing = string"),
 			},
+		},
+		{
+			name: "string interpolation missing field",
+			query: `
+				r = makeRecord(o: {a: "foo", b: 42})
+				"r._value = ${r._value}"`,
+			wantErr: true,
+		},
+		{
+			name: "string interpolation field has wrong type",
+			query: `
+				r = makeRecord(o: {a: "foo", b: 42})
+				"r._value = ${r.b}"`,
+			wantErr: true,
 		},
 		{
 			name:  "call builtin function",
@@ -357,10 +373,19 @@ func TestEval(t *testing.T) {
 
 			ctx := dependenciestest.Default().Inject(context.Background())
 			sideEffects, _, err := runtime.Eval(ctx, src)
-			if !tc.wantErr && err != nil {
-				t.Fatal(err)
-			} else if tc.wantErr && err == nil {
-				t.Fatal("expected error")
+			if err != nil {
+				if !tc.wantErr {
+					t.Fatal(err)
+				}
+
+				// We expect an error, so it should be a non-internal Flux error.
+				fluxErr, ok := err.(*errors.Error)
+				if !ok {
+					t.Fatalf("expected error of type %T, got %T", fluxErr, err)
+				} else if fluxErr.Code == codes.Internal {
+					t.Fatalf("expected error to have code other than %s", codes.Internal)
+				}
+				return
 			}
 
 			vs := getSideEffectsValues(sideEffects)

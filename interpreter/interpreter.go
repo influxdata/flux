@@ -414,7 +414,17 @@ func (itrp *Interpreter) doStringPart(ctx context.Context, part semantic.StringE
 	case *semantic.TextPart:
 		return values.NewString(p.Value), nil
 	case *semantic.InterpolatedPart:
-		return itrp.doExpression(ctx, p.Expression, scope)
+		v, err := itrp.doExpression(ctx, p.Expression, scope)
+		if err != nil {
+			return nil, err
+		} else if v.IsNull() {
+			return nil, errors.Newf(codes.Invalid, "%s: interpolated expression produced a null value",
+				p.Location())
+		} else if v.Type().Nature() != semantic.String {
+			return nil, errors.Newf(codes.Invalid, "%s: expected interpolated expression to have type %s, but it had type %s",
+				p.Location(), semantic.String, v.Type().Nature())
+		}
+		return v, nil
 	}
 	return nil, errors.New(codes.Internal, "expecting interpolated string part")
 }
