@@ -18,6 +18,3 @@ builtin set
 // - All other columns are fields
 // - An error will be thrown for incompatible data types
 builtin to
-
-// An experimental version of join.
-builtin join
