@@ -492,7 +492,7 @@ fn compare_exprs(
                 }
                 let fb_we = &fb_elems.get(i);
                 let fb_e = &fb_we.expr();
-                compare_exprs(&ast_ae.elements[i], fb_we.expr_type(), fb_e)?;
+                compare_exprs(&ast_ae.elements[i].expression, fb_we.expr_type(), fb_e)?;
                 i = i + 1
             }
         }
@@ -532,7 +532,7 @@ fn compare_exprs(
             let fb_oe = fbast::ObjectExpression::init_from_table(*fb_tbl);
             compare_base(&ast_oe.base, &fb_oe.base_node())?;
             compare_property_list(&ast_oe.properties, &fb_oe.properties())?;
-            compare_opt_ids(&ast_oe.with, &fb_oe.with())
+            compare_with_ids(&ast_oe.with, &fb_oe.with())
         }
         (ast::Expression::Member(ast_me), fbast::Expression::MemberExpression) => {
             let fb_me = fbast::MemberExpression::init_from_table(*fb_tbl);
@@ -818,6 +818,18 @@ fn compare_ids(ast_id: &ast::Identifier, fb_id: &Option<fbast::Identifier>) -> R
     compare_base(&ast_id.base, &fb_id.base_node())?;
     compare_strings("id", &ast_id.name, &fb_id.name())?;
     Ok(())
+}
+
+fn compare_with_ids(
+    ast_id: &Option<ast::WithSource>,
+    fb_id: &Option<fbast::Identifier>,
+) -> Result<(), String> {
+    match (ast_id, fb_id) {
+        (None, None) => Ok(()),
+        (Some(_), None) => Err(String::from("compare opt ids, ast had one, fb did not")),
+        (None, Some(_)) => Err(String::from("compare opt ids, ast had none, fb did")),
+        (Some(ast_id), fb_id) => compare_ids(&ast_id.source, fb_id),
+    }
 }
 
 fn compare_opt_ids(
