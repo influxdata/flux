@@ -19,14 +19,10 @@ export GO_GENERATE=go generate $(GO_ARGS)
 export GO_VET=env GO111MODULE=on go vet $(GO_ARGS)
 export CARGO=cargo
 export CARGO_ARGS=
-export VALGRIND=valgrind
-export VALGRIND_ARGS=--leak-check=full --error-exitcode=1
 
 define go_deps
 	$(shell env GO111MODULE=on go list -f "{{range .GoFiles}} {{$$.Dir}}/{{.}}{{end}}" $(1))
 endef
-
-LIBFLUX_MEMTEST_BIN=libflux/c/libflux_memory_tester
 
 default: build
 
@@ -83,7 +79,7 @@ build: libflux-go
 clean:
 	rm -rf bin
 	cd libflux && $(CARGO) clean && rm -rf pkg
-	rm -f $(LIBFLUX_MEMTEST_BIN)
+	cd libflux/c && $(MAKE) clean
 
 cleangenerate:
 	rm -rf $(GENERATED_TARGETS)
@@ -148,14 +144,8 @@ build-wasm:
 publish-wasm: build-wasm
 	cd libflux/src/flux/pkg && npm publish --access public
 
-test-valgrind: $(LIBFLUX_MEMTEST_BIN)
-	LD_LIBRARY_PATH=$(PWD)/libflux/target/debug $(VALGRIND) $(VALGRIND_ARGS) $^
-
-LIBFLUX_MEMTEST_SOURCES=libflux/c/*.c
-$(LIBFLUX_MEMTEST_BIN): libflux $(LIBFLUX_MEMTEST_SOURCES)
-	$(CC) -g -Wall -Werror $(LIBFLUX_MEMTEST_SOURCES) -I./libflux/include \
-		./libflux/target/debug/libflux.a \
-		-o $@ -lpthread -ldl
+test-valgrind: libflux
+	cd libflux/c && $(MAKE) test-valgrind
 
 .PHONY: generate \
 	clean \
