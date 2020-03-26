@@ -180,7 +180,6 @@ pub fn builtins() -> Builtins<'static> {
                 "resets" => "forall [t0, t1] (<-tables: [{_value: float | t0}]) -> [{_value: float | t1}]",
                 "timestamp" => "forall [t0] (<-tables: [{_value: float | t0}]) -> [{_value: float | t0}]",
                 "promqlYear" => "forall [] (timestamp: float) -> float",
-                "join" => "forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (left: [t0], right: [t1], fn: (left: t0, right: t1) -> t2) -> [t2]",
             },
             "json" => maplit::hashmap! {
                 "encode" => "forall [t0] (v: t0) -> bytes",
