@@ -33,8 +33,8 @@ impl From<fb::TypeEnvironment<'_>> for Option<Environment> {
     fn from(env: fb::TypeEnvironment) -> Option<Environment> {
         let env = env.assignments()?;
         let mut types = PolyTypeMap::new();
-        for i in 0..env.len() {
-            let assignment: Option<(String, PolyType)> = env.get(i).into();
+        for value in env.iter() {
+            let assignment: Option<(String, PolyType)> = value.into();
             let (id, ty) = assignment?;
             types.insert(id, ty);
         }
@@ -54,13 +54,13 @@ impl From<fb::PolyType<'_>> for Option<PolyType> {
     fn from(t: fb::PolyType) -> Option<PolyType> {
         let v = t.vars()?;
         let mut vars = Vec::new();
-        for i in 0..v.len() {
-            vars.push(v.get(i).into());
+        for value in v.iter() {
+            vars.push(value.into());
         }
         let c = t.cons()?;
         let mut cons = TvarKinds::new();
-        for i in 0..c.len() {
-            let constraint: Option<(Tvar, Kind)> = c.get(i).into();
+        for value in c.iter() {
+            let constraint: Option<(Tvar, Kind)> = value.into();
             let (tv, kind) = constraint?;
             cons.entry(tv).or_insert_with(Vec::new).push(kind);
         }
@@ -168,8 +168,8 @@ impl From<fb::Row<'_>> for Option<MonoType> {
             Some(tv) => MonoType::Var(tv.into()),
         };
         let p = t.props()?;
-        for i in (0..p.len()).rev() {
-            let prop: Option<Property> = p.get(i).into();
+        for value in p.iter().rev() {
+            let prop: Option<Property> = value.into();
             r = MonoType::Row(Box::new(Row::Extension {
                 head: prop?,
                 tail: r,
@@ -194,8 +194,8 @@ impl From<fb::Fun<'_>> for Option<Function> {
         let mut req = MonoTypeMap::new();
         let mut opt = MonoTypeMap::new();
         let mut pipe = None;
-        for i in 0..args.len() {
-            match args.get(i).into() {
+        for value in args.iter() {
+            match value.into() {
                 None => {
                     return None;
                 }

@@ -96,12 +96,12 @@ impl Formatter {
             }
         }
 
-        for i in 0..n.imports.len() {
+        for (i, value) in n.imports.iter().enumerate() {
             if i != 0 {
                 self.write_rune(sep)
             }
             self.write_indent();
-            self.format_import_declaration(n.imports.get(i).unwrap())
+            self.format_import_declaration(value)
         }
         if !n.imports.is_empty() && !n.body.is_empty() {
             self.write_rune(sep);
@@ -109,7 +109,7 @@ impl Formatter {
         }
 
         let mut prev: i8 = -1;
-        for i in 0..n.body.len() {
+        for (i, value) in n.body.iter().enumerate() {
             let cur = n.body.get(i).unwrap().typ();
             if i != 0 {
                 self.write_rune(sep);
@@ -119,7 +119,7 @@ impl Formatter {
                 }
             }
             self.write_indent();
-            self.format_node(&Node::from_stmt(n.body.get(i).unwrap()));
+            self.format_node(&Node::from_stmt(value));
             prev = cur;
         }
     }
@@ -181,12 +181,11 @@ impl Formatter {
             },
             base: ast::BaseNode::default(),
         });
-        for i in 0..n.files.len() {
+        for (i, file) in n.files.iter().enumerate() {
             if i != 0 {
                 self.write_rune('\n');
                 self.write_rune('\n');
             }
-            let file = n.files.get(i).unwrap();
             if !file.name.is_empty() {
                 self.write_comment(&file.name);
             }
@@ -205,12 +204,12 @@ impl Formatter {
     fn format_function_expression(&mut self, n: &ast::FunctionExpr) {
         self.write_rune('(');
         let sep = ", ";
-        for i in 0..n.params.len() {
+        for (i, value) in n.params.iter().enumerate() {
             if i != 0 {
                 self.write_string(sep)
             }
             // treat properties differently than in general case
-            self.format_function_argument(n.params.get(i).unwrap())
+            self.format_function_argument(value)
         }
         self.write_string(") =>");
         // must wrap body with parenthesis in order to discriminate between:
@@ -284,11 +283,11 @@ impl Formatter {
     fn format_array_expression(&mut self, n: &ast::ArrayExpr) {
         self.write_rune('[');
         let sep = ", ";
-        for i in 0..n.elements.len() {
+        for (i, value) in n.elements.iter().enumerate() {
             if i != 0 {
                 self.write_string(sep)
             }
-            self.format_node(&Node::from_expr(n.elements.get(i).unwrap()));
+            self.format_node(&Node::from_expr(value));
         }
         self.write_rune(']')
     }
@@ -308,8 +307,7 @@ impl Formatter {
         }
 
         let mut prev: i8 = -1;
-        for i in 0..n.body.len() {
-            let smt = n.body.get(i).unwrap();
+        for (i, smt) in n.body.iter().enumerate() {
             let cur = smt.typ();
             self.write_rune(sep);
 
@@ -417,11 +415,10 @@ impl Formatter {
         self.format_child_with_parens(Node::CallExpr(n), Node::from_expr(&n.callee));
         self.write_rune('(');
         let sep = ", ";
-        for i in 0..n.arguments.len() {
+        for (i, c) in n.arguments.iter().enumerate() {
             if i != 0 {
                 self.write_string(sep);
             }
-            let c = n.arguments.get(i).unwrap();
             match c {
                 ast::Expression::Object(s) => self.format_object_expression_as_function_argument(s),
                 _ => self.format_node(&Node::from_expr(c)),
@@ -457,14 +454,14 @@ impl Formatter {
         } else {
             sep = ", "
         }
-        for i in 0..n.properties.len() {
+        for (i, value) in n.properties.iter().enumerate() {
             if i != 0 {
                 self.write_string(sep);
                 if multiline {
                     self.write_indent()
                 }
             }
-            self.format_node(&Node::Property(n.properties.get(i).unwrap()));
+            self.format_node(&Node::Property(value));
         }
         if multiline {
             self.write_string(sep);
