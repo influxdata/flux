@@ -14,7 +14,8 @@ fn test_scan() {
             start_offset: 0,
             end_offset: 4,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 5 }
+            end_pos: Position { line: 1, column: 5 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -25,7 +26,8 @@ fn test_scan() {
             start_offset: 4,
             end_offset: 5,
             start_pos: Position { line: 1, column: 5 },
-            end_pos: Position { line: 1, column: 6 }
+            end_pos: Position { line: 1, column: 6 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -39,7 +41,8 @@ fn test_scan() {
             end_pos: Position {
                 line: 1,
                 column: 12
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -56,7 +59,8 @@ fn test_scan() {
             end_pos: Position {
                 line: 1,
                 column: 13
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -73,7 +77,8 @@ fn test_scan() {
             end_pos: Position {
                 line: 1,
                 column: 18
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -90,7 +95,8 @@ fn test_scan() {
             end_pos: Position {
                 line: 1,
                 column: 19
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -107,7 +113,8 @@ fn test_scan() {
             end_pos: Position {
                 line: 1,
                 column: 22
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -124,7 +131,8 @@ fn test_scan() {
             end_pos: Position {
                 line: 1,
                 column: 28
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -141,7 +149,8 @@ fn test_scan() {
             end_pos: Position {
                 line: 1,
                 column: 29
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -158,7 +167,8 @@ fn test_scan() {
             end_pos: Position {
                 line: 1,
                 column: 34
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -175,7 +185,8 @@ fn test_scan() {
             end_pos: Position {
                 line: 1,
                 column: 35
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -192,7 +203,8 @@ fn test_scan() {
             end_pos: Position {
                 line: 1,
                 column: 37
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -209,7 +221,8 @@ fn test_scan() {
             end_pos: Position {
                 line: 1,
                 column: 39
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -226,7 +239,8 @@ fn test_scan() {
             end_pos: Position {
                 line: 1,
                 column: 40
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -243,7 +257,8 @@ fn test_scan() {
             end_pos: Position {
                 line: 1,
                 column: 40
-            }
+            },
+            comments: None,
         }
     );
 }
@@ -261,7 +276,8 @@ fn test_scan_with_regex() {
             start_offset: 0,
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 2 }
+            end_pos: Position { line: 1, column: 2 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -272,7 +288,8 @@ fn test_scan_with_regex() {
             start_offset: 2,
             end_offset: 3,
             start_pos: Position { line: 1, column: 3 },
-            end_pos: Position { line: 1, column: 4 }
+            end_pos: Position { line: 1, column: 4 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -283,7 +300,8 @@ fn test_scan_with_regex() {
             start_offset: 4,
             end_offset: 5,
             start_pos: Position { line: 1, column: 5 },
-            end_pos: Position { line: 1, column: 6 }
+            end_pos: Position { line: 1, column: 6 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -294,7 +312,8 @@ fn test_scan_with_regex() {
             start_offset: 6,
             end_offset: 8,
             start_pos: Position { line: 1, column: 7 },
-            end_pos: Position { line: 1, column: 9 }
+            end_pos: Position { line: 1, column: 9 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -311,7 +330,8 @@ fn test_scan_with_regex() {
             end_pos: Position {
                 line: 1,
                 column: 19
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -328,7 +348,8 @@ fn test_scan_with_regex() {
             end_pos: Position {
                 line: 1,
                 column: 21
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -345,7 +366,8 @@ fn test_scan_with_regex() {
             end_pos: Position {
                 line: 1,
                 column: 23
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -362,7 +384,8 @@ fn test_scan_with_regex() {
             end_pos: Position {
                 line: 1,
                 column: 23
-            }
+            },
+            comments: None,
         }
     );
 }
@@ -380,7 +403,8 @@ fn test_scan_string_expr_simple() {
             start_offset: 0,
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 2 }
+            end_pos: Position { line: 1, column: 2 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -391,7 +415,8 @@ fn test_scan_string_expr_simple() {
             start_offset: 1,
             end_offset: 3,
             start_pos: Position { line: 1, column: 2 },
-            end_pos: Position { line: 1, column: 4 }
+            end_pos: Position { line: 1, column: 4 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -405,7 +430,8 @@ fn test_scan_string_expr_simple() {
             end_pos: Position {
                 line: 1,
                 column: 10
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -422,7 +448,8 @@ fn test_scan_string_expr_simple() {
             end_pos: Position {
                 line: 1,
                 column: 11
-            }
+            },
+            comments: None,
         }
     );
 }
@@ -440,7 +467,8 @@ fn test_scan_string_expr_start_with_text() {
             start_offset: 0,
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 2 }
+            end_pos: Position { line: 1, column: 2 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -454,7 +482,8 @@ fn test_scan_string_expr_start_with_text() {
             end_pos: Position {
                 line: 1,
                 column: 10
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -471,7 +500,8 @@ fn test_scan_string_expr_start_with_text() {
             end_pos: Position {
                 line: 1,
                 column: 12
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -488,7 +518,8 @@ fn test_scan_string_expr_start_with_text() {
             end_pos: Position {
                 line: 1,
                 column: 18
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -505,7 +536,8 @@ fn test_scan_string_expr_start_with_text() {
             end_pos: Position {
                 line: 1,
                 column: 19
-            }
+            },
+            comments: None,
         }
     );
 }
@@ -523,7 +555,8 @@ fn test_scan_string_expr_multiple() {
             start_offset: 0,
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 2 }
+            end_pos: Position { line: 1, column: 2 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -537,7 +570,8 @@ fn test_scan_string_expr_multiple() {
             end_pos: Position {
                 line: 1,
                 column: 10
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -554,7 +588,8 @@ fn test_scan_string_expr_multiple() {
             end_pos: Position {
                 line: 1,
                 column: 12
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -571,7 +606,8 @@ fn test_scan_string_expr_multiple() {
             end_pos: Position {
                 line: 1,
                 column: 31
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -588,7 +624,8 @@ fn test_scan_string_expr_multiple() {
             end_pos: Position {
                 line: 1,
                 column: 33
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -605,7 +642,8 @@ fn test_scan_string_expr_multiple() {
             end_pos: Position {
                 line: 1,
                 column: 39
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -622,7 +660,8 @@ fn test_scan_string_expr_multiple() {
             end_pos: Position {
                 line: 1,
                 column: 40
-            }
+            },
+            comments: None,
         }
     );
 }
@@ -640,7 +679,8 @@ fn test_scan_string_expr_end_with_text() {
             start_offset: 0,
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 2 }
+            end_pos: Position { line: 1, column: 2 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -654,7 +694,8 @@ fn test_scan_string_expr_end_with_text() {
             end_pos: Position {
                 line: 1,
                 column: 10
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -671,7 +712,8 @@ fn test_scan_string_expr_end_with_text() {
             end_pos: Position {
                 line: 1,
                 column: 12
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -688,7 +730,8 @@ fn test_scan_string_expr_end_with_text() {
             end_pos: Position {
                 line: 1,
                 column: 32
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -705,7 +748,8 @@ fn test_scan_string_expr_end_with_text() {
             end_pos: Position {
                 line: 1,
                 column: 33
-            }
+            },
+            comments: None,
         }
     );
 }
@@ -723,7 +767,8 @@ fn test_scan_string_expr_escaped_quotes() {
             start_offset: 0,
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 2 }
+            end_pos: Position { line: 1, column: 2 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -737,7 +782,8 @@ fn test_scan_string_expr_escaped_quotes() {
             end_pos: Position {
                 line: 1,
                 column: 31
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -754,7 +800,8 @@ fn test_scan_string_expr_escaped_quotes() {
             end_pos: Position {
                 line: 1,
                 column: 32
-            }
+            },
+            comments: None,
         }
     );
 }
@@ -772,7 +819,8 @@ fn test_scan_string_expr_not_escaped_quotes() {
             start_offset: 0,
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 2 }
+            end_pos: Position { line: 1, column: 2 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -783,7 +831,8 @@ fn test_scan_string_expr_not_escaped_quotes() {
             start_offset: 1,
             end_offset: 6,
             start_pos: Position { line: 1, column: 2 },
-            end_pos: Position { line: 1, column: 7 }
+            end_pos: Position { line: 1, column: 7 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -794,7 +843,8 @@ fn test_scan_string_expr_not_escaped_quotes() {
             start_offset: 6,
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
-            end_pos: Position { line: 1, column: 8 }
+            end_pos: Position { line: 1, column: 8 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -808,7 +858,8 @@ fn test_scan_string_expr_not_escaped_quotes() {
             end_pos: Position {
                 line: 1,
                 column: 32
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -825,7 +876,8 @@ fn test_scan_string_expr_not_escaped_quotes() {
             end_pos: Position {
                 line: 1,
                 column: 33
-            }
+            },
+            comments: None,
         }
     );
 }
@@ -843,7 +895,8 @@ fn test_scan_unread() {
             start_offset: 0,
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 2 }
+            end_pos: Position { line: 1, column: 2 },
+            comments: None,
         }
     );
     s.unread();
@@ -855,7 +908,8 @@ fn test_scan_unread() {
             start_offset: 0,
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 2 }
+            end_pos: Position { line: 1, column: 2 },
+            comments: None,
         }
     );
 
@@ -867,7 +921,8 @@ fn test_scan_unread() {
             start_offset: 2,
             end_offset: 7,
             start_pos: Position { line: 1, column: 3 },
-            end_pos: Position { line: 1, column: 8 }
+            end_pos: Position { line: 1, column: 8 },
+            comments: None,
         }
     );
     s.unread();
@@ -879,7 +934,8 @@ fn test_scan_unread() {
             start_offset: 2,
             end_offset: 3,
             start_pos: Position { line: 1, column: 3 },
-            end_pos: Position { line: 1, column: 4 }
+            end_pos: Position { line: 1, column: 4 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -890,7 +946,8 @@ fn test_scan_unread() {
             start_offset: 4,
             end_offset: 5,
             start_pos: Position { line: 1, column: 5 },
-            end_pos: Position { line: 1, column: 6 }
+            end_pos: Position { line: 1, column: 6 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -901,7 +958,8 @@ fn test_scan_unread() {
             start_offset: 6,
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
-            end_pos: Position { line: 1, column: 8 }
+            end_pos: Position { line: 1, column: 8 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -915,7 +973,8 @@ fn test_scan_unread() {
             end_pos: Position {
                 line: 1,
                 column: 10
-            }
+            },
+            comments: None,
         }
     );
     // test unread idempotence
@@ -935,7 +994,8 @@ fn test_scan_unread() {
             end_pos: Position {
                 line: 1,
                 column: 10
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -952,7 +1012,8 @@ fn test_scan_unread() {
             end_pos: Position {
                 line: 1,
                 column: 10
-            }
+            },
+            comments: None,
         }
     );
 }
@@ -974,6 +1035,7 @@ fn test_scan_unread_with_newlines() {
             end_offset: 5,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 6 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -985,6 +1047,7 @@ fn test_scan_unread_with_newlines() {
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
             end_pos: Position { line: 1, column: 8 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -996,6 +1059,7 @@ fn test_scan_unread_with_newlines() {
             end_offset: 11,
             start_pos: Position { line: 4, column: 1 },
             end_pos: Position { line: 4, column: 2 },
+            comments: None,
         }
     );
     s.unread();
@@ -1008,6 +1072,7 @@ fn test_scan_unread_with_newlines() {
             end_offset: 15,
             start_pos: Position { line: 4, column: 1 },
             end_pos: Position { line: 4, column: 6 },
+            comments: None,
         }
     );
 }
@@ -1041,6 +1106,7 @@ fn test_scan_with_regex_unread() {
                 end_offset: 1,
                 start_pos: Position { line: 1, column: 1 },
                 end_pos: Position { line: 1, column: 2 },
+                comments: None,
             },
             Token {
                 tok: TOK_MUL,
@@ -1049,6 +1115,7 @@ fn test_scan_with_regex_unread() {
                 end_offset: 3,
                 start_pos: Position { line: 1, column: 3 },
                 end_pos: Position { line: 1, column: 4 },
+                comments: None,
             },
             Token {
                 tok: TOK_DIV,
@@ -1057,6 +1124,7 @@ fn test_scan_with_regex_unread() {
                 end_offset: 5,
                 start_pos: Position { line: 1, column: 5 },
                 end_pos: Position { line: 1, column: 6 },
+                comments: None,
             },
             Token {
                 tok: TOK_DIV,
@@ -1065,6 +1133,7 @@ fn test_scan_with_regex_unread() {
                 end_offset: 5,
                 start_pos: Position { line: 1, column: 5 },
                 end_pos: Position { line: 1, column: 6 },
+                comments: None,
             },
             Token {
                 tok: TOK_INT,
@@ -1073,6 +1142,7 @@ fn test_scan_with_regex_unread() {
                 end_offset: 7,
                 start_pos: Position { line: 1, column: 7 },
                 end_pos: Position { line: 1, column: 8 },
+                comments: None,
             },
             Token {
                 tok: TOK_IDENT,
@@ -1087,6 +1157,7 @@ fn test_scan_with_regex_unread() {
                     line: 2,
                     column: 11
                 },
+                comments: None,
             },
             Token {
                 tok: TOK_EOF,
@@ -1095,6 +1166,7 @@ fn test_scan_with_regex_unread() {
                 end_offset: 23,
                 start_pos: Position { line: 3, column: 5 },
                 end_pos: Position { line: 3, column: 5 },
+                comments: None,
             },
         ],
         toks
@@ -1125,6 +1197,7 @@ fn test_unclosed_quote() {
                 end_offset: 1,
                 start_pos: Position { line: 1, column: 1 },
                 end_pos: Position { line: 1, column: 2 },
+                comments: None,
             },
             Token {
                 tok: TOK_ASSIGN,
@@ -1133,6 +1206,7 @@ fn test_unclosed_quote() {
                 end_offset: 3,
                 start_pos: Position { line: 1, column: 3 },
                 end_pos: Position { line: 1, column: 4 },
+                comments: None,
             },
             Token {
                 tok: TOK_QUOTE,
@@ -1141,6 +1215,7 @@ fn test_unclosed_quote() {
                 end_offset: 5,
                 start_pos: Position { line: 1, column: 5 },
                 end_pos: Position { line: 1, column: 6 },
+                comments: None,
             },
             Token {
                 tok: TOK_IDENT,
@@ -1149,6 +1224,7 @@ fn test_unclosed_quote() {
                 end_offset: 8,
                 start_pos: Position { line: 1, column: 6 },
                 end_pos: Position { line: 1, column: 9 },
+                comments: None,
             },
             Token {
                 tok: TOK_IDENT,
@@ -1160,6 +1236,7 @@ fn test_unclosed_quote() {
                     line: 2,
                     column: 12,
                 },
+                comments: None,
             },
             Token {
                 tok: TOK_IDENT,
@@ -1171,6 +1248,7 @@ fn test_unclosed_quote() {
                     line: 3,
                     column: 12,
                 },
+                comments: None,
             },
             Token {
                 tok: TOK_EOF,
@@ -1185,6 +1263,7 @@ fn test_unclosed_quote() {
                     line: 3,
                     column: 12
                 },
+                comments: None,
             }
         ],
         toks
@@ -1210,7 +1289,16 @@ a
             start_offset: 22,
             end_offset: 23,
             start_pos: Position { line: 2, column: 1 },
-            end_pos: Position { line: 2, column: 2 }
+            end_pos: Position { line: 2, column: 2 },
+            comments: Some(Box::new(Token {
+                tok: 2,
+                lit: String::from("// this is a comment.\n"),
+                start_offset: 0,
+                end_offset: 22,
+                start_pos: Position { line: 1, column: 1 },
+                end_pos: Position { line: 2, column: 1 },
+                comments: None
+            })),
         }
     );
     assert_eq!(
@@ -1221,7 +1309,32 @@ a
             start_offset: 95,
             end_offset: 96,
             start_pos: Position { line: 6, column: 1 },
-            end_pos: Position { line: 6, column: 2 }
+            end_pos: Position { line: 6, column: 2 },
+            comments: Some(Box::new(Token {
+                tok: 2,
+                lit: String::from("// last but not least.\n"),
+                start_offset: 72,
+                end_offset: 95,
+                start_pos: Position { line: 5, column: 1 },
+                end_pos: Position { line: 6, column: 1 },
+                comments: Some(Box::new(Token {
+                    tok: 2,
+                    lit: String::from("// one more.\n"),
+                    start_offset: 59,
+                    end_offset: 72,
+                    start_pos: Position { line: 4, column: 1 },
+                    end_pos: Position { line: 5, column: 1 },
+                    comments: Some(Box::new(Token {
+                        tok: 2,
+                        lit: String::from("// comment with // nested comment.\n"),
+                        start_offset: 24,
+                        end_offset: 59,
+                        start_pos: Position { line: 3, column: 1 },
+                        end_pos: Position { line: 4, column: 1 },
+                        comments: None,
+                    }))
+                }))
+            }))
         }
     );
     assert_eq!(
@@ -1238,7 +1351,19 @@ a
             end_pos: Position {
                 line: 7,
                 column: 18
-            }
+            },
+            comments: Some(Box::new(Token {
+                tok: 2,
+                lit: String::from("// ok, that\'s it."),
+                start_offset: 97,
+                end_offset: 114,
+                start_pos: Position { line: 7, column: 1 },
+                end_pos: Position {
+                    line: 7,
+                    column: 18
+                },
+                comments: None
+            }))
         }
     );
 
@@ -1253,7 +1378,16 @@ a
             start_offset: 22,
             end_offset: 23,
             start_pos: Position { line: 2, column: 1 },
-            end_pos: Position { line: 2, column: 2 }
+            end_pos: Position { line: 2, column: 2 },
+            comments: Some(Box::new(Token {
+                tok: 2,
+                lit: String::from("// this is a comment.\n"),
+                start_offset: 0,
+                end_offset: 22,
+                start_pos: Position { line: 1, column: 1 },
+                end_pos: Position { line: 2, column: 1 },
+                comments: None
+            })),
         }
     );
     assert_eq!(
@@ -1264,7 +1398,32 @@ a
             start_offset: 95,
             end_offset: 96,
             start_pos: Position { line: 6, column: 1 },
-            end_pos: Position { line: 6, column: 2 }
+            end_pos: Position { line: 6, column: 2 },
+            comments: Some(Box::new(Token {
+                tok: 2,
+                lit: String::from("// last but not least.\n"),
+                start_offset: 72,
+                end_offset: 95,
+                start_pos: Position { line: 5, column: 1 },
+                end_pos: Position { line: 6, column: 1 },
+                comments: Some(Box::new(Token {
+                    tok: 2,
+                    lit: String::from("// one more.\n"),
+                    start_offset: 59,
+                    end_offset: 72,
+                    start_pos: Position { line: 4, column: 1 },
+                    end_pos: Position { line: 5, column: 1 },
+                    comments: Some(Box::new(Token {
+                        tok: 2,
+                        lit: String::from("// comment with // nested comment.\n"),
+                        start_offset: 24,
+                        end_offset: 59,
+                        start_pos: Position { line: 3, column: 1 },
+                        end_pos: Position { line: 4, column: 1 },
+                        comments: None
+                    }))
+                }))
+            }))
         }
     );
     assert_eq!(
@@ -1281,7 +1440,19 @@ a
             end_pos: Position {
                 line: 7,
                 column: 18
-            }
+            },
+            comments: Some(Box::new(Token {
+                tok: 2,
+                lit: String::from("// ok, that\'s it."),
+                start_offset: 97,
+                end_offset: 114,
+                start_pos: Position { line: 7, column: 1 },
+                end_pos: Position {
+                    line: 7,
+                    column: 18
+                },
+                comments: None
+            }))
         }
     );
 }
@@ -1300,7 +1471,8 @@ fn test_scan_eof() {
             start_offset: 0,
             end_offset: 0,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 1 }
+            end_pos: Position { line: 1, column: 1 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1311,7 +1483,8 @@ fn test_scan_eof() {
             start_offset: 0,
             end_offset: 0,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 1 }
+            end_pos: Position { line: 1, column: 1 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1322,7 +1495,8 @@ fn test_scan_eof() {
             start_offset: 0,
             end_offset: 0,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 1 }
+            end_pos: Position { line: 1, column: 1 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1333,7 +1507,8 @@ fn test_scan_eof() {
             start_offset: 0,
             end_offset: 0,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 1 }
+            end_pos: Position { line: 1, column: 1 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1344,7 +1519,8 @@ fn test_scan_eof() {
             start_offset: 0,
             end_offset: 0,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 1 }
+            end_pos: Position { line: 1, column: 1 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1355,7 +1531,8 @@ fn test_scan_eof() {
             start_offset: 0,
             end_offset: 0,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 1 }
+            end_pos: Position { line: 1, column: 1 },
+            comments: None,
         }
     );
 }
@@ -1380,7 +1557,8 @@ fn test_scan_eof_trailing_spaces() {
             start_offset: 7,
             end_offset: 7,
             start_pos: Position { line: 2, column: 5 },
-            end_pos: Position { line: 2, column: 5 }
+            end_pos: Position { line: 2, column: 5 },
+            comments: None,
         }
     );
 
@@ -1394,7 +1572,8 @@ fn test_scan_eof_trailing_spaces() {
             start_offset: 7,
             end_offset: 7,
             start_pos: Position { line: 2, column: 5 },
-            end_pos: Position { line: 2, column: 5 }
+            end_pos: Position { line: 2, column: 5 },
+            comments: None,
         }
     );
 }
@@ -1412,7 +1591,8 @@ fn test_illegal() {
             start_offset: 0,
             end_offset: 5,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 6 }
+            end_pos: Position { line: 1, column: 6 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1423,7 +1603,8 @@ fn test_illegal() {
             start_offset: 6,
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
-            end_pos: Position { line: 1, column: 8 }
+            end_pos: Position { line: 1, column: 8 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1437,7 +1618,8 @@ fn test_illegal() {
             end_pos: Position {
                 line: 1,
                 column: 16
-            }
+            },
+            comments: None,
         }
     );
 
@@ -1451,7 +1633,8 @@ fn test_illegal() {
             start_offset: 0,
             end_offset: 5,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 6 }
+            end_pos: Position { line: 1, column: 6 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1462,7 +1645,8 @@ fn test_illegal() {
             start_offset: 6,
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
-            end_pos: Position { line: 1, column: 8 }
+            end_pos: Position { line: 1, column: 8 },
+            comments: None,
         }
     );
     s.unread();
@@ -1474,7 +1658,8 @@ fn test_illegal() {
             start_offset: 6,
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
-            end_pos: Position { line: 1, column: 8 }
+            end_pos: Position { line: 1, column: 8 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1488,7 +1673,8 @@ fn test_illegal() {
             end_pos: Position {
                 line: 1,
                 column: 16
-            }
+            },
+            comments: None,
         }
     );
 
@@ -1502,7 +1688,8 @@ fn test_illegal() {
             start_offset: 0,
             end_offset: 5,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 6 }
+            end_pos: Position { line: 1, column: 6 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1513,7 +1700,8 @@ fn test_illegal() {
             start_offset: 6,
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
-            end_pos: Position { line: 1, column: 8 }
+            end_pos: Position { line: 1, column: 8 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1527,7 +1715,8 @@ fn test_illegal() {
             end_pos: Position {
                 line: 1,
                 column: 16
-            }
+            },
+            comments: None,
         }
     );
 
@@ -1541,7 +1730,8 @@ fn test_illegal() {
             start_offset: 0,
             end_offset: 5,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 6 }
+            end_pos: Position { line: 1, column: 6 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1552,7 +1742,8 @@ fn test_illegal() {
             start_offset: 6,
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
-            end_pos: Position { line: 1, column: 8 }
+            end_pos: Position { line: 1, column: 8 },
+            comments: None,
         }
     );
     s.unread();
@@ -1564,7 +1755,8 @@ fn test_illegal() {
             start_offset: 6,
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
-            end_pos: Position { line: 1, column: 8 }
+            end_pos: Position { line: 1, column: 8 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1578,7 +1770,8 @@ fn test_illegal() {
             end_pos: Position {
                 line: 1,
                 column: 16
-            }
+            },
+            comments: None,
         }
     );
 }
@@ -1596,7 +1789,8 @@ fn test_scan_duration() {
             start_offset: 0,
             end_offset: 3,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 4 }
+            end_pos: Position { line: 1, column: 4 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1607,7 +1801,8 @@ fn test_scan_duration() {
             start_offset: 4,
             end_offset: 5,
             start_pos: Position { line: 1, column: 5 },
-            end_pos: Position { line: 1, column: 6 }
+            end_pos: Position { line: 1, column: 6 },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1621,7 +1816,8 @@ fn test_scan_duration() {
             end_pos: Position {
                 line: 1,
                 column: 34
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(
@@ -1638,7 +1834,8 @@ fn test_scan_duration() {
             end_pos: Position {
                 line: 1,
                 column: 34
-            }
+            },
+            comments: None,
         }
     );
 }
@@ -1667,7 +1864,8 @@ c = 1 + 2
             start_offset: 0,
             end_offset: 2,
             start_pos: Position { line: 1, column: 1 },
-            end_pos: Position { line: 1, column: 3 }
+            end_pos: Position { line: 1, column: 3 },
+            comments: None,
         }
     );
     assert_eq!(0, s.offset(&Position { line: 1, column: 1 }));
@@ -1679,7 +1877,8 @@ c = 1 + 2
             start_offset: 3,
             end_offset: 4,
             start_pos: Position { line: 1, column: 4 },
-            end_pos: Position { line: 1, column: 5 }
+            end_pos: Position { line: 1, column: 5 },
+            comments: None,
         }
     );
     assert_eq!(3, s.offset(&Position { line: 1, column: 4 }));
@@ -1691,7 +1890,8 @@ c = 1 + 2
             start_offset: 5,
             end_offset: 24,
             start_pos: Position { line: 1, column: 6 },
-            end_pos: Position { line: 3, column: 2 }
+            end_pos: Position { line: 3, column: 2 },
+            comments: None,
         }
     );
     assert_eq!(5, s.offset(&Position { line: 1, column: 6 }));
@@ -1704,7 +1904,16 @@ c = 1 + 2
             start_offset: 38,
             end_offset: 39,
             start_pos: Position { line: 7, column: 1 },
-            end_pos: Position { line: 7, column: 2 }
+            end_pos: Position { line: 7, column: 2 },
+            comments: Some(Box::new(Token {
+                tok: 2,
+                lit: String::from("// comment\n"),
+                start_offset: 26,
+                end_offset: 37,
+                start_pos: Position { line: 5, column: 1 },
+                end_pos: Position { line: 6, column: 1 },
+                comments: None
+            }))
         }
     );
     assert_eq!(38, s.offset(&Position { line: 7, column: 1 }));
@@ -1716,7 +1925,8 @@ c = 1 + 2
             start_offset: 40,
             end_offset: 41,
             start_pos: Position { line: 7, column: 3 },
-            end_pos: Position { line: 7, column: 4 }
+            end_pos: Position { line: 7, column: 4 },
+            comments: None,
         }
     );
     assert_eq!(40, s.offset(&Position { line: 7, column: 3 }));
@@ -1728,7 +1938,8 @@ c = 1 + 2
             start_offset: 42,
             end_offset: 43,
             start_pos: Position { line: 7, column: 5 },
-            end_pos: Position { line: 7, column: 6 }
+            end_pos: Position { line: 7, column: 6 },
+            comments: None,
         }
     );
     assert_eq!(42, s.offset(&Position { line: 7, column: 5 }));
@@ -1740,7 +1951,8 @@ c = 1 + 2
             start_offset: 44,
             end_offset: 45,
             start_pos: Position { line: 7, column: 7 },
-            end_pos: Position { line: 7, column: 8 }
+            end_pos: Position { line: 7, column: 8 },
+            comments: None,
         }
     );
     assert_eq!(44, s.offset(&Position { line: 7, column: 7 }));
@@ -1755,7 +1967,8 @@ c = 1 + 2
             end_pos: Position {
                 line: 7,
                 column: 10
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(46, s.offset(&Position { line: 7, column: 9 }));
@@ -1773,7 +1986,8 @@ c = 1 + 2
             end_pos: Position {
                 line: 12,
                 column: 1
-            }
+            },
+            comments: None,
         }
     );
     assert_eq!(

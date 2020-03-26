@@ -20,9 +20,10 @@ pub struct Scanner {
     checkpoint_last_newline: *const CChar,
     token: TOK,
     positions: HashMap<Position, u32>,
+    pub comments: Option<Box<Token>>,
 }
 
-#[derive(Debug, PartialEq, Clone, Hash)]
+#[derive(Debug, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct Position {
     pub line: u32,
     pub column: u32,
@@ -30,7 +31,7 @@ pub struct Position {
 
 impl std::cmp::Eq for Position {}
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Token {
     pub tok: TOK,
     pub lit: String,
@@ -38,6 +39,7 @@ pub struct Token {
     pub end_offset: u32,
     pub start_pos: Position,
     pub end_pos: Position,
+    pub comments: Option<Box<Token>>,
 }
 
 impl Scanner {
@@ -59,22 +61,37 @@ impl Scanner {
             checkpoint_line: 1,
             checkpoint_last_newline: ptr as *const CChar,
             positions: HashMap::new(),
+            comments: None,
         }
+    }
+
+    fn scan_with_comments(&mut self, mode: i32) -> Token {
+        let mut token;
+        loop {
+            token = self._scan(mode);
+            if token.tok != TOK_COMMENT {
+                break;
+            }
+            token.comments = self.comments.take();
+            self.comments = Some(Box::new(token));
+        }
+        token.comments = self.comments.take();
+        token
     }
 
     // scan produces the next token from the input.
     pub fn scan(&mut self) -> Token {
-        self._scan(0)
+        self.scan_with_comments(0)
     }
 
     // scan_with_regex produces the next token from the input accounting for regex.
     pub fn scan_with_regex(&mut self) -> Token {
-        self._scan(1)
+        self.scan_with_comments(1)
     }
 
     // scan_string_expr produces the next token from the input in a string expression.
     pub fn scan_string_expr(&mut self) -> Token {
-        self._scan(2)
+        self.scan_with_comments(2)
     }
 
     // unread will reset the Scanner to go back to the Scanner's location
@@ -107,6 +124,7 @@ impl Scanner {
                 line: self.cur_line,
                 column,
             },
+            comments: None,
         }
     }
 
@@ -172,6 +190,7 @@ impl Scanner {
                             line: token_start_line,
                             column: token_start_col + size as u32,
                         },
+                        comments: None,
                     }
                 }
                 // This should be impossible as we would have produced an EOF token
@@ -202,6 +221,7 @@ impl Scanner {
                     line: token_end_line,
                     column: token_end_col,
                 },
+                comments: None,
             }
         };
 
@@ -210,14 +230,7 @@ impl Scanner {
         self.positions.insert(t.start_pos.clone(), t.start_offset);
         self.positions.insert(t.end_pos.clone(), t.end_offset);
 
-        // Skipping comments.
-        // TODO(affo): return comments to attach them to nodes within the AST.
-        match t {
-            Token {
-                tok: TOK_COMMENT, ..
-            } => self.scan(),
-            _ => t,
-        }
+        t
     }
 }
 
