@@ -34,9 +34,9 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
     otherStatuses = tables
         |> filter(fn: otherLevelFilter)
         |> map(fn: (r) => ({r with level_value: -10}))
-        |> duplicate(column: "_level", as: "l2")
+        |> duplicate(column: "_level", as: "____temp_level____")
         |> drop(columns: ["_level"])
-        |> rename(columns: {"l2": "_level"})
+        |> rename(columns: {"____temp_level____": "_level"})
         
     toLevelFilter = if toLevel == "any" then (r) => r._level != fromLevel and exists r._level
                    else (r) => r._level == toLevel
@@ -44,9 +44,9 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
     toStatuses = tables
         |> filter(fn: toLevelFilter)
         |> map(fn: (r) => ({r with level_value: 1}))
-        |> duplicate(column: "_level", as: "l2")
+        |> duplicate(column: "_level", as: "____temp_level____")
         |> drop(columns: ["_level"])
-        |> rename(columns: {"l2": "_level"})
+        |> rename(columns: {"____temp_level____": "_level"})
 
     levelFilter = if fromLevel == "any" then (r) => r._level != toLevel and exists r._level
                    else (r) => r._level == fromLevel
@@ -54,9 +54,9 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
     fromStatuses = tables
         |> filter(fn: levelFilter)
         |> map(fn: (r) => ({r with level_value: 0}))
-        |> duplicate(column: "_level", as: "l2")
+        |> duplicate(column: "_level", as: "____temp_level____")
         |> drop(columns: ["_level"])
-        |> rename(columns: {"l2": "_level"})
+        |> rename(columns: {"____temp_level____": "_level"})
 
      allStatuses = union(tables: [toStatuses, fromStatuses, otherStatuses])
         |> sort(columns: ["_time"], desc: false)
@@ -73,9 +73,9 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 // of the _level column.
 stateChangesOnly = (tables=<-) => {
     return tables
-        |> duplicate(column: "_level", as: "l2")
+        |> duplicate(column: "_level", as: "____temp_level____")
         |> drop(columns: ["_level"])
-        |> rename(columns: {"l2": "_level"})
+        |> rename(columns: {"____temp_level____": "_level"})
         |> map(fn: (r) => ({r with level_value: if r._level == levelCrit then 4
                                                 else if r._level == levelWarn then 3
                                                 else if r._level == levelInfo then 2
