@@ -28,40 +28,20 @@ levelCrit = "crit"
 levelUnknown = "unknown"
 
 _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
-    otherLevelFilter = if toLevel == "any" or fromLevel == "any" then (r) => false
-                   else (r) => r._level != toLevel and r._level != fromLevel
-    
-    otherStatuses = tables
-        |> filter(fn: otherLevelFilter)
-        |> map(fn: (r) => ({r with level_value: -10}))
-        |> duplicate(column: "_level", as: "____temp_level____")
-        |> drop(columns: ["_level"])
-        |> rename(columns: {"____temp_level____": "_level"})
-        
     toLevelFilter = if toLevel == "any" then (r) => r._level != fromLevel and exists r._level
                    else (r) => r._level == toLevel
-    
-    toStatuses = tables
-        |> filter(fn: toLevelFilter)
-        |> map(fn: (r) => ({r with level_value: 1}))
-        |> duplicate(column: "_level", as: "____temp_level____")
-        |> drop(columns: ["_level"])
-        |> rename(columns: {"____temp_level____": "_level"})
 
-    levelFilter = if fromLevel == "any" then (r) => r._level != toLevel and exists r._level
+    fromLevelFilter = if fromLevel == "any" then (r) => r._level != toLevel and exists r._level
                    else (r) => r._level == fromLevel
 
-    fromStatuses = tables
-        |> filter(fn: levelFilter)
-        |> map(fn: (r) => ({r with level_value: 0}))
+    return tables
+        |> map(fn: (r) => ({r with level_value: if toLevelFilter(r: r) then 1
+                                                else if fromLevelFilter(r: r) then 0
+                                                else -10}))
         |> duplicate(column: "_level", as: "____temp_level____")
         |> drop(columns: ["_level"])
         |> rename(columns: {"____temp_level____": "_level"})
-
-     allStatuses = union(tables: [toStatuses, fromStatuses, otherStatuses])
         |> sort(columns: ["_time"], desc: false)
-
-    return allStatuses
         |> difference(columns: ["level_value"])
         |> filter(fn: (r) => r.level_value == 1)
         |> drop(columns: ["level_value"])
