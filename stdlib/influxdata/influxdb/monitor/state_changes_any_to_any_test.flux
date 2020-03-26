@@ -10,17 +10,6 @@ option now = () => 2018-05-22T19:54:40Z
 option monitor.log = (tables=<-) => tables |> drop(columns:["_start", "_stop"])
 
 // Note this input data is identical to the output data of the check test case, post pivot.
-//inData = "
-//#group,false,false,true,true,true,true,true,false,true,true,true,true,true,false,false,false
-//#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,double,string,long
-//#default,_result,,,,,,,,,,,,,,,
-//,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,usage_idle,_message,_source_timestamp
-//,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001,whoa!,1527018840000000000
-//,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732,whoa!,1527018820000000000
-//,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05,whoa!,1527018860000000000
-//"
-
-// Note this input data is identical to the output data of the check test case, post pivot.
 inData = "
 #datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double
 #group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false

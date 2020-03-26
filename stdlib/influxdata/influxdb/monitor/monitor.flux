@@ -73,16 +73,16 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 // of the _level column.
 stateChangesOnly = (tables=<-) => {
     return tables
-        |> duplicate(column: "_level", as: "____temp_level____")
-        |> drop(columns: ["_level"])
-        |> rename(columns: {"____temp_level____": "_level"})
         |> map(fn: (r) => ({r with level_value: if r._level == levelCrit then 4
                                                 else if r._level == levelWarn then 3
                                                 else if r._level == levelInfo then 2
                                                 else if r._level == levelOK then 1
                                                 else 0}))
+        |> duplicate(column: "_level", as: "____temp_level____")
+        |> drop(columns: ["_level"])
+        |> rename(columns: {"____temp_level____": "_level"})
+        |> sort(columns: ["_time"], desc: false)
         |> difference(columns: ["level_value"])
-        |> yield(name: "foo")
         |> filter(fn: (r) => r.level_value != 0)
         |> drop(columns: ["level_value"])
         |> experimental.group(mode: "extend", columns: ["_level"])
