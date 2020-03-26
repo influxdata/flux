@@ -36,22 +36,24 @@ inData = "
 ,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000
 "
 
+
 outData = "
 #datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double
 #group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false
 #default,got,,,,,,,,,,,,,,,
 ,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle
+,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732
 ,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05
 "
 
-t_state_changes_any_to_warn = (table=<-) => table
+t_state_changes_any_to_any = (table=<-) => table
     |> range(start: -1m)
     |> v1.fieldsAsCols()
     |> monitor.stateChanges(
         fromLevel: "any",
-        toLevel: "warn",
+        toLevel: "any",
     )
     |> drop(columns: ["_start","_stop"])
 
-test monitor_state_changes_any_to_warn = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_warn})
+test monitor_state_changes_any_to_any = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})
