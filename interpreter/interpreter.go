@@ -1214,6 +1214,7 @@ type Arguments interface {
 	GetRequiredBool(name string) (bool, error)
 	GetRequiredFunction(name string) (values.Function, error)
 	GetRequiredArray(name string, t semantic.Nature) (values.Array, error)
+	GetRequiredArrayAllowEmpty(name string, t semantic.Nature) (values.Array, error)
 	GetRequiredObject(name string) (values.Object, error)
 
 	// listUnused returns the list of provided arguments that were not used by the function.
@@ -1345,6 +1346,26 @@ func (a *arguments) GetRequiredArray(name string, t semantic.Nature) (values.Arr
 	}
 	if et.Nature() != t {
 		return nil, errors.Newf(codes.Invalid, "keyword argument %q should be of an array of type %v, but got an array of type %v", name, t, arr.Type())
+	}
+	return arr, nil
+}
+
+// Ensures a required array (with element type) is present, but unlike
+// GetRequiredArray, does not fail if the array is empty.
+func (a *arguments) GetRequiredArrayAllowEmpty(name string, t semantic.Nature) (values.Array, error) {
+	v, _, err := a.get(name, semantic.Array, true)
+	if err != nil {
+		return nil, err
+	}
+	arr := v.Array()
+	if arr.Array().Len() > 0 {
+		et, err := arr.Type().ElemType()
+		if err != nil {
+			return nil, err
+		}
+		if et.Nature() != t {
+			return nil, errors.Newf(codes.Invalid, "keyword argument %q should be of an array of type %v, but got an array of type %v", name, t, arr.Type())
+		}
 	}
 	return arr, nil
 }

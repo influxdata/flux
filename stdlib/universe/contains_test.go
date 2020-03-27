@@ -121,3 +121,14 @@ func containsTestHelper(t *testing.T, tc containsCase) {
 		t.Error("expected true, got false")
 	}
 }
+
+func TestContains_Empty(t *testing.T) {
+	script := `
+		ok = not contains( value: "nothing", set: [] )
+	`
+	s := evalOrFail(t, script)
+
+	if !mustLookup(s, "ok").Bool() {
+		t.Errorf("ok was not OK indeed")
+	}
+}

@@ -24,7 +24,7 @@ func MakeContainsFunc() values.Function {
 				return nil, err
 			}
 
-			setarg, err := a.GetRequiredArray("set", v.Type().Nature())
+			setarg, err := a.GetRequiredArrayAllowEmpty("set", v.Type().Nature())
 			if err != nil {
 				return nil, err
 			}
