@@ -3,6 +3,7 @@ package promql
 
 import "math" 
 import "universe"
+import "experimental"
 
 // changes() implements functionality equivalent to PromQL's changes() function:
 //
@@ -116,4 +117,4 @@ quantile = (q, tables=<-, method="exact_mean") =>
     (tables
         |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))
 
-builtin join
+join = experimental.join
