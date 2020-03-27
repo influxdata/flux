@@ -1,4 +1,4 @@
-package promql
+package experimental
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-const joinKind = "internal/promql.join"
+const joinKind = "experimental.join"
 
 func init() {
 	signature := semantic.FunctionPolySignature{
@@ -36,7 +36,7 @@ func init() {
 		Required: semantic.LabelSet{"left", "right", "fn"},
 		Return:   flux.TableObjectType,
 	}
-	flux.RegisterPackageValue("internal/promql", "join", flux.FunctionValue("join", createJoinOpSpec, signature))
+	flux.RegisterPackageValue("experimental", "join", flux.FunctionValue("join", createJoinOpSpec, signature))
 	flux.RegisterOpSpec(joinKind, newJoinOp)
 	plan.RegisterProcedureSpec(joinKind, newMergeJoinProcedure, joinKind)
 	execute.RegisterTransformation(joinKind, createMergeJoinTransformation)
