@@ -79,6 +79,8 @@ func ConvertToKind(t flux.ColType) semantic.Nature {
 		return semantic.String
 	case flux.TTime:
 		return semantic.Time
+	case flux.TDuration:
+		return semantic.Duration
 	default:
 		return semantic.Invalid
 	}
@@ -101,6 +103,8 @@ func ConvertFromKind(k semantic.Nature) flux.ColType {
 		return flux.TString
 	case semantic.Time:
 		return flux.TTime
+	case semantic.Duration:
+		return flux.TDuration
 	default:
 		return flux.TInvalid
 	}

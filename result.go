@@ -87,6 +87,7 @@ const (
 	TFloat
 	TString
 	TTime
+	TDuration
 )
 
 // ColumnType returns the column type when given a semantic.Type.
@@ -105,6 +106,8 @@ func ColumnType(typ semantic.Type) ColType {
 		return TString
 	case semantic.Time:
 		return TTime
+	case semantic.Duration:
+		return TDuration
 	default:
 		return TInvalid
 	}
@@ -124,6 +127,8 @@ func SemanticType(typ ColType) semantic.Type {
 		return semantic.String
 	case TTime:
 		return semantic.Time
+	case TDuration:
+		return semantic.Duration
 	default:
 		return semantic.Invalid
 	}
@@ -134,6 +139,8 @@ func (t ColType) String() string {
 	switch t {
 	case TInvalid:
 		return "invalid"
+	case TDuration:
+		return "duration"
 	case TBool:
 		return "bool"
 	case TInt:
