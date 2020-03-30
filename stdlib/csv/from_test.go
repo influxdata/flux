@@ -1,15 +1,19 @@
 package csv_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin" // We need to import the builtins for the tests to work.
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/csv"
 	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/influxdata/flux/values"
 )
 
 func TestFromCSV_NewQuery(t *testing.T) {
@@ -93,4 +97,90 @@ func TestFromCSVOperation_Marshaling(t *testing.T) {
 		},
 	}
 	querytest.OperationMarshalingTestHelper(t, data, op)
+}
+
+func TestFromCSV_Run(t *testing.T) {
+	spec := &csv.FromCSVProcedureSpec{
+		CSV: `#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
+#group,false,false,true,true,false,true,true,false
+#default,_result,,,,,,,
+,result,table,_start,_stop,_time,_measurement,host,_value
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,A,42
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:01Z,cpu,A,43
+,,1,2018-04-17T00:05:00Z,2018-04-17T00:10:00Z,2018-04-17T00:06:00Z,mem,A,52
+,,1,2018-04-17T00:05:00Z,2018-04-17T00:10:00Z,2018-04-17T00:07:01Z,mem,A,53
+`,
+	}
+	want := []*executetest.Table{
+		{
+			KeyCols: []string{"_start", "_stop", "_measurement", "host"},
+			ColMeta: []flux.ColMeta{
+				{Label: "_start", Type: flux.TTime},
+				{Label: "_stop", Type: flux.TTime},
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_measurement", Type: flux.TString},
+				{Label: "host", Type: flux.TString},
+				{Label: "_value", Type: flux.TFloat},
+			},
+			Data: [][]interface{}{
+				{
+					values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+					values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+					values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+					"cpu",
+					"A",
+					42.0,
+				},
+				{
+					values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+					values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+					values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 1, 0, time.UTC)),
+					"cpu",
+					"A",
+					43.0,
+				},
+			},
+		},
+		{
+			KeyCols: []string{"_start", "_stop", "_measurement", "host"},
+			ColMeta: []flux.ColMeta{
+				{Label: "_start", Type: flux.TTime},
+				{Label: "_stop", Type: flux.TTime},
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_measurement", Type: flux.TString},
+				{Label: "host", Type: flux.TString},
+				{Label: "_value", Type: flux.TFloat},
+			},
+			Data: [][]interface{}{
+				{
+					values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+					values.ConvertTime(time.Date(2018, 4, 17, 0, 10, 0, 0, time.UTC)),
+					values.ConvertTime(time.Date(2018, 4, 17, 0, 6, 0, 0, time.UTC)),
+					"mem",
+					"A",
+					52.0,
+				},
+				{
+					values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+					values.ConvertTime(time.Date(2018, 4, 17, 0, 10, 0, 0, time.UTC)),
+					values.ConvertTime(time.Date(2018, 4, 17, 0, 7, 1, 0, time.UTC)),
+					"mem",
+					"A",
+					53.0,
+				},
+			},
+		},
+	}
+	executetest.RunSourceHelper(t,
+		want,
+		nil,
+		func(id execute.DatasetID) execute.Source {
+			a := mock.AdministrationWithContext(context.Background())
+			s, err := csv.CreateSource(spec, id, a)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return s
+		},
+	)
 }

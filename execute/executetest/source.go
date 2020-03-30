@@ -2,6 +2,8 @@ package executetest
 
 import (
 	"context"
+	"runtime/debug"
+	"sort"
 	"strings"
 	"testing"
 
@@ -187,5 +189,59 @@ func (testCases *SourceUrlValidationTestCases) Run(t *testing.T, fn execute.Crea
 				}
 			}
 		})
+	}
+}
+
+// RunSourceHelper is a helper for testing an execute.Source.
+// This can be called with a list of wanted tables from the source.
+// The create function should create the source. If there is an error
+// creating the source, `t.Fatal` can be called to abort the unit test
+// by calling it from inside of a closure.
+func RunSourceHelper(
+	t *testing.T,
+	want []*Table,
+	wantErr error,
+	create func(id execute.DatasetID) execute.Source,
+) {
+	t.Helper()
+
+	defer func() {
+		if err := recover(); err != nil {
+			debug.PrintStack()
+			t.Fatalf("caught panic: %v", err)
+		}
+	}()
+
+	store := NewDataStore()
+	s := create(RandomDatasetID())
+	s.AddTransformation(store)
+	s.Run(context.Background())
+
+	gotErr := store.Err()
+	if gotErr == nil && wantErr != nil {
+		t.Fatalf("expected error %s, got none", wantErr.Error())
+	} else if gotErr != nil && wantErr == nil {
+		t.Fatalf("expected no error, got %s", gotErr.Error())
+	} else if gotErr != nil && wantErr != nil {
+		if wantErr.Error() != gotErr.Error() {
+			t.Fatalf("unexpected error -want/+got\n%s", cmp.Diff(wantErr.Error(), gotErr.Error()))
+		} else {
+			return
+		}
+	}
+
+	got, err := TablesFromCache(store)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	NormalizeTables(got)
+	NormalizeTables(want)
+
+	sort.Sort(SortedTables(got))
+	sort.Sort(SortedTables(want))
+
+	if !cmp.Equal(want, got, floatOptions) {
+		t.Errorf("unexpected tables -want/+got\n%s", cmp.Diff(want, got))
 	}
 }
