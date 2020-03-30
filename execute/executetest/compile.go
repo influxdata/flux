@@ -2,6 +2,7 @@ package executetest
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/influxdata/flux/interpreter"
@@ -19,8 +20,12 @@ var (
 // and return the *semantic.FunctionExpression.
 //
 // This will cause a fatal error in the test on failure.
-func FunctionExpression(t testing.TB, source string) *semantic.FunctionExpression {
+func FunctionExpression(t testing.TB, source string, args ...interface{}) *semantic.FunctionExpression {
 	t.Helper()
+
+	if len(args) > 0 {
+		source = fmt.Sprintf(source, args...)
+	}
 
 	if stdlib == nil {
 		stdlib = runtime.StdLib()

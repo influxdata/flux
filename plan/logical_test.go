@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/parser"
@@ -77,24 +78,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 		filterSpec = &universe.FilterProcedureSpec{
 			Fn: interpreter.ResolvedFunction{
 				Scope: valuestest.Scope(),
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{Name: "r"},
-								},
-							},
-						},
-						Body: &semantic.Block{
-							Body: []semantic.Statement{
-								&semantic.ReturnStatement{
-									Argument: &semantic.BooleanLiteral{Value: true},
-								},
-							},
-						},
-					},
-				},
+				Fn:    executetest.FunctionExpression(t, `(r) => true`),
 			},
 		}
 		joinSpec = &universe.MergeJoinProcedureSpec{
