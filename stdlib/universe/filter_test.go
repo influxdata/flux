@@ -1092,8 +1092,8 @@ func TestFilter_Process(t *testing.T) {
 }
 
 func BenchmarkFilter_Values(b *testing.B) {
-	b.Run("1000", func(b *testing.B) {
-		benchmarkFilter(b, 1000, &semantic.FunctionExpression{
+	b.Run("500", func(b *testing.B) {
+		benchmarkFilter(b, 500, &semantic.FunctionExpression{
 			Block: &semantic.FunctionBlock{
 				Parameters: &semantic.FunctionParameters{
 					List: []*semantic.FunctionParameter{

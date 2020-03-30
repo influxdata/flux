@@ -19,6 +19,9 @@ builtin set
 // - An error will be thrown for incompatible data types
 builtin to
 
+// An experimental version of join.
+builtin join
+
 // Aligns all tables/series to a common start time
 // By default, it aligns to the _start value
 // If _start doesn't exist, it aligns to 1970-01-01T00:00:00Z UTC
