@@ -123,7 +123,7 @@ func (m *SnowflakeRowReader) InitColumnTypes(types []*sql.ColumnType) {
 			} else {
 				fluxTypes[i] = flux.TInt
 			}
-		case "REAL", "FLOAT": // FIXED is reported by Snowflake driver
+		case "REAL", "FLOAT": // REAL is reported by Snowflake driver
 			fluxTypes[i] = flux.TFloat
 		case "BOOLEAN":
 			fluxTypes[i] = flux.TBool
