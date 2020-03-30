@@ -274,10 +274,11 @@ func getTranslationFunc(driverName string) (func() translationFunc, error) {
 		return PostgresColumnTranslateFunc, nil
 	case "mysql":
 		return MysqlColumnTranslateFunc, nil
+	case "snowflake":
+		return SnowflakeColumnTranslateFunc, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "invalid driverName: %s", driverName)
 	}
-
 }
 
 func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []string, valStringArray [][]string, valArgsArray [][]interface{}, err error) {
