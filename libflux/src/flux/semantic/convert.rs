@@ -2739,4 +2739,58 @@ mod tests {
         let got = test_convert(pkg).unwrap();
         assert_eq!(want, got);
     }
+    #[test]
+    fn test_convert_bad_stmt() {
+        let b = ast::BaseNode::default();
+        let pkg = ast::Package {
+            base: b.clone(),
+            path: "path".to_string(),
+            package: "main".to_string(),
+            files: vec![ast::File {
+                base: b.clone(),
+                name: "foo.flux".to_string(),
+                metadata: String::new(),
+                package: None,
+                imports: Vec::new(),
+                body: vec![ast::Statement::Bad(Box::new(ast::BadStmt {
+                    base: b.clone(),
+                    text: "bad statement".to_string(),
+                }))],
+                eof: None,
+            }],
+        };
+        let want: Result<Package> =
+            Err("BadStatement is not supported in semantic analysis".to_string());
+        let got = test_convert(pkg);
+        assert_eq!(want, got);
+    }
+    #[test]
+    fn test_convert_bad_expr() {
+        let b = ast::BaseNode::default();
+        let pkg = ast::Package {
+            base: b.clone(),
+            path: "path".to_string(),
+            package: "main".to_string(),
+            files: vec![ast::File {
+                base: b.clone(),
+                name: "foo.flux".to_string(),
+                metadata: String::new(),
+                package: None,
+                imports: Vec::new(),
+                body: vec![ast::Statement::Expr(Box::new(ast::ExprStmt {
+                    base: b.clone(),
+                    expression: ast::Expression::Bad(Box::new(ast::BadExpr {
+                        base: b.clone(),
+                        text: "bad expression".to_string(),
+                        expression: None,
+                    })),
+                }))],
+                eof: None,
+            }],
+        };
+        let want: Result<Package> =
+            Err("BadExpression is not supported in semantic analysis".to_string());
+        let got = test_convert(pkg);
+        assert_eq!(want, got);
+    }
 }
