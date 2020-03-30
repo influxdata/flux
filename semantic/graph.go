@@ -554,6 +554,28 @@ func (e *FunctionExpression) TypeOf() MonoType {
 	return e.typ
 }
 
+// GetFunctionBodyExpression will return the return value expression from
+// the function block. This will only return an expression if there
+// is exactly one expression in the block. It will return false
+// as the second argument if the statement is more complex.
+func (e *FunctionExpression) GetFunctionBodyExpression() (Expression, bool) {
+	switch e := e.Block.Body.(type) {
+	case *Block:
+		if len(e.Body) != 1 {
+			return nil, false
+		}
+		returnExpr, ok := e.Body[0].(*ReturnStatement)
+		if !ok {
+			return nil, false
+		}
+		return returnExpr.Argument, true
+	case Expression:
+		return e, true
+	default:
+		return nil, false
+	}
+}
+
 // FunctionBlock represents the function parameters and the function body.
 type FunctionBlock struct {
 	Loc
@@ -574,6 +596,19 @@ func (b *FunctionBlock) Copy() Node {
 
 	return nb
 }
+
+// GetFunctionExpression will return the returned semantic.Expression
+// for this function block if the body is either a semantic.Expression
+// or if there is exactly one statement in the block and it is a
+// return statement.
+//
+// This can be used for reliably getting a semantic.Expression for
+// simple functions.
+//
+// If the function is more complex than a single statement, this will
+// return false.
+// func (b *FunctionBlock) GetFunctionExpression() (Expression, bool) {
+// }
 
 // FunctionParameters represents the list of function parameters and which if any parameter is the pipe parameter.
 type FunctionParameters struct {

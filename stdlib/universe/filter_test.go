@@ -441,38 +441,17 @@ func TestMergeFilterAnyRule(t *testing.T) {
 		count       = &universe.CountProcedureSpec{}
 		filterOther = &universe.FilterProcedureSpec{
 			Fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Body: &semantic.IdentifierExpression{
-							Name: "foo",
-						},
-					},
-				},
-				Scope: valuestest.Scope(),
+				Fn: executetest.FunctionExpression(t, `() => "foo"`),
 			},
 		}
 		filterTrue = &universe.FilterProcedureSpec{
 			Fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Body: &semantic.BooleanLiteral{
-							Value: true,
-						},
-					},
-				},
-				Scope: valuestest.Scope(),
+				Fn: executetest.FunctionExpression(t, `() => true`),
 			},
 		}
 		filterFalse = &universe.FilterProcedureSpec{
 			Fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Body: &semantic.BooleanLiteral{
-							Value: false,
-						},
-					},
-				},
-				Scope: valuestest.Scope(),
+				Fn: executetest.FunctionExpression(t, `() => false`),
 			},
 		}
 	)

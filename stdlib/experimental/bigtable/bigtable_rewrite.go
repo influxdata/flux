@@ -1,19 +1,25 @@
 package bigtable
 
 import (
+	"time"
+
 	"cloud.google.com/go/bigtable"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
-	"time"
 )
 
 func AddFilterToNode(queryNode plan.Node, filterNode plan.Node) (plan.Node, bool) {
 	querySpec := queryNode.ProcedureSpec().(*FromBigtableProcedureSpec)
 	filterSpec := filterNode.ProcedureSpec().(*universe.FilterProcedureSpec)
 
-	switch body := filterSpec.Fn.Fn.Block.Body.(type) {
+	body, ok := filterSpec.Fn.Fn.GetFunctionBodyExpression()
+	if !ok {
+		return filterNode, false
+	}
+
+	switch body := body.(type) {
 	case *semantic.BinaryExpression:
 		switch body.Operator {
 		case ast.EqualOperator:

@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/repl"
@@ -612,24 +613,7 @@ func TestResolver(t *testing.T) {
 		t.Fatalf("could not resolve function: %s", err)
 	}
 
-	want := &semantic.FunctionExpression{
-		Block: &semantic.FunctionBlock{
-			Parameters: &semantic.FunctionParameters{
-				List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
-			},
-			Body: &semantic.Block{
-				Body: []semantic.Statement{
-					&semantic.ReturnStatement{
-						Argument: &semantic.BinaryExpression{
-							Operator: ast.AdditionOperator,
-							Left:     &semantic.IdentifierExpression{Name: "r"},
-							Right:    &semantic.IntegerLiteral{Value: 42},
-						},
-					},
-				},
-			},
-		},
-	}
+	want := executetest.FunctionExpression(t, `(r) => r + 42`)
 	if !cmp.Equal(want, got, semantictest.CmpOptions...) {
 		t.Errorf("unexpected resoved function: -want/+got\n%s", cmp.Diff(want, got, semantictest.CmpOptions...))
 	}
