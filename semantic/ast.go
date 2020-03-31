@@ -116,11 +116,11 @@ func ToAST(n Node) ast.Node {
 		return arr
 	case *FunctionExpression:
 		fn := &ast.FunctionExpression{
-			Body: ToAST(n.Block.Body),
+			Body: ToAST(n.Block),
 		}
-		if n.Block.Parameters != nil {
-			fn.Params = make([]*ast.Property, len(n.Block.Parameters.List))
-			for i, p := range n.Block.Parameters.List {
+		if n.Parameters != nil {
+			fn.Params = make([]*ast.Property, len(n.Parameters.List))
+			for i, p := range n.Parameters.List {
 				fn.Params[i] = &ast.Property{
 					Key: &ast.Identifier{Name: p.Key.Name},
 				}
