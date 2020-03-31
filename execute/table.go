@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"sync/atomic"
+	"time"
 
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/google/go-cmp/cmp"
@@ -2233,4 +2234,55 @@ func (t emptyTable) Done() {
 
 func (t emptyTable) Empty() bool {
 	return true
+}
+
+type TableMetadata struct {
+	Start     time.Time `json:"start"`
+	Stop      time.Time `json:"stop"`
+	NoRows    int       `json:"no_rows"`
+	NoValues  int       `json:"no_values"`
+	Key       string    `json:"key"`
+	RowsSec   float64   `json:"rows_per_second"`
+	ValuesSec float64   `json:"values_per_second"`
+}
+
+func (m *TableMetadata) init() {
+	m.Start = time.Now()
+}
+
+func (m *TableMetadata) update(cr flux.ColReader) {
+	m.NoRows += cr.Len()
+	m.NoValues += cr.Len() * len(cr.Cols())
+	m.Key = cr.Key().String()
+}
+
+func (m *TableMetadata) finish() {
+	m.Stop = time.Now()
+	delta := m.Stop.Sub(m.Start)
+	m.RowsSec = float64(m.NoRows) / delta.Seconds()
+	m.ValuesSec = float64(m.NoValues) / delta.Seconds()
+}
+
+type metaTable struct {
+	flux.Table
+	meta *TableMetadata
+}
+
+func newMetaTable(tbl flux.Table) *metaTable {
+	return &metaTable{
+		Table: tbl,
+		meta:  &TableMetadata{},
+	}
+}
+
+func (m *metaTable) Do(f func(flux.ColReader) error) error {
+	m.meta.init()
+	if err := m.Table.Do(func(cr flux.ColReader) error {
+		m.meta.update(cr)
+		return f(cr)
+	}); err != nil {
+		return err
+	}
+	m.meta.finish()
+	return nil
 }

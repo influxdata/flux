@@ -3,6 +3,7 @@ package execute
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/memory"
@@ -115,4 +116,44 @@ func ReplaceTransformation(k plan.ProcedureKind, c CreateTransformation) {
 		panic(fmt.Errorf("missing registration for transformation with procedure kind %v", k))
 	}
 	procedureToTransformation[k] = c
+}
+
+// metaTransformation is a Transformation with Metadata.
+type metaTransformation struct {
+	Transformation
+	id    plan.NodeID
+	metas []TableMetadata
+}
+
+func newMetaTransformation(id plan.NodeID, t Transformation) *metaTransformation {
+	return &metaTransformation{
+		Transformation: t,
+		id:             id,
+		metas:          make([]TableMetadata, 0),
+	}
+}
+
+func (mt *metaTransformation) addMetadata(tm TableMetadata) {
+	mt.metas = append(mt.metas, tm)
+}
+
+func (mt *metaTransformation) aggregateMetadata() TableMetadata {
+	agg := TableMetadata{
+		Start: time.Now(),
+	}
+	for _, m := range mt.metas {
+		if m.Start.Before(agg.Start) {
+			agg.Start = m.Start
+		}
+		if m.Stop.After(agg.Stop) {
+			agg.Stop = m.Stop
+		}
+		agg.NoRows += m.NoRows
+		agg.NoValues += m.NoValues
+		agg.RowsSec += m.RowsSec
+		agg.ValuesSec += m.ValuesSec
+	}
+	agg.RowsSec /= float64(len(mt.metas))
+	agg.ValuesSec /= float64(len(mt.metas))
+	return agg
 }
