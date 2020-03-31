@@ -119,6 +119,8 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 		newRowReader = NewSqliteRowReader
 	case "postgres", "sqlmock":
 		newRowReader = NewPostgresRowReader
+	case "snowflake":
+		newRowReader = NewSnowflakeRowReader
 	default:
 		return nil, errors.Newf(codes.Invalid, "sql driver %s not supported", spec.DriverName)
 	}
