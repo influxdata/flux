@@ -57,6 +57,14 @@ impl From<types::Error> for Error {
     }
 }
 
+impl From<infer::Error> for Error {
+    fn from(err: infer::Error) -> Error {
+        Error {
+            msg: err.to_string(),
+        }
+    }
+}
+
 impl From<String> for Error {
     fn from(msg: String) -> Error {
         Error { msg }

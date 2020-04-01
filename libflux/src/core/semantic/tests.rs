@@ -250,7 +250,7 @@ macro_rules! test_infer_err {
         if let Ok(env) = infer_types($src, env, imp, None) {
             panic!(
                 "\n\n{}\n\n{}\n",
-                "expected type error but instead inferred the following types:"
+                "expected type error but instead inferred the: following types:"
                     .red()
                     .bold(),
                 env.values
@@ -273,7 +273,7 @@ macro_rules! test_infer_err {
 ///     src: r#"
 ///         1 + "1"
 ///     "#,
-///     err: "type error: @2:17-2:20 int != string",
+///     err: "type error @2:17-2:20: int != string",
 /// }
 /// ```
 ///
@@ -3246,21 +3246,21 @@ fn test_error_messages() {
             1 + "1"
         "#,
         // Location points to right expression expression
-        err: "type error: @2:17-2:20 int != string",
+        err: "type error @2:17-2:20: int != string",
     }
     test_error_msg! {
         src: r#"
             -"s"
         "#,
         // Location points to argument of unary expression
-        err: "type error: @2:14-2:17 string is not Negatable",
+        err: "type error @2:14-2:17: string is not Negatable",
     }
     test_error_msg! {
         src: r#"
             1h + 2h
         "#,
         // Location points to entire binary expression
-        err: "type error: @2:13-2:20 duration is not Addable",
+        err: "type error @2:13-2:20: duration is not Addable",
     }
     test_error_msg! {
         src: r#"
@@ -3269,28 +3269,28 @@ fn test_error_messages() {
             "Hey ${bob} it's me ${joe}!"
         "#,
         // Location points to second interpolated expression
-        err: "type error: @4:35-4:38 int != string",
+        err: "type error @4:35-4:38: int != string",
     }
     test_error_msg! {
         src: r#"
             if 0 then "a" else "b"
         "#,
         // Location points to if expression
-        err: "type error: @2:16-2:17 int != bool",
+        err: "type error @2:16-2:17: int != bool",
     }
     test_error_msg! {
         src: r#"
             if exists 0 then 0 else "b"
         "#,
         // Location points to else expression
-        err: "type error: @2:37-2:40 int != string",
+        err: "type error @2:37-2:40: int != string",
     }
     test_error_msg! {
         src: r#"
             [1, "2"]
         "#,
         // Location points to second element of array
-        err: "type error: @2:17-2:20 string != int",
+        err: "type error @2:17-2:20: string != int",
     }
     test_error_msg! {
         src: r#"
@@ -3298,7 +3298,7 @@ fn test_error_messages() {
             a[1.1]
         "#,
         // Location points to expression representing the index
-        err: "type error: @3:15-3:18 float != int",
+        err: "type error @3:15-3:18: float != int",
     }
     test_error_msg! {
         src: r#"
@@ -3306,7 +3306,7 @@ fn test_error_messages() {
             a[1] + 1.1
         "#,
         // Location points to right expression
-        err: "type error: @3:20-3:23 int != float",
+        err: "type error @3:20-3:23: int != float",
     }
     test_error_msg! {
         src: r#"
@@ -3314,7 +3314,7 @@ fn test_error_messages() {
             a.x
         "#,
         // Location points to the identifier a
-        err: "type error: @3:13-3:14 [int] != {x:t6 | t8}",
+        err: "type error @3:13-3:14: [int] != {x:t6 | t8}",
     }
     test_error_msg! {
         src: r#"
@@ -3322,7 +3322,7 @@ fn test_error_messages() {
             f(x: "x", y: "y")
         "#,
         // Location points to entire call expression
-        err: "type error: @3:13-3:30 @argument x: string is not Subtractable",
+        err: "type error @3:13-3:30: string is not Subtractable (argument x)",
     }
     test_error_msg! {
         src: r#"
@@ -3330,6 +3330,22 @@ fn test_error_messages() {
             f(r: {b: 1})
         "#,
         // Location points to entire call expression
-        err: "type error: @3:13-3:25 @argument r: {a:t12 | t11} != {b:int | {}}",
+        err: "type error @3:13-3:25: record is missing label a (argument r)",
+    }
+    test_error_msg! {
+        src: r#"
+            x = 1 + 1
+            a
+        "#,
+        // Location points to the identifier a
+        err: "error @3:13-3:14: undefined identifier a",
+    }
+    test_error_msg! {
+        src: r#"
+            match = (o) => o.name =~ /^a/
+            fn = (r) => match(r)
+        "#,
+        // Location points to call expression `match(r)`
+        err: "type error @3:25-3:33: missing required argument o",
     }
 }

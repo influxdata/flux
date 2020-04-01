@@ -54,7 +54,9 @@ impl From<&str> for Error {
 
 impl From<semantic::nodes::Error> for Error {
     fn from(sn_err: semantic::nodes::Error) -> Self {
-        Error { msg: sn_err.msg }
+        Error {
+            msg: sn_err.to_string(),
+        }
     }
 }
 
