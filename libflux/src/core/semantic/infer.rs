@@ -2,7 +2,8 @@ use crate::ast::SourceLocation;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::sub::{Substitutable, Substitution};
-use crate::semantic::types::{minus, Error, Kind, MonoType, PolyType, SubstitutionMap, TvarKinds};
+use crate::semantic::types::{minus, Kind, MonoType, PolyType, SubstitutionMap, TvarKinds};
+use std::fmt;
 use std::ops;
 
 // Type constraints are produced during type inference and come
@@ -61,6 +62,17 @@ impl From<Constraint> for Constraints {
     }
 }
 
+#[derive(Debug)]
+pub struct Error {
+    msg: String,
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.msg)
+    }
+}
+
 // Solve a set of type constraints
 pub fn solve(
     cons: &Constraints,
@@ -74,7 +86,7 @@ pub fn solve(
                 // Apply the current substitution to the type, then constrain
                 let s = match monotype.clone().apply(&sub).constrain(*kind, with) {
                     Err(e) => Err(Error {
-                        msg: format!("type error: {} {}", loc, e),
+                        msg: format!("type error {}: {}", loc, e),
                     }),
                     Ok(s) => Ok(s),
                 }?;
@@ -86,7 +98,7 @@ pub fn solve(
                 let r = second.clone().apply(&sub);
                 let s = match l.unify(r, with, fresher) {
                     Err(e) => Err(Error {
-                        msg: format!("type error: {} {}", loc, e),
+                        msg: format!("type error {}: {}", loc, e),
                     }),
                     Ok(s) => Ok(s),
                 }?;

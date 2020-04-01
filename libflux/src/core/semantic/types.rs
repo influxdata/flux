@@ -136,67 +136,37 @@ pub fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
     from
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Error {
-    pub msg: String,
+#[derive(Debug, PartialEq)]
+pub enum Error {
+    CannotUnify(MonoType, MonoType),
+    CannotConstrain(MonoType, Kind),
+    OccursCheck(Tvar, MonoType),
+    MissingLabel(String),
+    CannotUnifyLabel(String, MonoType, MonoType),
+    MissingArgument(String),
+    CannotUnifyArgument(String, Box<Error>),
+    CannotUnifyReturn(MonoType, MonoType),
+    MissingPipeArgument,
+    MultiplePipeArguments(String, String),
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(&self.msg)
-    }
-}
-
-impl Error {
-    // An error can occur when the unification of two types
-    // contradicts what we have already inferred about the types
-    // in our program.
-    fn cannot_unify<T, S>(t: &T, with: &S) -> Error
-    where
-        T: fmt::Display,
-        S: fmt::Display,
-    {
-        Error {
-            msg: format!("{} != {}", t, with),
-        }
-    }
-    // An error can occur if we constrain a type with a kind to
-    // which it does not belong.
-    fn cannot_constrain<T: fmt::Display>(t: &T, with: Kind) -> Error {
-        Error {
-            msg: format!("{} is not {}", t, with,),
-        }
-    }
-    // An error can occur if we attempt to unify a type variable
-    // with a monotype that contains that same type variable.
-    fn occurs_check<T: fmt::Display>(tv: Tvar, t: T) -> Error {
-        Error {
-            msg: format!("type variable {} occurs in {}", tv, t),
-        }
-    }
-    fn inconsistent_pipe_arguments(l: &str, r: &str) -> Error {
-        Error {
-            msg: format!("pipe arguments have two different names - {} and {}", l, r),
-        }
-    }
-    fn missing_pipe_argument() -> Error {
-        Error {
-            msg: String::from("functions have different number of pipe arguments"),
-        }
-    }
-    fn missing_required_argument(name: &str) -> Error {
-        Error {
-            msg: format!("missing required argument {}", name),
-        }
-    }
-    fn cannot_unify_argument(name: &str, msg: &str) -> Error {
-        Error {
-            msg: format!("@argument {}: {}", name, msg),
-        }
-    }
-    fn cannot_unify_return(msg: &str) -> Error {
-        Error {
-            msg: format!("return type: {}", msg),
+        match self {
+            Error::CannotUnify(t, with) => write!(f, "{} != {}", t, with),
+            Error::CannotConstrain(t, with) => write!(f, "{} is not {}", t, with),
+            Error::OccursCheck(tv, ty) => write!(f, "{} != {} (recursive type)", tv, ty),
+            Error::MissingLabel(a) => write!(f, "record is missing label {}", a),
+            Error::CannotUnifyLabel(a, t, with) => {
+                write!(f, "{} != {} (record label {})", t, with, a)
+            }
+            Error::MissingArgument(x) => write!(f, "missing required argument {}", x),
+            Error::CannotUnifyArgument(x, e) => write!(f, "{} (argument {})", e, x),
+            Error::CannotUnifyReturn(t, with) => write!(f, "return type {} != {}", t, with),
+            Error::MissingPipeArgument => write!(f, "missing pipe argument"),
+            Error::MultiplePipeArguments(a, b) => {
+                write!(f, "inconsistent pipe arguments {} != {}", a, b)
+            }
         }
     }
 }
@@ -372,7 +342,7 @@ impl MonoType {
             (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(*s, cons, f),
             (MonoType::Row(t), MonoType::Row(s)) => t.unify(*s, cons, f),
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(*s, cons, f),
-            (t, with) => Err(Error::cannot_unify(&t, &with)),
+            (t, with) => Err(Error::CannotUnify(t, with)),
         }
     }
 
@@ -380,7 +350,7 @@ impl MonoType {
         match self {
             MonoType::Bool => match with {
                 Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
-                _ => Err(Error::cannot_constrain(&self, with)),
+                _ => Err(Error::CannotConstrain(self, with)),
             },
             MonoType::Int => match with {
                 Kind::Addable
@@ -391,7 +361,7 @@ impl MonoType {
                 | Kind::Equatable
                 | Kind::Nullable
                 | Kind::Negatable => Ok(Substitution::empty()),
-                _ => Err(Error::cannot_constrain(&self, with)),
+                _ => Err(Error::CannotConstrain(self, with)),
             },
             MonoType::Uint => match with {
                 Kind::Addable
@@ -402,7 +372,7 @@ impl MonoType {
                 | Kind::Equatable
                 | Kind::Nullable
                 | Kind::Negatable => Ok(Substitution::empty()),
-                _ => Err(Error::cannot_constrain(&self, with)),
+                _ => Err(Error::CannotConstrain(self, with)),
             },
             MonoType::Float => match with {
                 Kind::Addable
@@ -413,28 +383,28 @@ impl MonoType {
                 | Kind::Equatable
                 | Kind::Nullable
                 | Kind::Negatable => Ok(Substitution::empty()),
-                _ => Err(Error::cannot_constrain(&self, with)),
+                _ => Err(Error::CannotConstrain(self, with)),
             },
             MonoType::String => match with {
                 Kind::Addable | Kind::Comparable | Kind::Equatable | Kind::Nullable => {
                     Ok(Substitution::empty())
                 }
-                _ => Err(Error::cannot_constrain(&self, with)),
+                _ => Err(Error::CannotConstrain(self, with)),
             },
             MonoType::Duration => match with {
                 Kind::Comparable | Kind::Equatable | Kind::Nullable | Kind::Negatable => {
                     Ok(Substitution::empty())
                 }
-                _ => Err(Error::cannot_constrain(&self, with)),
+                _ => Err(Error::CannotConstrain(self, with)),
             },
             MonoType::Time => match with {
                 Kind::Comparable | Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
-                _ => Err(Error::cannot_constrain(&self, with)),
+                _ => Err(Error::CannotConstrain(self, with)),
             },
-            MonoType::Regexp => Err(Error::cannot_constrain(&self, with)),
+            MonoType::Regexp => Err(Error::CannotConstrain(self, with)),
             MonoType::Bytes => match with {
                 Kind::Equatable => Ok(Substitution::empty()),
-                _ => Err(Error::cannot_constrain(&self, with)),
+                _ => Err(Error::CannotConstrain(self, with)),
             },
             MonoType::Var(tvr) => {
                 tvr.constrain(with, cons);
@@ -505,7 +475,7 @@ impl Tvar {
             _ => {
                 if with.contains(self) {
                     // Invalid recursive type
-                    Err(Error::occurs_check(self, with))
+                    Err(Error::OccursCheck(self, with))
                 } else {
                     // Unify a type variable with a monotype.
                     // The monotype must satisify any
@@ -598,7 +568,7 @@ impl Array {
     fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         match with {
             Kind::Equatable => self.0.constrain(with, cons),
-            _ => Err(Error::cannot_constrain(&self, with)),
+            _ => Err(Error::CannotConstrain(MonoType::Arr(Box::new(self)), with)),
         }
     }
 
@@ -745,53 +715,35 @@ impl Row {
                     head: Property { k: b, v: u },
                     tail: MonoType::Var(r),
                 },
-            ) => {
-                if l == r {
-                    if a != b {
-                        Err(Error::cannot_unify(&self, &with))
-                    } else {
-                        match t.unify(u, cons, fresher) {
-                            Err(_) => Err(Error::cannot_unify(&self, &with)),
-                            Ok(sub) => Ok(sub),
-                        }
-                    }
-                } else if a == b {
-                    let lv = MonoType::Var(l);
-                    let rv = MonoType::Var(r);
-                    let sub = match t.unify(u, cons, fresher) {
-                        Err(_) => Err(Error::cannot_unify(&self, &with)),
-                        Ok(sub) => Ok(sub),
-                    }?;
-                    match apply_then_unify(lv, rv, sub, cons, fresher) {
-                        Err(_) => Err(Error::cannot_unify(&self, &with)),
-                        Ok(sub) => Ok(sub),
-                    }
-                } else {
-                    let var = fresher.fresh();
-                    let sub = match l.unify(
-                        MonoType::from(Row::Extension {
-                            head: Property { k: b, v: u },
-                            tail: MonoType::Var(var),
-                        }),
-                        cons,
-                    ) {
-                        Err(_) => Err(Error::cannot_unify(&self, &with)),
-                        Ok(sub) => Ok(sub),
-                    }?;
-                    match apply_then_unify(
-                        MonoType::Var(r),
-                        MonoType::from(Row::Extension {
-                            head: Property { k: a, v: t },
-                            tail: MonoType::Var(var),
-                        }),
-                        sub,
-                        cons,
-                        fresher,
-                    ) {
-                        Err(_) => Err(Error::cannot_unify(&self, &with)),
-                        Ok(sub) => Ok(sub),
-                    }
-                }
+            ) if a == b && l == r => match t.clone().unify(u.clone(), cons, fresher) {
+                Err(_) => Err(Error::CannotUnifyLabel(a, t, u)),
+                Ok(sub) => Ok(sub),
+            },
+            (
+                Row::Extension {
+                    head: Property { k: a, .. },
+                    tail: MonoType::Var(l),
+                },
+                Row::Extension {
+                    head: Property { k: b, .. },
+                    tail: MonoType::Var(r),
+                },
+            ) if a != b && l == r => Err(Error::CannotUnify(
+                MonoType::Row(Box::new(self)),
+                MonoType::Row(Box::new(with)),
+            )),
+            (
+                Row::Extension {
+                    head: Property { k: a, v: t },
+                    tail: l,
+                },
+                Row::Extension {
+                    head: Property { k: b, v: u },
+                    tail: r,
+                },
+            ) if a == b => {
+                let sub = t.unify(u, cons, fresher)?;
+                apply_then_unify(l, r, sub, cons, fresher)
             }
             (
                 Row::Extension {
@@ -802,51 +754,44 @@ impl Row {
                     head: Property { k: b, v: u },
                     tail: r,
                 },
-            ) => {
-                if a == b {
-                    let sub = match t.unify(u, cons, fresher) {
-                        Err(_) => Err(Error::cannot_unify(&self, &with)),
-                        Ok(sub) => Ok(sub),
-                    }?;
-                    match apply_then_unify(l, r, sub, cons, fresher) {
-                        Err(_) => Err(Error::cannot_unify(&self, &with)),
-                        Ok(sub) => Ok(sub),
-                    }
-                } else {
-                    let var = fresher.fresh();
-                    let sub = match l.unify(
-                        MonoType::from(Row::Extension {
-                            head: Property { k: b, v: u },
-                            tail: MonoType::Var(var),
-                        }),
-                        cons,
-                        fresher,
-                    ) {
-                        Err(_) => Err(Error::cannot_unify(&self, &with)),
-                        Ok(sub) => Ok(sub),
-                    }?;
-                    match apply_then_unify(
-                        r,
-                        MonoType::from(Row::Extension {
-                            head: Property { k: a, v: t },
-                            tail: MonoType::Var(var),
-                        }),
-                        sub,
-                        cons,
-                        fresher,
-                    ) {
-                        Err(_) => Err(Error::cannot_unify(&self, &with)),
-                        Ok(sub) => Ok(sub),
-                    }
-                }
+            ) if a != b => {
+                let var = fresher.fresh();
+                let sub = l.unify(
+                    MonoType::from(Row::Extension {
+                        head: Property { k: b, v: u },
+                        tail: MonoType::Var(var),
+                    }),
+                    cons,
+                    fresher,
+                )?;
+                apply_then_unify(
+                    r,
+                    MonoType::from(Row::Extension {
+                        head: Property { k: a, v: t },
+                        tail: MonoType::Var(var),
+                    }),
+                    sub,
+                    cons,
+                    fresher,
+                )
             }
-            (Row::Empty, Row::Extension { head, tail }) => Err(Error::cannot_unify(
-                &Row::Empty,
-                &Row::Extension { head, tail },
-            )),
-            (Row::Extension { head, tail }, Row::Empty) => Err(Error::cannot_unify(
-                &Row::Empty,
-                &Row::Extension { head, tail },
+            (
+                Row::Empty,
+                Row::Extension {
+                    head: Property { k: a, .. },
+                    ..
+                },
+            ) => Err(Error::MissingLabel(a)),
+            (
+                Row::Extension {
+                    head: Property { k: a, .. },
+                    ..
+                },
+                Row::Empty,
+            ) => Err(Error::MissingLabel(a)),
+            _ => Err(Error::CannotUnify(
+                MonoType::Row(Box::new(self)),
+                MonoType::Row(Box::new(with)),
             )),
         }
     }
@@ -861,7 +806,7 @@ impl Row {
                     Ok(sub.merge(tail.constrain(with, cons)?))
                 }
             },
-            _ => Err(Error::cannot_constrain(&self, with)),
+            _ => Err(Error::CannotConstrain(MonoType::Row(Box::new(self)), with)),
         }
     }
 
@@ -1129,7 +1074,7 @@ impl Function {
             (Some(fp), Some(gp)) => {
                 if fp.k != "<-" && gp.k != "<-" && fp.k != gp.k {
                     // Both are named and the name differs, fail unification.
-                    return Err(Error::inconsistent_pipe_arguments(&fp.k, &gp.k));
+                    return Err(Error::MultiplePipeArguments(fp.k, gp.k));
                 } else {
                     // At least one is unnamed or they are both named with the same name.
                     // This means they should match. Enforce this condition by inserting
@@ -1143,7 +1088,7 @@ impl Function {
                 if fp.k == "<-" {
                     // The pipe argument is unnamed and g does not have one.
                     // Fail unification.
-                    return Err(Error::missing_pipe_argument());
+                    return Err(Error::MissingPipeArgument);
                 } else {
                     // This is a named argument, simply put it into the required ones.
                     f.req.insert(fp.k, fp.v);
@@ -1154,7 +1099,7 @@ impl Function {
                 if gp.k == "<-" {
                     // The pipe argument is unnamed and f does not have one.
                     // Fail unification.
-                    return Err(Error::missing_pipe_argument());
+                    return Err(Error::MissingPipeArgument);
                 } else {
                     // This is a named argument, simply put it into the required ones.
                     g.req.insert(gp.k, gp.v);
@@ -1166,7 +1111,7 @@ impl Function {
         // Now that f has not been consumed yet, check that every required argument in g is in f too.
         for (name, _) in g.req.iter() {
             if !f.req.contains_key(name) && !f.opt.contains_key(name) {
-                return Err(Error::missing_required_argument(name));
+                return Err(Error::MissingArgument(String::from(name)));
             }
         }
         let mut sub = Substitution::empty();
@@ -1174,43 +1119,43 @@ impl Function {
         for (name, t) in f.req.into_iter() {
             if let Some(ty) = g.req.remove(&name) {
                 // The required argument is in g's required arguments.
-                sub = match apply_then_unify(t, ty, sub, cons, fresh) {
-                    Err(e) => Err(Error::cannot_unify_argument(&name, &e.to_string())),
+                sub = match apply_then_unify(t.clone(), ty.clone(), sub, cons, fresh) {
+                    Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
                     Ok(sub) => Ok(sub),
                 }?;
             } else if let Some(ty) = g.opt.remove(&name) {
                 // The required argument is in g's optional arguments.
-                sub = match apply_then_unify(t, ty, sub, cons, fresh) {
-                    Err(e) => Err(Error::cannot_unify_argument(&name, &e.to_string())),
+                sub = match apply_then_unify(t.clone(), ty.clone(), sub, cons, fresh) {
+                    Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
                     Ok(sub) => Ok(sub),
                 }?;
             } else {
-                return Err(Error::missing_required_argument(&name));
+                return Err(Error::MissingArgument(name));
             }
         }
         // Unify f's optional arguments.
         for (name, ty) in f.opt.into_iter() {
             if let Some(gty) = g.req.remove(&name) {
-                sub = match apply_then_unify(ty, gty, sub, cons, fresh) {
-                    Err(e) => Err(Error::cannot_unify_argument(&name, &e.to_string())),
+                sub = match apply_then_unify(ty.clone(), gty.clone(), sub, cons, fresh) {
+                    Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
                     Ok(sub) => Ok(sub),
                 }?;
             } else if let Some(gty) = g.opt.remove(&name) {
-                sub = match apply_then_unify(ty, gty, sub, cons, fresh) {
-                    Err(e) => Err(Error::cannot_unify_argument(&name, &e.to_string())),
+                sub = match apply_then_unify(ty.clone(), gty.clone(), sub, cons, fresh) {
+                    Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
                     Ok(sub) => Ok(sub),
                 }?;
             }
         }
         // Unify return types.
-        match apply_then_unify(f.retn, g.retn, sub, cons, fresh) {
-            Err(e) => Err(Error::cannot_unify_return(&e.to_string())),
+        match apply_then_unify(f.retn.clone(), g.retn.clone(), sub, cons, fresh) {
+            Err(_) => Err(Error::CannotUnifyReturn(f.retn, g.retn)),
             Ok(sub) => Ok(sub),
         }
     }
 
     fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
-        Err(Error::cannot_constrain(&self, with))
+        Err(Error::CannotConstrain(MonoType::Fun(Box::new(self)), with))
     }
 
     fn contains(&self, tv: Tvar) -> bool {
@@ -1856,7 +1801,7 @@ mod tests {
         }
 
         let sub = MonoType::Int.constrain(Kind::Row, &mut TvarKinds::new());
-        assert_eq!(Err(Error::cannot_constrain(&MonoType::Int, Kind::Row)), sub);
+        assert_eq!(Err(Error::CannotConstrain(MonoType::Int, Kind::Row)), sub);
     }
     #[test]
     fn constrain_rows() {
@@ -1873,7 +1818,13 @@ mod tests {
         ];
         for c in unallowable_cons {
             let sub = Row::Empty.constrain(c, &mut TvarKinds::new());
-            assert_eq!(Err(Error::cannot_constrain(&Row::Empty, c)), sub);
+            assert_eq!(
+                Err(Error::CannotConstrain(
+                    MonoType::Row(Box::new(Row::Empty)),
+                    c
+                )),
+                sub
+            );
         }
     }
     #[test]

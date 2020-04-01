@@ -25,6 +25,7 @@ use chrono::prelude::DateTime;
 use chrono::FixedOffset;
 use derivative::Derivative;
 use std::fmt;
+use std::fmt::Debug;
 use std::vec::Vec;
 
 // Result returned from the various 'infer' methods defined in this
@@ -33,64 +34,49 @@ use std::vec::Vec;
 pub type Result = std::result::Result<(Environment, Constraints), Error>;
 
 #[derive(Debug)]
-pub struct Error {
-    pub msg: String,
+pub enum Error {
+    Inference(infer::Error),
+    UndefinedBuiltin(String, ast::SourceLocation),
+    UndefinedIdentifier(String, ast::SourceLocation),
+    InvalidBinOp(ast::Operator, ast::SourceLocation),
+    InvalidUnaryOp(ast::Operator, ast::SourceLocation),
+    InvalidImportPath(String, ast::SourceLocation),
+    InvalidReturn(ast::SourceLocation),
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(&self.msg)
-    }
-}
-
-impl From<types::Error> for Error {
-    fn from(err: types::Error) -> Error {
-        Error {
-            msg: err.to_string(),
+        match self {
+            Error::Inference(err) => std::fmt::Display::fmt(err, f),
+            Error::UndefinedBuiltin(x, loc) => {
+                write!(f, "error {}: undefined builtin identifier {}", loc, x)
+            }
+            Error::UndefinedIdentifier(x, loc) => {
+                write!(f, "error {}: undefined identifier {}", loc, x)
+            }
+            Error::InvalidBinOp(op, loc) => write!(
+                f,
+                "error {}: invalid binary operator {}",
+                loc,
+                op.to_string()
+            ),
+            Error::InvalidUnaryOp(op, loc) => write!(
+                f,
+                "error {}: invalid unary operator {}",
+                loc,
+                op.to_string()
+            ),
+            Error::InvalidImportPath(path, loc) => {
+                write!(f, "error {}: invalid import path {}", loc, path)
+            }
+            Error::InvalidReturn(loc) => write!(f, "error {}: return not valid in file block", loc),
         }
     }
 }
 
-impl From<String> for Error {
-    fn from(msg: String) -> Error {
-        Error { msg }
-    }
-}
-
-impl From<Error> for String {
-    fn from(err: Error) -> String {
-        err.to_string()
-    }
-}
-
-impl Error {
-    fn undeclared_variable(name: String) -> Error {
-        Error {
-            msg: format!("undeclared variable {}", name),
-        }
-    }
-    fn undefined_builtin(name: &str) -> Error {
-        Error {
-            msg: format!("builtin identifier {} not defined", name),
-        }
-    }
-    fn invalid_statement(msg: String) -> Error {
-        Error { msg }
-    }
-    fn unsupported_binary_operator(op: &ast::Operator) -> Error {
-        Error {
-            msg: format!("unsupported binary operator {}", op.to_string()),
-        }
-    }
-    fn unsupported_unary_operator(op: &ast::Operator) -> Error {
-        Error {
-            msg: format!("unsupported unary operator {}", op.to_string()),
-        }
-    }
-    fn unknown_import_path(path: &str) -> Error {
-        Error {
-            msg: format!("\"{}\" is not a known import path", path),
-        }
+impl From<infer::Error> for Error {
+    fn from(err: infer::Error) -> Error {
+        Error::Inference(err)
     }
 }
 
@@ -358,7 +344,7 @@ impl File {
 
             match importer.import(path) {
                 Some(poly) => env.add(name.to_owned(), poly),
-                None => return Err(Error::unknown_import_path(path)),
+                None => return Err(Error::InvalidImportPath(path.clone(), dec.loc.clone())),
             };
         }
 
@@ -388,9 +374,7 @@ impl File {
                             let (env, cons) = stmt.infer(env, f)?;
                             Ok((env, cons + rest))
                         }
-                        Statement::Return(_) => Err(Error::invalid_statement(String::from(
-                            "cannot have return statement in file block",
-                        ))),
+                        Statement::Return(stmt) => Err(Error::InvalidReturn(stmt.loc.clone())),
                     },
                 )?;
 
@@ -478,7 +462,10 @@ impl BuiltinStmt {
             env.add(self.id.name.clone(), ty);
             Ok(env)
         } else {
-            Err(Error::undefined_builtin(&self.id.name))
+            Err(Error::UndefinedBuiltin(
+                self.id.name.clone(),
+                self.loc.clone(),
+            ))
         }
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1177,7 +1164,7 @@ impl BinaryExpr {
                     self.right.loc().clone(),
                 ),
             ]),
-            _ => return Err(Error::unsupported_binary_operator(&self.operator)),
+            _ => return Err(Error::InvalidBinOp(self.operator.clone(), self.loc.clone())),
         };
 
         // Otherwise, add the constraints together and return them.
@@ -1234,7 +1221,6 @@ impl CallExpr {
         }
         // Constrain the callee to be a Function.
         cons.add(Constraint::Equal(
-            self.callee.type_of().clone(),
             MonoType::Fun(Box::new(Function {
                 opt: MonoTypeMap::new(),
                 req,
@@ -1250,6 +1236,7 @@ impl CallExpr {
                 // can infer that, for instance, `f(a: 0) + 1` is legal.
                 retn: self.typ.clone(),
             })),
+            self.callee.type_of().clone(),
             self.loc.clone(),
         ));
         Ok((env, cons))
@@ -1540,7 +1527,12 @@ impl UnaryExpr {
                     ),
                 ])
             }
-            _ => return Err(Error::unsupported_unary_operator(&self.operator)),
+            _ => {
+                return Err(Error::InvalidUnaryOp(
+                    self.operator.clone(),
+                    self.loc.clone(),
+                ))
+            }
         };
         Ok((env, acons + cons))
     }
@@ -1590,7 +1582,10 @@ impl IdentifierExpr {
                     )]),
                 ))
             }
-            None => Err(Error::undeclared_variable(self.name.to_string())),
+            None => Err(Error::UndefinedIdentifier(
+                self.name.to_string(),
+                self.loc.clone(),
+            )),
         }
     }
     fn apply(mut self, sub: &Substitution) -> Self {
