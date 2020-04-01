@@ -63,7 +63,7 @@ func TestFluxCompiler(t *testing.T) {
 		{
 			name:     "type error",
 			q:        `t=0 t.s`,
-			startErr: "type error: @1:5-1:6",
+			startErr: "type error @1:5-1:6",
 		},
 		{
 			name:     "from with no streaming data",
@@ -105,7 +105,7 @@ func TestFluxCompiler(t *testing.T) {
 			q: `twentySeven = twentyFive + 2
 				twentySeven
 				from(bucket: "foo") |> range(start: -5m)`,
-			startErr: "undeclared variable twentyFive",
+			startErr: "undefined identifier twentyFive",
 		},
 		{
 			name: "with now",
@@ -629,7 +629,7 @@ option planner.disableLogicalRules = "not an array"
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `type error: @4:1-4:52 [string] != string`,
+			wantErr: `type error @4:1-4:52: [string] != string`,
 		},
 		{
 			name: "physical planner option must be an array",
@@ -640,7 +640,7 @@ option planner.disablePhysicalRules = "not an array"
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `type error: @4:1-4:53 [string] != string`,
+			wantErr: `type error @4:1-4:53: [string] != string`,
 		},
 		{
 			name: "logical planner option must be an array of strings",
@@ -651,7 +651,7 @@ option planner.disableLogicalRules = [1.0]
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `type error: @4:1-4:43 string != float`,
+			wantErr: `type error @4:1-4:43: string != float`,
 		},
 		{
 			name: "physical planner option must be an array of strings",
@@ -662,7 +662,7 @@ option planner.disablePhysicalRules = [1.0]
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `type error: @4:1-4:44 string != float`,
+			wantErr: `type error @4:1-4:44: string != float`,
 		},
 		{
 			name: "planner is an object defined by the user",

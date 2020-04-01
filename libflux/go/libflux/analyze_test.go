@@ -26,7 +26,7 @@ func TestAnalyze(t *testing.T) {
 		{
 			name: "failure",
 			flx:  `x = "foo" + 10`,
-			err:  errors.New("type error: @1:13-1:15 string != int"),
+			err:  errors.New("type error @1:13-1:15: string != int"),
 		},
 	}
 	for _, tc := range tcs {
