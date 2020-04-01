@@ -843,7 +843,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 		{
 			name:    "option with member assignment error",
 			fluxSrc: `option o.m = "hello"`,
-			err:     errors.New("undeclared variable o"),
+			err:     errors.New("error @1:8-1:9: undefined identifier o"),
 		},
 		{
 			name: "option with member assignment",
@@ -854,7 +854,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 		{
 			name:    "builtin statement",
 			fluxSrc: `builtin foo`,
-			err:     errors.New("builtin identifier foo not defined"),
+			err:     errors.New("error @1:1-1:12: undefined builtin identifier foo"),
 		},
 		{
 			name: "test statement",
@@ -1089,7 +1089,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 		{
 			name:    "exists operator",
 			fluxSrc: `e = exists {foo: 30}.bar`,
-			err:     errors.New("type error: @1:12-1:21 {foo:int | {}} != {bar:t0 | t1}"),
+			err:     errors.New("type error @1:12-1:21: record is missing label bar"),
 		},
 		{
 			name:    "exists operator with tvar",
