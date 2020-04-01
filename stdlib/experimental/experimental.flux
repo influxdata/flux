@@ -22,19 +22,26 @@ builtin to
 // An experimental version of join.
 builtin join
 
-// Aligns all tables/series to a common start time
-// By default, it aligns to the _start value
-// If _start doesn't exist, it aligns to 1970-01-01T00:00:00Z UTC
+// Aligns all tables to a common start time by using the same _time value for
+// the first record in each table incrementing all subsequent _time values by
+// using time elapsed between input records.
+// By default, it aligns to the _start value.
+// If _start doesn't exist, it aligns to 1970-01-01T00:00:00Z UTC.
 alignTime = (tables=<-, alignTo=time(v: 0)) => {
   _tableInfo = tables |> tableFind(fn: (key) => true) |> getRecord(idx: 0)
-  _startTime = if alignTo != time(v: 0) then alignTo else if exists _tableInfo._start then _tableInfo._start else time(v: 0)
   _data = tables
     |> stateDuration(
       fn: (r) => true,
       column: "timeDiff",
       unit: 1ns
     )
-    |> map(fn: (r) => ({ r with _time: time(v: (int(v: _startTime ) + r.timeDiff))}))
+    |> map(fn: (r) => ({ r with
+        _time:
+          if alignTo != time(v: 0) then time(v: (int(v: alignTo ) + r.timeDiff))
+          else if exists _tableInfo._start then _tableInfo._start
+          else time(v: 0)
+      })
+    )
     |> drop(columns: ["timeDiff"])
   return _data
 }
