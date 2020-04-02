@@ -38,9 +38,10 @@ func GetBufferedBuilder(key flux.GroupKey, cache *BuilderCache) (builder *Buffer
 // It ensures the schemas are compatible and will backfill previous
 // buffers with nil for new columns that didn't previously exist.
 func (b *BufferedBuilder) AppendBuffer(cr flux.ColReader) error {
-	if len(b.Buffers) == 0 {
-		// If there are no buffers, then take the columns
-		// from the column reader and append the buffer directly.
+	if b.Columns == nil {
+		// If the columns have not been set, then take the columns
+		// from the column reader and append the buffer directly
+		// since we know it matches the table schema.
 		b.Columns = cr.Cols()
 		buffer := &arrow.TableBuffer{
 			GroupKey: b.GroupKey,
