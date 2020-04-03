@@ -227,8 +227,21 @@ func (l *GroupLookup) createOrSetInGroup(index int, key flux.GroupKey, value int
 	// Construct the new group entry and copy the end of the slice
 	// into the new key group.
 	l.groups[index+1] = func() *groupKeyList {
+		// TODO(rockstar): A nice optimization here would be to prevent
+		// the deleted items from being copied. However, this entire function
+		// needs to be refactored to support that, as it's possible that *all*
+		// the elements have been deleted, so no split is needed.
+		// Moving currently deleted elements out of this key group, the deleted
+		// count must be decremented.
+		for _, item := range kg.elements[i:] {
+			if item.deleted {
+				kg.deleted--
+			}
+		}
+
 		entries := make([]groupKeyListElement, len(kg.elements[i:]))
 		copy(entries, kg.elements[i:])
+
 		return l.newKeyGroup(entries)
 	}()
 	// Use a slice on the key group elements to remove the extra elements.
@@ -412,6 +425,7 @@ func (l *RandomAccessGroupLookup) Set(key flux.GroupKey, value interface{}) {
 		l.elements = append(l.elements, e)
 	}
 	e.Value = value
+	e.Deleted = false
 }
 
 // Clear will clear the group lookup and reset it to contain nothing.
