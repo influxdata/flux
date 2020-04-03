@@ -868,6 +868,27 @@ func (f function) resolveIdentifiers(n semantic.Node, localIdentifiers *[]string
 		if err != nil {
 			return nil, err
 		}
+		// Substitute member expressions with the object properties
+		// they point to if possible.
+		//
+		// TODO(jlapacik): The following is a complete hack
+		// and should be replaced with a proper eval/reduction
+		// of the semantic graph. It has been added to aid the
+		// planner in pushing down as many predicates to storage
+		// as possible.
+		//
+		// The planner will now be able to push down predicates
+		// involving member expressions like so:
+		//
+		//     r.env == v.env
+		//
+		if obj, ok := node.(*semantic.ObjectExpression); ok {
+			for _, prop := range obj.Properties {
+				if prop.Key.Key() == n.Property {
+					return f.resolveIdentifiers(prop.Value, localIdentifiers)
+				}
+			}
+		}
 		n.Object = node.(semantic.Expression)
 	case *semantic.IdentifierExpression:
 		if f.e.Block.Parameters != nil {
