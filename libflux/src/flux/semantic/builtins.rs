@@ -351,7 +351,7 @@ pub fn builtins() -> Builtins<'static> {
             "testing" => maplit::hashmap! {
                 "assertEquals" => "forall [t0] (name: string, <-got: [t0], want: [t0]) -> [t0]",
                 "assertEmpty" => "forall [t0] (<-tables: [t0]) -> [t0]",
-                "diff" => "forall [t0] (<-got: [t0], want: [t0], ?verbose: bool) -> [{_diff: string | t0}]",
+                "diff" => "forall [t0] (<-got: [t0], want: [t0], ?verbose: bool, ?epsilon: float) -> [{_diff: string | t0}]",
             },
             "universe" => maplit::hashmap! {
                 "bool" => "forall [t0] (v: t0) -> bool",
