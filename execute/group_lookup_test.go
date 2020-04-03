@@ -179,6 +179,11 @@ func testGroupLookup(t *testing.T, l table.KeyLookup) {
 	if _, ok := l.Lookup(key3); ok {
 		t.Error("failed to delete key3")
 	}
+
+	l.Set(key1, 1)
+	if v, ok := l.Lookup(key1); !ok || v != 1 {
+		t.Error("failed to lookup key1")
+	}
 }
 
 func TestGroupLookup(t *testing.T) {
