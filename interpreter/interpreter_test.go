@@ -586,36 +586,59 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 }
 
 func TestResolver(t *testing.T) {
-	src := `
-	x = 42
-	f = (r) => r + x
-`
-
-	// Evaluate script with a function definition.
-	ctx := dependenciestest.Default().Inject(context.Background())
-	_, scope, err := runtime.Eval(ctx, src)
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
+	testcases := []struct {
+		env  string
+		fn   string
+		want string
+	}{
+		{
+			env:  "x = 42",
+			fn:   "f = (r) => r + x",
+			want: "(r) => r + 42",
+		},
+		{
+			env:  "v = {env: 42}",
+			fn:   "f = (r) => r + v.env",
+			want: "(r) => r + 42",
+		},
+		{
+			env:  `option v = {env: "acc"}`,
+			fn:   "f = (r) => r.env == v.env",
+			want: `(r) => r.env == "acc"`,
+		},
 	}
+	for _, tc := range testcases {
+		tc := tc
+		t.Run("", func(t *testing.T) {
+			src := tc.env + "\n" + tc.fn
 
-	fn, ok := scope.Lookup("f")
-	if !ok {
-		t.Fatalf("could not lookup function definition")
-	}
+			// Evaluate script with a function definition.
+			ctx := dependenciestest.Default().Inject(context.Background())
+			_, scope, err := runtime.Eval(ctx, src)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
 
-	resolver, ok := fn.Function().(interpreter.Resolver)
-	if !ok {
-		t.Fatalf("function is not resolvable")
-	}
+			fn, ok := scope.Lookup("f")
+			if !ok {
+				t.Fatalf("could not lookup function definition")
+			}
 
-	got, err := resolver.Resolve()
-	if err != nil {
-		t.Fatalf("could not resolve function: %s", err)
-	}
+			resolver, ok := fn.Function().(interpreter.Resolver)
+			if !ok {
+				t.Fatalf("function is not resolvable")
+			}
 
-	want := executetest.FunctionExpression(t, `(r) => r + 42`)
-	if !cmp.Equal(want, got, semantictest.CmpOptions...) {
-		t.Errorf("unexpected resoved function: -want/+got\n%s", cmp.Diff(want, got, semantictest.CmpOptions...))
+			got, err := resolver.Resolve()
+			if err != nil {
+				t.Fatalf("could not resolve function: %s", err)
+			}
+
+			want := executetest.FunctionExpression(t, tc.want)
+			if !cmp.Equal(want, got, semantictest.CmpOptions...) {
+				t.Errorf("unexpected resoved function: -want/+got\n%s", cmp.Diff(want, got, semantictest.CmpOptions...))
+			}
+		})
 	}
 }
 
