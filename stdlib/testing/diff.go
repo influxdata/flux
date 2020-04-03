@@ -111,7 +111,7 @@ type DiffTransformation struct {
 	cache execute.TableBuilderCache
 	alloc *memory.Allocator
 
-	inputCache *execute.GroupLookup
+	inputCache *execute.RandomAccessGroupLookup
 }
 
 type tableBuffer struct {
@@ -293,7 +293,7 @@ func NewDiffTransformation(d execute.Dataset, cache execute.TableBuilderCache, s
 		gotID:      gotID,
 		d:          d,
 		cache:      cache,
-		inputCache: execute.NewGroupLookup(),
+		inputCache: execute.NewRandomAccessGroupLookup(),
 		finished:   make(map[execute.DatasetID]bool, 2),
 		alloc:      a,
 	}
