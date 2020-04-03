@@ -9,8 +9,8 @@ option now = () => 2018-05-22T19:54:40Z
 
 option monitor.log = (tables=<-) => tables |> drop(columns:["_start", "_stop"])
 
-// Change sort column because expected result is based on order by _time, but order by _source_timestamp differs.
-option monitor.sortBy = "_time"
+// Expected result is based on order by `_time` (order by `_source_timestamp` differs).
+option monitor.reorder = (tables=<-) => tables |> sort(columns: ["_time"], desc: false)
 
 // Note this input data is identical to the output data of the check test case, post pivot.
 inData = "

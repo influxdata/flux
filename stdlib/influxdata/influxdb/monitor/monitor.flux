@@ -12,8 +12,8 @@ option write = (tables=<-) => tables |> experimental.to(bucket: bucket)
 // Log records notification events
 option log = (tables=<-) => tables |> experimental.to(bucket: bucket)
 
-// Column by which to sort statuses by
-option sortBy = "_source_timestamp"
+// Reorder sorts statuses before difference computation
+option reorder = (tables=<-) => tables |> sort(columns: ["_source_timestamp"], desc: false)
 
 // From retrieves the check statuses that have been stored.
 from = (start, stop=now(), fn=(r) => true) =>
@@ -44,7 +44,7 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
         |> duplicate(column: "_level", as: "____temp_level____")
         |> drop(columns: ["_level"])
         |> rename(columns: {"____temp_level____": "_level"})
-        |> sort(columns: [sortBy], desc: false)
+        |> reorder()
         |> difference(columns: ["level_value"])
         |> filter(fn: (r) => r.level_value == 1)
         |> drop(columns: ["level_value"])
@@ -64,7 +64,7 @@ stateChangesOnly = (tables=<-) => {
         |> duplicate(column: "_level", as: "____temp_level____")
         |> drop(columns: ["_level"])
         |> rename(columns: {"____temp_level____": "_level"})
-        |> sort(columns: [sortBy], desc: false)
+        |> reorder()
         |> difference(columns: ["level_value"])
         |> filter(fn: (r) => r.level_value != 0)
         |> drop(columns: ["level_value"])
