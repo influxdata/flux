@@ -2,6 +2,7 @@ package testing
 
 import (
 	"bytes"
+	"math"
 	"sort"
 	"sync"
 
@@ -17,9 +18,11 @@ import (
 )
 
 const DiffKind = "diff"
+const DefaultEpsilon = 1e-9
 
 type DiffOpSpec struct {
-	Verbose bool `json:"verbose,omitempty"`
+	Verbose bool    `json:"verbose,omitempty"`
+	Epsilon float64 `json:"minValue"`
 }
 
 func (s *DiffOpSpec) Kind() flux.OperationKind {
@@ -32,6 +35,7 @@ func init() {
 			"verbose": semantic.Bool,
 			"got":     flux.TableObjectType,
 			"want":    flux.TableObjectType,
+			"epsilon": semantic.Float,
 		},
 		Required:     semantic.LabelSet{"got", "want"},
 		Return:       flux.TableObjectType,
@@ -72,7 +76,14 @@ func createDiffOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		verbose = false
 	}
 
-	return &DiffOpSpec{Verbose: verbose}, nil
+	epsilon, ok, err := args.GetFloat("epsilon")
+	if err != nil {
+		return nil, err
+	} else if !ok {
+		epsilon = DefaultEpsilon
+	}
+
+	return &DiffOpSpec{Verbose: verbose, Epsilon: epsilon}, nil
 }
 
 func newDiffOp() flux.OperationSpec {
@@ -82,6 +93,7 @@ func newDiffOp() flux.OperationSpec {
 type DiffProcedureSpec struct {
 	plan.DefaultCost
 	Verbose bool
+	Epsilon float64
 }
 
 func (s *DiffProcedureSpec) Kind() plan.ProcedureKind {
@@ -98,7 +110,7 @@ func newDiffProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proce
 	if !ok {
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
-	return &DiffProcedureSpec{Verbose: spec.Verbose}, nil
+	return &DiffProcedureSpec{Verbose: spec.Verbose, Epsilon: spec.Epsilon}, nil
 }
 
 type DiffTransformation struct {
@@ -112,6 +124,8 @@ type DiffTransformation struct {
 	alloc *memory.Allocator
 
 	inputCache *execute.RandomAccessGroupLookup
+
+	epsilon float64
 }
 
 type tableBuffer struct {
@@ -296,6 +310,7 @@ func NewDiffTransformation(d execute.Dataset, cache execute.TableBuilderCache, s
 		inputCache: execute.NewRandomAccessGroupLookup(),
 		finished:   make(map[execute.DatasetID]bool, 2),
 		alloc:      a,
+		epsilon:    spec.Epsilon,
 	}
 }
 
@@ -488,10 +503,9 @@ func (t *DiffTransformation) rowEqual(want, got *tableBuffer, i int) bool {
 
 		switch wantCol.Type {
 		case flux.TFloat:
-			want, got := wantCol.Values.(*array.Float64), gotCol.Values.(*array.Float64)
-			if want.Value(i) != got.Value(i) {
-				return false
-			}
+			want, got := wantCol.Values.(*array.Float64).Value(i), gotCol.Values.(*array.Float64).Value(i)
+			// want == got is for handling +Inf and -Inf.
+			return want == got || math.Abs(want-got) <= t.epsilon
 		case flux.TInt:
 			want, got := wantCol.Values.(*array.Int64), gotCol.Values.(*array.Int64)
 			if want.Value(i) != got.Value(i) {
