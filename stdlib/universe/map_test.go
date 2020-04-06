@@ -124,6 +124,41 @@ func TestMap_Process(t *testing.T) {
 		wantErr error
 	}{
 		{
+			name: `identity function`,
+			spec: &universe.MapProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Scope: builtIns,
+					Fn:    executetest.FunctionExpression(t, "(r) => r"),
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 1.0},
+					{execute.Time(2), 6.0},
+					{execute.Time(3), nil},
+					{execute.Time(4), 7.0},
+					{execute.Time(5), nil},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 1.0},
+					{execute.Time(2), 6.0},
+					{execute.Time(3), nil},
+					{execute.Time(4), 7.0},
+					{execute.Time(5), nil},
+				},
+			}},
+		},
+		{
 			name: `_value+5`,
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{

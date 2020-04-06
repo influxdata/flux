@@ -62,7 +62,6 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 	}
 	return compiledFn{
 		root:       root,
-		fnType:     fnType,
 		inputScope: nestScope(scope),
 	}, nil
 }
