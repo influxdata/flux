@@ -26,7 +26,6 @@ type Evaluator interface {
 
 type compiledFn struct {
 	root       Evaluator
-	fnType     semantic.MonoType
 	inputScope Scope
 }
 
@@ -38,13 +37,8 @@ func (c compiledFn) buildScope(input values.Object) error {
 }
 
 // Type returns the return type of the compiled function.
-// Will panic if assigned type is not a function type.
 func (c compiledFn) Type() semantic.MonoType {
-	rt, err := c.fnType.ReturnType()
-	if err != nil {
-		panic(err)
-	}
-	return rt
+	return c.root.Type()
 }
 
 func (c compiledFn) Eval(ctx context.Context, input values.Object) (values.Value, error) {
