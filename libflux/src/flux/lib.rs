@@ -274,40 +274,32 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
 /// clauses match and merges the files from the input package into the output package. If
 /// package clauses fail validation then an option with an Error is returned.
 pub fn merge_packages(out_pkg: &mut ast::Package, in_pkg: &mut ast::Package) -> Option<Error> {
-    let out_pkg_clause = match &out_pkg.files[0].package {
-        Some(clause) => Some(&clause.name.name),
-        None => None,
+    let out_pkg_name = if let Some(pc) = &out_pkg.files[0].package {
+        &pc.name.name
+    } else {
+        DEFAULT_PACKAGE_NAME
     };
 
     // Check that all input files have a package clause that matches the output package.
     for file in &in_pkg.files {
-        let file_clause = match &file.package {
-            Some(clause) => Some(&clause.name.name),
-            None => None,
-        };
-
-        match (out_pkg_clause, file_clause) {
-            (Some(out_name), Some(in_name)) => {
-                if out_name != in_name {
+        match file.package.as_ref() {
+            Some(pc) => {
+                let in_pkg_name = &pc.name.name;
+                if in_pkg_name != out_pkg_name {
                     return Some(Error::from(format!(
-                        r#"file's package clause: "{}" does not match package output package clause: "{}""#,
-                        in_name, out_name
+                        r#"error at {}: file is in package "{}", but other files are in package "{}""#,
+                        pc.base.location, in_pkg_name, out_pkg_name
                     )));
                 }
             }
-            (None, Some(in_name)) => {
-                return Some(Error::from(format!(
-                    r#"output package does not have a package clause, but current file has package clause "{}""#,
-                    in_name
-                )))
+            None => {
+                if out_pkg_name != DEFAULT_PACKAGE_NAME {
+                    return Some(Error::from(format!(
+                        r#"error at {}: file is in default package "{}", but other files are in package "{}""#,
+                        file.base.location, DEFAULT_PACKAGE_NAME, out_pkg_name
+                    )));
+                }
             }
-            (Some(out_name), None) => {
-                return Some(Error::from(format!(
-                    r#"current file does not have a package clause, but output package has package clause "{}""#,
-                    out_name
-                )))
-            }
-            (None, None) => (),
         };
     }
     out_pkg.files.append(&mut in_pkg.files);
@@ -547,6 +539,37 @@ mod tests {
     }
 
     #[test]
+    fn ok_merge_one_default_pkg() {
+        // Make sure we can merge one file with default "main"
+        // and on explicit
+        let has_clause_script = "package main\nx = 32";
+        let no_clause_script = "y = 32";
+        let has_clause_file = crate::parser::parse_string("has_clause.flux", has_clause_script);
+        let no_clause_file = crate::parser::parse_string("no_clause.flux", no_clause_script);
+        {
+            let mut out_pkg: ast::Package = has_clause_file.clone().into();
+            let mut in_pkg: ast::Package = no_clause_file.clone().into();
+            if let Some(e) = merge_packages(&mut out_pkg, &mut in_pkg) {
+                panic!(e);
+            }
+            let got = out_pkg.files;
+            let want = vec![has_clause_file.clone(), no_clause_file.clone()];
+            assert_eq!(want, got);
+        }
+        {
+            // Same as previous test, but reverse order
+            let mut out_pkg: ast::Package = no_clause_file.clone().into();
+            let mut in_pkg: ast::Package = has_clause_file.clone().into();
+            if let Some(e) = merge_packages(&mut out_pkg, &mut in_pkg) {
+                panic!(e);
+            }
+            let got = out_pkg.files;
+            let want = vec![no_clause_file.clone(), has_clause_file.clone()];
+            assert_eq!(want, got);
+        }
+    }
+
+    #[test]
     fn ok_no_in_pkg() {
         let out_script = "package foo\nb = 2\n";
 
@@ -574,8 +597,8 @@ mod tests {
         let in_script = "package foo\na = 1\n";
         let out_script = "";
 
-        let in_file = crate::parser::parse_string("test", in_script);
-        let out_file = crate::parser::parse_string("test", out_script);
+        let in_file = crate::parser::parse_string("test_in.flux", in_script);
+        let out_file = crate::parser::parse_string("test_out.flux", out_script);
         let mut in_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
@@ -589,17 +612,17 @@ mod tests {
             files: vec![out_file.clone()],
         };
         let got_err = merge_packages(&mut out_pkg, &mut in_pkg).unwrap().msg;
-        let want_err = r#"output package does not have a package clause, but current file has package clause "foo""#;
+        let want_err = r#"error at test_in.flux@1:1-1:12: file is in package "foo", but other files are in package "main""#;
         assert_eq!(got_err.to_string(), want_err);
     }
 
     #[test]
     fn err_no_in_pkg_clause() {
-        let in_script = "";
+        let in_script = "a = 1000\n";
         let out_script = "package foo\nb = 100\n";
 
-        let in_file = crate::parser::parse_string("test", in_script);
-        let out_file = crate::parser::parse_string("test", out_script);
+        let in_file = crate::parser::parse_string("test_in.flux", in_script);
+        let out_file = crate::parser::parse_string("test_out.flux", out_script);
         let mut in_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
@@ -613,7 +636,7 @@ mod tests {
             files: vec![out_file.clone()],
         };
         let got_err = merge_packages(&mut out_pkg, &mut in_pkg).unwrap().msg;
-        let want_err = r#"current file does not have a package clause, but output package has package clause "foo""#;
+        let want_err = r#"error at test_in.flux@1:1-1:9: file is in default package "main", but other files are in package "foo""#;
         assert_eq!(got_err.to_string(), want_err);
     }
 

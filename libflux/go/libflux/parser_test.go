@@ -118,15 +118,15 @@ b = 1`)
 }
 
 func TestMergePackagesWithErrors(t *testing.T) {
-	fooPkg := libflux.ParseString(`
+	fooPkg := libflux.Parse("foo.flux", `
 package foo
 
 a = 1`)
-	barPkg := libflux.ParseString(`
+	barPkg := libflux.Parse("bar.flux", `
 package bar
 
 c = 3`)
-	noClausePkg := libflux.ParseString(``)
+	noClausePkg := libflux.Parse("no_pkg.flux", `d = 7`)
 
 	testCases := []struct {
 		name    string
@@ -138,19 +138,19 @@ c = 3`)
 			name:    "packages clauses don't match",
 			outPkg:  barPkg,
 			inPkg:   fooPkg,
-			wantErr: errors.New(`failed to merge packages: file's package clause: "foo" does not match package output package clause: "bar"`),
+			wantErr: errors.New(`failed to merge packages: error at foo.flux@2:1-2:12: file is in package "foo", but other files are in package "bar"`),
 		},
 		{
 			name:    "input package has no package clause",
 			outPkg:  barPkg,
 			inPkg:   noClausePkg,
-			wantErr: errors.New(`failed to merge packages: current file does not have a package clause, but output package has package clause "bar"`),
+			wantErr: errors.New(`failed to merge packages: error at no_pkg.flux@1:1-1:6: file is in default package "main", but other files are in package "bar"`),
 		},
 		{
 			name:    "output package has no package clause",
 			outPkg:  noClausePkg,
 			inPkg:   fooPkg,
-			wantErr: errors.New(`failed to merge packages: output package does not have a package clause, but current file has package clause "foo"`),
+			wantErr: errors.New(`failed to merge packages: error at foo.flux@2:1-2:12: file is in package "foo", but other files are in package "main"`),
 		},
 	}
 
