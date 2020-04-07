@@ -56,7 +56,7 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 		}
 	}
 
-	root, err := compile(f.Block.Body, subst, scope)
+	root, err := compile(f.Block, subst, scope)
 	if err != nil {
 		return nil, errors.Wrapf(err, codes.Inherit, "cannot compile @ %v", f.Location())
 	}

@@ -434,14 +434,29 @@ func analyzeFunctionExpression(arrow *ast.FunctionExpression) (*FunctionExpressi
 		return nil, err
 	}
 
+	body, ok := b.(*Block)
+	if !ok {
+		// Is a single semantic expression.
+		expr, ok := b.(Expression)
+		if !ok {
+			return nil, errors.Newf(codes.Internal, "function body must be a block or expression, got %T", b)
+		}
+		body = &Block{
+			Loc: Loc(expr.Location()),
+			Body: []Statement{
+				&ReturnStatement{
+					Loc:      Loc(expr.Location()),
+					Argument: expr,
+				},
+			},
+		}
+	}
+
 	f := &FunctionExpression{
-		Loc:      Loc(arrow.Location()),
-		Defaults: defaults,
-		Block: &FunctionBlock{
-			Loc:        Loc(arrow.Location()),
-			Parameters: parameters,
-			Body:       b,
-		},
+		Loc:        Loc(arrow.Location()),
+		Parameters: parameters,
+		Defaults:   defaults,
+		Block:      body,
 	}
 
 	return f, nil

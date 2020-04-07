@@ -56,7 +56,6 @@ func (*InterpolatedPart) node() {}
 
 func (*FunctionParameters) node() {}
 func (*FunctionParameter) node()  {}
-func (*FunctionBlock) node()      {}
 
 func (*BooleanLiteral) node()         {}
 func (*DateTimeLiteral) node()        {}
@@ -528,8 +527,9 @@ func (e *ArrayExpression) TypeOf() MonoType {
 type FunctionExpression struct {
 	Loc
 
-	Defaults *ObjectExpression
-	Block    *FunctionBlock
+	Parameters *FunctionParameters
+	Defaults   *ObjectExpression
+	Block      *Block
 
 	typ MonoType
 }
@@ -543,10 +543,13 @@ func (e *FunctionExpression) Copy() Node {
 	ne := new(FunctionExpression)
 	*ne = *e
 
+	if e.Parameters != nil {
+		ne.Parameters = e.Parameters.Copy().(*FunctionParameters)
+	}
 	if e.Defaults != nil {
 		ne.Defaults = e.Defaults.Copy().(*ObjectExpression)
 	}
-	ne.Block = e.Block.Copy().(*FunctionBlock)
+	ne.Block = e.Block.Copy().(*Block)
 
 	return ne
 }
@@ -559,56 +562,16 @@ func (e *FunctionExpression) TypeOf() MonoType {
 // is exactly one expression in the block. It will return false
 // as the second argument if the statement is more complex.
 func (e *FunctionExpression) GetFunctionBodyExpression() (Expression, bool) {
-	switch e := e.Block.Body.(type) {
-	case *Block:
-		if len(e.Body) != 1 {
-			return nil, false
-		}
-		returnExpr, ok := e.Body[0].(*ReturnStatement)
-		if !ok {
-			return nil, false
-		}
-		return returnExpr.Argument, true
-	case Expression:
-		return e, true
-	default:
+	if len(e.Block.Body) != 1 {
 		return nil, false
 	}
-}
 
-// FunctionBlock represents the function parameters and the function body.
-type FunctionBlock struct {
-	Loc
-
-	Parameters *FunctionParameters
-	Body       Node
-}
-
-func (*FunctionBlock) NodeType() string { return "FunctionBlock" }
-func (b *FunctionBlock) Copy() Node {
-	if b == nil {
-		return b
+	returnExpr, ok := e.Block.Body[0].(*ReturnStatement)
+	if !ok {
+		return nil, false
 	}
-	nb := new(FunctionBlock)
-	*nb = *b
-
-	nb.Body = b.Body.Copy()
-
-	return nb
+	return returnExpr.Argument, true
 }
-
-// GetFunctionExpression will return the returned semantic.Expression
-// for this function block if the body is either a semantic.Expression
-// or if there is exactly one statement in the block and it is a
-// return statement.
-//
-// This can be used for reliably getting a semantic.Expression for
-// simple functions.
-//
-// If the function is more complex than a single statement, this will
-// return false.
-// func (b *FunctionBlock) GetFunctionExpression() (Expression, bool) {
-// }
 
 // FunctionParameters represents the list of function parameters and which if any parameter is the pipe parameter.
 type FunctionParameters struct {

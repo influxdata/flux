@@ -741,9 +741,9 @@ func (f function) doCall(ctx context.Context, args Arguments) (values.Value, err
 	}
 
 	blockScope := f.scope.Nest(nil)
-	if f.e.Block.Parameters != nil {
+	if f.e.Parameters != nil {
 	PARAMETERS:
-		for _, p := range f.e.Block.Parameters.List {
+		for _, p := range f.e.Parameters.List {
 			if f.e.Defaults != nil {
 				for _, d := range f.e.Defaults.Properties {
 					if d.Key.Key() == p.Key.Name {
@@ -769,27 +769,32 @@ func (f function) doCall(ctx context.Context, args Arguments) (values.Value, err
 			blockScope.Set(p.Key.Name, v)
 		}
 	}
-	switch n := f.e.Block.Body.(type) {
-	case semantic.Expression:
-		return f.itrp.doExpression(ctx, n, blockScope)
-	case *semantic.Block:
-		nested := blockScope.Nest(nil)
-		for i, stmt := range n.Body {
-			_, err := f.itrp.doStatement(ctx, stmt, nested)
-			if err != nil {
-				return nil, err
-			}
-			// Validate a return statement is the last statement
-			if _, ok := stmt.(*semantic.ReturnStatement); ok {
-				if i != len(n.Body)-1 {
-					return nil, errors.New(codes.Invalid, "return statement is not the last statement in the block")
-				}
-			}
-		}
-		return nested.Return(), nil
-	default:
-		return nil, errors.Newf(codes.Internal, "unsupported function body type %T", f.e.Block.Body)
+
+	// Validate the function block.
+	if !isValidFunctionBlock(f.e.Block) {
+		return nil, errors.New(codes.Invalid, "return statement is not the last statement in the block")
 	}
+
+	nested := blockScope.Nest(nil)
+	for _, stmt := range f.e.Block.Body {
+		if _, err := f.itrp.doStatement(ctx, stmt, nested); err != nil {
+			return nil, err
+		}
+	}
+	return nested.Return(), nil
+}
+
+// isValidFunctionBlock returns true if the function block has at least one
+// statement and the last statement is a return statement.
+func isValidFunctionBlock(fn *semantic.Block) bool {
+	// Must have at least one statement.
+	if len(fn.Body) == 0 {
+		return false
+	}
+
+	// Validate a return statement is the last statement.
+	_, ok := fn.Body[len(fn.Body)-1].(*semantic.ReturnStatement)
+	return ok
 }
 
 func (f function) String() string {
@@ -891,8 +896,8 @@ func (f function) resolveIdentifiers(n semantic.Node, localIdentifiers *[]string
 		}
 		n.Object = node.(semantic.Expression)
 	case *semantic.IdentifierExpression:
-		if f.e.Block.Parameters != nil {
-			for _, p := range f.e.Block.Parameters.List {
+		if f.e.Parameters != nil {
+			for _, p := range f.e.Parameters.List {
 				if n.Name == p.Key.Name {
 					// Identifier is a parameter do not resolve
 					return n, nil
@@ -959,11 +964,11 @@ func (f function) resolveIdentifiers(n semantic.Node, localIdentifiers *[]string
 		// TODO(adam): lookup the function definition, call the function if it's found in scope.
 		n.Arguments = node.(*semantic.ObjectExpression)
 	case *semantic.FunctionExpression:
-		node, err := f.resolveIdentifiers(n.Block.Body, localIdentifiers)
+		node, err := f.resolveIdentifiers(n.Block, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
-		n.Block.Body = node
+		n.Block = node.(*semantic.Block)
 	case *semantic.BinaryExpression:
 		node, err := f.resolveIdentifiers(n.Left, localIdentifiers)
 		if err != nil {

@@ -500,59 +500,45 @@ func (e *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
 		}
 	}
 
-	bl := new(FunctionBlock)
 	var defaults []*Property
+	ps := &FunctionParameters{
+		Loc: e.Loc,
+	}
 	{
-		bl.Loc = e.Loc
-		ps := &FunctionParameters{
-			Loc: e.Loc,
-		}
-		{
-			nParams := fb.ParamsLength()
-			ps.List = make([]*FunctionParameter, nParams)
-			for i := 0; i < nParams; i++ {
-				fbp := new(fbsemantic.FunctionParameter)
-				if !fb.Params(fbp, i) {
-					return errors.Newf(codes.Internal, "missing parameter at position %v", i)
-				}
-				p := new(FunctionParameter)
-				if err := p.FromBuf(fbp); err != nil {
-					return err
-				}
-				ps.List[i] = p
+		nParams := fb.ParamsLength()
+		ps.List = make([]*FunctionParameter, nParams)
+		for i := 0; i < nParams; i++ {
+			fbp := new(fbsemantic.FunctionParameter)
+			if !fb.Params(fbp, i) {
+				return errors.Newf(codes.Internal, "missing parameter at position %v", i)
+			}
+			p := new(FunctionParameter)
+			if err := p.FromBuf(fbp); err != nil {
+				return err
+			}
+			ps.List[i] = p
 
-				if fbp.Default(&flatbuffers.Table{}) {
-					e, err := fromExpressionTable(fbp.Default, fbp.DefaultType())
-					if err != nil {
-						return errors.Wrapf(err, codes.Inherit, "default for parameter at position %v", i)
-					}
-					defaults = append(defaults, &Property{
-						Loc:   p.Loc,
-						Key:   p.Key,
-						Value: e,
-					})
+			if fbp.Default(&flatbuffers.Table{}) {
+				e, err := fromExpressionTable(fbp.Default, fbp.DefaultType())
+				if err != nil {
+					return errors.Wrapf(err, codes.Inherit, "default for parameter at position %v", i)
 				}
+				defaults = append(defaults, &Property{
+					Loc:   p.Loc,
+					Key:   p.Key,
+					Value: e,
+				})
+			}
 
-				if fbp.IsPipe() {
-					ps.Pipe = p.Key
-				}
+			if fbp.IsPipe() {
+				ps.Pipe = p.Key
 			}
 		}
-		if len(ps.List) > 0 {
-			bl.Parameters = ps
-		}
 
-		fbBlock := fb.Body(nil)
-		if fbBlock == nil {
-			return errors.New(codes.Internal, "missing function body")
+		if len(ps.List) > 0 {
+			e.Parameters = ps
 		}
-		stmts := new(Block)
-		if err := stmts.FromBuf(fbBlock); err != nil {
-			return err
-		}
-		bl.Body = stmts
 	}
-	e.Block = bl
 
 	if len(defaults) > 0 {
 		e.Defaults = &ObjectExpression{
@@ -560,6 +546,16 @@ func (e *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
 			Properties: defaults,
 		}
 	}
+
+	fbBlock := fb.Body(nil)
+	if fbBlock == nil {
+		return errors.New(codes.Internal, "missing function body")
+	}
+	stmts := new(Block)
+	if err := stmts.FromBuf(fbBlock); err != nil {
+		return err
+	}
+	e.Block = stmts
 
 	var err error
 	if e.typ, err = getMonoType(fb); err != nil {
