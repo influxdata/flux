@@ -316,6 +316,102 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 	}
 }
 
+var nilTableFindBase = `
+import "csv"
+
+data = "
+#group,false,false,false,false,false,false,true
+#datatype,string,long,double,string,string,string,string
+#default,_result,,,,,,
+,result,table,_value,_field,_measurement,cpu,host
+,,0,1,usage_user,cpu,cpu-total,influx.local
+,,0,2,usage_user,cpu,cpu0,influx.local
+,,0,3,usage_user,cpu,cpu1,influx.local
+,,0,4,usage_user,cpu,cpu10,influx.local
+,,0,5,usage_user,cpu,cpu11,influx.local
+"
+
+base = csv.from( csv: data )
+
+// Intentionally fail the table find
+find_no = (key) => key.host == "influx.local-NOT-FOUND"
+find_yes = (key) => key.host == "influx.local"
+`
+
+func TestFindColumn_NoTable(t *testing.T) {
+	script := nilTableFindBase + `
+		filtered_list =
+			base
+				|> limit(n: 3)
+				|> findColumn(fn: find_no, column: "cpu")
+
+		ok = length( arr: filtered_list ) == 0
+	`
+
+	s := evalOrFail(t, script)
+
+	for _, id := range []string{ "ok", } {
+		if !mustLookup(s, id).Bool() {
+			t.Errorf("%s was not OK indeed", id)
+		}
+	}
+}
+
+func TestFindColumn_BadColumn(t *testing.T) {
+	script := nilTableFindBase + `
+		filtered_list =
+			base
+				|> limit(n: 3)
+				|> findColumn(fn: find_yes, column: "cpu-NOT-FOUND")
+
+		ok = length( arr: filtered_list ) == 0
+	`
+
+	s := evalOrFail(t, script)
+
+	for _, id := range []string{ "ok", } {
+		if !mustLookup(s, id).Bool() {
+			t.Errorf("%s was not OK indeed", id)
+		}
+	}
+}
+
+func TestFindRecord_NoTable(t *testing.T) {
+	script := nilTableFindBase + `
+		filtered_object =
+			base |> findRecord(fn: find_no, idx: 0)
+
+		ok = not exists filtered_object.cpu
+	`
+
+	s := evalOrFail(t, script)
+
+	for _, id := range []string{ "ok", } {
+		if !mustLookup(s, id).Bool() {
+			t.Errorf("%s was not OK indeed", id)
+		}
+	}
+}
+
+func TestFindRecord_BadIdx(t *testing.T) {
+	script := nilTableFindBase + `
+		filtered_object =
+			base |> findRecord(fn: find_yes, idx: 1000)
+
+		ok = not exists filtered_object.cpu
+	`
+
+	s := evalOrFail(t, script)
+
+	for _, id := range []string{ "ok", } {
+		if !mustLookup(s, id).Bool() {
+			t.Errorf("%s was not OK indeed", id)
+		}
+	}
+}
+
+
+
 // We have to write this test as a non-standard e2e test, because
 // our framework doesn't allow comparison between "simple" values, but only streams of tables.
 func TestIndexFns_EndToEnd(t *testing.T) {

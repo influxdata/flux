@@ -4155,6 +4155,60 @@ r0 = from(bucket:"telegraf/autogen")
 x = r0._field + "--" + r0._measurement
 ```
 
+##### FindColumn
+
+FindColumn extracts the first table from a stream of tables where the group key
+values match a given predicate, and from that table extracts a specified column.
+The column is returned as an array. The function returns an empty array if no
+table is found, or if the column label is not present in the set of columns.
+
+It has the following parameters:
+
+| Name   | Type   | Description                                                                                                   |
+| ----   | ----   | -----------                                                                                                   |
+| fn     | (key: object) -> bool | Fn is a predicate function. The column is extracted from the first table for which fn is true. |
+| column | string                | Column is the name of the column to extract.                                                   |
+
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
+Example:
+
+```
+vs = from(bucket:"telegraf/autogen")
+    |> range(start: -5m)
+    |> filter(fn:(r) => r._measurement == "cpu")
+    |> findColumn(fn: (key) => key._field == "usage_idle", column: "_value")
+
+// use values
+x = vs[0] + vs[1]
+```
+
+##### FindRecord
+
+FindRecord extracts the first table from a stream of tables where the group key
+values match a given predicate, and from that table extracts a record at a
+specified index. The record is returned as an object. The function returns an
+empty object if no table is found, or if the index is out of bounds.
+
+It has the following parameters:
+
+| Name | Type | Description                                                                                                     |
+| ---- | ---- | -----------                                                                                                     |
+| fn   | (key: object) -> bool | Fn is a predicate function. The record is extracted from the first table for which fn is true. |
+| idx  | int                   | Idx is the index of the record to extract.                                                     |
+
+Example:
+
+```
+r0 = from(bucket:"telegraf/autogen")
+    |> range(start: -5m)
+    |> filter(fn:(r) => r._measurement == "cpu")
+    |> findRecord(fn: (key) => key._field == "usage_idle", idx: 0)
+
+// use values
+x = r0._field + "--" + r0._measurement
+```
+
 ##### truncateTimeColumn 
 
 Truncates all entries in a given time column to a specified unit.

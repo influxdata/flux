@@ -74,6 +74,8 @@ builtin yield
 builtin tableFind
 builtin getColumn
 builtin getRecord
+builtin findColumn
+builtin findRecord
 
 // type conversion functions
 builtin bool

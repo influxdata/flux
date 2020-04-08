@@ -31,6 +31,8 @@ func init() {
 	runtime.RegisterPackageValue("universe", "tableFind", NewTableFindFunction())
 	runtime.RegisterPackageValue("universe", "getColumn", NewGetColumnFunction())
 	runtime.RegisterPackageValue("universe", "getRecord", NewGetRecordFunction())
+	runtime.RegisterPackageValue("universe", "findColumn", NewFindColumnFunction())
+	runtime.RegisterPackageValue("universe", "findRecord", NewFindRecordFunction())
 }
 
 func NewTableFindFunction() values.Value {
@@ -66,6 +68,19 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 		}
 	}
 
+	t, err := tableFind(ctx, to, fn)
+	if err != nil {
+		return nil, err
+	}
+	if t == nil {
+		return nil, errors.New(codes.NotFound, "no table found")
+	}
+	return t, nil
+}
+
+// Returns an error in the second return value, or the found table in the first
+// return value, or nil to indicate that no table was found.
+func tableFind(ctx context.Context, to *flux.TableObject, fn *execute.TablePredicateFn) (*objects.Table, error) {
 	c := lang.TableObjectCompiler{
 		Tables: to,
 		Now:    time.Now(),
@@ -125,9 +140,9 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 		}
 	}
 	if !found {
-		return nil, errors.New(codes.NotFound, "no table found")
+		return nil, nil
 	}
-	return t, nil
+	return t, err
 }
 
 func NewGetColumnFunction() values.Value {
@@ -297,5 +312,141 @@ func objectFromRow(idx int, cr flux.ColReader) values.Object {
 		}
 		vsMap[c.Label] = v
 	}
+	return values.NewObjectWithValues(vsMap)
+}
+
+func NewFindColumnFunction() values.Value {
+	return values.NewFunction("findColumn",
+		runtime.MustLookupBuiltinType("universe", "findColumn"),
+		findColumnCall,
+		false)
+}
+
+func findColumnCall(ctx context.Context, args values.Object) (values.Value, error) {
+	arguments := interpreter.NewArguments(args)
+	v, err := arguments.GetRequired(tableFindStreamArg)
+	if err != nil {
+		return nil, err
+	}
+	to, ok := v.(*flux.TableObject)
+	if !ok {
+		return nil, errors.Newf(codes.Invalid, "expected TableObject but instead got %T", v)
+	}
+
+	var fn *execute.TablePredicateFn
+	if call, err := arguments.GetRequiredFunction(tableFindFunctionArg); err != nil {
+		return nil, errors.Newf(codes.Invalid, "missing argument: %s", tableFindFunctionArg)
+	} else {
+		predicate, err := interpreter.ResolveFunction(call)
+		if err != nil {
+			return nil, err
+		}
+
+		fn, err = execute.NewTablePredicateFn(predicate.Fn, compiler.ToScope(predicate.Scope))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	col, err := arguments.GetRequiredString(getColumnColumnArg)
+	if err != nil {
+		return nil, err
+	}
+
+	tv, err := tableFind(ctx, to, fn)
+	if err != nil {
+		return nil, err
+	}
+
+	if tv == nil {
+		return emptyArray(), nil
+	}
+
+	tbl := tv.Table()
+
+	idx := execute.ColIdx(col, tbl.Cols())
+	if idx < 0 {
+		return emptyArray(), nil
+	}
+	var a values.Array
+	if err = tbl.Do(func(cr flux.ColReader) error {
+		a = arrayFromColumn(idx, cr)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return a, nil
+}
+
+func emptyArray() values.Array {
+	vsSlice := make([]values.Value, 0)
+	return values.NewArrayWithBacking(semantic.NewArrayType(semantic.BasicString), vsSlice)
+}
+
+func NewFindRecordFunction() values.Value {
+	return values.NewFunction("findRecord",
+		runtime.MustLookupBuiltinType("universe", "findRecord"),
+		findRecordCall,
+		false)
+}
+
+func findRecordCall(ctx context.Context, args values.Object) (values.Value, error) {
+	arguments := interpreter.NewArguments(args)
+	v, err := arguments.GetRequired(tableFindStreamArg)
+	if err != nil {
+		return nil, err
+	}
+	to, ok := v.(*flux.TableObject)
+	if !ok {
+		return nil, errors.Newf(codes.Invalid, "expected TableObject but instead got %T", v)
+	}
+
+	var fn *execute.TablePredicateFn
+	if call, err := arguments.GetRequiredFunction(tableFindFunctionArg); err != nil {
+		return nil, errors.Newf(codes.Invalid, "missing argument: %s", tableFindFunctionArg)
+	} else {
+		predicate, err := interpreter.ResolveFunction(call)
+		if err != nil {
+			return nil, err
+		}
+
+		fn, err = execute.NewTablePredicateFn(predicate.Fn, compiler.ToScope(predicate.Scope))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	rowIdx, err := arguments.GetRequiredInt(getRecordIndexArg)
+	if err != nil {
+		return nil, err
+	}
+
+	tv, err := tableFind(ctx, to, fn)
+	if err != nil {
+		return nil, err
+	}
+
+	if tv == nil {
+		return emptyObject(), nil
+	}
+
+	tbl := tv.Table()
+
+	var r values.Object
+	if err = tbl.Do(func(cr flux.ColReader) error {
+		if rowIdx < 0 || int(rowIdx) >= cr.Len() {
+			r = emptyObject()
+			return nil
+		}
+		r = objectFromRow(int(rowIdx), cr)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
+func emptyObject() values.Object {
+	vsMap := make(map[string]values.Value)
 	return values.NewObjectWithValues(vsMap)
 }
