@@ -117,6 +117,7 @@ test-race: libflux-go
 
 test-bench: libflux-go
 	$(GO_TEST) -run=NONE -bench=. -benchtime=1x ./...
+	cd libflux && $(CARGO) bench
 
 vet: libflux-go
 	$(GO_VET) ./...
