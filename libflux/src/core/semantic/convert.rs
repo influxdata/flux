@@ -107,9 +107,7 @@ fn convert_statement(stmt: ast::Statement, fresher: &mut Fresher) -> Result<Stat
         ast::Statement::Variable(s) => Ok(Statement::Variable(Box::new(
             convert_variable_assignment(*s, fresher)?,
         ))),
-        ast::Statement::Bad(_) => {
-            Err("BadStatement is not supported in semantic analysis".to_string())
-        }
+        ast::Statement::Bad(s) => Ok(Statement::Bad(convert_bad_statement(s))),
     }
 }
 
@@ -178,6 +176,17 @@ fn convert_member_assignment(stmt: ast::MemberAssgn, fresher: &mut Fresher) -> R
     })
 }
 
+fn convert_bad_statement(e: ast::BadStmt) -> Box<BadStmt> {
+    let loc = e.base.location;
+    let errors = vec![Error::ASTError(e.text, loc.clone())];
+    let statement = None;
+    Box::new(BadStmt {
+        loc,
+        errors,
+        statement,
+    })
+}
+
 fn convert_expression(expr: ast::Expression, fresher: &mut Fresher) -> Result<Expression> {
     match expr {
         ast::Expression::Function(expr) => Ok(Expression::Function(Box::new(convert_function_expression(*expr, fresher)?))),
@@ -203,7 +212,7 @@ fn convert_expression(expr: ast::Expression, fresher: &mut Fresher) -> Result<Ex
         ast::Expression::Duration(lit) => Ok(Expression::Duration(convert_duration_literal(lit, fresher)?)),
         ast::Expression::DateTime(lit) => Ok(Expression::DateTime(convert_date_time_literal(lit, fresher)?)),
         ast::Expression::PipeLit(_) => Err("a pipe literal may only be used as a default value for an argument in a function definition".to_string()),
-        ast::Expression::Bad(_) => Err("BadExpression is not supported in semantic analysis".to_string())
+        ast::Expression::Bad(e) => Ok(Expression::Bad(convert_bad_expression(e, fresher))),
     }
 }
 
@@ -575,6 +584,22 @@ fn convert_date_time_literal(lit: ast::DateTimeLit, fresher: &mut Fresher) -> Re
         loc: lit.base.location,
         typ: MonoType::Var(fresher.fresh()),
         value: lit.value,
+    })
+}
+
+fn convert_bad_expression(e: Box<ast::BadExpr>, fresher: &mut Fresher) -> Box<BadExpr> {
+    let loc = e.base.location;
+    let errors = vec![Error::ASTError(e.text, loc.clone())];
+    let typ = MonoType::Var(fresher.fresh());
+    let expression = match e.expression {
+        Some(e) => Some(convert_expression(e, fresher).unwrap()),
+        None => None,
+    };
+    Box::new(BadExpr {
+        loc,
+        errors,
+        expression,
+        typ,
     })
 }
 
@@ -2597,6 +2622,88 @@ mod tests {
                             arguments: Vec::new(),
                         })),
                         property: "c".to_string(),
+                    })),
+                })],
+            }],
+        };
+        let got = test_convert(pkg).unwrap();
+        assert_eq!(want, got);
+    }
+
+    #[test]
+    fn test_convert_bad_statement() {
+        let b = ast::BaseNode::default();
+        let pkg = ast::Package {
+            base: b.clone(),
+            path: "path".to_string(),
+            package: "main".to_string(),
+            files: vec![ast::File {
+                base: b.clone(),
+                name: "foo.flux".to_string(),
+                metadata: String::new(),
+                package: None,
+                imports: Vec::new(),
+                body: vec![ast::Statement::Bad(ast::BadStmt {
+                    base: b.clone(),
+                    text: "expected".to_string(),
+                })],
+            }],
+        };
+        let want = Package {
+            loc: b.location.clone(),
+            package: "main".to_string(),
+            files: vec![File {
+                loc: b.location.clone(),
+                package: None,
+                imports: Vec::new(),
+                body: vec![Statement::Bad(Box::new(BadStmt {
+                    loc: b.location.clone(),
+                    errors: vec![Error::ASTError("expected".to_string(), b.location.clone())],
+                    statement: None,
+                }))],
+            }],
+        };
+        let got = test_convert(pkg).unwrap();
+        assert_eq!(want, got);
+    }
+
+    #[test]
+    fn test_convert_bad_expression() {
+        let b = ast::BaseNode::default();
+        let pkg = ast::Package {
+            base: b.clone(),
+            path: "path".to_string(),
+            package: "main".to_string(),
+            files: vec![ast::File {
+                base: b.clone(),
+                name: "foo.flux".to_string(),
+                metadata: String::new(),
+                package: None,
+                imports: Vec::new(),
+                body: vec![ast::Statement::Expr(ast::ExprStmt {
+                    base: b.clone(),
+                    expression: ast::Expression::Bad(Box::new(ast::BadExpr {
+                        base: b.clone(),
+                        text: "expected".to_string(),
+                        expression: None,
+                    })),
+                })],
+            }],
+        };
+        let want = Package {
+            loc: b.location.clone(),
+            package: "main".to_string(),
+            files: vec![File {
+                loc: b.location.clone(),
+                package: None,
+                imports: Vec::new(),
+                body: vec![Statement::Expr(ExprStmt {
+                    loc: b.location.clone(),
+                    expression: Expression::Bad(Box::new(BadExpr {
+                        loc: b.location.clone(),
+                        errors: vec![Error::ASTError("expected".to_string(), b.location.clone())],
+                        expression: None,
+                        typ: type_info(),
                     })),
                 })],
             }],
