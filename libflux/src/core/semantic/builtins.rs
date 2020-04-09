@@ -508,6 +508,20 @@ pub fn builtins() -> Builtins<'static> {
                         idx: int
                     ) -> t0
                 "#,
+                "findColumn" => r#"
+                    forall [t0, t1, t2] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        fn: (key: t1) -> bool,
+                        column: string
+                    ) -> [t2]
+                "#,
+                "findRecord" => r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        fn: (key: t1) -> bool,
+                        idx: int
+                    ) -> t0
+                "#,
                 "group" => r#"
                     forall [t0] where t0: Row (
                         <-tables: [t0],
