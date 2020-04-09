@@ -513,12 +513,14 @@ An _object type_ represents a set of unordered key and value pairs.
 The key must always be a string.
 The value may be any other type, and need not be the same as other values within the object.
 
+Type inference will determine the properties that are present on an object.
+If type inference determines all the properties on an object it is said to be bounded.
+Not all keys may be known on the type of an object in which case the object is said to be unbounded.
+An unbounded object may contain any property in addition to the properties it is known to contain.
+
 ##### Function types
 
 A _function type_ represents a set of all functions with the same argument and result types.
-
-
-[IMPL#249](https://github.com/influxdata/platform/issues/249) Specify type inference rules
 
 ##### Generator types
 
@@ -797,12 +799,13 @@ Index expressions access a value from an array based on a numeric index.
 
 Member expressions access a property of an object.
 They are specified via an expression of the form `obj.k` or `obj["k"]`.
-The property being accessed must be either an identifer or a string literal.
-In either case the literal value is the name of the property being accessed, the identifer is not evaluated.
+The property being accessed must be either an identifier or a string literal.
+In either case the literal value is the name of the property being accessed, the identifier is not evaluated.
 It is not possible to access an object's property using an arbitrary expression.
 
 If `obj` contains an entry with property `k`, both `obj.k` and `obj["k"]` return the value associated with `k`.
-If `obj` does **not** contain an entry with property `k`, both `obj.k` and `obj["k"]` return _null_.
+If `obj` is bounded and does *not* contain a property `k`, both `obj.k` and `obj["k"]` report a type checking error.
+If `obj` is unbounded and does *not* contain a property `k`, both `obj.k` and `obj["k"]` return _null_.
 
     MemberExpression        = DotExpression  | MemberBracketExpression
     DotExpression           = "." identifer
