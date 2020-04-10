@@ -1,0 +1,2 @@
+cpu,host=serverA,region=west usage_system=23.2,usage_user=55.1 1566000000
+events,app=foo description="something happened",state=1i 1566000000

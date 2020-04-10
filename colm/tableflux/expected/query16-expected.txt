@@ -1,0 +1,4 @@
+table | max_bottom_degrees | max_surface_degrees | min_bottom_degrees | min_surface_degrees | state
+===================================================================================================
+    0 |                 51 |                  65 |                 48 |                  53 | CA   
+    0 |                 40 |                  55 |                 40 |                  54 | WA   

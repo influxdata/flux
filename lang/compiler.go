@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/colm/tableflux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
@@ -165,8 +166,18 @@ type FluxCompiler struct {
 }
 
 func (c FluxCompiler) Compile(ctx context.Context) (flux.Program, error) {
+	query := c.Query
+
+	if tableflux.Enabled() {
+		ok, flux, err, _ := tableflux.TableFlux(query)
+		if !ok {
+			return nil, errors.Newf(codes.Invalid, "tableflux transformation failed: %s", err)
+		}
+		query = flux
+	}
+
 	// Ignore context, it will be provided upon Program Start.
-	return Compile(c.Query, c.Now, WithExtern(c.Extern))
+	return Compile(query, c.Now, WithExtern(c.Extern))
 }
 
 func (c FluxCompiler) CompilerType() flux.CompilerType {

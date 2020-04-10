@@ -1,8 +1,8 @@
 namespace flux
-	include '../flux.lm'
+	include 'flux.lm'
 end
 
-include '../influxql.lm'
+include 'influxql.lm'
 
 if argv->length < 1 {
 	send stderr "usage: ./transpile bucket-name

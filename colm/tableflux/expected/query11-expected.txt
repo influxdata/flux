@@ -1,0 +1,3 @@
+table | max_bottom_degrees | mean_bottom_degrees | min_bottom_degrees
+=====================================================================
+    0 |                 51 |   47.45454545454545 |                 40
