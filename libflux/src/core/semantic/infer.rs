@@ -62,7 +62,7 @@ impl From<Constraint> for Constraints {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Error {
     msg: String,
 }

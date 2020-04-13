@@ -37,6 +37,7 @@ pub enum NodeMut<'a> {
     BooleanLit(&'a mut BooleanLit),
     DateTimeLit(&'a mut DateTimeLit),
     RegexpLit(&'a mut RegexpLit),
+    BadExpr(&'a mut BadExpr),
 
     // Statements.
     ExprStmt(&'a mut ExprStmt),
@@ -44,6 +45,7 @@ pub enum NodeMut<'a> {
     ReturnStmt(&'a mut ReturnStmt),
     TestStmt(&'a mut TestStmt),
     BuiltinStmt(&'a mut BuiltinStmt),
+    BadStmt(&'a mut BadStmt),
 
     // StringExprPart.
     TextPart(&'a mut TextPart),
@@ -83,6 +85,7 @@ impl<'a> fmt::Display for NodeMut<'a> {
             NodeMut::BooleanLit(_) => write!(f, "BooleanLit"),
             NodeMut::DateTimeLit(_) => write!(f, "DateTimeLit"),
             NodeMut::RegexpLit(_) => write!(f, "RegexpLit"),
+            NodeMut::BadExpr(_) => write!(f, "BadExpr"),
             NodeMut::ExprStmt(_) => write!(f, "ExprStmt"),
             NodeMut::OptionStmt(_) => write!(f, "OptionStmt"),
             NodeMut::ReturnStmt(_) => write!(f, "ReturnStmt"),
@@ -98,6 +101,7 @@ impl<'a> fmt::Display for NodeMut<'a> {
             NodeMut::InterpolatedPart(_) => write!(f, "InterpolatedPart"),
             NodeMut::VariableAssgn(_) => write!(f, "VariableAssgn"),
             NodeMut::MemberAssgn(_) => write!(f, "MemberAssgn"),
+            NodeMut::BadStmt(_) => write!(f, "BadStmt"),
         }
     }
 }
@@ -130,6 +134,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::BooleanLit(n) => &n.loc,
             NodeMut::DateTimeLit(n) => &n.loc,
             NodeMut::RegexpLit(n) => &n.loc,
+            NodeMut::BadExpr(n) => &n.loc,
             NodeMut::ExprStmt(n) => &n.loc,
             NodeMut::OptionStmt(n) => &n.loc,
             NodeMut::ReturnStmt(n) => &n.loc,
@@ -141,6 +146,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::InterpolatedPart(n) => &n.loc,
             NodeMut::VariableAssgn(n) => &n.loc,
             NodeMut::MemberAssgn(n) => &n.loc,
+            NodeMut::BadStmt(n) => &n.loc,
         }
     }
     pub fn type_of(&self) -> Option<&MonoType> {
@@ -165,6 +171,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::BooleanLit(n) => Some(&n.typ),
             NodeMut::DateTimeLit(n) => Some(&n.typ),
             NodeMut::RegexpLit(n) => Some(&n.typ),
+            NodeMut::BadExpr(n) => Some(&n.typ),
             _ => None,
         }
     }
@@ -196,6 +203,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::BooleanLit(ref mut n) => n.loc = loc,
             NodeMut::DateTimeLit(ref mut n) => n.loc = loc,
             NodeMut::RegexpLit(ref mut n) => n.loc = loc,
+            NodeMut::BadExpr(ref mut n) => n.loc = loc,
             NodeMut::ExprStmt(ref mut n) => n.loc = loc,
             NodeMut::OptionStmt(ref mut n) => n.loc = loc,
             NodeMut::ReturnStmt(ref mut n) => n.loc = loc,
@@ -207,6 +215,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::InterpolatedPart(ref mut n) => n.loc = loc,
             NodeMut::VariableAssgn(ref mut n) => n.loc = loc,
             NodeMut::MemberAssgn(ref mut n) => n.loc = loc,
+            NodeMut::BadStmt(ref mut n) => n.loc = loc,
         };
     }
 }
@@ -235,6 +244,7 @@ impl<'a> NodeMut<'a> {
             Expression::Boolean(ref mut e) => NodeMut::BooleanLit(e),
             Expression::DateTime(ref mut e) => NodeMut::DateTimeLit(e),
             Expression::Regexp(ref mut e) => NodeMut::RegexpLit(e),
+            Expression::Bad(ref mut e) => NodeMut::BadExpr(e),
         }
     }
     fn from_stmt(stmt: &'a mut Statement) -> NodeMut {
@@ -245,6 +255,7 @@ impl<'a> NodeMut<'a> {
             Statement::Return(ref mut s) => NodeMut::ReturnStmt(s),
             Statement::Test(ref mut s) => NodeMut::TestStmt(s),
             Statement::Builtin(ref mut s) => NodeMut::BuiltinStmt(s),
+            Statement::Bad(ref mut s) => NodeMut::BadStmt(s),
         }
     }
     fn from_string_expr_part(sp: &'a mut StringExprPart) -> NodeMut {
@@ -425,6 +436,7 @@ where
             NodeMut::BooleanLit(_) => {}
             NodeMut::DateTimeLit(_) => {}
             NodeMut::RegexpLit(_) => {}
+            NodeMut::BadExpr(_) => {}
             NodeMut::ExprStmt(ref mut n) => {
                 walk_mut(v, &mut NodeMut::from_expr(&mut n.expression));
             }
@@ -467,6 +479,7 @@ where
                 walk_mut(v, &mut NodeMut::MemberExpr(&mut n.member));
                 walk_mut(v, &mut NodeMut::from_expr(&mut n.init));
             }
+            NodeMut::BadStmt(_) => {}
         };
     }
     v.done(&mut node);
