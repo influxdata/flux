@@ -37,7 +37,6 @@ pub enum Node<'a> {
     BooleanLit(&'a BooleanLit),
     DateTimeLit(&'a DateTimeLit),
     RegexpLit(&'a RegexpLit),
-    BadExpr(&'a BadExpr),
 
     // Statements.
     ExprStmt(&'a ExprStmt),
@@ -45,7 +44,6 @@ pub enum Node<'a> {
     ReturnStmt(&'a ReturnStmt),
     TestStmt(&'a TestStmt),
     BuiltinStmt(&'a BuiltinStmt),
-    BadStmt(&'a BadStmt),
 
     // StringExprPart.
     TextPart(&'a TextPart),
@@ -85,7 +83,6 @@ impl<'a> fmt::Display for Node<'a> {
             Node::BooleanLit(_) => write!(f, "BooleanLit"),
             Node::DateTimeLit(_) => write!(f, "DateTimeLit"),
             Node::RegexpLit(_) => write!(f, "RegexpLit"),
-            Node::BadExpr(_) => write!(f, "BadExpr"),
             Node::ExprStmt(_) => write!(f, "ExprStmt"),
             Node::OptionStmt(_) => write!(f, "OptionStmt"),
             Node::ReturnStmt(_) => write!(f, "ReturnStmt"),
@@ -101,7 +98,6 @@ impl<'a> fmt::Display for Node<'a> {
             Node::InterpolatedPart(_) => write!(f, "InterpolatedPart"),
             Node::VariableAssgn(_) => write!(f, "VariableAssgn"),
             Node::MemberAssgn(_) => write!(f, "MemberAssgn"),
-            Node::BadStmt(_) => write!(f, "BadStmt"),
         }
     }
 }
@@ -135,7 +131,6 @@ impl<'a> Node<'a> {
             Node::BooleanLit(n) => &n.loc,
             Node::DateTimeLit(n) => &n.loc,
             Node::RegexpLit(n) => &n.loc,
-            Node::BadExpr(n) => &n.loc,
             Node::ExprStmt(n) => &n.loc,
             Node::OptionStmt(n) => &n.loc,
             Node::ReturnStmt(n) => &n.loc,
@@ -147,7 +142,6 @@ impl<'a> Node<'a> {
             Node::InterpolatedPart(n) => &n.loc,
             Node::VariableAssgn(n) => &n.loc,
             Node::MemberAssgn(n) => &n.loc,
-            Node::BadStmt(n) => &n.loc,
         }
     }
     pub fn type_of(&self) -> Option<&MonoType> {
@@ -172,7 +166,6 @@ impl<'a> Node<'a> {
             Node::BooleanLit(n) => Some(&n.typ),
             Node::DateTimeLit(n) => Some(&n.typ),
             Node::RegexpLit(n) => Some(&n.typ),
-            Node::BadExpr(n) => Some(&n.typ),
             _ => None,
         }
     }
@@ -202,7 +195,6 @@ impl<'a> Node<'a> {
             Expression::Boolean(ref e) => Node::BooleanLit(e),
             Expression::DateTime(ref e) => Node::DateTimeLit(e),
             Expression::Regexp(ref e) => Node::RegexpLit(e),
-            Expression::Bad(ref e) => Node::BadExpr(e),
         }
     }
     pub fn from_stmt(stmt: &'a Statement) -> Node {
@@ -213,7 +205,6 @@ impl<'a> Node<'a> {
             Statement::Return(ref s) => Node::ReturnStmt(s),
             Statement::Test(ref s) => Node::TestStmt(s),
             Statement::Builtin(ref s) => Node::BuiltinStmt(s),
-            Statement::Bad(ref s) => Node::BadStmt(s),
         }
     }
     fn from_string_expr_part(sp: &'a StringExprPart) -> Node {
@@ -420,7 +411,6 @@ where
             Node::BooleanLit(_) => {}
             Node::DateTimeLit(_) => {}
             Node::RegexpLit(_) => {}
-            Node::BadExpr(_) => {}
             Node::ExprStmt(ref n) => {
                 walk(v, Rc::new(Node::from_expr(&n.expression)));
             }
@@ -463,7 +453,6 @@ where
                 walk(v, Rc::new(Node::MemberExpr(&n.member)));
                 walk(v, Rc::new(Node::from_expr(&n.init)));
             }
-            Node::BadStmt(_) => {}
         };
     }
     v.done(node.clone());

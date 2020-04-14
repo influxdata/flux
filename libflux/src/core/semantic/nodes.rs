@@ -33,7 +33,7 @@ use std::vec::Vec;
 // updated type environment and a set of type constraints to be solved.
 pub type Result = std::result::Result<(Environment, Constraints), Error>;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug)]
 pub enum Error {
     Inference(infer::Error),
     UndefinedBuiltin(String, ast::SourceLocation),
@@ -42,7 +42,6 @@ pub enum Error {
     InvalidUnaryOp(ast::Operator, ast::SourceLocation),
     InvalidImportPath(String, ast::SourceLocation),
     InvalidReturn(ast::SourceLocation),
-    ASTError(String, ast::SourceLocation),
 }
 
 impl fmt::Display for Error {
@@ -71,7 +70,6 @@ impl fmt::Display for Error {
                 write!(f, "error {}: invalid import path {}", loc, path)
             }
             Error::InvalidReturn(loc) => write!(f, "error {}: return not valid in file block", loc),
-            Error::ASTError(s, loc) => write!(f, "error {}: {}", loc, s),
         }
     }
 }
@@ -90,7 +88,6 @@ pub enum Statement {
     Return(ReturnStmt),
     Test(Box<TestStmt>),
     Builtin(BuiltinStmt),
-    Bad(Box<BadStmt>),
 }
 
 impl Statement {
@@ -102,7 +99,6 @@ impl Statement {
             Statement::Return(stmt) => Statement::Return(stmt.apply(&sub)),
             Statement::Test(stmt) => Statement::Test(Box::new(stmt.apply(&sub))),
             Statement::Builtin(stmt) => Statement::Builtin(stmt.apply(&sub)),
-            Statement::Bad(stmt) => Statement::Bad(Box::new(stmt.apply(&sub))),
         }
     }
 }
@@ -119,19 +115,6 @@ impl Assignment {
             Assignment::Variable(assign) => Assignment::Variable(assign.apply(&sub)),
             Assignment::Member(assign) => Assignment::Member(assign.apply(&sub)),
         }
-    }
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct BadStmt {
-    pub loc: ast::SourceLocation,
-    pub errors: Vec<Error>,
-    pub statement: Option<Statement>,
-}
-
-impl BadStmt {
-    fn apply(self, _sub: &Substitution) -> Self {
-        self
     }
 }
 
@@ -158,7 +141,6 @@ pub enum Expression {
     Boolean(BooleanLit),
     DateTime(DateTimeLit),
     Regexp(RegexpLit),
-    Bad(Box<BadExpr>),
 }
 
 impl Expression {
@@ -184,7 +166,6 @@ impl Expression {
             Expression::Boolean(lit) => &lit.typ,
             Expression::DateTime(lit) => &lit.typ,
             Expression::Regexp(lit) => &lit.typ,
-            Expression::Bad(e) => &e.typ,
         }
     }
     pub fn loc(&self) -> &ast::SourceLocation {
@@ -209,7 +190,6 @@ impl Expression {
             Expression::Boolean(lit) => &lit.loc,
             Expression::DateTime(lit) => &lit.loc,
             Expression::Regexp(lit) => &lit.loc,
-            Expression::Bad(e) => &e.loc,
         }
     }
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
@@ -234,7 +214,6 @@ impl Expression {
             Expression::Boolean(lit) => lit.infer(env),
             Expression::DateTime(lit) => lit.infer(env),
             Expression::Regexp(lit) => lit.infer(env),
-            Expression::Bad(e) => e.infer(env),
         }
     }
     fn apply(self, sub: &Substitution) -> Self {
@@ -259,7 +238,6 @@ impl Expression {
             Expression::Boolean(lit) => Expression::Boolean(lit.apply(&sub)),
             Expression::DateTime(lit) => Expression::DateTime(lit.apply(&sub)),
             Expression::Regexp(lit) => Expression::Regexp(lit.apply(&sub)),
-            Expression::Bad(e) => Expression::Bad(Box::new(e.apply(&sub))),
         }
     }
 }
@@ -397,7 +375,6 @@ impl File {
                             Ok((env, cons + rest))
                         }
                         Statement::Return(stmt) => Err(Error::InvalidReturn(stmt.loc.clone())),
-                        Statement::Bad(_) => Ok((env, Constraints::empty())),
                     },
                 )?;
 
@@ -1792,28 +1769,6 @@ pub struct DurationLit {
 impl DurationLit {
     fn infer(&self, env: Environment) -> Result {
         infer_literal(env, &self.typ, MonoType::Duration, self.loc.clone())
-    }
-    fn apply(mut self, sub: &Substitution) -> Self {
-        self.typ = self.typ.apply(&sub);
-        self
-    }
-}
-
-// BadExpr is a placeholder for an invalid expression.
-#[derive(Derivative)]
-#[derivative(Debug, PartialEq, Clone)]
-pub struct BadExpr {
-    pub loc: ast::SourceLocation,
-    pub errors: Vec<Error>,
-    pub expression: Option<Expression>,
-    #[derivative(PartialEq = "ignore")]
-    pub typ: MonoType,
-}
-
-impl BadExpr {
-    #[allow(unused_variables)]
-    fn infer(&self, env: Environment) -> Result {
-        unimplemented!()
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(&sub);
