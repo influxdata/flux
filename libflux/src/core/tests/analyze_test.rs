@@ -57,7 +57,6 @@ f(a: s)
                     },
                     Expression::Integer(IntegerLit {
                         loc: ast::BaseNode::default().location,
-                        typ: MonoType::Int,
                         value: 1,
                     }),
                     ast::BaseNode::default().location,
@@ -69,7 +68,6 @@ f(a: s)
                     },
                     Expression::StringLit(StringLit {
                         loc: ast::BaseNode::default().location,
-                        typ: MonoType::String,
                         value: "string".to_string(),
                     }),
                     ast::BaseNode::default().location,

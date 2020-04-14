@@ -227,7 +227,6 @@ table WrappedExpression {
 table StringExpression {
   loc:SourceLocation;
   parts:[StringExpressionPart];
-  typ:MonoType;
 }
 
 table StringExpressionPart {
@@ -312,7 +311,6 @@ table ConditionalExpression {
   test:Expression;
   alternate:Expression;
   consequent:Expression;
-  typ:MonoType;
 }
 
 table LogicalExpression {
@@ -320,7 +318,6 @@ table LogicalExpression {
   operator:LogicalOperator;
   left:Expression;
   right:Expression;
-  typ:MonoType;
 }
 
 table MemberExpression {
@@ -371,13 +368,11 @@ table Identifier {
 table BooleanLiteral {
   loc:SourceLocation;
   value:bool;
-  typ:MonoType;
 }
 
 table DateTimeLiteral {
   loc:SourceLocation;
   value:Time;
-  typ:MonoType;
 }
 
 table Time {
@@ -395,37 +390,31 @@ table Duration {
 table DurationLiteral {
   loc:SourceLocation;
   value:[Duration];
-  typ:MonoType;
 }
 
 table IntegerLiteral {
   loc:SourceLocation;
   value:int64;
-  typ:MonoType;
 }
 
 table FloatLiteral {
   loc:SourceLocation;
   value:float64;
-  typ:MonoType;
 }
 
 table RegexpLiteral {
   loc:SourceLocation;
   value:string;
-  typ:MonoType;
 }
 
 table StringLiteral {
   loc:SourceLocation;
   value:string;
-  typ:MonoType;
 }
 
 table UnsignedIntegerLiteral {
   loc:SourceLocation;
   value:uint64;
-  typ:MonoType;
 }
 
 root_type Package;

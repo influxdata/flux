@@ -117,8 +117,6 @@ func getUnaryOpFlatBuffer() (*semantic.Package, []byte) {
 	fty := getFBBasicType(b, fbsemantic.TypeFloat)
 	fbsemantic.FloatLiteralStart(b)
 	fbsemantic.FloatLiteralAddLoc(b, litLoc)
-	fbsemantic.FloatLiteralAddTypType(b, fbsemantic.MonoTypeBasic)
-	fbsemantic.FloatLiteralAddTyp(b, fty)
 	fbsemantic.FloatLiteralAddValue(b, 3.5)
 	floatval := fbsemantic.FloatLiteralEnd(b)
 
@@ -237,8 +235,6 @@ func getFnExprFlatBuffer() (*semantic.Package, []byte) {
 	intTy := getFBBasicType(b, fbsemantic.TypeInt)
 	fbsemantic.IntegerLiteralStart(b)
 	fbsemantic.IntegerLiteralAddLoc(b, dloc)
-	fbsemantic.IntegerLiteralAddTypType(b, fbsemantic.MonoTypeBasic)
-	fbsemantic.IntegerLiteralAddTyp(b, intTy)
 	fbsemantic.IntegerLiteralAddValue(b, 72)
 	def := fbsemantic.IntegerLiteralEnd(b)
 

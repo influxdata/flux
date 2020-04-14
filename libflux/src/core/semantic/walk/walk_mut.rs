@@ -143,28 +143,34 @@ impl<'a> NodeMut<'a> {
             NodeMut::MemberAssgn(n) => &n.loc,
         }
     }
-    pub fn type_of(&self) -> Option<&MonoType> {
+    pub fn type_of(&self) -> Option<MonoType> {
         match self {
-            NodeMut::IdentifierExpr(n) => Some(&n.typ),
-            NodeMut::ArrayExpr(n) => Some(&n.typ),
-            NodeMut::FunctionExpr(n) => Some(&n.typ),
-            NodeMut::LogicalExpr(n) => Some(&n.typ),
-            NodeMut::ObjectExpr(n) => Some(&n.typ),
-            NodeMut::MemberExpr(n) => Some(&n.typ),
-            NodeMut::IndexExpr(n) => Some(&n.typ),
-            NodeMut::BinaryExpr(n) => Some(&n.typ),
-            NodeMut::UnaryExpr(n) => Some(&n.typ),
-            NodeMut::CallExpr(n) => Some(&n.typ),
-            NodeMut::ConditionalExpr(n) => Some(&n.typ),
-            NodeMut::StringExpr(n) => Some(&n.typ),
-            NodeMut::IntegerLit(n) => Some(&n.typ),
-            NodeMut::FloatLit(n) => Some(&n.typ),
-            NodeMut::StringLit(n) => Some(&n.typ),
-            NodeMut::DurationLit(n) => Some(&n.typ),
-            NodeMut::UintLit(n) => Some(&n.typ),
-            NodeMut::BooleanLit(n) => Some(&n.typ),
-            NodeMut::DateTimeLit(n) => Some(&n.typ),
-            NodeMut::RegexpLit(n) => Some(&n.typ),
+            NodeMut::IdentifierExpr(n) => Some(Expression::Identifier((*n).clone()).type_of()),
+            NodeMut::ArrayExpr(n) => Some(Expression::Array(Box::new((*n).clone())).type_of()),
+            NodeMut::FunctionExpr(n) => {
+                Some(Expression::Function(Box::new((*n).clone())).type_of())
+            }
+            NodeMut::LogicalExpr(n) => Some(Expression::Logical(Box::new((*n).clone())).type_of()),
+            NodeMut::ObjectExpr(n) => Some(Expression::Object(Box::new((*n).clone())).type_of()),
+            NodeMut::MemberExpr(n) => Some(Expression::Member(Box::new((*n).clone())).type_of()),
+            NodeMut::IndexExpr(n) => Some(Expression::Index(Box::new((*n).clone())).type_of()),
+            NodeMut::BinaryExpr(n) => Some(Expression::Binary(Box::new((*n).clone())).type_of()),
+            NodeMut::UnaryExpr(n) => Some(Expression::Unary(Box::new((*n).clone())).type_of()),
+            NodeMut::CallExpr(n) => Some(Expression::Call(Box::new((*n).clone())).type_of()),
+            NodeMut::ConditionalExpr(n) => {
+                Some(Expression::Conditional(Box::new((*n).clone())).type_of())
+            }
+            NodeMut::StringExpr(n) => {
+                Some(Expression::StringExpr(Box::new((*n).clone())).type_of())
+            }
+            NodeMut::IntegerLit(n) => Some(Expression::Integer((*n).clone()).type_of()),
+            NodeMut::FloatLit(n) => Some(Expression::Float((*n).clone()).type_of()),
+            NodeMut::StringLit(n) => Some(Expression::StringLit((*n).clone()).type_of()),
+            NodeMut::DurationLit(n) => Some(Expression::Duration((*n).clone()).type_of()),
+            NodeMut::UintLit(n) => Some(Expression::Uint((*n).clone()).type_of()),
+            NodeMut::BooleanLit(n) => Some(Expression::Boolean((*n).clone()).type_of()),
+            NodeMut::DateTimeLit(n) => Some(Expression::DateTime((*n).clone()).type_of()),
+            NodeMut::RegexpLit(n) => Some(Expression::Regexp((*n).clone()).type_of()),
             _ => None,
         }
     }
@@ -281,23 +287,12 @@ impl<'a> NodeMut<'a> {
 ///             NodeMut::IdentifierExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
 ///             NodeMut::ArrayExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
 ///             NodeMut::FunctionExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-///             NodeMut::LogicalExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
 ///             NodeMut::ObjectExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
 ///             NodeMut::MemberExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
 ///             NodeMut::IndexExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
 ///             NodeMut::BinaryExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
 ///             NodeMut::UnaryExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
 ///             NodeMut::CallExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-///             NodeMut::ConditionalExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-///             NodeMut::StringExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-///             NodeMut::IntegerLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-///             NodeMut::FloatLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-///             NodeMut::StringLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-///             NodeMut::DurationLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-///             NodeMut::UintLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-///             NodeMut::BooleanLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-///             NodeMut::DateTimeLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-///             NodeMut::RegexpLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
 ///             _ => (),
 ///         };
 ///         true
@@ -891,26 +886,50 @@ mod tests {
         impl VisitorMut for TypeCollector {
             fn visit(&mut self, node: &mut NodeMut) -> bool {
                 let typ = match node {
-                    NodeMut::FunctionExpr(ref expr) => Some(expr.typ.clone()),
-                    NodeMut::CallExpr(ref expr) => Some(expr.typ.clone()),
-                    NodeMut::MemberExpr(ref expr) => Some(expr.typ.clone()),
-                    NodeMut::IndexExpr(ref expr) => Some(expr.typ.clone()),
-                    NodeMut::BinaryExpr(ref expr) => Some(expr.typ.clone()),
-                    NodeMut::UnaryExpr(ref expr) => Some(expr.typ.clone()),
-                    NodeMut::LogicalExpr(ref expr) => Some(expr.typ.clone()),
-                    NodeMut::ConditionalExpr(ref expr) => Some(expr.typ.clone()),
-                    NodeMut::ObjectExpr(ref expr) => Some(expr.typ.clone()),
-                    NodeMut::ArrayExpr(ref expr) => Some(expr.typ.clone()),
-                    NodeMut::IdentifierExpr(ref expr) => Some(expr.typ.clone()),
-                    NodeMut::StringExpr(ref expr) => Some(expr.typ.clone()),
-                    NodeMut::StringLit(ref lit) => Some(lit.typ.clone()),
-                    NodeMut::BooleanLit(ref lit) => Some(lit.typ.clone()),
-                    NodeMut::FloatLit(ref lit) => Some(lit.typ.clone()),
-                    NodeMut::IntegerLit(ref lit) => Some(lit.typ.clone()),
-                    NodeMut::UintLit(ref lit) => Some(lit.typ.clone()),
-                    NodeMut::RegexpLit(ref lit) => Some(lit.typ.clone()),
-                    NodeMut::DurationLit(ref lit) => Some(lit.typ.clone()),
-                    NodeMut::DateTimeLit(ref lit) => Some(lit.typ.clone()),
+                    NodeMut::IdentifierExpr(n) => {
+                        Some(Expression::Identifier((*n).clone()).type_of())
+                    }
+                    NodeMut::ArrayExpr(n) => {
+                        Some(Expression::Array(Box::new((*n).clone())).type_of())
+                    }
+                    NodeMut::FunctionExpr(n) => {
+                        Some(Expression::Function(Box::new((*n).clone())).type_of())
+                    }
+                    NodeMut::LogicalExpr(n) => {
+                        Some(Expression::Logical(Box::new((*n).clone())).type_of())
+                    }
+                    NodeMut::ObjectExpr(n) => {
+                        Some(Expression::Object(Box::new((*n).clone())).type_of())
+                    }
+                    NodeMut::MemberExpr(n) => {
+                        Some(Expression::Member(Box::new((*n).clone())).type_of())
+                    }
+                    NodeMut::IndexExpr(n) => {
+                        Some(Expression::Index(Box::new((*n).clone())).type_of())
+                    }
+                    NodeMut::BinaryExpr(n) => {
+                        Some(Expression::Binary(Box::new((*n).clone())).type_of())
+                    }
+                    NodeMut::UnaryExpr(n) => {
+                        Some(Expression::Unary(Box::new((*n).clone())).type_of())
+                    }
+                    NodeMut::CallExpr(n) => {
+                        Some(Expression::Call(Box::new((*n).clone())).type_of())
+                    }
+                    NodeMut::ConditionalExpr(n) => {
+                        Some(Expression::Conditional(Box::new((*n).clone())).type_of())
+                    }
+                    NodeMut::StringExpr(n) => {
+                        Some(Expression::StringExpr(Box::new((*n).clone())).type_of())
+                    }
+                    NodeMut::IntegerLit(n) => Some(Expression::Integer((*n).clone()).type_of()),
+                    NodeMut::FloatLit(n) => Some(Expression::Float((*n).clone()).type_of()),
+                    NodeMut::StringLit(n) => Some(Expression::StringLit((*n).clone()).type_of()),
+                    NodeMut::DurationLit(n) => Some(Expression::Duration((*n).clone()).type_of()),
+                    NodeMut::UintLit(n) => Some(Expression::Uint((*n).clone()).type_of()),
+                    NodeMut::BooleanLit(n) => Some(Expression::Boolean((*n).clone()).type_of()),
+                    NodeMut::DateTimeLit(n) => Some(Expression::DateTime((*n).clone()).type_of()),
+                    NodeMut::RegexpLit(n) => Some(Expression::Regexp((*n).clone()).type_of()),
                     _ => None,
                 };
                 if let Some(MonoType::Var(tv)) = typ {
@@ -988,23 +1007,12 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                         NodeMut::IdentifierExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
                         NodeMut::ArrayExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
                         NodeMut::FunctionExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-                        NodeMut::LogicalExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
                         NodeMut::ObjectExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
                         NodeMut::MemberExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
                         NodeMut::IndexExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
                         NodeMut::BinaryExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
                         NodeMut::UnaryExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
                         NodeMut::CallExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-                        NodeMut::ConditionalExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-                        NodeMut::StringExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-                        NodeMut::IntegerLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-                        NodeMut::FloatLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-                        NodeMut::StringLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-                        NodeMut::DurationLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-                        NodeMut::UintLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-                        NodeMut::BooleanLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-                        NodeMut::DateTimeLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
-                        NodeMut::RegexpLit(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
                         _ => (),
                     };
                 },

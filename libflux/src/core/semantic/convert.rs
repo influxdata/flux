@@ -388,7 +388,6 @@ fn convert_logical_expression(
     let right = convert_expression(expr.right, fresher)?;
     Ok(LogicalExpr {
         loc: expr.base.location,
-        typ: MonoType::Var(fresher.fresh()),
         operator: expr.operator,
         left,
         right,
@@ -404,7 +403,6 @@ fn convert_conditional_expression(
     let alternate = convert_expression(expr.alternate, fresher)?;
     Ok(ConditionalExpr {
         loc: expr.base.location,
-        typ: MonoType::Var(fresher.fresh()),
         test,
         consequent,
         alternate,
@@ -491,7 +489,6 @@ fn convert_string_expression(expr: ast::StringExpr, fresher: &mut Fresher) -> Re
         .collect::<Result<Vec<StringExprPart>>>()?;
     Ok(StringExpr {
         loc: expr.base.location,
-        typ: MonoType::Var(fresher.fresh()),
         parts,
     })
 }
@@ -514,66 +511,58 @@ fn convert_string_expression_part(
     }
 }
 
-fn convert_string_literal(lit: ast::StringLit, fresher: &mut Fresher) -> Result<StringLit> {
+fn convert_string_literal(lit: ast::StringLit, _: &mut Fresher) -> Result<StringLit> {
     Ok(StringLit {
         loc: lit.base.location,
-        typ: MonoType::Var(fresher.fresh()),
         value: lit.value,
     })
 }
 
-fn convert_boolean_literal(lit: ast::BooleanLit, fresher: &mut Fresher) -> Result<BooleanLit> {
+fn convert_boolean_literal(lit: ast::BooleanLit, _: &mut Fresher) -> Result<BooleanLit> {
     Ok(BooleanLit {
         loc: lit.base.location,
-        typ: MonoType::Var(fresher.fresh()),
         value: lit.value,
     })
 }
 
-fn convert_float_literal(lit: ast::FloatLit, fresher: &mut Fresher) -> Result<FloatLit> {
+fn convert_float_literal(lit: ast::FloatLit, _: &mut Fresher) -> Result<FloatLit> {
     Ok(FloatLit {
         loc: lit.base.location,
-        typ: MonoType::Var(fresher.fresh()),
         value: lit.value,
     })
 }
 
-fn convert_integer_literal(lit: ast::IntegerLit, fresher: &mut Fresher) -> Result<IntegerLit> {
+fn convert_integer_literal(lit: ast::IntegerLit, _: &mut Fresher) -> Result<IntegerLit> {
     Ok(IntegerLit {
         loc: lit.base.location,
-        typ: MonoType::Var(fresher.fresh()),
         value: lit.value,
     })
 }
 
-fn convert_unsigned_integer_literal(lit: ast::UintLit, fresher: &mut Fresher) -> Result<UintLit> {
+fn convert_unsigned_integer_literal(lit: ast::UintLit, _: &mut Fresher) -> Result<UintLit> {
     Ok(UintLit {
         loc: lit.base.location,
-        typ: MonoType::Var(fresher.fresh()),
         value: lit.value,
     })
 }
 
-fn convert_regexp_literal(lit: ast::RegexpLit, fresher: &mut Fresher) -> Result<RegexpLit> {
+fn convert_regexp_literal(lit: ast::RegexpLit, _: &mut Fresher) -> Result<RegexpLit> {
     Ok(RegexpLit {
         loc: lit.base.location,
-        typ: MonoType::Var(fresher.fresh()),
         value: lit.value,
     })
 }
 
-fn convert_duration_literal(lit: ast::DurationLit, fresher: &mut Fresher) -> Result<DurationLit> {
+fn convert_duration_literal(lit: ast::DurationLit, _: &mut Fresher) -> Result<DurationLit> {
     Ok(DurationLit {
         loc: lit.base.location,
-        typ: MonoType::Var(fresher.fresh()),
         value: convert_duration(&lit.values)?,
     })
 }
 
-fn convert_date_time_literal(lit: ast::DateTimeLit, fresher: &mut Fresher) -> Result<DateTimeLit> {
+fn convert_date_time_literal(lit: ast::DateTimeLit, _: &mut Fresher) -> Result<DateTimeLit> {
     Ok(DateTimeLit {
         loc: lit.base.location,
-        typ: MonoType::Var(fresher.fresh()),
         value: lit.value,
     })
 }
@@ -717,7 +706,6 @@ mod tests {
                         loc: b.location.clone(),
                         path: StringLit {
                             loc: b.location.clone(),
-                            typ: type_info(),
                             value: "path/foo".to_string(),
                         },
                         alias: None,
@@ -726,7 +714,6 @@ mod tests {
                         loc: b.location.clone(),
                         path: StringLit {
                             loc: b.location.clone(),
-                            typ: type_info(),
                             value: "path/bar".to_string(),
                         },
                         alias: Some(Identifier {
@@ -792,7 +779,6 @@ mod tests {
                         },
                         Expression::Boolean(BooleanLit {
                             loc: b.location.clone(),
-                            typ: type_info(),
                             value: true,
                         }),
                         b.location.clone(),
@@ -866,7 +852,6 @@ mod tests {
                             },
                             value: Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
-                                typ: type_info(),
                                 value: 10,
                             }),
                         }],
@@ -932,7 +917,6 @@ mod tests {
                             },
                             value: Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
-                                typ: type_info(),
                                 value: 10,
                             }),
                         }],
@@ -1012,7 +996,6 @@ mod tests {
                                 },
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
-                                    typ: type_info(),
                                     value: 10,
                                 }),
                             },
@@ -1024,7 +1007,6 @@ mod tests {
                                 },
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
-                                    typ: type_info(),
                                     value: 11,
                                 }),
                             },
@@ -1243,7 +1225,6 @@ mod tests {
                                     },
                                     value: Expression::StringLit(StringLit {
                                         loc: b.location.clone(),
-                                        typ: type_info(),
                                         value: "foo".to_string(),
                                     }),
                                 },
@@ -1255,7 +1236,6 @@ mod tests {
                                     },
                                     value: Expression::Duration(DurationLit {
                                         loc: b.location.clone(),
-                                        typ: type_info(),
                                         value: Duration {
                                             months: 5,
                                             nanoseconds: 5000,
@@ -1271,7 +1251,6 @@ mod tests {
                                     },
                                     value: Expression::Duration(DurationLit {
                                         loc: b.location.clone(),
-                                        typ: type_info(),
                                         value: Duration {
                                             months: 1,
                                             nanoseconds: 50,
@@ -1287,7 +1266,6 @@ mod tests {
                                     },
                                     value: Expression::StringLit(StringLit {
                                         loc: b.location.clone(),
-                                        typ: type_info(),
                                         value: "0 2 * * *".to_string(),
                                     }),
                                 },
@@ -1299,7 +1277,6 @@ mod tests {
                                     },
                                     value: Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
-                                        typ: type_info(),
                                         value: 5,
                                     }),
                                 },
@@ -1373,7 +1350,6 @@ mod tests {
                         },
                         init: Expression::StringLit(StringLit {
                             loc: b.location.clone(),
-                            typ: type_info(),
                             value: "Warning".to_string(),
                         }),
                     }),
@@ -1558,7 +1534,6 @@ mod tests {
                                     },
                                     value: Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
-                                        typ: type_info(),
                                         value: 2,
                                     }),
                                 },
@@ -1570,7 +1545,6 @@ mod tests {
                                     },
                                     value: Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
-                                        typ: type_info(),
                                         value: 3,
                                     }),
                                 },
@@ -1716,7 +1690,6 @@ mod tests {
                                     },
                                     default: Some(Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
-                                        typ: type_info(),
                                         value: 0,
                                     })),
                                 },
@@ -1729,7 +1702,6 @@ mod tests {
                                     },
                                     default: Some(Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
-                                        typ: type_info(),
                                         value: 0,
                                     })),
                                 },
@@ -1793,7 +1765,6 @@ mod tests {
                                 },
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
-                                    typ: type_info(),
                                     value: 42,
                                 }),
                             }],
@@ -2096,7 +2067,6 @@ mod tests {
                             typ: type_info(),
                             pipe: Some(Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
-                                typ: type_info(),
                                 value: 3,
                             })),
                             callee: Expression::Identifier(IdentifierExpr {
@@ -2112,7 +2082,6 @@ mod tests {
                                 },
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
-                                    typ: type_info(),
                                     value: 2,
                                 }),
                             }],
@@ -2186,7 +2155,6 @@ mod tests {
             },
             default: Some(Expression::Integer(IntegerLit {
                 loc: b.location.clone(),
-                typ: type_info(),
                 value: 0,
             })),
         };
@@ -2199,7 +2167,6 @@ mod tests {
             },
             default: Some(Expression::Integer(IntegerLit {
                 loc: b.location.clone(),
-                typ: type_info(),
                 value: 1,
             })),
         };
@@ -2212,7 +2179,6 @@ mod tests {
             },
             default: Some(Expression::Integer(IntegerLit {
                 loc: b.location.clone(),
-                typ: type_info(),
                 value: 2,
             })),
         };
@@ -2306,7 +2272,6 @@ mod tests {
                         }),
                         index: Expression::Integer(IntegerLit {
                             loc: b.location.clone(),
-                            typ: type_info(),
                             value: 3,
                         }),
                     })),
@@ -2375,13 +2340,11 @@ mod tests {
                             }),
                             index: Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
-                                typ: type_info(),
                                 value: 3,
                             }),
                         })),
                         index: Expression::Integer(IntegerLit {
                             loc: b.location.clone(),
-                            typ: type_info(),
                             value: 5,
                         }),
                     })),
@@ -2450,7 +2413,6 @@ mod tests {
                         })),
                         index: Expression::Integer(IntegerLit {
                             loc: b.location.clone(),
-                            typ: type_info(),
                             value: 3,
                         }),
                     })),
