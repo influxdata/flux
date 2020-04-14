@@ -181,6 +181,7 @@ outData = "
 
 t_alignTime = (table=<-) =>
 	table
+		|> range(start: 2020-01-01T00:00:00Z, stop: 2020-04-01T00:00:00Z)
 		|> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)
 
 test _set = () =>
