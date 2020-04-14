@@ -229,9 +229,6 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 ))
             }
 
-            walk::Node::BadStmt(e) => unimplemented!(),
-            walk::Node::BadExpr(e) => unimplemented!(),
-
             walk::Node::IdentifierExpr(id) => {
                 let name = v.create_string(&id.name);
                 let id_typ = id.typ.clone();
