@@ -18,10 +18,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 99,
-					Line:   187,
+					Line:   188,
 				},
 				File:   "alignTime_test.flux",
-				Source: "package experimental_test\n\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,country\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-22T00:00:00Z,76369,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-23T00:00:00Z,77016,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-24T00:00:00Z,77234,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-25T00:00:00Z,77749,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-26T00:00:00Z,78159,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-27T00:00:00Z,78598,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-28T00:00:00Z,78927,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-29T00:00:00Z,79355,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-01T00:00:00Z,79929,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-02T00:00:00Z,80134,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-03T00:00:00Z,80261,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-04T00:00:00Z,80380,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-05T00:00:00Z,80497,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-06T00:00:00Z,80667,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-07T00:00:00Z,80768,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-08T00:00:00Z,80814,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-09T00:00:00Z,80859,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-10T00:00:00Z,80879,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-11T00:00:00Z,80908,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-12T00:00:00Z,80932,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-13T00:00:00Z,80954,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-14T00:00:00Z,80973,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-15T00:00:00Z,80995,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-16T00:00:00Z,81020,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-17T00:00:00Z,81130,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-18T00:00:00Z,81163,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-19T00:00:00Z,81238,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-20T00:00:00Z,81337,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-21T00:00:00Z,81416,total_cases,covid-19,China\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,country\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-24T00:00:00Z,132,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-25T00:00:00Z,229,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-26T00:00:00Z,322,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-27T00:00:00Z,400,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-28T00:00:00Z,650,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-29T00:00:00Z,888,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-01T00:00:00Z,1128,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-02T00:00:00Z,1689,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-03T00:00:00Z,1835,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-04T00:00:00Z,2502,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-05T00:00:00Z,3089,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-06T00:00:00Z,3858,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-07T00:00:00Z,4636,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-08T00:00:00Z,5883,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-09T00:00:00Z,7375,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-10T00:00:00Z,9172,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-11T00:00:00Z,10149,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-12T00:00:00Z,12462,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-13T00:00:00Z,15113,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-14T00:00:00Z,17660,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-15T00:00:00Z,17750,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-16T00:00:00Z,23980,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-17T00:00:00Z,27980,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-18T00:00:00Z,31506,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-19T00:00:00Z,35713,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-20T00:00:00Z,41035,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-21T00:00:00Z,47021,total_cases,covid-19,Italy\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,country\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-03T00:00:00Z,103,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-04T00:00:00Z,125,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-05T00:00:00Z,159,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-06T00:00:00Z,233,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-07T00:00:00Z,338,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-08T00:00:00Z,433,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-09T00:00:00Z,554,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-10T00:00:00Z,754,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-11T00:00:00Z,1025,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-12T00:00:00Z,1312,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-13T00:00:00Z,1663,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-14T00:00:00Z,2174,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-15T00:00:00Z,2951,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-16T00:00:00Z,3774,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-17T00:00:00Z,4661,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-18T00:00:00Z,6427,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-19T00:00:00Z,9415,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-20T00:00:00Z,14250,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-21T00:00:00Z,19624,total_cases,covid-19,United States\n\"\n\noutData = \"\n#group,false,false,true,true,true,true,false,false,true\n#datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_start,_stop,_time,_value,country\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-01T00:00:00Z,76369,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-02T00:00:00Z,77016,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-03T00:00:00Z,77234,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-04T00:00:00Z,77749,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-05T00:00:00Z,78159,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-06T00:00:00Z,78598,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-07T00:00:00Z,78927,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-08T00:00:00Z,79355,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-09T00:00:00Z,79929,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-10T00:00:00Z,80134,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-11T00:00:00Z,80261,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-12T00:00:00Z,80380,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-13T00:00:00Z,80497,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-14T00:00:00Z,80667,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-15T00:00:00Z,80768,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-16T00:00:00Z,80814,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-17T00:00:00Z,80859,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-18T00:00:00Z,80879,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-19T00:00:00Z,80908,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-20T00:00:00Z,80932,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-21T00:00:00Z,80954,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-22T00:00:00Z,80973,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-23T00:00:00Z,80995,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-24T00:00:00Z,81020,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-25T00:00:00Z,81130,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-26T00:00:00Z,81163,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-27T00:00:00Z,81238,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-28T00:00:00Z,81337,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-29T00:00:00Z,81416,China\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-01T00:00:00Z,132,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-02T00:00:00Z,229,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-03T00:00:00Z,322,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-04T00:00:00Z,400,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-05T00:00:00Z,650,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-06T00:00:00Z,888,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-07T00:00:00Z,1128,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-08T00:00:00Z,1689,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-09T00:00:00Z,1835,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-10T00:00:00Z,2502,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-11T00:00:00Z,3089,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-12T00:00:00Z,3858,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-13T00:00:00Z,4636,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-14T00:00:00Z,5883,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-15T00:00:00Z,7375,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-16T00:00:00Z,9172,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-17T00:00:00Z,10149,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-18T00:00:00Z,12462,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-19T00:00:00Z,15113,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-20T00:00:00Z,17660,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-21T00:00:00Z,17750,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-22T00:00:00Z,23980,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-23T00:00:00Z,27980,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-24T00:00:00Z,31506,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-25T00:00:00Z,35713,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-26T00:00:00Z,41035,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-27T00:00:00Z,47021,Italy\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-01T00:00:00Z,103,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-02T00:00:00Z,125,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-03T00:00:00Z,159,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-04T00:00:00Z,233,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-05T00:00:00Z,338,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-06T00:00:00Z,433,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-07T00:00:00Z,554,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-08T00:00:00Z,754,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-09T00:00:00Z,1025,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-10T00:00:00Z,1312,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-11T00:00:00Z,1663,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-12T00:00:00Z,2174,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-13T00:00:00Z,2951,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-14T00:00:00Z,3774,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-15T00:00:00Z,4661,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-16T00:00:00Z,6427,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-17T00:00:00Z,9415,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-18T00:00:00Z,14250,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-19T00:00:00Z,19624,United States\n\"\n\nt_alignTime = (table=<-) =>\n\ttable\n\t\t|> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)\n\ntest _set = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_alignTime})",
+				Source: "package experimental_test\n\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,country\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-22T00:00:00Z,76369,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-23T00:00:00Z,77016,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-24T00:00:00Z,77234,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-25T00:00:00Z,77749,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-26T00:00:00Z,78159,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-27T00:00:00Z,78598,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-28T00:00:00Z,78927,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-29T00:00:00Z,79355,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-01T00:00:00Z,79929,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-02T00:00:00Z,80134,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-03T00:00:00Z,80261,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-04T00:00:00Z,80380,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-05T00:00:00Z,80497,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-06T00:00:00Z,80667,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-07T00:00:00Z,80768,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-08T00:00:00Z,80814,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-09T00:00:00Z,80859,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-10T00:00:00Z,80879,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-11T00:00:00Z,80908,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-12T00:00:00Z,80932,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-13T00:00:00Z,80954,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-14T00:00:00Z,80973,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-15T00:00:00Z,80995,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-16T00:00:00Z,81020,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-17T00:00:00Z,81130,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-18T00:00:00Z,81163,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-19T00:00:00Z,81238,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-20T00:00:00Z,81337,total_cases,covid-19,China\n,,0,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-21T00:00:00Z,81416,total_cases,covid-19,China\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,country\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-24T00:00:00Z,132,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-25T00:00:00Z,229,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-26T00:00:00Z,322,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-27T00:00:00Z,400,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-28T00:00:00Z,650,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-02-29T00:00:00Z,888,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-01T00:00:00Z,1128,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-02T00:00:00Z,1689,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-03T00:00:00Z,1835,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-04T00:00:00Z,2502,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-05T00:00:00Z,3089,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-06T00:00:00Z,3858,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-07T00:00:00Z,4636,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-08T00:00:00Z,5883,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-09T00:00:00Z,7375,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-10T00:00:00Z,9172,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-11T00:00:00Z,10149,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-12T00:00:00Z,12462,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-13T00:00:00Z,15113,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-14T00:00:00Z,17660,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-15T00:00:00Z,17750,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-16T00:00:00Z,23980,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-17T00:00:00Z,27980,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-18T00:00:00Z,31506,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-19T00:00:00Z,35713,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-20T00:00:00Z,41035,total_cases,covid-19,Italy\n,,1,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-21T00:00:00Z,47021,total_cases,covid-19,Italy\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,country\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-03T00:00:00Z,103,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-04T00:00:00Z,125,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-05T00:00:00Z,159,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-06T00:00:00Z,233,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-07T00:00:00Z,338,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-08T00:00:00Z,433,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-09T00:00:00Z,554,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-10T00:00:00Z,754,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-11T00:00:00Z,1025,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-12T00:00:00Z,1312,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-13T00:00:00Z,1663,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-14T00:00:00Z,2174,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-15T00:00:00Z,2951,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-16T00:00:00Z,3774,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-17T00:00:00Z,4661,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-18T00:00:00Z,6427,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-19T00:00:00Z,9415,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-20T00:00:00Z,14250,total_cases,covid-19,United States\n,,2,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-03-21T00:00:00Z,19624,total_cases,covid-19,United States\n\"\n\noutData = \"\n#group,false,false,true,true,true,true,false,false,true\n#datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_start,_stop,_time,_value,country\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-01T00:00:00Z,76369,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-02T00:00:00Z,77016,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-03T00:00:00Z,77234,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-04T00:00:00Z,77749,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-05T00:00:00Z,78159,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-06T00:00:00Z,78598,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-07T00:00:00Z,78927,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-08T00:00:00Z,79355,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-09T00:00:00Z,79929,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-10T00:00:00Z,80134,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-11T00:00:00Z,80261,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-12T00:00:00Z,80380,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-13T00:00:00Z,80497,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-14T00:00:00Z,80667,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-15T00:00:00Z,80768,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-16T00:00:00Z,80814,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-17T00:00:00Z,80859,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-18T00:00:00Z,80879,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-19T00:00:00Z,80908,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-20T00:00:00Z,80932,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-21T00:00:00Z,80954,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-22T00:00:00Z,80973,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-23T00:00:00Z,80995,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-24T00:00:00Z,81020,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-25T00:00:00Z,81130,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-26T00:00:00Z,81163,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-27T00:00:00Z,81238,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-28T00:00:00Z,81337,China\n,,0,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-29T00:00:00Z,81416,China\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-01T00:00:00Z,132,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-02T00:00:00Z,229,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-03T00:00:00Z,322,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-04T00:00:00Z,400,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-05T00:00:00Z,650,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-06T00:00:00Z,888,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-07T00:00:00Z,1128,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-08T00:00:00Z,1689,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-09T00:00:00Z,1835,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-10T00:00:00Z,2502,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-11T00:00:00Z,3089,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-12T00:00:00Z,3858,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-13T00:00:00Z,4636,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-14T00:00:00Z,5883,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-15T00:00:00Z,7375,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-16T00:00:00Z,9172,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-17T00:00:00Z,10149,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-18T00:00:00Z,12462,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-19T00:00:00Z,15113,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-20T00:00:00Z,17660,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-21T00:00:00Z,17750,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-22T00:00:00Z,23980,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-23T00:00:00Z,27980,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-24T00:00:00Z,31506,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-25T00:00:00Z,35713,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-26T00:00:00Z,41035,Italy\n,,1,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-27T00:00:00Z,47021,Italy\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-01T00:00:00Z,103,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-02T00:00:00Z,125,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-03T00:00:00Z,159,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-04T00:00:00Z,233,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-05T00:00:00Z,338,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-06T00:00:00Z,433,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-07T00:00:00Z,554,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-08T00:00:00Z,754,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-09T00:00:00Z,1025,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-10T00:00:00Z,1312,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-11T00:00:00Z,1663,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-12T00:00:00Z,2174,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-13T00:00:00Z,2951,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-14T00:00:00Z,3774,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-15T00:00:00Z,4661,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-16T00:00:00Z,6427,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-17T00:00:00Z,9415,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-18T00:00:00Z,14250,United States\n,,2,total_cases,covid-19,2020-02-22T00:00:00Z,2020-03-22T00:00:00Z,2020-01-19T00:00:00Z,19624,United States\n\"\n\nt_alignTime = (table=<-) =>\n\ttable\n\t\t|> range(start: 2020-01-01T00:00:00Z, stop: 2020-04-01T00:00:00Z)\n\t\t|> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)\n\ntest _set = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_alignTime})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -242,10 +242,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 59,
-						Line:   184,
+						Line:   185,
 					},
 					File:   "alignTime_test.flux",
-					Source: "t_alignTime = (table=<-) =>\n\ttable\n\t\t|> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)",
+					Source: "t_alignTime = (table=<-) =>\n\ttable\n\t\t|> range(start: 2020-01-01T00:00:00Z, stop: 2020-04-01T00:00:00Z)\n\t\t|> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
 						Line:   182,
@@ -276,10 +276,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 59,
-							Line:   184,
+							Line:   185,
 						},
 						File:   "alignTime_test.flux",
-						Source: "(table=<-) =>\n\ttable\n\t\t|> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)",
+						Source: "(table=<-) =>\n\ttable\n\t\t|> range(start: 2020-01-01T00:00:00Z, stop: 2020-04-01T00:00:00Z)\n\t\t|> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 15,
 							Line:   182,
@@ -287,33 +287,208 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 				},
 				Body: &ast.PipeExpression{
-					Argument: &ast.Identifier{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 7,
+										Line:   183,
+									},
+									File:   "alignTime_test.flux",
+									Source: "table",
+									Start: ast.Position{
+										Column: 2,
+										Line:   183,
+									},
+								},
+							},
+							Name: "table",
+						},
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 7,
-									Line:   183,
+									Column: 68,
+									Line:   184,
 								},
 								File:   "alignTime_test.flux",
-								Source: "table",
+								Source: "table\n\t\t|> range(start: 2020-01-01T00:00:00Z, stop: 2020-04-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 2,
 									Line:   183,
 								},
 							},
 						},
-						Name: "table",
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 67,
+											Line:   184,
+										},
+										File:   "alignTime_test.flux",
+										Source: "start: 2020-01-01T00:00:00Z, stop: 2020-04-01T00:00:00Z",
+										Start: ast.Position{
+											Column: 12,
+											Line:   184,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   184,
+											},
+											File:   "alignTime_test.flux",
+											Source: "start: 2020-01-01T00:00:00Z",
+											Start: ast.Position{
+												Column: 12,
+												Line:   184,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 17,
+													Line:   184,
+												},
+												File:   "alignTime_test.flux",
+												Source: "start",
+												Start: ast.Position{
+													Column: 12,
+													Line:   184,
+												},
+											},
+										},
+										Name: "start",
+									},
+									Value: &ast.DateTimeLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   184,
+												},
+												File:   "alignTime_test.flux",
+												Source: "2020-01-01T00:00:00Z",
+												Start: ast.Position{
+													Column: 19,
+													Line:   184,
+												},
+											},
+										},
+										Value: parser.MustParseTime("2020-01-01T00:00:00Z"),
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 67,
+												Line:   184,
+											},
+											File:   "alignTime_test.flux",
+											Source: "stop: 2020-04-01T00:00:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   184,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   184,
+												},
+												File:   "alignTime_test.flux",
+												Source: "stop",
+												Start: ast.Position{
+													Column: 41,
+													Line:   184,
+												},
+											},
+										},
+										Name: "stop",
+									},
+									Value: &ast.DateTimeLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 67,
+													Line:   184,
+												},
+												File:   "alignTime_test.flux",
+												Source: "2020-04-01T00:00:00Z",
+												Start: ast.Position{
+													Column: 47,
+													Line:   184,
+												},
+											},
+										},
+										Value: parser.MustParseTime("2020-04-01T00:00:00Z"),
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 68,
+										Line:   184,
+									},
+									File:   "alignTime_test.flux",
+									Source: "range(start: 2020-01-01T00:00:00Z, stop: 2020-04-01T00:00:00Z)",
+									Start: ast.Position{
+										Column: 6,
+										Line:   184,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 11,
+											Line:   184,
+										},
+										File:   "alignTime_test.flux",
+										Source: "range",
+										Start: ast.Position{
+											Column: 6,
+											Line:   184,
+										},
+									},
+								},
+								Name: "range",
+							},
+						},
 					},
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 59,
-								Line:   184,
+								Line:   185,
 							},
 							File:   "alignTime_test.flux",
-							Source: "table\n\t\t|> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)",
+							Source: "table\n\t\t|> range(start: 2020-01-01T00:00:00Z, stop: 2020-04-01T00:00:00Z)\n\t\t|> experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 2,
 								Line:   183,
@@ -327,13 +502,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 58,
-										Line:   184,
+										Line:   185,
 									},
 									File:   "alignTime_test.flux",
 									Source: "alignTo: 2020-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 29,
-										Line:   184,
+										Line:   185,
 									},
 								},
 							},
@@ -343,13 +518,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 58,
-											Line:   184,
+											Line:   185,
 										},
 										File:   "alignTime_test.flux",
 										Source: "alignTo: 2020-01-01T00:00:00Z",
 										Start: ast.Position{
 											Column: 29,
-											Line:   184,
+											Line:   185,
 										},
 									},
 								},
@@ -359,13 +534,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 36,
-												Line:   184,
+												Line:   185,
 											},
 											File:   "alignTime_test.flux",
 											Source: "alignTo",
 											Start: ast.Position{
 												Column: 29,
-												Line:   184,
+												Line:   185,
 											},
 										},
 									},
@@ -377,13 +552,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 58,
-												Line:   184,
+												Line:   185,
 											},
 											File:   "alignTime_test.flux",
 											Source: "2020-01-01T00:00:00Z",
 											Start: ast.Position{
 												Column: 38,
-												Line:   184,
+												Line:   185,
 											},
 										},
 									},
@@ -397,13 +572,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 59,
-									Line:   184,
+									Line:   185,
 								},
 								File:   "alignTime_test.flux",
 								Source: "experimental.alignTime(alignTo: 2020-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 6,
-									Line:   184,
+									Line:   185,
 								},
 							},
 						},
@@ -413,13 +588,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 28,
-										Line:   184,
+										Line:   185,
 									},
 									File:   "alignTime_test.flux",
 									Source: "experimental.alignTime",
 									Start: ast.Position{
 										Column: 6,
-										Line:   184,
+										Line:   185,
 									},
 								},
 							},
@@ -429,13 +604,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
-											Line:   184,
+											Line:   185,
 										},
 										File:   "alignTime_test.flux",
 										Source: "experimental",
 										Start: ast.Position{
 											Column: 6,
-											Line:   184,
+											Line:   185,
 										},
 									},
 								},
@@ -447,13 +622,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   184,
+											Line:   185,
 										},
 										File:   "alignTime_test.flux",
 										Source: "alignTime",
 										Start: ast.Position{
 											Column: 19,
-											Line:   184,
+											Line:   185,
 										},
 									},
 								},
@@ -520,13 +695,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 99,
-							Line:   187,
+							Line:   188,
 						},
 						File:   "alignTime_test.flux",
 						Source: "_set = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_alignTime})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   186,
+							Line:   187,
 						},
 					},
 				},
@@ -536,13 +711,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 10,
-								Line:   186,
+								Line:   187,
 							},
 							File:   "alignTime_test.flux",
 							Source: "_set",
 							Start: ast.Position{
 								Column: 6,
-								Line:   186,
+								Line:   187,
 							},
 						},
 					},
@@ -554,13 +729,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 99,
-								Line:   187,
+								Line:   188,
 							},
 							File:   "alignTime_test.flux",
 							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_alignTime})",
 							Start: ast.Position{
 								Column: 13,
-								Line:   186,
+								Line:   187,
 							},
 						},
 					},
@@ -570,13 +745,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 99,
-									Line:   187,
+									Line:   188,
 								},
 								File:   "alignTime_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_alignTime})",
 								Start: ast.Position{
 									Column: 2,
-									Line:   187,
+									Line:   188,
 								},
 							},
 						},
@@ -586,13 +761,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 98,
-										Line:   187,
+										Line:   188,
 									},
 									File:   "alignTime_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_alignTime}",
 									Start: ast.Position{
 										Column: 3,
-										Line:   187,
+										Line:   188,
 									},
 								},
 							},
@@ -602,13 +777,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   187,
+											Line:   188,
 										},
 										File:   "alignTime_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
-											Line:   187,
+											Line:   188,
 										},
 									},
 								},
@@ -618,13 +793,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 9,
-												Line:   187,
+												Line:   188,
 											},
 											File:   "alignTime_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 4,
-												Line:   187,
+												Line:   188,
 											},
 										},
 									},
@@ -637,13 +812,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
-													Line:   187,
+													Line:   188,
 												},
 												File:   "alignTime_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 31,
-													Line:   187,
+													Line:   188,
 												},
 											},
 										},
@@ -653,13 +828,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
-														Line:   187,
+														Line:   188,
 													},
 													File:   "alignTime_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 31,
-														Line:   187,
+														Line:   188,
 													},
 												},
 											},
@@ -669,13 +844,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 34,
-															Line:   187,
+															Line:   188,
 														},
 														File:   "alignTime_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 31,
-															Line:   187,
+															Line:   188,
 														},
 													},
 												},
@@ -687,13 +862,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 42,
-															Line:   187,
+															Line:   188,
 														},
 														File:   "alignTime_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 36,
-															Line:   187,
+															Line:   188,
 														},
 													},
 												},
@@ -707,13 +882,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   187,
+												Line:   188,
 											},
 											File:   "alignTime_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
-												Line:   187,
+												Line:   188,
 											},
 										},
 									},
@@ -723,13 +898,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   187,
+													Line:   188,
 												},
 												File:   "alignTime_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 11,
-													Line:   187,
+													Line:   188,
 												},
 											},
 										},
@@ -739,13 +914,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   187,
+														Line:   188,
 													},
 													File:   "alignTime_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
-														Line:   187,
+														Line:   188,
 													},
 												},
 											},
@@ -757,13 +932,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
-														Line:   187,
+														Line:   188,
 													},
 													File:   "alignTime_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 19,
-														Line:   187,
+														Line:   188,
 													},
 												},
 											},
@@ -777,13 +952,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 80,
-											Line:   187,
+											Line:   188,
 										},
 										File:   "alignTime_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
-											Line:   187,
+											Line:   188,
 										},
 									},
 								},
@@ -793,13 +968,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 49,
-												Line:   187,
+												Line:   188,
 											},
 											File:   "alignTime_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 45,
-												Line:   187,
+												Line:   188,
 											},
 										},
 									},
@@ -812,13 +987,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 79,
-													Line:   187,
+													Line:   188,
 												},
 												File:   "alignTime_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 67,
-													Line:   187,
+													Line:   188,
 												},
 											},
 										},
@@ -828,13 +1003,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 79,
-														Line:   187,
+														Line:   188,
 													},
 													File:   "alignTime_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 67,
-														Line:   187,
+														Line:   188,
 													},
 												},
 											},
@@ -844,13 +1019,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 70,
-															Line:   187,
+															Line:   188,
 														},
 														File:   "alignTime_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 67,
-															Line:   187,
+															Line:   188,
 														},
 													},
 												},
@@ -862,13 +1037,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 79,
-															Line:   187,
+															Line:   188,
 														},
 														File:   "alignTime_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 72,
-															Line:   187,
+															Line:   188,
 														},
 													},
 												},
@@ -882,13 +1057,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 80,
-												Line:   187,
+												Line:   188,
 											},
 											File:   "alignTime_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
-												Line:   187,
+												Line:   188,
 											},
 										},
 									},
@@ -898,13 +1073,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 66,
-													Line:   187,
+													Line:   188,
 												},
 												File:   "alignTime_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 51,
-													Line:   187,
+													Line:   188,
 												},
 											},
 										},
@@ -914,13 +1089,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 58,
-														Line:   187,
+														Line:   188,
 													},
 													File:   "alignTime_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 51,
-														Line:   187,
+														Line:   188,
 													},
 												},
 											},
@@ -932,13 +1107,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 66,
-														Line:   187,
+														Line:   188,
 													},
 													File:   "alignTime_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 59,
-														Line:   187,
+														Line:   188,
 													},
 												},
 											},
@@ -952,13 +1127,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 97,
-											Line:   187,
+											Line:   188,
 										},
 										File:   "alignTime_test.flux",
 										Source: "fn: t_alignTime",
 										Start: ast.Position{
 											Column: 82,
-											Line:   187,
+											Line:   188,
 										},
 									},
 								},
@@ -968,13 +1143,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 84,
-												Line:   187,
+												Line:   188,
 											},
 											File:   "alignTime_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 82,
-												Line:   187,
+												Line:   188,
 											},
 										},
 									},
@@ -986,13 +1161,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 97,
-												Line:   187,
+												Line:   188,
 											},
 											File:   "alignTime_test.flux",
 											Source: "t_alignTime",
 											Start: ast.Position{
 												Column: 86,
-												Line:   187,
+												Line:   188,
 											},
 										},
 									},
@@ -1010,13 +1185,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 99,
-						Line:   187,
+						Line:   188,
 					},
 					File:   "alignTime_test.flux",
 					Source: "test _set = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_alignTime})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   186,
+						Line:   187,
 					},
 				},
 			},
