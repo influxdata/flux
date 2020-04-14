@@ -419,10 +419,7 @@ func (s *MemberAssignment) Copy() Node {
 
 type StringExpression struct {
 	Loc
-
 	Parts []StringExpressionPart
-
-	typ MonoType
 }
 
 func (*StringExpression) NodeType() string {
@@ -443,7 +440,7 @@ func (e *StringExpression) Copy() Node {
 	return ne
 }
 func (e *StringExpression) TypeOf() MonoType {
-	return e.typ
+	return BasicString
 }
 
 type StringExpressionPart interface {
@@ -689,8 +686,6 @@ type ConditionalExpression struct {
 	Test       Expression
 	Alternate  Expression
 	Consequent Expression
-
-	typ MonoType
 }
 
 func (*ConditionalExpression) NodeType() string { return "ConditionalExpression" }
@@ -709,7 +704,7 @@ func (e *ConditionalExpression) Copy() Node {
 	return ne
 }
 func (e *ConditionalExpression) TypeOf() MonoType {
-	return e.typ
+	return e.Alternate.TypeOf()
 }
 
 type LogicalExpression struct {
@@ -718,8 +713,6 @@ type LogicalExpression struct {
 	Operator ast.LogicalOperatorKind
 	Left     Expression
 	Right    Expression
-
-	typ MonoType
 }
 
 func (*LogicalExpression) NodeType() string { return "LogicalExpression" }
@@ -737,7 +730,7 @@ func (e *LogicalExpression) Copy() Node {
 	return ne
 }
 func (e *LogicalExpression) TypeOf() MonoType {
-	return e.typ
+	return BasicBool
 }
 
 type MemberExpression struct {
@@ -914,10 +907,7 @@ func (i *Identifier) Copy() Node {
 
 type BooleanLiteral struct {
 	Loc
-
 	Value bool
-
-	typ MonoType
 }
 
 func (*BooleanLiteral) NodeType() string { return "BooleanLiteral" }
@@ -937,10 +927,7 @@ func (e *BooleanLiteral) TypeOf() MonoType {
 
 type DateTimeLiteral struct {
 	Loc
-
 	Value time.Time
-
-	typ MonoType
 }
 
 func (*DateTimeLiteral) NodeType() string { return "DateTimeLiteral" }
@@ -960,10 +947,7 @@ func (e *DateTimeLiteral) TypeOf() MonoType {
 
 type DurationLiteral struct {
 	Loc
-
 	Values []ast.Duration
-
-	typ MonoType
 }
 
 func (*DurationLiteral) NodeType() string { return "DurationLiteral" }
@@ -983,10 +967,7 @@ func (e *DurationLiteral) TypeOf() MonoType {
 
 type IntegerLiteral struct {
 	Loc
-
 	Value int64
-
-	typ MonoType
 }
 
 func (*IntegerLiteral) NodeType() string { return "IntegerLiteral" }
@@ -1006,10 +987,7 @@ func (e *IntegerLiteral) TypeOf() MonoType {
 
 type FloatLiteral struct {
 	Loc
-
 	Value float64
-
-	typ MonoType
 }
 
 func (*FloatLiteral) NodeType() string { return "FloatLiteral" }
@@ -1029,10 +1007,7 @@ func (e *FloatLiteral) TypeOf() MonoType {
 
 type RegexpLiteral struct {
 	Loc
-
 	Value *regexp.Regexp
-
-	typ MonoType
 }
 
 func (*RegexpLiteral) NodeType() string { return "RegexpLiteral" }
@@ -1054,10 +1029,7 @@ func (e *RegexpLiteral) TypeOf() MonoType {
 
 type StringLiteral struct {
 	Loc
-
 	Value string
-
-	typ MonoType
 }
 
 func (*StringLiteral) NodeType() string { return "StringLiteral" }
@@ -1077,10 +1049,7 @@ func (e *StringLiteral) TypeOf() MonoType {
 
 type UnsignedIntegerLiteral struct {
 	Loc
-
 	Value uint64
-
-	typ MonoType
 }
 
 func (*UnsignedIntegerLiteral) NodeType() string { return "UnsignedIntegerLiteral" }

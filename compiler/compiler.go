@@ -333,7 +333,6 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			parts[i] = e
 		}
 		return &stringExpressionEvaluator{
-			t:     monoType(subst, n.TypeOf()),
 			parts: parts,
 		}, nil
 	case *semantic.TextPart:
@@ -350,37 +349,30 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 		}, nil
 	case *semantic.BooleanLiteral:
 		return &booleanEvaluator{
-			t: monoType(subst, n.TypeOf()),
 			b: n.Value,
 		}, nil
 	case *semantic.IntegerLiteral:
 		return &integerEvaluator{
-			t: monoType(subst, n.TypeOf()),
 			i: n.Value,
 		}, nil
 	case *semantic.UnsignedIntegerLiteral:
 		return &unsignedIntegerEvaluator{
-			t: monoType(subst, n.TypeOf()),
 			i: n.Value,
 		}, nil
 	case *semantic.FloatLiteral:
 		return &floatEvaluator{
-			t: monoType(subst, n.TypeOf()),
 			f: n.Value,
 		}, nil
 	case *semantic.StringLiteral:
 		return &stringEvaluator{
-			t: monoType(subst, n.TypeOf()),
 			s: n.Value,
 		}, nil
 	case *semantic.RegexpLiteral:
 		return &regexpEvaluator{
-			t: monoType(subst, n.TypeOf()),
 			r: n.Value,
 		}, nil
 	case *semantic.DateTimeLiteral:
 		return &timeEvaluator{
-			t:    monoType(subst, n.TypeOf()),
 			time: values.ConvertTime(n.Value),
 		}, nil
 	case *semantic.DurationLiteral:
@@ -389,7 +381,6 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			return nil, err
 		}
 		return &durationEvaluator{
-			t:        monoType(subst, n.TypeOf()),
 			duration: v,
 		}, nil
 	case *semantic.UnaryExpression:
@@ -412,7 +403,6 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			return nil, err
 		}
 		return &logicalEvaluator{
-			t:        monoType(subst, n.TypeOf()),
 			operator: n.Operator,
 			left:     l,
 			right:    r,
@@ -431,7 +421,6 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			return nil, err
 		}
 		return &conditionalEvaluator{
-			t:          monoType(subst, n.Consequent.TypeOf()),
 			test:       test,
 			consequent: c,
 			alternate:  a,

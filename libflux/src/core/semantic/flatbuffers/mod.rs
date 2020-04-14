@@ -51,34 +51,22 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
         let loc = v.create_loc(node.loc());
         match node {
             walk::Node::IntegerLit(int) => {
-                // TODO (fchikwekwe): change `build_type` so that it accepts a reference.
-                // Bug filed here: https://github.com/influxdata/flux/issues/2292
-                let int_typ = int.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, int_typ);
-
                 let int = fbsemantic::IntegerLiteral::create(
                     &mut v.builder,
                     &fbsemantic::IntegerLiteralArgs {
                         loc,
                         value: int.value,
-                        typ: Some(typ),
-                        typ_type,
                     },
                 );
                 v.expr_stack
                     .push((int.as_union_value(), fbsemantic::Expression::IntegerLiteral))
             }
             walk::Node::UintLit(uint) => {
-                let uint_typ = uint.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, uint_typ);
-
                 let uint = fbsemantic::UnsignedIntegerLiteral::create(
                     &mut v.builder,
                     &fbsemantic::UnsignedIntegerLiteralArgs {
                         loc,
                         value: uint.value,
-                        typ: Some(typ),
-                        typ_type,
                     },
                 );
                 v.expr_stack.push((
@@ -87,16 +75,11 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 ))
             }
             walk::Node::FloatLit(float) => {
-                let float_typ = float.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, float_typ);
-
                 let float = fbsemantic::FloatLiteral::create(
                     &mut v.builder,
                     &fbsemantic::FloatLiteralArgs {
                         loc,
                         value: float.value,
-                        typ: Some(typ),
-                        typ_type,
                     },
                 );
                 v.expr_stack
@@ -104,16 +87,11 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
             }
             walk::Node::RegexpLit(regex) => {
                 let regex_val = v.create_string(&regex.value);
-                let regex_typ = regex.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, regex_typ);
-
                 let regex = fbsemantic::RegexpLiteral::create(
                     &mut v.builder,
                     &fbsemantic::RegexpLiteralArgs {
                         loc,
                         value: regex_val,
-                        typ: Some(typ),
-                        typ_type,
                     },
                 );
                 v.expr_stack.push((
@@ -123,16 +101,11 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
             }
             walk::Node::StringLit(string) => {
                 let string_val = v.create_string(&string.value);
-                let string_typ = string.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, string_typ);
-
                 let string = fbsemantic::StringLiteral::create(
                     &mut v.builder,
                     &fbsemantic::StringLiteralArgs {
                         loc,
                         value: string_val,
-                        typ: Some(typ),
-                        typ_type,
                     },
                 );
                 v.expr_stack.push((
@@ -157,18 +130,9 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
 
                 dur_vec.push(dur);
                 let value = Some(v.builder.create_vector(dur_vec.as_slice()));
-
-                let dur_typ = dur_lit.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, dur_typ);
-
                 let dur_lit = fbsemantic::DurationLiteral::create(
                     &mut v.builder,
-                    &fbsemantic::DurationLiteralArgs {
-                        loc,
-                        value,
-                        typ: Some(typ),
-                        typ_type,
-                    },
+                    &fbsemantic::DurationLiteralArgs { loc, value },
                 );
                 v.expr_stack.push((
                     dur_lit.as_union_value(),
@@ -193,16 +157,11 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                     },
                 );
 
-                let date_typ = datetime.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, date_typ);
-
                 let datetime = fbsemantic::DateTimeLiteral::create(
                     &mut v.builder,
                     &fbsemantic::DateTimeLiteralArgs {
                         loc,
                         value: Some(time),
-                        typ: Some(typ),
-                        typ_type,
                     },
                 );
                 v.expr_stack.push((
@@ -212,15 +171,11 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
             }
 
             walk::Node::BooleanLit(boolean) => {
-                let boolean_typ = boolean.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, boolean_typ);
                 let boolean = fbsemantic::BooleanLiteral::create(
                     &mut v.builder,
                     &fbsemantic::BooleanLiteralArgs {
                         loc,
                         value: boolean.value,
-                        typ: Some(typ),
-                        typ_type,
                     },
                 );
                 v.expr_stack.push((
@@ -382,9 +337,6 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 let (right, right_type) = v.pop_expr();
                 let (left, left_type) = v.pop_expr();
 
-                let logical_typ = logical.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, logical_typ);
-
                 let logical = fbsemantic::LogicalExpression::create(
                     &mut v.builder,
                     &fbsemantic::LogicalExpressionArgs {
@@ -394,8 +346,6 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                         left,
                         right_type,
                         right,
-                        typ: Some(typ),
-                        typ_type,
                     },
                 );
                 v.expr_stack.push((
@@ -409,9 +359,6 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 let (consequent, consequent_type) = v.pop_expr();
                 let (test, test_type) = v.pop_expr();
 
-                let cond_typ = cond.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, cond_typ);
-
                 let cond = fbsemantic::ConditionalExpression::create(
                     &mut v.builder,
                     &fbsemantic::ConditionalExpressionArgs {
@@ -422,8 +369,6 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                         alternate_type,
                         consequent,
                         consequent_type,
-                        typ: Some(typ),
-                        typ_type,
                     },
                 );
                 v.expr_stack.push((
@@ -662,17 +607,9 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                     v.string_expr_parts.truncate(start);
                     Some(vec)
                 };
-                let string_typ = string.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, string_typ);
-
                 let string = fbsemantic::StringExpression::create(
                     &mut v.builder,
-                    &fbsemantic::StringExpressionArgs {
-                        loc,
-                        parts,
-                        typ: Some(typ),
-                        typ_type,
-                    },
+                    &fbsemantic::StringExpressionArgs { loc, parts },
                 );
                 v.expr_stack.push((
                     string.as_union_value(),

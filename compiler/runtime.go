@@ -135,12 +135,11 @@ func (e *declarationEvaluator) Eval(ctx context.Context, scope Scope) (values.Va
 }
 
 type stringExpressionEvaluator struct {
-	t     semantic.MonoType
 	parts []Evaluator
 }
 
 func (e *stringExpressionEvaluator) Type() semantic.MonoType {
-	return e.t
+	return semantic.BasicString
 }
 
 func (e *stringExpressionEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
@@ -234,13 +233,12 @@ func (e *arrayEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, e
 }
 
 type logicalEvaluator struct {
-	t           semantic.MonoType
 	operator    ast.LogicalOperatorKind
 	left, right Evaluator
 }
 
 func (e *logicalEvaluator) Type() semantic.MonoType {
-	return e.t
+	return semantic.BasicBool
 }
 
 func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
@@ -270,14 +268,13 @@ func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 }
 
 type conditionalEvaluator struct {
-	t          semantic.MonoType
 	test       Evaluator
 	consequent Evaluator
 	alternate  Evaluator
 }
 
 func (e *conditionalEvaluator) Type() semantic.MonoType {
-	return e.t
+	return e.alternate.Type()
 }
 
 func (e *conditionalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
@@ -372,12 +369,11 @@ func (e *unaryEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, e
 }
 
 type integerEvaluator struct {
-	t semantic.MonoType
 	i int64
 }
 
 func (e *integerEvaluator) Type() semantic.MonoType {
-	return e.t
+	return semantic.BasicInt
 }
 
 func (e *integerEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
@@ -385,12 +381,11 @@ func (e *integerEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 }
 
 type unsignedIntegerEvaluator struct {
-	t semantic.MonoType
 	i uint64
 }
 
 func (e *unsignedIntegerEvaluator) Type() semantic.MonoType {
-	return e.t
+	return semantic.BasicUint
 }
 
 func (e *unsignedIntegerEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
@@ -398,12 +393,11 @@ func (e *unsignedIntegerEvaluator) Eval(ctx context.Context, scope Scope) (value
 }
 
 type stringEvaluator struct {
-	t semantic.MonoType
 	s string
 }
 
 func (e *stringEvaluator) Type() semantic.MonoType {
-	return e.t
+	return semantic.BasicString
 }
 
 func (e *stringEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
@@ -411,12 +405,11 @@ func (e *stringEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, 
 }
 
 type regexpEvaluator struct {
-	t semantic.MonoType
 	r *regexp.Regexp
 }
 
 func (e *regexpEvaluator) Type() semantic.MonoType {
-	return e.t
+	return semantic.BasicRegexp
 }
 
 func (e *regexpEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
@@ -424,12 +417,11 @@ func (e *regexpEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, 
 }
 
 type booleanEvaluator struct {
-	t semantic.MonoType
 	b bool
 }
 
 func (e *booleanEvaluator) Type() semantic.MonoType {
-	return e.t
+	return semantic.BasicBool
 }
 
 func (e *booleanEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
@@ -437,12 +429,11 @@ func (e *booleanEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 }
 
 type floatEvaluator struct {
-	t semantic.MonoType
 	f float64
 }
 
 func (e *floatEvaluator) Type() semantic.MonoType {
-	return e.t
+	return semantic.BasicFloat
 }
 
 func (e *floatEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
@@ -450,12 +441,11 @@ func (e *floatEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, e
 }
 
 type timeEvaluator struct {
-	t    semantic.MonoType
 	time values.Time
 }
 
 func (e *timeEvaluator) Type() semantic.MonoType {
-	return e.t
+	return semantic.BasicTime
 }
 
 func (e *timeEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
@@ -463,12 +453,11 @@ func (e *timeEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, er
 }
 
 type durationEvaluator struct {
-	t        semantic.MonoType
 	duration values.Duration
 }
 
 func (e *durationEvaluator) Type() semantic.MonoType {
-	return e.t
+	return semantic.BasicDuration
 }
 
 func (e *durationEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {

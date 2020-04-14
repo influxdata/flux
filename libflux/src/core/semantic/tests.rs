@@ -97,7 +97,7 @@ fn infer_types(
         .collect();
 
     // Compute the maximum type variable and init fresher
-    let max = imports.max_tvar();
+    let mut max = imports.max_tvar();
     let mut f = Fresher::from(max.0 + 1);
 
     // Instantiate package importer using generic objects
@@ -105,6 +105,14 @@ fn infer_types(
         .into_iter()
         .map(|(path, types)| (path, build_polytype(types, &mut f).unwrap()))
         .collect();
+
+    for (_, t) in &importer {
+        max = if t.max_tvar() > max {
+            t.max_tvar()
+        } else {
+            max
+        };
+    }
 
     // Parse polytype expressions in initial environment.
     let env = parse_map(env);
@@ -3314,7 +3322,7 @@ fn test_error_messages() {
             a.x
         "#,
         // Location points to the identifier a
-        err: "type error @3:13-3:14: [int] != {x:t6 | t8}",
+        err: "type error @3:13-3:14: [int] != {x:t3 | t5}",
     }
     test_error_msg! {
         src: r#"

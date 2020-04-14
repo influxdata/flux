@@ -2105,29 +2105,8 @@ func (rcv *StringExpression) PartsLength() int {
 	return 0
 }
 
-func (rcv *StringExpression) TypType() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *StringExpression) MutateTypType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
-}
-
-func (rcv *StringExpression) Typ(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
-	if o != 0 {
-		rcv._tab.Union(obj, o)
-		return true
-	}
-	return false
-}
-
 func StringExpressionStart(builder *flatbuffers.Builder) {
-	builder.StartObject(4)
+	builder.StartObject(2)
 }
 func StringExpressionAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
@@ -2137,12 +2116,6 @@ func StringExpressionAddParts(builder *flatbuffers.Builder, parts flatbuffers.UO
 }
 func StringExpressionStartPartsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
-}
-func StringExpressionAddTypType(builder *flatbuffers.Builder, typType byte) {
-	builder.PrependByteSlot(2, typType, 0)
-}
-func StringExpressionAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(typ), 0)
 }
 func StringExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -2992,29 +2965,8 @@ func (rcv *ConditionalExpression) Consequent(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func (rcv *ConditionalExpression) TypType() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *ConditionalExpression) MutateTypType(n byte) bool {
-	return rcv._tab.MutateByteSlot(18, n)
-}
-
-func (rcv *ConditionalExpression) Typ(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(20))
-	if o != 0 {
-		rcv._tab.Union(obj, o)
-		return true
-	}
-	return false
-}
-
 func ConditionalExpressionStart(builder *flatbuffers.Builder) {
-	builder.StartObject(9)
+	builder.StartObject(7)
 }
 func ConditionalExpressionAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
@@ -3036,12 +2988,6 @@ func ConditionalExpressionAddConsequentType(builder *flatbuffers.Builder, conseq
 }
 func ConditionalExpressionAddConsequent(builder *flatbuffers.Builder, consequent flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(consequent), 0)
-}
-func ConditionalExpressionAddTypType(builder *flatbuffers.Builder, typType byte) {
-	builder.PrependByteSlot(7, typType, 0)
-}
-func ConditionalExpressionAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(8, flatbuffers.UOffsetT(typ), 0)
 }
 func ConditionalExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -3134,29 +3080,8 @@ func (rcv *LogicalExpression) Right(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func (rcv *LogicalExpression) TypType() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *LogicalExpression) MutateTypType(n byte) bool {
-	return rcv._tab.MutateByteSlot(16, n)
-}
-
-func (rcv *LogicalExpression) Typ(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(18))
-	if o != 0 {
-		rcv._tab.Union(obj, o)
-		return true
-	}
-	return false
-}
-
 func LogicalExpressionStart(builder *flatbuffers.Builder) {
-	builder.StartObject(8)
+	builder.StartObject(6)
 }
 func LogicalExpressionAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
@@ -3175,12 +3100,6 @@ func LogicalExpressionAddRightType(builder *flatbuffers.Builder, rightType byte)
 }
 func LogicalExpressionAddRight(builder *flatbuffers.Builder, right flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(right), 0)
-}
-func LogicalExpressionAddTypType(builder *flatbuffers.Builder, typType byte) {
-	builder.PrependByteSlot(6, typType, 0)
-}
-func LogicalExpressionAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(7, flatbuffers.UOffsetT(typ), 0)
 }
 func LogicalExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -3908,41 +3827,14 @@ func (rcv *BooleanLiteral) MutateValue(n bool) bool {
 	return rcv._tab.MutateBoolSlot(6, n)
 }
 
-func (rcv *BooleanLiteral) TypType() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *BooleanLiteral) MutateTypType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
-}
-
-func (rcv *BooleanLiteral) Typ(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
-	if o != 0 {
-		rcv._tab.Union(obj, o)
-		return true
-	}
-	return false
-}
-
 func BooleanLiteralStart(builder *flatbuffers.Builder) {
-	builder.StartObject(4)
+	builder.StartObject(2)
 }
 func BooleanLiteralAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
 }
 func BooleanLiteralAddValue(builder *flatbuffers.Builder, value bool) {
 	builder.PrependBoolSlot(1, value, false)
-}
-func BooleanLiteralAddTypType(builder *flatbuffers.Builder, typType byte) {
-	builder.PrependByteSlot(2, typType, 0)
-}
-func BooleanLiteralAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(typ), 0)
 }
 func BooleanLiteralEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -3994,41 +3886,14 @@ func (rcv *DateTimeLiteral) Value(obj *Time) *Time {
 	return nil
 }
 
-func (rcv *DateTimeLiteral) TypType() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *DateTimeLiteral) MutateTypType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
-}
-
-func (rcv *DateTimeLiteral) Typ(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
-	if o != 0 {
-		rcv._tab.Union(obj, o)
-		return true
-	}
-	return false
-}
-
 func DateTimeLiteralStart(builder *flatbuffers.Builder) {
-	builder.StartObject(4)
+	builder.StartObject(2)
 }
 func DateTimeLiteralAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
 }
 func DateTimeLiteralAddValue(builder *flatbuffers.Builder, value flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(value), 0)
-}
-func DateTimeLiteralAddTypType(builder *flatbuffers.Builder, typType byte) {
-	builder.PrependByteSlot(2, typType, 0)
-}
-func DateTimeLiteralAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(typ), 0)
 }
 func DateTimeLiteralEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -4231,29 +4096,8 @@ func (rcv *DurationLiteral) ValueLength() int {
 	return 0
 }
 
-func (rcv *DurationLiteral) TypType() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *DurationLiteral) MutateTypType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
-}
-
-func (rcv *DurationLiteral) Typ(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
-	if o != 0 {
-		rcv._tab.Union(obj, o)
-		return true
-	}
-	return false
-}
-
 func DurationLiteralStart(builder *flatbuffers.Builder) {
-	builder.StartObject(4)
+	builder.StartObject(2)
 }
 func DurationLiteralAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
@@ -4263,12 +4107,6 @@ func DurationLiteralAddValue(builder *flatbuffers.Builder, value flatbuffers.UOf
 }
 func DurationLiteralStartValueVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
-}
-func DurationLiteralAddTypType(builder *flatbuffers.Builder, typType byte) {
-	builder.PrependByteSlot(2, typType, 0)
-}
-func DurationLiteralAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(typ), 0)
 }
 func DurationLiteralEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -4319,41 +4157,14 @@ func (rcv *IntegerLiteral) MutateValue(n int64) bool {
 	return rcv._tab.MutateInt64Slot(6, n)
 }
 
-func (rcv *IntegerLiteral) TypType() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *IntegerLiteral) MutateTypType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
-}
-
-func (rcv *IntegerLiteral) Typ(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
-	if o != 0 {
-		rcv._tab.Union(obj, o)
-		return true
-	}
-	return false
-}
-
 func IntegerLiteralStart(builder *flatbuffers.Builder) {
-	builder.StartObject(4)
+	builder.StartObject(2)
 }
 func IntegerLiteralAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
 }
 func IntegerLiteralAddValue(builder *flatbuffers.Builder, value int64) {
 	builder.PrependInt64Slot(1, value, 0)
-}
-func IntegerLiteralAddTypType(builder *flatbuffers.Builder, typType byte) {
-	builder.PrependByteSlot(2, typType, 0)
-}
-func IntegerLiteralAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(typ), 0)
 }
 func IntegerLiteralEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -4404,41 +4215,14 @@ func (rcv *FloatLiteral) MutateValue(n float64) bool {
 	return rcv._tab.MutateFloat64Slot(6, n)
 }
 
-func (rcv *FloatLiteral) TypType() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *FloatLiteral) MutateTypType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
-}
-
-func (rcv *FloatLiteral) Typ(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
-	if o != 0 {
-		rcv._tab.Union(obj, o)
-		return true
-	}
-	return false
-}
-
 func FloatLiteralStart(builder *flatbuffers.Builder) {
-	builder.StartObject(4)
+	builder.StartObject(2)
 }
 func FloatLiteralAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
 }
 func FloatLiteralAddValue(builder *flatbuffers.Builder, value float64) {
 	builder.PrependFloat64Slot(1, value, 0.0)
-}
-func FloatLiteralAddTypType(builder *flatbuffers.Builder, typType byte) {
-	builder.PrependByteSlot(2, typType, 0)
-}
-func FloatLiteralAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(typ), 0)
 }
 func FloatLiteralEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -4485,41 +4269,14 @@ func (rcv *RegexpLiteral) Value() []byte {
 	return nil
 }
 
-func (rcv *RegexpLiteral) TypType() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *RegexpLiteral) MutateTypType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
-}
-
-func (rcv *RegexpLiteral) Typ(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
-	if o != 0 {
-		rcv._tab.Union(obj, o)
-		return true
-	}
-	return false
-}
-
 func RegexpLiteralStart(builder *flatbuffers.Builder) {
-	builder.StartObject(4)
+	builder.StartObject(2)
 }
 func RegexpLiteralAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
 }
 func RegexpLiteralAddValue(builder *flatbuffers.Builder, value flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(value), 0)
-}
-func RegexpLiteralAddTypType(builder *flatbuffers.Builder, typType byte) {
-	builder.PrependByteSlot(2, typType, 0)
-}
-func RegexpLiteralAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(typ), 0)
 }
 func RegexpLiteralEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -4566,41 +4323,14 @@ func (rcv *StringLiteral) Value() []byte {
 	return nil
 }
 
-func (rcv *StringLiteral) TypType() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *StringLiteral) MutateTypType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
-}
-
-func (rcv *StringLiteral) Typ(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
-	if o != 0 {
-		rcv._tab.Union(obj, o)
-		return true
-	}
-	return false
-}
-
 func StringLiteralStart(builder *flatbuffers.Builder) {
-	builder.StartObject(4)
+	builder.StartObject(2)
 }
 func StringLiteralAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
 }
 func StringLiteralAddValue(builder *flatbuffers.Builder, value flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(value), 0)
-}
-func StringLiteralAddTypType(builder *flatbuffers.Builder, typType byte) {
-	builder.PrependByteSlot(2, typType, 0)
-}
-func StringLiteralAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(typ), 0)
 }
 func StringLiteralEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -4651,41 +4381,14 @@ func (rcv *UnsignedIntegerLiteral) MutateValue(n uint64) bool {
 	return rcv._tab.MutateUint64Slot(6, n)
 }
 
-func (rcv *UnsignedIntegerLiteral) TypType() byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
-	}
-	return 0
-}
-
-func (rcv *UnsignedIntegerLiteral) MutateTypType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
-}
-
-func (rcv *UnsignedIntegerLiteral) Typ(obj *flatbuffers.Table) bool {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
-	if o != 0 {
-		rcv._tab.Union(obj, o)
-		return true
-	}
-	return false
-}
-
 func UnsignedIntegerLiteralStart(builder *flatbuffers.Builder) {
-	builder.StartObject(4)
+	builder.StartObject(2)
 }
 func UnsignedIntegerLiteralAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
 }
 func UnsignedIntegerLiteralAddValue(builder *flatbuffers.Builder, value uint64) {
 	builder.PrependUint64Slot(1, value, 0)
-}
-func UnsignedIntegerLiteralAddTypType(builder *flatbuffers.Builder, typType byte) {
-	builder.PrependByteSlot(2, typType, 0)
-}
-func UnsignedIntegerLiteralAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(typ), 0)
 }
 func UnsignedIntegerLiteralEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

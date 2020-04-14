@@ -144,28 +144,30 @@ impl<'a> Node<'a> {
             Node::MemberAssgn(n) => &n.loc,
         }
     }
-    pub fn type_of(&self) -> Option<&MonoType> {
+    pub fn type_of(&self) -> Option<MonoType> {
         match self {
-            Node::IdentifierExpr(n) => Some(&n.typ),
-            Node::ArrayExpr(n) => Some(&n.typ),
-            Node::FunctionExpr(n) => Some(&n.typ),
-            Node::LogicalExpr(n) => Some(&n.typ),
-            Node::ObjectExpr(n) => Some(&n.typ),
-            Node::MemberExpr(n) => Some(&n.typ),
-            Node::IndexExpr(n) => Some(&n.typ),
-            Node::BinaryExpr(n) => Some(&n.typ),
-            Node::UnaryExpr(n) => Some(&n.typ),
-            Node::CallExpr(n) => Some(&n.typ),
-            Node::ConditionalExpr(n) => Some(&n.typ),
-            Node::StringExpr(n) => Some(&n.typ),
-            Node::IntegerLit(n) => Some(&n.typ),
-            Node::FloatLit(n) => Some(&n.typ),
-            Node::StringLit(n) => Some(&n.typ),
-            Node::DurationLit(n) => Some(&n.typ),
-            Node::UintLit(n) => Some(&n.typ),
-            Node::BooleanLit(n) => Some(&n.typ),
-            Node::DateTimeLit(n) => Some(&n.typ),
-            Node::RegexpLit(n) => Some(&n.typ),
+            Node::IdentifierExpr(n) => Some(Expression::Identifier((*n).clone()).type_of()),
+            Node::ArrayExpr(n) => Some(Expression::Array(Box::new((*n).clone())).type_of()),
+            Node::FunctionExpr(n) => Some(Expression::Function(Box::new((*n).clone())).type_of()),
+            Node::LogicalExpr(n) => Some(Expression::Logical(Box::new((*n).clone())).type_of()),
+            Node::ObjectExpr(n) => Some(Expression::Object(Box::new((*n).clone())).type_of()),
+            Node::MemberExpr(n) => Some(Expression::Member(Box::new((*n).clone())).type_of()),
+            Node::IndexExpr(n) => Some(Expression::Index(Box::new((*n).clone())).type_of()),
+            Node::BinaryExpr(n) => Some(Expression::Binary(Box::new((*n).clone())).type_of()),
+            Node::UnaryExpr(n) => Some(Expression::Unary(Box::new((*n).clone())).type_of()),
+            Node::CallExpr(n) => Some(Expression::Call(Box::new((*n).clone())).type_of()),
+            Node::ConditionalExpr(n) => {
+                Some(Expression::Conditional(Box::new((*n).clone())).type_of())
+            }
+            Node::StringExpr(n) => Some(Expression::StringExpr(Box::new((*n).clone())).type_of()),
+            Node::IntegerLit(n) => Some(Expression::Integer((*n).clone()).type_of()),
+            Node::FloatLit(n) => Some(Expression::Float((*n).clone()).type_of()),
+            Node::StringLit(n) => Some(Expression::StringLit((*n).clone()).type_of()),
+            Node::DurationLit(n) => Some(Expression::Duration((*n).clone()).type_of()),
+            Node::UintLit(n) => Some(Expression::Uint((*n).clone()).type_of()),
+            Node::BooleanLit(n) => Some(Expression::Boolean((*n).clone()).type_of()),
+            Node::DateTimeLit(n) => Some(Expression::DateTime((*n).clone()).type_of()),
+            Node::RegexpLit(n) => Some(Expression::Regexp((*n).clone()).type_of()),
             _ => None,
         }
     }

@@ -97,9 +97,6 @@ func (rcv *BooleanLiteral) FromBuf(fb *fbsemantic.BooleanLiteral) error {
 		}
 	}
 	rcv.Value = fb.Value()
-	if rcv.typ, err = getMonoType(fb); err != nil {
-		return errors.Wrap(err, codes.Inherit, "BooleanLiteral.typ")
-	}
 	return nil
 }
 
@@ -166,9 +163,6 @@ func (rcv *ConditionalExpression) FromBuf(fb *fbsemantic.ConditionalExpression) 
 	if rcv.Consequent, err = fromExpressionTable(fb.Consequent, fb.ConsequentType()); err != nil {
 		return errors.Wrap(err, codes.Inherit, "ConditionalExpression.Consequent")
 	}
-	if rcv.typ, err = getMonoType(fb); err != nil {
-		return errors.Wrap(err, codes.Inherit, "ConditionalExpression.typ")
-	}
 	return nil
 }
 
@@ -185,9 +179,6 @@ func (rcv *DateTimeLiteral) FromBuf(fb *fbsemantic.DateTimeLiteral) error {
 	if fbValue := fb.Value(nil); fbValue != nil {
 		rcv.Value = fromFBTime(fbValue)
 	}
-	if rcv.typ, err = getMonoType(fb); err != nil {
-		return errors.Wrap(err, codes.Inherit, "DateTimeLiteral.typ")
-	}
 	return nil
 }
 
@@ -203,9 +194,6 @@ func (rcv *DurationLiteral) FromBuf(fb *fbsemantic.DurationLiteral) error {
 	}
 	if rcv.Values, err = fromFBDurationVector(fb); err != nil {
 		return errors.Wrap(err, codes.Inherit, "DurationLiteral.Values")
-	}
-	if rcv.typ, err = getMonoType(fb); err != nil {
-		return errors.Wrap(err, codes.Inherit, "DurationLiteral.typ")
 	}
 	return nil
 }
@@ -281,9 +269,6 @@ func (rcv *FloatLiteral) FromBuf(fb *fbsemantic.FloatLiteral) error {
 		}
 	}
 	rcv.Value = fb.Value()
-	if rcv.typ, err = getMonoType(fb); err != nil {
-		return errors.Wrap(err, codes.Inherit, "FloatLiteral.typ")
-	}
 	return nil
 }
 
@@ -376,9 +361,6 @@ func (rcv *IntegerLiteral) FromBuf(fb *fbsemantic.IntegerLiteral) error {
 		}
 	}
 	rcv.Value = fb.Value()
-	if rcv.typ, err = getMonoType(fb); err != nil {
-		return errors.Wrap(err, codes.Inherit, "IntegerLiteral.typ")
-	}
 	return nil
 }
 
@@ -400,9 +382,6 @@ func (rcv *LogicalExpression) FromBuf(fb *fbsemantic.LogicalExpression) error {
 	}
 	if rcv.Right, err = fromExpressionTable(fb.Right, fb.RightType()); err != nil {
 		return errors.Wrap(err, codes.Inherit, "LogicalExpression.Right")
-	}
-	if rcv.typ, err = getMonoType(fb); err != nil {
-		return errors.Wrap(err, codes.Inherit, "LogicalExpression.typ")
 	}
 	return nil
 }
@@ -603,9 +582,6 @@ func (rcv *RegexpLiteral) FromBuf(fb *fbsemantic.RegexpLiteral) error {
 	if rcv.Value, err = fromFBRegexpLiteral(fb.Value()); err != nil {
 		return errors.Wrap(err, codes.Inherit, "RegexpLiteral.Value")
 	}
-	if rcv.typ, err = getMonoType(fb); err != nil {
-		return errors.Wrap(err, codes.Inherit, "RegexpLiteral.typ")
-	}
 	return nil
 }
 
@@ -638,9 +614,6 @@ func (rcv *StringExpression) FromBuf(fb *fbsemantic.StringExpression) error {
 	if rcv.Parts, err = fromFBStringExpressionPartVector(fb); err != nil {
 		return errors.Wrap(err, codes.Inherit, "StringExpression.Parts")
 	}
-	if rcv.typ, err = getMonoType(fb); err != nil {
-		return errors.Wrap(err, codes.Inherit, "StringExpression.typ")
-	}
 	return nil
 }
 
@@ -655,9 +628,6 @@ func (rcv *StringLiteral) FromBuf(fb *fbsemantic.StringLiteral) error {
 		}
 	}
 	rcv.Value = string(fb.Value())
-	if rcv.typ, err = getMonoType(fb); err != nil {
-		return errors.Wrap(err, codes.Inherit, "StringLiteral.typ")
-	}
 	return nil
 }
 
@@ -713,8 +683,5 @@ func (rcv *UnsignedIntegerLiteral) FromBuf(fb *fbsemantic.UnsignedIntegerLiteral
 		}
 	}
 	rcv.Value = fb.Value()
-	if rcv.typ, err = getMonoType(fb); err != nil {
-		return errors.Wrap(err, codes.Inherit, "UnsignedIntegerLiteral.typ")
-	}
 	return nil
 }
