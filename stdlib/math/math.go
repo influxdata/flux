@@ -23,12 +23,13 @@ func generateMathFunctionX(name string, mathFn func(float64) float64) values.Fun
 			if !ok {
 				return nil, errors.New(codes.Invalid, "missing argument x")
 			}
-
-			if v.Type().Nature() == semantic.Float {
-				return values.NewFloat(mathFn(v.Float())), nil
+			if v.Type().Nature() != semantic.Float {
+				return nil, fmt.Errorf("cannot convert argument of type %v to float", v.Type().Nature())
 			}
-
-			return nil, fmt.Errorf("cannot convert argument of type %v to float", v.Type().Nature())
+			if v.IsNull() {
+				return values.NewNull(semantic.BasicFloat), nil
+			}
+			return values.NewFloat(mathFn(v.Float())), nil
 		}, false,
 	)
 }
@@ -49,15 +50,16 @@ func generateMathFunctionXY(name string, mathFn func(float64, float64) float64, 
 			if !ok {
 				return nil, fmt.Errorf("missing argument %s", argNames[1])
 			}
-
-			if v1.Type().Nature() == semantic.Float {
-				if v2.Type().Nature() == semantic.Float {
-					return values.NewFloat(mathFn(v1.Float(), v2.Float())), nil
-				} else {
-					return nil, fmt.Errorf("cannot convert argument %s of type %v to float", argNames[1], v2.Type().Nature())
-				}
+			if v1.Type().Nature() != semantic.Float {
+				return nil, fmt.Errorf("cannot convert argument %s of type %v to float", argNames[0], v1.Type().Nature())
 			}
-			return nil, fmt.Errorf("cannot convert argument %s of type %v to float", argNames[0], v1.Type().Nature())
+			if v2.Type().Nature() != semantic.Float {
+				return nil, fmt.Errorf("cannot convert argument %s of type %v to float", argNames[1], v2.Type().Nature())
+			}
+			if v1.IsNull() || v2.IsNull() {
+				return values.NewNull(semantic.BasicFloat), nil
+			}
+			return values.NewFloat(mathFn(v1.Float(), v2.Float())), nil
 		}, false,
 	)
 }
@@ -137,30 +139,36 @@ func init() {
 			"float64bits",
 			runtime.MustLookupBuiltinType("math", "float64bits"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				v1, ok := args.Get("f")
+				names := []string{"f"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument f")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
-
-				if v1.Type().Nature() == semantic.Float {
-					return values.NewUInt(math.Float64bits(v1.Float())), nil
+				if v1.Type().Nature() != semantic.Float {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to float", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument f of type %v to float", v1.Type().Nature())
+				if v1.IsNull() {
+					return values.NewNull(semantic.BasicUint), nil
+				}
+				return values.NewUInt(math.Float64bits(v1.Float())), nil
 			}, false,
 		),
 		"float64frombits": values.NewFunction(
 			"float64frombits",
 			runtime.MustLookupBuiltinType("math", "float64frombits"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				v1, ok := args.Get("b")
+				names := []string{"b"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument b")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
-
-				if v1.Type().Nature() == semantic.UInt {
-					return values.NewFloat(math.Float64frombits(v1.UInt())), nil
+				if v1.Type().Nature() != semantic.UInt {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to uint", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument b of type %v to uint", v1.Type().Nature())
+				if v1.IsNull() {
+					return values.NewNull(semantic.BasicFloat), nil
+				}
+				return values.NewFloat(math.Float64frombits(v1.UInt())), nil
 			}, false,
 		),
 		// float --> int
@@ -168,15 +176,18 @@ func init() {
 			"ilogb",
 			runtime.MustLookupBuiltinType("math", "ilogb"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				v1, ok := args.Get("x")
+				names := []string{"x"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument x")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
-
-				if v1.Type().Nature() == semantic.Float {
-					return values.NewInt(int64(math.Ilogb(v1.Float()))), nil
+				if v1.Type().Nature() != semantic.Float {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to float", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument x of type %v to float", v1.Type().Nature())
+				if v1.IsNull() {
+					return values.NewNull(semantic.BasicInt), nil
+				}
+				return values.NewInt(int64(math.Ilogb(v1.Float()))), nil
 			}, false,
 		),
 		// float --> {frac: float, exp: int}
@@ -184,16 +195,22 @@ func init() {
 			"frexp",
 			runtime.MustLookupBuiltinType("math", "frexp"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				v1, ok := args.Get("f")
+				names := []string{"f"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument f")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
-
-				if v1.Type().Nature() == semantic.Float {
-					frac, exp := math.Frexp(v1.Float())
-					return values.NewObjectWithValues(map[string]values.Value{"frac": values.NewFloat(frac), "exp": values.NewInt(int64(exp))}), nil
+				if v1.Type().Nature() != semantic.Float {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to float", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument f of type %v to float", v1.Type().Nature())
+				if v1.IsNull() {
+					return nil, fmt.Errorf("frexp does not support null values")
+				}
+				frac, exp := math.Frexp(v1.Float())
+				return values.NewObjectWithValues(map[string]values.Value{
+					"frac": values.NewFloat(frac),
+					"exp":  values.NewInt(int64(exp)),
+				}), nil
 			}, false,
 		),
 		// float --> {lgamma: float, sign: int}
@@ -201,16 +218,22 @@ func init() {
 			"lgamma",
 			runtime.MustLookupBuiltinType("math", "lgamma"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				v1, ok := args.Get("x")
+				names := []string{"x"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument x")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
-
-				if v1.Type().Nature() == semantic.Float {
-					lgamma, sign := math.Lgamma(v1.Float())
-					return values.NewObjectWithValues(map[string]values.Value{"lgamma": values.NewFloat(lgamma), "sign": values.NewInt(int64(sign))}), nil
+				if v1.Type().Nature() != semantic.Float {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to float", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument x of type %v to float", v1.Type().Nature())
+				if v1.IsNull() {
+					return nil, fmt.Errorf("lgamma does not support null values")
+				}
+				lgamma, sign := math.Lgamma(v1.Float())
+				return values.NewObjectWithValues(map[string]values.Value{
+					"lgamma": values.NewFloat(lgamma),
+					"sign":   values.NewInt(int64(sign)),
+				}), nil
 			}, false,
 		),
 		// float --> {int: float, frac: float}
@@ -218,16 +241,22 @@ func init() {
 			"modf",
 			runtime.MustLookupBuiltinType("math", "modf"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				v1, ok := args.Get("f")
+				names := []string{"f"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument f")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
-
-				if v1.Type().Nature() == semantic.Float {
-					intres, frac := math.Modf(v1.Float())
-					return values.NewObjectWithValues(map[string]values.Value{"int": values.NewFloat(intres), "frac": values.NewFloat(frac)}), nil
+				if v1.Type().Nature() != semantic.Float {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to float", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument f of type %v to float", v1.Type().Nature())
+				if v1.IsNull() {
+					return nil, fmt.Errorf("modf does not support null values")
+				}
+				intres, frac := math.Modf(v1.Float())
+				return values.NewObjectWithValues(map[string]values.Value{
+					"int":  values.NewFloat(intres),
+					"frac": values.NewFloat(frac),
+				}), nil
 			}, false,
 		),
 		// float --> {sin: float, cos: float}
@@ -235,16 +264,22 @@ func init() {
 			"sincos",
 			runtime.MustLookupBuiltinType("math", "sincos"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				v1, ok := args.Get("x")
+				names := []string{"x"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument x")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
-
-				if v1.Type().Nature() == semantic.Float {
-					sin, cos := math.Sin(v1.Float()), math.Cos(v1.Float())
-					return values.NewObjectWithValues(map[string]values.Value{"sin": values.NewFloat(sin), "cos": values.NewFloat(cos)}), nil
+				if v1.Type().Nature() != semantic.Float {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to float", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument x of type %v to float", v1.Type().Nature())
+				if v1.IsNull() {
+					return nil, fmt.Errorf("sincos does not support null values")
+				}
+				sin, cos := math.Sin(v1.Float()), math.Cos(v1.Float())
+				return values.NewObjectWithValues(map[string]values.Value{
+					"sin": values.NewFloat(sin),
+					"cos": values.NewFloat(cos),
+				}), nil
 			}, false,
 		),
 		// float, int --> bool
@@ -252,23 +287,25 @@ func init() {
 			"isInf",
 			runtime.MustLookupBuiltinType("math", "isInf"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				v1, ok := args.Get("f")
+				names := []string{"f", "sign"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument f")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
 				v2, ok := args.Get("sign")
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument sign")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[1])
 				}
-
-				if v1.Type().Nature() == semantic.Float {
-					if v2.Type().Nature() == semantic.Int {
-						return values.NewBool(math.IsInf(v1.Float(), int(v2.Int()))), nil
-					} else {
-						return nil, fmt.Errorf("cannot convert argument sign of type %v to int", v2.Type().Nature())
-					}
+				if v1.Type().Nature() != semantic.Float {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to float", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument f of type %v to float", v1.Type().Nature())
+				if v2.Type().Nature() != semantic.Int {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to int", names[1], v2.Type().Nature())
+				}
+				if v1.IsNull() || v2.IsNull() {
+					return values.NewNull(semantic.BasicBool), nil
+				}
+				return values.NewBool(math.IsInf(v1.Float(), int(v2.Int()))), nil
 			}, false,
 		),
 		// float --> bool
@@ -276,15 +313,18 @@ func init() {
 			"isNaN",
 			runtime.MustLookupBuiltinType("math", "isNaN"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				v1, ok := args.Get("f")
+				names := []string{"f"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument f")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
-
-				if v1.Type().Nature() == semantic.Float {
-					return values.NewBool(math.IsNaN(v1.Float())), nil
+				if v1.Type().Nature() != semantic.Float {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to float", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument f of type %v to float", v1.Type().Nature())
+				if v1.IsNull() {
+					return values.NewNull(semantic.BasicBool), nil
+				}
+				return values.NewBool(math.IsNaN(v1.Float())), nil
 			}, false,
 		),
 		// float --> bool
@@ -292,15 +332,18 @@ func init() {
 			"signbit",
 			runtime.MustLookupBuiltinType("math", "signbit"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				v1, ok := args.Get("x")
+				names := []string{"x"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument x")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
-
-				if v1.Type().Nature() == semantic.Float {
-					return values.NewBool(math.Signbit(v1.Float())), nil
+				if v1.Type().Nature() != semantic.Float {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to float", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument x of type %v to float", v1.Type().Nature())
+				if v1.IsNull() {
+					return values.NewNull(semantic.BasicBool), nil
+				}
+				return values.NewBool(math.Signbit(v1.Float())), nil
 			}, false,
 		),
 		// () --> float
@@ -316,16 +359,18 @@ func init() {
 			"inf",
 			runtime.MustLookupBuiltinType("math", "mInf"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-
-				v1, ok := args.Get("sign")
+				names := []string{"sign"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument sign")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
-
-				if v1.Type().Nature() == semantic.Int {
-					return values.NewFloat(math.Inf(int(v1.Int()))), nil
+				if v1.Type().Nature() != semantic.Int {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to int", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument sign of type %v to int", v1.Type().Nature())
+				if v1.IsNull() {
+					return values.NewNull(semantic.BasicFloat), nil
+				}
+				return values.NewFloat(math.Inf(int(v1.Int()))), nil
 			}, false,
 		),
 		// (int, float) --> float
@@ -333,23 +378,25 @@ func init() {
 			"jn",
 			runtime.MustLookupBuiltinType("math", "jn"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				v1, ok := args.Get("n")
+				names := []string{"n", "x"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument n")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
-				v2, ok := args.Get("x")
+				v2, ok := args.Get(names[1])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument x")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[1])
 				}
-
-				if v1.Type().Nature() == semantic.Int {
-					if v2.Type().Nature() == semantic.Float {
-						return values.NewFloat(math.Jn(int(v1.Int()), v2.Float())), nil
-					} else {
-						return nil, fmt.Errorf("cannot convert argument x of type %v to float", v2.Type().Nature())
-					}
+				if v1.Type().Nature() != semantic.Int {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to int", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument n of type %v to int", v1.Type().Nature())
+				if v2.Type().Nature() != semantic.Float {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to float", names[1], v2.Type().Nature())
+				}
+				if v1.IsNull() || v2.IsNull() {
+					return values.NewNull(semantic.BasicFloat), nil
+				}
+				return values.NewFloat(math.Jn(int(v1.Int()), v2.Float())), nil
 			}, false,
 		),
 		// (int, float) --> float
@@ -357,23 +404,25 @@ func init() {
 			"yn",
 			runtime.MustLookupBuiltinType("math", "yn"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				v1, ok := args.Get("n")
+				names := []string{"n", "x"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument n")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
-				v2, ok := args.Get("x")
+				v2, ok := args.Get(names[1])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument x")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[1])
 				}
-
-				if v1.Type().Nature() == semantic.Int {
-					if v2.Type().Nature() == semantic.Float {
-						return values.NewFloat(math.Yn(int(v1.Int()), v2.Float())), nil
-					} else {
-						return nil, fmt.Errorf("cannot convert argument x of type %v to float", v2.Type().Nature())
-					}
+				if v1.Type().Nature() != semantic.Int {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to int", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument n of type %v to int", v1.Type().Nature())
+				if v2.Type().Nature() != semantic.Float {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to float", names[1], v2.Type().Nature())
+				}
+				if v1.IsNull() || v2.IsNull() {
+					return values.NewNull(semantic.BasicFloat), nil
+				}
+				return values.NewFloat(math.Yn(int(v1.Int()), v2.Float())), nil
 			}, false,
 		),
 		// (float, int) --> float
@@ -381,23 +430,25 @@ func init() {
 			"ldexp",
 			runtime.MustLookupBuiltinType("math", "ldexp"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				v1, ok := args.Get("frac")
+				names := []string{"frac", "exp"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument frac")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
-				v2, ok := args.Get("exp")
+				v2, ok := args.Get(names[1])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument exp")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[1])
 				}
-
-				if v1.Type().Nature() == semantic.Float {
-					if v2.Type().Nature() == semantic.Int {
-						return values.NewFloat(math.Ldexp(v1.Float(), int(v2.Int()))), nil
-					} else {
-						return nil, fmt.Errorf("cannot convert argument exp of type %v to int", v2.Type().Nature())
-					}
+				if v1.Type().Nature() != semantic.Float {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to float", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument frac of type %v to float", v1.Type().Nature())
+				if v2.Type().Nature() != semantic.Int {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to int", names[1], v2.Type().Nature())
+				}
+				if v1.IsNull() || v2.IsNull() {
+					return values.NewNull(semantic.BasicFloat), nil
+				}
+				return values.NewFloat(math.Ldexp(v1.Float(), int(v2.Int()))), nil
 			}, false,
 		),
 		// int --> float
@@ -405,15 +456,18 @@ func init() {
 			"pow10",
 			runtime.MustLookupBuiltinType("math", "pow10"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				v1, ok := args.Get("n")
+				names := []string{"n"}
+				v1, ok := args.Get(names[0])
 				if !ok {
-					return nil, errors.New(codes.Invalid, "missing argument frac")
+					return nil, errors.Newf(codes.Invalid, "missing argument %s", names[0])
 				}
-
-				if v1.Type().Nature() == semantic.Int {
-					return values.NewFloat(math.Pow10(int(v1.Int()))), nil
+				if v1.Type().Nature() != semantic.Int {
+					return nil, fmt.Errorf("cannot convert argument %s of type %v to int", names[0], v1.Type().Nature())
 				}
-				return nil, fmt.Errorf("cannot convert argument n of type %v to int", v1.Type().Nature())
+				if v1.IsNull() {
+					return values.NewNull(semantic.BasicFloat), nil
+				}
+				return values.NewFloat(math.Pow10(int(v1.Int()))), nil
 			}, false,
 		),
 	}

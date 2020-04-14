@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/influxdata/flux/semantic"
+
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/values"
 )
@@ -115,6 +117,104 @@ func TestMathFunctionsXY(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNulls(t *testing.T) {
+	t.Run("single parameter functions", func(t *testing.T) {
+		testCases := []struct {
+			name   string
+			mathFn func(float64) float64
+		}{
+			{"abs", math.Abs},
+			{"abs", math.Abs},
+			{"acos", math.Acos},
+			{"acosh", math.Acosh},
+			{"asin", math.Asin},
+			{"asinh", math.Asinh},
+			{"atan", math.Atan},
+			{"atanh", math.Atanh},
+			{"cbrt", math.Cbrt},
+			{"ceil", math.Ceil},
+			{"cos", math.Cos},
+			{"cosh", math.Cosh},
+			{"erf", math.Erf},
+			{"erfc", math.Erfc},
+			{"erfcinv", math.Erfcinv},
+			{"erfinv", math.Erfinv},
+			{"exp", math.Exp},
+			{"exp2", math.Exp2},
+			{"expm1", math.Expm1},
+			{"floor", math.Floor},
+			{"gamma", math.Gamma},
+			{"j0", math.J0},
+			{"j1", math.J1},
+			{"log", math.Log},
+			{"log10", math.Log10},
+			{"log1p", math.Log1p},
+			{"log2", math.Log2},
+			{"logb", math.Logb},
+			{"round", math.Round},
+			{"roundtoeven", math.RoundToEven},
+			{"sin", math.Sin},
+			{"sinh", math.Sinh},
+			{"sqrt", math.Sqrt},
+			{"tan", math.Tan},
+			{"tanh", math.Tanh},
+			{"trunc", math.Trunc},
+			{"y0", math.Y0},
+			{"y1", math.Y1},
+		}
+		for _, tc := range testCases {
+			tc := tc
+			t.Run(tc.name, func(t *testing.T) {
+				fn := generateMathFunctionX(tc.name, tc.mathFn)
+				v, err := fn.Call(context.Background(), values.NewObjectWithValues(map[string]values.Value{
+					"x": values.NewNull(semantic.BasicFloat),
+				}))
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !v.IsNull() {
+					t.Errorf("expected null value; got %s instead", v.(values.ValueStringer).String())
+				}
+			})
+		}
+	})
+	t.Run("multiple parameter functions", func(t *testing.T) {
+		testCases := []struct {
+			name   string
+			mathFn func(float64, float64) float64
+			xname  string
+			yname  string
+		}{
+			{"hypot", math.Hypot, "p", "q"},
+			{"mMax", math.Max, "x", "y"},
+			{"mMin", math.Min, "x", "y"},
+			{"mod", math.Mod, "x", "y"},
+			{"nextafter", math.Nextafter, "x", "y"},
+			{"pow", math.Pow, "x", "y"},
+			{"remainder", math.Remainder, "x", "y"},
+			{"dim", math.Dim, "x", "y"},
+			{"copysign", math.Copysign, "x", "y"},
+			{"atan2", math.Atan2, "x", "y"},
+		}
+		for _, tc := range testCases {
+			tc := tc
+			t.Run(tc.name, func(t *testing.T) {
+				fn := generateMathFunctionXY(tc.name, tc.mathFn, tc.xname, tc.yname)
+				v, err := fn.Call(context.Background(), values.NewObjectWithValues(map[string]values.Value{
+					tc.xname: values.NewNull(semantic.BasicFloat),
+					tc.yname: values.NewNull(semantic.BasicFloat),
+				}))
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !v.IsNull() {
+					t.Errorf("expected null value; got %s instead", v.(values.ValueStringer).String())
+				}
+			})
+		}
+	})
 }
 
 func TestFloat64Bits(t *testing.T) {
