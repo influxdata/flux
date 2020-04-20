@@ -150,7 +150,7 @@ func buildPlan(ctx context.Context, spec *flux.Spec, opts *compileOptions) (*pla
 	pb.AddLogicalOptions(lopts...)
 	pb.AddPhysicalOptions(popts...)
 
-	ps, err := pb.Build().Plan(spec)
+	ps, err := pb.Build().Plan(ctx, spec)
 	if err != nil {
 		return nil, err
 	}

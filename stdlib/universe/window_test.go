@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"context"
 	"sort"
 	"strconv"
 	"testing"
@@ -1158,7 +1159,7 @@ func TestWindowRewriteRule(t *testing.T) {
 				plan.DisableValidation(),
 			)
 
-			pp, err := physicalPlanner.Plan(spec)
+			pp, err := physicalPlanner.Plan(context.Background(), spec)
 			if err != nil {
 				t.Fatalf("unexpected error during physical planning: %v", err)
 			}
