@@ -9318,11 +9318,10742 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 106,
-					Line:   56,
+					Column: 117,
+					Line:   59,
+				},
+				File:   "state_changes_any_to_any_test.flux",
+				Source: "package monitor_test\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => 2018-05-22T19:54:40Z\n\noption monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])\n\n// Note this input data is identical to the output data of the check test case, post pivot.\ninData = \"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"\n\n\noutData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"\n\nt_state_changes_any_to_any = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])\n\ntest monitor_state_changes_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 40,
+							Line:   8,
+						},
+						File:   "state_changes_any_to_any_test.flux",
+						Source: "now = () => 2018-05-22T19:54:40Z",
+						Start: ast.Position{
+							Column: 8,
+							Line:   8,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   8,
+							},
+							File:   "state_changes_any_to_any_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   8,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 40,
+								Line:   8,
+							},
+							File:   "state_changes_any_to_any_test.flux",
+							Source: "() => 2018-05-22T19:54:40Z",
+							Start: ast.Position{
+								Column: 14,
+								Line:   8,
+							},
+						},
+					},
+					Body: &ast.DateTimeLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   8,
+								},
+								File:   "state_changes_any_to_any_test.flux",
+								Source: "2018-05-22T19:54:40Z",
+								Start: ast.Position{
+									Column: 20,
+									Line:   8,
+								},
+							},
+						},
+						Value: parser.MustParseTime("2018-05-22T19:54:40Z"),
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 40,
+						Line:   8,
+					},
+					File:   "state_changes_any_to_any_test.flux",
+					Source: "option now = () => 2018-05-22T19:54:40Z",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+		}, &ast.OptionStatement{
+			Assignment: &ast.MemberAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 80,
+							Line:   10,
+						},
+						File:   "state_changes_any_to_any_test.flux",
+						Source: "monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+						Start: ast.Position{
+							Column: 8,
+							Line:   10,
+						},
+					},
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 80,
+								Line:   10,
+							},
+							File:   "state_changes_any_to_any_test.flux",
+							Source: "(tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+							Start: ast.Position{
+								Column: 22,
+								Line:   10,
+							},
+						},
+					},
+					Body: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 43,
+										Line:   10,
+									},
+									File:   "state_changes_any_to_any_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 37,
+										Line:   10,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 80,
+									Line:   10,
+								},
+								File:   "state_changes_any_to_any_test.flux",
+								Source: "tables |> drop(columns:[\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 37,
+									Line:   10,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 79,
+											Line:   10,
+										},
+										File:   "state_changes_any_to_any_test.flux",
+										Source: "columns:[\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 52,
+											Line:   10,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 79,
+												Line:   10,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "columns:[\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 52,
+												Line:   10,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 59,
+													Line:   10,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 52,
+													Line:   10,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   10,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "[\"_start\", \"_stop\"]",
+												Start: ast.Position{
+													Column: 60,
+													Line:   10,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   10,
+													},
+													File:   "state_changes_any_to_any_test.flux",
+													Source: "\"_start\"",
+													Start: ast.Position{
+														Column: 61,
+														Line:   10,
+													},
+												},
+											},
+											Value: "_start",
+										}, &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 78,
+														Line:   10,
+													},
+													File:   "state_changes_any_to_any_test.flux",
+													Source: "\"_stop\"",
+													Start: ast.Position{
+														Column: 71,
+														Line:   10,
+													},
+												},
+											},
+											Value: "_stop",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 80,
+										Line:   10,
+									},
+									File:   "state_changes_any_to_any_test.flux",
+									Source: "drop(columns:[\"_start\", \"_stop\"])",
+									Start: ast.Position{
+										Column: 47,
+										Line:   10,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 51,
+											Line:   10,
+										},
+										File:   "state_changes_any_to_any_test.flux",
+										Source: "drop",
+										Start: ast.Position{
+											Column: 47,
+											Line:   10,
+										},
+									},
+								},
+								Name: "drop",
+							},
+						},
+					},
+					Params: []*ast.Property{&ast.Property{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   10,
+								},
+								File:   "state_changes_any_to_any_test.flux",
+								Source: "tables=<-",
+								Start: ast.Position{
+									Column: 23,
+									Line:   10,
+								},
+							},
+						},
+						Key: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   10,
+									},
+									File:   "state_changes_any_to_any_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 23,
+										Line:   10,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   10,
+								},
+								File:   "state_changes_any_to_any_test.flux",
+								Source: "<-",
+								Start: ast.Position{
+									Column: 30,
+									Line:   10,
+								},
+							},
+						}},
+					}},
+				},
+				Member: &ast.MemberExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   10,
+							},
+							File:   "state_changes_any_to_any_test.flux",
+							Source: "monitor.log",
+							Start: ast.Position{
+								Column: 8,
+								Line:   10,
+							},
+						},
+					},
+					Object: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   10,
+								},
+								File:   "state_changes_any_to_any_test.flux",
+								Source: "monitor",
+								Start: ast.Position{
+									Column: 8,
+									Line:   10,
+								},
+							},
+						},
+						Name: "monitor",
+					},
+					Property: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 19,
+									Line:   10,
+								},
+								File:   "state_changes_any_to_any_test.flux",
+								Source: "log",
+								Start: ast.Position{
+									Column: 16,
+									Line:   10,
+								},
+							},
+						},
+						Name: "log",
+					},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 80,
+						Line:   10,
+					},
+					File:   "state_changes_any_to_any_test.flux",
+					Source: "option monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   10,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   37,
+					},
+					File:   "state_changes_any_to_any_test.flux",
+					Source: "inData = \"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   13,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   13,
+						},
+						File:   "state_changes_any_to_any_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   13,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   37,
+						},
+						File:   "state_changes_any_to_any_test.flux",
+						Source: "\"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   13,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   47,
+					},
+					File:   "state_changes_any_to_any_test.flux",
+					Source: "outData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   40,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   40,
+						},
+						File:   "state_changes_any_to_any_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   40,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   47,
+						},
+						File:   "state_changes_any_to_any_test.flux",
+						Source: "\"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   40,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 41,
+						Line:   56,
+					},
+					File:   "state_changes_any_to_any_test.flux",
+					Source: "t_state_changes_any_to_any = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   49,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 27,
+							Line:   49,
+						},
+						File:   "state_changes_any_to_any_test.flux",
+						Source: "t_state_changes_any_to_any",
+						Start: ast.Position{
+							Column: 1,
+							Line:   49,
+						},
+					},
+				},
+				Name: "t_state_changes_any_to_any",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 41,
+							Line:   56,
+						},
+						File:   "state_changes_any_to_any_test.flux",
+						Source: "(table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+						Start: ast.Position{
+							Column: 30,
+							Line:   49,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   49,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "table",
+											Start: ast.Position{
+												Column: 44,
+												Line:   49,
+											},
+										},
+									},
+									Name: "table",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   50,
+										},
+										File:   "state_changes_any_to_any_test.flux",
+										Source: "table\n    |> range(start: -1m)",
+										Start: ast.Position{
+											Column: 44,
+											Line:   49,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   50,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "start: -1m",
+												Start: ast.Position{
+													Column: 14,
+													Line:   50,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 24,
+														Line:   50,
+													},
+													File:   "state_changes_any_to_any_test.flux",
+													Source: "start: -1m",
+													Start: ast.Position{
+														Column: 14,
+														Line:   50,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 19,
+															Line:   50,
+														},
+														File:   "state_changes_any_to_any_test.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 14,
+															Line:   50,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Value: &ast.UnaryExpression{
+												Argument: &ast.DurationLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 24,
+																Line:   50,
+															},
+															File:   "state_changes_any_to_any_test.flux",
+															Source: "1m",
+															Start: ast.Position{
+																Column: 22,
+																Line:   50,
+															},
+														},
+													},
+													Values: []ast.Duration{ast.Duration{
+														Magnitude: int64(1),
+														Unit:      "m",
+													}},
+												},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 24,
+															Line:   50,
+														},
+														File:   "state_changes_any_to_any_test.flux",
+														Source: "-1m",
+														Start: ast.Position{
+															Column: 21,
+															Line:   50,
+														},
+													},
+												},
+												Operator: 6,
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   50,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "range(start: -1m)",
+											Start: ast.Position{
+												Column: 8,
+												Line:   50,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 13,
+													Line:   50,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "range",
+												Start: ast.Position{
+													Column: 8,
+													Line:   50,
+												},
+											},
+										},
+										Name: "range",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   51,
+									},
+									File:   "state_changes_any_to_any_test.flux",
+									Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()",
+									Start: ast.Position{
+										Column: 44,
+										Line:   49,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   51,
+										},
+										File:   "state_changes_any_to_any_test.flux",
+										Source: "v1.fieldsAsCols()",
+										Start: ast.Position{
+											Column: 8,
+											Line:   51,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   51,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "v1.fieldsAsCols",
+											Start: ast.Position{
+												Column: 8,
+												Line:   51,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 10,
+													Line:   51,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "v1",
+												Start: ast.Position{
+													Column: 8,
+													Line:   51,
+												},
+											},
+										},
+										Name: "v1",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   51,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "fieldsAsCols",
+												Start: ast.Position{
+													Column: 11,
+													Line:   51,
+												},
+											},
+										},
+										Name: "fieldsAsCols",
+									},
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   55,
+								},
+								File:   "state_changes_any_to_any_test.flux",
+								Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )",
+								Start: ast.Position{
+									Column: 44,
+									Line:   49,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   54,
+										},
+										File:   "state_changes_any_to_any_test.flux",
+										Source: "fromLevel: \"any\",\n        toLevel: \"any\"",
+										Start: ast.Position{
+											Column: 9,
+											Line:   53,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   53,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "fromLevel: \"any\"",
+											Start: ast.Position{
+												Column: 9,
+												Line:   53,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   53,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "fromLevel",
+												Start: ast.Position{
+													Column: 9,
+													Line:   53,
+												},
+											},
+										},
+										Name: "fromLevel",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   53,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "\"any\"",
+												Start: ast.Position{
+													Column: 20,
+													Line:   53,
+												},
+											},
+										},
+										Value: "any",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   54,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "toLevel: \"any\"",
+											Start: ast.Position{
+												Column: 9,
+												Line:   54,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   54,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "toLevel",
+												Start: ast.Position{
+													Column: 9,
+													Line:   54,
+												},
+											},
+										},
+										Name: "toLevel",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   54,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "\"any\"",
+												Start: ast.Position{
+													Column: 18,
+													Line:   54,
+												},
+											},
+										},
+										Value: "any",
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 6,
+										Line:   55,
+									},
+									File:   "state_changes_any_to_any_test.flux",
+									Source: "monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )",
+									Start: ast.Position{
+										Column: 8,
+										Line:   52,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   52,
+										},
+										File:   "state_changes_any_to_any_test.flux",
+										Source: "monitor.stateChanges",
+										Start: ast.Position{
+											Column: 8,
+											Line:   52,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   52,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "monitor",
+											Start: ast.Position{
+												Column: 8,
+												Line:   52,
+											},
+										},
+									},
+									Name: "monitor",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 28,
+												Line:   52,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "stateChanges",
+											Start: ast.Position{
+												Column: 16,
+												Line:   52,
+											},
+										},
+									},
+									Name: "stateChanges",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 41,
+								Line:   56,
+							},
+							File:   "state_changes_any_to_any_test.flux",
+							Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+							Start: ast.Position{
+								Column: 44,
+								Line:   49,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   56,
+									},
+									File:   "state_changes_any_to_any_test.flux",
+									Source: "columns: [\"_start\",\"_stop\"]",
+									Start: ast.Position{
+										Column: 13,
+										Line:   56,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   56,
+										},
+										File:   "state_changes_any_to_any_test.flux",
+										Source: "columns: [\"_start\",\"_stop\"]",
+										Start: ast.Position{
+											Column: 13,
+											Line:   56,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   56,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 13,
+												Line:   56,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 40,
+												Line:   56,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "[\"_start\",\"_stop\"]",
+											Start: ast.Position{
+												Column: 22,
+												Line:   56,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   56,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "\"_start\"",
+												Start: ast.Position{
+													Column: 23,
+													Line:   56,
+												},
+											},
+										},
+										Value: "_start",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   56,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "\"_stop\"",
+												Start: ast.Position{
+													Column: 32,
+													Line:   56,
+												},
+											},
+										},
+										Value: "_stop",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 41,
+									Line:   56,
+								},
+								File:   "state_changes_any_to_any_test.flux",
+								Source: "drop(columns: [\"_start\",\"_stop\"])",
+								Start: ast.Position{
+									Column: 8,
+									Line:   56,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   56,
+									},
+									File:   "state_changes_any_to_any_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 8,
+										Line:   56,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 39,
+								Line:   49,
+							},
+							File:   "state_changes_any_to_any_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 31,
+								Line:   49,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   49,
+								},
+								File:   "state_changes_any_to_any_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 31,
+									Line:   49,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 39,
+								Line:   49,
+							},
+							File:   "state_changes_any_to_any_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 37,
+								Line:   49,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 117,
+							Line:   59,
+						},
+						File:   "state_changes_any_to_any_test.flux",
+						Source: "monitor_state_changes_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   58,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 38,
+								Line:   58,
+							},
+							File:   "state_changes_any_to_any_test.flux",
+							Source: "monitor_state_changes_any_to_any",
+							Start: ast.Position{
+								Column: 6,
+								Line:   58,
+							},
+						},
+					},
+					Name: "monitor_state_changes_any_to_any",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 117,
+								Line:   59,
+							},
+							File:   "state_changes_any_to_any_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
+							Start: ast.Position{
+								Column: 41,
+								Line:   58,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 117,
+									Line:   59,
+								},
+								File:   "state_changes_any_to_any_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   59,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 116,
+										Line:   59,
+									},
+									File:   "state_changes_any_to_any_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   59,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   59,
+										},
+										File:   "state_changes_any_to_any_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   59,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   59,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   59,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   59,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 34,
+													Line:   59,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   59,
+													},
+													File:   "state_changes_any_to_any_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 34,
+														Line:   59,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   59,
+														},
+														File:   "state_changes_any_to_any_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   59,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 45,
+															Line:   59,
+														},
+														File:   "state_changes_any_to_any_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 39,
+															Line:   59,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 46,
+												Line:   59,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   59,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   59,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   59,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   59,
+													},
+													File:   "state_changes_any_to_any_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   59,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   59,
+													},
+													File:   "state_changes_any_to_any_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   59,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 83,
+											Line:   59,
+										},
+										File:   "state_changes_any_to_any_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 48,
+											Line:   59,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 52,
+												Line:   59,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 48,
+												Line:   59,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 82,
+													Line:   59,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 70,
+													Line:   59,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 82,
+														Line:   59,
+													},
+													File:   "state_changes_any_to_any_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 70,
+														Line:   59,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 73,
+															Line:   59,
+														},
+														File:   "state_changes_any_to_any_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 70,
+															Line:   59,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 82,
+															Line:   59,
+														},
+														File:   "state_changes_any_to_any_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 75,
+															Line:   59,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 83,
+												Line:   59,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 54,
+												Line:   59,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 69,
+													Line:   59,
+												},
+												File:   "state_changes_any_to_any_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 54,
+													Line:   59,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 61,
+														Line:   59,
+													},
+													File:   "state_changes_any_to_any_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 54,
+														Line:   59,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   59,
+													},
+													File:   "state_changes_any_to_any_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 62,
+														Line:   59,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 115,
+											Line:   59,
+										},
+										File:   "state_changes_any_to_any_test.flux",
+										Source: "fn: t_state_changes_any_to_any",
+										Start: ast.Position{
+											Column: 85,
+											Line:   59,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 87,
+												Line:   59,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 85,
+												Line:   59,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 115,
+												Line:   59,
+											},
+											File:   "state_changes_any_to_any_test.flux",
+											Source: "t_state_changes_any_to_any",
+											Start: ast.Position{
+												Column: 89,
+												Line:   59,
+											},
+										},
+									},
+									Name: "t_state_changes_any_to_any",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 117,
+						Line:   59,
+					},
+					File:   "state_changes_any_to_any_test.flux",
+					Source: "test monitor_state_changes_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   58,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 37,
+						Line:   3,
+					},
+					File:   "state_changes_any_to_any_test.flux",
+					Source: "import \"influxdata/influxdb/monitor\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 37,
+							Line:   3,
+						},
+						File:   "state_changes_any_to_any_test.flux",
+						Source: "\"influxdata/influxdb/monitor\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/monitor",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 32,
+						Line:   4,
+					},
+					File:   "state_changes_any_to_any_test.flux",
+					Source: "import \"influxdata/influxdb/v1\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 32,
+							Line:   4,
+						},
+						File:   "state_changes_any_to_any_test.flux",
+						Source: "\"influxdata/influxdb/v1\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/v1",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   5,
+					},
+					File:   "state_changes_any_to_any_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   5,
+						},
+						File:   "state_changes_any_to_any_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   6,
+					},
+					File:   "state_changes_any_to_any_test.flux",
+					Source: "import \"experimental\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   6,
+						},
+						File:   "state_changes_any_to_any_test.flux",
+						Source: "\"experimental\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				Value: "experimental",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "state_changes_any_to_any_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 21,
+						Line:   1,
+					},
+					File:   "state_changes_any_to_any_test.flux",
+					Source: "package monitor_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   1,
+						},
+						File:   "state_changes_any_to_any_test.flux",
+						Source: "monitor_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "monitor_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 121,
+					Line:   265,
+				},
+				File:   "state_changes_big_any_to_any_test.flux",
+				Source: "package monitor_test\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => 2018-05-22T19:54:40Z\n\noption monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])\n\n// Note this input data is identical to the output data of the check test case, post pivot.\ninData = \"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,23.371648565879127,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,29.007636780636247,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,28.93580898231049,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,28.28329800786939,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,28.338670930910908,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,29.551382817337316,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,20.229131737702303,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,20.57913145323683,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,11.086267669062991,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,18.937973208474638,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,11.550031971876997,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,8.495652148919287,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,4.358951746379062,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,7.129171924508139,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,4.5748599925408975,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,3.783743323598954,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,4.658109550294696,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,4.095150808198634,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,4.5538963928240594,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,4.428299890926006,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,2.758789040791375,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,3.399426580028879,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,4.620667027747688,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,4.363250147141176,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,6.281032939118847,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,4.972490830276759,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,5.167139505939133,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,4.824212762412529,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,4.887482325607516,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,5.345633364673913,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,4.47091485247676,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,4.408333333333333,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,2.608699518197021,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,4.99208267355613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,3.99008051788834,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,2.5659924848811504,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,4.5284466750289285,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,4.458348327059871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,4.571801254475424,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,3.8832004314667143,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,5.437130027220748,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,4.341341174188152,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1.4127195176169836,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1.358283009169833,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,2.874912507291059,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,2.4329003255950736,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1.3917298857089464,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,2.72916496860213,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,4.816784104464039,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,4.250548794042459,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,3.1213270718908044,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,2.8914444814753097,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,3.4166314635394666,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,4.424631876750123,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,3.5002719462770777,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,4.74975747963091,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,3.788131355225871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,3.5418847710036783,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,2.3748418711184613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,3.079545054484013,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,3.5373648023865356,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,4.229490309983358,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,7.848611329073602,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,2.9503906816927747,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,4.912786550445684,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,5.762651667220752,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,1585254415407797827,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,1585254750000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,1585254780000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,1585254810000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,1585254840000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,1585254870000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,1585254900000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,1585254930000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,1585254960000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,1585254990000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,1585255020000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,1585255050000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,1585255080000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,1585255110000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,1585255140000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,1585255170000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,1585255200000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,1585255230000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,1585255260000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,1585255290000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,1585255320000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,1585255350000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,1585255380000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,1585255410000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,1585255440000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,1585255470000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,1585255500000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,1585255530000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,1585255560000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,1585255590000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,1585255620000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,1585255650000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,1585255680000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,1585255710000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1585255740000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1585255770000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,1585255800000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,1585255830000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1585255860000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,1585255890000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,1585255920000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,1585255950000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,1585255980000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,1585256010000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,1585256040000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,1585256070000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,1585256100000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,1585256130000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,1585256160000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,1585256190000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,1585256220000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,1585256250000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,1585256280000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,1585256310000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,1585256340000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,1585256370000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,1585256400000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,1585256430000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,1585254420000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,1585254450000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,1585254480000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,1585254510000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,1585254540000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,1585254570000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,1585254690000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,1585254720000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n\n\n\"\n\n\noutData = \"\n#group,false,false,true,true,true,false,true,false,true,true,false,true,true,true,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_start,_stop,_time,_type,cpu,host,usage_user,_level\n,,0,057220dae1443000,cpu,statuses,Check: cpu is: info,cpu,1585254420000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,threshold,cpu-total,localhost,23.371648565879127,info\n,,1,057220dae1443000,cpu,statuses,Check: cpu is: ok,cpu,1585254750000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,threshold,cpu-total,localhost,18.937973208474638,ok\n\n\n\"\n\nt_state_changes_big_any_to_any = (table=<-) => table\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n\ntest monitor_state_changes_big_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_any_to_any})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 40,
+							Line:   8,
+						},
+						File:   "state_changes_big_any_to_any_test.flux",
+						Source: "now = () => 2018-05-22T19:54:40Z",
+						Start: ast.Position{
+							Column: 8,
+							Line:   8,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   8,
+							},
+							File:   "state_changes_big_any_to_any_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   8,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 40,
+								Line:   8,
+							},
+							File:   "state_changes_big_any_to_any_test.flux",
+							Source: "() => 2018-05-22T19:54:40Z",
+							Start: ast.Position{
+								Column: 14,
+								Line:   8,
+							},
+						},
+					},
+					Body: &ast.DateTimeLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   8,
+								},
+								File:   "state_changes_big_any_to_any_test.flux",
+								Source: "2018-05-22T19:54:40Z",
+								Start: ast.Position{
+									Column: 20,
+									Line:   8,
+								},
+							},
+						},
+						Value: parser.MustParseTime("2018-05-22T19:54:40Z"),
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 40,
+						Line:   8,
+					},
+					File:   "state_changes_big_any_to_any_test.flux",
+					Source: "option now = () => 2018-05-22T19:54:40Z",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+		}, &ast.OptionStatement{
+			Assignment: &ast.MemberAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 80,
+							Line:   10,
+						},
+						File:   "state_changes_big_any_to_any_test.flux",
+						Source: "monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+						Start: ast.Position{
+							Column: 8,
+							Line:   10,
+						},
+					},
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 80,
+								Line:   10,
+							},
+							File:   "state_changes_big_any_to_any_test.flux",
+							Source: "(tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+							Start: ast.Position{
+								Column: 22,
+								Line:   10,
+							},
+						},
+					},
+					Body: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 43,
+										Line:   10,
+									},
+									File:   "state_changes_big_any_to_any_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 37,
+										Line:   10,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 80,
+									Line:   10,
+								},
+								File:   "state_changes_big_any_to_any_test.flux",
+								Source: "tables |> drop(columns:[\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 37,
+									Line:   10,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 79,
+											Line:   10,
+										},
+										File:   "state_changes_big_any_to_any_test.flux",
+										Source: "columns:[\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 52,
+											Line:   10,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 79,
+												Line:   10,
+											},
+											File:   "state_changes_big_any_to_any_test.flux",
+											Source: "columns:[\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 52,
+												Line:   10,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 59,
+													Line:   10,
+												},
+												File:   "state_changes_big_any_to_any_test.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 52,
+													Line:   10,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   10,
+												},
+												File:   "state_changes_big_any_to_any_test.flux",
+												Source: "[\"_start\", \"_stop\"]",
+												Start: ast.Position{
+													Column: 60,
+													Line:   10,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   10,
+													},
+													File:   "state_changes_big_any_to_any_test.flux",
+													Source: "\"_start\"",
+													Start: ast.Position{
+														Column: 61,
+														Line:   10,
+													},
+												},
+											},
+											Value: "_start",
+										}, &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 78,
+														Line:   10,
+													},
+													File:   "state_changes_big_any_to_any_test.flux",
+													Source: "\"_stop\"",
+													Start: ast.Position{
+														Column: 71,
+														Line:   10,
+													},
+												},
+											},
+											Value: "_stop",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 80,
+										Line:   10,
+									},
+									File:   "state_changes_big_any_to_any_test.flux",
+									Source: "drop(columns:[\"_start\", \"_stop\"])",
+									Start: ast.Position{
+										Column: 47,
+										Line:   10,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 51,
+											Line:   10,
+										},
+										File:   "state_changes_big_any_to_any_test.flux",
+										Source: "drop",
+										Start: ast.Position{
+											Column: 47,
+											Line:   10,
+										},
+									},
+								},
+								Name: "drop",
+							},
+						},
+					},
+					Params: []*ast.Property{&ast.Property{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   10,
+								},
+								File:   "state_changes_big_any_to_any_test.flux",
+								Source: "tables=<-",
+								Start: ast.Position{
+									Column: 23,
+									Line:   10,
+								},
+							},
+						},
+						Key: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   10,
+									},
+									File:   "state_changes_big_any_to_any_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 23,
+										Line:   10,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   10,
+								},
+								File:   "state_changes_big_any_to_any_test.flux",
+								Source: "<-",
+								Start: ast.Position{
+									Column: 30,
+									Line:   10,
+								},
+							},
+						}},
+					}},
+				},
+				Member: &ast.MemberExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   10,
+							},
+							File:   "state_changes_big_any_to_any_test.flux",
+							Source: "monitor.log",
+							Start: ast.Position{
+								Column: 8,
+								Line:   10,
+							},
+						},
+					},
+					Object: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   10,
+								},
+								File:   "state_changes_big_any_to_any_test.flux",
+								Source: "monitor",
+								Start: ast.Position{
+									Column: 8,
+									Line:   10,
+								},
+							},
+						},
+						Name: "monitor",
+					},
+					Property: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 19,
+									Line:   10,
+								},
+								File:   "state_changes_big_any_to_any_test.flux",
+								Source: "log",
+								Start: ast.Position{
+									Column: 16,
+									Line:   10,
+								},
+							},
+						},
+						Name: "log",
+					},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 80,
+						Line:   10,
+					},
+					File:   "state_changes_big_any_to_any_test.flux",
+					Source: "option monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   10,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   243,
+					},
+					File:   "state_changes_big_any_to_any_test.flux",
+					Source: "inData = \"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,23.371648565879127,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,29.007636780636247,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,28.93580898231049,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,28.28329800786939,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,28.338670930910908,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,29.551382817337316,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,20.229131737702303,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,20.57913145323683,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,11.086267669062991,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,18.937973208474638,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,11.550031971876997,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,8.495652148919287,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,4.358951746379062,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,7.129171924508139,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,4.5748599925408975,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,3.783743323598954,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,4.658109550294696,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,4.095150808198634,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,4.5538963928240594,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,4.428299890926006,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,2.758789040791375,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,3.399426580028879,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,4.620667027747688,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,4.363250147141176,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,6.281032939118847,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,4.972490830276759,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,5.167139505939133,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,4.824212762412529,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,4.887482325607516,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,5.345633364673913,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,4.47091485247676,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,4.408333333333333,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,2.608699518197021,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,4.99208267355613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,3.99008051788834,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,2.5659924848811504,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,4.5284466750289285,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,4.458348327059871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,4.571801254475424,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,3.8832004314667143,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,5.437130027220748,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,4.341341174188152,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1.4127195176169836,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1.358283009169833,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,2.874912507291059,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,2.4329003255950736,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1.3917298857089464,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,2.72916496860213,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,4.816784104464039,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,4.250548794042459,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,3.1213270718908044,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,2.8914444814753097,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,3.4166314635394666,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,4.424631876750123,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,3.5002719462770777,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,4.74975747963091,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,3.788131355225871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,3.5418847710036783,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,2.3748418711184613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,3.079545054484013,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,3.5373648023865356,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,4.229490309983358,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,7.848611329073602,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,2.9503906816927747,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,4.912786550445684,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,5.762651667220752,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,1585254415407797827,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,1585254750000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,1585254780000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,1585254810000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,1585254840000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,1585254870000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,1585254900000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,1585254930000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,1585254960000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,1585254990000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,1585255020000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,1585255050000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,1585255080000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,1585255110000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,1585255140000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,1585255170000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,1585255200000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,1585255230000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,1585255260000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,1585255290000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,1585255320000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,1585255350000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,1585255380000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,1585255410000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,1585255440000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,1585255470000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,1585255500000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,1585255530000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,1585255560000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,1585255590000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,1585255620000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,1585255650000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,1585255680000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,1585255710000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1585255740000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1585255770000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,1585255800000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,1585255830000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1585255860000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,1585255890000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,1585255920000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,1585255950000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,1585255980000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,1585256010000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,1585256040000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,1585256070000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,1585256100000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,1585256130000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,1585256160000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,1585256190000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,1585256220000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,1585256250000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,1585256280000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,1585256310000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,1585256340000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,1585256370000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,1585256400000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,1585256430000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,1585254420000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,1585254450000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,1585254480000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,1585254510000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,1585254540000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,1585254570000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,1585254690000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,1585254720000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n\n\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   13,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   13,
+						},
+						File:   "state_changes_big_any_to_any_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   13,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   243,
+						},
+						File:   "state_changes_big_any_to_any_test.flux",
+						Source: "\"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,23.371648565879127,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,29.007636780636247,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,28.93580898231049,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,28.28329800786939,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,28.338670930910908,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,29.551382817337316,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,20.229131737702303,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,20.57913145323683,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,11.086267669062991,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,18.937973208474638,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,11.550031971876997,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,8.495652148919287,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,4.358951746379062,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,7.129171924508139,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,4.5748599925408975,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,3.783743323598954,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,4.658109550294696,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,4.095150808198634,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,4.5538963928240594,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,4.428299890926006,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,2.758789040791375,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,3.399426580028879,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,4.620667027747688,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,4.363250147141176,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,6.281032939118847,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,4.972490830276759,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,5.167139505939133,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,4.824212762412529,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,4.887482325607516,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,5.345633364673913,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,4.47091485247676,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,4.408333333333333,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,2.608699518197021,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,4.99208267355613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,3.99008051788834,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,2.5659924848811504,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,4.5284466750289285,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,4.458348327059871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,4.571801254475424,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,3.8832004314667143,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,5.437130027220748,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,4.341341174188152,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1.4127195176169836,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1.358283009169833,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,2.874912507291059,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,2.4329003255950736,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1.3917298857089464,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,2.72916496860213,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,4.816784104464039,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,4.250548794042459,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,3.1213270718908044,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,2.8914444814753097,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,3.4166314635394666,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,4.424631876750123,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,3.5002719462770777,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,4.74975747963091,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,3.788131355225871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,3.5418847710036783,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,2.3748418711184613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,3.079545054484013,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,3.5373648023865356,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,4.229490309983358,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,7.848611329073602,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,2.9503906816927747,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,4.912786550445684,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,5.762651667220752,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,1585254415407797827,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,1585254750000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,1585254780000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,1585254810000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,1585254840000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,1585254870000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,1585254900000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,1585254930000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,1585254960000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,1585254990000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,1585255020000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,1585255050000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,1585255080000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,1585255110000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,1585255140000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,1585255170000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,1585255200000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,1585255230000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,1585255260000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,1585255290000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,1585255320000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,1585255350000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,1585255380000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,1585255410000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,1585255440000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,1585255470000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,1585255500000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,1585255530000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,1585255560000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,1585255590000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,1585255620000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,1585255650000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,1585255680000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,1585255710000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1585255740000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1585255770000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,1585255800000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,1585255830000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1585255860000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,1585255890000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,1585255920000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,1585255950000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,1585255980000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,1585256010000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,1585256040000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,1585256070000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,1585256100000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,1585256130000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,1585256160000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,1585256190000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,1585256220000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,1585256250000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,1585256280000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,1585256310000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,1585256340000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,1585256370000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,1585256400000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,1585256430000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,1585254420000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,1585254450000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,1585254480000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,1585254510000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,1585254540000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,1585254570000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,1585254690000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,1585254720000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n\n\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   13,
+						},
+					},
+				},
+				Value: "\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,23.371648565879127,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,29.007636780636247,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,28.93580898231049,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,28.28329800786939,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,28.338670930910908,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,29.551382817337316,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,20.229131737702303,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,20.57913145323683,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,11.086267669062991,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,18.937973208474638,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,11.550031971876997,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,8.495652148919287,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,4.358951746379062,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,7.129171924508139,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,4.5748599925408975,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,3.783743323598954,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,4.658109550294696,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,4.095150808198634,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,4.5538963928240594,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,4.428299890926006,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,2.758789040791375,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,3.399426580028879,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,4.620667027747688,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,4.363250147141176,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,6.281032939118847,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,4.972490830276759,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,5.167139505939133,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,4.824212762412529,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,4.887482325607516,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,5.345633364673913,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,4.47091485247676,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,4.408333333333333,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,2.608699518197021,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,4.99208267355613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,3.99008051788834,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,2.5659924848811504,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,4.5284466750289285,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,4.458348327059871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,4.571801254475424,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,3.8832004314667143,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,5.437130027220748,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,4.341341174188152,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1.4127195176169836,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1.358283009169833,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,2.874912507291059,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,2.4329003255950736,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1.3917298857089464,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,2.72916496860213,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,4.816784104464039,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,4.250548794042459,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,3.1213270718908044,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,2.8914444814753097,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,3.4166314635394666,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,4.424631876750123,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,3.5002719462770777,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,4.74975747963091,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,3.788131355225871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,3.5418847710036783,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,2.3748418711184613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,3.079545054484013,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,3.5373648023865356,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,4.229490309983358,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,7.848611329073602,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,2.9503906816927747,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,4.912786550445684,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,5.762651667220752,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,1585254415407797827,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,1585254750000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,1585254780000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,1585254810000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,1585254840000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,1585254870000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,1585254900000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,1585254930000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,1585254960000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,1585254990000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,1585255020000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,1585255050000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,1585255080000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,1585255110000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,1585255140000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,1585255170000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,1585255200000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,1585255230000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,1585255260000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,1585255290000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,1585255320000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,1585255350000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,1585255380000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,1585255410000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,1585255440000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,1585255470000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,1585255500000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,1585255530000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,1585255560000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,1585255590000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,1585255620000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,1585255650000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,1585255680000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,1585255710000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1585255740000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1585255770000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,1585255800000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,1585255830000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1585255860000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,1585255890000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,1585255920000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,1585255950000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,1585255980000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,1585256010000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,1585256040000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,1585256070000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,1585256100000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,1585256130000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,1585256160000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,1585256190000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,1585256220000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,1585256250000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,1585256280000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,1585256310000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,1585256340000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,1585256370000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,1585256400000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,1585256430000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,1585254420000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,1585254450000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,1585254480000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,1585254510000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,1585254540000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,1585254570000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,1585254690000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,1585254720000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n\n\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   255,
+					},
+					File:   "state_changes_big_any_to_any_test.flux",
+					Source: "outData = \"\n#group,false,false,true,true,true,false,true,false,true,true,false,true,true,true,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_start,_stop,_time,_type,cpu,host,usage_user,_level\n,,0,057220dae1443000,cpu,statuses,Check: cpu is: info,cpu,1585254420000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,threshold,cpu-total,localhost,23.371648565879127,info\n,,1,057220dae1443000,cpu,statuses,Check: cpu is: ok,cpu,1585254750000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,threshold,cpu-total,localhost,18.937973208474638,ok\n\n\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   246,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   246,
+						},
+						File:   "state_changes_big_any_to_any_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   246,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   255,
+						},
+						File:   "state_changes_big_any_to_any_test.flux",
+						Source: "\"\n#group,false,false,true,true,true,false,true,false,true,true,false,true,true,true,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_start,_stop,_time,_type,cpu,host,usage_user,_level\n,,0,057220dae1443000,cpu,statuses,Check: cpu is: info,cpu,1585254420000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,threshold,cpu-total,localhost,23.371648565879127,info\n,,1,057220dae1443000,cpu,statuses,Check: cpu is: ok,cpu,1585254750000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,threshold,cpu-total,localhost,18.937973208474638,ok\n\n\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   246,
+						},
+					},
+				},
+				Value: "\n#group,false,false,true,true,true,false,true,false,true,true,false,true,true,true,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_start,_stop,_time,_type,cpu,host,usage_user,_level\n,,0,057220dae1443000,cpu,statuses,Check: cpu is: info,cpu,1585254420000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,threshold,cpu-total,localhost,23.371648565879127,info\n,,1,057220dae1443000,cpu,statuses,Check: cpu is: ok,cpu,1585254750000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,threshold,cpu-total,localhost,18.937973208474638,ok\n\n\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 6,
+						Line:   262,
+					},
+					File:   "state_changes_big_any_to_any_test.flux",
+					Source: "t_state_changes_big_any_to_any = (table=<-) => table\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )",
+					Start: ast.Position{
+						Column: 1,
+						Line:   257,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 31,
+							Line:   257,
+						},
+						File:   "state_changes_big_any_to_any_test.flux",
+						Source: "t_state_changes_big_any_to_any",
+						Start: ast.Position{
+							Column: 1,
+							Line:   257,
+						},
+					},
+				},
+				Name: "t_state_changes_big_any_to_any",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   262,
+						},
+						File:   "state_changes_big_any_to_any_test.flux",
+						Source: "(table=<-) => table\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )",
+						Start: ast.Position{
+							Column: 34,
+							Line:   257,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 53,
+										Line:   257,
+									},
+									File:   "state_changes_big_any_to_any_test.flux",
+									Source: "table",
+									Start: ast.Position{
+										Column: 48,
+										Line:   257,
+									},
+								},
+							},
+							Name: "table",
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   258,
+								},
+								File:   "state_changes_big_any_to_any_test.flux",
+								Source: "table\n    |> v1.fieldsAsCols()",
+								Start: ast.Position{
+									Column: 48,
+									Line:   257,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: nil,
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   258,
+									},
+									File:   "state_changes_big_any_to_any_test.flux",
+									Source: "v1.fieldsAsCols()",
+									Start: ast.Position{
+										Column: 8,
+										Line:   258,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   258,
+										},
+										File:   "state_changes_big_any_to_any_test.flux",
+										Source: "v1.fieldsAsCols",
+										Start: ast.Position{
+											Column: 8,
+											Line:   258,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 10,
+												Line:   258,
+											},
+											File:   "state_changes_big_any_to_any_test.flux",
+											Source: "v1",
+											Start: ast.Position{
+												Column: 8,
+												Line:   258,
+											},
+										},
+									},
+									Name: "v1",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   258,
+											},
+											File:   "state_changes_big_any_to_any_test.flux",
+											Source: "fieldsAsCols",
+											Start: ast.Position{
+												Column: 11,
+												Line:   258,
+											},
+										},
+									},
+									Name: "fieldsAsCols",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 6,
+								Line:   262,
+							},
+							File:   "state_changes_big_any_to_any_test.flux",
+							Source: "table\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )",
+							Start: ast.Position{
+								Column: 48,
+								Line:   257,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 23,
+										Line:   261,
+									},
+									File:   "state_changes_big_any_to_any_test.flux",
+									Source: "fromLevel: \"any\",\n        toLevel: \"any\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   260,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   260,
+										},
+										File:   "state_changes_big_any_to_any_test.flux",
+										Source: "fromLevel: \"any\"",
+										Start: ast.Position{
+											Column: 9,
+											Line:   260,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   260,
+											},
+											File:   "state_changes_big_any_to_any_test.flux",
+											Source: "fromLevel",
+											Start: ast.Position{
+												Column: 9,
+												Line:   260,
+											},
+										},
+									},
+									Name: "fromLevel",
+								},
+								Value: &ast.StringLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   260,
+											},
+											File:   "state_changes_big_any_to_any_test.flux",
+											Source: "\"any\"",
+											Start: ast.Position{
+												Column: 20,
+												Line:   260,
+											},
+										},
+									},
+									Value: "any",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   261,
+										},
+										File:   "state_changes_big_any_to_any_test.flux",
+										Source: "toLevel: \"any\"",
+										Start: ast.Position{
+											Column: 9,
+											Line:   261,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   261,
+											},
+											File:   "state_changes_big_any_to_any_test.flux",
+											Source: "toLevel",
+											Start: ast.Position{
+												Column: 9,
+												Line:   261,
+											},
+										},
+									},
+									Name: "toLevel",
+								},
+								Value: &ast.StringLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   261,
+											},
+											File:   "state_changes_big_any_to_any_test.flux",
+											Source: "\"any\"",
+											Start: ast.Position{
+												Column: 18,
+												Line:   261,
+											},
+										},
+									},
+									Value: "any",
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   262,
+								},
+								File:   "state_changes_big_any_to_any_test.flux",
+								Source: "monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )",
+								Start: ast.Position{
+									Column: 8,
+									Line:   259,
+								},
+							},
+						},
+						Callee: &ast.MemberExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   259,
+									},
+									File:   "state_changes_big_any_to_any_test.flux",
+									Source: "monitor.stateChanges",
+									Start: ast.Position{
+										Column: 8,
+										Line:   259,
+									},
+								},
+							},
+							Object: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   259,
+										},
+										File:   "state_changes_big_any_to_any_test.flux",
+										Source: "monitor",
+										Start: ast.Position{
+											Column: 8,
+											Line:   259,
+										},
+									},
+								},
+								Name: "monitor",
+							},
+							Property: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   259,
+										},
+										File:   "state_changes_big_any_to_any_test.flux",
+										Source: "stateChanges",
+										Start: ast.Position{
+											Column: 16,
+											Line:   259,
+										},
+									},
+								},
+								Name: "stateChanges",
+							},
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 43,
+								Line:   257,
+							},
+							File:   "state_changes_big_any_to_any_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 35,
+								Line:   257,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   257,
+								},
+								File:   "state_changes_big_any_to_any_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 35,
+									Line:   257,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 43,
+								Line:   257,
+							},
+							File:   "state_changes_big_any_to_any_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 41,
+								Line:   257,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 121,
+							Line:   265,
+						},
+						File:   "state_changes_big_any_to_any_test.flux",
+						Source: "monitor_state_changes_big_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_any_to_any})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   264,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   264,
+							},
+							File:   "state_changes_big_any_to_any_test.flux",
+							Source: "monitor_state_changes_big_any_to_any",
+							Start: ast.Position{
+								Column: 6,
+								Line:   264,
+							},
+						},
+					},
+					Name: "monitor_state_changes_big_any_to_any",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 121,
+								Line:   265,
+							},
+							File:   "state_changes_big_any_to_any_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_any_to_any})",
+							Start: ast.Position{
+								Column: 45,
+								Line:   264,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 121,
+									Line:   265,
+								},
+								File:   "state_changes_big_any_to_any_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_any_to_any})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   265,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 120,
+										Line:   265,
+									},
+									File:   "state_changes_big_any_to_any_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_any_to_any}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   265,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   265,
+										},
+										File:   "state_changes_big_any_to_any_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   265,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   265,
+											},
+											File:   "state_changes_big_any_to_any_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   265,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   265,
+												},
+												File:   "state_changes_big_any_to_any_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 34,
+													Line:   265,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   265,
+													},
+													File:   "state_changes_big_any_to_any_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 34,
+														Line:   265,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   265,
+														},
+														File:   "state_changes_big_any_to_any_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   265,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 45,
+															Line:   265,
+														},
+														File:   "state_changes_big_any_to_any_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 39,
+															Line:   265,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 46,
+												Line:   265,
+											},
+											File:   "state_changes_big_any_to_any_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   265,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   265,
+												},
+												File:   "state_changes_big_any_to_any_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   265,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   265,
+													},
+													File:   "state_changes_big_any_to_any_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   265,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   265,
+													},
+													File:   "state_changes_big_any_to_any_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   265,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 83,
+											Line:   265,
+										},
+										File:   "state_changes_big_any_to_any_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 48,
+											Line:   265,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 52,
+												Line:   265,
+											},
+											File:   "state_changes_big_any_to_any_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 48,
+												Line:   265,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 82,
+													Line:   265,
+												},
+												File:   "state_changes_big_any_to_any_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 70,
+													Line:   265,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 82,
+														Line:   265,
+													},
+													File:   "state_changes_big_any_to_any_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 70,
+														Line:   265,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 73,
+															Line:   265,
+														},
+														File:   "state_changes_big_any_to_any_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 70,
+															Line:   265,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 82,
+															Line:   265,
+														},
+														File:   "state_changes_big_any_to_any_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 75,
+															Line:   265,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 83,
+												Line:   265,
+											},
+											File:   "state_changes_big_any_to_any_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 54,
+												Line:   265,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 69,
+													Line:   265,
+												},
+												File:   "state_changes_big_any_to_any_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 54,
+													Line:   265,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 61,
+														Line:   265,
+													},
+													File:   "state_changes_big_any_to_any_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 54,
+														Line:   265,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   265,
+													},
+													File:   "state_changes_big_any_to_any_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 62,
+														Line:   265,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 119,
+											Line:   265,
+										},
+										File:   "state_changes_big_any_to_any_test.flux",
+										Source: "fn: t_state_changes_big_any_to_any",
+										Start: ast.Position{
+											Column: 85,
+											Line:   265,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 87,
+												Line:   265,
+											},
+											File:   "state_changes_big_any_to_any_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 85,
+												Line:   265,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 119,
+												Line:   265,
+											},
+											File:   "state_changes_big_any_to_any_test.flux",
+											Source: "t_state_changes_big_any_to_any",
+											Start: ast.Position{
+												Column: 89,
+												Line:   265,
+											},
+										},
+									},
+									Name: "t_state_changes_big_any_to_any",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 121,
+						Line:   265,
+					},
+					File:   "state_changes_big_any_to_any_test.flux",
+					Source: "test monitor_state_changes_big_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_any_to_any})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   264,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 37,
+						Line:   3,
+					},
+					File:   "state_changes_big_any_to_any_test.flux",
+					Source: "import \"influxdata/influxdb/monitor\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 37,
+							Line:   3,
+						},
+						File:   "state_changes_big_any_to_any_test.flux",
+						Source: "\"influxdata/influxdb/monitor\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/monitor",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 32,
+						Line:   4,
+					},
+					File:   "state_changes_big_any_to_any_test.flux",
+					Source: "import \"influxdata/influxdb/v1\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 32,
+							Line:   4,
+						},
+						File:   "state_changes_big_any_to_any_test.flux",
+						Source: "\"influxdata/influxdb/v1\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/v1",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   5,
+					},
+					File:   "state_changes_big_any_to_any_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   5,
+						},
+						File:   "state_changes_big_any_to_any_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   6,
+					},
+					File:   "state_changes_big_any_to_any_test.flux",
+					Source: "import \"experimental\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   6,
+						},
+						File:   "state_changes_big_any_to_any_test.flux",
+						Source: "\"experimental\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				Value: "experimental",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "state_changes_big_any_to_any_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 21,
+						Line:   1,
+					},
+					File:   "state_changes_big_any_to_any_test.flux",
+					Source: "package monitor_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   1,
+						},
+						File:   "state_changes_big_any_to_any_test.flux",
+						Source: "monitor_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "monitor_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 121,
+					Line:   264,
+				},
+				File:   "state_changes_big_info_to_ok_test.flux",
+				Source: "package monitor_test\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => 2018-05-22T19:54:40Z\n\noption monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])\n\n// Note this input data is identical to the output data of the check test case, post pivot.\ninData = \"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,23.371648565879127,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,29.007636780636247,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,28.93580898231049,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,28.28329800786939,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,28.338670930910908,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,29.551382817337316,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,20.229131737702303,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,20.57913145323683,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,11.086267669062991,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,18.937973208474638,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,11.550031971876997,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,8.495652148919287,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,4.358951746379062,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,7.129171924508139,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,4.5748599925408975,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,3.783743323598954,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,4.658109550294696,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,4.095150808198634,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,4.5538963928240594,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,4.428299890926006,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,2.758789040791375,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,3.399426580028879,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,4.620667027747688,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,4.363250147141176,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,6.281032939118847,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,4.972490830276759,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,5.167139505939133,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,4.824212762412529,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,4.887482325607516,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,5.345633364673913,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,4.47091485247676,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,4.408333333333333,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,2.608699518197021,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,4.99208267355613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,3.99008051788834,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,2.5659924848811504,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,4.5284466750289285,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,4.458348327059871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,4.571801254475424,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,3.8832004314667143,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,5.437130027220748,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,4.341341174188152,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1.4127195176169836,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1.358283009169833,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,2.874912507291059,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,2.4329003255950736,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1.3917298857089464,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,2.72916496860213,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,4.816784104464039,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,4.250548794042459,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,3.1213270718908044,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,2.8914444814753097,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,3.4166314635394666,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,4.424631876750123,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,3.5002719462770777,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,4.74975747963091,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,3.788131355225871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,3.5418847710036783,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,2.3748418711184613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,3.079545054484013,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,3.5373648023865356,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,4.229490309983358,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,7.848611329073602,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,2.9503906816927747,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,4.912786550445684,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,5.762651667220752,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,1585254415407797827,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,1585254750000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,1585254780000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,1585254810000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,1585254840000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,1585254870000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,1585254900000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,1585254930000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,1585254960000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,1585254990000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,1585255020000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,1585255050000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,1585255080000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,1585255110000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,1585255140000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,1585255170000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,1585255200000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,1585255230000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,1585255260000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,1585255290000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,1585255320000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,1585255350000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,1585255380000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,1585255410000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,1585255440000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,1585255470000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,1585255500000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,1585255530000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,1585255560000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,1585255590000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,1585255620000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,1585255650000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,1585255680000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,1585255710000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1585255740000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1585255770000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,1585255800000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,1585255830000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1585255860000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,1585255890000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,1585255920000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,1585255950000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,1585255980000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,1585256010000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,1585256040000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,1585256070000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,1585256100000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,1585256130000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,1585256160000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,1585256190000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,1585256220000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,1585256250000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,1585256280000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,1585256310000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,1585256340000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,1585256370000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,1585256400000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,1585256430000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,1585254420000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,1585254450000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,1585254480000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,1585254510000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,1585254540000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,1585254570000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,1585254690000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,1585254720000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n\n\n\"\n\n\noutData = \"\n#group,false,false,true,true,true,false,true,false,true,true,false,true,true,true,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_start,_stop,_time,_type,cpu,host,usage_user,_level\n,,0,057220dae1443000,cpu,statuses,Check: cpu is: ok,cpu,1585254750000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,threshold,cpu-total,localhost,18.937973208474638,ok\n\n\n\"\n\nt_state_changes_big_info_to_ok = (table=<-) => table\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"info\",\n        toLevel: \"ok\",\n    )\n\ntest monitor_state_changes_big_info_to_ok = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_info_to_ok})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 40,
+							Line:   8,
+						},
+						File:   "state_changes_big_info_to_ok_test.flux",
+						Source: "now = () => 2018-05-22T19:54:40Z",
+						Start: ast.Position{
+							Column: 8,
+							Line:   8,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   8,
+							},
+							File:   "state_changes_big_info_to_ok_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   8,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 40,
+								Line:   8,
+							},
+							File:   "state_changes_big_info_to_ok_test.flux",
+							Source: "() => 2018-05-22T19:54:40Z",
+							Start: ast.Position{
+								Column: 14,
+								Line:   8,
+							},
+						},
+					},
+					Body: &ast.DateTimeLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   8,
+								},
+								File:   "state_changes_big_info_to_ok_test.flux",
+								Source: "2018-05-22T19:54:40Z",
+								Start: ast.Position{
+									Column: 20,
+									Line:   8,
+								},
+							},
+						},
+						Value: parser.MustParseTime("2018-05-22T19:54:40Z"),
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 40,
+						Line:   8,
+					},
+					File:   "state_changes_big_info_to_ok_test.flux",
+					Source: "option now = () => 2018-05-22T19:54:40Z",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+		}, &ast.OptionStatement{
+			Assignment: &ast.MemberAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 80,
+							Line:   10,
+						},
+						File:   "state_changes_big_info_to_ok_test.flux",
+						Source: "monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+						Start: ast.Position{
+							Column: 8,
+							Line:   10,
+						},
+					},
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 80,
+								Line:   10,
+							},
+							File:   "state_changes_big_info_to_ok_test.flux",
+							Source: "(tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+							Start: ast.Position{
+								Column: 22,
+								Line:   10,
+							},
+						},
+					},
+					Body: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 43,
+										Line:   10,
+									},
+									File:   "state_changes_big_info_to_ok_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 37,
+										Line:   10,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 80,
+									Line:   10,
+								},
+								File:   "state_changes_big_info_to_ok_test.flux",
+								Source: "tables |> drop(columns:[\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 37,
+									Line:   10,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 79,
+											Line:   10,
+										},
+										File:   "state_changes_big_info_to_ok_test.flux",
+										Source: "columns:[\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 52,
+											Line:   10,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 79,
+												Line:   10,
+											},
+											File:   "state_changes_big_info_to_ok_test.flux",
+											Source: "columns:[\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 52,
+												Line:   10,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 59,
+													Line:   10,
+												},
+												File:   "state_changes_big_info_to_ok_test.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 52,
+													Line:   10,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   10,
+												},
+												File:   "state_changes_big_info_to_ok_test.flux",
+												Source: "[\"_start\", \"_stop\"]",
+												Start: ast.Position{
+													Column: 60,
+													Line:   10,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   10,
+													},
+													File:   "state_changes_big_info_to_ok_test.flux",
+													Source: "\"_start\"",
+													Start: ast.Position{
+														Column: 61,
+														Line:   10,
+													},
+												},
+											},
+											Value: "_start",
+										}, &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 78,
+														Line:   10,
+													},
+													File:   "state_changes_big_info_to_ok_test.flux",
+													Source: "\"_stop\"",
+													Start: ast.Position{
+														Column: 71,
+														Line:   10,
+													},
+												},
+											},
+											Value: "_stop",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 80,
+										Line:   10,
+									},
+									File:   "state_changes_big_info_to_ok_test.flux",
+									Source: "drop(columns:[\"_start\", \"_stop\"])",
+									Start: ast.Position{
+										Column: 47,
+										Line:   10,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 51,
+											Line:   10,
+										},
+										File:   "state_changes_big_info_to_ok_test.flux",
+										Source: "drop",
+										Start: ast.Position{
+											Column: 47,
+											Line:   10,
+										},
+									},
+								},
+								Name: "drop",
+							},
+						},
+					},
+					Params: []*ast.Property{&ast.Property{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   10,
+								},
+								File:   "state_changes_big_info_to_ok_test.flux",
+								Source: "tables=<-",
+								Start: ast.Position{
+									Column: 23,
+									Line:   10,
+								},
+							},
+						},
+						Key: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   10,
+									},
+									File:   "state_changes_big_info_to_ok_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 23,
+										Line:   10,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   10,
+								},
+								File:   "state_changes_big_info_to_ok_test.flux",
+								Source: "<-",
+								Start: ast.Position{
+									Column: 30,
+									Line:   10,
+								},
+							},
+						}},
+					}},
+				},
+				Member: &ast.MemberExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   10,
+							},
+							File:   "state_changes_big_info_to_ok_test.flux",
+							Source: "monitor.log",
+							Start: ast.Position{
+								Column: 8,
+								Line:   10,
+							},
+						},
+					},
+					Object: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   10,
+								},
+								File:   "state_changes_big_info_to_ok_test.flux",
+								Source: "monitor",
+								Start: ast.Position{
+									Column: 8,
+									Line:   10,
+								},
+							},
+						},
+						Name: "monitor",
+					},
+					Property: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 19,
+									Line:   10,
+								},
+								File:   "state_changes_big_info_to_ok_test.flux",
+								Source: "log",
+								Start: ast.Position{
+									Column: 16,
+									Line:   10,
+								},
+							},
+						},
+						Name: "log",
+					},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 80,
+						Line:   10,
+					},
+					File:   "state_changes_big_info_to_ok_test.flux",
+					Source: "option monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   10,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   243,
+					},
+					File:   "state_changes_big_info_to_ok_test.flux",
+					Source: "inData = \"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,23.371648565879127,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,29.007636780636247,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,28.93580898231049,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,28.28329800786939,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,28.338670930910908,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,29.551382817337316,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,20.229131737702303,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,20.57913145323683,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,11.086267669062991,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,18.937973208474638,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,11.550031971876997,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,8.495652148919287,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,4.358951746379062,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,7.129171924508139,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,4.5748599925408975,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,3.783743323598954,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,4.658109550294696,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,4.095150808198634,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,4.5538963928240594,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,4.428299890926006,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,2.758789040791375,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,3.399426580028879,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,4.620667027747688,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,4.363250147141176,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,6.281032939118847,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,4.972490830276759,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,5.167139505939133,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,4.824212762412529,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,4.887482325607516,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,5.345633364673913,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,4.47091485247676,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,4.408333333333333,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,2.608699518197021,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,4.99208267355613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,3.99008051788834,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,2.5659924848811504,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,4.5284466750289285,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,4.458348327059871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,4.571801254475424,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,3.8832004314667143,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,5.437130027220748,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,4.341341174188152,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1.4127195176169836,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1.358283009169833,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,2.874912507291059,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,2.4329003255950736,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1.3917298857089464,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,2.72916496860213,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,4.816784104464039,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,4.250548794042459,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,3.1213270718908044,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,2.8914444814753097,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,3.4166314635394666,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,4.424631876750123,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,3.5002719462770777,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,4.74975747963091,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,3.788131355225871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,3.5418847710036783,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,2.3748418711184613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,3.079545054484013,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,3.5373648023865356,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,4.229490309983358,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,7.848611329073602,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,2.9503906816927747,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,4.912786550445684,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,5.762651667220752,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,1585254415407797827,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,1585254750000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,1585254780000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,1585254810000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,1585254840000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,1585254870000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,1585254900000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,1585254930000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,1585254960000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,1585254990000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,1585255020000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,1585255050000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,1585255080000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,1585255110000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,1585255140000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,1585255170000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,1585255200000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,1585255230000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,1585255260000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,1585255290000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,1585255320000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,1585255350000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,1585255380000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,1585255410000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,1585255440000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,1585255470000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,1585255500000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,1585255530000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,1585255560000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,1585255590000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,1585255620000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,1585255650000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,1585255680000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,1585255710000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1585255740000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1585255770000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,1585255800000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,1585255830000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1585255860000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,1585255890000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,1585255920000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,1585255950000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,1585255980000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,1585256010000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,1585256040000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,1585256070000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,1585256100000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,1585256130000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,1585256160000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,1585256190000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,1585256220000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,1585256250000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,1585256280000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,1585256310000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,1585256340000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,1585256370000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,1585256400000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,1585256430000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,1585254420000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,1585254450000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,1585254480000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,1585254510000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,1585254540000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,1585254570000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,1585254690000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,1585254720000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n\n\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   13,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   13,
+						},
+						File:   "state_changes_big_info_to_ok_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   13,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   243,
+						},
+						File:   "state_changes_big_info_to_ok_test.flux",
+						Source: "\"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,23.371648565879127,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,29.007636780636247,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,28.93580898231049,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,28.28329800786939,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,28.338670930910908,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,29.551382817337316,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,20.229131737702303,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,20.57913145323683,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,11.086267669062991,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,18.937973208474638,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,11.550031971876997,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,8.495652148919287,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,4.358951746379062,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,7.129171924508139,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,4.5748599925408975,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,3.783743323598954,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,4.658109550294696,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,4.095150808198634,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,4.5538963928240594,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,4.428299890926006,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,2.758789040791375,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,3.399426580028879,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,4.620667027747688,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,4.363250147141176,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,6.281032939118847,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,4.972490830276759,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,5.167139505939133,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,4.824212762412529,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,4.887482325607516,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,5.345633364673913,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,4.47091485247676,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,4.408333333333333,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,2.608699518197021,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,4.99208267355613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,3.99008051788834,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,2.5659924848811504,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,4.5284466750289285,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,4.458348327059871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,4.571801254475424,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,3.8832004314667143,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,5.437130027220748,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,4.341341174188152,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1.4127195176169836,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1.358283009169833,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,2.874912507291059,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,2.4329003255950736,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1.3917298857089464,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,2.72916496860213,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,4.816784104464039,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,4.250548794042459,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,3.1213270718908044,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,2.8914444814753097,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,3.4166314635394666,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,4.424631876750123,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,3.5002719462770777,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,4.74975747963091,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,3.788131355225871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,3.5418847710036783,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,2.3748418711184613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,3.079545054484013,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,3.5373648023865356,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,4.229490309983358,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,7.848611329073602,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,2.9503906816927747,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,4.912786550445684,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,5.762651667220752,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,1585254415407797827,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,1585254750000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,1585254780000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,1585254810000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,1585254840000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,1585254870000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,1585254900000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,1585254930000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,1585254960000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,1585254990000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,1585255020000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,1585255050000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,1585255080000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,1585255110000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,1585255140000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,1585255170000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,1585255200000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,1585255230000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,1585255260000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,1585255290000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,1585255320000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,1585255350000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,1585255380000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,1585255410000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,1585255440000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,1585255470000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,1585255500000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,1585255530000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,1585255560000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,1585255590000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,1585255620000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,1585255650000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,1585255680000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,1585255710000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1585255740000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1585255770000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,1585255800000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,1585255830000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1585255860000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,1585255890000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,1585255920000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,1585255950000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,1585255980000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,1585256010000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,1585256040000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,1585256070000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,1585256100000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,1585256130000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,1585256160000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,1585256190000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,1585256220000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,1585256250000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,1585256280000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,1585256310000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,1585256340000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,1585256370000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,1585256400000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,1585256430000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,1585254420000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,1585254450000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,1585254480000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,1585254510000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,1585254540000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,1585254570000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,1585254690000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,1585254720000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n\n\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   13,
+						},
+					},
+				},
+				Value: "\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,23.371648565879127,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,29.007636780636247,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,28.93580898231049,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,28.28329800786939,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,28.338670930910908,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,29.551382817337316,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,20.229131737702303,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,20.57913145323683,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,11.086267669062991,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,18.937973208474638,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,11.550031971876997,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,8.495652148919287,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,4.358951746379062,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,7.129171924508139,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,4.5748599925408975,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,3.783743323598954,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,4.658109550294696,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,4.095150808198634,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,4.5538963928240594,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,4.428299890926006,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,2.758789040791375,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,3.399426580028879,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,4.620667027747688,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,4.363250147141176,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,6.281032939118847,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,4.972490830276759,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,5.167139505939133,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,4.824212762412529,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,4.887482325607516,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,5.345633364673913,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,4.47091485247676,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,4.408333333333333,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,2.608699518197021,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,4.99208267355613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,3.99008051788834,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,2.5659924848811504,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,4.5284466750289285,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,4.458348327059871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,4.571801254475424,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,3.8832004314667143,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,5.437130027220748,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,4.341341174188152,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1.4127195176169836,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1.358283009169833,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,2.874912507291059,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,2.4329003255950736,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1.3917298857089464,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,2.72916496860213,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,4.816784104464039,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,4.250548794042459,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,3.1213270718908044,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,2.8914444814753097,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,3.4166314635394666,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,4.424631876750123,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,3.5002719462770777,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,4.74975747963091,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,3.788131355225871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,3.5418847710036783,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,2.3748418711184613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,3.079545054484013,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,3.5373648023865356,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,4.229490309983358,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,7.848611329073602,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,2.9503906816927747,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,4.912786550445684,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,5.762651667220752,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,1585254415407797827,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,1585254750000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,1585254780000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,1585254810000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,1585254840000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,1585254870000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,1585254900000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,1585254930000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,1585254960000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,1585254990000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,1585255020000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,1585255050000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,1585255080000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,1585255110000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,1585255140000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,1585255170000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,1585255200000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,1585255230000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,1585255260000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,1585255290000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,1585255320000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,1585255350000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,1585255380000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,1585255410000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,1585255440000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,1585255470000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,1585255500000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,1585255530000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,1585255560000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,1585255590000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,1585255620000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,1585255650000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,1585255680000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,1585255710000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1585255740000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1585255770000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,1585255800000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,1585255830000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1585255860000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,1585255890000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,1585255920000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,1585255950000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,1585255980000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,1585256010000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,1585256040000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,1585256070000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,1585256100000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,1585256130000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,1585256160000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,1585256190000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,1585256220000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,1585256250000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,1585256280000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,1585256310000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,1585256340000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,1585256370000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,1585256400000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,1585256430000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,1585254420000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,1585254450000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,1585254480000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,1585254510000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,1585254540000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,1585254570000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,1585254690000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,1585254720000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n\n\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   254,
+					},
+					File:   "state_changes_big_info_to_ok_test.flux",
+					Source: "outData = \"\n#group,false,false,true,true,true,false,true,false,true,true,false,true,true,true,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_start,_stop,_time,_type,cpu,host,usage_user,_level\n,,0,057220dae1443000,cpu,statuses,Check: cpu is: ok,cpu,1585254750000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,threshold,cpu-total,localhost,18.937973208474638,ok\n\n\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   246,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   246,
+						},
+						File:   "state_changes_big_info_to_ok_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   246,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   254,
+						},
+						File:   "state_changes_big_info_to_ok_test.flux",
+						Source: "\"\n#group,false,false,true,true,true,false,true,false,true,true,false,true,true,true,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_start,_stop,_time,_type,cpu,host,usage_user,_level\n,,0,057220dae1443000,cpu,statuses,Check: cpu is: ok,cpu,1585254750000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,threshold,cpu-total,localhost,18.937973208474638,ok\n\n\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   246,
+						},
+					},
+				},
+				Value: "\n#group,false,false,true,true,true,false,true,false,true,true,false,true,true,true,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_start,_stop,_time,_type,cpu,host,usage_user,_level\n,,0,057220dae1443000,cpu,statuses,Check: cpu is: ok,cpu,1585254750000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,threshold,cpu-total,localhost,18.937973208474638,ok\n\n\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 6,
+						Line:   261,
+					},
+					File:   "state_changes_big_info_to_ok_test.flux",
+					Source: "t_state_changes_big_info_to_ok = (table=<-) => table\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"info\",\n        toLevel: \"ok\",\n    )",
+					Start: ast.Position{
+						Column: 1,
+						Line:   256,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 31,
+							Line:   256,
+						},
+						File:   "state_changes_big_info_to_ok_test.flux",
+						Source: "t_state_changes_big_info_to_ok",
+						Start: ast.Position{
+							Column: 1,
+							Line:   256,
+						},
+					},
+				},
+				Name: "t_state_changes_big_info_to_ok",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   261,
+						},
+						File:   "state_changes_big_info_to_ok_test.flux",
+						Source: "(table=<-) => table\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"info\",\n        toLevel: \"ok\",\n    )",
+						Start: ast.Position{
+							Column: 34,
+							Line:   256,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 53,
+										Line:   256,
+									},
+									File:   "state_changes_big_info_to_ok_test.flux",
+									Source: "table",
+									Start: ast.Position{
+										Column: 48,
+										Line:   256,
+									},
+								},
+							},
+							Name: "table",
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   257,
+								},
+								File:   "state_changes_big_info_to_ok_test.flux",
+								Source: "table\n    |> v1.fieldsAsCols()",
+								Start: ast.Position{
+									Column: 48,
+									Line:   256,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: nil,
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   257,
+									},
+									File:   "state_changes_big_info_to_ok_test.flux",
+									Source: "v1.fieldsAsCols()",
+									Start: ast.Position{
+										Column: 8,
+										Line:   257,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   257,
+										},
+										File:   "state_changes_big_info_to_ok_test.flux",
+										Source: "v1.fieldsAsCols",
+										Start: ast.Position{
+											Column: 8,
+											Line:   257,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 10,
+												Line:   257,
+											},
+											File:   "state_changes_big_info_to_ok_test.flux",
+											Source: "v1",
+											Start: ast.Position{
+												Column: 8,
+												Line:   257,
+											},
+										},
+									},
+									Name: "v1",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   257,
+											},
+											File:   "state_changes_big_info_to_ok_test.flux",
+											Source: "fieldsAsCols",
+											Start: ast.Position{
+												Column: 11,
+												Line:   257,
+											},
+										},
+									},
+									Name: "fieldsAsCols",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 6,
+								Line:   261,
+							},
+							File:   "state_changes_big_info_to_ok_test.flux",
+							Source: "table\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"info\",\n        toLevel: \"ok\",\n    )",
+							Start: ast.Position{
+								Column: 48,
+								Line:   256,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 22,
+										Line:   260,
+									},
+									File:   "state_changes_big_info_to_ok_test.flux",
+									Source: "fromLevel: \"info\",\n        toLevel: \"ok\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   259,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 26,
+											Line:   259,
+										},
+										File:   "state_changes_big_info_to_ok_test.flux",
+										Source: "fromLevel: \"info\"",
+										Start: ast.Position{
+											Column: 9,
+											Line:   259,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   259,
+											},
+											File:   "state_changes_big_info_to_ok_test.flux",
+											Source: "fromLevel",
+											Start: ast.Position{
+												Column: 9,
+												Line:   259,
+											},
+										},
+									},
+									Name: "fromLevel",
+								},
+								Value: &ast.StringLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 26,
+												Line:   259,
+											},
+											File:   "state_changes_big_info_to_ok_test.flux",
+											Source: "\"info\"",
+											Start: ast.Position{
+												Column: 20,
+												Line:   259,
+											},
+										},
+									},
+									Value: "info",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 22,
+											Line:   260,
+										},
+										File:   "state_changes_big_info_to_ok_test.flux",
+										Source: "toLevel: \"ok\"",
+										Start: ast.Position{
+											Column: 9,
+											Line:   260,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   260,
+											},
+											File:   "state_changes_big_info_to_ok_test.flux",
+											Source: "toLevel",
+											Start: ast.Position{
+												Column: 9,
+												Line:   260,
+											},
+										},
+									},
+									Name: "toLevel",
+								},
+								Value: &ast.StringLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 22,
+												Line:   260,
+											},
+											File:   "state_changes_big_info_to_ok_test.flux",
+											Source: "\"ok\"",
+											Start: ast.Position{
+												Column: 18,
+												Line:   260,
+											},
+										},
+									},
+									Value: "ok",
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   261,
+								},
+								File:   "state_changes_big_info_to_ok_test.flux",
+								Source: "monitor.stateChanges(\n        fromLevel: \"info\",\n        toLevel: \"ok\",\n    )",
+								Start: ast.Position{
+									Column: 8,
+									Line:   258,
+								},
+							},
+						},
+						Callee: &ast.MemberExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   258,
+									},
+									File:   "state_changes_big_info_to_ok_test.flux",
+									Source: "monitor.stateChanges",
+									Start: ast.Position{
+										Column: 8,
+										Line:   258,
+									},
+								},
+							},
+							Object: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   258,
+										},
+										File:   "state_changes_big_info_to_ok_test.flux",
+										Source: "monitor",
+										Start: ast.Position{
+											Column: 8,
+											Line:   258,
+										},
+									},
+								},
+								Name: "monitor",
+							},
+							Property: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   258,
+										},
+										File:   "state_changes_big_info_to_ok_test.flux",
+										Source: "stateChanges",
+										Start: ast.Position{
+											Column: 16,
+											Line:   258,
+										},
+									},
+								},
+								Name: "stateChanges",
+							},
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 43,
+								Line:   256,
+							},
+							File:   "state_changes_big_info_to_ok_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 35,
+								Line:   256,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   256,
+								},
+								File:   "state_changes_big_info_to_ok_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 35,
+									Line:   256,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 43,
+								Line:   256,
+							},
+							File:   "state_changes_big_info_to_ok_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 41,
+								Line:   256,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 121,
+							Line:   264,
+						},
+						File:   "state_changes_big_info_to_ok_test.flux",
+						Source: "monitor_state_changes_big_info_to_ok = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_info_to_ok})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   263,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   263,
+							},
+							File:   "state_changes_big_info_to_ok_test.flux",
+							Source: "monitor_state_changes_big_info_to_ok",
+							Start: ast.Position{
+								Column: 6,
+								Line:   263,
+							},
+						},
+					},
+					Name: "monitor_state_changes_big_info_to_ok",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 121,
+								Line:   264,
+							},
+							File:   "state_changes_big_info_to_ok_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_info_to_ok})",
+							Start: ast.Position{
+								Column: 45,
+								Line:   263,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 121,
+									Line:   264,
+								},
+								File:   "state_changes_big_info_to_ok_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_info_to_ok})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   264,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 120,
+										Line:   264,
+									},
+									File:   "state_changes_big_info_to_ok_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_info_to_ok}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   264,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   264,
+										},
+										File:   "state_changes_big_info_to_ok_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   264,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   264,
+											},
+											File:   "state_changes_big_info_to_ok_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   264,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   264,
+												},
+												File:   "state_changes_big_info_to_ok_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 34,
+													Line:   264,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   264,
+													},
+													File:   "state_changes_big_info_to_ok_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 34,
+														Line:   264,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   264,
+														},
+														File:   "state_changes_big_info_to_ok_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   264,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 45,
+															Line:   264,
+														},
+														File:   "state_changes_big_info_to_ok_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 39,
+															Line:   264,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 46,
+												Line:   264,
+											},
+											File:   "state_changes_big_info_to_ok_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   264,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   264,
+												},
+												File:   "state_changes_big_info_to_ok_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   264,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   264,
+													},
+													File:   "state_changes_big_info_to_ok_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   264,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   264,
+													},
+													File:   "state_changes_big_info_to_ok_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   264,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 83,
+											Line:   264,
+										},
+										File:   "state_changes_big_info_to_ok_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 48,
+											Line:   264,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 52,
+												Line:   264,
+											},
+											File:   "state_changes_big_info_to_ok_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 48,
+												Line:   264,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 82,
+													Line:   264,
+												},
+												File:   "state_changes_big_info_to_ok_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 70,
+													Line:   264,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 82,
+														Line:   264,
+													},
+													File:   "state_changes_big_info_to_ok_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 70,
+														Line:   264,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 73,
+															Line:   264,
+														},
+														File:   "state_changes_big_info_to_ok_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 70,
+															Line:   264,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 82,
+															Line:   264,
+														},
+														File:   "state_changes_big_info_to_ok_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 75,
+															Line:   264,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 83,
+												Line:   264,
+											},
+											File:   "state_changes_big_info_to_ok_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 54,
+												Line:   264,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 69,
+													Line:   264,
+												},
+												File:   "state_changes_big_info_to_ok_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 54,
+													Line:   264,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 61,
+														Line:   264,
+													},
+													File:   "state_changes_big_info_to_ok_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 54,
+														Line:   264,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   264,
+													},
+													File:   "state_changes_big_info_to_ok_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 62,
+														Line:   264,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 119,
+											Line:   264,
+										},
+										File:   "state_changes_big_info_to_ok_test.flux",
+										Source: "fn: t_state_changes_big_info_to_ok",
+										Start: ast.Position{
+											Column: 85,
+											Line:   264,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 87,
+												Line:   264,
+											},
+											File:   "state_changes_big_info_to_ok_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 85,
+												Line:   264,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 119,
+												Line:   264,
+											},
+											File:   "state_changes_big_info_to_ok_test.flux",
+											Source: "t_state_changes_big_info_to_ok",
+											Start: ast.Position{
+												Column: 89,
+												Line:   264,
+											},
+										},
+									},
+									Name: "t_state_changes_big_info_to_ok",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 121,
+						Line:   264,
+					},
+					File:   "state_changes_big_info_to_ok_test.flux",
+					Source: "test monitor_state_changes_big_info_to_ok = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_info_to_ok})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   263,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 37,
+						Line:   3,
+					},
+					File:   "state_changes_big_info_to_ok_test.flux",
+					Source: "import \"influxdata/influxdb/monitor\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 37,
+							Line:   3,
+						},
+						File:   "state_changes_big_info_to_ok_test.flux",
+						Source: "\"influxdata/influxdb/monitor\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/monitor",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 32,
+						Line:   4,
+					},
+					File:   "state_changes_big_info_to_ok_test.flux",
+					Source: "import \"influxdata/influxdb/v1\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 32,
+							Line:   4,
+						},
+						File:   "state_changes_big_info_to_ok_test.flux",
+						Source: "\"influxdata/influxdb/v1\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/v1",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   5,
+					},
+					File:   "state_changes_big_info_to_ok_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   5,
+						},
+						File:   "state_changes_big_info_to_ok_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   6,
+					},
+					File:   "state_changes_big_info_to_ok_test.flux",
+					Source: "import \"experimental\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   6,
+						},
+						File:   "state_changes_big_info_to_ok_test.flux",
+						Source: "\"experimental\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				Value: "experimental",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "state_changes_big_info_to_ok_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 21,
+						Line:   1,
+					},
+					File:   "state_changes_big_info_to_ok_test.flux",
+					Source: "package monitor_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   1,
+						},
+						File:   "state_changes_big_info_to_ok_test.flux",
+						Source: "monitor_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "monitor_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 121,
+					Line:   264,
+				},
+				File:   "state_changes_big_ok_to_info_test.flux",
+				Source: "package monitor_test\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => 2018-05-22T19:54:40Z\n\noption monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])\n\n// Note this input data is identical to the output data of the check test case, post pivot.\ninData = \"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,23.371648565879127,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,29.007636780636247,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,28.93580898231049,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,28.28329800786939,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,28.338670930910908,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,29.551382817337316,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,20.229131737702303,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,20.57913145323683,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,11.086267669062991,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,18.937973208474638,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,11.550031971876997,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,8.495652148919287,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,4.358951746379062,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,7.129171924508139,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,4.5748599925408975,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,3.783743323598954,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,4.658109550294696,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,4.095150808198634,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,4.5538963928240594,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,4.428299890926006,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,2.758789040791375,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,3.399426580028879,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,4.620667027747688,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,4.363250147141176,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,6.281032939118847,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,4.972490830276759,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,5.167139505939133,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,4.824212762412529,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,4.887482325607516,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,5.345633364673913,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,4.47091485247676,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,4.408333333333333,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,2.608699518197021,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,4.99208267355613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,3.99008051788834,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,2.5659924848811504,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,4.5284466750289285,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,4.458348327059871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,4.571801254475424,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,3.8832004314667143,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,5.437130027220748,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,4.341341174188152,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1.4127195176169836,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1.358283009169833,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,2.874912507291059,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,2.4329003255950736,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1.3917298857089464,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,2.72916496860213,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,4.816784104464039,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,4.250548794042459,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,3.1213270718908044,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,2.8914444814753097,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,3.4166314635394666,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,4.424631876750123,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,3.5002719462770777,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,4.74975747963091,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,3.788131355225871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,3.5418847710036783,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,2.3748418711184613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,3.079545054484013,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,3.5373648023865356,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,4.229490309983358,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,7.848611329073602,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,2.9503906816927747,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,4.912786550445684,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,5.762651667220752,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,1585254415407797827,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,1585254750000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,1585254780000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,1585254810000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,1585254840000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,1585254870000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,1585254900000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,1585254930000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,1585254960000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,1585254990000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,1585255020000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,1585255050000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,1585255080000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,1585255110000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,1585255140000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,1585255170000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,1585255200000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,1585255230000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,1585255260000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,1585255290000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,1585255320000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,1585255350000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,1585255380000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,1585255410000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,1585255440000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,1585255470000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,1585255500000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,1585255530000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,1585255560000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,1585255590000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,1585255620000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,1585255650000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,1585255680000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,1585255710000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1585255740000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1585255770000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,1585255800000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,1585255830000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1585255860000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,1585255890000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,1585255920000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,1585255950000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,1585255980000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,1585256010000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,1585256040000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,1585256070000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,1585256100000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,1585256130000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,1585256160000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,1585256190000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,1585256220000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,1585256250000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,1585256280000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,1585256310000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,1585256340000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,1585256370000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,1585256400000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,1585256430000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,1585254420000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,1585254450000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,1585254480000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,1585254510000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,1585254540000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,1585254570000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,1585254690000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,1585254720000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n\n\n\"\n\n\noutData = \"\n#group,false,false,true,true,true,false,true,false,true,true,false,true,true,true,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_start,_stop,_time,_type,cpu,host,usage_user,_level\n,,0,057220dae1443000,cpu,statuses,Check: cpu is: info,cpu,1585254420000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,threshold,cpu-total,localhost,23.371648565879127,info\n\n\n\"\n\nt_state_changes_big_ok_to_info = (table=<-) => table\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"ok\",\n        toLevel: \"info\",\n    )\n\ntest monitor_state_changes_big_ok_to_info = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_ok_to_info})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 40,
+							Line:   8,
+						},
+						File:   "state_changes_big_ok_to_info_test.flux",
+						Source: "now = () => 2018-05-22T19:54:40Z",
+						Start: ast.Position{
+							Column: 8,
+							Line:   8,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   8,
+							},
+							File:   "state_changes_big_ok_to_info_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   8,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 40,
+								Line:   8,
+							},
+							File:   "state_changes_big_ok_to_info_test.flux",
+							Source: "() => 2018-05-22T19:54:40Z",
+							Start: ast.Position{
+								Column: 14,
+								Line:   8,
+							},
+						},
+					},
+					Body: &ast.DateTimeLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   8,
+								},
+								File:   "state_changes_big_ok_to_info_test.flux",
+								Source: "2018-05-22T19:54:40Z",
+								Start: ast.Position{
+									Column: 20,
+									Line:   8,
+								},
+							},
+						},
+						Value: parser.MustParseTime("2018-05-22T19:54:40Z"),
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 40,
+						Line:   8,
+					},
+					File:   "state_changes_big_ok_to_info_test.flux",
+					Source: "option now = () => 2018-05-22T19:54:40Z",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+		}, &ast.OptionStatement{
+			Assignment: &ast.MemberAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 80,
+							Line:   10,
+						},
+						File:   "state_changes_big_ok_to_info_test.flux",
+						Source: "monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+						Start: ast.Position{
+							Column: 8,
+							Line:   10,
+						},
+					},
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 80,
+								Line:   10,
+							},
+							File:   "state_changes_big_ok_to_info_test.flux",
+							Source: "(tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+							Start: ast.Position{
+								Column: 22,
+								Line:   10,
+							},
+						},
+					},
+					Body: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 43,
+										Line:   10,
+									},
+									File:   "state_changes_big_ok_to_info_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 37,
+										Line:   10,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 80,
+									Line:   10,
+								},
+								File:   "state_changes_big_ok_to_info_test.flux",
+								Source: "tables |> drop(columns:[\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 37,
+									Line:   10,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 79,
+											Line:   10,
+										},
+										File:   "state_changes_big_ok_to_info_test.flux",
+										Source: "columns:[\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 52,
+											Line:   10,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 79,
+												Line:   10,
+											},
+											File:   "state_changes_big_ok_to_info_test.flux",
+											Source: "columns:[\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 52,
+												Line:   10,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 59,
+													Line:   10,
+												},
+												File:   "state_changes_big_ok_to_info_test.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 52,
+													Line:   10,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   10,
+												},
+												File:   "state_changes_big_ok_to_info_test.flux",
+												Source: "[\"_start\", \"_stop\"]",
+												Start: ast.Position{
+													Column: 60,
+													Line:   10,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   10,
+													},
+													File:   "state_changes_big_ok_to_info_test.flux",
+													Source: "\"_start\"",
+													Start: ast.Position{
+														Column: 61,
+														Line:   10,
+													},
+												},
+											},
+											Value: "_start",
+										}, &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 78,
+														Line:   10,
+													},
+													File:   "state_changes_big_ok_to_info_test.flux",
+													Source: "\"_stop\"",
+													Start: ast.Position{
+														Column: 71,
+														Line:   10,
+													},
+												},
+											},
+											Value: "_stop",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 80,
+										Line:   10,
+									},
+									File:   "state_changes_big_ok_to_info_test.flux",
+									Source: "drop(columns:[\"_start\", \"_stop\"])",
+									Start: ast.Position{
+										Column: 47,
+										Line:   10,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 51,
+											Line:   10,
+										},
+										File:   "state_changes_big_ok_to_info_test.flux",
+										Source: "drop",
+										Start: ast.Position{
+											Column: 47,
+											Line:   10,
+										},
+									},
+								},
+								Name: "drop",
+							},
+						},
+					},
+					Params: []*ast.Property{&ast.Property{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   10,
+								},
+								File:   "state_changes_big_ok_to_info_test.flux",
+								Source: "tables=<-",
+								Start: ast.Position{
+									Column: 23,
+									Line:   10,
+								},
+							},
+						},
+						Key: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   10,
+									},
+									File:   "state_changes_big_ok_to_info_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 23,
+										Line:   10,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   10,
+								},
+								File:   "state_changes_big_ok_to_info_test.flux",
+								Source: "<-",
+								Start: ast.Position{
+									Column: 30,
+									Line:   10,
+								},
+							},
+						}},
+					}},
+				},
+				Member: &ast.MemberExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   10,
+							},
+							File:   "state_changes_big_ok_to_info_test.flux",
+							Source: "monitor.log",
+							Start: ast.Position{
+								Column: 8,
+								Line:   10,
+							},
+						},
+					},
+					Object: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   10,
+								},
+								File:   "state_changes_big_ok_to_info_test.flux",
+								Source: "monitor",
+								Start: ast.Position{
+									Column: 8,
+									Line:   10,
+								},
+							},
+						},
+						Name: "monitor",
+					},
+					Property: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 19,
+									Line:   10,
+								},
+								File:   "state_changes_big_ok_to_info_test.flux",
+								Source: "log",
+								Start: ast.Position{
+									Column: 16,
+									Line:   10,
+								},
+							},
+						},
+						Name: "log",
+					},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 80,
+						Line:   10,
+					},
+					File:   "state_changes_big_ok_to_info_test.flux",
+					Source: "option monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   10,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   243,
+					},
+					File:   "state_changes_big_ok_to_info_test.flux",
+					Source: "inData = \"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,23.371648565879127,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,29.007636780636247,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,28.93580898231049,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,28.28329800786939,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,28.338670930910908,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,29.551382817337316,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,20.229131737702303,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,20.57913145323683,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,11.086267669062991,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,18.937973208474638,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,11.550031971876997,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,8.495652148919287,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,4.358951746379062,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,7.129171924508139,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,4.5748599925408975,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,3.783743323598954,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,4.658109550294696,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,4.095150808198634,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,4.5538963928240594,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,4.428299890926006,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,2.758789040791375,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,3.399426580028879,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,4.620667027747688,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,4.363250147141176,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,6.281032939118847,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,4.972490830276759,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,5.167139505939133,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,4.824212762412529,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,4.887482325607516,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,5.345633364673913,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,4.47091485247676,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,4.408333333333333,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,2.608699518197021,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,4.99208267355613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,3.99008051788834,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,2.5659924848811504,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,4.5284466750289285,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,4.458348327059871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,4.571801254475424,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,3.8832004314667143,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,5.437130027220748,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,4.341341174188152,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1.4127195176169836,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1.358283009169833,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,2.874912507291059,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,2.4329003255950736,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1.3917298857089464,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,2.72916496860213,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,4.816784104464039,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,4.250548794042459,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,3.1213270718908044,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,2.8914444814753097,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,3.4166314635394666,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,4.424631876750123,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,3.5002719462770777,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,4.74975747963091,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,3.788131355225871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,3.5418847710036783,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,2.3748418711184613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,3.079545054484013,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,3.5373648023865356,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,4.229490309983358,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,7.848611329073602,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,2.9503906816927747,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,4.912786550445684,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,5.762651667220752,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,1585254415407797827,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,1585254750000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,1585254780000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,1585254810000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,1585254840000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,1585254870000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,1585254900000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,1585254930000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,1585254960000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,1585254990000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,1585255020000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,1585255050000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,1585255080000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,1585255110000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,1585255140000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,1585255170000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,1585255200000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,1585255230000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,1585255260000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,1585255290000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,1585255320000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,1585255350000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,1585255380000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,1585255410000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,1585255440000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,1585255470000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,1585255500000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,1585255530000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,1585255560000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,1585255590000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,1585255620000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,1585255650000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,1585255680000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,1585255710000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1585255740000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1585255770000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,1585255800000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,1585255830000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1585255860000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,1585255890000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,1585255920000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,1585255950000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,1585255980000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,1585256010000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,1585256040000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,1585256070000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,1585256100000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,1585256130000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,1585256160000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,1585256190000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,1585256220000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,1585256250000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,1585256280000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,1585256310000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,1585256340000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,1585256370000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,1585256400000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,1585256430000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,1585254420000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,1585254450000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,1585254480000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,1585254510000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,1585254540000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,1585254570000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,1585254690000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,1585254720000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n\n\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   13,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   13,
+						},
+						File:   "state_changes_big_ok_to_info_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   13,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   243,
+						},
+						File:   "state_changes_big_ok_to_info_test.flux",
+						Source: "\"\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,23.371648565879127,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,29.007636780636247,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,28.93580898231049,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,28.28329800786939,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,28.338670930910908,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,29.551382817337316,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,20.229131737702303,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,20.57913145323683,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,11.086267669062991,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,18.937973208474638,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,11.550031971876997,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,8.495652148919287,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,4.358951746379062,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,7.129171924508139,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,4.5748599925408975,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,3.783743323598954,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,4.658109550294696,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,4.095150808198634,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,4.5538963928240594,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,4.428299890926006,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,2.758789040791375,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,3.399426580028879,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,4.620667027747688,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,4.363250147141176,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,6.281032939118847,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,4.972490830276759,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,5.167139505939133,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,4.824212762412529,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,4.887482325607516,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,5.345633364673913,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,4.47091485247676,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,4.408333333333333,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,2.608699518197021,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,4.99208267355613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,3.99008051788834,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,2.5659924848811504,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,4.5284466750289285,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,4.458348327059871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,4.571801254475424,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,3.8832004314667143,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,5.437130027220748,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,4.341341174188152,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1.4127195176169836,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1.358283009169833,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,2.874912507291059,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,2.4329003255950736,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1.3917298857089464,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,2.72916496860213,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,4.816784104464039,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,4.250548794042459,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,3.1213270718908044,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,2.8914444814753097,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,3.4166314635394666,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,4.424631876750123,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,3.5002719462770777,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,4.74975747963091,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,3.788131355225871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,3.5418847710036783,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,2.3748418711184613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,3.079545054484013,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,3.5373648023865356,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,4.229490309983358,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,7.848611329073602,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,2.9503906816927747,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,4.912786550445684,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,5.762651667220752,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,1585254415407797827,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,1585254750000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,1585254780000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,1585254810000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,1585254840000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,1585254870000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,1585254900000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,1585254930000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,1585254960000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,1585254990000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,1585255020000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,1585255050000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,1585255080000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,1585255110000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,1585255140000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,1585255170000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,1585255200000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,1585255230000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,1585255260000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,1585255290000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,1585255320000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,1585255350000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,1585255380000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,1585255410000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,1585255440000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,1585255470000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,1585255500000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,1585255530000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,1585255560000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,1585255590000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,1585255620000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,1585255650000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,1585255680000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,1585255710000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1585255740000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1585255770000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,1585255800000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,1585255830000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1585255860000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,1585255890000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,1585255920000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,1585255950000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,1585255980000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,1585256010000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,1585256040000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,1585256070000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,1585256100000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,1585256130000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,1585256160000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,1585256190000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,1585256220000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,1585256250000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,1585256280000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,1585256310000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,1585256340000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,1585256370000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,1585256400000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,1585256430000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,1585254420000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,1585254450000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,1585254480000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,1585254510000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,1585254540000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,1585254570000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,1585254690000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,1585254720000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n\n\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   13,
+						},
+					},
+				},
+				Value: "\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,23.371648565879127,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,29.007636780636247,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,28.93580898231049,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,28.28329800786939,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,28.338670930910908,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,29.551382817337316,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,20.229131737702303,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n,,0,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,20.57913145323683,057220dae1443000,cpu,usage_user,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,11.086267669062991,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,18.937973208474638,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,11.550031971876997,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,8.495652148919287,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,4.358951746379062,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,7.129171924508139,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,4.5748599925408975,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,3.783743323598954,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,4.658109550294696,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,4.095150808198634,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,4.5538963928240594,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,4.428299890926006,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,2.758789040791375,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,3.399426580028879,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,4.620667027747688,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,4.363250147141176,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,6.281032939118847,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,4.972490830276759,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,5.167139505939133,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,4.824212762412529,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,4.887482325607516,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,5.345633364673913,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,4.47091485247676,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,4.408333333333333,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,2.608699518197021,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,4.99208267355613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,3.99008051788834,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,2.5659924848811504,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,4.5284466750289285,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,4.458348327059871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,4.571801254475424,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,3.8832004314667143,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,5.437130027220748,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,4.341341174188152,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1.4127195176169836,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1.358283009169833,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,2.874912507291059,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,2.4329003255950736,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1.3917298857089464,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,2.72916496860213,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,4.816784104464039,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,4.250548794042459,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,3.1213270718908044,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,2.8914444814753097,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,3.4166314635394666,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,4.424631876750123,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,3.5002719462770777,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,4.74975747963091,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,3.788131355225871,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,3.5418847710036783,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,2.3748418711184613,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,3.079545054484013,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,3.5373648023865356,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,4.229490309983358,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,7.848611329073602,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,2.9503906816927747,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,4.912786550445684,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n,,1,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,5.762651667220752,057220dae1443000,cpu,usage_user,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,1585254415407797827,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,1585254750000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,1585254780000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,1585254810000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,1585254840000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,1585254870000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,1585254900000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,1585254930000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,1585254960000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,1585254990000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,1585255020000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,1585255050000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,1585255080000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,1585255110000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,1585255140000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,1585255170000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,1585255200000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,1585255230000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,1585255260000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,1585255290000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,1585255320000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,1585255350000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,1585255380000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,1585255410000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,1585255440000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,1585255470000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,1585255500000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,1585255530000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,1585255560000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,1585255590000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,1585255620000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,1585255650000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,1585255680000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,1585255710000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,1585255740000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,1585255770000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,1585255800000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,1585255830000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,1585255860000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,1585255890000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,1585255920000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,1585255950000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,1585255980000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,1585256010000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,1585256040000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,1585256070000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,1585256100000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,1585256130000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,1585256160000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,1585256190000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,1585256220000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,1585256250000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,1585256280000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,1585256310000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,1585256340000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,1585256370000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,1585256400000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n,,2,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,1585256430000000000,057220dae1443000,cpu,_source_timestamp,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:26:55.569263562Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:31.587813488Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:04.805402131Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:33:31.548725134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:04.688898357Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:34:31.627798274Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:06.028334572Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:35:31.887412857Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:05.02933451Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:36:31.729957292Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:05.117833549Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:37:31.951393134Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:04.778056331Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:38:31.704503971Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:05.3491966Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:39:31.683358557Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:06.673196605Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:40:32.025836046Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:04.60909815Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:41:31.463047886Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:05.640482636Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:42:31.509308681Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:04.861844416Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:43:31.663809809Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:04.761999221Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:44:31.444359596Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:06.674292797Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:45:31.349830308Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:04.645782765Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:46:31.44042222Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:04.93331776Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:47:31.266766316Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:05.192557606Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:48:31.267979487Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:05.214485267Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:49:31.285683984Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:06.607726958Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:50:31.143841364Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:04.667647794Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:51:31.272251104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:04.855227871Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:52:31.201849914Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:04.56194885Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:53:31.203358634Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:04.590040077Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:54:31.516000884Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:05.791493388Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:55:31.09797193Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:05.000719889Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:56:31.167853945Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:04.551687359Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:57:30.9901659Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:05.461039406Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:58:30.835346999Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:04.713288759Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:59:31.086374842Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:08.182275847Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n,,3,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T21:00:30.954297104Z,Check: cpu is: ok,057220dae1443000,cpu,_message,ok,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n,,4,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,Check: cpu is: info,057220dae1443000,cpu,_message,info,statuses,cpu,threshold,cpu-total,localhost\n\n#group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string,string,string,string\n#default,got,,,,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,cpu,host\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,1585254420000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:31.884510446Z,1585254450000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:05.043453781Z,1585254480000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:28:32.219280733Z,1585254510000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:04.541599828Z,1585254540000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:29:31.590878487Z,1585254570000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:31:31.465992796Z,1585254690000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n,,5,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:32:04.903745932Z,1585254720000000000,057220dae1443000,cpu,_source_timestamp,info,statuses,cpu,threshold,cpu-total,localhost\n\n\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   254,
+					},
+					File:   "state_changes_big_ok_to_info_test.flux",
+					Source: "outData = \"\n#group,false,false,true,true,true,false,true,false,true,true,false,true,true,true,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_start,_stop,_time,_type,cpu,host,usage_user,_level\n,,0,057220dae1443000,cpu,statuses,Check: cpu is: info,cpu,1585254420000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,threshold,cpu-total,localhost,23.371648565879127,info\n\n\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   246,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   246,
+						},
+						File:   "state_changes_big_ok_to_info_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   246,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   254,
+						},
+						File:   "state_changes_big_ok_to_info_test.flux",
+						Source: "\"\n#group,false,false,true,true,true,false,true,false,true,true,false,true,true,true,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_start,_stop,_time,_type,cpu,host,usage_user,_level\n,,0,057220dae1443000,cpu,statuses,Check: cpu is: info,cpu,1585254420000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,threshold,cpu-total,localhost,23.371648565879127,info\n\n\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   246,
+						},
+					},
+				},
+				Value: "\n#group,false,false,true,true,true,false,true,false,true,true,false,true,true,true,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_start,_stop,_time,_type,cpu,host,usage_user,_level\n,,0,057220dae1443000,cpu,statuses,Check: cpu is: info,cpu,1585254420000000000,2020-03-25T21:25:05.876383836Z,2020-03-26T21:25:05.876383836Z,2020-03-26T20:27:04.467243917Z,threshold,cpu-total,localhost,23.371648565879127,info\n\n\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 6,
+						Line:   261,
+					},
+					File:   "state_changes_big_ok_to_info_test.flux",
+					Source: "t_state_changes_big_ok_to_info = (table=<-) => table\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"ok\",\n        toLevel: \"info\",\n    )",
+					Start: ast.Position{
+						Column: 1,
+						Line:   256,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 31,
+							Line:   256,
+						},
+						File:   "state_changes_big_ok_to_info_test.flux",
+						Source: "t_state_changes_big_ok_to_info",
+						Start: ast.Position{
+							Column: 1,
+							Line:   256,
+						},
+					},
+				},
+				Name: "t_state_changes_big_ok_to_info",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   261,
+						},
+						File:   "state_changes_big_ok_to_info_test.flux",
+						Source: "(table=<-) => table\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"ok\",\n        toLevel: \"info\",\n    )",
+						Start: ast.Position{
+							Column: 34,
+							Line:   256,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 53,
+										Line:   256,
+									},
+									File:   "state_changes_big_ok_to_info_test.flux",
+									Source: "table",
+									Start: ast.Position{
+										Column: 48,
+										Line:   256,
+									},
+								},
+							},
+							Name: "table",
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   257,
+								},
+								File:   "state_changes_big_ok_to_info_test.flux",
+								Source: "table\n    |> v1.fieldsAsCols()",
+								Start: ast.Position{
+									Column: 48,
+									Line:   256,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: nil,
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   257,
+									},
+									File:   "state_changes_big_ok_to_info_test.flux",
+									Source: "v1.fieldsAsCols()",
+									Start: ast.Position{
+										Column: 8,
+										Line:   257,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   257,
+										},
+										File:   "state_changes_big_ok_to_info_test.flux",
+										Source: "v1.fieldsAsCols",
+										Start: ast.Position{
+											Column: 8,
+											Line:   257,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 10,
+												Line:   257,
+											},
+											File:   "state_changes_big_ok_to_info_test.flux",
+											Source: "v1",
+											Start: ast.Position{
+												Column: 8,
+												Line:   257,
+											},
+										},
+									},
+									Name: "v1",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   257,
+											},
+											File:   "state_changes_big_ok_to_info_test.flux",
+											Source: "fieldsAsCols",
+											Start: ast.Position{
+												Column: 11,
+												Line:   257,
+											},
+										},
+									},
+									Name: "fieldsAsCols",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 6,
+								Line:   261,
+							},
+							File:   "state_changes_big_ok_to_info_test.flux",
+							Source: "table\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"ok\",\n        toLevel: \"info\",\n    )",
+							Start: ast.Position{
+								Column: 48,
+								Line:   256,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 24,
+										Line:   260,
+									},
+									File:   "state_changes_big_ok_to_info_test.flux",
+									Source: "fromLevel: \"ok\",\n        toLevel: \"info\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   259,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 24,
+											Line:   259,
+										},
+										File:   "state_changes_big_ok_to_info_test.flux",
+										Source: "fromLevel: \"ok\"",
+										Start: ast.Position{
+											Column: 9,
+											Line:   259,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   259,
+											},
+											File:   "state_changes_big_ok_to_info_test.flux",
+											Source: "fromLevel",
+											Start: ast.Position{
+												Column: 9,
+												Line:   259,
+											},
+										},
+									},
+									Name: "fromLevel",
+								},
+								Value: &ast.StringLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 24,
+												Line:   259,
+											},
+											File:   "state_changes_big_ok_to_info_test.flux",
+											Source: "\"ok\"",
+											Start: ast.Position{
+												Column: 20,
+												Line:   259,
+											},
+										},
+									},
+									Value: "ok",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 24,
+											Line:   260,
+										},
+										File:   "state_changes_big_ok_to_info_test.flux",
+										Source: "toLevel: \"info\"",
+										Start: ast.Position{
+											Column: 9,
+											Line:   260,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   260,
+											},
+											File:   "state_changes_big_ok_to_info_test.flux",
+											Source: "toLevel",
+											Start: ast.Position{
+												Column: 9,
+												Line:   260,
+											},
+										},
+									},
+									Name: "toLevel",
+								},
+								Value: &ast.StringLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 24,
+												Line:   260,
+											},
+											File:   "state_changes_big_ok_to_info_test.flux",
+											Source: "\"info\"",
+											Start: ast.Position{
+												Column: 18,
+												Line:   260,
+											},
+										},
+									},
+									Value: "info",
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   261,
+								},
+								File:   "state_changes_big_ok_to_info_test.flux",
+								Source: "monitor.stateChanges(\n        fromLevel: \"ok\",\n        toLevel: \"info\",\n    )",
+								Start: ast.Position{
+									Column: 8,
+									Line:   258,
+								},
+							},
+						},
+						Callee: &ast.MemberExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   258,
+									},
+									File:   "state_changes_big_ok_to_info_test.flux",
+									Source: "monitor.stateChanges",
+									Start: ast.Position{
+										Column: 8,
+										Line:   258,
+									},
+								},
+							},
+							Object: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   258,
+										},
+										File:   "state_changes_big_ok_to_info_test.flux",
+										Source: "monitor",
+										Start: ast.Position{
+											Column: 8,
+											Line:   258,
+										},
+									},
+								},
+								Name: "monitor",
+							},
+							Property: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   258,
+										},
+										File:   "state_changes_big_ok_to_info_test.flux",
+										Source: "stateChanges",
+										Start: ast.Position{
+											Column: 16,
+											Line:   258,
+										},
+									},
+								},
+								Name: "stateChanges",
+							},
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 43,
+								Line:   256,
+							},
+							File:   "state_changes_big_ok_to_info_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 35,
+								Line:   256,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   256,
+								},
+								File:   "state_changes_big_ok_to_info_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 35,
+									Line:   256,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 43,
+								Line:   256,
+							},
+							File:   "state_changes_big_ok_to_info_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 41,
+								Line:   256,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 121,
+							Line:   264,
+						},
+						File:   "state_changes_big_ok_to_info_test.flux",
+						Source: "monitor_state_changes_big_ok_to_info = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_ok_to_info})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   263,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   263,
+							},
+							File:   "state_changes_big_ok_to_info_test.flux",
+							Source: "monitor_state_changes_big_ok_to_info",
+							Start: ast.Position{
+								Column: 6,
+								Line:   263,
+							},
+						},
+					},
+					Name: "monitor_state_changes_big_ok_to_info",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 121,
+								Line:   264,
+							},
+							File:   "state_changes_big_ok_to_info_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_ok_to_info})",
+							Start: ast.Position{
+								Column: 45,
+								Line:   263,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 121,
+									Line:   264,
+								},
+								File:   "state_changes_big_ok_to_info_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_ok_to_info})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   264,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 120,
+										Line:   264,
+									},
+									File:   "state_changes_big_ok_to_info_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_ok_to_info}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   264,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   264,
+										},
+										File:   "state_changes_big_ok_to_info_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   264,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   264,
+											},
+											File:   "state_changes_big_ok_to_info_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   264,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   264,
+												},
+												File:   "state_changes_big_ok_to_info_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 34,
+													Line:   264,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   264,
+													},
+													File:   "state_changes_big_ok_to_info_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 34,
+														Line:   264,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   264,
+														},
+														File:   "state_changes_big_ok_to_info_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   264,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 45,
+															Line:   264,
+														},
+														File:   "state_changes_big_ok_to_info_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 39,
+															Line:   264,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 46,
+												Line:   264,
+											},
+											File:   "state_changes_big_ok_to_info_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   264,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   264,
+												},
+												File:   "state_changes_big_ok_to_info_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   264,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   264,
+													},
+													File:   "state_changes_big_ok_to_info_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   264,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   264,
+													},
+													File:   "state_changes_big_ok_to_info_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   264,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 83,
+											Line:   264,
+										},
+										File:   "state_changes_big_ok_to_info_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 48,
+											Line:   264,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 52,
+												Line:   264,
+											},
+											File:   "state_changes_big_ok_to_info_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 48,
+												Line:   264,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 82,
+													Line:   264,
+												},
+												File:   "state_changes_big_ok_to_info_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 70,
+													Line:   264,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 82,
+														Line:   264,
+													},
+													File:   "state_changes_big_ok_to_info_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 70,
+														Line:   264,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 73,
+															Line:   264,
+														},
+														File:   "state_changes_big_ok_to_info_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 70,
+															Line:   264,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 82,
+															Line:   264,
+														},
+														File:   "state_changes_big_ok_to_info_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 75,
+															Line:   264,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 83,
+												Line:   264,
+											},
+											File:   "state_changes_big_ok_to_info_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 54,
+												Line:   264,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 69,
+													Line:   264,
+												},
+												File:   "state_changes_big_ok_to_info_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 54,
+													Line:   264,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 61,
+														Line:   264,
+													},
+													File:   "state_changes_big_ok_to_info_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 54,
+														Line:   264,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   264,
+													},
+													File:   "state_changes_big_ok_to_info_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 62,
+														Line:   264,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 119,
+											Line:   264,
+										},
+										File:   "state_changes_big_ok_to_info_test.flux",
+										Source: "fn: t_state_changes_big_ok_to_info",
+										Start: ast.Position{
+											Column: 85,
+											Line:   264,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 87,
+												Line:   264,
+											},
+											File:   "state_changes_big_ok_to_info_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 85,
+												Line:   264,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 119,
+												Line:   264,
+											},
+											File:   "state_changes_big_ok_to_info_test.flux",
+											Source: "t_state_changes_big_ok_to_info",
+											Start: ast.Position{
+												Column: 89,
+												Line:   264,
+											},
+										},
+									},
+									Name: "t_state_changes_big_ok_to_info",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 121,
+						Line:   264,
+					},
+					File:   "state_changes_big_ok_to_info_test.flux",
+					Source: "test monitor_state_changes_big_ok_to_info = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_ok_to_info})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   263,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 37,
+						Line:   3,
+					},
+					File:   "state_changes_big_ok_to_info_test.flux",
+					Source: "import \"influxdata/influxdb/monitor\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 37,
+							Line:   3,
+						},
+						File:   "state_changes_big_ok_to_info_test.flux",
+						Source: "\"influxdata/influxdb/monitor\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/monitor",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 32,
+						Line:   4,
+					},
+					File:   "state_changes_big_ok_to_info_test.flux",
+					Source: "import \"influxdata/influxdb/v1\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 32,
+							Line:   4,
+						},
+						File:   "state_changes_big_ok_to_info_test.flux",
+						Source: "\"influxdata/influxdb/v1\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/v1",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   5,
+					},
+					File:   "state_changes_big_ok_to_info_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   5,
+						},
+						File:   "state_changes_big_ok_to_info_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   6,
+					},
+					File:   "state_changes_big_ok_to_info_test.flux",
+					Source: "import \"experimental\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   6,
+						},
+						File:   "state_changes_big_ok_to_info_test.flux",
+						Source: "\"experimental\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				Value: "experimental",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "state_changes_big_ok_to_info_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 21,
+						Line:   1,
+					},
+					File:   "state_changes_big_ok_to_info_test.flux",
+					Source: "package monitor_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   1,
+						},
+						File:   "state_changes_big_ok_to_info_test.flux",
+						Source: "monitor_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "monitor_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 118,
+					Line:   69,
+				},
+				File:   "state_changes_info_to_any_test.flux",
+				Source: "package monitor_test\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => 2018-05-22T19:54:40Z\n\noption monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])\n\n// Note this input data is identical to the output data of the check test case, post pivot.\ninData = \"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,1,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,1,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"\n\n\n// Note this input data is identical to the output data of the check test case, post pivot.\n//inData = \"\n//#group,false,false,true,true,true,true,true,false,true,true,true,true,true,false,false,false\n//#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,double,string,long\n//#default,_result,,,,,,,,,,,,,,,\n//,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,usage_idle,_message,_source_timestamp\n//,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001,whoa!,1527018840000000000\n//,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732,whoa!,1527018820000000000\n//,,1,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05,whoa!,1527018860000000000\n//\"\n\noutData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"\n\nt_state_changes_info_to_any = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"info\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])\n\ntest monitor_state_changes_info_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_info_to_any})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 40,
+							Line:   8,
+						},
+						File:   "state_changes_info_to_any_test.flux",
+						Source: "now = () => 2018-05-22T19:54:40Z",
+						Start: ast.Position{
+							Column: 8,
+							Line:   8,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   8,
+							},
+							File:   "state_changes_info_to_any_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   8,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 40,
+								Line:   8,
+							},
+							File:   "state_changes_info_to_any_test.flux",
+							Source: "() => 2018-05-22T19:54:40Z",
+							Start: ast.Position{
+								Column: 14,
+								Line:   8,
+							},
+						},
+					},
+					Body: &ast.DateTimeLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   8,
+								},
+								File:   "state_changes_info_to_any_test.flux",
+								Source: "2018-05-22T19:54:40Z",
+								Start: ast.Position{
+									Column: 20,
+									Line:   8,
+								},
+							},
+						},
+						Value: parser.MustParseTime("2018-05-22T19:54:40Z"),
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 40,
+						Line:   8,
+					},
+					File:   "state_changes_info_to_any_test.flux",
+					Source: "option now = () => 2018-05-22T19:54:40Z",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+		}, &ast.OptionStatement{
+			Assignment: &ast.MemberAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 80,
+							Line:   10,
+						},
+						File:   "state_changes_info_to_any_test.flux",
+						Source: "monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+						Start: ast.Position{
+							Column: 8,
+							Line:   10,
+						},
+					},
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 80,
+								Line:   10,
+							},
+							File:   "state_changes_info_to_any_test.flux",
+							Source: "(tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+							Start: ast.Position{
+								Column: 22,
+								Line:   10,
+							},
+						},
+					},
+					Body: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 43,
+										Line:   10,
+									},
+									File:   "state_changes_info_to_any_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 37,
+										Line:   10,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 80,
+									Line:   10,
+								},
+								File:   "state_changes_info_to_any_test.flux",
+								Source: "tables |> drop(columns:[\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 37,
+									Line:   10,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 79,
+											Line:   10,
+										},
+										File:   "state_changes_info_to_any_test.flux",
+										Source: "columns:[\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 52,
+											Line:   10,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 79,
+												Line:   10,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "columns:[\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 52,
+												Line:   10,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 59,
+													Line:   10,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 52,
+													Line:   10,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   10,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "[\"_start\", \"_stop\"]",
+												Start: ast.Position{
+													Column: 60,
+													Line:   10,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   10,
+													},
+													File:   "state_changes_info_to_any_test.flux",
+													Source: "\"_start\"",
+													Start: ast.Position{
+														Column: 61,
+														Line:   10,
+													},
+												},
+											},
+											Value: "_start",
+										}, &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 78,
+														Line:   10,
+													},
+													File:   "state_changes_info_to_any_test.flux",
+													Source: "\"_stop\"",
+													Start: ast.Position{
+														Column: 71,
+														Line:   10,
+													},
+												},
+											},
+											Value: "_stop",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 80,
+										Line:   10,
+									},
+									File:   "state_changes_info_to_any_test.flux",
+									Source: "drop(columns:[\"_start\", \"_stop\"])",
+									Start: ast.Position{
+										Column: 47,
+										Line:   10,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 51,
+											Line:   10,
+										},
+										File:   "state_changes_info_to_any_test.flux",
+										Source: "drop",
+										Start: ast.Position{
+											Column: 47,
+											Line:   10,
+										},
+									},
+								},
+								Name: "drop",
+							},
+						},
+					},
+					Params: []*ast.Property{&ast.Property{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   10,
+								},
+								File:   "state_changes_info_to_any_test.flux",
+								Source: "tables=<-",
+								Start: ast.Position{
+									Column: 23,
+									Line:   10,
+								},
+							},
+						},
+						Key: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   10,
+									},
+									File:   "state_changes_info_to_any_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 23,
+										Line:   10,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   10,
+								},
+								File:   "state_changes_info_to_any_test.flux",
+								Source: "<-",
+								Start: ast.Position{
+									Column: 30,
+									Line:   10,
+								},
+							},
+						}},
+					}},
+				},
+				Member: &ast.MemberExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   10,
+							},
+							File:   "state_changes_info_to_any_test.flux",
+							Source: "monitor.log",
+							Start: ast.Position{
+								Column: 8,
+								Line:   10,
+							},
+						},
+					},
+					Object: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   10,
+								},
+								File:   "state_changes_info_to_any_test.flux",
+								Source: "monitor",
+								Start: ast.Position{
+									Column: 8,
+									Line:   10,
+								},
+							},
+						},
+						Name: "monitor",
+					},
+					Property: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 19,
+									Line:   10,
+								},
+								File:   "state_changes_info_to_any_test.flux",
+								Source: "log",
+								Start: ast.Position{
+									Column: 16,
+									Line:   10,
+								},
+							},
+						},
+						Name: "log",
+					},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 80,
+						Line:   10,
+					},
+					File:   "state_changes_info_to_any_test.flux",
+					Source: "option monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   10,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   37,
+					},
+					File:   "state_changes_info_to_any_test.flux",
+					Source: "inData = \"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,1,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,1,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   13,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   13,
+						},
+						File:   "state_changes_info_to_any_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   13,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   37,
+						},
+						File:   "state_changes_info_to_any_test.flux",
+						Source: "\"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,1,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,1,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   13,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,1,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,0,000000000000000a,cpu threshold check,info,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,1,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   57,
+					},
+					File:   "state_changes_info_to_any_test.flux",
+					Source: "outData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   51,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   51,
+						},
+						File:   "state_changes_info_to_any_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   51,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   57,
+						},
+						File:   "state_changes_info_to_any_test.flux",
+						Source: "\"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   51,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 41,
+						Line:   66,
+					},
+					File:   "state_changes_info_to_any_test.flux",
+					Source: "t_state_changes_info_to_any = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"info\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   59,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 28,
+							Line:   59,
+						},
+						File:   "state_changes_info_to_any_test.flux",
+						Source: "t_state_changes_info_to_any",
+						Start: ast.Position{
+							Column: 1,
+							Line:   59,
+						},
+					},
+				},
+				Name: "t_state_changes_info_to_any",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 41,
+							Line:   66,
+						},
+						File:   "state_changes_info_to_any_test.flux",
+						Source: "(table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"info\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+						Start: ast.Position{
+							Column: 31,
+							Line:   59,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 50,
+												Line:   59,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "table",
+											Start: ast.Position{
+												Column: 45,
+												Line:   59,
+											},
+										},
+									},
+									Name: "table",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   60,
+										},
+										File:   "state_changes_info_to_any_test.flux",
+										Source: "table\n    |> range(start: -1m)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   59,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   60,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "start: -1m",
+												Start: ast.Position{
+													Column: 14,
+													Line:   60,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 24,
+														Line:   60,
+													},
+													File:   "state_changes_info_to_any_test.flux",
+													Source: "start: -1m",
+													Start: ast.Position{
+														Column: 14,
+														Line:   60,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 19,
+															Line:   60,
+														},
+														File:   "state_changes_info_to_any_test.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 14,
+															Line:   60,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Value: &ast.UnaryExpression{
+												Argument: &ast.DurationLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 24,
+																Line:   60,
+															},
+															File:   "state_changes_info_to_any_test.flux",
+															Source: "1m",
+															Start: ast.Position{
+																Column: 22,
+																Line:   60,
+															},
+														},
+													},
+													Values: []ast.Duration{ast.Duration{
+														Magnitude: int64(1),
+														Unit:      "m",
+													}},
+												},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 24,
+															Line:   60,
+														},
+														File:   "state_changes_info_to_any_test.flux",
+														Source: "-1m",
+														Start: ast.Position{
+															Column: 21,
+															Line:   60,
+														},
+													},
+												},
+												Operator: 6,
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   60,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "range(start: -1m)",
+											Start: ast.Position{
+												Column: 8,
+												Line:   60,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 13,
+													Line:   60,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "range",
+												Start: ast.Position{
+													Column: 8,
+													Line:   60,
+												},
+											},
+										},
+										Name: "range",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   61,
+									},
+									File:   "state_changes_info_to_any_test.flux",
+									Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()",
+									Start: ast.Position{
+										Column: 45,
+										Line:   59,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   61,
+										},
+										File:   "state_changes_info_to_any_test.flux",
+										Source: "v1.fieldsAsCols()",
+										Start: ast.Position{
+											Column: 8,
+											Line:   61,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   61,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "v1.fieldsAsCols",
+											Start: ast.Position{
+												Column: 8,
+												Line:   61,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 10,
+													Line:   61,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "v1",
+												Start: ast.Position{
+													Column: 8,
+													Line:   61,
+												},
+											},
+										},
+										Name: "v1",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   61,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "fieldsAsCols",
+												Start: ast.Position{
+													Column: 11,
+													Line:   61,
+												},
+											},
+										},
+										Name: "fieldsAsCols",
+									},
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   65,
+								},
+								File:   "state_changes_info_to_any_test.flux",
+								Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"info\",\n        toLevel: \"any\",\n    )",
+								Start: ast.Position{
+									Column: 45,
+									Line:   59,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   64,
+										},
+										File:   "state_changes_info_to_any_test.flux",
+										Source: "fromLevel: \"info\",\n        toLevel: \"any\"",
+										Start: ast.Position{
+											Column: 9,
+											Line:   63,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 26,
+												Line:   63,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "fromLevel: \"info\"",
+											Start: ast.Position{
+												Column: 9,
+												Line:   63,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   63,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "fromLevel",
+												Start: ast.Position{
+													Column: 9,
+													Line:   63,
+												},
+											},
+										},
+										Name: "fromLevel",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 26,
+													Line:   63,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "\"info\"",
+												Start: ast.Position{
+													Column: 20,
+													Line:   63,
+												},
+											},
+										},
+										Value: "info",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   64,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "toLevel: \"any\"",
+											Start: ast.Position{
+												Column: 9,
+												Line:   64,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   64,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "toLevel",
+												Start: ast.Position{
+													Column: 9,
+													Line:   64,
+												},
+											},
+										},
+										Name: "toLevel",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   64,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "\"any\"",
+												Start: ast.Position{
+													Column: 18,
+													Line:   64,
+												},
+											},
+										},
+										Value: "any",
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 6,
+										Line:   65,
+									},
+									File:   "state_changes_info_to_any_test.flux",
+									Source: "monitor.stateChanges(\n        fromLevel: \"info\",\n        toLevel: \"any\",\n    )",
+									Start: ast.Position{
+										Column: 8,
+										Line:   62,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   62,
+										},
+										File:   "state_changes_info_to_any_test.flux",
+										Source: "monitor.stateChanges",
+										Start: ast.Position{
+											Column: 8,
+											Line:   62,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   62,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "monitor",
+											Start: ast.Position{
+												Column: 8,
+												Line:   62,
+											},
+										},
+									},
+									Name: "monitor",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 28,
+												Line:   62,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "stateChanges",
+											Start: ast.Position{
+												Column: 16,
+												Line:   62,
+											},
+										},
+									},
+									Name: "stateChanges",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 41,
+								Line:   66,
+							},
+							File:   "state_changes_info_to_any_test.flux",
+							Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"info\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+							Start: ast.Position{
+								Column: 45,
+								Line:   59,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   66,
+									},
+									File:   "state_changes_info_to_any_test.flux",
+									Source: "columns: [\"_start\",\"_stop\"]",
+									Start: ast.Position{
+										Column: 13,
+										Line:   66,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   66,
+										},
+										File:   "state_changes_info_to_any_test.flux",
+										Source: "columns: [\"_start\",\"_stop\"]",
+										Start: ast.Position{
+											Column: 13,
+											Line:   66,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   66,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 13,
+												Line:   66,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 40,
+												Line:   66,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "[\"_start\",\"_stop\"]",
+											Start: ast.Position{
+												Column: 22,
+												Line:   66,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   66,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "\"_start\"",
+												Start: ast.Position{
+													Column: 23,
+													Line:   66,
+												},
+											},
+										},
+										Value: "_start",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   66,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "\"_stop\"",
+												Start: ast.Position{
+													Column: 32,
+													Line:   66,
+												},
+											},
+										},
+										Value: "_stop",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 41,
+									Line:   66,
+								},
+								File:   "state_changes_info_to_any_test.flux",
+								Source: "drop(columns: [\"_start\",\"_stop\"])",
+								Start: ast.Position{
+									Column: 8,
+									Line:   66,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   66,
+									},
+									File:   "state_changes_info_to_any_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 8,
+										Line:   66,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 40,
+								Line:   59,
+							},
+							File:   "state_changes_info_to_any_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 32,
+								Line:   59,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 37,
+									Line:   59,
+								},
+								File:   "state_changes_info_to_any_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 32,
+									Line:   59,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 40,
+								Line:   59,
+							},
+							File:   "state_changes_info_to_any_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 38,
+								Line:   59,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 118,
+							Line:   69,
+						},
+						File:   "state_changes_info_to_any_test.flux",
+						Source: "monitor_state_changes_info_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_info_to_any})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   68,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 39,
+								Line:   68,
+							},
+							File:   "state_changes_info_to_any_test.flux",
+							Source: "monitor_state_changes_info_to_any",
+							Start: ast.Position{
+								Column: 6,
+								Line:   68,
+							},
+						},
+					},
+					Name: "monitor_state_changes_info_to_any",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 118,
+								Line:   69,
+							},
+							File:   "state_changes_info_to_any_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_info_to_any})",
+							Start: ast.Position{
+								Column: 42,
+								Line:   68,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 118,
+									Line:   69,
+								},
+								File:   "state_changes_info_to_any_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_info_to_any})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   69,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 117,
+										Line:   69,
+									},
+									File:   "state_changes_info_to_any_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_info_to_any}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   69,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   69,
+										},
+										File:   "state_changes_info_to_any_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   69,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   69,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   69,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   69,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 34,
+													Line:   69,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   69,
+													},
+													File:   "state_changes_info_to_any_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 34,
+														Line:   69,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   69,
+														},
+														File:   "state_changes_info_to_any_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   69,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 45,
+															Line:   69,
+														},
+														File:   "state_changes_info_to_any_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 39,
+															Line:   69,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 46,
+												Line:   69,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   69,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   69,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   69,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   69,
+													},
+													File:   "state_changes_info_to_any_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   69,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   69,
+													},
+													File:   "state_changes_info_to_any_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   69,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 83,
+											Line:   69,
+										},
+										File:   "state_changes_info_to_any_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 48,
+											Line:   69,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 52,
+												Line:   69,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 48,
+												Line:   69,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 82,
+													Line:   69,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 70,
+													Line:   69,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 82,
+														Line:   69,
+													},
+													File:   "state_changes_info_to_any_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 70,
+														Line:   69,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 73,
+															Line:   69,
+														},
+														File:   "state_changes_info_to_any_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 70,
+															Line:   69,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 82,
+															Line:   69,
+														},
+														File:   "state_changes_info_to_any_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 75,
+															Line:   69,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 83,
+												Line:   69,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 54,
+												Line:   69,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 69,
+													Line:   69,
+												},
+												File:   "state_changes_info_to_any_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 54,
+													Line:   69,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 61,
+														Line:   69,
+													},
+													File:   "state_changes_info_to_any_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 54,
+														Line:   69,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   69,
+													},
+													File:   "state_changes_info_to_any_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 62,
+														Line:   69,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 116,
+											Line:   69,
+										},
+										File:   "state_changes_info_to_any_test.flux",
+										Source: "fn: t_state_changes_info_to_any",
+										Start: ast.Position{
+											Column: 85,
+											Line:   69,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 87,
+												Line:   69,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 85,
+												Line:   69,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 116,
+												Line:   69,
+											},
+											File:   "state_changes_info_to_any_test.flux",
+											Source: "t_state_changes_info_to_any",
+											Start: ast.Position{
+												Column: 89,
+												Line:   69,
+											},
+										},
+									},
+									Name: "t_state_changes_info_to_any",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 118,
+						Line:   69,
+					},
+					File:   "state_changes_info_to_any_test.flux",
+					Source: "test monitor_state_changes_info_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_info_to_any})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   68,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 37,
+						Line:   3,
+					},
+					File:   "state_changes_info_to_any_test.flux",
+					Source: "import \"influxdata/influxdb/monitor\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 37,
+							Line:   3,
+						},
+						File:   "state_changes_info_to_any_test.flux",
+						Source: "\"influxdata/influxdb/monitor\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/monitor",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 32,
+						Line:   4,
+					},
+					File:   "state_changes_info_to_any_test.flux",
+					Source: "import \"influxdata/influxdb/v1\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 32,
+							Line:   4,
+						},
+						File:   "state_changes_info_to_any_test.flux",
+						Source: "\"influxdata/influxdb/v1\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/v1",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   5,
+					},
+					File:   "state_changes_info_to_any_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   5,
+						},
+						File:   "state_changes_info_to_any_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   6,
+					},
+					File:   "state_changes_info_to_any_test.flux",
+					Source: "import \"experimental\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   6,
+						},
+						File:   "state_changes_info_to_any_test.flux",
+						Source: "\"experimental\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				Value: "experimental",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "state_changes_info_to_any_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 21,
+						Line:   1,
+					},
+					File:   "state_changes_info_to_any_test.flux",
+					Source: "package monitor_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   1,
+						},
+						File:   "state_changes_info_to_any_test.flux",
+						Source: "monitor_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "monitor_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 117,
+					Line:   57,
+				},
+				File:   "state_changes_invalid_any_to_any_test.flux",
+				Source: "package monitor_test\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => 2018-05-22T19:54:40Z\n\noption monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])\n\n// Note this input data is identical to the output data of the check test case, post pivot.\ninData = \"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"\n\noutData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n\"\n\nt_state_changes_any_to_any = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])\n\ntest monitor_state_changes_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 40,
+							Line:   8,
+						},
+						File:   "state_changes_invalid_any_to_any_test.flux",
+						Source: "now = () => 2018-05-22T19:54:40Z",
+						Start: ast.Position{
+							Column: 8,
+							Line:   8,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   8,
+							},
+							File:   "state_changes_invalid_any_to_any_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   8,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 40,
+								Line:   8,
+							},
+							File:   "state_changes_invalid_any_to_any_test.flux",
+							Source: "() => 2018-05-22T19:54:40Z",
+							Start: ast.Position{
+								Column: 14,
+								Line:   8,
+							},
+						},
+					},
+					Body: &ast.DateTimeLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   8,
+								},
+								File:   "state_changes_invalid_any_to_any_test.flux",
+								Source: "2018-05-22T19:54:40Z",
+								Start: ast.Position{
+									Column: 20,
+									Line:   8,
+								},
+							},
+						},
+						Value: parser.MustParseTime("2018-05-22T19:54:40Z"),
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 40,
+						Line:   8,
+					},
+					File:   "state_changes_invalid_any_to_any_test.flux",
+					Source: "option now = () => 2018-05-22T19:54:40Z",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+		}, &ast.OptionStatement{
+			Assignment: &ast.MemberAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 80,
+							Line:   10,
+						},
+						File:   "state_changes_invalid_any_to_any_test.flux",
+						Source: "monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+						Start: ast.Position{
+							Column: 8,
+							Line:   10,
+						},
+					},
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 80,
+								Line:   10,
+							},
+							File:   "state_changes_invalid_any_to_any_test.flux",
+							Source: "(tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+							Start: ast.Position{
+								Column: 22,
+								Line:   10,
+							},
+						},
+					},
+					Body: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 43,
+										Line:   10,
+									},
+									File:   "state_changes_invalid_any_to_any_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 37,
+										Line:   10,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 80,
+									Line:   10,
+								},
+								File:   "state_changes_invalid_any_to_any_test.flux",
+								Source: "tables |> drop(columns:[\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 37,
+									Line:   10,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 79,
+											Line:   10,
+										},
+										File:   "state_changes_invalid_any_to_any_test.flux",
+										Source: "columns:[\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 52,
+											Line:   10,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 79,
+												Line:   10,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "columns:[\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 52,
+												Line:   10,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 59,
+													Line:   10,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 52,
+													Line:   10,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   10,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "[\"_start\", \"_stop\"]",
+												Start: ast.Position{
+													Column: 60,
+													Line:   10,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   10,
+													},
+													File:   "state_changes_invalid_any_to_any_test.flux",
+													Source: "\"_start\"",
+													Start: ast.Position{
+														Column: 61,
+														Line:   10,
+													},
+												},
+											},
+											Value: "_start",
+										}, &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 78,
+														Line:   10,
+													},
+													File:   "state_changes_invalid_any_to_any_test.flux",
+													Source: "\"_stop\"",
+													Start: ast.Position{
+														Column: 71,
+														Line:   10,
+													},
+												},
+											},
+											Value: "_stop",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 80,
+										Line:   10,
+									},
+									File:   "state_changes_invalid_any_to_any_test.flux",
+									Source: "drop(columns:[\"_start\", \"_stop\"])",
+									Start: ast.Position{
+										Column: 47,
+										Line:   10,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 51,
+											Line:   10,
+										},
+										File:   "state_changes_invalid_any_to_any_test.flux",
+										Source: "drop",
+										Start: ast.Position{
+											Column: 47,
+											Line:   10,
+										},
+									},
+								},
+								Name: "drop",
+							},
+						},
+					},
+					Params: []*ast.Property{&ast.Property{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   10,
+								},
+								File:   "state_changes_invalid_any_to_any_test.flux",
+								Source: "tables=<-",
+								Start: ast.Position{
+									Column: 23,
+									Line:   10,
+								},
+							},
+						},
+						Key: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   10,
+									},
+									File:   "state_changes_invalid_any_to_any_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 23,
+										Line:   10,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   10,
+								},
+								File:   "state_changes_invalid_any_to_any_test.flux",
+								Source: "<-",
+								Start: ast.Position{
+									Column: 30,
+									Line:   10,
+								},
+							},
+						}},
+					}},
+				},
+				Member: &ast.MemberExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   10,
+							},
+							File:   "state_changes_invalid_any_to_any_test.flux",
+							Source: "monitor.log",
+							Start: ast.Position{
+								Column: 8,
+								Line:   10,
+							},
+						},
+					},
+					Object: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   10,
+								},
+								File:   "state_changes_invalid_any_to_any_test.flux",
+								Source: "monitor",
+								Start: ast.Position{
+									Column: 8,
+									Line:   10,
+								},
+							},
+						},
+						Name: "monitor",
+					},
+					Property: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 19,
+									Line:   10,
+								},
+								File:   "state_changes_invalid_any_to_any_test.flux",
+								Source: "log",
+								Start: ast.Position{
+									Column: 16,
+									Line:   10,
+								},
+							},
+						},
+						Name: "log",
+					},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 80,
+						Line:   10,
+					},
+					File:   "state_changes_invalid_any_to_any_test.flux",
+					Source: "option monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   10,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   37,
+					},
+					File:   "state_changes_invalid_any_to_any_test.flux",
+					Source: "inData = \"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   13,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   13,
+						},
+						File:   "state_changes_invalid_any_to_any_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   13,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   37,
+						},
+						File:   "state_changes_invalid_any_to_any_test.flux",
+						Source: "\"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   13,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   45,
+					},
+					File:   "state_changes_invalid_any_to_any_test.flux",
+					Source: "outData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   39,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   39,
+						},
+						File:   "state_changes_invalid_any_to_any_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   39,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   45,
+						},
+						File:   "state_changes_invalid_any_to_any_test.flux",
+						Source: "\"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   39,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 41,
+						Line:   54,
+					},
+					File:   "state_changes_invalid_any_to_any_test.flux",
+					Source: "t_state_changes_any_to_any = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   47,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 27,
+							Line:   47,
+						},
+						File:   "state_changes_invalid_any_to_any_test.flux",
+						Source: "t_state_changes_any_to_any",
+						Start: ast.Position{
+							Column: 1,
+							Line:   47,
+						},
+					},
+				},
+				Name: "t_state_changes_any_to_any",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 41,
+							Line:   54,
+						},
+						File:   "state_changes_invalid_any_to_any_test.flux",
+						Source: "(table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+						Start: ast.Position{
+							Column: 30,
+							Line:   47,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   47,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "table",
+											Start: ast.Position{
+												Column: 44,
+												Line:   47,
+											},
+										},
+									},
+									Name: "table",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   48,
+										},
+										File:   "state_changes_invalid_any_to_any_test.flux",
+										Source: "table\n    |> range(start: -1m)",
+										Start: ast.Position{
+											Column: 44,
+											Line:   47,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   48,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "start: -1m",
+												Start: ast.Position{
+													Column: 14,
+													Line:   48,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 24,
+														Line:   48,
+													},
+													File:   "state_changes_invalid_any_to_any_test.flux",
+													Source: "start: -1m",
+													Start: ast.Position{
+														Column: 14,
+														Line:   48,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 19,
+															Line:   48,
+														},
+														File:   "state_changes_invalid_any_to_any_test.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 14,
+															Line:   48,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Value: &ast.UnaryExpression{
+												Argument: &ast.DurationLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 24,
+																Line:   48,
+															},
+															File:   "state_changes_invalid_any_to_any_test.flux",
+															Source: "1m",
+															Start: ast.Position{
+																Column: 22,
+																Line:   48,
+															},
+														},
+													},
+													Values: []ast.Duration{ast.Duration{
+														Magnitude: int64(1),
+														Unit:      "m",
+													}},
+												},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 24,
+															Line:   48,
+														},
+														File:   "state_changes_invalid_any_to_any_test.flux",
+														Source: "-1m",
+														Start: ast.Position{
+															Column: 21,
+															Line:   48,
+														},
+													},
+												},
+												Operator: 6,
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   48,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "range(start: -1m)",
+											Start: ast.Position{
+												Column: 8,
+												Line:   48,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 13,
+													Line:   48,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "range",
+												Start: ast.Position{
+													Column: 8,
+													Line:   48,
+												},
+											},
+										},
+										Name: "range",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   49,
+									},
+									File:   "state_changes_invalid_any_to_any_test.flux",
+									Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()",
+									Start: ast.Position{
+										Column: 44,
+										Line:   47,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   49,
+										},
+										File:   "state_changes_invalid_any_to_any_test.flux",
+										Source: "v1.fieldsAsCols()",
+										Start: ast.Position{
+											Column: 8,
+											Line:   49,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   49,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "v1.fieldsAsCols",
+											Start: ast.Position{
+												Column: 8,
+												Line:   49,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 10,
+													Line:   49,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "v1",
+												Start: ast.Position{
+													Column: 8,
+													Line:   49,
+												},
+											},
+										},
+										Name: "v1",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   49,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "fieldsAsCols",
+												Start: ast.Position{
+													Column: 11,
+													Line:   49,
+												},
+											},
+										},
+										Name: "fieldsAsCols",
+									},
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   53,
+								},
+								File:   "state_changes_invalid_any_to_any_test.flux",
+								Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )",
+								Start: ast.Position{
+									Column: 44,
+									Line:   47,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   52,
+										},
+										File:   "state_changes_invalid_any_to_any_test.flux",
+										Source: "fromLevel: \"any\",\n        toLevel: \"any\"",
+										Start: ast.Position{
+											Column: 9,
+											Line:   51,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   51,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "fromLevel: \"any\"",
+											Start: ast.Position{
+												Column: 9,
+												Line:   51,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   51,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "fromLevel",
+												Start: ast.Position{
+													Column: 9,
+													Line:   51,
+												},
+											},
+										},
+										Name: "fromLevel",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   51,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "\"any\"",
+												Start: ast.Position{
+													Column: 20,
+													Line:   51,
+												},
+											},
+										},
+										Value: "any",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   52,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "toLevel: \"any\"",
+											Start: ast.Position{
+												Column: 9,
+												Line:   52,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   52,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "toLevel",
+												Start: ast.Position{
+													Column: 9,
+													Line:   52,
+												},
+											},
+										},
+										Name: "toLevel",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   52,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "\"any\"",
+												Start: ast.Position{
+													Column: 18,
+													Line:   52,
+												},
+											},
+										},
+										Value: "any",
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 6,
+										Line:   53,
+									},
+									File:   "state_changes_invalid_any_to_any_test.flux",
+									Source: "monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )",
+									Start: ast.Position{
+										Column: 8,
+										Line:   50,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   50,
+										},
+										File:   "state_changes_invalid_any_to_any_test.flux",
+										Source: "monitor.stateChanges",
+										Start: ast.Position{
+											Column: 8,
+											Line:   50,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   50,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "monitor",
+											Start: ast.Position{
+												Column: 8,
+												Line:   50,
+											},
+										},
+									},
+									Name: "monitor",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 28,
+												Line:   50,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "stateChanges",
+											Start: ast.Position{
+												Column: 16,
+												Line:   50,
+											},
+										},
+									},
+									Name: "stateChanges",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 41,
+								Line:   54,
+							},
+							File:   "state_changes_invalid_any_to_any_test.flux",
+							Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+							Start: ast.Position{
+								Column: 44,
+								Line:   47,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   54,
+									},
+									File:   "state_changes_invalid_any_to_any_test.flux",
+									Source: "columns: [\"_start\",\"_stop\"]",
+									Start: ast.Position{
+										Column: 13,
+										Line:   54,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   54,
+										},
+										File:   "state_changes_invalid_any_to_any_test.flux",
+										Source: "columns: [\"_start\",\"_stop\"]",
+										Start: ast.Position{
+											Column: 13,
+											Line:   54,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   54,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 13,
+												Line:   54,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 40,
+												Line:   54,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "[\"_start\",\"_stop\"]",
+											Start: ast.Position{
+												Column: 22,
+												Line:   54,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   54,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "\"_start\"",
+												Start: ast.Position{
+													Column: 23,
+													Line:   54,
+												},
+											},
+										},
+										Value: "_start",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   54,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "\"_stop\"",
+												Start: ast.Position{
+													Column: 32,
+													Line:   54,
+												},
+											},
+										},
+										Value: "_stop",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 41,
+									Line:   54,
+								},
+								File:   "state_changes_invalid_any_to_any_test.flux",
+								Source: "drop(columns: [\"_start\",\"_stop\"])",
+								Start: ast.Position{
+									Column: 8,
+									Line:   54,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   54,
+									},
+									File:   "state_changes_invalid_any_to_any_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 8,
+										Line:   54,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 39,
+								Line:   47,
+							},
+							File:   "state_changes_invalid_any_to_any_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 31,
+								Line:   47,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   47,
+								},
+								File:   "state_changes_invalid_any_to_any_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 31,
+									Line:   47,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 39,
+								Line:   47,
+							},
+							File:   "state_changes_invalid_any_to_any_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 37,
+								Line:   47,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 117,
+							Line:   57,
+						},
+						File:   "state_changes_invalid_any_to_any_test.flux",
+						Source: "monitor_state_changes_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   56,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 38,
+								Line:   56,
+							},
+							File:   "state_changes_invalid_any_to_any_test.flux",
+							Source: "monitor_state_changes_any_to_any",
+							Start: ast.Position{
+								Column: 6,
+								Line:   56,
+							},
+						},
+					},
+					Name: "monitor_state_changes_any_to_any",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 117,
+								Line:   57,
+							},
+							File:   "state_changes_invalid_any_to_any_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
+							Start: ast.Position{
+								Column: 41,
+								Line:   56,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 117,
+									Line:   57,
+								},
+								File:   "state_changes_invalid_any_to_any_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   57,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 116,
+										Line:   57,
+									},
+									File:   "state_changes_invalid_any_to_any_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   57,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   57,
+										},
+										File:   "state_changes_invalid_any_to_any_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   57,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   57,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   57,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   57,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 34,
+													Line:   57,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   57,
+													},
+													File:   "state_changes_invalid_any_to_any_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 34,
+														Line:   57,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   57,
+														},
+														File:   "state_changes_invalid_any_to_any_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   57,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 45,
+															Line:   57,
+														},
+														File:   "state_changes_invalid_any_to_any_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 39,
+															Line:   57,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 46,
+												Line:   57,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   57,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   57,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   57,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   57,
+													},
+													File:   "state_changes_invalid_any_to_any_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   57,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   57,
+													},
+													File:   "state_changes_invalid_any_to_any_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   57,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 83,
+											Line:   57,
+										},
+										File:   "state_changes_invalid_any_to_any_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 48,
+											Line:   57,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 52,
+												Line:   57,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 48,
+												Line:   57,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 82,
+													Line:   57,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 70,
+													Line:   57,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 82,
+														Line:   57,
+													},
+													File:   "state_changes_invalid_any_to_any_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 70,
+														Line:   57,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 73,
+															Line:   57,
+														},
+														File:   "state_changes_invalid_any_to_any_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 70,
+															Line:   57,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 82,
+															Line:   57,
+														},
+														File:   "state_changes_invalid_any_to_any_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 75,
+															Line:   57,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 83,
+												Line:   57,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 54,
+												Line:   57,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 69,
+													Line:   57,
+												},
+												File:   "state_changes_invalid_any_to_any_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 54,
+													Line:   57,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 61,
+														Line:   57,
+													},
+													File:   "state_changes_invalid_any_to_any_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 54,
+														Line:   57,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   57,
+													},
+													File:   "state_changes_invalid_any_to_any_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 62,
+														Line:   57,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 115,
+											Line:   57,
+										},
+										File:   "state_changes_invalid_any_to_any_test.flux",
+										Source: "fn: t_state_changes_any_to_any",
+										Start: ast.Position{
+											Column: 85,
+											Line:   57,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 87,
+												Line:   57,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 85,
+												Line:   57,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 115,
+												Line:   57,
+											},
+											File:   "state_changes_invalid_any_to_any_test.flux",
+											Source: "t_state_changes_any_to_any",
+											Start: ast.Position{
+												Column: 89,
+												Line:   57,
+											},
+										},
+									},
+									Name: "t_state_changes_any_to_any",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 117,
+						Line:   57,
+					},
+					File:   "state_changes_invalid_any_to_any_test.flux",
+					Source: "test monitor_state_changes_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   56,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 37,
+						Line:   3,
+					},
+					File:   "state_changes_invalid_any_to_any_test.flux",
+					Source: "import \"influxdata/influxdb/monitor\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 37,
+							Line:   3,
+						},
+						File:   "state_changes_invalid_any_to_any_test.flux",
+						Source: "\"influxdata/influxdb/monitor\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/monitor",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 32,
+						Line:   4,
+					},
+					File:   "state_changes_invalid_any_to_any_test.flux",
+					Source: "import \"influxdata/influxdb/v1\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 32,
+							Line:   4,
+						},
+						File:   "state_changes_invalid_any_to_any_test.flux",
+						Source: "\"influxdata/influxdb/v1\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/v1",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   5,
+					},
+					File:   "state_changes_invalid_any_to_any_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   5,
+						},
+						File:   "state_changes_invalid_any_to_any_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   6,
+					},
+					File:   "state_changes_invalid_any_to_any_test.flux",
+					Source: "import \"experimental\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   6,
+						},
+						File:   "state_changes_invalid_any_to_any_test.flux",
+						Source: "\"experimental\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				Value: "experimental",
+			},
+		}},
+		Metadata: "parser-type=go",
+		Name:     "state_changes_invalid_any_to_any_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 21,
+						Line:   1,
+					},
+					File:   "state_changes_invalid_any_to_any_test.flux",
+					Source: "package monitor_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   1,
+						},
+						File:   "state_changes_invalid_any_to_any_test.flux",
+						Source: "monitor_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "monitor_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 118,
+					Line:   57,
 				},
 				File:   "state_changes_test.flux",
-				Source: "package monitor_test\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => 2018-05-22T19:54:40Z\n\noption monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])\n\n// Note this input data is identical to the output data of the check test case, post pivot.\ninData = \"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"\n\noutData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"\n\nt_state_changes = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        toLevel: \"warn\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])\n\ntest monitor_state_changes = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes})",
+				Source: "package monitor_test\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => 2018-05-22T19:54:40Z\n\noption monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])\n\n// Note this input data is identical to the output data of the check test case, post pivot.\ninData = \"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"\n\noutData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"\n\nt_state_changes_any_to_warn = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"warn\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])\n\ntest monitor_state_changes_any_to_warn = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_warn})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -9854,10 +20585,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 41,
-						Line:   53,
+						Line:   54,
 					},
 					File:   "state_changes_test.flux",
-					Source: "t_state_changes = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        toLevel: \"warn\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+					Source: "t_state_changes_any_to_warn = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"warn\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
 					Start: ast.Position{
 						Column: 1,
 						Line:   47,
@@ -9869,18 +20600,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 16,
+							Column: 28,
 							Line:   47,
 						},
 						File:   "state_changes_test.flux",
-						Source: "t_state_changes",
+						Source: "t_state_changes_any_to_warn",
 						Start: ast.Position{
 							Column: 1,
 							Line:   47,
 						},
 					},
 				},
-				Name: "t_state_changes",
+				Name: "t_state_changes_any_to_warn",
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
@@ -9888,12 +20619,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 41,
-							Line:   53,
+							Line:   54,
 						},
 						File:   "state_changes_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        toLevel: \"warn\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+						Source: "(table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"warn\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
 						Start: ast.Position{
-							Column: 19,
+							Column: 31,
 							Line:   47,
 						},
 					},
@@ -9907,13 +20638,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 38,
+												Column: 50,
 												Line:   47,
 											},
 											File:   "state_changes_test.flux",
 											Source: "table",
 											Start: ast.Position{
-												Column: 33,
+												Column: 45,
 												Line:   47,
 											},
 										},
@@ -9930,7 +20661,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										File:   "state_changes_test.flux",
 										Source: "table\n    |> range(start: -1m)",
 										Start: ast.Position{
-											Column: 33,
+											Column: 45,
 											Line:   47,
 										},
 									},
@@ -10073,7 +20804,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									File:   "state_changes_test.flux",
 									Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()",
 									Start: ast.Position{
-										Column: 33,
+										Column: 45,
 										Line:   47,
 									},
 								},
@@ -10155,12 +20886,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   52,
+									Line:   53,
 								},
 								File:   "state_changes_test.flux",
-								Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        toLevel: \"warn\",\n    )",
+								Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"warn\",\n    )",
 								Start: ast.Position{
-									Column: 33,
+									Column: 45,
 									Line:   47,
 								},
 							},
@@ -10172,10 +20903,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   51,
+											Line:   52,
 										},
 										File:   "state_changes_test.flux",
-										Source: "toLevel: \"warn\"",
+										Source: "fromLevel: \"any\",\n        toLevel: \"warn\"",
 										Start: ast.Position{
 											Column: 9,
 											Line:   51,
@@ -10187,11 +20918,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 24,
+												Column: 25,
 												Line:   51,
 											},
 											File:   "state_changes_test.flux",
-											Source: "toLevel: \"warn\"",
+											Source: "fromLevel: \"any\"",
 											Start: ast.Position{
 												Column: 9,
 												Line:   51,
@@ -10203,14 +20934,66 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 16,
+													Column: 18,
 													Line:   51,
+												},
+												File:   "state_changes_test.flux",
+												Source: "fromLevel",
+												Start: ast.Position{
+													Column: 9,
+													Line:   51,
+												},
+											},
+										},
+										Name: "fromLevel",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   51,
+												},
+												File:   "state_changes_test.flux",
+												Source: "\"any\"",
+												Start: ast.Position{
+													Column: 20,
+													Line:   51,
+												},
+											},
+										},
+										Value: "any",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 24,
+												Line:   52,
+											},
+											File:   "state_changes_test.flux",
+											Source: "toLevel: \"warn\"",
+											Start: ast.Position{
+												Column: 9,
+												Line:   52,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   52,
 												},
 												File:   "state_changes_test.flux",
 												Source: "toLevel",
 												Start: ast.Position{
 													Column: 9,
-													Line:   51,
+													Line:   52,
 												},
 											},
 										},
@@ -10222,13 +21005,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   51,
+													Line:   52,
 												},
 												File:   "state_changes_test.flux",
 												Source: "\"warn\"",
 												Start: ast.Position{
 													Column: 18,
-													Line:   51,
+													Line:   52,
 												},
 											},
 										},
@@ -10242,10 +21025,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   52,
+										Line:   53,
 									},
 									File:   "state_changes_test.flux",
-									Source: "monitor.stateChanges(\n        toLevel: \"warn\",\n    )",
+									Source: "monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"warn\",\n    )",
 									Start: ast.Position{
 										Column: 8,
 										Line:   50,
@@ -10312,12 +21095,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 41,
-								Line:   53,
+								Line:   54,
 							},
 							File:   "state_changes_test.flux",
-							Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        toLevel: \"warn\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+							Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"warn\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
 							Start: ast.Position{
-								Column: 33,
+								Column: 45,
 								Line:   47,
 							},
 						},
@@ -10329,13 +21112,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   53,
+										Line:   54,
 									},
 									File:   "state_changes_test.flux",
 									Source: "columns: [\"_start\",\"_stop\"]",
 									Start: ast.Position{
 										Column: 13,
-										Line:   53,
+										Line:   54,
 									},
 								},
 							},
@@ -10345,13 +21128,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 40,
-											Line:   53,
+											Line:   54,
 										},
 										File:   "state_changes_test.flux",
 										Source: "columns: [\"_start\",\"_stop\"]",
 										Start: ast.Position{
 											Column: 13,
-											Line:   53,
+											Line:   54,
 										},
 									},
 								},
@@ -10361,13 +21144,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   53,
+												Line:   54,
 											},
 											File:   "state_changes_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
-												Line:   53,
+												Line:   54,
 											},
 										},
 									},
@@ -10379,13 +21162,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 40,
-												Line:   53,
+												Line:   54,
 											},
 											File:   "state_changes_test.flux",
 											Source: "[\"_start\",\"_stop\"]",
 											Start: ast.Position{
 												Column: 22,
-												Line:   53,
+												Line:   54,
 											},
 										},
 									},
@@ -10395,13 +21178,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
-													Line:   53,
+													Line:   54,
 												},
 												File:   "state_changes_test.flux",
 												Source: "\"_start\"",
 												Start: ast.Position{
 													Column: 23,
-													Line:   53,
+													Line:   54,
 												},
 											},
 										},
@@ -10412,13 +21195,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 39,
-													Line:   53,
+													Line:   54,
 												},
 												File:   "state_changes_test.flux",
 												Source: "\"_stop\"",
 												Start: ast.Position{
 													Column: 32,
-													Line:   53,
+													Line:   54,
 												},
 											},
 										},
@@ -10433,13 +21216,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 41,
-									Line:   53,
+									Line:   54,
 								},
 								File:   "state_changes_test.flux",
 								Source: "drop(columns: [\"_start\",\"_stop\"])",
 								Start: ast.Position{
 									Column: 8,
-									Line:   53,
+									Line:   54,
 								},
 							},
 						},
@@ -10449,13 +21232,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   53,
+										Line:   54,
 									},
 									File:   "state_changes_test.flux",
 									Source: "drop",
 									Start: ast.Position{
 										Column: 8,
-										Line:   53,
+										Line:   54,
 									},
 								},
 							},
@@ -10468,13 +21251,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 28,
+								Column: 40,
 								Line:   47,
 							},
 							File:   "state_changes_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
-								Column: 20,
+								Column: 32,
 								Line:   47,
 							},
 						},
@@ -10484,13 +21267,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 25,
+									Column: 37,
 									Line:   47,
 								},
 								File:   "state_changes_test.flux",
 								Source: "table",
 								Start: ast.Position{
-									Column: 20,
+									Column: 32,
 									Line:   47,
 								},
 							},
@@ -10501,13 +21284,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 28,
+								Column: 40,
 								Line:   47,
 							},
 							File:   "state_changes_test.flux",
 							Source: "<-",
 							Start: ast.Position{
-								Column: 26,
+								Column: 38,
 								Line:   47,
 							},
 						},
@@ -10520,14 +21303,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 106,
-							Line:   56,
+							Column: 118,
+							Line:   57,
 						},
 						File:   "state_changes_test.flux",
-						Source: "monitor_state_changes = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes})",
+						Source: "monitor_state_changes_any_to_warn = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_warn})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   55,
+							Line:   56,
 						},
 					},
 				},
@@ -10536,32 +21319,32 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 27,
-								Line:   55,
+								Column: 39,
+								Line:   56,
 							},
 							File:   "state_changes_test.flux",
-							Source: "monitor_state_changes",
+							Source: "monitor_state_changes_any_to_warn",
 							Start: ast.Position{
 								Column: 6,
-								Line:   55,
+								Line:   56,
 							},
 						},
 					},
-					Name: "monitor_state_changes",
+					Name: "monitor_state_changes_any_to_warn",
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 106,
-								Line:   56,
+								Column: 118,
+								Line:   57,
 							},
 							File:   "state_changes_test.flux",
-							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes})",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_warn})",
 							Start: ast.Position{
-								Column: 30,
-								Line:   55,
+								Column: 42,
+								Line:   56,
 							},
 						},
 					},
@@ -10570,14 +21353,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 106,
-									Line:   56,
+									Column: 118,
+									Line:   57,
 								},
 								File:   "state_changes_test.flux",
-								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes})",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_warn})",
 								Start: ast.Position{
 									Column: 5,
-									Line:   56,
+									Line:   57,
 								},
 							},
 						},
@@ -10586,14 +21369,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 105,
-										Line:   56,
+										Column: 117,
+										Line:   57,
 									},
 									File:   "state_changes_test.flux",
-									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes}",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_warn}",
 									Start: ast.Position{
 										Column: 6,
-										Line:   56,
+										Line:   57,
 									},
 								},
 							},
@@ -10603,13 +21386,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   56,
+											Line:   57,
 										},
 										File:   "state_changes_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 7,
-											Line:   56,
+											Line:   57,
 										},
 									},
 								},
@@ -10619,13 +21402,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
-												Line:   56,
+												Line:   57,
 											},
 											File:   "state_changes_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 7,
-												Line:   56,
+												Line:   57,
 											},
 										},
 									},
@@ -10638,13 +21421,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   56,
+													Line:   57,
 												},
 												File:   "state_changes_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 34,
-													Line:   56,
+													Line:   57,
 												},
 											},
 										},
@@ -10654,13 +21437,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
-														Line:   56,
+														Line:   57,
 													},
 													File:   "state_changes_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 34,
-														Line:   56,
+														Line:   57,
 													},
 												},
 											},
@@ -10670,13 +21453,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
-															Line:   56,
+															Line:   57,
 														},
 														File:   "state_changes_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 34,
-															Line:   56,
+															Line:   57,
 														},
 													},
 												},
@@ -10688,13 +21471,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 45,
-															Line:   56,
+															Line:   57,
 														},
 														File:   "state_changes_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 39,
-															Line:   56,
+															Line:   57,
 														},
 													},
 												},
@@ -10708,13 +21491,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 46,
-												Line:   56,
+												Line:   57,
 											},
 											File:   "state_changes_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 14,
-												Line:   56,
+												Line:   57,
 											},
 										},
 									},
@@ -10724,13 +21507,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   56,
+													Line:   57,
 												},
 												File:   "state_changes_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 14,
-													Line:   56,
+													Line:   57,
 												},
 											},
 										},
@@ -10740,13 +21523,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   56,
+														Line:   57,
 													},
 													File:   "state_changes_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 14,
-														Line:   56,
+														Line:   57,
 													},
 												},
 											},
@@ -10758,13 +21541,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
-														Line:   56,
+														Line:   57,
 													},
 													File:   "state_changes_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 22,
-														Line:   56,
+														Line:   57,
 													},
 												},
 											},
@@ -10778,13 +21561,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 83,
-											Line:   56,
+											Line:   57,
 										},
 										File:   "state_changes_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 48,
-											Line:   56,
+											Line:   57,
 										},
 									},
 								},
@@ -10794,13 +21577,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 52,
-												Line:   56,
+												Line:   57,
 											},
 											File:   "state_changes_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 48,
-												Line:   56,
+												Line:   57,
 											},
 										},
 									},
@@ -10813,13 +21596,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 82,
-													Line:   56,
+													Line:   57,
 												},
 												File:   "state_changes_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 70,
-													Line:   56,
+													Line:   57,
 												},
 											},
 										},
@@ -10829,13 +21612,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 82,
-														Line:   56,
+														Line:   57,
 													},
 													File:   "state_changes_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 70,
-														Line:   56,
+														Line:   57,
 													},
 												},
 											},
@@ -10845,13 +21628,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 73,
-															Line:   56,
+															Line:   57,
 														},
 														File:   "state_changes_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 70,
-															Line:   56,
+															Line:   57,
 														},
 													},
 												},
@@ -10863,13 +21646,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 82,
-															Line:   56,
+															Line:   57,
 														},
 														File:   "state_changes_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 75,
-															Line:   56,
+															Line:   57,
 														},
 													},
 												},
@@ -10883,13 +21666,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 83,
-												Line:   56,
+												Line:   57,
 											},
 											File:   "state_changes_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 54,
-												Line:   56,
+												Line:   57,
 											},
 										},
 									},
@@ -10899,13 +21682,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   56,
+													Line:   57,
 												},
 												File:   "state_changes_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 54,
-													Line:   56,
+													Line:   57,
 												},
 											},
 										},
@@ -10915,13 +21698,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 61,
-														Line:   56,
+														Line:   57,
 													},
 													File:   "state_changes_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 54,
-														Line:   56,
+														Line:   57,
 													},
 												},
 											},
@@ -10933,13 +21716,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 69,
-														Line:   56,
+														Line:   57,
 													},
 													File:   "state_changes_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 62,
-														Line:   56,
+														Line:   57,
 													},
 												},
 											},
@@ -10952,14 +21735,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 104,
-											Line:   56,
+											Column: 116,
+											Line:   57,
 										},
 										File:   "state_changes_test.flux",
-										Source: "fn: t_state_changes",
+										Source: "fn: t_state_changes_any_to_warn",
 										Start: ast.Position{
 											Column: 85,
-											Line:   56,
+											Line:   57,
 										},
 									},
 								},
@@ -10969,13 +21752,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 87,
-												Line:   56,
+												Line:   57,
 											},
 											File:   "state_changes_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 85,
-												Line:   56,
+												Line:   57,
 											},
 										},
 									},
@@ -10986,18 +21769,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 104,
-												Line:   56,
+												Column: 116,
+												Line:   57,
 											},
 											File:   "state_changes_test.flux",
-											Source: "t_state_changes",
+											Source: "t_state_changes_any_to_warn",
 											Start: ast.Position{
 												Column: 89,
-												Line:   56,
+												Line:   57,
 											},
 										},
 									},
-									Name: "t_state_changes",
+									Name: "t_state_changes_any_to_warn",
 								},
 							}},
 							With: nil,
@@ -11010,14 +21793,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 106,
-						Line:   56,
+						Column: 118,
+						Line:   57,
 					},
 					File:   "state_changes_test.flux",
-					Source: "test monitor_state_changes = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes})",
+					Source: "test monitor_state_changes_any_to_warn = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_warn})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   55,
+						Line:   56,
 					},
 				},
 			},

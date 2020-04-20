@@ -31,6 +31,8 @@ pub fn format(contents: String) -> Result<String, String> {
 pub struct Formatter {
     builder: String,
     indentation: u32,
+    clear: bool,
+    temp_indent: bool,
     err: Option<Error>,
 }
 
@@ -39,6 +41,8 @@ impl Default for Formatter {
         Formatter {
             builder: String::new(),
             indentation: 0,
+            clear: true,
+            temp_indent: false,
             err: None,
         }
     }
@@ -54,12 +58,26 @@ impl Formatter {
         Ok(self.builder.clone())
     }
 
+    // Do not use to send newline. This is not (yet) setting clear
+    // appropriately.
     fn write_string(&mut self, s: &str) {
+        self.clear = false;
         (&mut self.builder).push_str(s);
     }
+
     fn write_rune(&mut self, c: char) {
+        if c == '\n' {
+            self.clear = true;
+            if self.temp_indent {
+                self.temp_indent = false;
+                self.unindent();
+            }
+        } else if c != '\t' && c != ' ' {
+            self.clear = false;
+        }
         (&mut self.builder).push(c);
     }
+
     fn write_indent(&mut self) {
         for _ in 0..self.indentation {
             self.write_rune('\t')
@@ -75,6 +93,22 @@ impl Formatter {
 
     fn set_indent(&mut self, i: u32) {
         self.indentation = i;
+        self.temp_indent = false;
+    }
+
+    fn format_comments(&mut self, mut comment: &ast::CommentList) {
+        while let Some(boxed) = comment {
+            if !self.clear {
+                self.write_rune('\n');
+                self.temp_indent = true;
+                self.indent();
+                self.write_indent();
+            }
+            self.write_string((*boxed).lit.as_str());
+            self.clear = true;
+            self.write_indent();
+            comment = &(*boxed).next;
+        }
     }
 
     fn write_comment(&mut self, comment: &str) {
@@ -121,6 +155,13 @@ impl Formatter {
             self.write_indent();
             self.format_node(&Node::from_stmt(value));
             prev = cur;
+        }
+
+        if n.eof.is_some() {
+            self.write_rune(sep);
+            self.set_indent(0);
+            self.clear = true;
+            self.format_comments(&n.eof);
         }
     }
 
@@ -196,12 +237,14 @@ impl Formatter {
     fn format_property(&mut self, n: &ast::Property) {
         self.format_property_key(&n.key);
         if let Some(v) = &n.value {
+            self.format_comments(&n.separator);
             self.write_string(": ");
             self.format_node(&Node::from_expr(&v));
         }
     }
 
     fn format_function_expression(&mut self, n: &ast::FunctionExpr) {
+        self.format_comments(&n.lparen);
         self.write_rune('(');
         let sep = ", ";
         for (i, value) in n.params.iter().enumerate() {
@@ -209,9 +252,20 @@ impl Formatter {
                 self.write_string(sep)
             }
             // treat properties differently than in general case
+<<<<<<< HEAD:libflux/src/core/formatter/mod.rs
             self.format_function_argument(value)
         }
         self.write_string(") =>");
+=======
+            let property = n.params.get(i).unwrap();
+            self.format_function_argument(property);
+            self.format_comments(&property.comma);
+        }
+        self.format_comments(&n.rparen);
+        self.write_string(") ");
+        self.format_comments(&n.arrow);
+        self.write_string("=>");
+>>>>>>> master:libflux/src/flux/formatter/mod.rs
         // must wrap body with parenthesis in order to discriminate between:
         //  - returning an object: (x) => ({foo: x})
         //  - and block statements:
@@ -237,6 +291,7 @@ impl Formatter {
     fn format_function_argument(&mut self, n: &ast::Property) {
         if let Some(v) = &n.value {
             self.format_property_key(&n.key);
+            self.format_comments(&n.separator);
             self.write_rune('=');
             self.format_node(&Node::from_expr(&v));
         } else {
@@ -252,10 +307,16 @@ impl Formatter {
     }
 
     fn format_paren_expression(&mut self, n: &ast::ParenExpr) {
-        self.format_node(&Node::from_expr(&n.expression))
+        // This could mix up ordering, but since the parens are programatically
+        // added back, we would need to pass any closing comments down,
+        // seriously complicating the function interface. For now, permit reordering.
+        self.format_comments(&n.lparen);
+        self.format_node(&Node::from_expr(&n.expression));
+        self.format_comments(&n.rparen);
     }
 
     fn format_string_expression(&mut self, n: &ast::StringExpr) {
+        self.format_comments(&n.base.comments);
         self.write_rune('"');
         for p in &n.parts {
             self.format_string_expression_part(p)
@@ -281,25 +342,36 @@ impl Formatter {
     }
 
     fn format_array_expression(&mut self, n: &ast::ArrayExpr) {
+        self.format_comments(&n.lbrack);
         self.write_rune('[');
         let sep = ", ";
         for (i, value) in n.elements.iter().enumerate() {
             if i != 0 {
                 self.write_string(sep)
             }
+<<<<<<< HEAD:libflux/src/core/formatter/mod.rs
             self.format_node(&Node::from_expr(value));
+=======
+            let item = n.elements.get(i).unwrap();
+            self.format_node(&Node::from_expr(&item.expression));
+            self.format_comments(&item.comma);
+>>>>>>> master:libflux/src/flux/formatter/mod.rs
         }
+        self.format_comments(&n.rbrack);
         self.write_rune(']')
     }
 
     fn format_index_expression(&mut self, n: &ast::IndexExpr) {
         self.format_child_with_parens(Node::IndexExpr(n), Node::from_expr(&n.array));
+        self.format_comments(&n.lbrack);
         self.write_rune('[');
         self.format_node(&Node::from_expr(&n.index));
+        self.format_comments(&n.rbrack);
         self.write_rune(']');
     }
 
     fn format_block(&mut self, n: &ast::Block) {
+        self.format_comments(&n.lbrace);
         self.write_rune('{');
         let sep = '\n';
         if !n.body.is_empty() {
@@ -326,20 +398,24 @@ impl Formatter {
             self.unindent();
             self.write_indent()
         }
+        self.format_comments(&n.rbrace);
         self.write_rune('}')
     }
 
     fn format_return_statement(&mut self, n: &ast::ReturnStmt) {
+        self.format_comments(&n.base.comments);
         self.write_string("return ");
         self.format_node(&Node::from_expr(&n.argument));
     }
 
     fn format_option_statement(&mut self, n: &ast::OptionStmt) {
+        self.format_comments(&n.base.comments);
         self.write_string("option ");
         self.format_assignment(&n.assignment);
     }
 
     fn format_test_statement(&mut self, n: &ast::TestStmt) {
+        self.format_comments(&n.base.comments);
         self.write_string("test ");
         self.format_node(&Node::VariableAssgn(&n.assignment));
     }
@@ -391,12 +467,15 @@ impl Formatter {
 
         match &n.property {
             ast::PropertyKey::Identifier(m) => {
+                self.format_comments(&n.lbrack);
                 self.write_rune('.');
                 self.format_node(&Node::Identifier(&m));
             }
             ast::PropertyKey::StringLit(m) => {
+                self.format_comments(&n.lbrack);
                 self.write_rune('[');
                 self.format_node(&Node::StringLit(&m));
+                self.format_comments(&n.rbrack);
                 self.write_rune(']');
             }
         }
@@ -407,12 +486,14 @@ impl Formatter {
         self.write_rune('\n');
         self.indent();
         self.write_indent();
+        self.format_comments(&n.base.comments);
         self.write_string("|> ");
         self.format_node(&Node::CallExpr(&n.call));
     }
 
     fn format_call_expression(&mut self, n: &ast::CallExpr) {
         self.format_child_with_parens(Node::CallExpr(n), Node::from_expr(&n.callee));
+        self.format_comments(&n.lparen);
         self.write_rune('(');
         let sep = ", ";
         for (i, c) in n.arguments.iter().enumerate() {
@@ -424,6 +505,7 @@ impl Formatter {
                 _ => self.format_node(&Node::from_expr(c)),
             }
         }
+        self.format_comments(&n.rparen);
         self.write_rune(')');
     }
 
@@ -436,11 +518,13 @@ impl Formatter {
 
     fn format_object_expression_braces(&mut self, n: &ast::ObjectExpr, braces: bool) {
         let multiline = n.properties.len() > 3;
+        self.format_comments(&n.lbrace);
         if braces {
             self.write_rune('{');
         }
         if let Some(with) = &n.with {
-            self.format_identifier(&with);
+            self.format_identifier(&with.source);
+            self.format_comments(&with.with);
             self.write_string(" with ");
         }
         if multiline {
@@ -461,44 +545,58 @@ impl Formatter {
                     self.write_indent()
                 }
             }
+<<<<<<< HEAD:libflux/src/core/formatter/mod.rs
             self.format_node(&Node::Property(value));
+=======
+            let property = n.properties.get(i).unwrap();
+            self.format_node(&Node::Property(property));
+            self.format_comments(&property.comma);
+>>>>>>> master:libflux/src/flux/formatter/mod.rs
         }
         if multiline {
             self.write_string(sep);
             self.unindent();
             self.write_indent();
         }
+        self.format_comments(&n.rbrace);
         if braces {
             self.write_rune('}');
         }
     }
 
     fn format_identifier(&mut self, n: &ast::Identifier) {
+        self.format_comments(&n.base.comments);
         self.write_string(&n.name);
     }
 
     fn format_variable_assignment(&mut self, n: &ast::VariableAssgn) {
         self.format_node(&Node::Identifier(&n.id));
+        self.format_comments(&n.base.comments);
         self.write_string(" = ");
         self.format_node(&Node::from_expr(&n.init));
     }
 
     fn format_conditional_expression(&mut self, n: &ast::ConditionalExpr) {
+        self.format_comments(&n.tk_if);
         self.write_string("if ");
         self.format_node(&Node::from_expr(&n.test));
+        self.format_comments(&n.tk_then);
         self.write_string(" then ");
         self.format_node(&Node::from_expr(&n.consequent));
+        self.format_comments(&n.tk_else);
         self.write_string(" else ");
         self.format_node(&Node::from_expr(&n.alternate));
     }
 
     fn format_member_assignment(&mut self, n: &ast::MemberAssgn) {
         self.format_node(&Node::MemberExpr(&n.member));
+        self.format_comments(&n.base.comments);
         self.write_string(" = ");
         self.format_node(&Node::from_expr(&n.init));
     }
 
     fn format_unary_expression(&mut self, n: &ast::UnaryExpr) {
+        self.format_comments(&n.base.comments);
         self.write_string(&n.operator.to_string());
         match n.operator {
             ast::Operator::SubtractionOperator => {}
@@ -512,6 +610,7 @@ impl Formatter {
 
     fn format_binary_expression(&mut self, n: &ast::BinaryExpr) {
         self.format_binary(
+            &n.base.comments,
             &n.operator.to_string(),
             Node::BinaryExpr(&n),
             Node::from_expr(&n.left),
@@ -521,6 +620,7 @@ impl Formatter {
 
     fn format_logical_expression(&mut self, n: &ast::LogicalExpr) {
         self.format_binary(
+            &n.base.comments,
             &n.operator.to_string(),
             Node::LogicalExpr(&n),
             Node::from_expr(&n.left),
@@ -528,15 +628,24 @@ impl Formatter {
         );
     }
 
-    fn format_binary(&mut self, op: &str, parent: Node, left: Node, right: Node) {
+    fn format_binary(
+        &mut self,
+        comments: &ast::CommentList,
+        op: &str,
+        parent: Node,
+        left: Node,
+        right: Node,
+    ) {
         self.format_left_child_with_parens(&parent, &left);
         self.write_rune(' ');
+        self.format_comments(comments);
         self.write_string(op);
         self.write_rune(' ');
         self.format_right_child_with_parens(&parent, &right);
     }
 
     fn format_import_declaration(&mut self, n: &ast::ImportDeclaration) {
+        self.format_comments(&n.base.comments);
         self.write_string("import ");
         if let Some(alias) = &n.alias {
             if !alias.name.is_empty() {
@@ -552,12 +661,14 @@ impl Formatter {
     }
 
     fn format_package_clause(&mut self, n: &ast::PackageClause) {
+        self.format_comments(&n.base.comments);
         self.write_string("package ");
         self.format_node(&Node::Identifier(&n.name));
         self.write_rune('\n');
     }
 
     fn format_string_literal(&mut self, n: &ast::StringLit) {
+        self.format_comments(&n.base.comments);
         if let Some(src) = &n.base.location.source {
             if !src.is_empty() {
                 // Preserve the exact literal if we have it
@@ -585,6 +696,7 @@ impl Formatter {
         self.write_rune('"');
     }
 
+    // TODO(adriandt): this code appears dead. Boolean literal is no longer a node type?
     fn format_boolean_literal(&mut self, n: &ast::BooleanLit) {
         let s: &str;
         if n.value {
@@ -622,10 +734,12 @@ impl Formatter {
         } else {
             f = v.to_rfc3339_opts(SecondsFormat::Secs, true)
         }
+        self.format_comments(&n.base.comments);
         self.write_string(&f);
     }
 
     fn format_duration_literal(&mut self, n: &ast::DurationLit) {
+        self.format_comments(&n.base.comments);
         for d in &n.values {
             self.write_string(&format!("{}", d.magnitude));
             self.write_string(&d.unit)
@@ -633,6 +747,7 @@ impl Formatter {
     }
 
     fn format_float_literal(&mut self, n: &ast::FloatLit) {
+        self.format_comments(&n.base.comments);
         let mut s = format!("{}", n.value);
         if !s.contains('.') {
             s.push_str(".0");
@@ -641,18 +756,22 @@ impl Formatter {
     }
 
     fn format_integer_literal(&mut self, n: &ast::IntegerLit) {
+        self.format_comments(&n.base.comments);
         self.write_string(&format!("{}", n.value));
     }
 
     fn format_unsigned_integer_literal(&mut self, n: &ast::UintLit) {
+        self.format_comments(&n.base.comments);
         self.write_string(&format!("{0:10}", n.value))
     }
 
-    fn format_pipe_literal(&mut self, _: &ast::PipeLit) {
+    fn format_pipe_literal(&mut self, n: &ast::PipeLit) {
+        self.format_comments(&n.base.comments);
         self.write_string("<-")
     }
 
     fn format_regexp_literal(&mut self, n: &ast::RegexpLit) {
+        self.format_comments(&n.base.comments);
         self.write_rune('/');
         self.write_string(&n.value.replace("/", "\\/"));
         self.write_rune('/')

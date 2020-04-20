@@ -733,9 +733,30 @@ func TestFilter_Process(t *testing.T) {
 }
 
 func BenchmarkFilter_Values(b *testing.B) {
+<<<<<<< HEAD
 	b.Run("1000", func(b *testing.B) {
 		fn := executetest.FunctionExpression(b, `(r) => r._value > 0.0`)
 		benchmarkFilter(b, 1000, fn)
+=======
+	b.Run("500", func(b *testing.B) {
+		benchmarkFilter(b, 500, &semantic.FunctionExpression{
+			Block: &semantic.FunctionBlock{
+				Parameters: &semantic.FunctionParameters{
+					List: []*semantic.FunctionParameter{
+						{Key: &semantic.Identifier{Name: "r"}},
+					},
+				},
+				Body: &semantic.BinaryExpression{
+					Operator: ast.GreaterThanEqualOperator,
+					Left: &semantic.MemberExpression{
+						Object:   &semantic.IdentifierExpression{Name: "r"},
+						Property: "_value",
+					},
+					Right: &semantic.FloatLiteral{Value: 0.0},
+				},
+			},
+		})
+>>>>>>> master
 	})
 }
 

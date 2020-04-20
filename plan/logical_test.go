@@ -306,7 +306,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 
 			if tc.wantErr {
 				if err == nil {
-					_, err = thePlanner.Plan(initPlan)
+					_, err = thePlanner.Plan(context.Background(), initPlan)
 				}
 				if err == nil {
 					t.Fatal("expected error, but got none")
@@ -315,7 +315,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				gotPlan, err := thePlanner.Plan(initPlan)
+				gotPlan, err := thePlanner.Plan(context.Background(), initPlan)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -342,7 +342,7 @@ func (MergeFiltersRule) Pattern() plan.Pattern {
 			plan.Any()))
 }
 
-func (MergeFiltersRule) Rewrite(pn plan.Node) (plan.Node, bool, error) {
+func (MergeFiltersRule) Rewrite(ctx context.Context, pn plan.Node) (plan.Node, bool, error) {
 	specTop := pn.ProcedureSpec()
 
 	filterSpecTop := specTop.(*universe.FilterProcedureSpec)
@@ -401,7 +401,7 @@ func (PushFilterThroughMapRule) Pattern() plan.Pattern {
 			plan.Any()))
 }
 
-func (PushFilterThroughMapRule) Rewrite(pn plan.Node) (plan.Node, bool, error) {
+func (PushFilterThroughMapRule) Rewrite(ctx context.Context, pn plan.Node) (plan.Node, bool, error) {
 	// It will not always be possible to push a filter through a map... but this is just a unit test.
 
 	swapped, err := plan.SwapPlanNodes(pn, pn.Predecessors()[0])
@@ -605,7 +605,7 @@ func TestLogicalPlanner(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			logicalPlan, err := logicalPlanner.Plan(initPlan)
+			logicalPlan, err := logicalPlanner.Plan(context.Background(), initPlan)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -644,7 +644,7 @@ from(bucket: "telegraf")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = planner.Plan(initPlan)
+	_, err = planner.Plan(context.Background(), initPlan)
 	if err != nil {
 		t.Fatalf("unexpected fail: %v", err)
 	}
@@ -656,7 +656,7 @@ from(bucket: "telegraf")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = planner.Plan(initPlan)
+	_, err = planner.Plan(context.Background(), initPlan)
 	if err == nil {
 		t.Fatal("unexpected pass")
 	}
@@ -668,7 +668,7 @@ from(bucket: "telegraf")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = planner.Plan(initPlan)
+	_, err = planner.Plan(context.Background(), initPlan)
 	if err == nil {
 		t.Fatal("unexpected pass")
 	}

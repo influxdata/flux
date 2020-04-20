@@ -295,7 +295,7 @@ where
             Node::Identifier(_) => {}
             Node::ArrayExpr(n) => {
                 for element in n.elements.iter() {
-                    walk(&w, Node::from_expr(&element));
+                    walk(&w, Node::from_expr(&element.expression));
                 }
             }
             Node::FunctionExpr(n) => {
@@ -309,8 +309,8 @@ where
                 walk(&w, Node::from_expr(&n.right));
             }
             Node::ObjectExpr(n) => {
-                if let Some(i) = &n.with {
-                    walk(&w, Node::Identifier(i));
+                if let Some(ws) = &n.with {
+                    walk(&w, Node::Identifier(&ws.source));
                 }
                 for prop in n.properties.iter() {
                     walk(&w, Node::Property(&prop));

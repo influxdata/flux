@@ -6,12 +6,21 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+<<<<<<< HEAD
+=======
+	"github.com/influxdata/flux/stdlib/experimental"
+
+>>>>>>> master
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
+<<<<<<< HEAD
 	"github.com/influxdata/flux/stdlib/internal/promql"
+=======
+	"github.com/influxdata/flux/semantic"
+>>>>>>> master
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/valuestest"
 )
@@ -674,14 +683,14 @@ func TestJoin(t *testing.T) {
 			l := execute.DatasetID(executetest.RandomDatasetID())
 			r := execute.DatasetID(executetest.RandomDatasetID())
 
-			cache := promql.NewMergeJoinCache(
+			cache := experimental.NewMergeJoinCache(
 				context.Background(),
 				executetest.UnlimitedAllocator,
 				tc.fn,
 				l,
 				r,
 			)
-			pjoin := promql.NewMergeJoinTransformation(
+			pjoin := experimental.NewMergeJoinTransformation(
 				executetest.NewDataset(executetest.RandomDatasetID()),
 				cache,
 			)

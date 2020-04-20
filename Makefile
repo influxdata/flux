@@ -100,9 +100,14 @@ checktidy:
 checkgenerate:
 	./etc/checkgenerate.sh
 
+# Run this in two passes to to keep memory usage down. As of this commit,
+# running on everything (./...) uses just over 4G of memory. Breaking stdlib
+# out keeps memory under 3G.
 staticcheck:
 	GO111MODULE=on go mod vendor # staticcheck looks in vendor for dependencies.
-	GO111MODULE=on ./gotool.sh honnef.co/go/tools/cmd/staticcheck ./...
+	GO111MODULE=on ./gotool.sh honnef.co/go/tools/cmd/staticcheck \
+		`go list ./... | grep -v '\/flux\/stdlib\>'`
+	GO111MODULE=on ./gotool.sh honnef.co/go/tools/cmd/staticcheck ./stdlib/...
 
 test: test-go test-rust
 

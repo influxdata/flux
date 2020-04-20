@@ -1,6 +1,8 @@
 package plan
 
 import (
+	"context"
+
 	"github.com/influxdata/flux"
 )
 
@@ -35,16 +37,16 @@ type planner struct {
 	pp PhysicalPlanner
 }
 
-func (p *planner) Plan(fspec *flux.Spec) (*Spec, error) {
+func (p *planner) Plan(ctx context.Context, fspec *flux.Spec) (*Spec, error) {
 	ip, err := p.lp.CreateInitialPlan(fspec)
 	if err != nil {
 		return nil, err
 	}
-	lp, err := p.lp.Plan(ip)
+	lp, err := p.lp.Plan(ctx, ip)
 	if err != nil {
 		return nil, err
 	}
-	pp, err := p.pp.Plan(lp)
+	pp, err := p.pp.Plan(ctx, lp)
 	if err != nil {
 		return nil, err
 	}

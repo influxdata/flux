@@ -102,6 +102,7 @@ pub fn builtins() -> Builtins<'static> {
                  // if host is specified, token must be too.
                  // https://github.com/influxdata/flux/issues/1660
                  "to" => "forall [t0] where t0: Row (<-tables: [t0], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) -> [t0]",
+                 "join" => "forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (left: [t0], right: [t1], fn: (left: t0, right: t1) -> t2) -> [t2]",
             },
             "generate" => semantic_map! {
                 "from" => "forall [] (start: time, stop: time, count: int, fn: (n: int) -> int) -> [{ _start: time | _stop: time | _time: time | _value:int }]",
@@ -198,7 +199,6 @@ pub fn builtins() -> Builtins<'static> {
                 "resets" => "forall [t0, t1] (<-tables: [{_value: float | t0}]) -> [{_value: float | t1}]",
                 "timestamp" => "forall [t0] (<-tables: [{_value: float | t0}]) -> [{_value: float | t0}]",
                 "promqlYear" => "forall [] (timestamp: float) -> float",
-                "join" => "forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (left: [t0], right: [t1], fn: (left: t0, right: t1) -> t2) -> [t2]",
             },
             "internal/testutil" => semantic_map! {
                 "fail" => "forall [] () -> bool",
@@ -377,7 +377,7 @@ pub fn builtins() -> Builtins<'static> {
             "testing" => semantic_map! {
                 "assertEquals" => "forall [t0] (name: string, <-got: [t0], want: [t0]) -> [t0]",
                 "assertEmpty" => "forall [t0] (<-tables: [t0]) -> [t0]",
-                "diff" => "forall [t0] (<-got: [t0], want: [t0], ?verbose: bool) -> [{_diff: string | t0}]",
+                "diff" => "forall [t0] (<-got: [t0], want: [t0], ?verbose: bool, ?epsilon: float) -> [{_diff: string | t0}]",
             },
             "universe" => semantic_map! {
                 "bool" => "forall [t0] (v: t0) -> bool",

@@ -241,7 +241,7 @@ func (r BigtableFilterRewriteRule) Pattern() plan.Pattern {
 	return plan.Pat(universe.FilterKind, plan.Pat(FromBigtableKind))
 }
 
-func (r BigtableFilterRewriteRule) Rewrite(filter plan.Node) (plan.Node, bool, error) {
+func (r BigtableFilterRewriteRule) Rewrite(ctx context.Context, filter plan.Node) (plan.Node, bool, error) {
 	query := filter.Predecessors()[0]
 
 	node, changed := AddFilterToNode(query, filter)
@@ -258,7 +258,7 @@ func (r BigtableLimitRewriteRule) Pattern() plan.Pattern {
 	return plan.Pat(universe.LimitKind, plan.Pat(FromBigtableKind))
 }
 
-func (r BigtableLimitRewriteRule) Rewrite(limit plan.Node) (plan.Node, bool, error) {
+func (r BigtableLimitRewriteRule) Rewrite(ctx context.Context, limit plan.Node) (plan.Node, bool, error) {
 	query := limit.Predecessors()[0]
 
 	node, changed := AddLimitToNode(query, limit)

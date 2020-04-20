@@ -2,6 +2,7 @@ package testing_test
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"testing"
 
@@ -211,6 +212,85 @@ func TestDiff_Process(t *testing.T) {
 						{"+", execute.Time(1), 1.0},
 						{"+", execute.Time(2), 2.0},
 						{"+", execute.Time(3), 3.0},
+					},
+				},
+			},
+		},
+		{
+			name: "float64 comparison large epsilon",
+			spec: &fluxtesting.DiffProcedureSpec{
+				DefaultCost: plan.DefaultCost{},
+				Epsilon:     1e-6,
+			},
+			data0: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0},
+						{execute.Time(2), 2.0},
+						{execute.Time(3), math.Inf(1)},
+					},
+				},
+			},
+			data1: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.000001},
+						{execute.Time(2), 2.0},
+						{execute.Time(3), math.Inf(1)},
+					},
+				},
+			},
+			want: []*executetest.Table(nil),
+		},
+		{
+			name: "float64 comparison default epsilon",
+			spec: &fluxtesting.DiffProcedureSpec{
+				DefaultCost: plan.DefaultCost{},
+			},
+			data0: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0},
+						{execute.Time(2), 2.0},
+						{execute.Time(3), math.Inf(1)},
+					},
+				},
+			},
+			data1: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.000001},
+						{execute.Time(2), 2.0},
+						{execute.Time(3), math.Inf(1)},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_diff", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"-", execute.Time(1), 1.0},
+						{"+", execute.Time(1), 1.000001},
 					},
 				},
 			},

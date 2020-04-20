@@ -151,9 +151,12 @@ impl Parser {
 
     // peek_with_regex is the same as peek, except that the scan step will allow scanning regexp tokens.
     fn peek_with_regex(&mut self) -> Token {
-        if let Some(Token { tok: TOK_DIV, .. }) = &self.t {
-            self.t = None;
-            self.s.unread();
+        if let Some(token) = &mut self.t {
+            if let Token { tok: TOK_DIV, .. } = token {
+                self.s.comments = token.comments.take();
+                self.t = None;
+                self.s.unread();
+            }
         }
         match self.t.clone() {
             Some(t) => t,
@@ -275,11 +278,33 @@ impl Parser {
     fn base_node(&mut self, location: SourceLocation) -> BaseNode {
         let errors = self.errs.clone();
         self.errs = vec![];
-        BaseNode { location, errors }
+        BaseNode {
+            location,
+            errors,
+            ..BaseNode::default()
+        }
+    }
+
+    // Makes a comment list from a token. The comments in the Token struct are
+    // in reverse order, so we restore proper order here.
+    fn make_comments(&mut self, token: &scanner::Token) -> Option<Box<ast::Comment>> {
+        let mut reversed = None;
+        let mut head = &(*token).comments;
+        while let Some(boxed_head) = head {
+            reversed = Some(Box::new(Comment {
+                lit: (*boxed_head).lit.clone(),
+                next: reversed.take(),
+            }));
+
+            head = &(*boxed_head).comments;
+        }
+        reversed
     }
 
     fn base_node_from_token(&mut self, tok: &Token) -> BaseNode {
-        self.base_node_from_tokens(tok, tok)
+        let mut base = self.base_node_from_tokens(tok, tok);
+        base.set_comments(self.make_comments(&tok));
+        base
     }
 
     fn base_node_from_tokens(&mut self, start: &Token, end: &Token) -> BaseNode {
@@ -300,8 +325,32 @@ impl Parser {
         )
     }
 
+    fn base_node_from_other_end_c(
+        &mut self,
+        start: &Token,
+        end: &BaseNode,
+        comments_from: &Token,
+    ) -> BaseNode {
+        let mut base = self.base_node(
+            self.source_location(&ast::Position::from(&start.start_pos), &end.location.end),
+        );
+        base.set_comments(self.make_comments(&comments_from));
+        base
+    }
+
     fn base_node_from_others(&mut self, start: &BaseNode, end: &BaseNode) -> BaseNode {
         self.base_node_from_pos(&start.location.start, &end.location.end)
+    }
+
+    fn base_node_from_others_c(
+        &mut self,
+        start: &BaseNode,
+        end: &BaseNode,
+        comments_from: &Token,
+    ) -> BaseNode {
+        let mut base = self.base_node_from_pos(&start.location.start, &end.location.end);
+        base.set_comments(self.make_comments(&comments_from));
+        base
     }
 
     fn base_node_from_pos(&mut self, start: &ast::Position, end: &ast::Position) -> BaseNode {
@@ -340,16 +389,18 @@ impl Parser {
         if let Some(stmt) = body.last() {
             end = stmt.base().location.end.clone();
         }
+        let eof = self.peek();
         File {
             base: BaseNode {
                 location: self.source_location(&ast::Position::from(&t.start_pos), &end),
-                errors: vec![],
+                ..BaseNode::default()
             },
             name: self.fname.clone(),
             metadata: String::from(Self::METADATA),
             package: pkg,
             imports,
             body,
+            eof: self.make_comments(&eof),
         }
     }
 
@@ -359,7 +410,7 @@ impl Parser {
             self.consume();
             let ident = self.parse_identifier();
             return Some(PackageClause {
-                base: self.base_node_from_other_end(&t, &ident.base),
+                base: self.base_node_from_other_end_c(&t, &ident.base, &t),
                 name: ident,
             });
         }
@@ -386,7 +437,7 @@ impl Parser {
         };
         let path = self.parse_string_literal();
         ImportDeclaration {
-            base: self.base_node_from_other_end(&t, &path.base),
+            base: self.base_node_from_other_end_c(&t, &path.base, &t),
             alias,
             path,
         }
@@ -415,10 +466,10 @@ impl Parser {
             TOK_RETURN => self.parse_return_statement(),
             _ => {
                 self.consume();
-                Statement::Bad(BadStmt {
+                Statement::Bad(Box::new(BadStmt {
                     base: self.base_node_from_token(&t),
                     text: t.lit,
-                })
+                }))
             }
         }
     }
@@ -428,13 +479,13 @@ impl Parser {
         let assignment = self.parse_option_assignment_suffix(ident);
         match assignment {
             Ok(assgn) => Statement::Option(Box::new(OptionStmt {
-                base: self.base_node_from_other_end(&t, assgn.base()),
+                base: self.base_node_from_other_end_c(&t, assgn.base(), &t),
                 assignment: assgn,
             })),
-            Err(_) => Statement::Bad(BadStmt {
+            Err(_) => Statement::Bad(Box::new(BadStmt {
                 base: self.base_node_from_token(&t),
                 text: t.lit,
-            }),
+            })),
         }
     }
     fn parse_option_assignment_suffix(&mut self, id: Identifier) -> Result<Assignment, String> {
@@ -443,7 +494,7 @@ impl Parser {
             TOK_ASSIGN => {
                 let init = self.parse_assign_statement();
                 Ok(Assignment::Variable(Box::new(VariableAssgn {
-                    base: self.base_node_from_others(&id.base, init.base()),
+                    base: self.base_node_from_others_c(&id.base, init.base(), &t),
                     id,
                     init,
                 })))
@@ -451,13 +502,16 @@ impl Parser {
             TOK_DOT => {
                 self.consume();
                 let prop = self.parse_identifier();
-                let init = self.parse_assign_statement();
+                let assign = self.expect(TOK_ASSIGN);
+                let init = self.parse_expression();
                 Ok(Assignment::Member(Box::new(MemberAssgn {
-                    base: self.base_node_from_others(&id.base, init.base()),
+                    base: self.base_node_from_others_c(&id.base, init.base(), &assign),
                     member: MemberExpr {
                         base: self.base_node_from_others(&id.base, &prop.base),
                         object: Expression::Identifier(id),
+                        lbrack: self.make_comments(&t),
                         property: PropertyKey::Identifier(prop),
+                        rbrack: None,
                     },
                     init,
                 })))
@@ -468,19 +522,20 @@ impl Parser {
     fn parse_builtin_statement(&mut self) -> Statement {
         let t = self.expect(TOK_BUILTIN);
         let id = self.parse_identifier();
-        Statement::Builtin(BuiltinStmt {
+        Statement::Builtin(Box::new(BuiltinStmt {
             base: self.base_node_from_other_end(&t, &id.base),
             id,
-        })
+        }))
     }
     fn parse_test_statement(&mut self) -> Statement {
         let t = self.expect(TOK_TEST);
         let id = self.parse_identifier();
+        let assign = self.peek();
         let assignment = self.parse_assign_statement();
         Statement::Test(Box::new(TestStmt {
-            base: self.base_node_from_other_end(&t, assignment.base()),
+            base: self.base_node_from_other_end_c(&t, assignment.base(), &t),
             assignment: VariableAssgn {
-                base: self.base_node_from_others(&id.base, assignment.base()),
+                base: self.base_node_from_others_c(&id.base, assignment.base(), &assign),
                 id,
                 init: assignment,
             },
@@ -493,17 +548,17 @@ impl Parser {
             TOK_ASSIGN => {
                 let init = self.parse_assign_statement();
                 Statement::Variable(Box::new(VariableAssgn {
-                    base: self.base_node_from_others(&id.base, init.base()),
+                    base: self.base_node_from_others_c(&id.base, init.base(), &t),
                     id,
                     init,
                 }))
             }
             _ => {
                 let expr = self.parse_expression_suffix(Expression::Identifier(id));
-                Statement::Expr(ExprStmt {
+                Statement::Expr(Box::new(ExprStmt {
                     base: self.base_node(expr.base().location.clone()),
                     expression: expr,
-                })
+                }))
             }
         }
     }
@@ -514,10 +569,10 @@ impl Parser {
     fn parse_return_statement(&mut self) -> Statement {
         let t = self.expect(TOK_RETURN);
         let expr = self.parse_expression();
-        Statement::Return(ReturnStmt {
-            base: self.base_node_from_other_end(&t, expr.base()),
+        Statement::Return(Box::new(ReturnStmt {
+            base: self.base_node_from_other_end_c(&t, expr.base(), &t),
             argument: expr,
-        })
+        }))
     }
     fn parse_expression_statement(&mut self) -> Statement {
         let expr = self.parse_expression();
@@ -525,7 +580,7 @@ impl Parser {
             base: self.base_node(expr.base().location.clone()),
             expression: expr,
         };
-        Statement::Expr(stmt)
+        Statement::Expr(Box::new(stmt))
     }
     fn parse_block(&mut self) -> Block {
         let start = self.open(TOK_LBRACE, TOK_RBRACE);
@@ -533,7 +588,9 @@ impl Parser {
         let end = self.close(TOK_RBRACE);
         Block {
             base: self.base_node_from_tokens(&start, &end),
+            lbrace: self.make_comments(&start),
             body: stmts,
+            rbrace: self.make_comments(&end),
         }
     }
     fn parse_expression(&mut self) -> Expression {
@@ -597,38 +654,48 @@ impl Parser {
         let expr = self.parse_logical_and_expression_suffix(expr);
         self.parse_logical_or_expression_suffix(expr)
     }
-    fn parse_expression_list(&mut self) -> Vec<Expression> {
-        let mut exprs = Vec::new();
+    fn parse_expression_list(&mut self) -> Vec<ArrayItem> {
+        let mut exprs = Vec::<ArrayItem>::new();
         while self.more() {
             match self.peek().tok {
                 TOK_IDENT | TOK_INT | TOK_FLOAT | TOK_STRING | TOK_TIME | TOK_DURATION
                 | TOK_PIPE_RECEIVE | TOK_LPAREN | TOK_LBRACK | TOK_LBRACE | TOK_ADD | TOK_SUB
-                | TOK_DIV | TOK_NOT | TOK_EXISTS => exprs.push(self.parse_expression()),
+                | TOK_DIV | TOK_NOT | TOK_EXISTS => {
+                    let mut comments = None;
+                    let expr = self.parse_expression();
+                    if self.peek().tok == TOK_COMMA {
+                        let t = self.scan();
+                        comments = self.make_comments(&t);
+                    }
+                    exprs.push(ArrayItem {
+                        expression: expr,
+                        comma: comments,
+                    });
+                }
                 _ => {
                     // TODO: bad expression
                     self.consume();
-                    continue;
                 }
             };
-            if self.peek().tok == TOK_COMMA {
-                self.consume();
-            }
         }
         exprs
     }
     fn parse_conditional_expression(&mut self) -> Expression {
         let t = self.peek();
         if t.tok == TOK_IF {
-            self.consume();
+            let if_tok = self.scan();
             let test = self.parse_expression();
-            self.expect(TOK_THEN);
+            let then_tok = self.expect(TOK_THEN);
             let cons = self.parse_expression();
-            self.expect(TOK_ELSE);
+            let else_tok = self.expect(TOK_ELSE);
             let alt = self.parse_expression();
             return Expression::Conditional(Box::new(ConditionalExpr {
                 base: self.base_node_from_other_end(&t, alt.base()),
+                tk_if: self.make_comments(&if_tok),
                 test,
+                tk_then: self.make_comments(&then_tok),
                 consequent: cons,
+                tk_else: self.make_comments(&else_tok),
                 alternate: alt,
             }));
         }
@@ -644,9 +711,10 @@ impl Parser {
             let or = self.parse_or_operator();
             match or {
                 Some(or_op) => {
+                    let t = self.scan();
                     let rhs = self.parse_logical_and_expression();
                     res = Expression::Logical(Box::new(LogicalExpr {
-                        base: self.base_node_from_others(res.base(), rhs.base()),
+                        base: self.base_node_from_others_c(res.base(), rhs.base(), &t),
                         operator: or_op,
                         left: res,
                         right: rhs,
@@ -660,7 +728,6 @@ impl Parser {
     fn parse_or_operator(&mut self) -> Option<LogicalOperator> {
         let t = self.peek().tok;
         if t == TOK_OR {
-            self.consume();
             Some(LogicalOperator::OrOperator)
         } else {
             None
@@ -676,9 +743,10 @@ impl Parser {
             let and = self.parse_and_operator();
             match and {
                 Some(and_op) => {
+                    let t = self.scan();
                     let rhs = self.parse_logical_unary_expression();
                     res = Expression::Logical(Box::new(LogicalExpr {
-                        base: self.base_node_from_others(res.base(), rhs.base()),
+                        base: self.base_node_from_others_c(res.base(), rhs.base(), &t),
                         operator: and_op,
                         left: res,
                         right: rhs,
@@ -692,7 +760,6 @@ impl Parser {
     fn parse_and_operator(&mut self) -> Option<LogicalOperator> {
         let t = self.peek().tok;
         if t == TOK_AND {
-            self.consume();
             Some(LogicalOperator::AndOperator)
         } else {
             None
@@ -703,9 +770,10 @@ impl Parser {
         let op = self.parse_logical_unary_operator();
         match op {
             Some(op) => {
+                self.consume();
                 let expr = self.parse_logical_unary_expression();
                 Expression::Unary(Box::new(UnaryExpr {
-                    base: self.base_node_from_other_end(&t, expr.base()),
+                    base: self.base_node_from_other_end_c(&t, expr.base(), &t),
                     operator: op,
                     argument: expr,
                 }))
@@ -716,14 +784,8 @@ impl Parser {
     fn parse_logical_unary_operator(&mut self) -> Option<Operator> {
         let t = self.peek().tok;
         match t {
-            TOK_NOT => {
-                self.consume();
-                Some(Operator::NotOperator)
-            }
-            TOK_EXISTS => {
-                self.consume();
-                Some(Operator::ExistsOperator)
-            }
+            TOK_NOT => Some(Operator::NotOperator),
+            TOK_EXISTS => Some(Operator::ExistsOperator),
             _ => None,
         }
     }
@@ -737,9 +799,10 @@ impl Parser {
             let op = self.parse_comparison_operator();
             match op {
                 Some(op) => {
+                    let t = self.scan();
                     let rhs = self.parse_additive_expression();
                     res = Expression::Binary(Box::new(BinaryExpr {
-                        base: self.base_node_from_others(res.base(), rhs.base()),
+                        base: self.base_node_from_others_c(res.base(), rhs.base(), &t),
                         operator: op,
                         left: res,
                         right: rhs,
@@ -764,9 +827,6 @@ impl Parser {
             TOK_REGEXNEQ => res = Some(Operator::NotRegexpMatchOperator),
             _ => (),
         }
-        if res.is_some() {
-            self.consume();
-        }
         res
     }
     fn parse_additive_expression(&mut self) -> Expression {
@@ -779,9 +839,10 @@ impl Parser {
             let op = self.parse_additive_operator();
             match op {
                 Some(op) => {
+                    let t = self.scan();
                     let rhs = self.parse_multiplicative_expression();
                     res = Expression::Binary(Box::new(BinaryExpr {
-                        base: self.base_node_from_others(res.base(), rhs.base()),
+                        base: self.base_node_from_others_c(res.base(), rhs.base(), &t),
                         operator: op,
                         left: res,
                         right: rhs,
@@ -800,9 +861,6 @@ impl Parser {
             TOK_SUB => res = Some(Operator::SubtractionOperator),
             _ => (),
         }
-        if res.is_some() {
-            self.consume();
-        }
         res
     }
     fn parse_multiplicative_expression(&mut self) -> Expression {
@@ -815,9 +873,11 @@ impl Parser {
             let op = self.parse_multiplicative_operator();
             match op {
                 Some(op) => {
+                    let t = self.scan();
                     let rhs = self.parse_pipe_expression();
+                    self.base_node_from_others_c(res.base(), rhs.base(), &t);
                     res = Expression::Binary(Box::new(BinaryExpr {
-                        base: self.base_node_from_others(res.base(), rhs.base()),
+                        base: self.base_node_from_others_c(res.base(), rhs.base(), &t),
                         operator: op,
                         left: res,
                         right: rhs,
@@ -838,9 +898,6 @@ impl Parser {
             TOK_POW => res = Some(Operator::PowerOperator),
             _ => (),
         }
-        if res.is_some() {
-            self.consume();
-        }
         res
     }
     fn parse_pipe_expression(&mut self) -> Expression {
@@ -854,12 +911,15 @@ impl Parser {
             if !op {
                 break;
             }
+
+            let t = self.scan();
+
             // TODO(jsternberg): this is not correct.
             let rhs = self.parse_unary_expression();
             match rhs {
                 Expression::Call(b) => {
                     res = Expression::PipeExpr(Box::new(PipeExpr {
-                        base: self.base_node_from_others(res.base(), &b.base),
+                        base: self.base_node_from_others_c(res.base(), &b.base, &t),
                         argument: res,
                         call: *b,
                     }));
@@ -873,10 +933,12 @@ impl Parser {
                     let call = CallExpr {
                         base: self.base_node(rhs.base().location.clone()),
                         callee: rhs,
+                        lparen: None,
                         arguments: vec![],
+                        rparen: None,
                     };
                     res = Expression::PipeExpr(Box::new(PipeExpr {
-                        base: self.base_node_from_others(res.base(), &call.base),
+                        base: self.base_node_from_others_c(res.base(), &call.base, &t),
                         argument: res,
                         call,
                     }));
@@ -887,19 +949,16 @@ impl Parser {
     }
     fn parse_pipe_operator(&mut self) -> bool {
         let t = self.peek().tok;
-        let res = t == TOK_PIPE_FORWARD;
-        if res {
-            self.consume();
-        }
-        res
+        t == TOK_PIPE_FORWARD
     }
     fn parse_unary_expression(&mut self) -> Expression {
         let t = self.peek();
         let op = self.parse_additive_operator();
         if let Some(op) = op {
+            self.consume();
             let expr = self.parse_unary_expression();
             return Expression::Unary(Box::new(UnaryExpr {
-                base: self.base_node_from_other_end(&t, expr.base()),
+                base: self.base_node_from_other_end_c(&t, expr.base(), &t),
                 operator: op,
                 argument: expr,
             }));
@@ -941,22 +1000,26 @@ impl Parser {
         }
     }
     fn parse_dot_expression(&mut self, expr: Expression) -> Expression {
-        self.expect(TOK_DOT);
+        let dot = self.expect(TOK_DOT);
         let id = self.parse_identifier();
         Expression::Member(Box::new(MemberExpr {
             base: self.base_node_from_others(expr.base(), &id.base),
             object: expr,
+            lbrack: self.make_comments(&dot),
             property: PropertyKey::Identifier(id),
+            rbrack: None,
         }))
     }
     fn parse_call_expression(&mut self, expr: Expression) -> Expression {
-        self.open(TOK_LPAREN, TOK_RPAREN);
+        let lparen = self.open(TOK_LPAREN, TOK_RPAREN);
         let params = self.parse_property_list();
         let end = self.close(TOK_RPAREN);
         let mut call = CallExpr {
             base: self.base_node_from_other_start(expr.base(), &end),
             callee: expr,
+            lparen: self.make_comments(&lparen),
             arguments: vec![],
+            rparen: self.make_comments(&end),
         };
         if !params.is_empty() {
             call.arguments.push(Expression::Object(Box::new(ObjectExpr {
@@ -964,8 +1027,10 @@ impl Parser {
                     &params.first().expect("len > 0, impossible").base,
                     &params.last().expect("len > 0, impossible").base,
                 ),
+                lbrace: None,
                 with: None,
                 properties: params,
+                rbrace: None,
             })));
         }
         Expression::Call(Box::new(call))
@@ -978,12 +1043,16 @@ impl Parser {
             Some(Expression::StringLit(sl)) => Expression::Member(Box::new(MemberExpr {
                 base: self.base_node_from_other_start(expr.base(), &end),
                 object: expr,
+                lbrack: self.make_comments(&start),
                 property: PropertyKey::StringLit(sl),
+                rbrack: self.make_comments(&end),
             })),
             Some(e) => Expression::Index(Box::new(IndexExpr {
                 base: self.base_node_from_other_start(expr.base(), &end),
                 array: expr,
+                lbrack: self.make_comments(&start),
                 index: e,
+                rbrack: self.make_comments(&end),
             })),
             // Return a bad node.
             None => {
@@ -992,10 +1061,12 @@ impl Parser {
                 Expression::Index(Box::new(IndexExpr {
                     base: self.base_node_from_other_start(expr.base(), &end),
                     array: expr,
+                    lbrack: None,
                     index: Expression::Integer(IntegerLit {
                         base: self.base_node_from_tokens(&start, &end),
                         value: -1,
                     }),
+                    rbrack: None,
                 }))
             }
         }
@@ -1025,7 +1096,7 @@ impl Parser {
                         &ast::Position::from(&t.start_pos),
                         &ast::Position::from(&t.end_pos),
                     ),
-                    errors: vec![],
+                    ..BaseNode::default()
                 },
                 text: format!(
                     "invalid token for primary expression: {}",
@@ -1177,7 +1248,9 @@ impl Parser {
         let end = self.close(TOK_RBRACK);
         ArrayExpr {
             base: self.base_node_from_tokens(&start, &end),
+            lbrack: self.make_comments(&start),
             elements: exprs,
+            rbrack: self.make_comments(&end),
         }
     }
     fn parse_object_literal(&mut self) -> ObjectExpr {
@@ -1185,6 +1258,8 @@ impl Parser {
         let mut obj = self.parse_object_body();
         let end = self.close(TOK_RBRACE);
         obj.base = self.base_node_from_tokens(&start, &end);
+        obj.lbrace = self.make_comments(&start);
+        obj.rbrace = self.make_comments(&end);
         obj
     }
     fn parse_paren_expression(&mut self) -> Expression {
@@ -1196,7 +1271,7 @@ impl Parser {
         match t.tok {
             TOK_RPAREN => {
                 self.close(TOK_RPAREN);
-                self.parse_function_expression(lparen, Vec::new())
+                self.parse_function_expression(lparen, t, Vec::new())
             }
             TOK_IDENT => {
                 let ident = self.parse_identifier();
@@ -1214,7 +1289,7 @@ impl Parser {
                                     &ast::Position::from(&t.start_pos),
                                     &ast::Position::from(&t.end_pos),
                                 ),
-                                errors: vec![],
+                                ..BaseNode::default()
                             },
                             text: t.lit,
                             expression: None,
@@ -1225,7 +1300,9 @@ impl Parser {
                 let rparen = self.close(TOK_RPAREN);
                 Expression::Paren(Box::new(ParenExpr {
                     base: self.base_node_from_tokens(&lparen, &rparen),
+                    lparen: self.make_comments(&lparen),
                     expression: expr.expect("must be Some at this point"),
+                    rparen: self.make_comments(&rparen),
                 }))
             }
         }
@@ -1243,8 +1320,10 @@ impl Parser {
                             base: self.base_node(key.base.location.clone()),
                             key: PropertyKey::Identifier(key),
                             value: None,
+                            comma: None,
+                            separator: None,
                         });
-                        self.parse_function_expression(lparen, params)
+                        self.parse_function_expression(lparen, t, params)
                     }
                     _ => Expression::Identifier(key),
                 }
@@ -1257,14 +1336,17 @@ impl Parser {
                     base: self.base_node_from_others(&key.base, value.base()),
                     key: PropertyKey::Identifier(key),
                     value: Some(value),
+                    separator: self.make_comments(&t),
+                    comma: None,
                 });
                 if self.peek().tok == TOK_COMMA {
-                    self.consume();
+                    let comma = self.scan();
+                    params[0].comma = self.make_comments(&comma);
                     let others = &mut self.parse_parameter_list();
                     params.append(others);
                 }
-                self.close(TOK_RPAREN);
-                self.parse_function_expression(lparen, params)
+                let rparen = self.close(TOK_RPAREN);
+                self.parse_function_expression(lparen, rparen, params)
             }
             TOK_COMMA => {
                 self.consume();
@@ -1273,11 +1355,13 @@ impl Parser {
                     base: self.base_node(key.base.location.clone()),
                     key: PropertyKey::Identifier(key),
                     value: None,
+                    separator: None,
+                    comma: self.make_comments(&t),
                 });
                 let others = &mut self.parse_parameter_list();
                 params.append(others);
-                self.close(TOK_RPAREN);
-                self.parse_function_expression(lparen, params)
+                let rparen = self.close(TOK_RPAREN);
+                self.parse_function_expression(lparen, rparen, params)
             }
             _ => {
                 let mut expr = self.parse_expression_suffix(Expression::Identifier(key));
@@ -1303,7 +1387,9 @@ impl Parser {
                 let rparen = self.close(TOK_RPAREN);
                 Expression::Paren(Box::new(ParenExpr {
                     base: self.base_node_from_tokens(&lparen, &rparen),
+                    lparen: self.make_comments(&lparen),
                     expression: expr,
+                    rparen: self.make_comments(&rparen),
                 }))
             }
         }
@@ -1321,15 +1407,19 @@ impl Parser {
                 ObjectExpr {
                     // `base` will be overridden by `parse_object_literal`.
                     base: BaseNode::default(),
+                    lbrace: None,
                     with: None,
                     properties: props,
+                    rbrace: None,
                 }
             }
             _ => ObjectExpr {
                 // `base` will be overridden by `parse_object_literal`.
                 base: BaseNode::default(),
+                lbrace: None,
                 with: None,
                 properties: self.parse_property_list(),
+                rbrace: None,
             },
         }
     }
@@ -1345,8 +1435,13 @@ impl Parser {
                 ObjectExpr {
                     // `base` will be overridden by `parse_object_literal`.
                     base: BaseNode::default(),
-                    with: Some(ident),
+                    lbrace: None,
+                    with: Some(WithSource {
+                        source: ident,
+                        with: self.make_comments(&t),
+                    }),
                     properties: props,
+                    rbrace: None,
                 }
             }
             _ => {
@@ -1354,8 +1449,10 @@ impl Parser {
                 ObjectExpr {
                     // `base` will be overridden by `parse_object_literal`.
                     base: BaseNode::default(),
+                    lbrace: None,
                     with: None,
                     properties: props,
+                    rbrace: None,
                 }
             }
         }
@@ -1374,6 +1471,8 @@ impl Parser {
                 format_token(t.tok)
             ))
         } else {
+            let last = props.len() - 1;
+            props[last].comma = self.make_comments(&t);
             self.consume();
         }
         props.append(&mut self.parse_property_list());
@@ -1382,15 +1481,16 @@ impl Parser {
     fn parse_property_list(&mut self) -> Vec<Property> {
         let mut params = Vec::new();
         let mut errs = Vec::new();
+        let mut last_comma_comments = None;
         while self.more() {
-            let p: Property;
+            let mut p: Property;
             let t = self.peek();
             match t.tok {
                 TOK_IDENT => p = self.parse_ident_property(),
                 TOK_STRING => p = self.parse_string_property(),
                 _ => p = self.parse_invalid_property(),
             }
-            params.push(p);
+            p.comma = last_comma_comments.take();
 
             if self.more() {
                 let t = self.peek();
@@ -1400,9 +1500,12 @@ impl Parser {
                         format_token(t.tok)
                     ))
                 } else {
+                    p.comma = self.make_comments(&t);
                     self.consume();
                 }
             }
+
+            params.push(p);
         }
         self.errs.append(&mut errs);
         params
@@ -1417,10 +1520,12 @@ impl Parser {
     }
     fn parse_property_suffix(&mut self, key: PropertyKey) -> Property {
         let mut value = None;
+        let mut separator = None;
         let t = self.peek();
         if t.tok == TOK_COLON {
             self.consume();
             value = self.parse_property_value();
+            separator = self.make_comments(&t);
         };
         let value_base = match &value {
             Some(v) => v.base(),
@@ -1430,6 +1535,8 @@ impl Parser {
             base: self.base_node_from_others(key.base(), value_base),
             key,
             value,
+            comma: None,
+            separator,
         }
     }
     fn parse_invalid_property(&mut self) -> Property {
@@ -1476,6 +1583,8 @@ impl Parser {
                 value: "<invalid>".to_string(),
             }),
             value,
+            comma: None,
+            separator: None,
         }
     }
     fn parse_property_value(&mut self) -> Option<Expression> {
@@ -1489,19 +1598,22 @@ impl Parser {
     fn parse_parameter_list(&mut self) -> Vec<Property> {
         let mut params = Vec::new();
         while self.more() {
-            let p = self.parse_parameter();
-            params.push(p);
+            let mut p = self.parse_parameter();
             if self.peek().tok == TOK_COMMA {
-                self.consume();
+                let t = self.scan();
+                p.comma = self.make_comments(&t);
             };
+            params.push(p);
         }
         params
     }
     fn parse_parameter(&mut self) -> Property {
         let key = self.parse_identifier();
         let base: BaseNode;
+        let mut separator = None;
         let value = if self.peek().tok == TOK_ASSIGN {
-            self.consume();
+            let t = self.scan();
+            separator = self.make_comments(&t);
             let v = self.parse_expression();
             base = self.base_node_from_others(&key.base, v.base());
             Some(v)
@@ -1513,15 +1625,24 @@ impl Parser {
             base,
             key: PropertyKey::Identifier(key),
             value,
+            comma: None,
+            separator,
         }
     }
-    fn parse_function_expression(&mut self, lparen: Token, params: Vec<Property>) -> Expression {
-        self.expect(TOK_ARROW);
-        self.parse_function_body_expression(lparen, params)
+    fn parse_function_expression(
+        &mut self,
+        lparen: Token,
+        rparen: Token,
+        params: Vec<Property>,
+    ) -> Expression {
+        let arrow = self.expect(TOK_ARROW);
+        self.parse_function_body_expression(lparen, rparen, arrow, params)
     }
     fn parse_function_body_expression(
         &mut self,
         lparen: Token,
+        rparen: Token,
+        arrow: Token,
         params: Vec<Property>,
     ) -> Expression {
         let t = self.peek();
@@ -1530,7 +1651,10 @@ impl Parser {
                 let block = self.parse_block();
                 Expression::Function(Box::new(FunctionExpr {
                     base: self.base_node_from_other_end(&lparen, &block.base),
+                    lparen: self.make_comments(&lparen),
                     params,
+                    rparen: self.make_comments(&rparen),
+                    arrow: self.make_comments(&arrow),
                     body: FunctionBody::Block(block),
                 }))
             }
@@ -1538,7 +1662,10 @@ impl Parser {
                 let expr = self.parse_expression();
                 Expression::Function(Box::new(FunctionExpr {
                     base: self.base_node_from_other_end(&lparen, expr.base()),
+                    lparen: self.make_comments(&lparen),
                     params,
+                    rparen: self.make_comments(&rparen),
+                    arrow: self.make_comments(&arrow),
                     body: FunctionBody::Expr(expr),
                 }))
             }

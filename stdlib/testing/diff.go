@@ -19,9 +19,11 @@ import (
 )
 
 const DiffKind = "diff"
+const DefaultEpsilon = 1e-9
 
 type DiffOpSpec struct {
-	Verbose bool `json:"verbose,omitempty"`
+	Verbose bool    `json:"verbose,omitempty"`
+	Epsilon float64 `json:"minValue"`
 }
 
 func (s *DiffOpSpec) Kind() flux.OperationKind {
@@ -29,9 +31,25 @@ func (s *DiffOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
+<<<<<<< HEAD
 	diffSignature := runtime.MustLookupBuiltinType("testing", "diff")
 
 	runtime.RegisterPackageValue("testing", "diff", flux.MustValue(flux.FunctionValue(DiffKind, createDiffOpSpec, diffSignature)))
+=======
+	diffSignature := semantic.FunctionPolySignature{
+		Parameters: map[string]semantic.PolyType{
+			"verbose": semantic.Bool,
+			"got":     flux.TableObjectType,
+			"want":    flux.TableObjectType,
+			"epsilon": semantic.Float,
+		},
+		Required:     semantic.LabelSet{"got", "want"},
+		Return:       flux.TableObjectType,
+		PipeArgument: "got",
+	}
+
+	flux.RegisterPackageValue("testing", "diff", flux.FunctionValue(DiffKind, createDiffOpSpec, diffSignature))
+>>>>>>> master
 	flux.RegisterOpSpec(DiffKind, newDiffOp)
 	plan.RegisterProcedureSpec(DiffKind, newDiffProcedure, DiffKind)
 	execute.RegisterTransformation(DiffKind, createDiffTransformation)
@@ -65,7 +83,14 @@ func createDiffOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		verbose = false
 	}
 
-	return &DiffOpSpec{Verbose: verbose}, nil
+	epsilon, ok, err := args.GetFloat("epsilon")
+	if err != nil {
+		return nil, err
+	} else if !ok {
+		epsilon = DefaultEpsilon
+	}
+
+	return &DiffOpSpec{Verbose: verbose, Epsilon: epsilon}, nil
 }
 
 func newDiffOp() flux.OperationSpec {
@@ -75,6 +100,7 @@ func newDiffOp() flux.OperationSpec {
 type DiffProcedureSpec struct {
 	plan.DefaultCost
 	Verbose bool
+	Epsilon float64
 }
 
 func (s *DiffProcedureSpec) Kind() plan.ProcedureKind {
@@ -91,7 +117,7 @@ func newDiffProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proce
 	if !ok {
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
-	return &DiffProcedureSpec{Verbose: spec.Verbose}, nil
+	return &DiffProcedureSpec{Verbose: spec.Verbose, Epsilon: spec.Epsilon}, nil
 }
 
 type DiffTransformation struct {
@@ -104,7 +130,9 @@ type DiffTransformation struct {
 	cache execute.TableBuilderCache
 	alloc *memory.Allocator
 
-	inputCache *execute.GroupLookup
+	inputCache *execute.RandomAccessGroupLookup
+
+	epsilon float64
 }
 
 type diffParentState struct {
@@ -291,6 +319,7 @@ func NewDiffTransformation(d execute.Dataset, cache execute.TableBuilderCache, s
 	parentState[wantID] = new(diffParentState)
 	parentState[gotID] = new(diffParentState)
 	return &DiffTransformation{
+<<<<<<< HEAD
 		wantID:      wantID,
 		gotID:       gotID,
 		d:           d,
@@ -298,6 +327,16 @@ func NewDiffTransformation(d execute.Dataset, cache execute.TableBuilderCache, s
 		inputCache:  execute.NewGroupLookup(),
 		parentState: parentState,
 		alloc:       a,
+=======
+		wantID:     wantID,
+		gotID:      gotID,
+		d:          d,
+		cache:      cache,
+		inputCache: execute.NewRandomAccessGroupLookup(),
+		finished:   make(map[execute.DatasetID]bool, 2),
+		alloc:      a,
+		epsilon:    spec.Epsilon,
+>>>>>>> master
 	}
 }
 
@@ -511,10 +550,16 @@ func (t *DiffTransformation) rowEqual(want, got *tableBuffer, i int) bool {
 
 		switch wantCol.Type {
 		case flux.TFloat:
+<<<<<<< HEAD
 			want, got := wantCol.Values.(*array.Float64), gotCol.Values.(*array.Float64)
 			if !equalFloats(want.Value(i), got.Value(i), tolerance, ulp) {
 				return false
 			}
+=======
+			want, got := wantCol.Values.(*array.Float64).Value(i), gotCol.Values.(*array.Float64).Value(i)
+			// want == got is for handling +Inf and -Inf.
+			return want == got || math.Abs(want-got) <= t.epsilon
+>>>>>>> master
 		case flux.TInt:
 			want, got := wantCol.Values.(*array.Int64), gotCol.Values.(*array.Int64)
 			if want.Value(i) != got.Value(i) {

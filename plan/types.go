@@ -1,6 +1,7 @@
 package plan
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -9,31 +10,31 @@ import (
 )
 
 type Planner interface {
-	Plan(*flux.Spec) (*Spec, error)
+	Plan(context.Context, *flux.Spec) (*Spec, error)
 }
 
 // Node defines the common interface for interacting with
 // logical and physical plan nodes.
 type Node interface {
-	// Returns an identifier for this plan node
+	// ID returns an identifier for this plan node.
 	ID() NodeID
 
-	// Returns the time bounds for this plan node
+	// Bounds returns the time bounds for this plan node.
 	Bounds() *Bounds
 
-	// Plan nodes executed immediately before this node
+	// Predecessors returns plan nodes executed immediately before this node.
 	Predecessors() []Node
 
-	// Plan nodes executed immediately after this node
+	// Successors returns plan nodes executed immediately after this node.
 	Successors() []Node
 
-	// Specification of the procedure represented by this node
+	// ProcedureSpec returns the specification of the procedure represented by this node.
 	ProcedureSpec() ProcedureSpec
 
-	// Replaces the procedure spec of this node with another
+	// ReplaceSpec replaces the procedure spec of this node with another.
 	ReplaceSpec(ProcedureSpec) error
 
-	// Type of procedure represented by this node
+	// Kind returns the type of procedure represented by this node.
 	Kind() ProcedureKind
 
 	// Helper methods for manipulating a plan

@@ -3160,6 +3160,1896 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
+					Column: 107,
+					Line:   213,
+				},
+				File:   "filterRowsPivoted_test.flux",
+				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"\n\noutData = \"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\"\n\nt_filterRowsPivoted = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)\n    |> drop(columns: [\"_start\", \"_stop\"])\ntest _filterRowsPivoted = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsPivoted})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "filterRowsPivoted_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "filterRowsPivoted_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "filterRowsPivoted_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "filterRowsPivoted_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   184,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "inData = \"#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   184,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "\"#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,0,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,40.728077,89c2624,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,1,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1572615165632969758,89c261c,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,2,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1572566409947779410,89c2594,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,3,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,40.671928,89c25b4,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,4,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,-73.962692,89c25b4,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,5,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1572566426666145821,89c25b4,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,6,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,1572567458287113937,89c2664,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,7,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,-73.752579,89c261c,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,8,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,0,89c261c,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,9,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,1.2,89c2594,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,10,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,-73.776665,89c2664,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,11,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,40.733585,89c2624,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,12,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,-73.951332,89c2594,lon,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,13,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.75,89c25b4,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,14,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:17:38.287113937Z,40.645245,89c2664,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,15,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,9.7,89c2624,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,16,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,40.725647,89c261c,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,17,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,5,89c2624,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,18,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,1572567458287113937,89c2624,tid,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,40.712173,89c25bc,lat,taxi,start\n,,19,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,40.688564,89c25bc,lat,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,20,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,40.7122,89c2594,lat,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,21,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:18.082153551Z,0,89c2594,tip,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,22,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:07:41.235010051Z,1.3,89c25b4,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,23,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,-73.737175,89c2624,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,24,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:32:45.632969758Z,1572615165632969758,89c2624,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,25,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T13:41:59.331776148Z,1.3,89c261c,dist,taxi,end\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,-73.963913,89c25bc,lon,taxi,start\n,,26,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,-73.965881,89c25bc,lon,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:09.94777941Z,1572566409947779410,89c25bc,tid,taxi,start\n,,27,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:00:26.666145821Z,1572566426666145821,89c25bc,tid,taxi,start\n\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt\n,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   204,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "outData = \"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   186,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   186,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   186,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   204,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "\"\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   186,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,long,double,double,double,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,tid,lon,tip,lat,dist\n,,0,2019-11-01T13:41:59.331776148Z,89c261c,taxi,end,1572615165632969758,-73.752579,0,40.725647,1.3\n\n#group,false,false,false,true,true,true,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,double,long,double\n#default,_result,,,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,dist,tip,tid,lon\n,,1,2019-11-01T00:33:07.54916732Z,89c2624,taxi,end,40.728077,9.7,5,1572567458287113937,-73.716583\n\n#group,false,false,false,true,true,true,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,double,long\n#default,_result,,,,,,,,\n,result,table,_time,s2_cell_id,_measurement,_pt,lat,lon,tid\n,,2,2019-11-01T13:32:45.632969758Z,89c2624,taxi,start,40.733585,-73.737175,1572615165632969758\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   211,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "t_filterRowsPivoted = (table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)\n    |> drop(columns: [\"_start\", \"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   206,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   206,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "t_filterRowsPivoted",
+						Start: ast.Position{
+							Column: 1,
+							Line:   206,
+						},
+					},
+				},
+				Name: "t_filterRowsPivoted",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   211,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "(table=<-) =>\n  table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)\n    |> drop(columns: [\"_start\", \"_stop\"])",
+						Start: ast.Position{
+							Column: 23,
+							Line:   206,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 8,
+												Line:   207,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "table",
+											Start: ast.Position{
+												Column: 3,
+												Line:   207,
+											},
+										},
+									},
+									Name: "table",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   208,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)",
+										Start: ast.Position{
+											Column: 3,
+											Line:   207,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   208,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "start: 2019-11-01T00:00:00Z",
+												Start: ast.Position{
+													Column: 14,
+													Line:   208,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   208,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "start: 2019-11-01T00:00:00Z",
+													Start: ast.Position{
+														Column: 14,
+														Line:   208,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 19,
+															Line:   208,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 14,
+															Line:   208,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Value: &ast.DateTimeLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   208,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "2019-11-01T00:00:00Z",
+														Start: ast.Position{
+															Column: 21,
+															Line:   208,
+														},
+													},
+												},
+												Value: parser.MustParseTime("2019-11-01T00:00:00Z"),
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   208,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "range(start: 2019-11-01T00:00:00Z)",
+											Start: ast.Position{
+												Column: 8,
+												Line:   208,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 13,
+													Line:   208,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "range",
+												Start: ast.Position{
+													Column: 8,
+													Line:   208,
+												},
+											},
+										},
+										Name: "range",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 77,
+										Line:   209,
+									},
+									File:   "filterRowsPivoted_test.flux",
+									Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")",
+									Start: ast.Position{
+										Column: 3,
+										Line:   207,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 76,
+												Line:   209,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\"",
+											Start: ast.Position{
+												Column: 14,
+												Line:   209,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   209,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "rowKey:[\"_time\"]",
+												Start: ast.Position{
+													Column: 14,
+													Line:   209,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 20,
+														Line:   209,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "rowKey",
+													Start: ast.Position{
+														Column: 14,
+														Line:   209,
+													},
+												},
+											},
+											Name: "rowKey",
+										},
+										Value: &ast.ArrayExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   209,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "[\"_time\"]",
+													Start: ast.Position{
+														Column: 21,
+														Line:   209,
+													},
+												},
+											},
+											Elements: []ast.Expression{&ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 29,
+															Line:   209,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "\"_time\"",
+														Start: ast.Position{
+															Column: 22,
+															Line:   209,
+														},
+													},
+												},
+												Value: "_time",
+											}},
+										},
+									}, &ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 53,
+													Line:   209,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "columnKey: [\"_field\"]",
+												Start: ast.Position{
+													Column: 32,
+													Line:   209,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   209,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "columnKey",
+													Start: ast.Position{
+														Column: 32,
+														Line:   209,
+													},
+												},
+											},
+											Name: "columnKey",
+										},
+										Value: &ast.ArrayExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 53,
+														Line:   209,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "[\"_field\"]",
+													Start: ast.Position{
+														Column: 43,
+														Line:   209,
+													},
+												},
+											},
+											Elements: []ast.Expression{&ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 52,
+															Line:   209,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "\"_field\"",
+														Start: ast.Position{
+															Column: 44,
+															Line:   209,
+														},
+													},
+												},
+												Value: "_field",
+											}},
+										},
+									}, &ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 76,
+													Line:   209,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "valueColumn: \"_value\"",
+												Start: ast.Position{
+													Column: 55,
+													Line:   209,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   209,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "valueColumn",
+													Start: ast.Position{
+														Column: 55,
+														Line:   209,
+													},
+												},
+											},
+											Name: "valueColumn",
+										},
+										Value: &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 76,
+														Line:   209,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "\"_value\"",
+													Start: ast.Position{
+														Column: 68,
+														Line:   209,
+													},
+												},
+											},
+											Value: "_value",
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 77,
+											Line:   209,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")",
+										Start: ast.Position{
+											Column: 8,
+											Line:   209,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   209,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "pivot",
+											Start: ast.Position{
+												Column: 8,
+												Line:   209,
+											},
+										},
+									},
+									Name: "pivot",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 93,
+									Line:   210,
+								},
+								File:   "filterRowsPivoted_test.flux",
+								Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)",
+								Start: ast.Position{
+									Column: 3,
+									Line:   207,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 92,
+											Line:   210,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true",
+										Start: ast.Position{
+											Column: 23,
+											Line:   210,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 78,
+												Line:   210,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}",
+											Start: ast.Position{
+												Column: 23,
+												Line:   210,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   210,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "region",
+												Start: ast.Position{
+													Column: 23,
+													Line:   210,
+												},
+											},
+										},
+										Name: "region",
+									},
+									Value: &ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 78,
+													Line:   210,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "{lat: 40.7090214, lon: -73.61846, radius: 15.0}",
+												Start: ast.Position{
+													Column: 31,
+													Line:   210,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 47,
+														Line:   210,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "lat: 40.7090214",
+													Start: ast.Position{
+														Column: 32,
+														Line:   210,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 35,
+															Line:   210,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "lat",
+														Start: ast.Position{
+															Column: 32,
+															Line:   210,
+														},
+													},
+												},
+												Name: "lat",
+											},
+											Value: &ast.FloatLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 47,
+															Line:   210,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "40.7090214",
+														Start: ast.Position{
+															Column: 37,
+															Line:   210,
+														},
+													},
+												},
+												Value: 40.7090214,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 63,
+														Line:   210,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "lon: -73.61846",
+													Start: ast.Position{
+														Column: 49,
+														Line:   210,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 52,
+															Line:   210,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "lon",
+														Start: ast.Position{
+															Column: 49,
+															Line:   210,
+														},
+													},
+												},
+												Name: "lon",
+											},
+											Value: &ast.UnaryExpression{
+												Argument: &ast.FloatLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 63,
+																Line:   210,
+															},
+															File:   "filterRowsPivoted_test.flux",
+															Source: "73.61846",
+															Start: ast.Position{
+																Column: 55,
+																Line:   210,
+															},
+														},
+													},
+													Value: 73.61846,
+												},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 63,
+															Line:   210,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "-73.61846",
+														Start: ast.Position{
+															Column: 54,
+															Line:   210,
+														},
+													},
+												},
+												Operator: 6,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 77,
+														Line:   210,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "radius: 15.0",
+													Start: ast.Position{
+														Column: 65,
+														Line:   210,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 71,
+															Line:   210,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "radius",
+														Start: ast.Position{
+															Column: 65,
+															Line:   210,
+														},
+													},
+												},
+												Name: "radius",
+											},
+											Value: &ast.FloatLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 77,
+															Line:   210,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "15.0",
+														Start: ast.Position{
+															Column: 73,
+															Line:   210,
+														},
+													},
+												},
+												Value: 15.0,
+											},
+										}},
+										With: nil,
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 92,
+												Line:   210,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "strict: true",
+											Start: ast.Position{
+												Column: 80,
+												Line:   210,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 86,
+													Line:   210,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "strict",
+												Start: ast.Position{
+													Column: 80,
+													Line:   210,
+												},
+											},
+										},
+										Name: "strict",
+									},
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 92,
+													Line:   210,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "true",
+												Start: ast.Position{
+													Column: 88,
+													Line:   210,
+												},
+											},
+										},
+										Name: "true",
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 93,
+										Line:   210,
+									},
+									File:   "filterRowsPivoted_test.flux",
+									Source: "geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)",
+									Start: ast.Position{
+										Column: 8,
+										Line:   210,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 22,
+											Line:   210,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "geo.filterRows",
+										Start: ast.Position{
+											Column: 8,
+											Line:   210,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   210,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "geo",
+											Start: ast.Position{
+												Column: 8,
+												Line:   210,
+											},
+										},
+									},
+									Name: "geo",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 22,
+												Line:   210,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "filterRows",
+											Start: ast.Position{
+												Column: 12,
+												Line:   210,
+											},
+										},
+									},
+									Name: "filterRows",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   211,
+							},
+							File:   "filterRowsPivoted_test.flux",
+							Source: "table\n    |> range(start: 2019-11-01T00:00:00Z)\n    |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n    |> geo.filterRows(region: {lat: 40.7090214, lon: -73.61846, radius: 15.0}, strict: true)\n    |> drop(columns: [\"_start\", \"_stop\"])",
+							Start: ast.Position{
+								Column: 3,
+								Line:   207,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   211,
+									},
+									File:   "filterRowsPivoted_test.flux",
+									Source: "columns: [\"_start\", \"_stop\"]",
+									Start: ast.Position{
+										Column: 13,
+										Line:   211,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 41,
+											Line:   211,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "columns: [\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 13,
+											Line:   211,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   211,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 13,
+												Line:   211,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   211,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "[\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 22,
+												Line:   211,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   211,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "\"_start\"",
+												Start: ast.Position{
+													Column: 23,
+													Line:   211,
+												},
+											},
+										},
+										Value: "_start",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 40,
+													Line:   211,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "\"_stop\"",
+												Start: ast.Position{
+													Column: 33,
+													Line:   211,
+												},
+											},
+										},
+										Value: "_stop",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   211,
+								},
+								File:   "filterRowsPivoted_test.flux",
+								Source: "drop(columns: [\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 8,
+									Line:   211,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   211,
+									},
+									File:   "filterRowsPivoted_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 8,
+										Line:   211,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   206,
+							},
+							File:   "filterRowsPivoted_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 24,
+								Line:   206,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   206,
+								},
+								File:   "filterRowsPivoted_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 24,
+									Line:   206,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   206,
+							},
+							File:   "filterRowsPivoted_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 30,
+								Line:   206,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 107,
+							Line:   213,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "_filterRowsPivoted = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsPivoted})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   212,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   212,
+							},
+							File:   "filterRowsPivoted_test.flux",
+							Source: "_filterRowsPivoted",
+							Start: ast.Position{
+								Column: 6,
+								Line:   212,
+							},
+						},
+					},
+					Name: "_filterRowsPivoted",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 107,
+								Line:   213,
+							},
+							File:   "filterRowsPivoted_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsPivoted})",
+							Start: ast.Position{
+								Column: 27,
+								Line:   212,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 107,
+									Line:   213,
+								},
+								File:   "filterRowsPivoted_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsPivoted})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   213,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 106,
+										Line:   213,
+									},
+									File:   "filterRowsPivoted_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsPivoted}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   213,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   213,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   213,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   213,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   213,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   213,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   213,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   213,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   213,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   213,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   213,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   213,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   213,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   213,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   213,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   213,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   213,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   213,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   213,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   213,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   213,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   213,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   213,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   213,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   213,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   213,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   213,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   213,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   213,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   213,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   213,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   213,
+														},
+														File:   "filterRowsPivoted_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   213,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   213,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   213,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   213,
+												},
+												File:   "filterRowsPivoted_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   213,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   213,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   213,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   213,
+													},
+													File:   "filterRowsPivoted_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   213,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 105,
+											Line:   213,
+										},
+										File:   "filterRowsPivoted_test.flux",
+										Source: "fn: t_filterRowsPivoted",
+										Start: ast.Position{
+											Column: 82,
+											Line:   213,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   213,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   213,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 105,
+												Line:   213,
+											},
+											File:   "filterRowsPivoted_test.flux",
+											Source: "t_filterRowsPivoted",
+											Start: ast.Position{
+												Column: 86,
+												Line:   213,
+											},
+										},
+									},
+									Name: "t_filterRowsPivoted",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 107,
+						Line:   213,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "test _filterRowsPivoted = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filterRowsPivoted})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   212,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   3,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "import \"experimental/geo\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   3,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "\"experimental/geo\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental/geo",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+<<<<<<< HEAD
+		Metadata: "parser-type=rust",
+		Name:     "filterRowsStrict_test.flux",
+=======
+		Metadata: "parser-type=go",
+		Name:     "filterRowsPivoted_test.flux",
+>>>>>>> master
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   1,
+					},
+					File:   "filterRowsPivoted_test.flux",
+					Source: "package geo_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   1,
+						},
+						File:   "filterRowsPivoted_test.flux",
+						Source: "geo_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "geo_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
 					Column: 106,
 					Line:   213,
 				},
@@ -4742,8 +6632,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
+<<<<<<< HEAD
 		Metadata: "parser-type=rust",
+		Name:     "gridFilterLevel_test.flux",
+=======
+		Metadata: "parser-type=go",
 		Name:     "filterRowsStrict_test.flux",
+>>>>>>> master
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -6627,7 +8522,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=rust",
+		Metadata: "parser-type=go",
 		Name:     "gridFilterLevel_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -8460,7 +10355,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=rust",
+		Metadata: "parser-type=go",
 		Name:     "gridFilter_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -9997,7 +11892,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=rust",
+		Metadata: "parser-type=go",
 		Name:     "groupByArea_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -10024,6 +11919,3019 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   1,
 						},
 						File:   "groupByArea_test.flux",
+						Source: "geo_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "geo_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 109,
+					Line:   98,
+				},
+				File:   "shapeDataWithFilter_test.flux",
+				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,0,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.03383\n,,0,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14267\n,,0,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16667\n,,0,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.18183\n,,0,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.2935\n,,0,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.3485\n,,0,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17167\n,,0,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14683\n,,0,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,0,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.1595\n,,0,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16\n,,0,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,1,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.09867\n,,1,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17567\n,,1,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16933\n,,1,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17\n,,1,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.187\n,,1,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18217\n,,1,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15833\n,,1,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15083\n,,1,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.181\n,,1,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1815\n,,1,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1845\n,,1,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17433\n,,1,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18667\n,,1,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18167\n,,1,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16733\n,,1,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1665\n,,1,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16817\n,,1,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18417\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,2,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n\"\n\noutData = \"\n#group,false,false,true,true,true,false,false,true,false,false,true\n#datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,string\n#default,_result,,,,,,,,,,\n,result,table,_measurement,_start,_stop,_time,control,id,lat,lon,s2_cell_id\n,,0,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T07:00:00Z,ctrlField,91916A,21.03383,39.09867,15c309\n,,1,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T04:00:00Z,ctrlField,91916A,21.14267,39.17567,15c3a9\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T04:00:00Z,ctrlField,91916A,21.14683,39.17433,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T04:00:00Z,ctrlField,91916A,21.1595,39.16733,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T07:00:00Z,ctrlField,91916A,21.16,39.1665,15c3af\n\"\n\nt_shapeDataWithFilter = (table=<-) =>\n  table\n    |> range(start: 2019-01-01T00:00:00Z)\n    |> geo.shapeData(latField: \"latitude\", lonField: \"longitude\", level: 10)\n    |> geo.filterRows(region: {lat: 21.0, lon: 39.0, radius: 25.0})\ntest _shapeDataWithFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeDataWithFilter})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "shapeDataWithFilter_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "shapeDataWithFilter_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "shapeDataWithFilter_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "shapeDataWithFilter_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "shapeDataWithFilter_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "shapeDataWithFilter_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   78,
+					},
+					File:   "shapeDataWithFilter_test.flux",
+					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,0,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.03383\n,,0,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14267\n,,0,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16667\n,,0,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.18183\n,,0,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.2935\n,,0,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.3485\n,,0,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17167\n,,0,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14683\n,,0,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,0,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.1595\n,,0,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16\n,,0,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,1,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.09867\n,,1,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17567\n,,1,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16933\n,,1,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17\n,,1,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.187\n,,1,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18217\n,,1,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15833\n,,1,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15083\n,,1,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.181\n,,1,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1815\n,,1,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1845\n,,1,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17433\n,,1,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18667\n,,1,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18167\n,,1,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16733\n,,1,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1665\n,,1,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16817\n,,1,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18417\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,2,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "shapeDataWithFilter_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   78,
+						},
+						File:   "shapeDataWithFilter_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,0,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.03383\n,,0,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14267\n,,0,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16667\n,,0,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.18183\n,,0,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.2935\n,,0,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.3485\n,,0,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17167\n,,0,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14683\n,,0,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,0,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.1595\n,,0,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16\n,,0,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,1,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.09867\n,,1,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17567\n,,1,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16933\n,,1,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17\n,,1,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.187\n,,1,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18217\n,,1,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15833\n,,1,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15083\n,,1,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.181\n,,1,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1815\n,,1,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1845\n,,1,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17433\n,,1,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18667\n,,1,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18167\n,,1,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16733\n,,1,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1665\n,,1,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16817\n,,1,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18417\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,2,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,0,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.03383\n,,0,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14267\n,,0,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16667\n,,0,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.18183\n,,0,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.2935\n,,0,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.3485\n,,0,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17167\n,,0,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14683\n,,0,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,0,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.1595\n,,0,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16\n,,0,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,1,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.09867\n,,1,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17567\n,,1,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16933\n,,1,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17\n,,1,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.187\n,,1,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18217\n,,1,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15833\n,,1,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15083\n,,1,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.181\n,,1,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1815\n,,1,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1845\n,,1,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17433\n,,1,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18667\n,,1,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18167\n,,1,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16733\n,,1,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1665\n,,1,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16817\n,,1,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18417\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,2,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   90,
+					},
+					File:   "shapeDataWithFilter_test.flux",
+					Source: "outData = \"\n#group,false,false,true,true,true,false,false,true,false,false,true\n#datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,string\n#default,_result,,,,,,,,,,\n,result,table,_measurement,_start,_stop,_time,control,id,lat,lon,s2_cell_id\n,,0,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T07:00:00Z,ctrlField,91916A,21.03383,39.09867,15c309\n,,1,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T04:00:00Z,ctrlField,91916A,21.14267,39.17567,15c3a9\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T04:00:00Z,ctrlField,91916A,21.14683,39.17433,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T04:00:00Z,ctrlField,91916A,21.1595,39.16733,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T07:00:00Z,ctrlField,91916A,21.16,39.1665,15c3af\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   80,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   80,
+						},
+						File:   "shapeDataWithFilter_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   80,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   90,
+						},
+						File:   "shapeDataWithFilter_test.flux",
+						Source: "\"\n#group,false,false,true,true,true,false,false,true,false,false,true\n#datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,string\n#default,_result,,,,,,,,,,\n,result,table,_measurement,_start,_stop,_time,control,id,lat,lon,s2_cell_id\n,,0,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T07:00:00Z,ctrlField,91916A,21.03383,39.09867,15c309\n,,1,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T04:00:00Z,ctrlField,91916A,21.14267,39.17567,15c3a9\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T04:00:00Z,ctrlField,91916A,21.14683,39.17433,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T04:00:00Z,ctrlField,91916A,21.1595,39.16733,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T07:00:00Z,ctrlField,91916A,21.16,39.1665,15c3af\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   80,
+						},
+					},
+				},
+				Value: "\n#group,false,false,true,true,true,false,false,true,false,false,true\n#datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,string\n#default,_result,,,,,,,,,,\n,result,table,_measurement,_start,_stop,_time,control,id,lat,lon,s2_cell_id\n,,0,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T07:00:00Z,ctrlField,91916A,21.03383,39.09867,15c309\n,,1,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T04:00:00Z,ctrlField,91916A,21.14267,39.17567,15c3a9\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T04:00:00Z,ctrlField,91916A,21.14683,39.17433,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T04:00:00Z,ctrlField,91916A,21.1595,39.16733,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T07:00:00Z,ctrlField,91916A,21.16,39.1665,15c3af\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 68,
+						Line:   96,
+					},
+					File:   "shapeDataWithFilter_test.flux",
+					Source: "t_shapeDataWithFilter = (table=<-) =>\n  table\n    |> range(start: 2019-01-01T00:00:00Z)\n    |> geo.shapeData(latField: \"latitude\", lonField: \"longitude\", level: 10)\n    |> geo.filterRows(region: {lat: 21.0, lon: 39.0, radius: 25.0})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   92,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   92,
+						},
+						File:   "shapeDataWithFilter_test.flux",
+						Source: "t_shapeDataWithFilter",
+						Start: ast.Position{
+							Column: 1,
+							Line:   92,
+						},
+					},
+				},
+				Name: "t_shapeDataWithFilter",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 68,
+							Line:   96,
+						},
+						File:   "shapeDataWithFilter_test.flux",
+						Source: "(table=<-) =>\n  table\n    |> range(start: 2019-01-01T00:00:00Z)\n    |> geo.shapeData(latField: \"latitude\", lonField: \"longitude\", level: 10)\n    |> geo.filterRows(region: {lat: 21.0, lon: 39.0, radius: 25.0})",
+						Start: ast.Position{
+							Column: 25,
+							Line:   92,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 8,
+											Line:   93,
+										},
+										File:   "shapeDataWithFilter_test.flux",
+										Source: "table",
+										Start: ast.Position{
+											Column: 3,
+											Line:   93,
+										},
+									},
+								},
+								Name: "table",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   94,
+									},
+									File:   "shapeDataWithFilter_test.flux",
+									Source: "table\n    |> range(start: 2019-01-01T00:00:00Z)",
+									Start: ast.Position{
+										Column: 3,
+										Line:   93,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   94,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "start: 2019-01-01T00:00:00Z",
+											Start: ast.Position{
+												Column: 14,
+												Line:   94,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   94,
+												},
+												File:   "shapeDataWithFilter_test.flux",
+												Source: "start: 2019-01-01T00:00:00Z",
+												Start: ast.Position{
+													Column: 14,
+													Line:   94,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 19,
+														Line:   94,
+													},
+													File:   "shapeDataWithFilter_test.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 14,
+														Line:   94,
+													},
+												},
+											},
+											Name: "start",
+										},
+										Value: &ast.DateTimeLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   94,
+													},
+													File:   "shapeDataWithFilter_test.flux",
+													Source: "2019-01-01T00:00:00Z",
+													Start: ast.Position{
+														Column: 21,
+														Line:   94,
+													},
+												},
+											},
+											Value: parser.MustParseTime("2019-01-01T00:00:00Z"),
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   94,
+										},
+										File:   "shapeDataWithFilter_test.flux",
+										Source: "range(start: 2019-01-01T00:00:00Z)",
+										Start: ast.Position{
+											Column: 8,
+											Line:   94,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   94,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "range",
+											Start: ast.Position{
+												Column: 8,
+												Line:   94,
+											},
+										},
+									},
+									Name: "range",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 77,
+									Line:   95,
+								},
+								File:   "shapeDataWithFilter_test.flux",
+								Source: "table\n    |> range(start: 2019-01-01T00:00:00Z)\n    |> geo.shapeData(latField: \"latitude\", lonField: \"longitude\", level: 10)",
+								Start: ast.Position{
+									Column: 3,
+									Line:   93,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 76,
+											Line:   95,
+										},
+										File:   "shapeDataWithFilter_test.flux",
+										Source: "latField: \"latitude\", lonField: \"longitude\", level: 10",
+										Start: ast.Position{
+											Column: 22,
+											Line:   95,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   95,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "latField: \"latitude\"",
+											Start: ast.Position{
+												Column: 22,
+												Line:   95,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   95,
+												},
+												File:   "shapeDataWithFilter_test.flux",
+												Source: "latField",
+												Start: ast.Position{
+													Column: 22,
+													Line:   95,
+												},
+											},
+										},
+										Name: "latField",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   95,
+												},
+												File:   "shapeDataWithFilter_test.flux",
+												Source: "\"latitude\"",
+												Start: ast.Position{
+													Column: 32,
+													Line:   95,
+												},
+											},
+										},
+										Value: "latitude",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 65,
+												Line:   95,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "lonField: \"longitude\"",
+											Start: ast.Position{
+												Column: 44,
+												Line:   95,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 52,
+													Line:   95,
+												},
+												File:   "shapeDataWithFilter_test.flux",
+												Source: "lonField",
+												Start: ast.Position{
+													Column: 44,
+													Line:   95,
+												},
+											},
+										},
+										Name: "lonField",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 65,
+													Line:   95,
+												},
+												File:   "shapeDataWithFilter_test.flux",
+												Source: "\"longitude\"",
+												Start: ast.Position{
+													Column: 54,
+													Line:   95,
+												},
+											},
+										},
+										Value: "longitude",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 76,
+												Line:   95,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "level: 10",
+											Start: ast.Position{
+												Column: 67,
+												Line:   95,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 72,
+													Line:   95,
+												},
+												File:   "shapeDataWithFilter_test.flux",
+												Source: "level",
+												Start: ast.Position{
+													Column: 67,
+													Line:   95,
+												},
+											},
+										},
+										Name: "level",
+									},
+									Value: &ast.IntegerLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 76,
+													Line:   95,
+												},
+												File:   "shapeDataWithFilter_test.flux",
+												Source: "10",
+												Start: ast.Position{
+													Column: 74,
+													Line:   95,
+												},
+											},
+										},
+										Value: int64(10),
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 77,
+										Line:   95,
+									},
+									File:   "shapeDataWithFilter_test.flux",
+									Source: "geo.shapeData(latField: \"latitude\", lonField: \"longitude\", level: 10)",
+									Start: ast.Position{
+										Column: 8,
+										Line:   95,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   95,
+										},
+										File:   "shapeDataWithFilter_test.flux",
+										Source: "geo.shapeData",
+										Start: ast.Position{
+											Column: 8,
+											Line:   95,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   95,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "geo",
+											Start: ast.Position{
+												Column: 8,
+												Line:   95,
+											},
+										},
+									},
+									Name: "geo",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 21,
+												Line:   95,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "shapeData",
+											Start: ast.Position{
+												Column: 12,
+												Line:   95,
+											},
+										},
+									},
+									Name: "shapeData",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 68,
+								Line:   96,
+							},
+							File:   "shapeDataWithFilter_test.flux",
+							Source: "table\n    |> range(start: 2019-01-01T00:00:00Z)\n    |> geo.shapeData(latField: \"latitude\", lonField: \"longitude\", level: 10)\n    |> geo.filterRows(region: {lat: 21.0, lon: 39.0, radius: 25.0})",
+							Start: ast.Position{
+								Column: 3,
+								Line:   93,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 67,
+										Line:   96,
+									},
+									File:   "shapeDataWithFilter_test.flux",
+									Source: "region: {lat: 21.0, lon: 39.0, radius: 25.0}",
+									Start: ast.Position{
+										Column: 23,
+										Line:   96,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 67,
+											Line:   96,
+										},
+										File:   "shapeDataWithFilter_test.flux",
+										Source: "region: {lat: 21.0, lon: 39.0, radius: 25.0}",
+										Start: ast.Position{
+											Column: 23,
+											Line:   96,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   96,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "region",
+											Start: ast.Position{
+												Column: 23,
+												Line:   96,
+											},
+										},
+									},
+									Name: "region",
+								},
+								Value: &ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 67,
+												Line:   96,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "{lat: 21.0, lon: 39.0, radius: 25.0}",
+											Start: ast.Position{
+												Column: 31,
+												Line:   96,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   96,
+												},
+												File:   "shapeDataWithFilter_test.flux",
+												Source: "lat: 21.0",
+												Start: ast.Position{
+													Column: 32,
+													Line:   96,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 35,
+														Line:   96,
+													},
+													File:   "shapeDataWithFilter_test.flux",
+													Source: "lat",
+													Start: ast.Position{
+														Column: 32,
+														Line:   96,
+													},
+												},
+											},
+											Name: "lat",
+										},
+										Value: &ast.FloatLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   96,
+													},
+													File:   "shapeDataWithFilter_test.flux",
+													Source: "21.0",
+													Start: ast.Position{
+														Column: 37,
+														Line:   96,
+													},
+												},
+											},
+											Value: 21.0,
+										},
+									}, &ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 52,
+													Line:   96,
+												},
+												File:   "shapeDataWithFilter_test.flux",
+												Source: "lon: 39.0",
+												Start: ast.Position{
+													Column: 43,
+													Line:   96,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 46,
+														Line:   96,
+													},
+													File:   "shapeDataWithFilter_test.flux",
+													Source: "lon",
+													Start: ast.Position{
+														Column: 43,
+														Line:   96,
+													},
+												},
+											},
+											Name: "lon",
+										},
+										Value: &ast.FloatLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 52,
+														Line:   96,
+													},
+													File:   "shapeDataWithFilter_test.flux",
+													Source: "39.0",
+													Start: ast.Position{
+														Column: 48,
+														Line:   96,
+													},
+												},
+											},
+											Value: 39.0,
+										},
+									}, &ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   96,
+												},
+												File:   "shapeDataWithFilter_test.flux",
+												Source: "radius: 25.0",
+												Start: ast.Position{
+													Column: 54,
+													Line:   96,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 60,
+														Line:   96,
+													},
+													File:   "shapeDataWithFilter_test.flux",
+													Source: "radius",
+													Start: ast.Position{
+														Column: 54,
+														Line:   96,
+													},
+												},
+											},
+											Name: "radius",
+										},
+										Value: &ast.FloatLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   96,
+													},
+													File:   "shapeDataWithFilter_test.flux",
+													Source: "25.0",
+													Start: ast.Position{
+														Column: 62,
+														Line:   96,
+													},
+												},
+											},
+											Value: 25.0,
+										},
+									}},
+									With: nil,
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 68,
+									Line:   96,
+								},
+								File:   "shapeDataWithFilter_test.flux",
+								Source: "geo.filterRows(region: {lat: 21.0, lon: 39.0, radius: 25.0})",
+								Start: ast.Position{
+									Column: 8,
+									Line:   96,
+								},
+							},
+						},
+						Callee: &ast.MemberExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 22,
+										Line:   96,
+									},
+									File:   "shapeDataWithFilter_test.flux",
+									Source: "geo.filterRows",
+									Start: ast.Position{
+										Column: 8,
+										Line:   96,
+									},
+								},
+							},
+							Object: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 11,
+											Line:   96,
+										},
+										File:   "shapeDataWithFilter_test.flux",
+										Source: "geo",
+										Start: ast.Position{
+											Column: 8,
+											Line:   96,
+										},
+									},
+								},
+								Name: "geo",
+							},
+							Property: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 22,
+											Line:   96,
+										},
+										File:   "shapeDataWithFilter_test.flux",
+										Source: "filterRows",
+										Start: ast.Position{
+											Column: 12,
+											Line:   96,
+										},
+									},
+								},
+								Name: "filterRows",
+							},
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 34,
+								Line:   92,
+							},
+							File:   "shapeDataWithFilter_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 26,
+								Line:   92,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 31,
+									Line:   92,
+								},
+								File:   "shapeDataWithFilter_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 26,
+									Line:   92,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 34,
+								Line:   92,
+							},
+							File:   "shapeDataWithFilter_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 32,
+								Line:   92,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 109,
+							Line:   98,
+						},
+						File:   "shapeDataWithFilter_test.flux",
+						Source: "_shapeDataWithFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeDataWithFilter})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   97,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   97,
+							},
+							File:   "shapeDataWithFilter_test.flux",
+							Source: "_shapeDataWithFilter",
+							Start: ast.Position{
+								Column: 6,
+								Line:   97,
+							},
+						},
+					},
+					Name: "_shapeDataWithFilter",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 109,
+								Line:   98,
+							},
+							File:   "shapeDataWithFilter_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeDataWithFilter})",
+							Start: ast.Position{
+								Column: 29,
+								Line:   97,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 109,
+									Line:   98,
+								},
+								File:   "shapeDataWithFilter_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeDataWithFilter})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   98,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 108,
+										Line:   98,
+									},
+									File:   "shapeDataWithFilter_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeDataWithFilter}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   98,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   98,
+										},
+										File:   "shapeDataWithFilter_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   98,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   98,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   98,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   98,
+												},
+												File:   "shapeDataWithFilter_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   98,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   98,
+													},
+													File:   "shapeDataWithFilter_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   98,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   98,
+														},
+														File:   "shapeDataWithFilter_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   98,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   98,
+														},
+														File:   "shapeDataWithFilter_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   98,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   98,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   98,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   98,
+												},
+												File:   "shapeDataWithFilter_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   98,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   98,
+													},
+													File:   "shapeDataWithFilter_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   98,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   98,
+													},
+													File:   "shapeDataWithFilter_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   98,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   98,
+										},
+										File:   "shapeDataWithFilter_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   98,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   98,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   98,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   98,
+												},
+												File:   "shapeDataWithFilter_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   98,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   98,
+													},
+													File:   "shapeDataWithFilter_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   98,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   98,
+														},
+														File:   "shapeDataWithFilter_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   98,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   98,
+														},
+														File:   "shapeDataWithFilter_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   98,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   98,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   98,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   98,
+												},
+												File:   "shapeDataWithFilter_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   98,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   98,
+													},
+													File:   "shapeDataWithFilter_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   98,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   98,
+													},
+													File:   "shapeDataWithFilter_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   98,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 107,
+											Line:   98,
+										},
+										File:   "shapeDataWithFilter_test.flux",
+										Source: "fn: t_shapeDataWithFilter",
+										Start: ast.Position{
+											Column: 82,
+											Line:   98,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   98,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   98,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 107,
+												Line:   98,
+											},
+											File:   "shapeDataWithFilter_test.flux",
+											Source: "t_shapeDataWithFilter",
+											Start: ast.Position{
+												Column: 86,
+												Line:   98,
+											},
+										},
+									},
+									Name: "t_shapeDataWithFilter",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 109,
+						Line:   98,
+					},
+					File:   "shapeDataWithFilter_test.flux",
+					Source: "test _shapeDataWithFilter = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeDataWithFilter})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   97,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   3,
+					},
+					File:   "shapeDataWithFilter_test.flux",
+					Source: "import \"experimental/geo\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   3,
+						},
+						File:   "shapeDataWithFilter_test.flux",
+						Source: "\"experimental/geo\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental/geo",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "shapeDataWithFilter_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "shapeDataWithFilter_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+<<<<<<< HEAD
+		Metadata: "parser-type=rust",
+		Name:     "gridFilter_test.flux",
+=======
+		Metadata: "parser-type=go",
+		Name:     "shapeDataWithFilter_test.flux",
+>>>>>>> master
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   1,
+					},
+					File:   "shapeDataWithFilter_test.flux",
+					Source: "package geo_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   1,
+						},
+						File:   "shapeDataWithFilter_test.flux",
+						Source: "geo_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "geo_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 99,
+					Line:   112,
+				},
+				File:   "shapeData_test.flux",
+				Source: "package geo_test\n\nimport \"experimental/geo\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,0,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.03383\n,,0,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14267\n,,0,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16667\n,,0,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.18183\n,,0,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.2935\n,,0,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.3485\n,,0,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17167\n,,0,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14683\n,,0,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,0,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.1595\n,,0,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16\n,,0,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,1,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.09867\n,,1,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17567\n,,1,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16933\n,,1,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17\n,,1,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.187\n,,1,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18217\n,,1,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15833\n,,1,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15083\n,,1,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.181\n,,1,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1815\n,,1,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1845\n,,1,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17433\n,,1,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18667\n,,1,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18167\n,,1,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16733\n,,1,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1665\n,,1,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16817\n,,1,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18417\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,2,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n\"\n\noutData = \"\n#group,false,false,true,true,true,false,false,true,false,false,true\n#datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,string\n#default,_result,,,,,,,,,,\n,result,table,_measurement,_start,_stop,_time,control,id,lat,lon,s2_cell_id\n,,0,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T07:00:00Z,ctrlField,91916A,21.03383,39.09867,15c309\n,,1,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T04:00:00Z,ctrlField,91916A,21.14267,39.17567,15c3a9\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T04:00:00Z,ctrlField,91916A,21.16667,39.16933,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T07:00:00Z,ctrlField,91916A,21.18183,39.17,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T13:00:00Z,ctrlField,91916A,21.17367,39.187,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T19:00:00Z,ctrlField,91916A,21.17383,39.18217,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T19:00:00Z,ctrlField,91916A,21.17383,39.181,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T04:00:00Z,ctrlField,91916A,21.16633,39.16883,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T07:00:00Z,ctrlField,91916A,21.16633,39.16883,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T13:00:00Z,ctrlField,91916A,21.17167,39.1815,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T19:00:00Z,ctrlField,91916A,21.17383,39.1845,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T04:00:00Z,ctrlField,91916A,21.14683,39.17433,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T13:00:00Z,ctrlField,91916A,21.17367,39.18667,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T19:00:00Z,ctrlField,91916A,21.17433,39.18167,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T04:00:00Z,ctrlField,91916A,21.1595,39.16733,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T07:00:00Z,ctrlField,91916A,21.16,39.1665,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T13:00:00Z,ctrlField,91916A,21.16633,39.16817,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T19:00:00Z,ctrlField,91916A,21.17433,39.18417,15c3af\n,,3,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T07:00:00Z,ctrlField,91916A,21.2935,39.15833,15c3b1\n,,4,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T13:00:00Z,ctrlField,91916A,21.3485,39.15083,15c3b9\n\"\n\nt_shapeData = (table=<-) =>\n  table\n    |> range(start: 2019-01-01T00:00:00Z)\n    |> geo.shapeData(latField: \"latitude\", lonField: \"longitude\", level: 10)\ntest _shapeData = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeData})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "shapeData_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "shapeData_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "shapeData_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "shapeData_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "shapeData_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "shapeData_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   78,
+					},
+					File:   "shapeData_test.flux",
+					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,0,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.03383\n,,0,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14267\n,,0,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16667\n,,0,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.18183\n,,0,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.2935\n,,0,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.3485\n,,0,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17167\n,,0,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14683\n,,0,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,0,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.1595\n,,0,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16\n,,0,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,1,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.09867\n,,1,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17567\n,,1,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16933\n,,1,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17\n,,1,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.187\n,,1,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18217\n,,1,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15833\n,,1,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15083\n,,1,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.181\n,,1,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1815\n,,1,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1845\n,,1,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17433\n,,1,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18667\n,,1,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18167\n,,1,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16733\n,,1,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1665\n,,1,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16817\n,,1,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18417\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,2,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "shapeData_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   78,
+						},
+						File:   "shapeData_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,0,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.03383\n,,0,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14267\n,,0,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16667\n,,0,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.18183\n,,0,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.2935\n,,0,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.3485\n,,0,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17167\n,,0,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14683\n,,0,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,0,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.1595\n,,0,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16\n,,0,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,1,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.09867\n,,1,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17567\n,,1,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16933\n,,1,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17\n,,1,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.187\n,,1,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18217\n,,1,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15833\n,,1,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15083\n,,1,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.181\n,,1,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1815\n,,1,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1845\n,,1,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17433\n,,1,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18667\n,,1,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18167\n,,1,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16733\n,,1,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1665\n,,1,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16817\n,,1,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18417\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,2,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,0,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.03383\n,,0,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14267\n,,0,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16667\n,,0,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.18183\n,,0,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.2935\n,,0,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.3485\n,,0,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17167\n,,0,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17383\n,,0,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.14683\n,,0,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17367\n,,0,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,0,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.1595\n,,0,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16\n,,0,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.16633\n,,0,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,latitude,21.17433\n,,1,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.09867\n,,1,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17567\n,,1,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16933\n,,1,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17\n,,1,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.187\n,,1,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18217\n,,1,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15833\n,,1,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.15083\n,,1,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.181\n,,1,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16883\n,,1,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1815\n,,1,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1845\n,,1,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.17433\n,,1,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18667\n,,1,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18167\n,,1,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16733\n,,1,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.1665\n,,1,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.16817\n,,1,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,longitude,39.18417\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,true,true,false\n#default,,,,,,,,,\n,result,table,_time,_start,_stop,_measurement,id,_field,_value\n,,2,2019-01-04T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-01T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-02T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-03T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-04T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T04:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T07:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n,,2,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   105,
+					},
+					File:   "shapeData_test.flux",
+					Source: "outData = \"\n#group,false,false,true,true,true,false,false,true,false,false,true\n#datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,string\n#default,_result,,,,,,,,,,\n,result,table,_measurement,_start,_stop,_time,control,id,lat,lon,s2_cell_id\n,,0,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T07:00:00Z,ctrlField,91916A,21.03383,39.09867,15c309\n,,1,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T04:00:00Z,ctrlField,91916A,21.14267,39.17567,15c3a9\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T04:00:00Z,ctrlField,91916A,21.16667,39.16933,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T07:00:00Z,ctrlField,91916A,21.18183,39.17,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T13:00:00Z,ctrlField,91916A,21.17367,39.187,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T19:00:00Z,ctrlField,91916A,21.17383,39.18217,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T19:00:00Z,ctrlField,91916A,21.17383,39.181,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T04:00:00Z,ctrlField,91916A,21.16633,39.16883,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T07:00:00Z,ctrlField,91916A,21.16633,39.16883,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T13:00:00Z,ctrlField,91916A,21.17167,39.1815,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T19:00:00Z,ctrlField,91916A,21.17383,39.1845,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T04:00:00Z,ctrlField,91916A,21.14683,39.17433,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T13:00:00Z,ctrlField,91916A,21.17367,39.18667,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T19:00:00Z,ctrlField,91916A,21.17433,39.18167,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T04:00:00Z,ctrlField,91916A,21.1595,39.16733,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T07:00:00Z,ctrlField,91916A,21.16,39.1665,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T13:00:00Z,ctrlField,91916A,21.16633,39.16817,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T19:00:00Z,ctrlField,91916A,21.17433,39.18417,15c3af\n,,3,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T07:00:00Z,ctrlField,91916A,21.2935,39.15833,15c3b1\n,,4,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T13:00:00Z,ctrlField,91916A,21.3485,39.15083,15c3b9\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   80,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   80,
+						},
+						File:   "shapeData_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   80,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   105,
+						},
+						File:   "shapeData_test.flux",
+						Source: "\"\n#group,false,false,true,true,true,false,false,true,false,false,true\n#datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,string\n#default,_result,,,,,,,,,,\n,result,table,_measurement,_start,_stop,_time,control,id,lat,lon,s2_cell_id\n,,0,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T07:00:00Z,ctrlField,91916A,21.03383,39.09867,15c309\n,,1,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T04:00:00Z,ctrlField,91916A,21.14267,39.17567,15c3a9\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T04:00:00Z,ctrlField,91916A,21.16667,39.16933,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T07:00:00Z,ctrlField,91916A,21.18183,39.17,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T13:00:00Z,ctrlField,91916A,21.17367,39.187,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T19:00:00Z,ctrlField,91916A,21.17383,39.18217,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T19:00:00Z,ctrlField,91916A,21.17383,39.181,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T04:00:00Z,ctrlField,91916A,21.16633,39.16883,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T07:00:00Z,ctrlField,91916A,21.16633,39.16883,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T13:00:00Z,ctrlField,91916A,21.17167,39.1815,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T19:00:00Z,ctrlField,91916A,21.17383,39.1845,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T04:00:00Z,ctrlField,91916A,21.14683,39.17433,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T13:00:00Z,ctrlField,91916A,21.17367,39.18667,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T19:00:00Z,ctrlField,91916A,21.17433,39.18167,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T04:00:00Z,ctrlField,91916A,21.1595,39.16733,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T07:00:00Z,ctrlField,91916A,21.16,39.1665,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T13:00:00Z,ctrlField,91916A,21.16633,39.16817,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T19:00:00Z,ctrlField,91916A,21.17433,39.18417,15c3af\n,,3,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T07:00:00Z,ctrlField,91916A,21.2935,39.15833,15c3b1\n,,4,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T13:00:00Z,ctrlField,91916A,21.3485,39.15083,15c3b9\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   80,
+						},
+					},
+				},
+				Value: "\n#group,false,false,true,true,true,false,false,true,false,false,true\n#datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,string\n#default,_result,,,,,,,,,,\n,result,table,_measurement,_start,_stop,_time,control,id,lat,lon,s2_cell_id\n,,0,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T07:00:00Z,ctrlField,91916A,21.03383,39.09867,15c309\n,,1,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T04:00:00Z,ctrlField,91916A,21.14267,39.17567,15c3a9\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T04:00:00Z,ctrlField,91916A,21.16667,39.16933,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T07:00:00Z,ctrlField,91916A,21.18183,39.17,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T13:00:00Z,ctrlField,91916A,21.17367,39.187,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-01T19:00:00Z,ctrlField,91916A,21.17383,39.18217,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T19:00:00Z,ctrlField,91916A,21.17383,39.181,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T04:00:00Z,ctrlField,91916A,21.16633,39.16883,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T07:00:00Z,ctrlField,91916A,21.16633,39.16883,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T13:00:00Z,ctrlField,91916A,21.17167,39.1815,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-03T19:00:00Z,ctrlField,91916A,21.17383,39.1845,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T04:00:00Z,ctrlField,91916A,21.14683,39.17433,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T13:00:00Z,ctrlField,91916A,21.17367,39.18667,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-04T19:00:00Z,ctrlField,91916A,21.17433,39.18167,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T04:00:00Z,ctrlField,91916A,21.1595,39.16733,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T07:00:00Z,ctrlField,91916A,21.16,39.1665,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T13:00:00Z,ctrlField,91916A,21.16633,39.16817,15c3af\n,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T19:00:00Z,ctrlField,91916A,21.17433,39.18417,15c3af\n,,3,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T07:00:00Z,ctrlField,91916A,21.2935,39.15833,15c3b1\n,,4,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T13:00:00Z,ctrlField,91916A,21.3485,39.15083,15c3b9\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 77,
+						Line:   110,
+					},
+					File:   "shapeData_test.flux",
+					Source: "t_shapeData = (table=<-) =>\n  table\n    |> range(start: 2019-01-01T00:00:00Z)\n    |> geo.shapeData(latField: \"latitude\", lonField: \"longitude\", level: 10)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   107,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 12,
+							Line:   107,
+						},
+						File:   "shapeData_test.flux",
+						Source: "t_shapeData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   107,
+						},
+					},
+				},
+				Name: "t_shapeData",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 77,
+							Line:   110,
+						},
+						File:   "shapeData_test.flux",
+						Source: "(table=<-) =>\n  table\n    |> range(start: 2019-01-01T00:00:00Z)\n    |> geo.shapeData(latField: \"latitude\", lonField: \"longitude\", level: 10)",
+						Start: ast.Position{
+							Column: 15,
+							Line:   107,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 8,
+										Line:   108,
+									},
+									File:   "shapeData_test.flux",
+									Source: "table",
+									Start: ast.Position{
+										Column: 3,
+										Line:   108,
+									},
+								},
+							},
+							Name: "table",
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   109,
+								},
+								File:   "shapeData_test.flux",
+								Source: "table\n    |> range(start: 2019-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 3,
+									Line:   108,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 41,
+											Line:   109,
+										},
+										File:   "shapeData_test.flux",
+										Source: "start: 2019-01-01T00:00:00Z",
+										Start: ast.Position{
+											Column: 14,
+											Line:   109,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   109,
+											},
+											File:   "shapeData_test.flux",
+											Source: "start: 2019-01-01T00:00:00Z",
+											Start: ast.Position{
+												Column: 14,
+												Line:   109,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 19,
+													Line:   109,
+												},
+												File:   "shapeData_test.flux",
+												Source: "start",
+												Start: ast.Position{
+													Column: 14,
+													Line:   109,
+												},
+											},
+										},
+										Name: "start",
+									},
+									Value: &ast.DateTimeLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   109,
+												},
+												File:   "shapeData_test.flux",
+												Source: "2019-01-01T00:00:00Z",
+												Start: ast.Position{
+													Column: 21,
+													Line:   109,
+												},
+											},
+										},
+										Value: parser.MustParseTime("2019-01-01T00:00:00Z"),
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   109,
+									},
+									File:   "shapeData_test.flux",
+									Source: "range(start: 2019-01-01T00:00:00Z)",
+									Start: ast.Position{
+										Column: 8,
+										Line:   109,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   109,
+										},
+										File:   "shapeData_test.flux",
+										Source: "range",
+										Start: ast.Position{
+											Column: 8,
+											Line:   109,
+										},
+									},
+								},
+								Name: "range",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 77,
+								Line:   110,
+							},
+							File:   "shapeData_test.flux",
+							Source: "table\n    |> range(start: 2019-01-01T00:00:00Z)\n    |> geo.shapeData(latField: \"latitude\", lonField: \"longitude\", level: 10)",
+							Start: ast.Position{
+								Column: 3,
+								Line:   108,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 76,
+										Line:   110,
+									},
+									File:   "shapeData_test.flux",
+									Source: "latField: \"latitude\", lonField: \"longitude\", level: 10",
+									Start: ast.Position{
+										Column: 22,
+										Line:   110,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   110,
+										},
+										File:   "shapeData_test.flux",
+										Source: "latField: \"latitude\"",
+										Start: ast.Position{
+											Column: 22,
+											Line:   110,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 30,
+												Line:   110,
+											},
+											File:   "shapeData_test.flux",
+											Source: "latField",
+											Start: ast.Position{
+												Column: 22,
+												Line:   110,
+											},
+										},
+									},
+									Name: "latField",
+								},
+								Value: &ast.StringLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   110,
+											},
+											File:   "shapeData_test.flux",
+											Source: "\"latitude\"",
+											Start: ast.Position{
+												Column: 32,
+												Line:   110,
+											},
+										},
+									},
+									Value: "latitude",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 65,
+											Line:   110,
+										},
+										File:   "shapeData_test.flux",
+										Source: "lonField: \"longitude\"",
+										Start: ast.Position{
+											Column: 44,
+											Line:   110,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 52,
+												Line:   110,
+											},
+											File:   "shapeData_test.flux",
+											Source: "lonField",
+											Start: ast.Position{
+												Column: 44,
+												Line:   110,
+											},
+										},
+									},
+									Name: "lonField",
+								},
+								Value: &ast.StringLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 65,
+												Line:   110,
+											},
+											File:   "shapeData_test.flux",
+											Source: "\"longitude\"",
+											Start: ast.Position{
+												Column: 54,
+												Line:   110,
+											},
+										},
+									},
+									Value: "longitude",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 76,
+											Line:   110,
+										},
+										File:   "shapeData_test.flux",
+										Source: "level: 10",
+										Start: ast.Position{
+											Column: 67,
+											Line:   110,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 72,
+												Line:   110,
+											},
+											File:   "shapeData_test.flux",
+											Source: "level",
+											Start: ast.Position{
+												Column: 67,
+												Line:   110,
+											},
+										},
+									},
+									Name: "level",
+								},
+								Value: &ast.IntegerLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 76,
+												Line:   110,
+											},
+											File:   "shapeData_test.flux",
+											Source: "10",
+											Start: ast.Position{
+												Column: 74,
+												Line:   110,
+											},
+										},
+									},
+									Value: int64(10),
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 77,
+									Line:   110,
+								},
+								File:   "shapeData_test.flux",
+								Source: "geo.shapeData(latField: \"latitude\", lonField: \"longitude\", level: 10)",
+								Start: ast.Position{
+									Column: 8,
+									Line:   110,
+								},
+							},
+						},
+						Callee: &ast.MemberExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   110,
+									},
+									File:   "shapeData_test.flux",
+									Source: "geo.shapeData",
+									Start: ast.Position{
+										Column: 8,
+										Line:   110,
+									},
+								},
+							},
+							Object: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 11,
+											Line:   110,
+										},
+										File:   "shapeData_test.flux",
+										Source: "geo",
+										Start: ast.Position{
+											Column: 8,
+											Line:   110,
+										},
+									},
+								},
+								Name: "geo",
+							},
+							Property: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   110,
+										},
+										File:   "shapeData_test.flux",
+										Source: "shapeData",
+										Start: ast.Position{
+											Column: 12,
+											Line:   110,
+										},
+									},
+								},
+								Name: "shapeData",
+							},
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   107,
+							},
+							File:   "shapeData_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 16,
+								Line:   107,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 21,
+									Line:   107,
+								},
+								File:   "shapeData_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 16,
+									Line:   107,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   107,
+							},
+							File:   "shapeData_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 22,
+								Line:   107,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 99,
+							Line:   112,
+						},
+						File:   "shapeData_test.flux",
+						Source: "_shapeData = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeData})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   111,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 16,
+								Line:   111,
+							},
+							File:   "shapeData_test.flux",
+							Source: "_shapeData",
+							Start: ast.Position{
+								Column: 6,
+								Line:   111,
+							},
+						},
+					},
+					Name: "_shapeData",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 99,
+								Line:   112,
+							},
+							File:   "shapeData_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeData})",
+							Start: ast.Position{
+								Column: 19,
+								Line:   111,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 99,
+									Line:   112,
+								},
+								File:   "shapeData_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeData})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   112,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 98,
+										Line:   112,
+									},
+									File:   "shapeData_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeData}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   112,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   112,
+										},
+										File:   "shapeData_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   112,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   112,
+											},
+											File:   "shapeData_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   112,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   112,
+												},
+												File:   "shapeData_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   112,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   112,
+													},
+													File:   "shapeData_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   112,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   112,
+														},
+														File:   "shapeData_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   112,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   112,
+														},
+														File:   "shapeData_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   112,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   112,
+											},
+											File:   "shapeData_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   112,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   112,
+												},
+												File:   "shapeData_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   112,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   112,
+													},
+													File:   "shapeData_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   112,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   112,
+													},
+													File:   "shapeData_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   112,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   112,
+										},
+										File:   "shapeData_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   112,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   112,
+											},
+											File:   "shapeData_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   112,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   112,
+												},
+												File:   "shapeData_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   112,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   112,
+													},
+													File:   "shapeData_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   112,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   112,
+														},
+														File:   "shapeData_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   112,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   112,
+														},
+														File:   "shapeData_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   112,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   112,
+											},
+											File:   "shapeData_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   112,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   112,
+												},
+												File:   "shapeData_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   112,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   112,
+													},
+													File:   "shapeData_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   112,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   112,
+													},
+													File:   "shapeData_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   112,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 97,
+											Line:   112,
+										},
+										File:   "shapeData_test.flux",
+										Source: "fn: t_shapeData",
+										Start: ast.Position{
+											Column: 82,
+											Line:   112,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   112,
+											},
+											File:   "shapeData_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   112,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 97,
+												Line:   112,
+											},
+											File:   "shapeData_test.flux",
+											Source: "t_shapeData",
+											Start: ast.Position{
+												Column: 86,
+												Line:   112,
+											},
+										},
+									},
+									Name: "t_shapeData",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 99,
+						Line:   112,
+					},
+					File:   "shapeData_test.flux",
+					Source: "test _shapeData = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeData})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   111,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   3,
+					},
+					File:   "shapeData_test.flux",
+					Source: "import \"experimental/geo\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   3,
+						},
+						File:   "shapeData_test.flux",
+						Source: "\"experimental/geo\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental/geo",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "shapeData_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "shapeData_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+<<<<<<< HEAD
+		Metadata: "parser-type=rust",
+		Name:     "groupByArea_test.flux",
+=======
+		Metadata: "parser-type=go",
+		Name:     "shapeData_test.flux",
+>>>>>>> master
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   1,
+					},
+					File:   "shapeData_test.flux",
+					Source: "package geo_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   1,
+						},
+						File:   "shapeData_test.flux",
 						Source: "geo_test",
 						Start: ast.Position{
 							Column: 9,

@@ -1,6 +1,7 @@
 package plan
 
 import (
+	"context"
 	"fmt"
 	"math"
 )
@@ -8,7 +9,7 @@ import (
 // PhysicalPlanner performs transforms a logical plan to a physical plan,
 // by applying any registered physical rules.
 type PhysicalPlanner interface {
-	Plan(lplan *Spec) (*Spec, error)
+	Plan(ctx context.Context, lplan *Spec) (*Spec, error)
 }
 
 // NewPhysicalPlanner creates a new physical plan with the specified options.
@@ -39,8 +40,8 @@ func NewPhysicalPlanner(options ...PhysicalOption) PhysicalPlanner {
 	return pp
 }
 
-func (pp *physicalPlanner) Plan(spec *Spec) (*Spec, error) {
-	transformedSpec, err := pp.heuristicPlanner.Plan(spec)
+func (pp *physicalPlanner) Plan(ctx context.Context, spec *Spec) (*Spec, error) {
+	transformedSpec, err := pp.heuristicPlanner.Plan(ctx, spec)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +141,7 @@ func RemovePhysicalRules(rules ...string) PhysicalOption {
 	})
 }
 
-// Disables validation in the physical planner
+// DisableValidation disables validation in the physical planner.
 func DisableValidation() PhysicalOption {
 	return physicalOption(func(p *physicalPlanner) {
 		p.disableValidation = true
@@ -161,7 +162,7 @@ func (physicalConverterRule) Pattern() Pattern {
 	return Any()
 }
 
-func (physicalConverterRule) Rewrite(pn Node) (Node, bool, error) {
+func (physicalConverterRule) Rewrite(ctx context.Context, pn Node) (Node, bool, error) {
 	if _, ok := pn.(*PhysicalPlanNode); ok {
 		// Already converted
 		return pn, false, nil
