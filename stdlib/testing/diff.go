@@ -302,14 +302,14 @@ func NewDiffTransformation(d execute.Dataset, cache execute.TableBuilderCache, s
 	parentState[wantID] = new(diffParentState)
 	parentState[gotID] = new(diffParentState)
 	return &DiffTransformation{
-		wantID:     wantID,
-		gotID:      gotID,
-		d:          d,
-		cache:      cache,
-		inputCache: execute.NewRandomAccessGroupLookup(),
-		parentState:   parentState,
-		alloc:      a,
-		epsilon:    spec.Epsilon,
+		wantID:      wantID,
+		gotID:       gotID,
+		d:           d,
+		cache:       cache,
+		inputCache:  execute.NewRandomAccessGroupLookup(),
+		parentState: parentState,
+		alloc:       a,
+		epsilon:     spec.Epsilon,
 	}
 }
 

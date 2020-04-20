@@ -350,7 +350,7 @@ func TestFindColumn_NoTable(t *testing.T) {
 
 	s := evalOrFail(t, script)
 
-	for _, id := range []string{ "ok", } {
+	for _, id := range []string{"ok"} {
 		if !mustLookup(s, id).Bool() {
 			t.Errorf("%s was not OK indeed", id)
 		}
@@ -369,7 +369,7 @@ func TestFindColumn_BadColumn(t *testing.T) {
 
 	s := evalOrFail(t, script)
 
-	for _, id := range []string{ "ok", } {
+	for _, id := range []string{"ok"} {
 		if !mustLookup(s, id).Bool() {
 			t.Errorf("%s was not OK indeed", id)
 		}
@@ -386,7 +386,7 @@ func TestFindRecord_NoTable(t *testing.T) {
 
 	s := evalOrFail(t, script)
 
-	for _, id := range []string{ "ok", } {
+	for _, id := range []string{"ok"} {
 		if !mustLookup(s, id).Bool() {
 			t.Errorf("%s was not OK indeed", id)
 		}
@@ -403,14 +403,12 @@ func TestFindRecord_BadIdx(t *testing.T) {
 
 	s := evalOrFail(t, script)
 
-	for _, id := range []string{ "ok", } {
+	for _, id := range []string{"ok"} {
 		if !mustLookup(s, id).Bool() {
 			t.Errorf("%s was not OK indeed", id)
 		}
 	}
 }
-
-
 
 // We have to write this test as a non-standard e2e test, because
 // our framework doesn't allow comparison between "simple" values, but only streams of tables.
