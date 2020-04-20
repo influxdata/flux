@@ -1,6 +1,10 @@
 package v1
 
-import "github.com/influxdata/flux/plan"
+import (
+	"context"
+
+	"github.com/influxdata/flux/plan"
+)
 
 type DatabasesRemoteRule struct{}
 
@@ -12,7 +16,7 @@ func (p DatabasesRemoteRule) Pattern() plan.Pattern {
 	return plan.Pat(DatabasesKind)
 }
 
-func (p DatabasesRemoteRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
+func (p DatabasesRemoteRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
 	spec := node.ProcedureSpec().(*DatabasesProcedureSpec)
 	if spec.Host == nil {
 		return node, false, nil
