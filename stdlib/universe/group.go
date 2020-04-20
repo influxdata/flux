@@ -1,6 +1,7 @@
 package universe
 
 import (
+	"context"
 	"sort"
 
 	"github.com/apache/arrow/go/arrow/array"
@@ -380,7 +381,7 @@ func (r MergeGroupRule) Pattern() plan.Pattern {
 	return plan.Pat(GroupKind, plan.Pat(GroupKind, plan.Any()))
 }
 
-func (r MergeGroupRule) Rewrite(lastGroup plan.Node) (plan.Node, bool, error) {
+func (r MergeGroupRule) Rewrite(ctx context.Context, lastGroup plan.Node) (plan.Node, bool, error) {
 	firstGroup := lastGroup.Predecessors()[0]
 	lastSpec := lastGroup.ProcedureSpec().(*GroupProcedureSpec)
 

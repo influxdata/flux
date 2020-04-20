@@ -355,7 +355,7 @@ func (rule removeCount) Name() string {
 func (rule removeCount) Pattern() plan.Pattern {
 	return plan.Pat(universe.CountKind, plan.Any())
 }
-func (rule removeCount) Rewrite(node plan.Node) (plan.Node, bool, error) {
+func (rule removeCount) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
 	return node.Predecessors()[0], true, nil
 }
 

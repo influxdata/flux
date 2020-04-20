@@ -30,7 +30,7 @@ func TestRuleRegistration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	logicalPlanSpec, err := logicalPlanner.Plan(initPlan)
+	logicalPlanSpec, err := logicalPlanner.Plan(context.Background(), initPlan)
 	if err != nil {
 		t.Fatalf("could not do logical planning: %v", err)
 	}
@@ -47,7 +47,7 @@ func TestRuleRegistration(t *testing.T) {
 	plan.RegisterPhysicalRules(&plantest.MergeFromRangePhysicalRule{})
 
 	physicalPlanner := plan.NewPhysicalPlanner()
-	_, err = physicalPlanner.Plan(logicalPlanSpec)
+	_, err = physicalPlanner.Plan(context.Background(), logicalPlanSpec)
 	if err != nil {
 		t.Fatalf("could not do physical planning: %v", err)
 	}
@@ -56,5 +56,66 @@ func TestRuleRegistration(t *testing.T) {
 	// so just pass if we saw anything.
 	if len(simpleRule.SeenNodes) == 0 {
 		t.Errorf("expected simpleRule to have been registered and have seen some nodes")
+	}
+}
+
+func TestRewriteWithContext(t *testing.T) {
+	var (
+		ctxKey  = "contextKey"
+		rewrite = false
+		value   interface{}
+	)
+	functionRule := plantest.FunctionRule{
+		RewriteFn: func(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+			rewrite = true
+			value = ctx.Value(ctxKey)
+			return node, false, nil
+		},
+	}
+
+	// Define the context after the above to ensure we don't end up accidentally reading
+	// from the outer context rather than the one passed to the function.
+	ctx := context.WithValue(context.Background(), ctxKey, true)
+	// Register the rule.
+	plan.RegisterLogicalRules(&functionRule)
+
+	now := time.Now().UTC()
+	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(ctx), now, `from(bucket: "telegraf") |> range(start: -5m)`)
+	if err != nil {
+		t.Fatalf("could not compile very simple Flux query: %v", err)
+	}
+
+	logicalPlanner := plan.NewLogicalPlanner()
+	initPlan, err := logicalPlanner.CreateInitialPlan(fluxSpec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	logicalPlanSpec, err := logicalPlanner.Plan(ctx, initPlan)
+	if err != nil {
+		t.Fatalf("could not do logical planning: %v", err)
+	}
+
+	if !rewrite {
+		t.Fatal("logical planning did not call rewrite on the function rule")
+	} else if value == nil {
+		t.Fatal("value wasn't present in the context")
+	}
+
+	// Reset the values that were modified.
+	rewrite, value = false, nil
+
+	// Register the same rule with the physical planner.
+	plan.RegisterPhysicalRules(&functionRule)
+
+	physicalPlanner := plan.NewPhysicalPlanner()
+	_, err = physicalPlanner.Plan(ctx, logicalPlanSpec)
+	if err != nil {
+		t.Fatalf("could not do physical planning: %v", err)
+	}
+
+	if !rewrite {
+		t.Fatal("physical planning did not call rewrite on the function rule")
+	} else if value == nil {
+		t.Fatal("value wasn't present in the context")
 	}
 }

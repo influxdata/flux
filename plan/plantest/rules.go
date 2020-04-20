@@ -1,6 +1,7 @@
 package plantest
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -19,13 +20,30 @@ func (sr *SimpleRule) Pattern() plan.Pattern {
 	return plan.Any()
 }
 
-func (sr *SimpleRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
+func (sr *SimpleRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
 	sr.SeenNodes = append(sr.SeenNodes, node.ID())
 	return node, false, nil
 }
 
 func (sr *SimpleRule) Name() string {
 	return "simple"
+}
+
+// FunctionRule is a simple rule intended to invoke a Rewrite function.
+type FunctionRule struct {
+	RewriteFn func(ctx context.Context, node plan.Node) (plan.Node, bool, error)
+}
+
+func (fr *FunctionRule) Name() string {
+	return "function"
+}
+
+func (fr *FunctionRule) Pattern() plan.Pattern {
+	return plan.Any()
+}
+
+func (fr *FunctionRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+	return fr.RewriteFn(ctx, node)
 }
 
 // MergeFromRangePhysicalRule merges a from and a subsequent range.
@@ -35,7 +53,7 @@ func (sr *MergeFromRangePhysicalRule) Pattern() plan.Pattern {
 	return plan.Pat(universe.RangeKind, plan.Pat(influxdb.FromKind))
 }
 
-func (sr *MergeFromRangePhysicalRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
+func (sr *MergeFromRangePhysicalRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
 	mergedSpec := node.Predecessors()[0].ProcedureSpec().Copy().(*influxdb.FromProcedureSpec)
 	mergedNode, err := plan.MergeToPhysicalNode(node, node.Predecessors()[0], mergedSpec)
 	if err != nil {
@@ -73,7 +91,7 @@ func (spp SmashPlanRule) Pattern() plan.Pattern {
 	return plan.Pat(k, plan.Any())
 }
 
-func (spp SmashPlanRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
+func (spp SmashPlanRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
 	var changed bool
 	if len(spp.Kind) > 0 || node == spp.Node {
 		node.AddPredecessors(spp.Intruder)
@@ -110,7 +128,7 @@ func (ccr CreateCycleRule) Pattern() plan.Pattern {
 	return plan.Pat(k, plan.Any())
 }
 
-func (ccr CreateCycleRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
+func (ccr CreateCycleRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
 	var changed bool
 	if len(ccr.Kind) > 0 || node == ccr.Node {
 		node.Predecessors()[0].AddPredecessors(node)
@@ -150,7 +168,7 @@ func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 		plan.DisableValidation(),
 	)
 
-	pp, err := physicalPlanner.Plan(before)
+	pp, err := physicalPlanner.Plan(context.Background(), before)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -199,7 +217,7 @@ func LogicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 		plan.OnlyLogicalRules(tc.Rules...),
 	)
 
-	pp, err := logicalPlanner.Plan(before)
+	pp, err := logicalPlanner.Plan(context.Background(), before)
 	if err != nil {
 		t.Fatal(err)
 	}
