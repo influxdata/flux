@@ -15,7 +15,6 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"gonum.org/v1/gonum/floats"
 )
 
 const DiffKind = "diff"
@@ -31,25 +30,9 @@ func (s *DiffOpSpec) Kind() flux.OperationKind {
 }
 
 func init() {
-<<<<<<< HEAD
 	diffSignature := runtime.MustLookupBuiltinType("testing", "diff")
 
 	runtime.RegisterPackageValue("testing", "diff", flux.MustValue(flux.FunctionValue(DiffKind, createDiffOpSpec, diffSignature)))
-=======
-	diffSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"verbose": semantic.Bool,
-			"got":     flux.TableObjectType,
-			"want":    flux.TableObjectType,
-			"epsilon": semantic.Float,
-		},
-		Required:     semantic.LabelSet{"got", "want"},
-		Return:       flux.TableObjectType,
-		PipeArgument: "got",
-	}
-
-	flux.RegisterPackageValue("testing", "diff", flux.FunctionValue(DiffKind, createDiffOpSpec, diffSignature))
->>>>>>> master
 	flux.RegisterOpSpec(DiffKind, newDiffOp)
 	plan.RegisterProcedureSpec(DiffKind, newDiffProcedure, DiffKind)
 	execute.RegisterTransformation(DiffKind, createDiffTransformation)
@@ -319,24 +302,14 @@ func NewDiffTransformation(d execute.Dataset, cache execute.TableBuilderCache, s
 	parentState[wantID] = new(diffParentState)
 	parentState[gotID] = new(diffParentState)
 	return &DiffTransformation{
-<<<<<<< HEAD
-		wantID:      wantID,
-		gotID:       gotID,
-		d:           d,
-		cache:       cache,
-		inputCache:  execute.NewGroupLookup(),
-		parentState: parentState,
-		alloc:       a,
-=======
 		wantID:     wantID,
 		gotID:      gotID,
 		d:          d,
 		cache:      cache,
 		inputCache: execute.NewRandomAccessGroupLookup(),
-		finished:   make(map[execute.DatasetID]bool, 2),
+		parentState:   parentState,
 		alloc:      a,
 		epsilon:    spec.Epsilon,
->>>>>>> master
 	}
 }
 
@@ -510,27 +483,6 @@ func (t *DiffTransformation) diff(key flux.GroupKey, want, got *tableBuffer) err
 	return nil
 }
 
-// Arbitrary floating point tolerance
-const tolerance float64 = 1e-25
-
-// The maximum number of floating point values that are allowed
-// to lie between two float64s and still be considered equal.
-const ulp uint = 2
-
-func equalFloats(a, b, tolerance float64, ulp uint) bool {
-	// If sufficiently close, then move on.
-	// This avoids situations close to zero.
-	if floats.EqualWithinAbs(a, b, tolerance) {
-		return true
-	}
-	// If not sufficiently close, both floats
-	// must be within ulp steps of each other.
-	if !floats.EqualWithinULP(a, b, ulp) {
-		return false
-	}
-	return true
-}
-
 func (t *DiffTransformation) rowEqual(want, got *tableBuffer, i int) bool {
 	if len(want.columns) != len(got.columns) {
 		return false
@@ -550,16 +502,9 @@ func (t *DiffTransformation) rowEqual(want, got *tableBuffer, i int) bool {
 
 		switch wantCol.Type {
 		case flux.TFloat:
-<<<<<<< HEAD
-			want, got := wantCol.Values.(*array.Float64), gotCol.Values.(*array.Float64)
-			if !equalFloats(want.Value(i), got.Value(i), tolerance, ulp) {
-				return false
-			}
-=======
 			want, got := wantCol.Values.(*array.Float64).Value(i), gotCol.Values.(*array.Float64).Value(i)
 			// want == got is for handling +Inf and -Inf.
 			return want == got || math.Abs(want-got) <= t.epsilon
->>>>>>> master
 		case flux.TInt:
 			want, got := wantCol.Values.(*array.Int64), gotCol.Values.(*array.Int64)
 			if want.Value(i) != got.Value(i) {

@@ -252,11 +252,6 @@ impl Formatter {
                 self.write_string(sep)
             }
             // treat properties differently than in general case
-<<<<<<< HEAD:libflux/src/core/formatter/mod.rs
-            self.format_function_argument(value)
-        }
-        self.write_string(") =>");
-=======
             let property = n.params.get(i).unwrap();
             self.format_function_argument(property);
             self.format_comments(&property.comma);
@@ -265,7 +260,6 @@ impl Formatter {
         self.write_string(") ");
         self.format_comments(&n.arrow);
         self.write_string("=>");
->>>>>>> master:libflux/src/flux/formatter/mod.rs
         // must wrap body with parenthesis in order to discriminate between:
         //  - returning an object: (x) => ({foo: x})
         //  - and block statements:
@@ -349,13 +343,9 @@ impl Formatter {
             if i != 0 {
                 self.write_string(sep)
             }
-<<<<<<< HEAD:libflux/src/core/formatter/mod.rs
-            self.format_node(&Node::from_expr(value));
-=======
             let item = n.elements.get(i).unwrap();
             self.format_node(&Node::from_expr(&item.expression));
             self.format_comments(&item.comma);
->>>>>>> master:libflux/src/flux/formatter/mod.rs
         }
         self.format_comments(&n.rbrack);
         self.write_rune(']')
@@ -545,13 +535,9 @@ impl Formatter {
                     self.write_indent()
                 }
             }
-<<<<<<< HEAD:libflux/src/core/formatter/mod.rs
-            self.format_node(&Node::Property(value));
-=======
             let property = n.properties.get(i).unwrap();
             self.format_node(&Node::Property(property));
             self.format_comments(&property.comma);
->>>>>>> master:libflux/src/flux/formatter/mod.rs
         }
         if multiline {
             self.write_string(sep);

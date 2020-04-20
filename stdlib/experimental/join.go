@@ -21,28 +21,8 @@ import (
 const joinKind = "experimental.join"
 
 func init() {
-<<<<<<< HEAD:stdlib/internal/promql/join.go
-	signature := runtime.MustLookupBuiltinType("internal/promql", "join")
-	runtime.RegisterPackageValue("internal/promql", "join", flux.MustValue(flux.FunctionValue("join", createJoinOpSpec, signature)))
-=======
-	signature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"left":  flux.TableObjectType,
-			"right": flux.TableObjectType,
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"left":  semantic.NewEmptyObjectPolyType(),
-					"right": semantic.NewEmptyObjectPolyType(),
-				},
-				Required: semantic.LabelSet{"left", "right"},
-				Return:   semantic.NewEmptyObjectPolyType(),
-			}),
-		},
-		Required: semantic.LabelSet{"left", "right", "fn"},
-		Return:   flux.TableObjectType,
-	}
-	flux.RegisterPackageValue("experimental", "join", flux.FunctionValue("join", createJoinOpSpec, signature))
->>>>>>> master:stdlib/experimental/join.go
+	signature := runtime.MustLookupBuiltinType("experimental", "join")
+	runtime.RegisterPackageValue("experimental", "join", flux.MustValue(flux.FunctionValue("join", createJoinOpSpec, signature)))
 	flux.RegisterOpSpec(joinKind, newJoinOp)
 	plan.RegisterProcedureSpec(joinKind, newMergeJoinProcedure, joinKind)
 	execute.RegisterTransformation(joinKind, createMergeJoinTransformation)

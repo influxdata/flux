@@ -18,16 +18,12 @@ func (sr *SimpleRule) Pattern() plan.Pattern {
 	return plan.Any()
 }
 
-<<<<<<< HEAD
-func (sr *SimpleRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
+func (sr *SimpleRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
 	for _, nid := range sr.SeenNodes {
 		if nid == node.ID() {
 			return node, false, nil
 		}
 	}
-=======
-func (sr *SimpleRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
->>>>>>> master
 	sr.SeenNodes = append(sr.SeenNodes, node.ID())
 	return node, false, nil
 }
@@ -36,8 +32,6 @@ func (sr *SimpleRule) Name() string {
 	return "simple"
 }
 
-<<<<<<< HEAD
-=======
 // FunctionRule is a simple rule intended to invoke a Rewrite function.
 type FunctionRule struct {
 	RewriteFn func(ctx context.Context, node plan.Node) (plan.Node, bool, error)
@@ -55,27 +49,6 @@ func (fr *FunctionRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node,
 	return fr.RewriteFn(ctx, node)
 }
 
-// MergeFromRangePhysicalRule merges a from and a subsequent range.
-type MergeFromRangePhysicalRule struct{}
-
-func (sr *MergeFromRangePhysicalRule) Pattern() plan.Pattern {
-	return plan.Pat(universe.RangeKind, plan.Pat(influxdb.FromKind))
-}
-
-func (sr *MergeFromRangePhysicalRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
-	mergedSpec := node.Predecessors()[0].ProcedureSpec().Copy().(*influxdb.FromProcedureSpec)
-	mergedNode, err := plan.MergeToPhysicalNode(node, node.Predecessors()[0], mergedSpec)
-	if err != nil {
-		return nil, false, err
-	}
-	return mergedNode, true, nil
-}
-
-func (sr *MergeFromRangePhysicalRule) Name() string {
-	return "fromRangeRule"
-}
-
->>>>>>> master
 // SmashPlanRule adds an `Intruder` as predecessor of the given `Node` without
 // marking it as successor of it. It breaks the integrity of the plan.
 // If `Kind` is specified, it takes precedence over `Node`, and the rule will use it

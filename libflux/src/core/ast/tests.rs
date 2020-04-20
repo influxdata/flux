@@ -358,14 +358,9 @@ fn test_json_block() {
                 base: Default::default(),
                 value: "hello".to_string(),
             }),
-<<<<<<< HEAD:libflux/src/core/ast/tests.rs
-        })],
-    });
-=======
         }))],
         rbrace: None,
-    };
->>>>>>> master:libflux/src/flux/ast/tests.rs
+    });
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,

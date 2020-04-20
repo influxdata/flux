@@ -74,11 +74,7 @@ func BenchmarkRustParse(b *testing.B) {
 }
 
 func ParseReturnHandle(fluxFile string) error {
-<<<<<<< HEAD
 	p := libflux.ParseString(fluxFile)
-=======
-	p := libflux.Parse(fluxFile)
->>>>>>> master
 	p.Free()
 	return nil
 }

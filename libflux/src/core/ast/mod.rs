@@ -938,12 +938,8 @@ pub struct ObjectExpr {
     pub lbrace: CommentList,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
-<<<<<<< HEAD:libflux/src/core/ast/mod.rs
-    pub with: Option<Identifier>,
-    #[serde(deserialize_with = "deserialize_default_from_null")]
-=======
     pub with: Option<WithSource>,
->>>>>>> master:libflux/src/flux/ast/mod.rs
+    #[serde(deserialize_with = "deserialize_default_from_null")]
     pub properties: Vec<Property>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rbrace: CommentList,
