@@ -5003,13 +5003,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-<<<<<<< HEAD
 		Metadata: "parser-type=rust",
-		Name:     "filterRowsStrict_test.flux",
-=======
-		Metadata: "parser-type=go",
 		Name:     "filterRowsPivoted_test.flux",
->>>>>>> master
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -6632,13 +6627,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-<<<<<<< HEAD
 		Metadata: "parser-type=rust",
-		Name:     "gridFilterLevel_test.flux",
-=======
-		Metadata: "parser-type=go",
 		Name:     "filterRowsStrict_test.flux",
->>>>>>> master
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -8522,7 +8512,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "gridFilterLevel_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -10355,7 +10345,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "gridFilter_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -11892,7 +11882,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "groupByArea_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -13551,13 +13541,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-<<<<<<< HEAD
 		Metadata: "parser-type=rust",
-		Name:     "gridFilter_test.flux",
-=======
-		Metadata: "parser-type=go",
 		Name:     "shapeDataWithFilter_test.flux",
->>>>>>> master
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -14900,13 +14885,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-<<<<<<< HEAD
 		Metadata: "parser-type=rust",
-		Name:     "groupByArea_test.flux",
-=======
-		Metadata: "parser-type=go",
 		Name:     "shapeData_test.flux",
->>>>>>> master
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,

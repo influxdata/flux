@@ -10172,10 +10172,6 @@ var pkgAST = &ast.Package{
 				}},
 			},
 		}},
-<<<<<<< HEAD
-		Imports:  nil,
-		Metadata: "parser-type=rust",
-=======
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
@@ -10212,8 +10208,7 @@ var pkgAST = &ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Metadata: "parser-type=go",
->>>>>>> master
+		Metadata: "parser-type=rust",
 		Name:     "geo.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{

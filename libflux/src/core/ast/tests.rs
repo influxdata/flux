@@ -1590,10 +1590,10 @@ fn test_object_expression_with_source_locations_and_errors() {
 
 #[test]
 fn test_json_bad_statement() {
-    let n = Statement::Bad(BadStmt {
+    let n = Statement::Bad(Box::new(BadStmt {
         base: BaseNode::default(),
         text: String::from("this is bad"),
-    });
+    }));
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,

@@ -247,7 +247,7 @@ impl Formatter {
         self.format_comments(&n.lparen);
         self.write_rune('(');
         let sep = ", ";
-        for (i, value) in n.params.iter().enumerate() {
+        for (i, _) in n.params.iter().enumerate() {
             if i != 0 {
                 self.write_string(sep)
             }
@@ -339,7 +339,7 @@ impl Formatter {
         self.format_comments(&n.lbrack);
         self.write_rune('[');
         let sep = ", ";
-        for (i, value) in n.elements.iter().enumerate() {
+        for (i, _) in n.elements.iter().enumerate() {
             if i != 0 {
                 self.write_string(sep)
             }
@@ -528,7 +528,7 @@ impl Formatter {
         } else {
             sep = ", "
         }
-        for (i, value) in n.properties.iter().enumerate() {
+        for (i, _) in n.properties.iter().enumerate() {
             if i != 0 {
                 self.write_string(sep);
                 if multiline {

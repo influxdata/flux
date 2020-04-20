@@ -89,7 +89,7 @@ func TestRewriteWithContext(t *testing.T) {
 	plan.RegisterLogicalRules(&functionRule)
 
 	now := time.Now().UTC()
-	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(ctx), now, `from(bucket: "telegraf") |> range(start: -5m)`)
+	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(ctx), runtime.Default, now, `from(bucket: "telegraf") |> range(start: -5m)`)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
 	}

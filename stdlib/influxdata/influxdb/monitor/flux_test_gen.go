@@ -11215,7 +11215,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "state_changes_any_to_any_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -12853,7 +12853,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "state_changes_big_any_to_any_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -14491,7 +14491,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "state_changes_big_info_to_ok_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -16129,7 +16129,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "state_changes_big_ok_to_info_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -18068,7 +18068,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "state_changes_info_to_any_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -20007,7 +20007,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "state_changes_invalid_any_to_any_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{

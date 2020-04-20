@@ -190,8 +190,6 @@ option now = () => (2030-01-01T00:00:00Z)
 option foo.bar = "baz"
 builtin foo
 
-# // bad stmt
-
 test aggregate_window_empty = () => ({
     input: testing.loadStorage(csv: inData),
     want: testing.loadMem(csv: outData),
