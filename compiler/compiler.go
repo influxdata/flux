@@ -202,14 +202,62 @@ func findProperty(name string, t semantic.MonoType) (*semantic.RowProperty, bool
 	return nil, false, nil
 }
 
-// monoType ignores any errors when reading the type of a node.
+// apply applies a subsitution to a type.
+// It will ignore any errors when reading a type.
 // This is safe becase we already validated that the function type is a mono type.
-func monoType(subst map[uint64]semantic.MonoType, t semantic.MonoType) semantic.MonoType {
-	tv, err := t.VarNum()
-	if err != nil {
-		return t
+func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t semantic.MonoType) semantic.MonoType {
+	switch t.Kind() {
+	case semantic.Var:
+		tv, err := t.VarNum()
+		if err != nil {
+			return t
+		}
+		return sub[tv]
+	case semantic.Arr:
+		element, err := t.ElemType()
+		if err != nil {
+			return t
+		}
+		return semantic.NewArrayType(apply(sub, props, element))
+	case semantic.Row:
+		n, err := t.NumProperties()
+		if err != nil {
+			return t
+		}
+		for i := 0; i < n; i++ {
+			pr, err := t.RowProperty(i)
+			if err != nil {
+				return t
+			}
+			ty, err := pr.TypeOf()
+			if err != nil {
+				return t
+			}
+			props = append(props, semantic.PropertyType{
+				Key:   []byte(pr.Name()),
+				Value: apply(sub, nil, ty),
+			})
+		}
+		r, extends, err := t.Extends()
+		if err != nil {
+			return t
+		}
+		if !extends {
+			return semantic.NewObjectType(props)
+		}
+		r = apply(sub, nil, r)
+		switch r.Kind() {
+		case semantic.Row:
+			return apply(sub, props, r)
+		case semantic.Var:
+			tv, err := r.VarNum()
+			if err != nil {
+				return t
+			}
+			return semantic.ExtendObjectType(props, &tv)
+		}
 	}
-	return subst[tv]
+	return t
 }
 
 // compile recursively compiles semantic nodes into evaluators.
@@ -225,7 +273,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			body[i] = node
 		}
 		return &blockEvaluator{
-			t:    monoType(subst, n.ReturnStatement().Argument.TypeOf()),
+			t:    apply(subst, nil, n.ReturnStatement().Argument.TypeOf()),
 			body: body,
 		}, nil
 	case *semantic.ExpressionStatement:
@@ -244,15 +292,12 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			return nil, err
 		}
 		return &declarationEvaluator{
-			t:    monoType(subst, n.Init.TypeOf()),
+			t:    apply(subst, nil, n.Init.TypeOf()),
 			id:   n.Identifier.Name,
 			init: node,
 		}, nil
 	case *semantic.ObjectExpression:
 		properties := make(map[string]Evaluator, len(n.Properties))
-		obj := &objEvaluator{
-			t: monoType(subst, n.TypeOf()),
-		}
 
 		for _, p := range n.Properties {
 			node, err := compile(p.Value, subst, scope)
@@ -261,8 +306,8 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			}
 			properties[p.Key.Key()] = node
 		}
-		obj.properties = properties
 
+		var extends *identifierEvaluator
 		if n.With != nil {
 			node, err := compile(n.With, subst, scope)
 			if err != nil {
@@ -272,11 +317,14 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			if !ok {
 				return nil, errors.New(codes.Internal, "unknown identifier in with expression")
 			}
-			obj.with = with
-
+			extends = with
 		}
 
-		return obj, nil
+		return &objEvaluator{
+			t:          apply(subst, nil, n.TypeOf()),
+			properties: properties,
+			with:       extends,
+		}, nil
 
 	case *semantic.ArrayExpression:
 		var elements []Evaluator
@@ -291,12 +339,12 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			}
 		}
 		return &arrayEvaluator{
-			t:     monoType(subst, n.TypeOf()),
+			t:     apply(subst, nil, n.TypeOf()),
 			array: elements,
 		}, nil
 	case *semantic.IdentifierExpression:
 		return &identifierEvaluator{
-			t:    monoType(subst, n.TypeOf()),
+			t:    apply(subst, nil, n.TypeOf()),
 			name: n.Name,
 		}, nil
 	case *semantic.MemberExpression:
@@ -305,7 +353,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			return nil, err
 		}
 		return &memberEvaluator{
-			t:        monoType(subst, n.TypeOf()),
+			t:        apply(subst, nil, n.TypeOf()),
 			object:   object,
 			property: n.Property,
 		}, nil
@@ -319,7 +367,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			return nil, err
 		}
 		return &arrayIndexEvaluator{
-			t:     monoType(subst, n.TypeOf()),
+			t:     apply(subst, nil, n.TypeOf()),
 			array: arr,
 			index: idx,
 		}, nil
@@ -389,7 +437,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			return nil, err
 		}
 		return &unaryEvaluator{
-			t:    monoType(subst, n.TypeOf()),
+			t:    apply(subst, nil, n.TypeOf()),
 			node: node,
 			op:   n.Operator,
 		}, nil
@@ -450,7 +498,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			return nil, err
 		}
 		return &binaryEvaluator{
-			t:     monoType(subst, n.TypeOf()),
+			t:     apply(subst, nil, n.TypeOf()),
 			left:  l,
 			right: r,
 			f:     f,
@@ -465,12 +513,12 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			return nil, err
 		}
 		return &callEvaluator{
-			t:      monoType(subst, n.TypeOf()),
+			t:      apply(subst, nil, n.TypeOf()),
 			callee: callee,
 			args:   args,
 		}, nil
 	case *semantic.FunctionExpression:
-		fnType := monoType(subst, n.TypeOf())
+		fnType := apply(subst, nil, n.TypeOf())
 		num, err := fnType.NumArguments()
 		if err != nil {
 			return nil, err

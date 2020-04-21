@@ -615,8 +615,12 @@ type PropertyType struct {
 // The MonoType will be constructed with the properties in the
 // same order as they appear in the array.
 func NewObjectType(properties []PropertyType) MonoType {
+	return ExtendObjectType(properties, nil)
+}
+
+func ExtendObjectType(properties []PropertyType, extends *uint64) MonoType {
 	builder := flatbuffers.NewBuilder(64)
-	offset := buildObjectType(builder, properties, nil)
+	offset := buildObjectType(builder, properties, extends)
 	builder.Finish(offset)
 
 	buf := builder.FinishedBytes()
@@ -673,7 +677,11 @@ func copyMonoType(builder *flatbuffers.Builder, t MonoType) flatbuffers.UOffsetT
 			}
 		}
 		extends := row.Extends(nil)
-		return buildObjectType(builder, properties, extends)
+		var tv uint64
+		if extends != nil {
+			tv = extends.I()
+		}
+		return buildObjectType(builder, properties, &tv)
 	case fbsemantic.MonoTypeFun:
 		var fun fbsemantic.Fun
 		fun.Init(table.Bytes, table.Pos)
@@ -767,7 +775,7 @@ func buildFunctionType(builder *flatbuffers.Builder, retn MonoType, args []Argum
 
 // buildObjectType will construct a row type in the builder
 // and return the offset for the type.
-func buildObjectType(builder *flatbuffers.Builder, properties []PropertyType, extends *fbsemantic.Var) flatbuffers.UOffsetT {
+func buildObjectType(builder *flatbuffers.Builder, properties []PropertyType, extends *uint64) flatbuffers.UOffsetT {
 	propOffsets := make([]flatbuffers.UOffsetT, len(properties))
 	for i, p := range properties {
 		kOffset := builder.CreateByteString(p.Key)
@@ -784,7 +792,7 @@ func buildObjectType(builder *flatbuffers.Builder, properties []PropertyType, ex
 	var extendsOffset flatbuffers.UOffsetT
 	if extends != nil {
 		fbsemantic.VarStart(builder)
-		fbsemantic.VarAddI(builder, extends.I())
+		fbsemantic.VarAddI(builder, *extends)
 		extendsOffset = fbsemantic.VarEnd(builder)
 	}
 
