@@ -202,7 +202,7 @@ func findProperty(name string, t semantic.MonoType) (*semantic.RowProperty, bool
 	return nil, false, nil
 }
 
-// apply applies a subsitution to a type.
+// apply applies a substitution to a type.
 // It will ignore any errors when reading a type.
 // This is safe becase we already validated that the function type is a mono type.
 func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t semantic.MonoType) semantic.MonoType {
