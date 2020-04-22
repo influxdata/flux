@@ -17,6 +17,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/spec"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -122,6 +124,18 @@ func (r *REPL) input(t string) {
 	}
 }
 
+func evalWithExecDependencies(ctx context.Context, script string, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+	astPkg, err := flux.Parse(script)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	deps := execdeps.DefaultExecutionDependencies()
+	ctx = deps.Inject(ctx)
+
+	return flux.EvalAST(ctx, astPkg, opts...)
+}
+
 // executeLine processes a line of input.
 // If the input evaluates to a valid value, that value is returned.
 func (r *REPL) executeLine(t string) error {
@@ -137,7 +151,7 @@ func (r *REPL) executeLine(t string) error {
 		t = q
 	}
 
-	ses, scope, err := flux.Eval(r.ctx, t, func(ns values.Scope) {
+	ses, scope, err := evalWithExecDependencies(r.ctx, t, func(ns values.Scope) {
 		// copy values saved in the cached scope to the new interpreter's scope
 		r.scope.Range(func(k string, v values.Value) {
 			ns.Set(k, v)
