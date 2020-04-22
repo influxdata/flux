@@ -204,15 +204,23 @@ func findProperty(name string, t semantic.MonoType) (*semantic.RowProperty, bool
 
 // apply applies a substitution to a type.
 // It will ignore any errors when reading a type.
-// This is safe becase we already validated that the function type is a mono type.
+// This is safe becase we already validated that the function type is a monotype.
 func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t semantic.MonoType) semantic.MonoType {
 	switch t.Kind() {
+	case semantic.Unknown, semantic.Basic:
+		// Basic types do not contain type variables.
+		// As a result there is nothing to substitute.
+		return t
 	case semantic.Var:
 		tv, err := t.VarNum()
 		if err != nil {
 			return t
 		}
-		return sub[tv]
+		ty, ok := sub[tv]
+		if !ok {
+			return t
+		}
+		return ty
 	case semantic.Arr:
 		element, err := t.ElemType()
 		if err != nil {
@@ -256,8 +264,37 @@ func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t se
 			}
 			return semantic.ExtendObjectType(props, &tv)
 		}
+	case semantic.Fun:
+		n, err := t.NumArguments()
+		if err != nil {
+			return t
+		}
+		args := make([]semantic.ArgumentType, n)
+		for i := 0; i < n; i++ {
+			arg, err := t.Argument(i)
+			if err != nil {
+				return t
+			}
+			typ, err := arg.TypeOf()
+			if err != nil {
+				return t
+			}
+			args[i] = semantic.ArgumentType{
+				Name:     arg.Name(),
+				Type:     apply(sub, nil, typ),
+				Pipe:     arg.Pipe(),
+				Optional: arg.Optional(),
+			}
+		}
+		retn, err := t.ReturnType()
+		if err != nil {
+			return t
+		}
+		return semantic.NewFunctionType(apply(sub, nil, retn), args)
 	}
-	return t
+	// If none of the above cases are matched, something has gone
+	// seriously wrong and we should panic.
+	panic("unknown type")
 }
 
 // compile recursively compiles semantic nodes into evaluators.
