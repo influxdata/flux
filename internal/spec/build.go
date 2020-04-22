@@ -7,11 +7,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
-<<<<<<< HEAD
-=======
 	"github.com/influxdata/flux/lang/execdeps"
-	"github.com/influxdata/flux/values"
->>>>>>> master
 	"github.com/opentracing/opentracing-go"
 )
 
@@ -144,11 +140,7 @@ func FromScript(ctx context.Context, runtime flux.Runtime, now time.Time, script
 	ctx = deps.Inject(ctx)
 
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-<<<<<<< HEAD
-	sideEffects, scope, err := runtime.Eval(cctx, astPkg, flux.SetNowOption(now))
-=======
-	sideEffects, _, err := flux.EvalAST(cctx, astPkg)
->>>>>>> master
+	sideEffects, _, err := runtime.Eval(cctx, astPkg)
 	if err != nil {
 		return nil, err
 	}

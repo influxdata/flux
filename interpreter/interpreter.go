@@ -190,31 +190,23 @@ func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.Opti
 		if err != nil {
 			return nil, err
 		}
-<<<<<<< HEAD
 
 		// Retrieve an option with the name from the scope.
 		// If it exists and is an option, then set the option
 		// as it is from the prelude.
 		if opt, ok := scope.Lookup(a.Identifier.Name); ok {
 			if opt, ok := opt.(*values.Option); ok {
+				itrp.evaluateNowOption(ctx, a.Identifier.Name, init)
 				opt.Value = init
 				return opt, nil
 			}
 		}
 
 		// Create a new option and set it within the current scope.
+		itrp.evaluateNowOption(ctx, a.Identifier.Name, init)
 		v := &values.Option{Value: init}
 		scope.Set(a.Identifier.Name, v)
 		return v, nil
-=======
-		// Use an empty string as the package name as we don't know its name.
-		// This will have one of two behaviors:
-		//     1. The option key will be found in the prelude and applied there.
-		//     2. The option key will not be found in the prelude and the
-		//        interpreter will handle adding the new option to the current package.
-		itrp.evaluateNowOption(ctx, a.Identifier.Name, init)
-		return itrp.setOption(scope, "", a.Identifier.Name, init)
->>>>>>> master
 	case *semantic.MemberAssignment:
 		init, err := itrp.doExpression(ctx, a.Init, scope)
 		if err != nil {

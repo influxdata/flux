@@ -354,11 +354,7 @@ func (p *AstProgram) getSpec(ctx context.Context, runtime flux.Runtime, alloc *m
 	ctx = deps.Inject(ctx)
 
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-<<<<<<< HEAD
-	sideEffects, scope, err := runtime.Eval(cctx, p.Ast, flux.SetNowOption(p.Now))
-=======
-	sideEffects, scope, err := flux.EvalAST(cctx, p.Ast)
->>>>>>> master
+	sideEffects, scope, err := runtime.Eval(cctx, p.Ast)
 	if err != nil {
 		return nil, nil, err
 	}

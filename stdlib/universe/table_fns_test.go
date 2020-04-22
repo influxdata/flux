@@ -7,14 +7,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute/executetest"
-<<<<<<< HEAD
-	"github.com/influxdata/flux/lang/langtest"
+	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/runtime"
-=======
->>>>>>> master
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
@@ -60,17 +56,8 @@ func evalOrFail(t *testing.T, script string) values.Scope {
 	t.Helper()
 
 	ctx := dependenciestest.Default().Inject(context.Background())
-<<<<<<< HEAD
-	ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
-	_, s, err := runtime.Eval(ctx, script)
-=======
 	ctx = execdeps.DefaultExecutionDependencies().Inject(ctx)
-	_, s, err := flux.Eval(ctx, script, func(s values.Scope) {
-		if mutator != nil {
-			mutator(s)
-		}
-	})
->>>>>>> master
+	_, s, err := runtime.Eval(ctx, script)
 	if err != nil {
 		t.Fatal(err)
 	}
