@@ -18,9 +18,13 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
+<<<<<<< HEAD
 	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/runtime"
+=======
+	"github.com/influxdata/flux/lang/execdeps"
+>>>>>>> master
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -141,7 +145,25 @@ func (r *REPL) input(t string) {
 	}
 }
 
+<<<<<<< HEAD
 func (r *REPL) Eval(t string) ([]interpreter.SideEffect, error) {
+=======
+func evalWithExecDependencies(ctx context.Context, script string, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+	astPkg, err := flux.Parse(script)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	deps := execdeps.DefaultExecutionDependencies()
+	ctx = deps.Inject(ctx)
+
+	return flux.EvalAST(ctx, astPkg, opts...)
+}
+
+// executeLine processes a line of input.
+// If the input evaluates to a valid value, that value is returned.
+func (r *REPL) executeLine(t string) error {
+>>>>>>> master
 	if t == "" {
 		return nil, nil
 	}
@@ -154,6 +176,7 @@ func (r *REPL) Eval(t string) ([]interpreter.SideEffect, error) {
 		t = q
 	}
 
+<<<<<<< HEAD
 	pkg, err := r.analyzeLine(t)
 	if err != nil {
 		return nil, err
@@ -165,6 +188,14 @@ func (r *REPL) Eval(t string) ([]interpreter.SideEffect, error) {
 // If the input evaluates to a valid value, that value is returned.
 func (r *REPL) executeLine(t string) error {
 	ses, err := r.Eval(t)
+=======
+	ses, scope, err := evalWithExecDependencies(r.ctx, t, func(ns values.Scope) {
+		// copy values saved in the cached scope to the new interpreter's scope
+		r.scope.Range(func(k string, v values.Value) {
+			ns.Set(k, v)
+		})
+	})
+>>>>>>> master
 	if err != nil {
 		return err
 	}

@@ -71,6 +71,43 @@ Navigate to http://localhost:8080 to try it out.
 This will watch the filesystem and rebuild on changes.
 As such you should be able to run `wasm-pack` to get new changes and then refresh the browser to test.
 
+## Updating NodeJS Dependencies
+
+On occasion a vulnerability is found in one of the nodejs dependencies of the WASM package.
+To update the vulnerable dependencies do the following
+
+1. Change into the web app directory:
+
+   ```
+   $ cd libflux/site
+   ```
+
+2. Install its dependencies locally so you can introspect them:
+
+   ```
+   $ yarn install
+   ```
+
+3. Check for outdated dependencies
+
+   ```
+   $ npm outdated
+   ```
+
+4. Update any dependecies listed as outdated. For example the `webpack` dependencies is outdate run:
+
+   ```
+   $ npm update webpack
+   ```
+
+5. Finally update the yarn.lock file:
+
+   ```
+   $ yarn install
+   ```
+
+Now you can commit the new `package.json` and `yarn.lock` files.
+
 ## Publishing the WASM package
 
 1. Log into yarn (`yarn login`) with an account that has access to the [influxdata npm organization](https://www.npmjs.com/org/influxdata)

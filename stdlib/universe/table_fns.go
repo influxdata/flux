@@ -2,7 +2,6 @@ package universe
 
 import (
 	"context"
-	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -11,7 +10,11 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
+<<<<<<< HEAD
 	"github.com/influxdata/flux/runtime"
+=======
+	"github.com/influxdata/flux/lang/execdeps"
+>>>>>>> master
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/objects"
@@ -68,6 +71,7 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 		}
 	}
 
+<<<<<<< HEAD
 	t, err := tableFind(ctx, to, fn)
 	if err != nil {
 		return nil, err
@@ -81,9 +85,17 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 // Returns an error in the second return value, or the found table in the first
 // return value, or nil to indicate that no table was found.
 func tableFind(ctx context.Context, to *flux.TableObject, fn *execute.TablePredicateFn) (*objects.Table, error) {
+=======
+	if !execdeps.HaveExecutionDependencies(ctx) {
+		return nil, errors.New(codes.Internal, "no execution context for tableFind to use")
+	}
+
+	deps := execdeps.GetExecutionDependencies(ctx)
+
+>>>>>>> master
 	c := lang.TableObjectCompiler{
 		Tables: to,
-		Now:    time.Now(),
+		Now:    *deps.Now,
 	}
 
 	p, err := c.Compile(ctx)
@@ -91,11 +103,6 @@ func tableFind(ctx context.Context, to *flux.TableObject, fn *execute.TablePredi
 		return nil, errors.Wrap(err, codes.Inherit, "error in table object compilation")
 	}
 
-	if !lang.HaveExecutionDependencies(ctx) {
-		return nil, errors.New(codes.Invalid, "do not have an execution context for tableFind, if using the repl, try executing this code on the server using the InfluxDB API")
-	}
-
-	deps := lang.GetExecutionDependencies(ctx)
 	if p, ok := p.(lang.LoggingProgram); ok {
 		p.SetLogger(deps.Logger)
 	}
