@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 35,
-					Line:   39,
+					Line:   41,
 				},
 				File:   "experimental.flux",
-				Source: "package experimental\n\nbuiltin addDuration\nbuiltin subDuration\n\n// An experimental version of group that has mode: \"extend\"\nbuiltin group\n\n// objectKeys produces a list of the keys existing on the object\nbuiltin objectKeys\n\n// set adds the values from the object onto each row of a table\nbuiltin set\n\n// An experimental version of \"to\" that:\n// - Expects pivoted data\n// - Any column in the group key is made a tag in storage\n// - All other columns are fields\n// - An error will be thrown for incompatible data types\nbuiltin to\n\n// An experimental version of join.\nbuiltin join\n\n// Aligns all tables to a common start time by using the same _time value for\n// the first record in each table and incrementing all subsequent _time values\n// using time elapsed between input records.\n// By default, it aligns to tables to 1970-01-01T00:00:00Z UTC.\nalignTime = (tables=<-, alignTo=time(v: 0)) =>\n  tables\n    |> stateDuration(\n      fn: (r) => true,\n      column: \"timeDiff\",\n      unit: 1ns\n    )\n    |> map(fn: (r) =>\n      ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })\n    )\n    |> drop(columns: [\"timeDiff\"])",
+				Source: "package experimental\n\nbuiltin addDuration\nbuiltin subDuration\n\n// An experimental version of group that has mode: \"extend\"\nbuiltin group\n\n// objectKeys produces a list of the keys existing on the object\nbuiltin objectKeys\n\n// set adds the values from the object onto each row of a table\nbuiltin set\n\n// An experimental version of \"to\" that:\n// - Expects pivoted data\n// - Any column in the group key is made a tag in storage\n// - All other columns are fields\n// - An error will be thrown for incompatible data types\nbuiltin to\n\n// An experimental version of join.\nbuiltin join\n\nbuiltin chain\n\n// Aligns all tables to a common start time by using the same _time value for\n// the first record in each table and incrementing all subsequent _time values\n// using time elapsed between input records.\n// By default, it aligns to tables to 1970-01-01T00:00:00Z UTC.\nalignTime = (tables=<-, alignTo=time(v: 0)) =>\n  tables\n    |> stateDuration(\n      fn: (r) => true,\n      column: \"timeDiff\",\n      unit: 1ns\n    )\n    |> map(fn: (r) =>\n      ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })\n    )\n    |> drop(columns: [\"timeDiff\"])",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -270,19 +270,53 @@ var pkgAST = &ast.Package{
 				},
 				Name: "join",
 			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   25,
+					},
+					File:   "experimental.flux",
+					Source: "builtin chain",
+					Start: ast.Position{
+						Column: 1,
+						Line:   25,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   25,
+						},
+						File:   "experimental.flux",
+						Source: "chain",
+						Start: ast.Position{
+							Column: 9,
+							Line:   25,
+						},
+					},
+				},
+				Name: "chain",
+			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 35,
-						Line:   39,
+						Line:   41,
 					},
 					File:   "experimental.flux",
 					Source: "alignTime = (tables=<-, alignTo=time(v: 0)) =>\n  tables\n    |> stateDuration(\n      fn: (r) => true,\n      column: \"timeDiff\",\n      unit: 1ns\n    )\n    |> map(fn: (r) =>\n      ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })\n    )\n    |> drop(columns: [\"timeDiff\"])",
 					Start: ast.Position{
 						Column: 1,
-						Line:   29,
+						Line:   31,
 					},
 				},
 			},
@@ -292,13 +326,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   29,
+							Line:   31,
 						},
 						File:   "experimental.flux",
 						Source: "alignTime",
 						Start: ast.Position{
 							Column: 1,
-							Line:   29,
+							Line:   31,
 						},
 					},
 				},
@@ -310,13 +344,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 35,
-							Line:   39,
+							Line:   41,
 						},
 						File:   "experimental.flux",
 						Source: "(tables=<-, alignTo=time(v: 0)) =>\n  tables\n    |> stateDuration(\n      fn: (r) => true,\n      column: \"timeDiff\",\n      unit: 1ns\n    )\n    |> map(fn: (r) =>\n      ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })\n    )\n    |> drop(columns: [\"timeDiff\"])",
 						Start: ast.Position{
 							Column: 13,
-							Line:   29,
+							Line:   31,
 						},
 					},
 				},
@@ -329,13 +363,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 9,
-											Line:   30,
+											Line:   32,
 										},
 										File:   "experimental.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 3,
-											Line:   30,
+											Line:   32,
 										},
 									},
 								},
@@ -346,13 +380,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   35,
+										Line:   37,
 									},
 									File:   "experimental.flux",
 									Source: "tables\n    |> stateDuration(\n      fn: (r) => true,\n      column: \"timeDiff\",\n      unit: 1ns\n    )",
 									Start: ast.Position{
 										Column: 3,
-										Line:   30,
+										Line:   32,
 									},
 								},
 							},
@@ -363,13 +397,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   34,
+												Line:   36,
 											},
 											File:   "experimental.flux",
 											Source: "fn: (r) => true,\n      column: \"timeDiff\",\n      unit: 1ns",
 											Start: ast.Position{
 												Column: 7,
-												Line:   32,
+												Line:   34,
 											},
 										},
 									},
@@ -379,13 +413,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 22,
-													Line:   32,
+													Line:   34,
 												},
 												File:   "experimental.flux",
 												Source: "fn: (r) => true",
 												Start: ast.Position{
 													Column: 7,
-													Line:   32,
+													Line:   34,
 												},
 											},
 										},
@@ -395,13 +429,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 9,
-														Line:   32,
+														Line:   34,
 													},
 													File:   "experimental.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 7,
-														Line:   32,
+														Line:   34,
 													},
 												},
 											},
@@ -413,13 +447,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 22,
-														Line:   32,
+														Line:   34,
 													},
 													File:   "experimental.flux",
 													Source: "(r) => true",
 													Start: ast.Position{
 														Column: 11,
-														Line:   32,
+														Line:   34,
 													},
 												},
 											},
@@ -429,13 +463,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 22,
-															Line:   32,
+															Line:   34,
 														},
 														File:   "experimental.flux",
 														Source: "true",
 														Start: ast.Position{
 															Column: 18,
-															Line:   32,
+															Line:   34,
 														},
 													},
 												},
@@ -447,13 +481,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 13,
-															Line:   32,
+															Line:   34,
 														},
 														File:   "experimental.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 12,
-															Line:   32,
+															Line:   34,
 														},
 													},
 												},
@@ -463,13 +497,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 13,
-																Line:   32,
+																Line:   34,
 															},
 															File:   "experimental.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 12,
-																Line:   32,
+																Line:   34,
 															},
 														},
 													},
@@ -484,13 +518,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   33,
+													Line:   35,
 												},
 												File:   "experimental.flux",
 												Source: "column: \"timeDiff\"",
 												Start: ast.Position{
 													Column: 7,
-													Line:   33,
+													Line:   35,
 												},
 											},
 										},
@@ -500,13 +534,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 13,
-														Line:   33,
+														Line:   35,
 													},
 													File:   "experimental.flux",
 													Source: "column",
 													Start: ast.Position{
 														Column: 7,
-														Line:   33,
+														Line:   35,
 													},
 												},
 											},
@@ -518,13 +552,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 25,
-														Line:   33,
+														Line:   35,
 													},
 													File:   "experimental.flux",
 													Source: "\"timeDiff\"",
 													Start: ast.Position{
 														Column: 15,
-														Line:   33,
+														Line:   35,
 													},
 												},
 											},
@@ -536,13 +570,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
-													Line:   34,
+													Line:   36,
 												},
 												File:   "experimental.flux",
 												Source: "unit: 1ns",
 												Start: ast.Position{
 													Column: 7,
-													Line:   34,
+													Line:   36,
 												},
 											},
 										},
@@ -552,13 +586,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   34,
+														Line:   36,
 													},
 													File:   "experimental.flux",
 													Source: "unit",
 													Start: ast.Position{
 														Column: 7,
-														Line:   34,
+														Line:   36,
 													},
 												},
 											},
@@ -570,13 +604,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 16,
-														Line:   34,
+														Line:   36,
 													},
 													File:   "experimental.flux",
 													Source: "1ns",
 													Start: ast.Position{
 														Column: 13,
-														Line:   34,
+														Line:   36,
 													},
 												},
 											},
@@ -593,13 +627,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   35,
+											Line:   37,
 										},
 										File:   "experimental.flux",
 										Source: "stateDuration(\n      fn: (r) => true,\n      column: \"timeDiff\",\n      unit: 1ns\n    )",
 										Start: ast.Position{
 											Column: 8,
-											Line:   31,
+											Line:   33,
 										},
 									},
 								},
@@ -609,13 +643,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   31,
+												Line:   33,
 											},
 											File:   "experimental.flux",
 											Source: "stateDuration",
 											Start: ast.Position{
 												Column: 8,
-												Line:   31,
+												Line:   33,
 											},
 										},
 									},
@@ -628,13 +662,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   38,
+									Line:   40,
 								},
 								File:   "experimental.flux",
 								Source: "tables\n    |> stateDuration(\n      fn: (r) => true,\n      column: \"timeDiff\",\n      unit: 1ns\n    )\n    |> map(fn: (r) =>\n      ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })\n    )",
 								Start: ast.Position{
 									Column: 3,
-									Line:   30,
+									Line:   32,
 								},
 							},
 						},
@@ -645,13 +679,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 67,
-											Line:   37,
+											Line:   39,
 										},
 										File:   "experimental.flux",
 										Source: "fn: (r) =>\n      ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })",
 										Start: ast.Position{
 											Column: 12,
-											Line:   36,
+											Line:   38,
 										},
 									},
 								},
@@ -661,13 +695,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 67,
-												Line:   37,
+												Line:   39,
 											},
 											File:   "experimental.flux",
 											Source: "fn: (r) =>\n      ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })",
 											Start: ast.Position{
 												Column: 12,
-												Line:   36,
+												Line:   38,
 											},
 										},
 									},
@@ -677,13 +711,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   36,
+													Line:   38,
 												},
 												File:   "experimental.flux",
 												Source: "fn",
 												Start: ast.Position{
 													Column: 12,
-													Line:   36,
+													Line:   38,
 												},
 											},
 										},
@@ -695,13 +729,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 67,
-													Line:   37,
+													Line:   39,
 												},
 												File:   "experimental.flux",
 												Source: "(r) =>\n      ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })",
 												Start: ast.Position{
 													Column: 16,
-													Line:   36,
+													Line:   38,
 												},
 											},
 										},
@@ -711,13 +745,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 67,
-														Line:   37,
+														Line:   39,
 													},
 													File:   "experimental.flux",
 													Source: "({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })",
 													Start: ast.Position{
 														Column: 7,
-														Line:   37,
+														Line:   39,
 													},
 												},
 											},
@@ -727,13 +761,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 66,
-															Line:   37,
+															Line:   39,
 														},
 														File:   "experimental.flux",
 														Source: "{ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) }",
 														Start: ast.Position{
 															Column: 8,
-															Line:   37,
+															Line:   39,
 														},
 													},
 												},
@@ -743,13 +777,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 64,
-																Line:   37,
+																Line:   39,
 															},
 															File:   "experimental.flux",
 															Source: "_time: time(v: (int(v: alignTo ) + r.timeDiff))",
 															Start: ast.Position{
 																Column: 17,
-																Line:   37,
+																Line:   39,
 															},
 														},
 													},
@@ -759,13 +793,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 22,
-																	Line:   37,
+																	Line:   39,
 																},
 																File:   "experimental.flux",
 																Source: "_time",
 																Start: ast.Position{
 																	Column: 17,
-																	Line:   37,
+																	Line:   39,
 																},
 															},
 														},
@@ -778,13 +812,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 63,
-																		Line:   37,
+																		Line:   39,
 																	},
 																	File:   "experimental.flux",
 																	Source: "v: (int(v: alignTo ) + r.timeDiff)",
 																	Start: ast.Position{
 																		Column: 29,
-																		Line:   37,
+																		Line:   39,
 																	},
 																},
 															},
@@ -794,13 +828,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 63,
-																			Line:   37,
+																			Line:   39,
 																		},
 																		File:   "experimental.flux",
 																		Source: "v: (int(v: alignTo ) + r.timeDiff)",
 																		Start: ast.Position{
 																			Column: 29,
-																			Line:   37,
+																			Line:   39,
 																		},
 																	},
 																},
@@ -810,13 +844,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
-																				Line:   37,
+																				Line:   39,
 																			},
 																			File:   "experimental.flux",
 																			Source: "v",
 																			Start: ast.Position{
 																				Column: 29,
-																				Line:   37,
+																				Line:   39,
 																			},
 																		},
 																	},
@@ -828,13 +862,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 63,
-																				Line:   37,
+																				Line:   39,
 																			},
 																			File:   "experimental.flux",
 																			Source: "(int(v: alignTo ) + r.timeDiff)",
 																			Start: ast.Position{
 																				Column: 32,
-																				Line:   37,
+																				Line:   39,
 																			},
 																		},
 																	},
@@ -844,13 +878,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 62,
-																					Line:   37,
+																					Line:   39,
 																				},
 																				File:   "experimental.flux",
 																				Source: "int(v: alignTo ) + r.timeDiff",
 																				Start: ast.Position{
 																					Column: 33,
-																					Line:   37,
+																					Line:   39,
 																				},
 																			},
 																		},
@@ -861,13 +895,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 47,
-																							Line:   37,
+																							Line:   39,
 																						},
 																						File:   "experimental.flux",
 																						Source: "v: alignTo",
 																						Start: ast.Position{
 																							Column: 37,
-																							Line:   37,
+																							Line:   39,
 																						},
 																					},
 																				},
@@ -877,13 +911,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 47,
-																								Line:   37,
+																								Line:   39,
 																							},
 																							File:   "experimental.flux",
 																							Source: "v: alignTo",
 																							Start: ast.Position{
 																								Column: 37,
-																								Line:   37,
+																								Line:   39,
 																							},
 																						},
 																					},
@@ -893,13 +927,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 38,
-																									Line:   37,
+																									Line:   39,
 																								},
 																								File:   "experimental.flux",
 																								Source: "v",
 																								Start: ast.Position{
 																									Column: 37,
-																									Line:   37,
+																									Line:   39,
 																								},
 																							},
 																						},
@@ -911,13 +945,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 47,
-																									Line:   37,
+																									Line:   39,
 																								},
 																								File:   "experimental.flux",
 																								Source: "alignTo",
 																								Start: ast.Position{
 																									Column: 40,
-																									Line:   37,
+																									Line:   39,
 																								},
 																							},
 																						},
@@ -931,13 +965,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 49,
-																						Line:   37,
+																						Line:   39,
 																					},
 																					File:   "experimental.flux",
 																					Source: "int(v: alignTo )",
 																					Start: ast.Position{
 																						Column: 33,
-																						Line:   37,
+																						Line:   39,
 																					},
 																				},
 																			},
@@ -947,13 +981,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 36,
-																							Line:   37,
+																							Line:   39,
 																						},
 																						File:   "experimental.flux",
 																						Source: "int",
 																						Start: ast.Position{
 																							Column: 33,
-																							Line:   37,
+																							Line:   39,
 																						},
 																					},
 																				},
@@ -967,13 +1001,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 62,
-																						Line:   37,
+																						Line:   39,
 																					},
 																					File:   "experimental.flux",
 																					Source: "r.timeDiff",
 																					Start: ast.Position{
 																						Column: 52,
-																						Line:   37,
+																						Line:   39,
 																					},
 																				},
 																			},
@@ -983,13 +1017,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 53,
-																							Line:   37,
+																							Line:   39,
 																						},
 																						File:   "experimental.flux",
 																						Source: "r",
 																						Start: ast.Position{
 																							Column: 52,
-																							Line:   37,
+																							Line:   39,
 																						},
 																					},
 																				},
@@ -1001,13 +1035,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 62,
-																							Line:   37,
+																							Line:   39,
 																						},
 																						File:   "experimental.flux",
 																						Source: "timeDiff",
 																						Start: ast.Position{
 																							Column: 54,
-																							Line:   37,
+																							Line:   39,
 																						},
 																					},
 																				},
@@ -1024,13 +1058,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 64,
-																	Line:   37,
+																	Line:   39,
 																},
 																File:   "experimental.flux",
 																Source: "time(v: (int(v: alignTo ) + r.timeDiff))",
 																Start: ast.Position{
 																	Column: 24,
-																	Line:   37,
+																	Line:   39,
 																},
 															},
 														},
@@ -1040,13 +1074,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 28,
-																		Line:   37,
+																		Line:   39,
 																	},
 																	File:   "experimental.flux",
 																	Source: "time",
 																	Start: ast.Position{
 																		Column: 24,
-																		Line:   37,
+																		Line:   39,
 																	},
 																},
 															},
@@ -1060,13 +1094,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 11,
-																Line:   37,
+																Line:   39,
 															},
 															File:   "experimental.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 10,
-																Line:   37,
+																Line:   39,
 															},
 														},
 													},
@@ -1080,13 +1114,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   36,
+														Line:   38,
 													},
 													File:   "experimental.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 17,
-														Line:   36,
+														Line:   38,
 													},
 												},
 											},
@@ -1096,13 +1130,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 18,
-															Line:   36,
+															Line:   38,
 														},
 														File:   "experimental.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 17,
-															Line:   36,
+															Line:   38,
 														},
 													},
 												},
@@ -1119,13 +1153,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   38,
+										Line:   40,
 									},
 									File:   "experimental.flux",
 									Source: "map(fn: (r) =>\n      ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })\n    )",
 									Start: ast.Position{
 										Column: 8,
-										Line:   36,
+										Line:   38,
 									},
 								},
 							},
@@ -1135,13 +1169,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 11,
-											Line:   36,
+											Line:   38,
 										},
 										File:   "experimental.flux",
 										Source: "map",
 										Start: ast.Position{
 											Column: 8,
-											Line:   36,
+											Line:   38,
 										},
 									},
 								},
@@ -1154,13 +1188,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 35,
-								Line:   39,
+								Line:   41,
 							},
 							File:   "experimental.flux",
 							Source: "tables\n    |> stateDuration(\n      fn: (r) => true,\n      column: \"timeDiff\",\n      unit: 1ns\n    )\n    |> map(fn: (r) =>\n      ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })\n    )\n    |> drop(columns: [\"timeDiff\"])",
 							Start: ast.Position{
 								Column: 3,
-								Line:   30,
+								Line:   32,
 							},
 						},
 					},
@@ -1171,13 +1205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   39,
+										Line:   41,
 									},
 									File:   "experimental.flux",
 									Source: "columns: [\"timeDiff\"]",
 									Start: ast.Position{
 										Column: 13,
-										Line:   39,
+										Line:   41,
 									},
 								},
 							},
@@ -1187,13 +1221,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   39,
+											Line:   41,
 										},
 										File:   "experimental.flux",
 										Source: "columns: [\"timeDiff\"]",
 										Start: ast.Position{
 											Column: 13,
-											Line:   39,
+											Line:   41,
 										},
 									},
 								},
@@ -1203,13 +1237,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   39,
+												Line:   41,
 											},
 											File:   "experimental.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
-												Line:   39,
+												Line:   41,
 											},
 										},
 									},
@@ -1221,13 +1255,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   39,
+												Line:   41,
 											},
 											File:   "experimental.flux",
 											Source: "[\"timeDiff\"]",
 											Start: ast.Position{
 												Column: 22,
-												Line:   39,
+												Line:   41,
 											},
 										},
 									},
@@ -1237,13 +1271,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   39,
+													Line:   41,
 												},
 												File:   "experimental.flux",
 												Source: "\"timeDiff\"",
 												Start: ast.Position{
 													Column: 23,
-													Line:   39,
+													Line:   41,
 												},
 											},
 										},
@@ -1258,13 +1292,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 35,
-									Line:   39,
+									Line:   41,
 								},
 								File:   "experimental.flux",
 								Source: "drop(columns: [\"timeDiff\"])",
 								Start: ast.Position{
 									Column: 8,
-									Line:   39,
+									Line:   41,
 								},
 							},
 						},
@@ -1274,13 +1308,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   39,
+										Line:   41,
 									},
 									File:   "experimental.flux",
 									Source: "drop",
 									Start: ast.Position{
 										Column: 8,
-										Line:   39,
+										Line:   41,
 									},
 								},
 							},
@@ -1294,13 +1328,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   29,
+								Line:   31,
 							},
 							File:   "experimental.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 14,
-								Line:   29,
+								Line:   31,
 							},
 						},
 					},
@@ -1310,13 +1344,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   29,
+									Line:   31,
 								},
 								File:   "experimental.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 14,
-									Line:   29,
+									Line:   31,
 								},
 							},
 						},
@@ -1327,13 +1361,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   29,
+								Line:   31,
 							},
 							File:   "experimental.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 21,
-								Line:   29,
+								Line:   31,
 							},
 						},
 					}},
@@ -1343,13 +1377,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 43,
-								Line:   29,
+								Line:   31,
 							},
 							File:   "experimental.flux",
 							Source: "alignTo=time(v: 0)",
 							Start: ast.Position{
 								Column: 25,
-								Line:   29,
+								Line:   31,
 							},
 						},
 					},
@@ -1359,13 +1393,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   29,
+									Line:   31,
 								},
 								File:   "experimental.flux",
 								Source: "alignTo",
 								Start: ast.Position{
 									Column: 25,
-									Line:   29,
+									Line:   31,
 								},
 							},
 						},
@@ -1378,13 +1412,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 42,
-										Line:   29,
+										Line:   31,
 									},
 									File:   "experimental.flux",
 									Source: "v: 0",
 									Start: ast.Position{
 										Column: 38,
-										Line:   29,
+										Line:   31,
 									},
 								},
 							},
@@ -1394,13 +1428,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 42,
-											Line:   29,
+											Line:   31,
 										},
 										File:   "experimental.flux",
 										Source: "v: 0",
 										Start: ast.Position{
 											Column: 38,
-											Line:   29,
+											Line:   31,
 										},
 									},
 								},
@@ -1410,13 +1444,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
-												Line:   29,
+												Line:   31,
 											},
 											File:   "experimental.flux",
 											Source: "v",
 											Start: ast.Position{
 												Column: 38,
-												Line:   29,
+												Line:   31,
 											},
 										},
 									},
@@ -1428,13 +1462,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 42,
-												Line:   29,
+												Line:   31,
 											},
 											File:   "experimental.flux",
 											Source: "0",
 											Start: ast.Position{
 												Column: 41,
-												Line:   29,
+												Line:   31,
 											},
 										},
 									},
@@ -1448,13 +1482,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   29,
+									Line:   31,
 								},
 								File:   "experimental.flux",
 								Source: "time(v: 0)",
 								Start: ast.Position{
 									Column: 33,
-									Line:   29,
+									Line:   31,
 								},
 							},
 						},
@@ -1464,13 +1498,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 37,
-										Line:   29,
+										Line:   31,
 									},
 									File:   "experimental.flux",
 									Source: "time",
 									Start: ast.Position{
 										Column: 33,
-										Line:   29,
+										Line:   31,
 									},
 								},
 							},
