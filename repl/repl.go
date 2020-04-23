@@ -18,6 +18,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/runtime"
@@ -158,6 +159,10 @@ func (r *REPL) Eval(t string) ([]interpreter.SideEffect, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	deps := execdeps.DefaultExecutionDependencies()
+	r.ctx = deps.Inject(r.ctx)
+
 	return r.itrp.Eval(r.ctx, pkg, r.scope, r.importer)
 }
 
