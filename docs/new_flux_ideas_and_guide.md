@@ -1,13 +1,4 @@
 # Getting Started Querying with Flux and InfluxDB
-**NOTE BEFORE YOU GET STARTED:** Forget much of what you know about Flux. This is a new version with some very 
-important differences. As you work through this guide, please keep notes on your thoughts for each section 
-as you encounter it. This ends in a test and you are expected to create a secret Gist with your thoughts and 
-the answers to the questions. You can close with a summary of your feelings after going through the whole thing 
-but please note your thoughts as you go along. It's very likely that you'll think something is crazy or off 
-initially, but maybe think it's ok when you look back later to write your summary. We're interested in 
-seeing this progression of your learning and thought process.
-
-You're allowed to ask questions in the private channel set up for this usability test in Slack. #flux-usability-yourname
 
 Welcome to the getting started guide for Flux. Flux is a functional scripting and query language that looks 
 very similar to Javascript in some parts, but with shortcut syntax for common queries. Its goal is to make 
