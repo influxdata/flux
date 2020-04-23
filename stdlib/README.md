@@ -42,3 +42,8 @@ All `*_test.flux` files are encoded into `flux_test_gen.go` the non test `.flux`
 > NOTE: The `flux_test_gen.go` file is not a Go test file as we want to include the Flux test code into the normal build.
 This enables downstream projects that import Flux to run the test suite define in the standard library against their implementation.
 
+
+## Third Party Contributions
+
+We collect third part contributions into the `contrib` package.
+See the [README](https://github.com/influxdata/flux/blob/master/stdlib/contrib/README.md) for details on how to contribute a third party package to Flux.
