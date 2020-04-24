@@ -163,6 +163,47 @@ func TestMap_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: `overwrite mergekey`,
+			spec: &universe.MapProcedureSpec{
+				MergeKey: true,
+				Fn: interpreter.ResolvedFunction{
+					Scope: builtIns,
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_stop: "a", _value: "b"})`),
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), execute.Time(6), execute.Time(1), 1.0},
+					{execute.Time(0), execute.Time(6), execute.Time(2), 2.0},
+					{execute.Time(0), execute.Time(6), execute.Time(3), 3.0},
+					{execute.Time(0), execute.Time(6), execute.Time(4), 4.0},
+					{execute.Time(0), execute.Time(6), execute.Time(5), 5.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TString},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), "a", "b"},
+					{execute.Time(0), "a", "b"},
+					{execute.Time(0), "a", "b"},
+					{execute.Time(0), "a", "b"},
+					{execute.Time(0), "a", "b"},
+				},
+			}},
+		},
+		{
 			name: `identity function`,
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
