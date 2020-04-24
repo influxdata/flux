@@ -41,7 +41,7 @@ type Schema struct {
 	// truncated to the period.
 	Start time.Time
 
-	// Tags is a listing of tags and the generated cardinality for
+	// Labels is a listing of tags and the generated cardinality for
 	// that tag.
 	Tags []Tag
 

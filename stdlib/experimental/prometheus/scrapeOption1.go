@@ -5,14 +5,15 @@ import (
 
 	"context"
 	"fmt"
+	"github.com/matttproud/golang_protobuf_extensions/pbutil"
+	dto "github.com/prometheus/client_model/go"
+	"github.com/prometheus/common/expfmt"
 	"io"
 	"math"
 	"mime"
 	"net/http"
 	"net/url"
 	"time"
-
-	"github.com/matttproud/golang_protobuf_extensions/pbutil"
 
 	// Flux packages
 	"github.com/influxdata/flux"
@@ -22,15 +23,11 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-
-	// Prometheus packages
-	dto "github.com/prometheus/client_model/go"
-	"github.com/prometheus/common/expfmt"
 )
 
-const ScrapePrometheusKind = "scrapePrometheus"
+const ScrapePrometheusOpt1Kind = "scrapePrometheusOpt1"
 
-type ScrapePrometheusOpSpec struct {
+type ScrapePrometheusOpt1Spec struct {
 	URL string `json:"token,omitempty"`
 }
 
@@ -42,14 +39,14 @@ func init() {
 		Required: semantic.LabelSet{"url"},
 		Return:   flux.TableObjectType,
 	}
-	flux.RegisterPackageValue("experimental/prometheus", "scrape", flux.FunctionValue(ScrapePrometheusKind, createScrapePrometheusOpSpec, scrapePrometheusSignature))
-	flux.RegisterOpSpec(ScrapePrometheusKind, newScrapePrometheusOp)
-	plan.RegisterProcedureSpec(ScrapePrometheusKind, newScrapePrometheusProcedure, ScrapePrometheusKind)
-	execute.RegisterSource(ScrapePrometheusKind, createScrapePrometheusSource)
+	flux.RegisterPackageValue("experimental/prometheus", "scrapeOpt1", flux.FunctionValue(ScrapePrometheusOpt1Kind, createScrapePrometheusOpt1Spec, scrapePrometheusSignature))
+	flux.RegisterOpSpec(ScrapePrometheusOpt1Kind, newScrapePrometheusOpt1)
+	plan.RegisterProcedureSpec(ScrapePrometheusOpt1Kind, newScrapePrometheusOpt1Procedure, ScrapePrometheusOpt1Kind)
+	execute.RegisterSource(ScrapePrometheusOpt1Kind, createScrapePrometheusOpt1Source)
 }
 
-func createScrapePrometheusOpSpec(args flux.Arguments, administration *flux.Administration) (flux.OperationSpec, error) {
-	spec := new(ScrapePrometheusOpSpec)
+func createScrapePrometheusOpt1Spec(args flux.Arguments, administration *flux.Administration) (flux.OperationSpec, error) {
+	spec := new(ScrapePrometheusOpt1Spec)
 
 	if url, err := args.GetRequiredString("url"); err != nil {
 		return nil, err
@@ -59,63 +56,64 @@ func createScrapePrometheusOpSpec(args flux.Arguments, administration *flux.Admi
 	return spec, nil
 }
 
-func newScrapePrometheusOp() flux.OperationSpec {
-	return new(ScrapePrometheusOpSpec)
+func newScrapePrometheusOpt1() flux.OperationSpec {
+	return new(ScrapePrometheusOpt1Spec)
 }
 
-func (s *ScrapePrometheusOpSpec) Kind() flux.OperationKind {
-	return ScrapePrometheusKind
+func (s *ScrapePrometheusOpt1Spec) Kind() flux.OperationKind {
+	return ScrapePrometheusOpt1Kind
 }
 
-type ScrapePrometheusProcedureSpec struct {
+type ScrapePrometheusOpt1ProcedureSpec struct {
 	plan.DefaultCost
 	URL string
 }
 
-func newScrapePrometheusProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*ScrapePrometheusOpSpec)
+func newScrapePrometheusOpt1Procedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
+	spec, ok := qs.(*ScrapePrometheusOpt1Spec)
 	if !ok {
 		return nil, errors.Newf(codes.Invalid, "invalid spec type %T", qs)
 	}
 
-	return &ScrapePrometheusProcedureSpec{
+	return &ScrapePrometheusOpt1ProcedureSpec{
 		URL: spec.URL,
 	}, nil
 }
 
-func (s *ScrapePrometheusProcedureSpec) Kind() plan.ProcedureKind {
-	return ScrapePrometheusKind
+func (s *ScrapePrometheusOpt1ProcedureSpec) Kind() plan.ProcedureKind {
+	return ScrapePrometheusOpt1Kind
 }
 
-func (s *ScrapePrometheusProcedureSpec) Copy() plan.ProcedureSpec {
-	ns := new(ScrapePrometheusProcedureSpec)
+func (s *ScrapePrometheusOpt1ProcedureSpec) Copy() plan.ProcedureSpec {
+	ns := new(ScrapePrometheusOpt1ProcedureSpec)
 	ns.URL = s.URL
 	return ns
 }
 
-func createScrapePrometheusSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
-	spec, ok := prSpec.(*ScrapePrometheusProcedureSpec)
+
+func createScrapePrometheusOpt1Source(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
+	spec, ok := prSpec.(*ScrapePrometheusOpt1ProcedureSpec)
 	if !ok {
 		return nil, errors.Newf(codes.Invalid, "invalid spec type %T", prSpec)
 	}
 	c := execute.NewTableBuilderCache(a.Allocator())
 	c.SetTriggerSpec(plan.DefaultTriggerSpec)
-	PrometheusIterator := PrometheusIterator{
+	PrometheusIteratorOpt1 := PrometheusIteratorOpt1{
 		id:             dsid,
 		spec:           spec,
 		administration: a,
 		cache:          c,
 	}
 
-	return execute.CreateSourceFromDecoder(&PrometheusIterator, dsid, a)
+	return execute.CreateSourceFromDecoder(&PrometheusIteratorOpt1, dsid, a)
 }
 
-type PrometheusIterator struct {
+type PrometheusIteratorOpt1 struct {
 	NowFn          func() time.Time // Convert times
 	id             execute.DatasetID
 	administration execute.Administration
 	cache          execute.TableBuilderCache
-	spec           *ScrapePrometheusProcedureSpec
+	spec           *ScrapePrometheusOpt1ProcedureSpec
 
 	metrics []Metric // Slice of metrics to convert to tables
 	i       int
@@ -124,20 +122,10 @@ type PrometheusIterator struct {
 	now     time.Time
 }
 
-// Metric stores the fields that we need to construct Table
-type Metric struct {
-	MetricName string                 // Prometheus metric name
-	Labels     map[string]string      // key is tag name; val is tag value
-	TypeVal    map[string]interface{} // key is metric type; val is metric value
-	Timestamp  time.Time
-	Type       string // Prometheus metric type
-	Help       string
-}
-
 // This implementation of Connect takes in a user defined url, validates the url
 // and gets an http response. It then calls parse to parse the body into a list
 // Metrics or returns and error if not given a valid prometheus metric endpoint.
-func (p *PrometheusIterator) Connect(ctx context.Context) error {
+func (p *PrometheusIteratorOpt1) Connect(ctx context.Context) error {
 	p.url = p.spec.URL // Attach url to Prometheus Iterator
 
 	if p.NowFn != nil {
@@ -181,7 +169,7 @@ func (p *PrometheusIterator) Connect(ctx context.Context) error {
 // parse will take in an http header, and read the body of an http response. It looks for prometheus
 // Metrics and calls either makeQuantiles, makeBuckets or getNameandValue depending on each Metric
 // type. It produces a list of type Metric and stores them in p.metrics.
-func (p *PrometheusIterator) parse(reader io.Reader, header http.Header) (err error) {
+func (p *PrometheusIteratorOpt1) parse(reader io.Reader, header http.Header) (err error) {
 	var parser expfmt.TextParser
 
 	mediatype, params, err := mime.ParseMediaType(header.Get("Content-Type"))
@@ -245,6 +233,8 @@ func (p *PrometheusIterator) parse(reader io.Reader, header http.Header) (err er
 						TypeVal:    typeValue,
 						MetricName: field,
 						Type:       family.GetType().String(),
+						Help: 		family.GetHelp(),
+
 					}
 					p.metrics = append(p.metrics, met)
 				}
@@ -255,7 +245,7 @@ func (p *PrometheusIterator) parse(reader io.Reader, header http.Header) (err er
 }
 
 // This implementation of Fetch will iterate over p.metrics
-func (p *PrometheusIterator) Fetch(ctx context.Context) (bool, error) {
+func (p *PrometheusIteratorOpt1) Fetch(ctx context.Context) (bool, error) {
 
 	// Iterate over all Metrics
 	if p.i < len(p.metrics) {
@@ -269,7 +259,7 @@ func (p *PrometheusIterator) Fetch(ctx context.Context) (bool, error) {
 
 // This implementation of Decode will create flux Tables for a give Metric. It retrieves one Metric
 // from p.metrics and places it into a flux.Table
-func (p *PrometheusIterator) Decode(ctx context.Context) (table flux.Table, err error) {
+func (p *PrometheusIteratorOpt1) Decode(ctx context.Context) (table flux.Table, err error) {
 	met := p.metrics[p.i]
 
 	// Unpacking TypeVal map
@@ -279,8 +269,8 @@ func (p *PrometheusIterator) Decode(ctx context.Context) (table flux.Table, err 
 	}
 
 	groupKey := execute.NewGroupKeyBuilder(nil)
-	groupKey.AddKeyValue("_measurement", values.New("prometheus"))
-	groupKey.AddKeyValue("_field", values.New(met.MetricName))
+	groupKey.AddKeyValue("_measurement", values.New(met.MetricName))
+	groupKey.AddKeyValue("_field", values.New("value"))
 
 	// Add all tag names to Group Key
 	gkInt := 2
@@ -290,6 +280,10 @@ func (p *PrometheusIterator) Decode(ctx context.Context) (table flux.Table, err 
 			groupKey.AddKeyValue(name, values.New(val))
 		}
 	}
+
+	// add type and help
+	groupKey.AddKeyValue("type", values.New(met.Type))
+	groupKey.AddKeyValue("help", values.New(met.Help))
 
 	gk, err := groupKey.Build()
 	if err != nil {
@@ -303,15 +297,15 @@ func (p *PrometheusIterator) Decode(ctx context.Context) (table flux.Table, err 
 		Type:  flux.TTime,
 	})
 	builder.AddCol(flux.ColMeta{
-		Label: "_value",
+		Label: "_value", // prometheus metric value
 		Type:  flux.TFloat,
 	})
 	builder.AddCol(flux.ColMeta{
-		Label: "_measurement", // data source
+		Label: "_measurement", // prometheus metric name
 		Type:  flux.TString,
 	})
 	builder.AddCol(flux.ColMeta{
-		Label: "_field", // prometheus metric name
+		Label: "_field",  // "value" column
 		Type:  flux.TString,
 	})
 	builder.AddCol(flux.ColMeta{
@@ -329,10 +323,21 @@ func (p *PrometheusIterator) Decode(ctx context.Context) (table flux.Table, err 
 		}
 	}
 
+	// add type and help
+	builder.AddCol(flux.ColMeta{
+		Label: "type",
+		Type:  flux.TString,
+	})
+
+	builder.AddCol(flux.ColMeta{
+		Label: "help",
+		Type:  flux.TString,
+	})
+
 	builder.AppendTime(0, values.ConvertTime(met.Timestamp))
 	builder.AppendValue(1, values.New(val))
-	builder.AppendValue(2, values.New("prometheus"))
-	builder.AppendValue(3, values.New(met.MetricName))
+	builder.AppendValue(3, values.New("value"))
+	builder.AppendValue(2, values.New(met.MetricName))
 	builder.AppendValue(4, values.New(p.url))
 
 	// Add tag values
@@ -340,20 +345,24 @@ func (p *PrometheusIterator) Decode(ctx context.Context) (table flux.Table, err 
 		builder.AppendValue(execute.ColIdx(name, builder.Cols()), values.New(tagVal))
 	}
 
+	// add type and help
+	builder.AppendValue(execute.ColIdx("type", builder.Cols()), values.New(met.Type))
+	builder.AppendValue(execute.ColIdx("help", builder.Cols()), values.New(met.Help))
+
 	// Grab the next metric in list
 	p.i++
 
 	return builder.Table()
 }
 
-func (p *PrometheusIterator) Close() error {
+func (p *PrometheusIteratorOpt1) Close() error {
 	// nothing to close
 	return nil
 }
 
 // makeBuckets will return a list of summary values of type Metric given the prometheus metric, tags,
 // name and metric type
-func (p *PrometheusIterator) makeQuantiles(m *dto.Metric, tags map[string]string, metricName string, metricType dto.MetricType) []Metric {
+func (p *PrometheusIteratorOpt1) makeQuantiles(m *dto.Metric, tags map[string]string, metricName string, metricType dto.MetricType) []Metric {
 	var metrics []Metric
 	typeValue := make(map[string]interface{})
 	var t time.Time
@@ -411,7 +420,7 @@ func (p *PrometheusIterator) makeQuantiles(m *dto.Metric, tags map[string]string
 
 // makeBuckets will return a list of histogram values of type Metric given the prometheus metric, taags,
 // name and metric type
-func (p *PrometheusIterator) makeBuckets(m *dto.Metric, tags map[string]string, metricName string, metricType dto.MetricType) []Metric {
+func (p *PrometheusIteratorOpt1) makeBuckets(m *dto.Metric, tags map[string]string, metricName string, metricType dto.MetricType) []Metric {
 	var metrics []Metric
 	typeValue := make(map[string]interface{})
 
@@ -467,30 +476,3 @@ func (p *PrometheusIterator) makeBuckets(m *dto.Metric, tags map[string]string, 
 	return metrics
 }
 
-// makeLabels will return all labels on a given metric
-func makeLabels(m *dto.Metric) map[string]string {
-	result := map[string]string{}
-	for _, lp := range m.Label {
-		result[lp.GetName()] = lp.GetValue()
-	}
-	return result
-}
-
-// getNameandValue will return the metric name and value for a given counter, gauge and or untyped value
-func getNameAndValue(m *dto.Metric, metricName string) map[string]interface{} {
-	nameVal := make(map[string]interface{})
-	if m.Gauge != nil {
-		if !math.IsNaN(m.GetGauge().GetValue()) {
-			nameVal[metricName] = float64(m.GetGauge().GetValue())
-		}
-	} else if m.Counter != nil {
-		if !math.IsNaN(m.GetCounter().GetValue()) {
-			nameVal[metricName] = float64(m.GetCounter().GetValue())
-		}
-	} else if m.Untyped != nil {
-		if !math.IsNaN(m.GetUntyped().GetValue()) {
-			nameVal[metricName] = float64(m.GetUntyped().GetValue())
-		}
-	}
-	return nameVal
-}

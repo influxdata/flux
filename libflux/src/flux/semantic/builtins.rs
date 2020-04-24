@@ -89,6 +89,7 @@ pub fn builtins() -> Builtins<'static> {
             },
             "experimental/prometheus" => maplit::hashmap! {
                 "scrape" => "forall [t0] where t0: Row (url: string) -> [t0]",
+                "scrapeOpt1" => "forall [t0] where t0: Row (url: string) -> [t0]",
             },
             "experimental" => maplit::hashmap! {
                  "addDuration" => "forall [] (d: duration, to: time) -> time",

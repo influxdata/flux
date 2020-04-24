@@ -16,7 +16,7 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-// TestGague will make sure that gague metrics produce accurate flux Tables.
+// TestGauge will make sure that gauge metrics produce accurate flux Tables.
 func TestGauge(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, `

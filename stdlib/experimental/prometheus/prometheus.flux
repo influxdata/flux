@@ -6,6 +6,10 @@ import "universe"
 // table, including each histogram and summary value.  
 builtin scrape
 
+// scrape Opt1 is a prototype of the option 1 data model that is described in
+// this issue: https://github.com/influxdata/idpe/issues/6696
+builtin scrapeOpt1
+
 // histogramQuantile enables the user to calculate quantiles on a set of given values
 // This function assumes that the given histogram data is being scraped or read from a 
 // Prometheus source. 
