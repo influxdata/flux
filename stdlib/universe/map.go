@@ -314,12 +314,16 @@ func groupKeyForObject(i int, cr flux.ColReader, obj values.Object, on map[strin
 		if !on[c.Label] {
 			continue
 		}
-		cols = append(cols, c)
 		v, ok := obj.Get(c.Label)
 		if ok {
 			vs = append(vs, v)
+			cols = append(cols, flux.ColMeta{
+				Label: c.Label,
+				Type:  flux.ColumnType(v.Type()),
+			})
 		} else {
 			vs = append(vs, execute.ValueForRow(cr, i, j))
+			cols = append(cols, c)
 		}
 	}
 	return execute.NewGroupKey(cols, vs)

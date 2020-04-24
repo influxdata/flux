@@ -124,6 +124,45 @@ func TestMap_Process(t *testing.T) {
 		wantErr error
 	}{
 		{
+			name: `overwrite groupkey`,
+			spec: &universe.MapProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Scope: builtIns,
+					Fn:    executetest.FunctionExpression(t, `(r) => ({r with _stop: "a"})`),
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(6), execute.Time(1), 1.0},
+					{execute.Time(6), execute.Time(2), 2.0},
+					{execute.Time(6), execute.Time(3), 3.0},
+					{execute.Time(6), execute.Time(4), 4.0},
+					{execute.Time(6), execute.Time(5), 5.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_stop", Type: flux.TString},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{"a", execute.Time(1), 1.0},
+					{"a", execute.Time(2), 2.0},
+					{"a", execute.Time(3), 3.0},
+					{"a", execute.Time(4), 4.0},
+					{"a", execute.Time(5), 5.0},
+				},
+			}},
+		},
+		{
 			name: `identity function`,
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
