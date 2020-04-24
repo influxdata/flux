@@ -1,4 +1,4 @@
-include '../flux.lm'
+include 'flux.lm'
 
 parse Flux: file [stdin]
 if !Flux {

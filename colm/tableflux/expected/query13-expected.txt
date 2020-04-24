@@ -1,0 +1,5 @@
+table | location     | max_bottom_degrees | mean_bottom_degrees | min_bottom_degrees | state
+============================================================================================
+    0 | coyote_creek |                 51 |                50.5 |                 50 | CA   
+    0 | puget_sound  |                 40 |                  40 |                 40 | WA   
+    0 | santa_monica |                 50 |  48.714285714285715 |                 48 | CA   

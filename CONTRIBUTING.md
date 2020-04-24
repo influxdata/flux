@@ -72,6 +72,12 @@ This is done by running `go generate` in the following way.
 $ go generate ./stdlib
 ```
 
+### Contributing Flux Packages
+
+If you have some Flux code that you think the wider community would benifit from please consider contributing it to the Flux repo.
+We have layed out specific guildines in the contrib [README](https://github.com/influxdata/flux/blob/master/stdlib/contrib/README.md).
+uu
+
 ## Pull request guidelines
 
 ### Effective Go

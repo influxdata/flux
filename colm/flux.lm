@@ -8,11 +8,13 @@ lex
 		`: `|> `, `.
 
 	literal
-		`and `or `not
-		`empty `in
+		`not `empty `in
 		`import `package
 		`return `option `builtin
 		`test `if `then `else `exists
+
+	token OR /'or'i/
+	token AND /'and'i/
 
 	ignore / '//' [^\n]* '\n' /
 	ignore / [ \t\n\r]+ /
@@ -116,7 +118,7 @@ def comma_property
 	[`, property]
 
 def property_list
-	[ property comma_property*]
+	[property comma_property*]
 |	[]
 
 def colon_expr
@@ -125,6 +127,12 @@ def colon_expr
 def property
 	[identifier colon_expr?]
 |	[string_lit `: expression]
+
+#def property
+#	[identifier colon_expr?]
+#|	[string_lit `: expression]
+#|	[expression]
+#|	[`{ opt_predicate_list `}]
 
 #
 # Array Literals
@@ -221,7 +229,7 @@ def logical_expression
 |	[unary_logical_expression]
 
 def logical_operator
-	[`and] | [`or]
+	[AND] | [OR]
 
 def unary_logical_expression
 	[unary_logical_operator unary_logical_expression]

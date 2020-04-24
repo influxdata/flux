@@ -21,8 +21,10 @@ func newHeuristicPlanner() *heuristicPlanner {
 
 func (p *heuristicPlanner) addRules(rules ...Rule) {
 	for _, rule := range rules {
-		ruleSlice := p.rules[rule.Pattern().Root()]
-		p.rules[rule.Pattern().Root()] = append(ruleSlice, rule)
+		for _, root := range rule.Pattern().Roots() {
+			ruleSlice := p.rules[root]
+			p.rules[root] = append(ruleSlice, rule)
+		}
 	}
 }
 

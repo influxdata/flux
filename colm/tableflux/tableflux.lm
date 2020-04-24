@@ -1,0 +1,685 @@
+
+# This is a flux grammar modified in three ways:
+#   1. The bucket_query shorthand is added to unary_expression.
+#   2. The argument {} shorthand syntax is added to property.
+#   3. A plain expression is added to property.
+
+include 'flux.lm'
+
+lex
+	literal `@
+
+	ignore / '//' [^\n]* '\n' /
+	ignore / [ \t\n\r]+ /
+end
+
+#
+# Flux grammar modifications
+#
+
+def predicate
+	[expression]
+
+def predicate_list
+	[predicate_list `, predicate]
+|	[predicate]
+
+def opt_predicate_list
+	[predicate_list]
+|	[]
+
+def opt_pred_block
+	[`{ opt_predicate_list `}]
+|	[]
+
+def bucket_query
+	[`@ Bucket: identifier `. Measurement: identifier
+		OptPredBlock: opt_pred_block]
+
+#
+# Redefinition of unary expression to include bucket_query.
+#
+redef unary_expression
+	[...]
+|	[bucket_query]
+
+#
+# Redefinition of property to allow the {} predicate syntax, and a plain
+# expression as an argument to a function call. Unsing unique empty productions
+# to force ordered choice and get a predicatable disambiguation.
+#
+redef property
+	[...]
+|	[E1 `{ opt_predicate_list `}]
+|	[E2 expression]
+
+def E1 []
+def E2 []
+
+def tableflux
+	[flux]
+
+#
+# Transformation below
+#
+
+global out: stream = stdout
+global log: stream = stderr
+global transform_error: str = ""
+
+struct column
+	Identifier: identifier
+end
+
+struct pred
+	Expression: expression
+end
+
+alias column_map map<identifier, column>
+alias pred_list list<pred>
+
+struct shorthand
+	ColumnMap: column_map
+	PredicateList: pred_list
+
+	Start: expression
+	Stop: expression
+	TimeConstraint: bool
+end
+
+shorthand newShorthand()
+{
+	new Shorthand: shorthand()
+	Shorthand->ColumnMap = new column_map()
+	Shorthand->PredicateList = new pred_list()
+	Shorthand->TimeConstraint = false
+	return Shorthand
+}
+
+void addColumn( ColumnMap: column_map, Identifier: identifier )
+{
+	new C: column()
+	C->Identifier = Identifier
+	ColumnMap->insert(Identifier, C)
+}
+
+bool containsTime( Predicate: predicate )
+{
+	for Id: identifier in Predicate {
+		if $Id == "time"
+			return true
+	}
+	return false
+}
+
+bool checkTime( Shorthand: shorthand, CE: comparison_expression )
+{
+	if match CE "time [Op: comparison_operator Rhs: additive_expression ]"
+			&& ( match Op "<" || match Op "<=" )
+	{
+		Shorthand->TimeConstraint = true
+		Shorthand->Stop = parse expression [^Rhs]
+		return true
+	}
+
+	if match CE "time [Op: comparison_operator Rhs: additive_expression ]"
+			&& ( match Op ">" || match Op ">=" )
+	{
+		Shorthand->TimeConstraint = true
+		Shorthand->Start = parse expression [^Rhs]
+		return true
+	}
+
+	return false
+}
+
+void shorthandAnalysis( Shorthand: shorthand, ColumnMap: column_map,
+		PredicateList: pred_list, BucketQuery: bucket_query )
+{
+	for Predicate: predicate in BucketQuery {
+		if match Predicate [Identifier: identifier] {
+			addColumn( ColumnMap, Identifier )
+		}
+		else if containsTime( Predicate ) {
+			send log "found a time predicate
+			for CE: comparison_expression in Predicate
+				checkTime( Shorthand, CE )
+		}
+		else {
+			new P: pred()
+			P->Expression = expression in Predicate
+			PredicateList->push_tail( P )
+
+			for Identifier: identifier in Predicate {
+				addColumn( ColumnMap, Identifier )
+			}
+		}
+	}
+}
+
+void lowercase( Expression: ref<expression> )
+{
+	for Or: OR in Expression
+		Or.data = 'or'
+	for And: AND in Expression
+		And.data = 'and'
+}
+
+void addRecordAccess( Expression: ref<expression> )
+{
+	# Badly needing non-recursive iteration. To get around it we visit parents,
+	# then visit children and break on the first one.
+	for UE: unary_expression in Expression {
+		for PE: postfix_expression in UE {
+			if match PE [ Id: identifier ] {
+				PE = cons postfix_expression "r.[Id]"
+			}
+			break
+		}
+	}
+}
+
+void addTimeRange( Shorthand: shorthand )
+{
+	# If there is no start range, add one. 
+	if !Shorthand->Start
+		Shorthand->Start = parse expression "0"
+
+	# Range stop.
+	cons Stop: comma_property* []
+	if Shorthand->Stop
+		Stop = parse comma_property* ", stop: [$Shorthand->Stop] "
+
+	send out
+		"	|> range( start: [Shorthand->Start] [Stop] )
+}
+
+void generateShorthand( N: int, BucketQuery: bucket_query )
+{
+	Shorthand: shorthand = newShorthand()
+
+	shorthandAnalysis( Shorthand, Shorthand->ColumnMap,
+			Shorthand->PredicateList, BucketQuery )
+
+	send out
+		"short_hand_[N] = from( bucket: \"[BucketQuery.Bucket]\" )
+
+	if ( Shorthand->TimeConstraint ) {
+		addTimeRange( Shorthand )
+	}
+	else {
+		send out
+			"	|> range( start: 0 )
+			"	|> last()
+	}
+
+	send out
+		"	|> filter( fn: (r) => ( r._measurement == \"[BucketQuery.Measurement]\") )
+
+	for P: pred in Shorthand->PredicateList {
+		send log "predicate: [P->Expression]
+
+		Expression: expression = P->Expression
+		addRecordAccess( Expression )
+		lowercase( Expression )
+		send out
+			"	|> filter( fn: (r) => [ Expression ] )
+	}
+	
+	send out
+		'	|> pivot(
+		'		rowKey:["_time"],
+		'		columnKey: ["_field"],
+		'		valueColumn: "_value"
+		'	)
+		'	|> group( columns: [] )
+	
+	if match BucketQuery.OptPredBlock "" || match BucketQuery.OptPredBlock "{}" {
+		send out
+			~	|> drop( columns: ["_start", "_stop", "_measurement"] )
+	}
+	else {
+		send out
+			'	|> keep( columns: ["_time", '
+		Comma: str = ""
+		for C: column in Shorthand->ColumnMap {
+			send log "column: [C->Identifier]
+
+			send out [Comma '"' C->Identifier '"']
+			Comma = ", "
+		}
+		send out '])
+	}
+
+	send out "
+}
+
+struct agg_fn
+	Fn: identifier
+	Column: identifier
+	Local: int
+end
+
+alias agg_fn_list list<agg_fn>
+
+struct aggregate
+	AggFnList: agg_fn_list
+	By: expression_list
+	Window: expression
+end
+
+aggregate newAggregate()
+{
+	new Aggregate: aggregate()
+	Aggregate->AggFnList = new agg_fn_list()
+	return Aggregate
+}
+
+void aggregateAnalysis( Aggregate: aggregate,
+		OPL: opt_predicate_list, Rest: comma_property* )
+{
+	for Predicate: predicate in OPL {
+		if match Predicate [Fn: identifier `( Column: identifier `)] {
+			new AggFn: agg_fn()
+			AggFn->Fn = Fn
+			AggFn->Column = Column
+			AggFn->Local = Aggregate->AggFnList->length + 1
+
+			Aggregate->AggFnList->push_tail( AggFn )
+		}
+	}
+
+	for Property: property in Rest {
+		if match Property "by: \[[EL: expression_list]\]" {
+			send log "found by clause: [EL]
+			Aggregate->By = EL
+		}
+		if match Property "window: [E: expression]" {
+			send log "found window clause: [E]
+			Aggregate->Window = E
+		}
+	}
+}
+
+void generateAggregate( N: int, OPL: opt_predicate_list,
+		Rest: comma_property* )
+{
+	Aggregate: aggregate = newAggregate()
+	aggregateAnalysis( Aggregate, OPL, Rest )
+	
+	send out
+		"aggregate_[N] = (tables=<-) => {
+		"	grouping = tables
+
+	if ( Aggregate->By ) {
+		send out
+			"		|> group( columns: \[[Aggregate->By]\] )
+	}
+
+	if ( Aggregate->Window ) {
+		send out
+			"		|> window( every: [Aggregate->Window] )
+	}
+
+	DropKeys: bool = false
+	for AggFn: agg_fn in Aggregate->AggFnList {
+		Keep: expression_list
+			Keep = parse expression_list
+				"\"[^AggFn->Column]\"
+
+		if Aggregate->By {
+			match Aggregate->By [AF: expression AR: comma_expression*]
+			Keep = parse expression_list
+				"[^Keep], [^AF ^AR]"
+		}
+
+		if Aggregate->Window {
+			match Keep [AF: expression AR: comma_expression*]
+			Keep = cons expression_list
+				"\"_stop\", [AF AR]"
+		}
+
+		send out
+			"	local_[AggFn->Local] = grouping
+			"		|> keep( columns: \[[Keep]\] )
+			"		|> rename( columns: {[AggFn->Column]: \"[AggFn->Fn]_[AggFn->Column]\"} )
+			"		|> [AggFn->Fn]( column: \"[AggFn->Fn]_[AggFn->Column]\" )
+			"		|> map( fn: (r) => ( {r with __id: 1} ) )
+			"		|> group()
+			"		|> cumulativeSum( columns: \[\"__id\"\] )
+
+		# We don't need they group by keys for 2nd and up component. Only need
+		# to keep it once
+		if DropKeys {
+			send out
+				"		|> drop( columns: \[[Keep]\]  )
+		}
+		DropKeys = true
+	}
+
+	NextLocal: int = Aggregate->AggFnList->length + 1
+	Last: int = 0
+	for AggFn: agg_fn in Aggregate->AggFnList {
+		if AggFn->Local == 1 {
+			Last = AggFn->Local
+		}
+		else {
+			send out
+				"	local_[NextLocal] = join(
+				"		tables: {
+				"			local_[Last]: local_[Last],
+				"			local_[AggFn->Local]: local_[AggFn->Local]
+				"		},
+				"		on: \[\"__id\"\]
+				"	)
+
+			Last = NextLocal
+			NextLocal = NextLocal + 1
+		}
+	}
+
+	send out
+		"	return local_[Last]
+		"		|> drop(columns: \[\"__id\"\] )
+
+	if Aggregate->Window {
+		send out
+			'		|> rename( columns: { _stop: "_time" } )
+	}
+
+	send out
+		"}
+		"
+}
+
+global SentWithIds: bool = false
+
+void sendWithIds()
+{
+	if !SentWithIds {
+		SentWithIds = true
+		send out
+			"_add_group_row_ids = (tables=<-) => {
+			"	return tables
+			"		|> map(fn: (r) => ({ r with row_id: 1}))
+			"		|> cumulativeSum( columns: \[\"row_id\"\] )
+			"		|> group()
+			"		|> map(fn: (r) => ({ r with group_id: 1}))
+			"		|> cumulativeSum( columns: \[\"group_id\"\] )
+			"		|> map(fn: (r) => ({r with
+			"			group_id: r.group_id - r.row_id}))
+			"		|> difference( columns: \[\"group_id\"\], keepFirst: true )
+			"		|> map(fn: (r) => ({r with
+			"			group_id: if r.group_id > 0 then 1 else 0 }))
+			"		|> cumulativeSum( columns: \[\"group_id\"\] )
+			"}
+	}
+}
+
+void selectGroupingWindowing( By: expression_list, Window: expression )
+{
+	if ( By ) {
+		send out
+			"		|> group( columns: \[[By]\] )
+	}
+
+	if ( Window ) {
+		send out
+			"		|> window( every: [Window] )
+			"		|> drop( columns: \[\"_start\", \"_time\"\] )
+			"		|> rename( columns: { _stop: \"_time\" } )
+	}
+}
+
+#
+# Generate code for a select, using the tableFind method. Uses table finds to
+# place the target values into an array, then filters the rows using these
+# target values. Used for min/max.
+#
+void generateSelectTF( N: int, Fn: identifier,
+		Column: identifier, By: expression_list, Window: expression )
+{
+	sendWithIds()
+
+	send out
+		"select_[N] = (tables=<-) => {
+	
+
+	# with_ids: add group and column ids
+	send out
+		"	with_ids = tables
+
+	selectGroupingWindowing( By, Window )
+
+	send out
+		"		|> _add_group_row_ids()
+
+	#
+	# Apply the function on the table with the ids we added above. Adding Ids
+	# removes grouping/windowing, so we need to add it back first.
+	#
+	send out
+		"	grouped_fn = with_ids
+
+	selectGroupingWindowing( By, Window )
+
+	send out
+		"		|> [Fn]( column: \"[Column]\" )
+	
+	#
+	# Compute a column indexed by group-id and containing the value we are
+	# looking for.
+	#
+	send out
+		"	fn_values = grouped_fn 
+		"		|> group()
+		"		|> sort( columns: \[\"group_id\"\] )
+		"		|> tableFind( fn: (key) => (true) ) 
+		"		|> getColumn( column: \"[Column]\" )
+	
+	# Select the rows that match the values we computed.
+	send out
+		"	return with_ids
+		"		|> filter( fn: (r) =>
+		"			( r.[Column] == fn_values\[r.group_id\] ) )
+		"}
+}
+
+# Generate code for a select, using the desired function directly. Simply
+# groups/windows, then applies the function and ungroups.
+void generateSelectFunc( N: int, Fn: identifier,
+		By: expression_list, Window: expression )
+{
+	send out
+		"select_[N] = (tables=<-) => {
+		"	return tables
+		"		|> map( fn: (r) => ({r with _value: 0}) )
+
+	selectGroupingWindowing( By, Window )
+
+	send out
+		"		|> [Fn]()
+		"		|> drop( columns: \[\"_value\"\] )
+		"}
+
+}
+
+void generateSelectColumn( N: int, Fn: identifier, Column: identifier,
+		By: expression_list, Window: expression )
+{
+	send out
+		"select_[N] = (tables=<-) => {
+		"	return tables
+
+	selectGroupingWindowing( By, Window )
+
+	send out
+		"		|> [Fn]( column: \"[Column]\" )
+		"		|> rename( columns: { _value: \"[Column]\" } )
+		"}
+}
+void generateSelectColOpt( N: int, Fn: identifier, Column: identifier,
+		P1: str, Arg1: expression, By: expression_list, Window: expression )
+{
+	send out
+		"select_[N] = (tables=<-) => {
+		"	return tables
+
+	selectGroupingWindowing( By, Window )
+
+	send out
+		"		|> [Fn]( columns: \[\"[Column]\"\], [P1]: [Arg1] )
+		"}
+}
+
+void generateSelect( N: int, E: expression, Rest: comma_property* )
+{
+	By: expression_list
+	Window: expression
+
+	for Property: property in Rest {
+		if match Property "by: \[[EL: expression_list]\]" {
+			send log "found by clause: [EL]
+			By = EL
+		}
+		if match Property "window: [E: expression]" {
+			send log "found window clause: [E]
+			Window = E
+		}
+	}
+
+	if match E
+		[Fn: identifier]
+		&& ( Fn.data == "first" || Fn.data == "last" )
+	{
+		generateSelectFunc( N, Fn, By, Window )
+	}
+	else if match E
+		[Fn: identifier `( Column: identifier `)]
+		&& ( Fn.data == "min" || Fn.data == "max" )
+	{
+		generateSelectTF( N, Fn, Column, By, Window )
+	}
+	else if match E
+		[Fn: identifier `( Column: identifier `)]
+		&& ( Fn.data == "distinct" )
+	{
+		generateSelectColumn( N, Fn, Column, By, Window )
+	}
+	else if match E
+		"[Fn: identifier]( [Column: identifier], [SelectN: int_lit] )
+		&& ( Fn.data == "top" || Fn.data == "bottom" )
+	{
+		generateSelectColOpt( N, Fn, Column, "n",
+				cons expression [SelectN], By, Window )
+	}
+}
+
+void transform( TableFlux: ref<tableflux> )
+{
+	# Ignore WS before the first token and after the last token when printing
+	# entire trees. Whitespace between the tokens is preserved. We inject lots
+	# of strings into other strings and turning on auto_trim instead of using ^
+	# everywhere we need to saves using figuring out where we need it, or want
+	# it for more beautiful output.
+	out->auto_trim( true )
+	log->auto_trim( true )
+
+	for UE: unary_expression in TableFlux {
+		N: int = 0
+		if match UE [BucketQuery: bucket_query] {
+			send log "bucket query: [UE]
+
+			generateShorthand( N, BucketQuery )
+
+			UE = parse unary_expression
+				"short_hand_[N]
+			N = N + 1
+		}
+
+		if match UE
+			"aggregate( { [OPL: opt_predicate_list] } [Rest: comma_property*])"
+		{
+			send log "aggregate: [UE]
+
+			generateAggregate( N, OPL, Rest )
+
+			UE = parse unary_expression
+				"aggregate_[N]()
+			N = N + 1
+		}
+
+		if match UE
+			"select( fn: [E: expression] [Rest: comma_property*] )
+		{
+			send log "aggregate-select 1: [UE]
+			
+			generateSelect( N, E, Rest )
+
+			UE = parse unary_expression
+				"select_[N]()
+			N = N + 1
+		}
+
+		if match UE
+			"select( { [E: expression] } [Rest: comma_property*] )
+		{
+			send log "aggregate-select 2: [UE]
+
+			generateSelect( N, E, Rest )
+
+			UE = parse unary_expression
+				"select_[N]()
+			N = N + 1
+		}
+
+		if match UE
+			"timeShift( [E: expression] )
+		{
+			UE = parse unary_expression
+				"timeShift( duration: [E], columns: \[\"_time\"\] )
+		}
+
+		if match UE
+			"count( [Identifier: identifier] [Rest: comma_property*] )
+		{
+			parse OPL: opt_predicate_list "count( [Identifier] )"
+
+			generateAggregate( N, OPL, Rest )
+
+			UE = parse unary_expression
+				"aggregate_[N]()
+			N = N + 1
+		}
+	}
+
+	send out "[TableFlux]
+
+	checkResult( TableFlux )
+}
+
+void checkResult( TableFlux: tableflux )
+{
+	# Check for leftover expressions that did not transform.
+	for UE: unary_expression in TableFlux {
+		if match UE [BQ: bucket_query]
+			transform_error =
+				"[BQ.Bucket.line]:[BQ.Bucket.col] "
+				"failed to transform bucket query: [BQ]"
+	}
+
+	for Property: property in TableFlux {
+		if match Property
+			[E1 `{ opt_predicate_list `}]
+		|| match Property
+			[E2 expression]
+		{
+			transform_error =
+				#"[Property.line]:[Property.col] "
+				"failed to transform tableflux property: [Property]"
+		}
+	}
+
+	if transform_error.length > 0
+		send log "transformation failed: [transform_error]
+}

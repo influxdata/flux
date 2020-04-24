@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 // SimpleRule is a simple rule whose pattern matches any plan node and
@@ -122,6 +123,31 @@ func (ccr CreateCycleRule) Rewrite(ctx context.Context, node plan.Node) (plan.No
 	// just return a copy of the node, otherwise the rule will be triggered an infinite number of times
 	// (it doesn't change the number of predecessors, indeed).
 	return node.ShallowCopy(), changed, nil
+}
+
+// MultiRoot matches a set of plan nodes at the root and stores the NodeIDs of
+// nodes it has visited in SeenNodes.
+type MultiRootRule struct {
+	SeenNodes []plan.NodeID
+}
+
+func (sr *MultiRootRule) Pattern() plan.Pattern {
+	return plan.OneOf(
+		[]plan.ProcedureKind{
+			universe.MinKind,
+			universe.MaxKind,
+			universe.MeanKind,
+		},
+		plan.Any())
+}
+
+func (sr *MultiRootRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+	sr.SeenNodes = append(sr.SeenNodes, node.ID())
+	return node, false, nil
+}
+
+func (sr *MultiRootRule) Name() string {
+	return "multiroot"
 }
 
 // RuleTestCase allows for concise creation of test cases that exercise rules

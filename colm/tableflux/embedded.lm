@@ -1,0 +1,37 @@
+include 'tableflux.lm'
+
+export result_ok: bool
+export result_flux: str
+export result_err: str
+export result_log: str
+
+parse TableFlux: tableflux [argv->head_el->value]
+
+namespace error
+	token file /[^:]+ ':'/
+	token rest /any+/
+
+	def breakdown
+		[file rest]
+end
+
+if !TableFlux {
+	parse EB: error::breakdown [error]
+
+	result_ok = false
+	result_flux = ""
+	result_err = $EB.rest
+	result_log = ""
+}
+else {
+	# By default these go to stdout and stderr, collect them instead.
+	out = new stream()
+	log = new stream()
+
+	transform( TableFlux )
+
+	result_ok = transform_error.length == 0
+	result_flux = out->tree
+	result_err = transform_error
+	result_log = log->tree
+}

@@ -1,0 +1,15 @@
+COLM = @WITH_COLM@/bin/colm
+
+all: @BINARY_TARGET@
+
+build-binary: influxql
+
+influxql: transform.lm ../flux.lm influxql.lm $(COLM)
+	$(COLM) -I.. -o $@ $<
+
+clean: clean-binary
+
+clean-binary:
+	rm -f influxql
+
+.PHONY: all build-binary clean clean-binary

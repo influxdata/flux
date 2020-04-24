@@ -1,0 +1,4 @@
+table | _time                | bottom_degrees | group_id | location    | row_id | state | surface_degrees
+=========================================================================================================
+    0 | 2020-02-22T17:10:00Z |             40 |        0 | puget_sound |      3 | WA    |              55
+    0 | 2020-02-22T17:40:00Z |             40 |        0 | puget_sound |      4 | WA    |              54

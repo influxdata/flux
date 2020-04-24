@@ -1,0 +1,4 @@
+table | max_bottom_degrees | mean_bottom_degrees | min_bottom_degrees | state
+=============================================================================
+    0 |                 51 |  49.111111111111114 |                 48 | CA   
+    0 |                 40 |                  40 |                 40 | WA   

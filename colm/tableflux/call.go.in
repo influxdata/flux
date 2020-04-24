@@ -1,0 +1,33 @@
+package tableflux
+
+// #cgo CFLAGS: -I@WITH_COLM@/include
+// #cgo LDFLAGS: @WITH_COLM@/lib/libcolm.a
+// #include <stdlib.h>
+// #include "call.h"
+import "C"
+import "unsafe"
+
+func init() {
+	RegisterTableFlux( tableFlux )
+}
+
+func tableFlux( input string ) ( bool, string, string, string, ) {
+	csInput := C.CString(input)
+
+	var csFlux *C.char;
+	var csErr *C.char;
+	var csLog *C.char;
+
+	ok := C.tableflux_call(csInput, &csFlux, &csErr, &csLog)
+
+	flux := C.GoString(csFlux);
+	err := C.GoString(csErr);
+	log := C.GoString(csLog);
+
+	C.free(unsafe.Pointer(csInput))
+	C.free(unsafe.Pointer(csFlux))
+	C.free(unsafe.Pointer(csErr))
+	C.free(unsafe.Pointer(csLog))
+
+	return ok != 0, flux, err, log;
+}

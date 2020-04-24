@@ -1,0 +1,18 @@
+include 'tableflux.lm'
+
+parse TableFlux: tableflux [stdin]
+
+if !TableFlux {
+	send log "[error]
+	exit(1)
+}
+
+#
+# By default, transformation output goes to stdout and log/error information
+# goes to stderr.
+#
+
+transform( TableFlux )
+
+if transform_error.length > 0
+	exit(1)

@@ -24,6 +24,8 @@ func init() {
 }
 
 func TestRuleRegistration(t *testing.T) {
+	plan.ClearRegisteredRules()
+
 	simpleRule := plantest.SimpleRule{}
 
 	// Register the rule,
@@ -31,7 +33,8 @@ func TestRuleRegistration(t *testing.T) {
 	plan.RegisterLogicalRules(&simpleRule)
 
 	now := time.Now().UTC()
-	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now, `from(bucket: "telegraf") |> range(start: -5m)`)
+	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now,
+		`from(host: "http://localhost:9999", bucket: "telegraf") |> range(start: -5m)`)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
 	}
@@ -69,6 +72,8 @@ func TestRuleRegistration(t *testing.T) {
 }
 
 func TestRewriteWithContext(t *testing.T) {
+	plan.ClearRegisteredRules()
+
 	var (
 		ctxKey  = "contextKey"
 		rewrite = false
@@ -89,7 +94,8 @@ func TestRewriteWithContext(t *testing.T) {
 	plan.RegisterLogicalRules(&functionRule)
 
 	now := time.Now().UTC()
-	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(ctx), runtime.Default, now, `from(bucket: "telegraf") |> range(start: -5m)`)
+	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(ctx), runtime.Default, now,
+		`from(host: "http://localhost:9999", bucket: "telegraf") |> range(start: -5m)`)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
 	}
@@ -126,5 +132,38 @@ func TestRewriteWithContext(t *testing.T) {
 		t.Fatal("physical planning did not call rewrite on the function rule")
 	} else if value == nil {
 		t.Fatal("value wasn't present in the context")
+	}
+}
+
+func TestMultiRootMatch(t *testing.T) {
+	plan.ClearRegisteredRules()
+
+	multiRootRule := plantest.MultiRootRule{}
+
+	// Register the rule,
+	// then check seenNodes below to check that the rule was invoked.
+	plan.RegisterLogicalRules(&multiRootRule)
+
+	now := time.Now().UTC()
+	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now,
+		`from(host: "http://localhost:9999", bucket: "telegraf") |> range(start: -5m) |> min() |> max() |> mean()`)
+	if err != nil {
+		t.Fatalf("could not compile very simple Flux query: %v", err)
+	}
+
+	logicalPlanner := plan.NewLogicalPlanner()
+	initPlan, err := logicalPlanner.CreateInitialPlan(fluxSpec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = logicalPlanner.Plan(context.Background(), initPlan)
+	if err != nil {
+		t.Fatalf("could not do logical planning: %v", err)
+	}
+
+	// Only the min/max/means should match, not the from or range.
+	wantSeenNodes := []plan.NodeID{"mean4", "max3", "min2"}
+	if !cmp.Equal(wantSeenNodes, multiRootRule.SeenNodes) {
+		t.Errorf("did not find expected seen nodes, -want/+got:\n%v", cmp.Diff(wantSeenNodes, multiRootRule.SeenNodes))
 	}
 }
