@@ -5,7 +5,7 @@ const AnyKind = "*** any procedure kind ***"
 // Pattern represents an operator tree pattern
 // It can match itself against a query plan
 type Pattern interface {
-	Root() ProcedureKind
+	Roots() []ProcedureKind
 	Match(Node) bool
 }
 
@@ -20,8 +20,18 @@ type Pattern interface {
 //  /   \
 // A     B
 func Pat(kind ProcedureKind, predecessors ...Pattern) Pattern {
-	return &OneKindPattern{
-		kind:         kind,
+	return &UnionKindPattern{
+		kinds:        []ProcedureKind{kind},
+		predecessors: predecessors,
+	}
+}
+
+// OneOf matches any plan node from a given set of ProcedureKind and whose
+// predecessors match the given predecessor patterns. This is identical to Pat,
+// except for matching any pattern root from a set of ProcedureKinds.
+func OneOf(kinds []ProcedureKind, predecessors ...Pattern) Pattern {
+	return &UnionKindPattern{
+		kinds:        kinds,
 		predecessors: predecessors,
 	}
 }
@@ -39,8 +49,8 @@ type PhysicalOneKindPattern struct {
 	pattern Pattern
 }
 
-func (p PhysicalOneKindPattern) Root() ProcedureKind {
-	return p.pattern.Root()
+func (p PhysicalOneKindPattern) Roots() []ProcedureKind {
+	return p.pattern.Roots()
 }
 
 func (p PhysicalOneKindPattern) Match(node Node) bool {
@@ -53,22 +63,32 @@ func Any() Pattern {
 	return &AnyPattern{}
 }
 
-// OneKindPattern matches a specified procedure with a predecessor pattern
+// UnionKindPattern matches any one of a set of procedures that have a
+// specified predecessor pattern.
 //
-//                   ProcedureKind
+// For example, UnionKindPattern( { Proc1Kind, Proc2Kind }, { Pat1, Pat2 } )
+// will match either Proc1Kind { Pat1, Pat2 } or Proc2Kind { Pat1, Pat2 }
+//
+//                 [ ProcedureKind ]
 //                 /       |  ...  \
 //        pattern1     pattern2  ... patternK
-type OneKindPattern struct {
-	kind         ProcedureKind
+type UnionKindPattern struct {
+	kinds        []ProcedureKind
 	predecessors []Pattern
 }
 
-func (okp OneKindPattern) Root() ProcedureKind {
-	return okp.kind
+func (okp UnionKindPattern) Roots() []ProcedureKind {
+	return okp.kinds
 }
 
-func (okp OneKindPattern) Match(node Node) bool {
-	if node.Kind() != okp.kind {
+func (okp UnionKindPattern) Match(node Node) bool {
+	found := false
+	for _, kind := range okp.kinds {
+		if node.Kind() == kind {
+			found = true
+		}
+	}
+	if !found {
 		return false
 	}
 
@@ -95,8 +115,8 @@ func (okp OneKindPattern) Match(node Node) bool {
 // AnyPattern describes (and matches) any plan node
 type AnyPattern struct{}
 
-func (AnyPattern) Root() ProcedureKind {
-	return AnyKind
+func (AnyPattern) Roots() []ProcedureKind {
+	return []ProcedureKind{AnyKind}
 }
 
 func (AnyPattern) Match(node Node) bool {
