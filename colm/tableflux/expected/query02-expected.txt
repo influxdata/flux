@@ -1,0 +1,5 @@
+table | _time                | location     | state | surface_degrees
+=====================================================================
+    0 | 2020-02-22T17:05:00Z | coyote_creek | CA    |              53
+    0 | 2020-02-22T17:40:00Z | puget_sound  | WA    |              54
+    0 | 2020-02-22T17:46:00Z | santa_monica | CA    |              60

@@ -1,0 +1,7 @@
+table | _time                | location     | surface_degrees
+=============================================================
+    0 | 2020-02-22T15:01:00Z | santa_monica |              65
+    0 | 2020-02-22T15:31:00Z | santa_monica |              64
+    0 | 2020-02-22T16:01:00Z | santa_monica |              63
+    0 | 2020-02-22T16:31:00Z | santa_monica |              62
+    0 | 2020-02-22T17:01:00Z | santa_monica |              61

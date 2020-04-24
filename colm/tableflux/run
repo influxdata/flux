@@ -1,0 +1,113 @@
+#!/bin/bash
+#
+
+[ -f .fluxrc ] || {
+	echo "error: config file '.fluxrc' not found" >&2
+	echo "It needs to have the following variables, in sh syntax:" >&2
+	echo "ORG=<org>" >&2
+	echo "TOKEN=<token>" >&2
+	echo "INFLUX=/path/to/influx/cmd" >&2
+	exit 1;
+}
+
+unset ORG
+unset TOKEN
+unset INFLUX
+. .fluxrc
+
+[ -n "$ORG" ] || { echo "error: no ORG set by config" >&2; exit 1; }
+[ -n "$TOKEN" ] || { echo "error: no TOKEN set by config" >&2; exit 1; }
+[ -f "$INFLUX" ] || { echo "error: no INFLUX set by config" >&2; exit 1; }
+
+[ -d "working" ] || mkdir working
+
+case "$1" in 
+	create)
+		BUCKET="$2"
+		if ! BID="$($INFLUX bucket -o $ORG -t $TOKEN find -n $BUCKET | \
+				awk -vBUCKET=$BUCKET '$2 == BUCKET {print $1}')";
+		then
+			echo "error: bucket query failed"
+			exit 1;
+		fi
+
+		if [ "x$BID" != x ]; then
+				echo "+ bucket $BUCKET exists, delete first"
+		else
+			echo "+ creating bucket $BUCKET"
+			$INFLUX bucket -o $ORG -t $TOKEN create -n $BUCKET
+		fi
+	;;
+	drop)
+		BUCKET="$2"
+		if ! BID="$($INFLUX bucket -o $ORG -t $TOKEN find -n $BUCKET | \
+				awk -vBUCKET=$BUCKET '$2 == BUCKET {print $1}')";
+		then
+			echo "error: bucket query failed"
+			exit 1;
+		fi
+
+		if [ "x$BID" != x ]; then
+				echo "+ bucket $BUCKET exists, deleting"
+				$INFLUX bucket -t $TOKEN delete -i $BID
+		else
+				echo "+ bucket $BUCKET not found"
+		fi
+	;;
+	write)
+		BUCKET="$2"
+		PTS="$3"
+		[ -n "$BUCKET" ] || { echo "error: no BUCKET provided" >&2; exit 1; }
+		[ -f "$PTS" ] || { echo "error: $PTS does not exist" >&2; exit 1; }
+		$INFLUX write -t $TOKEN -o $ORG -b $BUCKET -p s "@$PTS"
+	;;
+	flux|query)
+		QUERY="$2"
+		[ -f "$QUERY" ] || { echo "error: $QUERY does not exist" >&2; exit 1; }
+		RESPONSE=`mktemp /tmp/flux-query.XXXXX`
+		curl -s \
+			-H "Authorization: Token $TOKEN" \
+			-H "Content-Type: application/vnd.flux" \
+			"http://localhost:9999/api/v2/query?org=$ORG" \
+			--data-binary "@$QUERY" > $RESPONSE
+		if head -1 $RESPONSE | grep -q '^{'; then
+			cat $RESPONSE
+			echo
+		else
+			python format.py < $RESPONSE
+		fi
+	;;
+	tableflux)
+		QUERY="$2"
+		[ -f "$QUERY" ] || { echo "error: $QUERY does not exist" >&2; exit 1; }
+		OUTPUT=working/${QUERY%.flux}-output.flux
+		set -e
+		echo "+ tableflux query:" >&2
+		cat $QUERY >&2
+		echo "+ transforming:" >&2
+		./tableflux < $QUERY > $OUTPUT
+		LAST=$?
+		echo "+ output:" >&2
+		cat $OUTPUT >&2
+		if test $LAST == 0; then
+			echo "+ results:" >&2
+			./run query $OUTPUT
+		fi
+	;;
+	test)
+		shift 1
+		[ -z "$*" ] && set -- query??.flux
+		for QUERY do
+			LOG=working/${QUERY%.flux}-log.txt
+			RESULTS=working/${QUERY%.flux}-results.txt
+			EXPECTED=expected/${QUERY%.flux}-expected.txt
+			./run tableflux $QUERY > $RESULTS 2> $LOG
+			diff -u $EXPECTED $RESULTS
+		done
+	;;
+	*)
+		echo "error: unknown command '$1'" >&2;
+		exit 1;
+	;;
+esac
+
