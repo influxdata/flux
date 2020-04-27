@@ -8,9 +8,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/lang/langtest"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
@@ -121,7 +121,7 @@ func evalOrFail(t *testing.T, script string, mutator flux.ScopeMutator) values.S
 	t.Helper()
 
 	ctx := dependenciestest.Default().Inject(context.Background())
-	ctx = execdeps.DefaultExecutionDependencies().Inject(ctx)
+	ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
 	_, s, err := flux.Eval(ctx, script, func(s values.Scope) {
 		if mutator != nil {
 			mutator(s)
@@ -169,7 +169,7 @@ func TestTableFind_Call(t *testing.T) {
 		},
 		{
 			name:         "no execution context", // notifying the user of no-execution context
-			wantErr:      fmt.Errorf("no execution context for tableFind to use"),
+			wantErr:      fmt.Errorf("do not have an execution context for tableFind, if using the repl, try executing this code on the server using the InfluxDB API"),
 			fn:           `f = (key) => key.user == "user1" and key._measurement == "CPU"`,
 			omitExecDeps: true,
 		},
@@ -179,7 +179,7 @@ func TestTableFind_Call(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := dependenciestest.Default().Inject(context.Background())
 			if !tc.omitExecDeps {
-				ctx = execdeps.DefaultExecutionDependencies().Inject(ctx)
+				ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
 			}
 			_, scope, err := flux.Eval(ctx, tc.fn)
 			if err != nil {
@@ -232,7 +232,7 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 
 	f := universe.NewGetColumnFunction()
 	ctx := dependenciestest.Default().Inject(context.Background())
-	ctx = execdeps.DefaultExecutionDependencies().Inject(ctx)
+	ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
 	res, err := f.Function().Call(ctx,
 		values.NewObjectWithValues(map[string]values.Value{
 			"table":  tbl.(*objects.Table),
@@ -278,7 +278,7 @@ t = inj |> tableFind(fn: (key) => key.user == "user1")`
 
 	f := universe.NewGetRecordFunction()
 	ctx := dependenciestest.Default().Inject(context.Background())
-	ctx = execdeps.DefaultExecutionDependencies().Inject(ctx)
+	ctx = langtest.DefaultExecutionDependencies().Inject(ctx)
 	res, err := f.Function().Call(ctx,
 		values.NewObjectWithValues(map[string]values.Value{
 			"table": tbl.(*objects.Table),

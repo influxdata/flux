@@ -13,7 +13,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
-	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -317,14 +316,15 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 	if p.opts.extern != nil {
 		p.Ast.Files = append([]*ast.File{p.opts.extern}, p.Ast.Files...)
 	}
-
-	// The program must inject execution dependencies to make it available to
-	// function calls during the evaluation phase (see `tableFind`).
-	deps := execdeps.NewExecutionDependencies(alloc, &p.Now, p.Logger)
+	// The program must inject execution dependencies to make it available
+	// to function calls during the evaluation phase (see `tableFind`).
+	deps := ExecutionDependencies{
+		Allocator: alloc,
+		Logger:    p.Logger,
+	}
 	ctx = deps.Inject(ctx)
-
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-	sideEffects, scope, err := flux.EvalAST(cctx, p.Ast)
+	sideEffects, scope, err := flux.EvalAST(cctx, p.Ast, flux.SetNowOption(p.Now))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -332,7 +332,16 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 
 	s, cctx = opentracing.StartSpanFromContext(ctx, "compile")
 	defer s.Finish()
-	sp, err := spec.FromEvaluation(cctx, sideEffects, *deps.Now)
+	nowOpt, ok := scope.Lookup(flux.NowOption)
+	if !ok {
+		return nil, nil, fmt.Errorf("%q option not set", flux.NowOption)
+	}
+	nowTime, err := nowOpt.Function().Call(ctx, nil)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
+	}
+	p.Now = nowTime.Time().Time()
+	sp, err := spec.FromEvaluation(cctx, sideEffects, p.Now)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, codes.Inherit, "error in query specification while starting program")
 	}

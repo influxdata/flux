@@ -7,7 +7,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
 )
@@ -139,11 +138,8 @@ func FromScript(ctx context.Context, now time.Time, script string) (*flux.Spec, 
 	}
 	s.Finish()
 
-	deps := execdeps.NewExecutionDependencies(nil, &now, nil)
-	ctx = deps.Inject(ctx)
-
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-	sideEffects, _, err := flux.EvalAST(cctx, astPkg)
+	sideEffects, scope, err := flux.EvalAST(cctx, astPkg, flux.SetNowOption(now))
 	if err != nil {
 		return nil, err
 	}
@@ -151,5 +147,14 @@ func FromScript(ctx context.Context, now time.Time, script string) (*flux.Spec, 
 
 	s, cctx = opentracing.StartSpanFromContext(ctx, "compile")
 	defer s.Finish()
-	return FromEvaluation(cctx, sideEffects, *deps.Now)
+	nowOpt, ok := scope.Lookup(flux.NowOption)
+	if !ok {
+		return nil, fmt.Errorf("%q option not set", flux.NowOption)
+	}
+	nowTime, err := nowOpt.Function().Call(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return FromEvaluation(cctx, sideEffects, nowTime.Time().Time())
 }
