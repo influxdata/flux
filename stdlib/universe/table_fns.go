@@ -2,6 +2,7 @@ package universe
 
 import (
 	"context"
+	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -10,7 +11,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/objects"
@@ -79,15 +79,9 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 		}
 	}
 
-	if !execdeps.HaveExecutionDependencies(ctx) {
-		return nil, errors.New(codes.Internal, "no execution context for tableFind to use")
-	}
-
-	deps := execdeps.GetExecutionDependencies(ctx)
-
 	c := lang.TableObjectCompiler{
 		Tables: to,
-		Now:    *deps.Now,
+		Now:    time.Now(),
 	}
 
 	p, err := c.Compile(ctx)
@@ -95,6 +89,11 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 		return nil, errors.Wrap(err, codes.Inherit, "error in table object compilation")
 	}
 
+	if !lang.HaveExecutionDependencies(ctx) {
+		return nil, errors.New(codes.Invalid, "do not have an execution context for tableFind, if using the repl, try executing this code on the server using the InfluxDB API")
+	}
+
+	deps := lang.GetExecutionDependencies(ctx)
 	if p, ok := p.(lang.LoggingProgram); ok {
 		p.SetLogger(deps.Logger)
 	}

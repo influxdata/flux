@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -178,31 +177,6 @@ func (itrp *Interpreter) doStatement(ctx context.Context, stmt semantic.Statemen
 	return nil, nil
 }
 
-// If the option is "now", evaluate the function and store in the execution
-// dependencies.
-func (irtp *Interpreter) evaluateNowOption(ctx context.Context, name string, init values.Value) {
-	if name != "now" {
-		return
-	}
-	if !execdeps.HaveExecutionDependencies(ctx) {
-		return
-	}
-
-	// Evaluate now.
-	nowTime, err := init.Function().Call(ctx, nil)
-	if err != nil {
-		return
-	}
-	now := nowTime.Time().Time()
-
-	// Stash in the execution dependencies. The deps use a pointer and we
-	// overwrite the dest of the pointer. Overwritng the pointer would have no
-	// effect as context changes are passed down only.
-	deps := execdeps.GetExecutionDependencies(ctx)
-	*deps.Now = now
-	deps.Inject(ctx)
-}
-
 func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.OptionStatement, scope values.Scope) (values.Value, error) {
 	switch a := s.Assignment.(type) {
 	case *semantic.NativeVariableAssignment:
@@ -215,7 +189,6 @@ func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.Opti
 		//     1. The option key will be found in the prelude and applied there.
 		//     2. The option key will not be found in the prelude and the
 		//        interpreter will handle adding the new option to the current package.
-		itrp.evaluateNowOption(ctx, a.Identifier.Name, init)
 		return itrp.setOption(scope, "", a.Identifier.Name, init)
 	case *semantic.MemberAssignment:
 		init, err := itrp.doExpression(ctx, a.Init, scope)
