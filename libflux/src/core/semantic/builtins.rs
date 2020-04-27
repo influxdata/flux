@@ -93,6 +93,7 @@ pub fn builtins() -> Builtins<'static> {
             },
             "experimental" => semantic_map! {
                  "addDuration" => "forall [] (d: duration, to: time) -> time",
+                 "chain" => "forall [t0, t1] where t0: Row, t1: Row (first: [t0], second: [t1]) -> [t1]",
                  "subDuration" => "forall [] (d: duration, from: time) -> time",
                  "group" => "forall [t0] where t0: Row (<-tables: [t0], mode: string, columns: [string]) -> [t0]",
                  "objectKeys" => "forall [t0] where t0: Row (o: t0) -> [string]",
