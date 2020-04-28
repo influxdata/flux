@@ -1098,14 +1098,14 @@ func TestSplit(t *testing.T) {
 			name: "Basic",
 			v:    "a,b,c",
 			t:    ",",
-			want: values.NewArrayWithBacking(semantic.String, []values.Value{
+			want: values.NewArrayWithBacking(semantic.NewArrayType(semantic.BasicString), []values.Value{
 				values.NewString("a"), values.NewString("b"), values.NewString("c")}),
 		},
 		{
 			name: "Palindrome",
 			v:    "a man a plan a canal panama",
 			t:    "a ",
-			want: values.NewArrayWithBacking(semantic.String, []values.Value{
+			want: values.NewArrayWithBacking(semantic.NewArrayType(semantic.BasicString), []values.Value{
 				values.NewString(""), values.NewString("man "), values.NewString("plan "), values.NewString("canal panama")}),
 		},
 	}
@@ -1140,7 +1140,7 @@ func TestSplitAfter(t *testing.T) {
 			name: "Basic",
 			v:    "a,b,c",
 			t:    ",",
-			want: values.NewArrayWithBacking(semantic.String, []values.Value{
+			want: values.NewArrayWithBacking(semantic.NewArrayType(semantic.BasicString), []values.Value{
 				values.NewString("a,"), values.NewString("b,"), values.NewString("c")}),
 		},
 	}
@@ -1177,7 +1177,7 @@ func TestSplitN(t *testing.T) {
 			v:    "a,b,c",
 			t:    ",",
 			i:    2,
-			want: values.NewArrayWithBacking(semantic.String, []values.Value{
+			want: values.NewArrayWithBacking(semantic.NewArrayType(semantic.BasicString), []values.Value{
 				values.NewString("a"), values.NewString("b,c")}),
 		},
 	}
@@ -1214,7 +1214,7 @@ func TestSplitAfterN(t *testing.T) {
 			v:    "a,b,c",
 			t:    ",",
 			i:    2,
-			want: values.NewArrayWithBacking(semantic.String, []values.Value{
+			want: values.NewArrayWithBacking(semantic.NewArrayType(semantic.BasicString), []values.Value{
 				values.NewString("a,"), values.NewString("b,c")}),
 		},
 	}
@@ -1240,7 +1240,7 @@ func TestSplitAfterN(t *testing.T) {
 
 func TestJoinStr(t *testing.T) {
 	fluxFunc := SpecialFns["joinStr"]
-	arr := values.NewArrayWithBacking(semantic.String, []values.Value{
+	arr := values.NewArrayWithBacking(semantic.NewArrayType(semantic.BasicString), []values.Value{
 		values.NewString("a"), values.NewString("b"), values.NewString("c")})
 	fluxArg := values.NewObjectWithValues(map[string]values.Value{"arr": arr, "v": values.NewString(", ")})
 	want := strings.Join([]string{"a", "b", "c"}, ", ")

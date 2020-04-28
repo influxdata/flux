@@ -13,7 +13,7 @@ import (
 // Repeat will construct an arrow array that repeats
 // the value n times.
 func Repeat(v values.Value, n int, mem memory.Allocator) array.Interface {
-	switch v.Type() {
+	switch v.Type().Nature() {
 	case semantic.Int:
 		b := array.NewInt64Builder(mem)
 		b.Resize(n)

@@ -7,7 +7,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
 )
 
@@ -98,25 +97,23 @@ func buildSpecWithTrace(ctx context.Context, t *flux.TableObject, ider flux.IDer
 func buildSpec(t *flux.TableObject, ider flux.IDer, spec *flux.Spec, visited map[*flux.TableObject]bool) {
 	// Traverse graph upwards to first unvisited node.
 	// Note: parents are sorted based on parameter name, so the visit order is consistent.
-	t.Parents.Range(func(i int, v values.Value) {
-		p := v.(*flux.TableObject)
+	for _, p := range t.Parents {
 		if !visited[p] {
 			// recurse up parents
 			buildSpec(p, ider, spec, visited)
 		}
-	})
+	}
 
 	// Assign ID to table object after visiting all ancestors.
 	tableID := ider.ID(t)
 
 	// Link table object to all parents after assigning ID.
-	t.Parents.Range(func(i int, v values.Value) {
-		p := v.(*flux.TableObject)
+	for _, p := range t.Parents {
 		spec.Edges = append(spec.Edges, flux.Edge{
 			Parent: ider.ID(p),
 			Child:  tableID,
 		})
-	})
+	}
 
 	visited[t] = true
 	spec.Operations = append(spec.Operations, t.Operation(ider))
@@ -130,16 +127,16 @@ func FromTableObject(ctx context.Context, to *flux.TableObject, now time.Time) (
 // FromScript returns a spec from a script expressed as a raw string.
 // This is duplicate logic for what happens when a flux.Program runs.
 // This function is used in tests that compare flux.Specs (e.g. in planner tests).
-func FromScript(ctx context.Context, now time.Time, script string) (*flux.Spec, error) {
+func FromScript(ctx context.Context, runtime flux.Runtime, now time.Time, script string) (*flux.Spec, error) {
 	s, _ := opentracing.StartSpanFromContext(ctx, "parse")
-	astPkg, err := flux.Parse(script)
+	astPkg, err := runtime.Parse(script)
 	if err != nil {
 		return nil, err
 	}
 	s.Finish()
 
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-	sideEffects, scope, err := flux.EvalAST(cctx, astPkg, flux.SetNowOption(now))
+	sideEffects, scope, err := runtime.Eval(cctx, astPkg, flux.SetNowOption(now))
 	if err != nil {
 		return nil, err
 	}

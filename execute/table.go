@@ -489,32 +489,32 @@ func ValueForRow(cr flux.ColReader, i, j int) values.Value {
 	switch t {
 	case flux.TString:
 		if cr.Strings(j).IsNull(i) {
-			return values.NewNull(semantic.String)
+			return values.NewNull(semantic.BasicString)
 		}
 		return values.NewString(cr.Strings(j).ValueString(i))
 	case flux.TInt:
 		if cr.Ints(j).IsNull(i) {
-			return values.NewNull(semantic.Int)
+			return values.NewNull(semantic.BasicInt)
 		}
 		return values.NewInt(cr.Ints(j).Value(i))
 	case flux.TUInt:
 		if cr.UInts(j).IsNull(i) {
-			return values.NewNull(semantic.UInt)
+			return values.NewNull(semantic.BasicUint)
 		}
 		return values.NewUInt(cr.UInts(j).Value(i))
 	case flux.TFloat:
 		if cr.Floats(j).IsNull(i) {
-			return values.NewNull(semantic.Float)
+			return values.NewNull(semantic.BasicFloat)
 		}
 		return values.NewFloat(cr.Floats(j).Value(i))
 	case flux.TBool:
 		if cr.Bools(j).IsNull(i) {
-			return values.NewNull(semantic.Bool)
+			return values.NewNull(semantic.BasicBool)
 		}
 		return values.NewBool(cr.Bools(j).Value(i))
 	case flux.TTime:
 		if cr.Times(j).IsNull(i) {
-			return values.NewNull(semantic.Time)
+			return values.NewNull(semantic.BasicTime)
 		}
 		return values.NewTime(values.Time(cr.Times(j).Value(i)))
 	default:
@@ -1109,7 +1109,7 @@ func (b *ColListTableBuilder) SetValue(i, j int, v values.Value) error {
 		return b.SetNil(i, j)
 	}
 
-	switch v.Type() {
+	switch v.Type().Nature() {
 	case semantic.Bool:
 		return b.SetBool(i, j, v.Bool())
 	case semantic.Int:
@@ -1132,7 +1132,7 @@ func (b *ColListTableBuilder) AppendValue(j int, v values.Value) error {
 		return b.AppendNil(j)
 	}
 
-	switch v.Type() {
+	switch v.Type().Nature() {
 	case semantic.Bool:
 		return b.AppendBool(j, v.Bool())
 	case semantic.Int:
@@ -1245,29 +1245,31 @@ func (b *ColListTableBuilder) Times(j int) []values.Time {
 
 // GetRow takes a row index and returns the record located at that index in the cache
 func (b *ColListTableBuilder) GetRow(row int) values.Object {
-	record := values.NewObject()
-	var val values.Value
-	for j, col := range b.colMeta {
-		if b.cols[j].IsNil(row) {
-			val = values.NewNull(flux.SemanticType(col.Type))
-		} else {
-			switch col.Type {
-			case flux.TBool:
-				val = values.NewBool(b.cols[j].(*boolColumnBuilder).data[row])
-			case flux.TInt:
-				val = values.NewInt(b.cols[j].(*intColumnBuilder).data[row])
-			case flux.TUInt:
-				val = values.NewUInt(b.cols[j].(*uintColumnBuilder).data[row])
-			case flux.TFloat:
-				val = values.NewFloat(b.cols[j].(*floatColumnBuilder).data[row])
-			case flux.TString:
-				val = values.NewString(b.cols[j].(*stringColumnBuilder).data[row])
-			case flux.TTime:
-				val = values.NewTime(b.cols[j].(*timeColumnBuilder).data[row])
+	record, _ := values.BuildObjectWithSize(len(b.colMeta), func(set values.ObjectSetter) error {
+		var val values.Value
+		for j, col := range b.colMeta {
+			if b.cols[j].IsNil(row) {
+				val = values.NewNull(flux.SemanticType(col.Type))
+			} else {
+				switch col.Type {
+				case flux.TBool:
+					val = values.NewBool(b.cols[j].(*boolColumnBuilder).data[row])
+				case flux.TInt:
+					val = values.NewInt(b.cols[j].(*intColumnBuilder).data[row])
+				case flux.TUInt:
+					val = values.NewUInt(b.cols[j].(*uintColumnBuilder).data[row])
+				case flux.TFloat:
+					val = values.NewFloat(b.cols[j].(*floatColumnBuilder).data[row])
+				case flux.TString:
+					val = values.NewString(b.cols[j].(*stringColumnBuilder).data[row])
+				case flux.TTime:
+					val = values.NewTime(b.cols[j].(*timeColumnBuilder).data[row])
+				}
 			}
+			set(col.Label, val)
 		}
-		record.Set(col.Label, val)
-	}
+		return nil
+	})
 	return record
 }
 
@@ -1446,25 +1448,27 @@ func (t *ColListTable) Times(j int) *array.Int64 {
 
 // GetRow takes a row index and returns the record located at that index in the cache
 func (t *ColListTable) GetRow(row int) values.Object {
-	record := values.NewObject()
-	var val values.Value
-	for j, col := range t.colMeta {
-		switch col.Type {
-		case flux.TBool:
-			val = values.NewBool(t.cols[j].(*boolColumnBuilder).data[row])
-		case flux.TInt:
-			val = values.NewInt(t.cols[j].(*intColumnBuilder).data[row])
-		case flux.TUInt:
-			val = values.NewUInt(t.cols[j].(*uintColumnBuilder).data[row])
-		case flux.TFloat:
-			val = values.NewFloat(t.cols[j].(*floatColumnBuilder).data[row])
-		case flux.TString:
-			val = values.NewString(t.cols[j].(*stringColumnBuilder).data[row])
-		case flux.TTime:
-			val = values.NewTime(t.cols[j].(*timeColumnBuilder).data[row])
+	record, _ := values.BuildObjectWithSize(len(t.colMeta), func(set values.ObjectSetter) error {
+		var val values.Value
+		for j, col := range t.colMeta {
+			switch col.Type {
+			case flux.TBool:
+				val = values.NewBool(t.cols[j].(*boolColumnBuilder).data[row])
+			case flux.TInt:
+				val = values.NewInt(t.cols[j].(*intColumnBuilder).data[row])
+			case flux.TUInt:
+				val = values.NewUInt(t.cols[j].(*uintColumnBuilder).data[row])
+			case flux.TFloat:
+				val = values.NewFloat(t.cols[j].(*floatColumnBuilder).data[row])
+			case flux.TString:
+				val = values.NewString(t.cols[j].(*stringColumnBuilder).data[row])
+			case flux.TTime:
+				val = values.NewTime(t.cols[j].(*timeColumnBuilder).data[row])
+			}
+			set(col.Label, val)
 		}
-		record.Set(col.Label, val)
-	}
+		return nil
+	})
 	return record
 }
 

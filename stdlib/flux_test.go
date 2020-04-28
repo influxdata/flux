@@ -3,6 +3,7 @@ package stdlib_test
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -12,11 +13,12 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib"
 )
 
 func init() {
-	flux.FinalizeBuiltIns()
+	runtime.FinalizeBuiltIns()
 }
 
 // list of end-to-end tests that are meant to be skipped and not run for various reasons
@@ -117,7 +119,11 @@ func benchEndToEnd(b *testing.B, pkgs []*ast.Package) {
 					if reason, ok := skip[pkgpath][name]; ok {
 						b.Skip(reason)
 					}
-					c := &lang.ASTCompiler{AST: pkg}
+					bs, err := json.Marshal(pkg)
+					if err != nil {
+						b.Fatal(err)
+					}
+					c := &lang.ASTCompiler{AST: bs}
 
 					b.ResetTimer()
 					b.ReportAllocs()
@@ -139,7 +145,11 @@ func benchEndToEnd(b *testing.B, pkgs []*ast.Package) {
 func testFlux(t testing.TB, file *ast.File) flux.Statistics {
 	pkg := makeTestPackage(file)
 	pkg.Files = append(pkg.Files, stdlib.TestingRunCalls(pkg))
-	c := lang.ASTCompiler{AST: pkg}
+	bs, err := json.Marshal(pkg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := lang.ASTCompiler{AST: bs}
 
 	// testing.run
 	stats := doTestRun(t, c)
@@ -148,14 +158,18 @@ func testFlux(t testing.TB, file *ast.File) flux.Statistics {
 	if t.Failed() {
 		// Rerun the test case using testing.inspect
 		pkg.Files[len(pkg.Files)-1] = stdlib.TestingInspectCalls(pkg)
-		c := lang.ASTCompiler{AST: pkg}
+		bs, err := json.Marshal(pkg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		c := lang.ASTCompiler{AST: bs}
 		stats = doTestInspect(t, c)
 	}
 	return stats
 }
 
 func doTestRun(t testing.TB, c flux.Compiler) flux.Statistics {
-	program, err := c.Compile(context.Background())
+	program, err := c.Compile(context.Background(), runtime.Default)
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}
@@ -185,7 +199,7 @@ func doTestRun(t testing.TB, c flux.Compiler) flux.Statistics {
 }
 
 func doTestInspect(t testing.TB, c flux.Compiler) flux.Statistics {
-	program, err := c.Compile(context.Background())
+	program, err := c.Compile(context.Background(), runtime.Default)
 	if err != nil {
 		t.Fatalf("unexpected error while compiling query: %v", err)
 	}

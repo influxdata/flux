@@ -5,8 +5,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/internal/token"
+	"github.com/influxdata/flux/libflux/go/libflux"
 )
 
 const defaultPackageName = "main"
@@ -80,6 +82,19 @@ func ParseSource(source string) *ast.Package {
 		Files:   []*ast.File{file},
 	}
 	return pkg
+}
+
+func HandleToJSON(hdl flux.ASTHandle) ([]byte, error) {
+	libfluxHdl := hdl.(*libflux.ASTPkg)
+	return libfluxHdl.MarshalJSON()
+}
+
+func ParseToHandle(src []byte) (*libflux.ASTPkg, error) {
+	pkg := libflux.ParseString(string(src))
+	if err := pkg.GetError(); err != nil {
+		return nil, err
+	}
+	return pkg, nil
 }
 
 func packageName(f *ast.File) string {

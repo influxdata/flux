@@ -17,6 +17,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -36,16 +37,9 @@ type PivotOpSpec struct {
 }
 
 func init() {
-	pivotSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"rowKey":      semantic.NewArrayPolyType(semantic.String),
-			"columnKey":   semantic.NewArrayPolyType(semantic.String),
-			"valueColumn": semantic.String,
-		},
-		[]string{"rowKey", "columnKey", "valueColumn"},
-	)
+	pivotSignature := runtime.MustLookupBuiltinType("universe", "pivot")
 
-	flux.RegisterPackageValue("universe", PivotKind, flux.FunctionValue(PivotKind, createPivotOpSpec, pivotSignature))
+	runtime.RegisterPackageValue("universe", PivotKind, flux.MustValue(flux.FunctionValue(PivotKind, createPivotOpSpec, pivotSignature)))
 	flux.RegisterOpSpec(PivotKind, newPivotOp)
 
 	plan.RegisterProcedureSpec(PivotKind, newPivotProcedure, PivotKind)
@@ -511,7 +505,7 @@ func (t *pivotTransformation2) Process(id execute.DatasetID, tbl flux.Table) err
 		}
 
 		// The key must be a string.
-		if key.Type() != semantic.String {
+		if key.Type().Nature() != semantic.String {
 			return errors.New(codes.FailedPrecondition, "column key must be of type string")
 		}
 		label := key.Str()

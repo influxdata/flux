@@ -69,7 +69,7 @@ func (t *Table) Normalize() {
 				v = values.NewNull(flux.SemanticType(t.ColMeta[idx].Type))
 			} else {
 				v = values.New(t.KeyValues[j])
-				if v.Type() == semantic.Invalid {
+				if v.Type().Nature() == semantic.Invalid {
 					panic(fmt.Errorf("invalid value: %s", t.KeyValues[j]))
 				}
 			}

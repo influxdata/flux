@@ -1337,7 +1337,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "influxdata/influxdb/v1",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "influxFieldsAsCols_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -2924,7 +2924,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 						},
-						Elements: nil,
+						Elements: []ast.Expression{},
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
@@ -4149,7 +4149,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "influxdata/influxdb/v1",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "influxRawQuery_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -6007,7 +6007,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "measurement_tag_values_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -7547,7 +7547,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "show_measurements_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -9017,7 +9017,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "show_tag_keys_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -10557,7 +10557,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "show_tag_values_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{

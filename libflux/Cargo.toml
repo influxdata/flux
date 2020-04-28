@@ -1,5 +1,5 @@
 [workspace]
-members = ["src/flux", "src/libstd"]
+members = ["src/core", "src/flux"]
 
 # https://rustwasm.github.io/docs/book/reference/code-size.html#optimizing-builds-for-code-size
 [profile.release]

@@ -5,9 +5,13 @@ import (
 	"fmt"
 	"testing"
 
+	_ "github.com/influxdata/flux/builtin"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/interpreter/interptest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -17,32 +21,33 @@ type importer struct {
 	packages map[string]*interpreter.Package
 }
 
-func (imp *importer) Import(path string) (semantic.PackageType, bool) {
+func (imp *importer) Import(path string) (semantic.MonoType, bool) {
 	pkg, ok := imp.packages[path]
 	if !ok {
-		return semantic.PackageType{}, false
+		return semantic.MonoType{}, false
 	}
-	return semantic.PackageType{
-		Name: pkg.Name(),
-		Type: pkg.PolyType(),
-	}, true
+	return pkg.Type(), true
 }
 
-func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, bool) {
+func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, error) {
 	pkg, ok := imp.packages[path]
-	return pkg, ok
+	if !ok {
+		return nil, errors.Newf(codes.NotFound, "package %q not found", path)
+	}
+	return pkg, nil
 }
 
 func TestAccessNestedImport(t *testing.T) {
+	t.Skip("Handle imports for user-defined packages https://github.com/influxdata/flux/issues/2343")
 	// package a
 	// x = 0
-	packageA := interpreter.NewPackageWithValues("a", values.NewObjectWithValues(map[string]values.Value{
+	packageA := interpreter.NewPackageWithValues("a", "", values.NewObjectWithValues(map[string]values.Value{
 		"x": values.NewInt(0),
 	}))
 
 	// package b
 	// import "a"
-	packageB := interpreter.NewPackageWithValues("b", values.NewObjectWithValues(map[string]values.Value{
+	packageB := interpreter.NewPackageWithValues("b", "", values.NewObjectWithValues(map[string]values.Value{
 		"a": packageA,
 	}))
 
@@ -360,33 +365,29 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 }
 */
 
-func TestInterpreter_SetNewOption(t *testing.T) {
+func TestInterpreter_MutateOption(t *testing.T) {
 	pkg := interpreter.NewPackage("alert")
 	ctx := dependenciestest.Default().Inject(context.Background())
 	itrp := interpreter.NewInterpreter(pkg)
 	script := `
 		package alert
-		option state = "Warning"
-		state
+		import "planner"
+		fail = () => {
+			[][0]
+			return false
+		}
+		option planner.disableLogicalRules = ["dummyRule"]
+		planner.disableLogicalRules[0] == "dummyRule" or fail()
 `
-	if _, err := interptest.Eval(ctx, itrp, values.NewNestedScope(nil, pkg), nil, script); err != nil {
+	if _, err := interptest.Eval(ctx, itrp, values.NewNestedScope(nil, pkg), runtime.StdLib(), script); err != nil {
 		t.Fatalf("failed to evaluate package: %v", err)
-	}
-	option, ok := pkg.Get("state")
-	if !ok {
-		t.Errorf("missing option %q in package %s", "state", "alert")
-	}
-	if got, want := option.Type().Nature(), semantic.String; want != got {
-		t.Fatalf("unexpected option type; want=%s got=%s value: %v", want, got, option)
-	}
-	if got, want := option.Str(), "Warning"; want != got {
-		t.Errorf("unexpected option value; want=%s got=%s", want, got)
 	}
 }
 
 func TestInterpreter_SetQualifiedOption(t *testing.T) {
+	t.Skip("Handle imports for user-defined packages https://github.com/influxdata/flux/issues/2343")
 	externalPackage := interpreter.NewPackage("alert")
-	externalPackage.SetOption("state", values.NewString("Warning"))
+	values.SetOption(externalPackage, "state", values.NewString("Warning"))
 	importer := &importer{
 		packages: map[string]*interpreter.Package{
 			"alert": externalPackage,

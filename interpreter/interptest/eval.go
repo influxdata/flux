@@ -3,21 +3,17 @@ package interptest
 import (
 	"context"
 
-	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/parser"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 )
 
 func Eval(ctx context.Context, itrp *interpreter.Interpreter, scope values.Scope, importer interpreter.Importer, src string) ([]interpreter.SideEffect, error) {
-	pkg := parser.ParseSource(src)
-	if ast.Check(pkg) > 0 {
-		return nil, ast.GetError(pkg)
-	}
-	node, err := semantic.New(pkg)
+	node, err := runtime.AnalyzeSource(src)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, codes.Inherit, "could not analyze program")
 	}
 	return itrp.Eval(ctx, node, scope, importer)
 }

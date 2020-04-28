@@ -40,8 +40,10 @@ func TestGroup_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID:   "from0",
-						Spec: &influxdb.FromOpSpec{Bucket: "telegraf"},
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "telegraf"},
+						},
 					},
 					{
 						ID: "range1",
@@ -73,8 +75,10 @@ func TestGroup_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID:   "from0",
-						Spec: &influxdb.FromOpSpec{Bucket: "telegraf"},
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "telegraf"},
+						},
 					},
 					{
 						ID: "range1",
@@ -106,8 +110,10 @@ func TestGroup_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID:   "from0",
-						Spec: &influxdb.FromOpSpec{Bucket: "telegraf"},
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "telegraf"},
+						},
 					},
 					{
 						ID: "range1",
@@ -139,8 +145,10 @@ func TestGroup_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID:   "from0",
-						Spec: &influxdb.FromOpSpec{Bucket: "telegraf"},
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "telegraf"},
+						},
 					},
 					{
 						ID: "range1",
@@ -175,8 +183,10 @@ func TestGroup_NewQuery(t *testing.T) {
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID:   "from0",
-						Spec: &influxdb.FromOpSpec{Bucket: "telegraf"},
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "telegraf"},
+						},
 					},
 					{
 						ID: "range1",
@@ -739,7 +749,7 @@ func TestGroup_Process(t *testing.T) {
 					KeyValues: []interface{}{nil},
 					GroupKey: execute.NewGroupKey(
 						[]flux.ColMeta{{Label: "t1", Type: flux.TString}},
-						[]values.Value{values.NewNull(semantic.String)},
+						[]values.Value{values.NewNull(semantic.BasicString)},
 					),
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},

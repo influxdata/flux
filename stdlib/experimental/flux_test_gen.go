@@ -1267,7 +1267,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "alignTime_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -3000,7 +3000,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "group_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -5906,7 +5906,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "join_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -7199,7 +7199,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "set_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{

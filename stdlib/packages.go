@@ -23,6 +23,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/internal/gen"
 	_ "github.com/influxdata/flux/stdlib/internal/influxql"
 	_ "github.com/influxdata/flux/stdlib/internal/promql"
+	_ "github.com/influxdata/flux/stdlib/internal/testutil"
 	_ "github.com/influxdata/flux/stdlib/json"
 	_ "github.com/influxdata/flux/stdlib/kafka"
 	_ "github.com/influxdata/flux/stdlib/math"

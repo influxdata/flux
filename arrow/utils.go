@@ -43,7 +43,7 @@ func AppendValue(b array.Builder, v values.Value) error {
 		return nil
 	}
 
-	switch v.Type() {
+	switch v.Type().Nature() {
 	case semantic.Int:
 		return AppendInt(b, v.Int())
 	case semantic.UInt:

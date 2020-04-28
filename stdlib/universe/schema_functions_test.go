@@ -3,18 +3,15 @@ package universe_test
 import (
 	"context"
 	"errors"
-	"regexp"
 	"testing"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values/valuestest"
@@ -30,7 +27,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
@@ -62,7 +59,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
@@ -92,7 +89,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
@@ -122,7 +119,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
@@ -153,30 +150,15 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
 						ID: "drop1",
 						Spec: &universe.DropOpSpec{
 							Predicate: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-										},
-										Body: &semantic.BinaryExpression{
-											Operator: ast.RegexpMatchOperator,
-											Left: &semantic.IdentifierExpression{
-												Name: "column",
-											},
-											Right: &semantic.RegexpLiteral{
-												Value: regexp.MustCompile(`reg*`),
-											},
-										},
-									},
-								},
-								Scope: valuestest.NowScope(),
+								Fn:    executetest.FunctionExpression(t, "(column) => column =~ /reg*/"),
+								Scope: valuestest.Scope(),
 							},
 						},
 					},
@@ -201,30 +183,15 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
 						ID: "keep1",
 						Spec: &universe.KeepOpSpec{
 							Predicate: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-										},
-										Body: &semantic.BinaryExpression{
-											Operator: ast.RegexpMatchOperator,
-											Left: &semantic.IdentifierExpression{
-												Name: "column",
-											},
-											Right: &semantic.RegexpLiteral{
-												Value: regexp.MustCompile(`reg*`),
-											},
-										},
-									},
-								},
-								Scope: valuestest.NowScope(),
+								Fn:    executetest.FunctionExpression(t, "(column) => column =~ /reg*/"),
+								Scope: valuestest.Scope(),
 							},
 						},
 					},
@@ -249,24 +216,15 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
 						ID: "rename1",
 						Spec: &universe.RenameOpSpec{
 							Fn: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-										},
-										Body: &semantic.StringLiteral{
-											Value: "new_name",
-										},
-									},
-								},
-								Scope: valuestest.NowScope(),
+								Fn:    executetest.FunctionExpression(t, `(column) => "new_name"`),
+								Scope: valuestest.Scope(),
 							},
 						},
 					},
@@ -749,17 +707,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				Mutations: []universe.SchemaMutation{
 					&universe.RenameOpSpec{
 						Fn: interpreter.ResolvedFunction{
-							Fn: &semantic.FunctionExpression{
-								Block: &semantic.FunctionBlock{
-									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-									},
-									Body: &semantic.StringLiteral{
-										Value: "new_name",
-									},
-								},
-							},
-							Scope: valuestest.NowScope(),
+							Fn:    executetest.FunctionExpression(t, `(column) => "new_name"`),
+							Scope: valuestest.Scope(),
 						},
 					},
 				},
@@ -784,23 +733,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				Mutations: []universe.SchemaMutation{
 					&universe.DropOpSpec{
 						Predicate: interpreter.ResolvedFunction{
-							Fn: &semantic.FunctionExpression{
-								Block: &semantic.FunctionBlock{
-									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-									},
-									Body: &semantic.BinaryExpression{
-										Operator: ast.RegexpMatchOperator,
-										Left: &semantic.IdentifierExpression{
-											Name: "column",
-										},
-										Right: &semantic.RegexpLiteral{
-											Value: regexp.MustCompile(`server*`),
-										},
-									},
-								},
-							},
-							Scope: valuestest.NowScope(),
+							Fn:    executetest.FunctionExpression(t, `(column) => column =~ /server*/`),
+							Scope: valuestest.Scope(),
 						},
 					},
 				},
@@ -834,23 +768,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				Mutations: []universe.SchemaMutation{
 					&universe.KeepOpSpec{
 						Predicate: interpreter.ResolvedFunction{
-							Fn: &semantic.FunctionExpression{
-								Block: &semantic.FunctionBlock{
-									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-									},
-									Body: &semantic.BinaryExpression{
-										Operator: ast.RegexpMatchOperator,
-										Left: &semantic.IdentifierExpression{
-											Name: "column",
-										},
-										Right: &semantic.RegexpLiteral{
-											Value: regexp.MustCompile(`server*`),
-										},
-									},
-								},
-							},
-							Scope: valuestest.NowScope(),
+							Fn:    executetest.FunctionExpression(t, `(column) => column =~ /server*/`),
+							Scope: valuestest.Scope(),
 						},
 					},
 				},
@@ -1555,6 +1474,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Skip("https://github.com/influxdata/flux/issues/2490")
 			executetest.ProcessTestHelper(
 				t,
 				tc.data,

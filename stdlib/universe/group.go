@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -30,15 +31,9 @@ type GroupOpSpec struct {
 }
 
 func init() {
-	groupSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"mode":    semantic.String,
-			"columns": semantic.NewArrayPolyType(semantic.String),
-		},
-		nil,
-	)
+	groupSignature := runtime.MustLookupBuiltinType("universe", "group")
 
-	flux.RegisterPackageValue("universe", GroupKind, flux.FunctionValue(GroupKind, createGroupOpSpec, groupSignature))
+	runtime.RegisterPackageValue("universe", GroupKind, flux.MustValue(flux.FunctionValue(GroupKind, createGroupOpSpec, groupSignature)))
 	flux.RegisterOpSpec(GroupKind, newGroupOp)
 	plan.RegisterProcedureSpec(GroupKind, newGroupProcedure, GroupKind)
 	plan.RegisterLogicalRules(MergeGroupRule{})

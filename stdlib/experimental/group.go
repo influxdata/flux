@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -30,15 +31,8 @@ type GroupOpSpec struct {
 }
 
 func init() {
-	groupSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"mode":    semantic.String,
-			"columns": semantic.NewArrayPolyType(semantic.String),
-		},
-		nil,
-	)
-
-	flux.RegisterPackageValue("experimental", "group", flux.FunctionValue("group", createGroupOpSpec, groupSignature))
+	groupSignature := runtime.MustLookupBuiltinType("experimental", "group")
+	runtime.RegisterPackageValue("experimental", "group", flux.MustValue(flux.FunctionValue("group", createGroupOpSpec, groupSignature)))
 	flux.RegisterOpSpec(ExperimentalGroupKind, newGroupOp)
 	plan.RegisterProcedureSpec(ExperimentalGroupKind, newGroupProcedure, ExperimentalGroupKind)
 	execute.RegisterTransformation(ExperimentalGroupKind, createGroupTransformation)

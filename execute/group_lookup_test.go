@@ -113,7 +113,7 @@ var (
 		cols,
 		[]values.Value{
 			values.NewString("Z"),
-			values.NewNull(semantic.String),
+			values.NewNull(semantic.BasicString),
 			values.NewString("A"),
 		},
 	)

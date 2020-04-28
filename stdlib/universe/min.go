@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 )
 
 const MinKind = "min"
@@ -16,9 +17,9 @@ type MinOpSpec struct {
 }
 
 func init() {
-	minSignature := execute.SelectorSignature(nil, nil)
+	minSignature := runtime.MustLookupBuiltinType("universe", "min")
 
-	flux.RegisterPackageValue("universe", MinKind, flux.FunctionValue(MinKind, createMinOpSpec, minSignature))
+	runtime.RegisterPackageValue("universe", MinKind, flux.MustValue(flux.FunctionValue(MinKind, createMinOpSpec, minSignature)))
 	flux.RegisterOpSpec(MinKind, newMinOp)
 	plan.RegisterProcedureSpec(MinKind, newMinProcedure, MinKind)
 	execute.RegisterTransformation(MinKind, createMinTransformation)

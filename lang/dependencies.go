@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/influxdata/flux/memory"
-
 	"go.uber.org/zap"
 )
 

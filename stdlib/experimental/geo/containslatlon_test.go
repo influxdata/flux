@@ -139,7 +139,7 @@ func TestContainsLatLon_Process(t *testing.T) {
 				"lon": values.NewFloat(tc.lon),
 			})
 		} else if tc.polygon != nil {
-			array := values.NewArray(semantic.Object)
+			array := values.NewArray(semantic.NewArrayType(pointT))
 			for _, p := range *tc.polygon {
 				array.Append(values.NewObjectWithValues(map[string]values.Value{
 					"lat": values.NewFloat(p.lat),

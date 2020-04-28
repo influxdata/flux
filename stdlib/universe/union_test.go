@@ -25,8 +25,10 @@ func TestUnion_NewQuery(t *testing.T) {
 				union(tables: [a, b])`,
 			Want: &flux.Spec{Operations: []*flux.Operation{
 				{
-					ID:   "from0",
-					Spec: &influxdb.FromOpSpec{Bucket: "dbA"},
+					ID: "from0",
+					Spec: &influxdb.FromOpSpec{
+						Bucket: influxdb.NameOrID{Name: "dbA"},
+					},
 				},
 				{
 					ID: "range1",
@@ -44,8 +46,10 @@ func TestUnion_NewQuery(t *testing.T) {
 					},
 				},
 				{
-					ID:   "from2",
-					Spec: &influxdb.FromOpSpec{Bucket: "dbB"},
+					ID: "from2",
+					Spec: &influxdb.FromOpSpec{
+						Bucket: influxdb.NameOrID{Name: "dbB"},
+					},
 				},
 				{
 					ID: "range3",
@@ -84,8 +88,10 @@ func TestUnion_NewQuery(t *testing.T) {
 				union(tables: [a, b, c])`,
 			Want: &flux.Spec{Operations: []*flux.Operation{
 				{
-					ID:   "from0",
-					Spec: &influxdb.FromOpSpec{Bucket: "dbA"},
+					ID: "from0",
+					Spec: &influxdb.FromOpSpec{
+						Bucket: influxdb.NameOrID{Name: "dbA"},
+					},
 				},
 				{
 					ID: "range1",
@@ -103,8 +109,10 @@ func TestUnion_NewQuery(t *testing.T) {
 					},
 				},
 				{
-					ID:   "from2",
-					Spec: &influxdb.FromOpSpec{Bucket: "dbB"},
+					ID: "from2",
+					Spec: &influxdb.FromOpSpec{
+						Bucket: influxdb.NameOrID{Name: "dbB"},
+					},
 				},
 				{
 					ID: "range3",
@@ -122,8 +130,10 @@ func TestUnion_NewQuery(t *testing.T) {
 					},
 				},
 				{
-					ID:   "from4",
-					Spec: &influxdb.FromOpSpec{Bucket: "dbC"},
+					ID: "from4",
+					Spec: &influxdb.FromOpSpec{
+						Bucket: influxdb.NameOrID{Name: "dbC"},
+					},
 				},
 				{
 					ID: "range5",

@@ -15,8 +15,12 @@ type Function interface {
 	Call(ctx context.Context, args Object) (Value, error)
 }
 
-// NewFunction returns a new function value
-func NewFunction(name string, typ semantic.PolyType, call func(ctx context.Context, args Object) (Value, error), sideEffect bool) *function {
+// NewFunction returns a new function value.
+// This function will panic if it is passed anything other than a function type.
+func NewFunction(name string, typ semantic.MonoType, call func(ctx context.Context, args Object) (Value, error), sideEffect bool) *function {
+	if typ.Kind() != semantic.Fun {
+		panic("expected function type, but instead got " + typ.String())
+	}
 	return &function{
 		name:          name,
 		t:             typ,
@@ -28,7 +32,7 @@ func NewFunction(name string, typ semantic.PolyType, call func(ctx context.Conte
 // function implements Value interface and more specifically the Function interface
 type function struct {
 	name          string
-	t             semantic.PolyType
+	t             semantic.MonoType
 	call          func(ctx context.Context, args Object) (Value, error)
 	hasSideEffect bool
 }
@@ -40,14 +44,7 @@ func (f *function) String() string {
 	return fmt.Sprintf("%s()", f.name)
 }
 
-func (f *function) Type() semantic.Type {
-	typ, ok := f.t.MonoType()
-	if ok {
-		return typ
-	}
-	return semantic.Invalid
-}
-func (f *function) PolyType() semantic.PolyType {
+func (f *function) Type() semantic.MonoType {
 	return f.t
 }
 
@@ -100,7 +97,7 @@ func (f *function) Function() Function {
 }
 
 func (f *function) Equal(rhs Value) bool {
-	if f.Type() != rhs.Type() {
+	if f.t != rhs.Type() {
 		return false
 	}
 	v, ok := rhs.(*function)

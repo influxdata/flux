@@ -29,7 +29,7 @@ func TestJoin_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "dbA",
+							Bucket: influxdb.NameOrID{Name: "dbA"},
 						},
 					},
 					{
@@ -50,7 +50,7 @@ func TestJoin_NewQuery(t *testing.T) {
 					{
 						ID: "from2",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "dbB",
+							Bucket: influxdb.NameOrID{Name: "dbB"},
 						},
 					},
 					{
@@ -97,7 +97,7 @@ func TestJoin_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "flux",
+							Bucket: influxdb.NameOrID{Name: "flux"},
 						},
 					},
 					{
@@ -118,7 +118,7 @@ func TestJoin_NewQuery(t *testing.T) {
 					{
 						ID: "from2",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "flux",
+							Bucket: influxdb.NameOrID{Name: "flux"},
 						},
 					},
 					{

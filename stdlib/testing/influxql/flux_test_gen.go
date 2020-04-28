@@ -2289,7 +2289,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/influxql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "aggregate_group_by_time_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -4338,7 +4338,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/influxql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "cumulative_sum_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -6285,7 +6285,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/influxql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "elapsed_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -8825,7 +8825,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/influxql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "filter_by_regex_tag_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -11472,7 +11472,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/influxql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "filter_by_values_with_and_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -13765,7 +13765,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/influxql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "regex_measurement_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -15971,7 +15971,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/influxql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "selector_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -17968,7 +17968,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/influxql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "series_agg_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{

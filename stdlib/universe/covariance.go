@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -22,15 +23,8 @@ type CovarianceOpSpec struct {
 }
 
 func init() {
-	var covarianceSignature = flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"pearsonr": semantic.Bool,
-			"valueDst": semantic.String,
-			"columns":  semantic.NewArrayPolyType(semantic.String),
-		},
-		[]string{"columns"},
-	)
-	flux.RegisterPackageValue("universe", CovarianceKind, flux.FunctionValue(CovarianceKind, createCovarianceOpSpec, covarianceSignature))
+	var covarianceSignature = runtime.MustLookupBuiltinType("universe", "covariance")
+	runtime.RegisterPackageValue("universe", CovarianceKind, flux.MustValue(flux.FunctionValue(CovarianceKind, createCovarianceOpSpec, covarianceSignature)))
 	flux.RegisterOpSpec(CovarianceKind, newCovarianceOp)
 	plan.RegisterProcedureSpec(CovarianceKind, newCovarianceProcedure, CovarianceKind)
 	execute.RegisterTransformation(CovarianceKind, createCovarianceTransformation)

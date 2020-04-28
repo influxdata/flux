@@ -8,8 +8,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/semantic/internal/fbsemantic"
-	"github.com/influxdata/flux/semantic/types"
+	"github.com/influxdata/flux/internal/fbsemantic"
 )
 
 func DeserializeFromFlatBuffer(buf []byte) (*Package, error) {
@@ -21,7 +20,7 @@ func DeserializeFromFlatBuffer(buf []byte) (*Package, error) {
 	return p, nil
 }
 
-func (l *loc) FromBuf(fb *fbsemantic.SourceLocation) error {
+func (l *Loc) FromBuf(fb *fbsemantic.SourceLocation) error {
 	l.File = string(fb.File())
 	posFromBuf(&l.Start, fb.Start(nil))
 	posFromBuf(&l.End, fb.End(nil))
@@ -454,7 +453,7 @@ func fromFBStringExpressionPartVector(fbExpr *fbsemantic.StringExpression) ([]St
 				Value: string(text),
 			}
 			if fbLoc != nil {
-				if err := tp.loc.FromBuf(fbLoc); err != nil {
+				if err := tp.Loc.FromBuf(fbLoc); err != nil {
 					return nil, err
 				}
 			}
@@ -468,7 +467,7 @@ func fromFBStringExpressionPartVector(fbExpr *fbsemantic.StringExpression) ([]St
 				Expression: expr,
 			}
 			if fbLoc != nil {
-				if err := ip.loc.FromBuf(fbLoc); err != nil {
+				if err := ip.Loc.FromBuf(fbLoc); err != nil {
 					return nil, err
 				}
 			}
@@ -496,70 +495,71 @@ func fromFBRegexpLiteral(fbRegexp []byte) (*regexp.Regexp, error) {
 
 func (e *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
 	if fbLoc := fb.Loc(nil); fbLoc != nil {
-		if err := e.loc.FromBuf(fbLoc); err != nil {
+		if err := e.Loc.FromBuf(fbLoc); err != nil {
 			return errors.Wrap(err, codes.Inherit, "FunctionExpression.loc")
 		}
 	}
 
-	bl := new(FunctionBlock)
 	var defaults []*Property
+	ps := &FunctionParameters{
+		Loc: e.Loc,
+	}
 	{
-		bl.loc = e.loc
-		ps := &FunctionParameters{
-			loc: e.loc,
-		}
-		{
-			nParams := fb.ParamsLength()
-			ps.List = make([]*FunctionParameter, nParams)
-			for i := 0; i < nParams; i++ {
-				fbp := new(fbsemantic.FunctionParameter)
-				if !fb.Params(fbp, i) {
-					return errors.Newf(codes.Internal, "missing parameter at position %v", i)
-				}
-				p := new(FunctionParameter)
-				if err := p.FromBuf(fbp); err != nil {
-					return err
-				}
-				ps.List[i] = p
+		nParams := fb.ParamsLength()
+		ps.List = make([]*FunctionParameter, nParams)
+		for i := 0; i < nParams; i++ {
+			fbp := new(fbsemantic.FunctionParameter)
+			if !fb.Params(fbp, i) {
+				return errors.Newf(codes.Internal, "missing parameter at position %v", i)
+			}
+			p := new(FunctionParameter)
+			if err := p.FromBuf(fbp); err != nil {
+				return err
+			}
+			ps.List[i] = p
 
-				if fbp.Default(&flatbuffers.Table{}) {
-					e, err := fromExpressionTable(fbp.Default, fbp.DefaultType())
-					if err != nil {
-						return errors.Wrapf(err, codes.Inherit, "default for parameter at position %v", i)
-					}
-					defaults = append(defaults, &Property{
-						loc:   p.loc,
-						Key:   p.Key,
-						Value: e,
-					})
+			if fbp.Default(&flatbuffers.Table{}) {
+				e, err := fromExpressionTable(fbp.Default, fbp.DefaultType())
+				if err != nil {
+					return errors.Wrapf(err, codes.Inherit, "default for parameter at position %v", i)
 				}
+				defaults = append(defaults, &Property{
+					Loc:   p.Loc,
+					Key:   p.Key,
+					Value: e,
+				})
+			}
 
-				if fbp.IsPipe() {
-					ps.Pipe = p.Key
-				}
+			if fbp.IsPipe() {
+				ps.Pipe = p.Key
 			}
 		}
-		if len(ps.List) > 0 {
-			bl.Parameters = ps
-		}
 
-		fbBlock := fb.Body(nil)
-		if fbBlock == nil {
-			return errors.New(codes.Internal, "missing function body")
+		if len(ps.List) > 0 {
+			e.Parameters = ps
 		}
-		stmts := new(Block)
-		if err := stmts.FromBuf(fbBlock); err != nil {
-			return err
-		}
-		bl.Body = stmts
 	}
-	e.Block = bl
 
 	if len(defaults) > 0 {
 		e.Defaults = &ObjectExpression{
-			loc:        e.loc,
+			Loc:        e.Loc,
 			Properties: defaults,
 		}
+	}
+
+	fbBlock := fb.Body(nil)
+	if fbBlock == nil {
+		return errors.New(codes.Internal, "missing function body")
+	}
+	stmts := new(Block)
+	if err := stmts.FromBuf(fbBlock); err != nil {
+		return err
+	}
+	e.Block = stmts
+
+	var err error
+	if e.typ, err = getMonoType(fb); err != nil {
+		return err
 	}
 
 	return nil
@@ -567,7 +567,7 @@ func (e *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
 
 func (p *FunctionParameter) FromBuf(fb *fbsemantic.FunctionParameter) error {
 	if fbLoc := fb.Loc(nil); fbLoc != nil {
-		if err := p.loc.FromBuf(fbLoc); err != nil {
+		if err := p.Loc.FromBuf(fbLoc); err != nil {
 			return errors.Wrap(err, codes.Inherit, "FunctionParameter.loc")
 		}
 	}
@@ -590,19 +590,19 @@ type fbTyper interface {
 
 // getMonoType produces an FBMonoType from the given FlatBuffers expression that has
 // a union "typ" field (which is all the different kinds of expressions).
-func getMonoType(fbExpr fbTyper) (*types.MonoType, error) {
-	tbl := new(flatbuffers.Table)
-	if !fbExpr.Typ(tbl) {
-		return nil, errors.Newf(codes.Internal, "missing monotype")
+func getMonoType(fbExpr fbTyper) (MonoType, error) {
+	var tbl flatbuffers.Table
+	if !fbExpr.Typ(&tbl) {
+		return MonoType{}, errors.Newf(codes.Internal, "missing monotype")
 	}
 
 	t := fbExpr.TypType()
-	return types.NewMonoType(tbl, t)
+	return NewMonoType(tbl, t)
 }
 
-func getPolyType(fb *fbsemantic.NativeVariableAssignment) (*types.PolyType, error) {
+func getPolyType(fb *fbsemantic.NativeVariableAssignment) (PolyType, error) {
 	t := fb.Typ(nil)
-	return types.NewPolyType(t)
+	return NewPolyType(t)
 }
 
 func objectExprFromProperties(fb *fbsemantic.CallExpression) (*ObjectExpression, error) {
@@ -619,15 +619,27 @@ func objectExprFromProperties(fb *fbsemantic.CallExpression) (*ObjectExpression,
 		props[i] = prop
 	}
 
-	l := loc{}
+	typ := func() MonoType {
+		properties := make([]PropertyType, len(props))
+		for i := range properties {
+			properties[i] = PropertyType{
+				Key:   []byte(props[i].Key.Key()),
+				Value: props[i].Value.TypeOf(),
+			}
+		}
+		return NewObjectType(properties)
+	}()
+
+	l := Loc{}
 	if len(props) > 0 {
-		l = props[0].loc
-		l.End = props[len(props)-1].loc.End
+		l = props[0].Loc
+		l.End = props[len(props)-1].Loc.End
 		l.Source = ""
 	}
 	obj := &ObjectExpression{
-		loc:        l,
+		Loc:        l,
 		Properties: props,
+		typ:        typ,
 	}
 	return obj, nil
 }

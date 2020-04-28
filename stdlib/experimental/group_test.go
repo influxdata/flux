@@ -36,8 +36,10 @@ from(bucket: "telegraf") |> range(start: -1m) |> experimental.group(mode: "exten
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
-						ID:   "from0",
-						Spec: &influxdb.FromOpSpec{Bucket: "telegraf"},
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "telegraf"},
+						},
 					},
 					{
 						ID: "range1",

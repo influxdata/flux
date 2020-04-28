@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -53,15 +54,14 @@ var SchemaMutationOps = []flux.OperationKind{}
 // should not have their own ProcedureSpec.
 type MutationRegistrar struct {
 	Kind   flux.OperationKind
-	Args   map[string]semantic.PolyType
+	Type   semantic.MonoType
 	Create flux.CreateOperationSpec
 	New    flux.NewOperationSpec
 }
 
 func (m MutationRegistrar) Register() {
-	signature := flux.FunctionSignature(m.Args, nil)
-
-	flux.RegisterPackageValue("universe", string(m.Kind), flux.FunctionValue(string(m.Kind), m.Create, signature))
+	t := runtime.MustLookupBuiltinType("universe", string(m.Kind))
+	runtime.RegisterPackageValue("universe", string(m.Kind), flux.MustValue(flux.FunctionValue(string(m.Kind), m.Create, t)))
 	flux.RegisterOpSpec(m.Kind, m.New)
 
 	// Add to list of SchemaMutations which should map to a
@@ -73,56 +73,26 @@ func (m MutationRegistrar) Register() {
 // To register a new mutation, add an entry to this list.
 var Registrars = []MutationRegistrar{
 	{
-		Kind: RenameKind,
-		Args: map[string]semantic.PolyType{
-			"columns": semantic.Object,
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"column": semantic.String,
-				},
-				Required: semantic.LabelSet{"column"},
-				Return:   semantic.String,
-			}),
-		},
+		Kind:   RenameKind,
+		Type:   runtime.MustLookupBuiltinType("universe", "rename"),
 		Create: createRenameOpSpec,
 		New:    newRenameOp,
 	},
 	{
-		Kind: DropKind,
-		Args: map[string]semantic.PolyType{
-			"columns": semantic.NewArrayPolyType(semantic.String),
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"column": semantic.String,
-				},
-				Required: semantic.LabelSet{"column"},
-				Return:   semantic.Bool,
-			}),
-		},
+		Kind:   DropKind,
+		Type:   runtime.MustLookupBuiltinType("universe", "drop"),
 		Create: createDropOpSpec,
 		New:    newDropOp,
 	},
 	{
-		Kind: KeepKind,
-		Args: map[string]semantic.PolyType{
-			"columns": semantic.NewArrayPolyType(semantic.String),
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"column": semantic.String,
-				},
-				Required: semantic.LabelSet{"column"},
-				Return:   semantic.Bool,
-			}),
-		},
+		Kind:   KeepKind,
+		Type:   runtime.MustLookupBuiltinType("universe", "keep"),
 		Create: createKeepOpSpec,
 		New:    newKeepOp,
 	},
 	{
-		Kind: DuplicateKind,
-		Args: map[string]semantic.PolyType{
-			"column": semantic.String,
-			"as":     semantic.String,
-		},
+		Kind:   DuplicateKind,
+		Type:   runtime.MustLookupBuiltinType("universe", "duplicate"),
 		Create: createDuplicateOpSpec,
 		New:    newDuplicateOp,
 	},
@@ -179,7 +149,7 @@ func createRenameOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 			if err != nil {
 				return
 			}
-			if v.Type() != semantic.String {
+			if v.Type().Nature() != semantic.String {
 				err = errors.Newf(codes.Invalid, "rename error: columns object contains non-string value of type %s", v.Type())
 				return
 			}

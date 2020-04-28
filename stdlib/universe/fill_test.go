@@ -77,7 +77,7 @@ func TestFill_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mydb",
+							Bucket: influxdb.NameOrID{Name: "mydb"},
 						},
 					},
 					{

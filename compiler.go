@@ -11,7 +11,7 @@ import (
 // Compiler produces a specification for the query.
 type Compiler interface {
 	// Compile produces a specification for the query.
-	Compile(ctx context.Context) (Program, error)
+	Compile(ctx context.Context, runtime Runtime) (Program, error)
 	CompilerType() CompilerType
 }
 

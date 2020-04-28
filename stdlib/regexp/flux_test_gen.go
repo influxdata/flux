@@ -2005,7 +2005,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "regexp",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "replaceAllString_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{

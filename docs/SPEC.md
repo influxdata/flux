@@ -513,12 +513,14 @@ An _object type_ represents a set of unordered key and value pairs.
 The key must always be a string.
 The value may be any other type, and need not be the same as other values within the object.
 
+Type inference will determine the properties that are present on an object.
+If type inference determines all the properties on an object it is said to be bounded.
+Not all keys may be known on the type of an object in which case the object is said to be unbounded.
+An unbounded object may contain any property in addition to the properties it is known to contain.
+
 ##### Function types
 
 A _function type_ represents a set of all functions with the same argument and result types.
-
-
-[IMPL#249](https://github.com/influxdata/platform/issues/249) Specify type inference rules
 
 ##### Generator types
 
@@ -797,12 +799,13 @@ Index expressions access a value from an array based on a numeric index.
 
 Member expressions access a property of an object.
 They are specified via an expression of the form `obj.k` or `obj["k"]`.
-The property being accessed must be either an identifer or a string literal.
-In either case the literal value is the name of the property being accessed, the identifer is not evaluated.
+The property being accessed must be either an identifier or a string literal.
+In either case the literal value is the name of the property being accessed, the identifier is not evaluated.
 It is not possible to access an object's property using an arbitrary expression.
 
 If `obj` contains an entry with property `k`, both `obj.k` and `obj["k"]` return the value associated with `k`.
-If `obj` does **not** contain an entry with property `k`, both `obj.k` and `obj["k"]` return _null_.
+If `obj` is bounded and does *not* contain a property `k`, both `obj.k` and `obj["k"]` report a type checking error.
+If `obj` is unbounded and does *not* contain a property `k`, both `obj.k` and `obj["k"]` return _null_.
 
     MemberExpression        = DotExpression  | MemberBracketExpression
     DotExpression           = "." identifer
@@ -4150,6 +4153,60 @@ r0 = from(bucket:"telegraf/autogen")
     |> filter(fn:(r) => r._measurement == "cpu")
     |> tableFind(fn: (key) => key._field == "usage_idle")
     |> getRecord(idx: 0)
+
+// use values
+x = r0._field + "--" + r0._measurement
+```
+
+##### FindColumn
+
+FindColumn extracts the first table from a stream of tables where the group key
+values match a given predicate, and from that table extracts a specified column.
+The column is returned as an array. The function returns an empty array if no
+table is found, or if the column label is not present in the set of columns.
+
+It has the following parameters:
+
+| Name   | Type   | Description                                                                                                   |
+| ----   | ----   | -----------                                                                                                   |
+| fn     | (key: object) -> bool | Fn is a predicate function. The column is extracted from the first table for which fn is true. |
+| column | string                | Column is the name of the column to extract.                                                   |
+
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
+Example:
+
+```
+vs = from(bucket:"telegraf/autogen")
+    |> range(start: -5m)
+    |> filter(fn:(r) => r._measurement == "cpu")
+    |> findColumn(fn: (key) => key._field == "usage_idle", column: "_value")
+
+// use values
+x = vs[0] + vs[1]
+```
+
+##### FindRecord
+
+FindRecord extracts the first table from a stream of tables where the group key
+values match a given predicate, and from that table extracts a record at a
+specified index. The record is returned as an object. The function returns an
+empty object if no table is found, or if the index is out of bounds.
+
+It has the following parameters:
+
+| Name | Type | Description                                                                                                     |
+| ---- | ---- | -----------                                                                                                     |
+| fn   | (key: object) -> bool | Fn is a predicate function. The record is extracted from the first table for which fn is true. |
+| idx  | int                   | Idx is the index of the record to extract.                                                     |
+
+Example:
+
+```
+r0 = from(bucket:"telegraf/autogen")
+    |> range(start: -5m)
+    |> filter(fn:(r) => r._measurement == "cpu")
+    |> findRecord(fn: (key) => key._field == "usage_idle", idx: 0)
 
 // use values
 x = r0._field + "--" + r0._measurement

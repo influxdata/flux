@@ -4,11 +4,11 @@ import "github.com/influxdata/flux/semantic"
 
 var (
 	trueValue Value = value{
-		t: semantic.Bool,
+		t: semantic.BasicBool,
 		v: true,
 	}
 	falseValue Value = value{
-		t: semantic.Bool,
+		t: semantic.BasicBool,
 		v: false,
 	}
 )
@@ -16,7 +16,6 @@ var (
 func NewBool(v bool) Value {
 	if v {
 		return trueValue
-	} else {
-		return falseValue
 	}
+	return falseValue
 }
