@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -40,11 +40,7 @@ func validateColorString(color string) error {
 
 var validateColorStringFluxFn = values.NewFunction(
 	"validateColorString",
-	semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{"color": semantic.String},
-		Required:   semantic.LabelSet{"color"},
-		Return:     semantic.String,
-	}),
+	runtime.MustLookupBuiltinType("slack", "validateColorString"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		v, ok := args.Get("color")
 
@@ -65,5 +61,5 @@ var validateColorStringFluxFn = values.NewFunction(
 )
 
 func init() {
-	flux.RegisterPackageValue("slack", "validateColorString", validateColorStringFluxFn)
+	runtime.RegisterPackageValue("slack", "validateColorString", validateColorStringFluxFn)
 }

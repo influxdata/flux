@@ -8,7 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 )
 
@@ -21,15 +21,9 @@ type IntegralOpSpec struct {
 }
 
 func init() {
-	integralSignature := execute.AggregateSignature(
-		map[string]semantic.PolyType{
-			"unit":       semantic.Duration,
-			"timeColumn": semantic.String,
-		},
-		nil,
-	)
+	integralSignature := runtime.MustLookupBuiltinType("universe", "integral")
 
-	flux.RegisterPackageValue("universe", IntegralKind, flux.FunctionValue(IntegralKind, createIntegralOpSpec, integralSignature))
+	runtime.RegisterPackageValue("universe", IntegralKind, flux.MustValue(flux.FunctionValue(IntegralKind, createIntegralOpSpec, integralSignature)))
 	flux.RegisterOpSpec(IntegralKind, newIntegralOp)
 	plan.RegisterProcedureSpec(IntegralKind, newIntegralProcedure, IntegralKind)
 	execute.RegisterTransformation(IntegralKind, createIntegralTransformation)

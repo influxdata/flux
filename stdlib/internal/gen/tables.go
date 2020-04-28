@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -27,24 +28,8 @@ type TablesOpSpec struct {
 }
 
 func init() {
-	tablesSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"n": semantic.Int,
-			"tags": semantic.NewArrayPolyType(
-				semantic.NewObjectPolyType(
-					map[string]semantic.PolyType{
-						"name":        semantic.String,
-						"cardinality": semantic.Int,
-					},
-					semantic.LabelSet{"name", "cardinality"},
-					semantic.LabelSet{"name", "cardinality"},
-				),
-			),
-		},
-		Required: semantic.LabelSet{"n"},
-		Return:   flux.TableObjectType,
-	}
-	flux.RegisterPackageValue("internal/gen", "tables", flux.FunctionValue(TablesKind, createTablesOpSpec, tablesSignature))
+	tablesSignature := runtime.MustLookupBuiltinType("internal/gen", "tables")
+	runtime.RegisterPackageValue("internal/gen", "tables", flux.MustValue(flux.FunctionValue(TablesKind, createTablesOpSpec, tablesSignature)))
 	flux.RegisterOpSpec(TablesKind, newTablesOp)
 	plan.RegisterProcedureSpec(TablesKind, newTablesProcedure, TablesKind)
 	execute.RegisterSource(TablesKind, createTablesSource)
@@ -79,7 +64,7 @@ func createTablesOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 			if v, ok := v.Object().Get("name"); !ok {
 				err = errors.Newf(codes.Invalid, "missing %q parameter in tag at index %d", "name", i)
 				return
-			} else if v.Type() != semantic.String {
+			} else if v.Type().Nature() != semantic.String {
 				err = errors.Newf(codes.Invalid, "expected string for %q at index %d, got %s", "name", i, v.Type())
 				return
 			} else {
@@ -89,7 +74,7 @@ func createTablesOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 			if v, ok := v.Object().Get("cardinality"); !ok {
 				err = errors.Newf(codes.Invalid, "missing %q parameter in tag at index %d", "cardinality", i)
 				return
-			} else if v.Type() != semantic.Int {
+			} else if v.Type().Nature() != semantic.Int {
 				err = errors.Newf(codes.Invalid, "expected int for %q at index %d, got %s", "cardinality", i, v.Type())
 				return
 			} else {

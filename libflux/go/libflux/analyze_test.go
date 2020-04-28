@@ -1,5 +1,3 @@
-// +build libflux
-
 package libflux_test
 
 import (
@@ -7,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
 	"github.com/influxdata/flux/libflux/go/libflux"
 )
 
@@ -27,13 +26,13 @@ func TestAnalyze(t *testing.T) {
 		{
 			name: "failure",
 			flx:  `x = "foo" + 10`,
-			err:  errors.New("cannot unify string with int"),
+			err:  errors.New("type error @1:13-1:15: string != int"),
 		},
 	}
 	for _, tc := range tcs {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			ast := libflux.Parse(tc.flx)
+			ast := libflux.ParseString(tc.flx)
 			defer ast.Free()
 
 			sem, err := libflux.Analyze(ast)

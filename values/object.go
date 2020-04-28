@@ -5,63 +5,155 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 )
 
 type Object interface {
 	Value
 	Get(name string) (Value, bool)
+
+	// Set will set the object value for the given key.
+	// The key must be part of the object property's type and the
+	// value that is set must match that type. It is undefined
+	// behavior to set a non-existant value or to set a value
+	// with the wrong type.
 	Set(name string, v Value)
+
 	Len() int
 	Range(func(name string, v Value))
 }
 
+// labelSet is a set of string labels.
+type labelSet []string
+
+// allLabels is a sentinal values indicating the set is the infinite set of all possible string labels.
+const allLabels = "-all-"
+
+// AllLabels returns a label set that represents the infinite set of all possible string labels.
+func AllLabels() labelSet {
+	return labelSet{allLabels}
+}
+
+func (s labelSet) String() string {
+	if s.isAllLabels() {
+		return "L"
+	}
+	if len(s) == 0 {
+		return "∅"
+	}
+	var builder strings.Builder
+	builder.WriteString("(")
+	for i, l := range s {
+		if i != 0 {
+			builder.WriteString(", ")
+		}
+		builder.WriteString(l)
+	}
+	builder.WriteString(")")
+	return builder.String()
+}
+
+func (s labelSet) isAllLabels() bool {
+	return len(s) == 1 && s[0] == allLabels
+}
+
 type object struct {
-	labels semantic.LabelSet
+	labels labelSet
 	values []Value
-	ptyp   map[string]semantic.PolyType
-	ptypv  semantic.PolyType
-	mtyp   map[string]semantic.Type
-	mtypv  semantic.Type
+	typ    semantic.MonoType
 }
 
-func NewObject() *object {
-	return &object{
-		ptyp: make(map[string]semantic.PolyType),
-		mtyp: make(map[string]semantic.Type),
+// NewObject will create a new object with the given type.
+// The type must be of kind Row.
+// The new object will be uninitialized and must be constructed
+// with Set on each of the property keys before it is used.
+func NewObject(typ semantic.MonoType) Object {
+	n, err := typ.NumProperties()
+	if err != nil {
+		panic(err)
 	}
-}
-func NewObjectWithValues(vals map[string]Value) *object {
-	l := len(vals)
-
-	labels := make(semantic.LabelSet, 0, l)
-	values := make([]Value, 0, l)
-
-	ptyp := make(map[string]semantic.PolyType, l)
-	mtyp := make(map[string]semantic.Type, l)
-
-	for k, v := range vals {
-		labels = append(labels, k)
-		values = append(values, v)
-
-		ptyp[k] = v.PolyType()
-		mtyp[k] = v.Type()
+	labels := make(labelSet, n)
+	for i := 0; i < len(labels); i++ {
+		rp, err := typ.RowProperty(i)
+		if err != nil {
+			panic(err)
+		}
+		labels[i] = rp.Name()
 	}
-
 	return &object{
 		labels: labels,
-		values: values,
-		ptyp:   ptyp,
-		mtyp:   mtyp,
+		values: make([]Value, n),
+		typ:    typ,
 	}
 }
-func NewObjectWithBacking(size int) *object {
-	return &object{
-		labels: make(semantic.LabelSet, 0, size),
-		values: make([]Value, 0, size),
-		ptyp:   make(map[string]semantic.PolyType, size),
-		mtyp:   make(map[string]semantic.Type, size),
+
+// ObjectSetter will set the value for the key.
+// If the key already exists, it will be overwritten with the new value.
+type ObjectSetter func(k string, v Value)
+
+// BuildObject will build an object by setting key/value pairs.
+// The records in the object get constructed in the order they
+// are set and resetting a key will overwrite a previous value,
+// but will retain the existing position.
+func BuildObject(fn func(set ObjectSetter) error) (Object, error) {
+	return BuildObjectWithSize(0, fn)
+}
+
+// BuildObjectWithSize will build an object with an initial size.
+func BuildObjectWithSize(sz int, fn func(set ObjectSetter) error) (Object, error) {
+	var (
+		keys   []string
+		values []Value
+	)
+	if sz > 0 {
+		keys = make([]string, 0, sz)
+		values = make([]Value, 0, sz)
 	}
+	if err := fn(func(k string, v Value) {
+		for i := 0; i < len(keys); i++ {
+			if keys[i] == k {
+				values[i] = v
+				return
+			}
+		}
+		keys = append(keys, k)
+		values = append(values, v)
+	}); err != nil {
+		return nil, err
+	}
+
+	properties := make([]semantic.PropertyType, len(keys))
+	for i, k := range keys {
+		properties[i] = semantic.PropertyType{
+			Key:   []byte(k),
+			Value: values[i].Type(),
+		}
+	}
+	typ := semantic.NewObjectType(properties)
+
+	object := NewObject(typ)
+	for i, k := range keys {
+		object.Set(k, values[i])
+	}
+	return object, nil
+}
+
+func NewObjectWithValues(vals map[string]Value) Object {
+	properties := make([]semantic.PropertyType, 0, len(vals))
+	for key, value := range vals {
+		properties = append(properties, semantic.PropertyType{
+			Key:   []byte(key),
+			Value: value.Type(),
+		})
+	}
+
+	object := NewObject(semantic.NewObjectType(properties))
+	object.Range(func(name string, _ Value) {
+		object.Set(name, vals[name])
+	})
+	return object
 }
 
 func (o *object) IsNull() bool {
@@ -84,53 +176,19 @@ func (o *object) String() string {
 	return b.String()
 }
 
-func (o *object) Type() semantic.Type {
-	if o.mtypv == nil {
-		o.mtypv = semantic.NewObjectType(o.mtyp)
-	}
-	return o.mtypv
-}
-
-func (o *object) PolyType() semantic.PolyType {
-	if o.ptypv == nil {
-		o.ptypv = semantic.NewObjectPolyType(o.ptyp, nil, o.labels)
-	}
-	return o.ptypv
+func (o *object) Type() semantic.MonoType {
+	return o.typ
 }
 
 func (o *object) Set(k string, v Value) {
-	// update type
-	pt := v.PolyType()
-	if o.ptypv != nil {
-		if optyp, ok := o.ptyp[k]; !ok || !pt.Equal(optyp) {
-			o.ptyp[k] = pt
-			o.ptypv = nil
-		}
-	} else {
-		o.ptyp[k] = pt
-	}
-	mt := v.Type()
-	if mt == nil {
-		mt = semantic.Invalid
-	}
-	if o.mtypv != nil {
-		if omtyp, ok := o.mtyp[k]; !ok || mt != omtyp {
-			o.mtyp[k] = mt
-			o.mtypv = nil
-		}
-	} else {
-		o.mtyp[k] = mt
-	}
-
-	// update value
+	// Find the index of the object.
 	for i, l := range o.labels {
-		if l == k {
+		if k == l {
 			o.values[i] = v
 			return
 		}
 	}
-	o.labels = append(o.labels, k)
-	o.values = append(o.values, v)
+	panic(errors.Newf(codes.Internal, "key %q not defined in object", k))
 }
 
 func (o *object) Get(name string) (Value, bool) {
@@ -188,7 +246,7 @@ func (o *object) Function() Function {
 	panic(UnexpectedKind(semantic.Object, semantic.Function))
 }
 func (o *object) Equal(rhs Value) bool {
-	if o.Type() != rhs.Type() {
+	if rhs.Type().Nature() != semantic.Object {
 		return false
 	}
 	r := rhs.Object()

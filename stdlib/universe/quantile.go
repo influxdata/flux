@@ -11,7 +11,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/tdigest"
 )
@@ -36,17 +36,9 @@ type QuantileOpSpec struct {
 }
 
 func init() {
-	quantileSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"column":      semantic.String,
-			"q":           semantic.Float,
-			"compression": semantic.Float,
-			"method":      semantic.String,
-		},
-		[]string{"q"},
-	)
+	quantileSignature := runtime.MustLookupBuiltinType("universe", "quantile")
 
-	flux.RegisterPackageValue("universe", QuantileKind, flux.FunctionValue(QuantileKind, createQuantileOpSpec, quantileSignature))
+	runtime.RegisterPackageValue("universe", QuantileKind, flux.MustValue(flux.FunctionValue(QuantileKind, createQuantileOpSpec, quantileSignature)))
 
 	flux.RegisterOpSpec(QuantileKind, newQuantileOp)
 	plan.RegisterProcedureSpec(QuantileKind, newQuantileProcedure, QuantileKind)

@@ -1,5 +1,3 @@
-// +build libflux
-
 package ast_test
 
 import (
@@ -102,7 +100,7 @@ bad_expr = 3 * / 1
 bad_expr = 3 * + 1
 `}
 	for _, src := range srcs {
-		a := libflux.Parse(src)
+		a := libflux.ParseString(src)
 		bs, err := a.MarshalFB()
 		if err != nil {
 			t.Fatal(err)

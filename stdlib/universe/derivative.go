@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -25,17 +26,9 @@ type DerivativeOpSpec struct {
 }
 
 func init() {
-	derivativeSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"unit":        semantic.Duration,
-			"nonNegative": semantic.Bool,
-			"columns":     semantic.NewArrayPolyType(semantic.String),
-			"timeColumn":  semantic.String,
-		},
-		nil,
-	)
+	derivativeSignature := runtime.MustLookupBuiltinType("universe", "derivative")
 
-	flux.RegisterPackageValue("universe", DerivativeKind, flux.FunctionValue(DerivativeKind, createDerivativeOpSpec, derivativeSignature))
+	runtime.RegisterPackageValue("universe", DerivativeKind, flux.MustValue(flux.FunctionValue(DerivativeKind, createDerivativeOpSpec, derivativeSignature)))
 	flux.RegisterOpSpec(DerivativeKind, newDerivativeOp)
 	plan.RegisterProcedureSpec(DerivativeKind, newDerivativeProcedure, DerivativeKind)
 	execute.RegisterTransformation(DerivativeKind, createDerivativeTransformation)

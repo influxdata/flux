@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/internal/spec"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic/semantictest"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values/valuestest"
@@ -31,14 +32,14 @@ var opts = append(
 	cmp.AllowUnexported(universe.JoinOpSpec{}),
 	cmpopts.IgnoreUnexported(flux.Spec{}),
 	cmpopts.IgnoreUnexported(universe.JoinOpSpec{}),
-	valuestest.ScopeComparer,
+	valuestest.ScopeTransformer,
 )
 
 func NewQueryTestHelper(t *testing.T, tc NewQueryTestCase) {
 	t.Helper()
 
 	now := time.Now().UTC()
-	got, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), now, tc.Raw)
+	got, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now, tc.Raw)
 	if (err != nil) != tc.WantErr {
 		t.Errorf("error compiling spec error = %v, wantErr %v", err, tc.WantErr)
 		return

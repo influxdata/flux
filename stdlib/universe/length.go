@@ -3,10 +3,10 @@ package universe
 import (
 	"context"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -17,13 +17,7 @@ import (
 func MakeLengthFunc() values.Function {
 	return values.NewFunction(
 		"length",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				"arr": semantic.NewArrayPolyType(semantic.Tvar(1)),
-			},
-			Required: semantic.LabelSet{"arr"},
-			Return:   semantic.Int,
-		}),
+		runtime.MustLookupBuiltinType("universe", "length"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
 			v, err := a.GetRequired("arr")
@@ -39,5 +33,5 @@ func MakeLengthFunc() values.Function {
 }
 
 func init() {
-	flux.RegisterPackageValue("universe", "length", MakeLengthFunc())
+	runtime.RegisterPackageValue("universe", "length", MakeLengthFunc())
 }

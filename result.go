@@ -91,7 +91,7 @@ const (
 
 // ColumnType returns the column type when given a semantic.Type.
 // It returns flux.TInvalid if the Type is not a valid column type.
-func ColumnType(typ semantic.Type) ColType {
+func ColumnType(typ semantic.MonoType) ColType {
 	switch typ.Nature() {
 	case semantic.Bool:
 		return TBool
@@ -110,22 +110,22 @@ func ColumnType(typ semantic.Type) ColType {
 	}
 }
 
-func SemanticType(typ ColType) semantic.Type {
+func SemanticType(typ ColType) semantic.MonoType {
 	switch typ {
 	case TBool:
-		return semantic.Bool
+		return semantic.BasicBool
 	case TInt:
-		return semantic.Int
+		return semantic.BasicInt
 	case TUInt:
-		return semantic.UInt
+		return semantic.BasicUint
 	case TFloat:
-		return semantic.Float
+		return semantic.BasicFloat
 	case TString:
-		return semantic.String
+		return semantic.BasicString
 	case TTime:
-		return semantic.Time
+		return semantic.BasicTime
 	default:
-		return semantic.Invalid
+		return semantic.MonoType{}
 	}
 }
 

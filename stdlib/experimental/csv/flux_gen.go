@@ -3,12 +3,12 @@
 package csv
 
 import (
-	flux "github.com/influxdata/flux"
 	ast "github.com/influxdata/flux/ast"
+	runtime "github.com/influxdata/flux/runtime"
 )
 
 func init() {
-	flux.RegisterPackage(pkgAST)
+	runtime.RegisterPackage(pkgAST)
 }
 
 var pkgAST = &ast.Package{
@@ -595,7 +595,7 @@ var pkgAST = &ast.Package{
 				Value: "experimental/http",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "csv.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{

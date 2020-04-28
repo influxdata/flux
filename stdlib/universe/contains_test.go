@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 )
@@ -110,7 +111,7 @@ func containsTestHelper(t *testing.T, tc containsCase) {
 	result, err := contains.Call(dependenciestest.Default().Inject(context.Background()),
 		values.NewObjectWithValues(map[string]values.Value{
 			"value": tc.value,
-			"set":   values.NewArrayWithBacking(tc.value.Type(), tc.set),
+			"set":   values.NewArrayWithBacking(semantic.NewArrayType(tc.value.Type()), tc.set),
 		}),
 	)
 
@@ -118,5 +119,16 @@ func containsTestHelper(t *testing.T, tc containsCase) {
 		t.Error(err.Error())
 	} else if result.Bool() != tc.expected {
 		t.Error("expected true, got false")
+	}
+}
+
+func TestContains_Empty(t *testing.T) {
+	script := `
+		ok = not contains( value: "nothing", set: [] )
+	`
+	s := evalOrFail(t, script)
+
+	if !mustLookup(s, "ok").Bool() {
+		t.Errorf("ok was not OK indeed")
 	}
 }

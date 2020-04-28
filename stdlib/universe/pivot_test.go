@@ -25,7 +25,7 @@ func TestPivot_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "testdb",
+							Bucket: influxdb.NameOrID{Name: "testdb"},
 						},
 					},
 					{

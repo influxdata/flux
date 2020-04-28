@@ -22,6 +22,8 @@ builtin to
 // An experimental version of join.
 builtin join
 
+builtin chain
+
 // Aligns all tables to a common start time by using the same _time value for
 // the first record in each table and incrementing all subsequent _time values
 // using time elapsed between input records.

@@ -3,12 +3,12 @@
 package aggregate
 
 import (
-	flux "github.com/influxdata/flux"
 	ast "github.com/influxdata/flux/ast"
+	runtime "github.com/influxdata/flux/runtime"
 )
 
 func init() {
-	flux.RegisterPackage(pkgAST)
+	runtime.RegisterPackage(pkgAST)
 }
 
 var pkgAST = &ast.Package{
@@ -1229,7 +1229,7 @@ var pkgAST = &ast.Package{
 								},
 							},
 						},
-						Elements: nil,
+						Elements: []ast.Expression{},
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
@@ -1325,7 +1325,7 @@ var pkgAST = &ast.Package{
 				Value: "experimental",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "aggregate.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{

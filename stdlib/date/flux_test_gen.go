@@ -1495,7 +1495,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "date",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "hour_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -3015,7 +3015,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "date",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "microsecond_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -4535,7 +4535,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "date",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "millisecond_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -6055,7 +6055,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "date",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "minute_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -7575,7 +7575,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "date",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "month_day_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -9095,7 +9095,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "date",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "month_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -10615,7 +10615,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "date",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "nanosecond_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -12135,7 +12135,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "date",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "quarter_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -13655,7 +13655,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "date",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "second_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -15387,7 +15387,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "date",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "truncate_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -16907,7 +16907,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "date",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "week_day_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -18427,7 +18427,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "date",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "week_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -19947,7 +19947,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "date",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "year_day_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -21467,7 +21467,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "date",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "year_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{

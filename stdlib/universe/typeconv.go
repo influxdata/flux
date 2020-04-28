@@ -8,24 +8,35 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/internal/parser"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 func init() {
-	flux.RegisterPackageValue("universe", "string", &stringConv{})
-	flux.RegisterPackageValue("universe", "int", &intConv{})
-	flux.RegisterPackageValue("universe", "uint", &uintConv{})
-	flux.RegisterPackageValue("universe", "float", &floatConv{})
-	flux.RegisterPackageValue("universe", "bool", &boolConv{})
-	flux.RegisterPackageValue("universe", "time", &timeConv{})
-	flux.RegisterPackageValue("universe", "duration", &durationConv{})
-	flux.RegisterPackageValue("universe", "bytes", bytes)
+	runtime.RegisterPackageValue("universe", "string", &stringConv{})
+	runtime.RegisterPackageValue("universe", "int", &intConv{})
+	runtime.RegisterPackageValue("universe", "uint", &uintConv{})
+	runtime.RegisterPackageValue("universe", "float", &floatConv{})
+	runtime.RegisterPackageValue("universe", "bool", &boolConv{})
+	runtime.RegisterPackageValue("universe", "time", &timeConv{})
+	runtime.RegisterPackageValue("universe", "duration", &durationConv{})
+	runtime.RegisterPackageValue("universe", "bytes", bytes)
 }
+
+var (
+	convBoolType     = runtime.MustLookupBuiltinType("universe", "bool")
+	convIntType      = runtime.MustLookupBuiltinType("universe", "int")
+	convUintType     = runtime.MustLookupBuiltinType("universe", "uint")
+	convFloatType    = runtime.MustLookupBuiltinType("universe", "float")
+	convStringType   = runtime.MustLookupBuiltinType("universe", "string")
+	convTimeType     = runtime.MustLookupBuiltinType("universe", "time")
+	convDurationType = runtime.MustLookupBuiltinType("universe", "duration")
+	convBytesType    = runtime.MustLookupBuiltinType("universe", "bytes")
+)
 
 const (
 	conversionArg = "v"
@@ -35,17 +46,8 @@ var errMissingArg = errors.Newf(codes.Invalid, "missing argument %q", conversion
 
 type stringConv struct{}
 
-var required = semantic.LabelSet{conversionArg}
-
-func (c *stringConv) Type() semantic.Type {
-	return semantic.Invalid
-}
-func (c *stringConv) PolyType() semantic.PolyType {
-	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
-		Required:   required,
-		Return:     semantic.String,
-	})
+func (c *stringConv) Type() semantic.MonoType {
+	return convStringType
 }
 func (c *stringConv) IsNull() bool {
 	return false
@@ -138,16 +140,10 @@ func (c *stringConv) Call(ctx context.Context, args values.Object) (values.Value
 
 type intConv struct{}
 
-func (c *intConv) Type() semantic.Type {
-	return semantic.Invalid
+func (c *intConv) Type() semantic.MonoType {
+	return convIntType
 }
-func (c *intConv) PolyType() semantic.PolyType {
-	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
-		Required:   required,
-		Return:     semantic.Int,
-	})
-}
+
 func (c *intConv) IsNull() bool {
 	return false
 }
@@ -234,16 +230,10 @@ func (c *intConv) Call(ctx context.Context, args values.Object) (values.Value, e
 
 type uintConv struct{}
 
-func (c *uintConv) Type() semantic.Type {
-	return semantic.Invalid
+func (c *uintConv) Type() semantic.MonoType {
+	return convUintType
 }
-func (c *uintConv) PolyType() semantic.PolyType {
-	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
-		Required:   required,
-		Return:     semantic.UInt,
-	})
-}
+
 func (c *uintConv) IsNull() bool {
 	return false
 }
@@ -330,16 +320,10 @@ func (c *uintConv) Call(ctx context.Context, args values.Object) (values.Value, 
 
 type floatConv struct{}
 
-func (c *floatConv) Type() semantic.Type {
-	return semantic.Invalid
+func (c *floatConv) Type() semantic.MonoType {
+	return convFloatType
 }
-func (c *floatConv) PolyType() semantic.PolyType {
-	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
-		Required:   required,
-		Return:     semantic.Float,
-	})
-}
+
 func (c *floatConv) IsNull() bool {
 	return false
 }
@@ -422,16 +406,10 @@ func (c *floatConv) Call(ctx context.Context, args values.Object) (values.Value,
 
 type boolConv struct{}
 
-func (c *boolConv) Type() semantic.Type {
-	return semantic.Invalid
+func (c *boolConv) Type() semantic.MonoType {
+	return convBoolType
 }
-func (c *boolConv) PolyType() semantic.PolyType {
-	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
-		Required:   required,
-		Return:     semantic.Bool,
-	})
-}
+
 func (c *boolConv) IsNull() bool {
 	return false
 }
@@ -534,16 +512,10 @@ func (c *boolConv) Call(ctx context.Context, args values.Object) (values.Value, 
 
 type timeConv struct{}
 
-func (c *timeConv) Type() semantic.Type {
-	return semantic.Invalid
+func (c *timeConv) Type() semantic.MonoType {
+	return convTimeType
 }
-func (c *timeConv) PolyType() semantic.PolyType {
-	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
-		Required:   required,
-		Return:     semantic.Time,
-	})
-}
+
 func (c *timeConv) IsNull() bool {
 	return false
 }
@@ -601,11 +573,11 @@ func (c *timeConv) Call(ctx context.Context, args values.Object) (values.Value, 
 	}
 	switch v.Type().Nature() {
 	case semantic.String:
-		ast, err := parser.ParseTime(v.Str())
+		ts, err := parser.ParseTime(v.Str())
 		if err != nil {
 			return nil, err
 		}
-		t = values.Time(ast.Value.UnixNano())
+		t = values.Time(ts.UnixNano())
 	case semantic.Int:
 		t = values.Time(v.Int())
 	case semantic.UInt:
@@ -620,16 +592,10 @@ func (c *timeConv) Call(ctx context.Context, args values.Object) (values.Value, 
 
 type durationConv struct{}
 
-func (c *durationConv) Type() semantic.Type {
-	return semantic.Invalid
+func (c *durationConv) Type() semantic.MonoType {
+	return convDurationType
 }
-func (c *durationConv) PolyType() semantic.PolyType {
-	return semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{conversionArg: semantic.Tvar(1)},
-		Required:   required,
-		Return:     semantic.Duration,
-	})
-}
+
 func (c *durationConv) IsNull() bool {
 	return false
 }
@@ -706,13 +672,7 @@ func (c *durationConv) Call(ctx context.Context, args values.Object) (values.Val
 
 var bytes = values.NewFunction(
 	"bytes",
-	semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			conversionArg: semantic.Tvar(1),
-		},
-		Required: []string{conversionArg},
-		Return:   semantic.Bytes,
-	}),
+	convBytesType,
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		v, ok := args.Get(conversionArg)
 		if !ok {

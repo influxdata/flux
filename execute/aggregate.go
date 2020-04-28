@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 type aggregateTransformation struct {
@@ -25,16 +24,6 @@ type AggregateConfig struct {
 
 var DefaultAggregateConfig = AggregateConfig{
 	Columns: []string{DefaultValueColLabel},
-}
-
-// AggregateSignature returns a function signature common to all aggregate functions,
-// with any additional arguments.
-func AggregateSignature(args map[string]semantic.PolyType, required []string) semantic.FunctionPolySignature {
-	if args == nil {
-		args = make(map[string]semantic.PolyType)
-	}
-	args["column"] = semantic.String
-	return flux.FunctionSignature(args, required)
 }
 
 func (c AggregateConfig) Copy() AggregateConfig {

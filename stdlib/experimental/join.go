@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -20,23 +21,8 @@ import (
 const joinKind = "experimental.join"
 
 func init() {
-	signature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"left":  flux.TableObjectType,
-			"right": flux.TableObjectType,
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"left":  semantic.NewEmptyObjectPolyType(),
-					"right": semantic.NewEmptyObjectPolyType(),
-				},
-				Required: semantic.LabelSet{"left", "right"},
-				Return:   semantic.NewEmptyObjectPolyType(),
-			}),
-		},
-		Required: semantic.LabelSet{"left", "right", "fn"},
-		Return:   flux.TableObjectType,
-	}
-	flux.RegisterPackageValue("experimental", "join", flux.FunctionValue("join", createJoinOpSpec, signature))
+	signature := runtime.MustLookupBuiltinType("experimental", "join")
+	runtime.RegisterPackageValue("experimental", "join", flux.MustValue(flux.FunctionValue("join", createJoinOpSpec, signature)))
 	flux.RegisterOpSpec(joinKind, newJoinOp)
 	plan.RegisterProcedureSpec(joinKind, newMergeJoinProcedure, joinKind)
 	execute.RegisterTransformation(joinKind, createMergeJoinTransformation)
@@ -56,9 +42,9 @@ func (s *JoinOpSpec) IDer(ider flux.IDer) {
 }
 
 func createJoinOpSpec(args flux.Arguments, p *flux.Administration) (flux.OperationSpec, error) {
-	l, err := args.GetRequiredObject("left")
-	if err != nil {
-		return nil, err
+	l, ok := args.Get("left")
+	if !ok {
+		return nil, errors.New(codes.Invalid, "argument 'left' not present")
 	}
 
 	// TODO(josh): The type system should ensure that this
@@ -71,9 +57,9 @@ func createJoinOpSpec(args flux.Arguments, p *flux.Administration) (flux.Operati
 	}
 	p.AddParent(left)
 
-	r, err := args.GetRequiredObject("right")
-	if err != nil {
-		return nil, err
+	r, ok := args.Get("right")
+	if !ok {
+		return nil, errors.New(codes.Invalid, "argument 'right' not present")
 	}
 
 	// Same comment as above. The type system should ensure
@@ -510,7 +496,6 @@ func (iter *RowIterator) record(idx int) map[string]values.Value {
 type rowJoinFn struct {
 	fn         *semantic.FunctionExpression
 	scope      compiler.Scope
-	cache      *compiler.CompilationCache
 	preparedFn compiler.Func
 }
 
@@ -518,25 +503,31 @@ func newRowJoinFn(fn *semantic.FunctionExpression, scope compiler.Scope) *rowJoi
 	return &rowJoinFn{
 		fn:    fn,
 		scope: scope,
-		cache: compiler.NewCompilationCache(fn, scope),
 	}
 }
 
 func (fn *rowJoinFn) Prepare(left, right []flux.ColMeta) error {
-	l := make(map[string]semantic.Type, len(left))
-	for _, col := range left {
-		l[col.Label] = execute.ConvertToKind(col.Type)
+	l := make([]semantic.PropertyType, len(left))
+	for j, col := range left {
+		l[j] = semantic.PropertyType{
+			Key:   []byte(col.Label),
+			Value: flux.SemanticType(col.Type),
+		}
 	}
 
-	r := make(map[string]semantic.Type, len(right))
-	for _, col := range right {
-		r[col.Label] = execute.ConvertToKind(col.Type)
+	r := make([]semantic.PropertyType, len(left))
+	for j, col := range right {
+		r[j] = semantic.PropertyType{
+			Key:   []byte(col.Label),
+			Value: flux.SemanticType(col.Type),
+		}
 	}
 
-	f, err := fn.cache.Compile(semantic.NewObjectType(map[string]semantic.Type{
-		"left":  semantic.NewObjectType(l),
-		"right": semantic.NewObjectType(r),
-	}))
+	in := semantic.NewObjectType([]semantic.PropertyType{
+		{Key: []byte("left"), Value: semantic.NewObjectType(l)},
+		{Key: []byte("right"), Value: semantic.NewObjectType(r)},
+	})
+	f, err := compiler.Compile(fn.scope, fn.fn, in)
 	if err != nil {
 		return err
 	}
@@ -545,6 +536,7 @@ func (fn *rowJoinFn) Prepare(left, right []flux.ColMeta) error {
 }
 
 func (fn *rowJoinFn) Eval(ctx context.Context, left, right map[string]values.Value) (values.Object, error) {
+	// TODO(jsternberg): This is not memory performant and should be updated.
 	obj, err := fn.preparedFn.Eval(ctx, values.NewObjectWithValues(map[string]values.Value{
 		"left":  values.NewObjectWithValues(left),
 		"right": values.NewObjectWithValues(right),

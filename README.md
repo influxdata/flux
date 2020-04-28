@@ -11,9 +11,38 @@ This repo represents the language definition and an implementation of the langua
 A complete specification can be found in [SPEC.md](./docs/SPEC.md).
 The specification contains many examples to start learning Flux.
 
+## Requirements
+
+Building Flux requires the following:
+
+* Go 1.12 or greater with module support enabled
+* Latest stable version of Rust and Cargo (recommended: [rustup](https://rustup.rs/)
+* Clang
+
 ## Getting Started
 
 Flux is currently available in InfluxDB 1.7 and 2.0 or through the REPL that can be compiled from this repository.
+
+To build flux, first install the `pkg-config` utility, and ensure the GNU `pkg-config` utility is also installed.
+
+```
+# On Debian/Ubuntu
+$ sudo apt-get install -y clang pkg-config
+# On Mac OS X with Homebrew
+$ brew install pkg-config
+# Install the pkg-config wrapper utility
+$ go get github.com/influxdata/pkg-config
+# Ensure the GOBIN directory is on your PATH
+$ export PATH=${GOPATH}/bin:${PATH}
+```
+
+To ensure that `pkg-config` is configured correctly, you can use `which -a`.
+
+```
+$ which -a pkg-config
+/home/user/go/bin/pkg-config
+/usr/bin/pkg-config
+```
 
 To compile the REPL, use the following command:
 
@@ -22,9 +51,23 @@ $ go build ./cmd/flux
 $ ./flux repl
 ```
 
-If you create or change any flux functions, you will need to rebuild the stdlib:
+If you do not want to add the wrapper `pkg-config` to your `PATH`, you can also set `PKG_CONFIG` and Go will use it.
+
 ```
-$ go generate ./stdlib
+$ export PKG_CONFIG=/home/user/go/bin/pkg-config
+$ go build ./cmd/flux
+$ ./flux repl
+```
+
+If you modify any Rust code, you will need to force Go to rebuild the library.
+
+```
+$ go generate ./libflux/go/libflux
+```
+
+If you create or change any flux functions, you will need to rebuild the stdlib and inform Go that it must rebuild libflux:
+```
+$ go generate ./stdlib ./libflux/go/libflux
 ```
 
 Your new Flux's code should be formatted to coexist nicely with the existing codebase with go fmt.  For example, if you add code to stdlib/universe:
@@ -37,10 +80,6 @@ Don't forget to add your tests and make sure they work. Here is an example showi
 $ go test ./stdlib/universe/
 ```
 
-
-
->NOTE: The Flux REPL above does not contain the ability to connect to InfluxDB.
-To connect to InfluxDB, please read the [InfluxDB 2.0](https://v2.docs.influxdata.com/v2.0/query-data/get-started/) query documentation or the [InfluxDB 1.7](http://docs.influxdata.com/flux/) documentation.
 
 From within the REPL, you can run any Flux expression.
 Additionally, you can also load a file directly into the REPL by typing `@` followed by the filename.

@@ -15,6 +15,7 @@ import (
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/parser"
+	"github.com/influxdata/flux/runtime"
 	"github.com/spf13/cobra"
 )
 
@@ -78,7 +79,7 @@ func runQuery(query string) (flux.ResultIterator, error) {
 	deps.Deps.FilesystemService = filesystem.SystemFS
 
 	ctx := deps.Inject(context.Background())
-	program, err := c.Compile(ctx)
+	program, err := c.Compile(ctx, runtime.Default)
 	if err != nil {
 		return nil, err
 	}

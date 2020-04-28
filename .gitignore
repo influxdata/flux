@@ -9,8 +9,9 @@ target
 .tern-project
 .idea
 /coverage.txt
-/libflux/c/libflux_memory_tester
+/libflux/lib
 /libflux/pkg
 /libflux/site/node_modules
 /libflux/.cache
+/libflux/go/libflux/hack.gen.go
 /release-notes.txt

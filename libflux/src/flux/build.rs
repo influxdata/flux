@@ -1,38 +1,79 @@
-// build.rs
+use std::{env, fs, io, io::Write, path};
 
-use std::env;
-use std::fs::copy;
-use std::path::PathBuf;
+use core::semantic::bootstrap;
+use core::semantic::env::Environment;
+use core::semantic::flatbuffers::types as fb;
+use core::semantic::sub::Substitutable;
 
-// Bring in a dependency on an externally maintained `cc` package which manages
-// invoking the C compiler.
-extern crate cc;
+use flatbuffers;
 
-fn main() {
-    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+#[derive(Debug)]
+struct Error {
+    msg: String,
+}
 
-    // The bindgen::Builder is the main entry point
-    // to bindgen, and lets you build up options for
-    // the resulting bindings.
-    let bindings = bindgen::Builder::default()
-        // The input header we would like to generate
-        // bindings for.
-        .header("scanner/scanner.h")
-        // Finish the builder and generate the bindings.
-        .generate()
-        // Unwrap the Result and panic on failure.
-        .expect("Unable to generate bindings");
+impl From<env::VarError> for Error {
+    fn from(err: env::VarError) -> Error {
+        Error {
+            msg: err.to_string(),
+        }
+    }
+}
 
-    // Write the bindings to the $OUT_DIR/bindings.rs file.
-    bindings
-        .write_to_file(out_path.join("bindings.rs"))
-        .expect("Couldn't write bindings!");
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Error {
+        Error {
+            msg: format!("{:?}", err),
+        }
+    }
+}
 
-    copy("../../scanner.c", out_path.join("scanner.c")).expect("Could not copy scanner.c");
+impl From<bootstrap::Error> for Error {
+    fn from(err: bootstrap::Error) -> Error {
+        Error { msg: err.msg }
+    }
+}
 
-    // Compile generated scanner
-    cc::Build::new()
-        .include("scanner")
-        .file(out_path.join("scanner.c"))
-        .compile("scanner");
+fn serialize<'a, T, S, F>(ty: T, f: F, path: &path::Path) -> Result<(), Error>
+where
+    F: Fn(&mut flatbuffers::FlatBufferBuilder<'a>, T) -> flatbuffers::WIPOffset<S>,
+{
+    let mut builder = flatbuffers::FlatBufferBuilder::new();
+    let buf = fb::serialize(&mut builder, ty, f);
+    let mut file = fs::File::create(path)?;
+    file.write_all(&buf)?;
+    Ok(())
+}
+
+fn main() -> Result<(), Error> {
+    let dir = path::PathBuf::from(env::var("OUT_DIR")?);
+
+    let (pre, lib, fresher) = bootstrap::infer_stdlib()?;
+
+    // Validate there aren't any free type variables in the environment
+    for (name, ty) in &pre {
+        if !ty.free_vars().is_empty() {
+            return Err(Error {
+                msg: format!("found free variables in type of {}: {}", name, ty),
+            });
+        }
+    }
+    for (name, ty) in &lib {
+        if !ty.free_vars().is_empty() {
+            return Err(Error {
+                msg: format!("found free variables in type of package {}: {}", name, ty),
+            });
+        }
+    }
+
+    let path = dir.join("prelude.data");
+    serialize(Environment::from(pre), fb::build_env, &path)?;
+
+    let path = dir.join("stdlib.data");
+    serialize(Environment::from(lib), fb::build_env, &path)?;
+
+    let path = dir.join("fresher.data");
+    serialize(fresher, fb::build_fresher, &path)?;
+
+    Ok(())
 }

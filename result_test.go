@@ -19,22 +19,20 @@ import (
 // TestColumnType tests that the column type gets returned from a semantic type correctly.
 func TestColumnType(t *testing.T) {
 	for _, tt := range []struct {
-		typ  semantic.Type
+		typ  semantic.MonoType
 		want flux.ColType
 	}{
-		{typ: semantic.String, want: flux.TString},
-		{typ: semantic.Int, want: flux.TInt},
-		{typ: semantic.UInt, want: flux.TUInt},
-		{typ: semantic.Float, want: flux.TFloat},
-		{typ: semantic.Bool, want: flux.TBool},
-		{typ: semantic.Time, want: flux.TTime},
-		{typ: semantic.Duration, want: flux.TInvalid},
-		{typ: semantic.Regexp, want: flux.TInvalid},
-		{typ: semantic.NewArrayType(semantic.String), want: flux.TInvalid},
-		{typ: semantic.NewObjectType(map[string]semantic.Type{
-			"foo": semantic.String,
-		}), want: flux.TInvalid},
-		{typ: semantic.NewFunctionType(semantic.FunctionSignature{}), want: flux.TInvalid},
+		{typ: semantic.BasicString, want: flux.TString},
+		{typ: semantic.BasicInt, want: flux.TInt},
+		{typ: semantic.BasicUint, want: flux.TUInt},
+		{typ: semantic.BasicFloat, want: flux.TFloat},
+		{typ: semantic.BasicBool, want: flux.TBool},
+		{typ: semantic.BasicTime, want: flux.TTime},
+		{typ: semantic.BasicDuration, want: flux.TInvalid},
+		{typ: semantic.BasicRegexp, want: flux.TInvalid},
+		{typ: semantic.NewArrayType(semantic.BasicString), want: flux.TInvalid},
+		{typ: semantic.NewObjectType([]semantic.PropertyType{{Key: []byte("a"), Value: semantic.BasicInt}}), want: flux.TInvalid},
+		{typ: semantic.NewFunctionType(semantic.BasicInt, []semantic.ArgumentType{{Name: []byte("a"), Type: semantic.BasicInt}}), want: flux.TInvalid},
 	} {
 		t.Run(fmt.Sprint(tt.typ), func(t *testing.T) {
 			if want, got := tt.want, flux.ColumnType(tt.typ); want != got {

@@ -18,6 +18,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -30,21 +31,9 @@ type FilterOpSpec struct {
 }
 
 func init() {
-	filterSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"r": semantic.Tvar(1),
-				},
-				Required: semantic.LabelSet{"r"},
-				Return:   semantic.Bool,
-			}),
-			"onEmpty": semantic.String,
-		},
-		[]string{"fn"},
-	)
+	filterSignature := runtime.MustLookupBuiltinType("universe", "filter")
 
-	flux.RegisterPackageValue("universe", FilterKind, flux.FunctionValue(FilterKind, createFilterOpSpec, filterSignature))
+	runtime.RegisterPackageValue("universe", FilterKind, flux.MustValue(flux.FunctionValue(FilterKind, createFilterOpSpec, filterSignature)))
 	flux.RegisterOpSpec(FilterKind, newFilterOp)
 	plan.RegisterProcedureSpec(FilterKind, newFilterProcedure, FilterKind)
 	execute.RegisterTransformation(FilterKind, createFilterTransformation)
@@ -142,8 +131,7 @@ func createFilterTransformation(id execute.DatasetID, mode execute.AccumulationM
 }
 
 func (s *FilterProcedureSpec) PlanDetails() string {
-	body := s.Fn.Fn.Block.Body
-	if expr, ok := body.(semantic.Expression); ok {
+	if expr, ok := s.Fn.Fn.GetFunctionBodyExpression(); ok {
 		return fmt.Sprintf("%v", semantic.Formatted(expr))
 	}
 	return "<non-Expression>"
@@ -185,47 +173,28 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		return err
 	}
 
-	// Copy out the properties so we can modify the map.
-	properties := make(map[string]semantic.Type)
-	for name, typ := range t.fn.InputType().Properties() {
-		properties[name] = typ
+	// Retrieve the inferred input type for the function.
+	// If all of the inferred inputs are part of the group
+	// key, we can evaluate a record with only the group key.
+	if t.canFilterByKey(tbl) {
+		return t.filterByKey(tbl)
 	}
 
-	// Iterate through the properties and prefill a record
-	// with the values from the group key.
-	record := values.NewObject()
-	for name := range properties {
-		if idx := execute.ColIdx(name, tbl.Key().Cols()); idx >= 0 {
-			record.Set(name, tbl.Key().Value(idx))
-			delete(properties, name)
+	// Prefill the columns that can be inferred from the group key.
+	// Retrieve the input type from the function and record the indices
+	// that need to be obtained from the columns.
+	record := values.NewObject(t.fn.InputType())
+	indices := make([]int, 0, len(tbl.Cols())-len(tbl.Key().Cols()))
+	for j, c := range tbl.Cols() {
+		if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); idx >= 0 {
+			record.Set(c.Label, tbl.Key().Value(idx))
+			continue
 		}
+		indices = append(indices, j)
 	}
 
-	// If there are no remaining properties, then all
-	// of the referenced values were in the group key
-	// and we can perform the comparison once for the
-	// entire table.
-	if len(properties) == 0 {
-		v, err := t.fn.Eval(t.ctx, record)
-		if err != nil {
-			return err
-		}
-
-		if !v {
-			tbl.Done()
-			if !t.keepEmptyTables {
-				return nil
-			}
-			// If we are supposed to keep empty tables, produce
-			// an empty table with this group key and send it
-			// to the next transformation to process it.
-			tbl = execute.NewEmptyTable(tbl.Key(), tbl.Cols())
-		}
-		return t.d.Process(tbl)
-	}
-
-	// Otherwise, we have to filter the existing table.
-	table, err := t.filterTable(tbl, record, properties)
+	// Filter the table and pass in the indices we have to read.
+	table, err := t.filterTable(tbl, record, indices)
 	if err != nil {
 		return err
 	} else if table.Empty() && !t.keepEmptyTables {
@@ -235,10 +204,79 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	return t.d.Process(table)
 }
 
-func (t *filterTransformation) filterTable(in flux.Table, record values.Object, properties map[string]semantic.Type) (flux.Table, error) {
+func (t *filterTransformation) canFilterByKey(tbl flux.Table) bool {
+	inType := t.fn.InferredInputType()
+	nargs, err := inType.NumProperties()
+	if err != nil {
+		panic(err)
+	}
+
+	for i := 0; i < nargs; i++ {
+		prop, err := inType.RowProperty(i)
+		if err != nil {
+			panic(err)
+		}
+
+		// Determine if this key is even valid. If it is not
+		// in the table at all, we don't care if it is missing
+		// since it will always be missing.
+		label := prop.Name()
+		if execute.ColIdx(label, tbl.Cols()) < 0 {
+			continue
+		}
+
+		// Look for a column with this name in the group key.
+		if execute.ColIdx(label, tbl.Key().Cols()) < 0 {
+			// If we cannot find this referenced column in the group
+			// key, then it is provided by the table and we need to
+			// evaluate each row individually.
+			return false
+		}
+	}
+
+	// All referenced keys were part of the group key.
+	return true
+}
+
+func (t *filterTransformation) filterByKey(tbl flux.Table) error {
+	key := tbl.Key()
+	cols := key.Cols()
+	if err := t.fn.Prepare(cols); err != nil {
+		return err
+	}
+
+	record, err := values.BuildObjectWithSize(len(cols), func(set values.ObjectSetter) error {
+		for j, c := range cols {
+			set(c.Label, key.Value(j))
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	v, err := t.fn.Eval(t.ctx, record)
+	if err != nil {
+		return err
+	}
+
+	if !v {
+		tbl.Done()
+		if !t.keepEmptyTables {
+			return nil
+		}
+		// If we are supposed to keep empty tables, produce
+		// an empty table with this group key and send it
+		// to the next transformation to process it.
+		tbl = execute.NewEmptyTable(tbl.Key(), tbl.Cols())
+	}
+	return t.d.Process(tbl)
+}
+
+func (t *filterTransformation) filterTable(in flux.Table, record values.Object, indices []int) (flux.Table, error) {
 	return table.StreamWithContext(t.ctx, in.Key(), in.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
 		return in.Do(func(cr flux.ColReader) error {
-			bitset, err := t.filter(cr, record, properties)
+			bitset, err := t.filter(cr, record, indices)
 			if err != nil {
 				return err
 			}
@@ -264,16 +302,13 @@ func (t *filterTransformation) filterTable(in flux.Table, record values.Object, 
 	})
 }
 
-func (t *filterTransformation) filter(cr flux.ColReader, record values.Object, properties map[string]semantic.Type) (*arrowmem.Buffer, error) {
+func (t *filterTransformation) filter(cr flux.ColReader, record values.Object, indices []int) (*arrowmem.Buffer, error) {
 	cols, l := cr.Cols(), cr.Len()
 	bitset := arrowmem.NewResizableBuffer(t.alloc)
 	bitset.Resize(l)
 	for i := 0; i < l; i++ {
-		for j := 0; j < len(cols); j++ {
-			label := cols[j].Label
-			if _, ok := properties[label]; ok {
-				record.Set(label, execute.ValueForRow(cr, i, j))
-			}
+		for _, j := range indices {
+			record.Set(cols[j].Label, execute.ValueForRow(cr, i, j))
 		}
 
 		val, err := t.fn.Eval(t.ctx, record)
@@ -314,7 +349,12 @@ func (RemoveTrivialFilterRule) Rewrite(ctx context.Context, filterNode plan.Node
 		filterSpec.Fn.Fn.Block.Body == nil {
 		return filterNode, false, nil
 	}
-	if boolean, ok := filterSpec.Fn.Fn.Block.Body.(*semantic.BooleanLiteral); !ok || !boolean.Value {
+
+	if bodyExpr, ok := filterSpec.Fn.Fn.GetFunctionBodyExpression(); !ok {
+		// Not an expression.
+		return filterNode, false, nil
+	} else if expr, ok := bodyExpr.(*semantic.BooleanLiteral); !ok || !expr.Value {
+		// Either not a boolean at all, or evaluates to false.
 		return filterNode, false, nil
 	}
 

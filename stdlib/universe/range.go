@@ -6,7 +6,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 )
 
@@ -21,19 +21,9 @@ type RangeOpSpec struct {
 }
 
 func init() {
-	rangeSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			// TODO(nathanielc): Add polymorphic constants and a type class for time/durations
-			"start":       semantic.Tvar(1),
-			"stop":        semantic.Tvar(2),
-			"timeColumn":  semantic.String,
-			"startColumn": semantic.String,
-			"stopColumn":  semantic.String,
-		},
-		[]string{"start"},
-	)
+	rangeSignature := runtime.MustLookupBuiltinType("universe", "range")
 
-	flux.RegisterPackageValue("universe", RangeKind, flux.FunctionValue(RangeKind, createRangeOpSpec, rangeSignature))
+	runtime.RegisterPackageValue("universe", RangeKind, flux.MustValue(flux.FunctionValue(RangeKind, createRangeOpSpec, rangeSignature)))
 	flux.RegisterOpSpec(RangeKind, newRangeOp)
 	plan.RegisterProcedureSpec(RangeKind, newRangeProcedure, RangeKind)
 	// TODO register a range transformation. Currently range is only supported if it is pushed down into a select procedure.

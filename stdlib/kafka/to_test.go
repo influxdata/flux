@@ -32,14 +32,14 @@ func TestToKafka_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
 						ID: "toKafka1",
 						Spec: &fkafka.ToKafkaOpSpec{
 							Brokers:      []string{"brokerurl:8989"},
-							Topic:        "totallynotfaketopic", //Balancer: &kafka.Hash{},
+							Topic:        "totallynotfaketopic", // Balancer: &kafka.Hash{},
 							Name:         "series1",
 							TimeColumn:   execute.DefaultTimeColLabel,
 							ValueColumns: []string{execute.DefaultValueColLabel},
@@ -428,23 +428,21 @@ func TestToKafka_Process(t *testing.T) {
 				},
 			},
 			want: wanted{
-				Table: []*executetest.Table{
-					&executetest.Table{
-						ColMeta: []flux.ColMeta{
-							{Label: "_time", Type: flux.TTime},
-							{Label: "_value", Type: flux.TFloat},
-							{Label: "fred", Type: flux.TString},
-						},
-						Data: [][]interface{}{
-							{execute.Time(11), 2.0, "one"},
-							{execute.Time(21), 1.0, "seven"},
-							{execute.Time(31), 3.0, "nine"},
-							{execute.Time(51), 2.0, "one"},
-							{execute.Time(61), 1.0, "seven"},
-							{execute.Time(71), 3.0, "nine"},
-						},
+				Table: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
 					},
-				},
+					Data: [][]interface{}{
+						{execute.Time(11), 2.0, "one"},
+						{execute.Time(21), 1.0, "seven"},
+						{execute.Time(31), 3.0, "nine"},
+						{execute.Time(51), 2.0, "one"},
+						{execute.Time(61), 1.0, "seven"},
+						{execute.Time(71), 3.0, "nine"},
+					},
+				}},
 				Result: [][]kafka.Message{{
 					{Value: []byte("multi_block,fred=one _value=2 11"), Key: []byte{0x41, 0x9d, 0x7f, 0x17, 0xc8, 0x21, 0xfb, 0x69}},
 					{Value: []byte("multi_block,fred=seven _value=1 21"), Key: []byte{0x8f, 0x83, 0x72, 0x66, 0x7b, 0x78, 0x77, 0x18}},
@@ -496,23 +494,21 @@ func TestToKafka_Process(t *testing.T) {
 				},
 			},
 			want: wanted{
-				Table: []*executetest.Table{
-					&executetest.Table{
-						ColMeta: []flux.ColMeta{
-							{Label: "_time", Type: flux.TTime},
-							{Label: "_value", Type: flux.TFloat},
-							{Label: "fred", Type: flux.TString},
-						},
-						Data: [][]interface{}{
-							{execute.Time(11), 2.0, "one"},
-							{execute.Time(21), 1.0, "seven"},
-							{execute.Time(31), 3.0, "nine"},
-							{execute.Time(51), 2.0, "one"},
-							{execute.Time(61), 1.0, "seven"},
-							{execute.Time(71), 3.0, "nine"},
-						},
+				Table: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
 					},
-				},
+					Data: [][]interface{}{
+						{execute.Time(11), 2.0, "one"},
+						{execute.Time(21), 1.0, "seven"},
+						{execute.Time(31), 3.0, "nine"},
+						{execute.Time(51), 2.0, "one"},
+						{execute.Time(61), 1.0, "seven"},
+						{execute.Time(71), 3.0, "nine"},
+					},
+				}},
 				Result: [][]kafka.Message{{
 					{Value: []byte("multi_collist_blocks,fred=one _value=2 11"), Key: []byte{0xfc, 0xab, 0xa3, 0x68, 0x81, 0x48, 0x7d, 0x8a}},
 					{Value: []byte("multi_collist_blocks,fred=seven _value=1 21"), Key: []byte{0x9f, 0xe1, 0x82, 0x97, 0x49, 0x92, 0x56, 0x1a}},

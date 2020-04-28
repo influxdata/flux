@@ -17,55 +17,62 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/csv"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
-	"github.com/influxdata/flux/values"
 )
 
 func init() {
 	execute.RegisterSource(influxdb.FromKind, mock.CreateMockFromSource)
+	plan.RegisterLogicalRules(
+		influxdb.DefaultFromAttributes{
+			Org:  &influxdb.NameOrID{Name: "influxdata"},
+			Host: func(v string) *string { return &v }("http://localhost:9999"),
+		},
+	)
 }
 
 func TestFluxCompiler(t *testing.T) {
 	ctx := context.Background()
 
 	for _, tc := range []struct {
-		name   string
-		now    time.Time
-		extern *ast.File
-		q      string
-		err    string
+		name         string
+		now          time.Time
+		extern       *ast.File
+		q            string
+		jsonCompiler []byte
+		compilerErr  string
+		startErr     string
 	}{
 		{
 			name: "simple",
-			q:    `from(bucket: "foo")`,
+			q:    `from(bucket: "foo") |> range(start: -5m)`,
 		},
 		{
-			name: "syntax error",
-			q:    `t={]`,
-			err:  "expected RBRACE",
+			name:        "syntax error",
+			q:           `t={]`,
+			compilerErr: "expected RBRACE",
 		},
 		{
-			name: "type error",
-			q:    `t=0 t.s`,
-			err:  "type error",
+			name:     "type error",
+			q:        `t=0 t.s`,
+			startErr: "type error @1:5-1:6",
 		},
 		{
-			name: "from with no streaming data",
-			q:    `x = from(bucket: "foo")`,
-			err:  "no streaming data",
+			name:     "from with no streaming data",
+			q:        `x = from(bucket: "foo") |> range(start: -5m)`,
+			startErr: "no streaming data",
 		},
 		{
 			name: "from with yield",
-			q:    `x = from(bucket: "foo") |> yield()`,
+			q:    `x = from(bucket: "foo") |> range(start: -5m) |> yield()`,
 		},
 		{
 			name: "extern",
@@ -81,7 +88,7 @@ func TestFluxCompiler(t *testing.T) {
 			},
 			q: `twentySeven = twentySix + 1
 				twentySeven
-				from(bucket: "foo")`,
+				from(bucket: "foo") |> range(start: -5m)`,
 		},
 		{
 			name: "extern with error",
@@ -97,23 +104,51 @@ func TestFluxCompiler(t *testing.T) {
 			},
 			q: `twentySeven = twentyFive + 2
 				twentySeven
-				from(bucket: "foo")`,
-			err: "undefined identifier",
+				from(bucket: "foo") |> range(start: -5m)`,
+			startErr: "undefined identifier twentyFive",
 		},
 		{
 			name: "with now",
 			now:  time.Unix(1000, 0),
-			q:    `from(bucket: "foo")`,
+			q:    `from(bucket: "foo") |> range(start: -5m)`,
+		},
+		{
+			name: "extern that uses null keyword",
+			now:  parser.MustParseTime("2020-03-24T14:24:46.15933241Z").Value,
+			jsonCompiler: []byte(`
+{
+    "Now": "2020-03-24T14:24:46.15933241Z",
+    "extern": null,
+    "query": "from(bucket: \"apps\")\n  |> range(start: -30s)\n  |> filter(fn: (r) => r._measurement == \"query_control_queueing_active\")\n  |> filter(fn: (r) => r._field == \"gauge\")\n  |> filter(fn: (r) => r.env == \"acc\")\n  |> group(columns: [\"host\"])\n  |> last()\n  |> group()\n  |> mean()\n  // Rename \"_value\" to \"metricValue\" for properly unmarshaling the result.\n  |> rename(columns: {_value: \"metricvalue\"})\n  |> keep(columns: [\"metricvalue\"])\n"
+}`),
 		},
 	} {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			c := lang.FluxCompiler{
-				Now:    tc.now,
-				Extern: tc.extern,
-				Query:  tc.q,
+			var c lang.FluxCompiler
+			{
+				if tc.q != "" {
+					var extern json.RawMessage
+					if tc.extern != nil {
+						var err error
+						extern, err = json.Marshal(tc.extern)
+						if err != nil {
+							t.Fatal(err)
+						}
+					}
+					c = lang.FluxCompiler{
+						Now:    tc.now,
+						Extern: extern,
+						Query:  tc.q,
+					}
+				} else if len(tc.jsonCompiler) > 0 {
+					if err := json.Unmarshal(tc.jsonCompiler, &c); err != nil {
+						t.Fatal(err)
+					}
+				} else {
+					t.Fatal("expected either a query, or a jsonCompiler in test case")
+				}
 			}
-
 			// serialize and deserialize and make sure they are equal
 			bs, err := json.Marshal(c)
 			if err != nil {
@@ -128,16 +163,18 @@ func TestFluxCompiler(t *testing.T) {
 				t.Errorf("compiler serialized/deserialized does not match: -want/+got:\n%v", diff)
 			}
 
-			program, err := c.Compile(ctx)
+			program, err := c.Compile(ctx, runtime.Default)
 			if err != nil {
-				if tc.err != "" {
-					if !strings.Contains(err.Error(), tc.err) {
-						t.Fatalf(`expected query to error with "%v" but got "%v"`, tc.err, err)
+				if tc.compilerErr != "" {
+					if !strings.Contains(err.Error(), tc.compilerErr) {
+						t.Fatalf(`expected query to error with "%v" but got "%v"`, tc.compilerErr, err)
 					} else {
 						return
 					}
 				}
 				t.Fatalf("failed to compile AST: %v", err)
+			} else if tc.compilerErr != "" {
+				t.Fatalf("expected query to error with %q, but got no error", tc.compilerErr)
 			}
 
 			astProg := program.(*lang.AstProgram)
@@ -147,19 +184,19 @@ func TestFluxCompiler(t *testing.T) {
 
 			// we need to start the program to get compile errors derived from AST evaluation
 			ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
-			if _, err = program.Start(ctx, &memory.Allocator{}); tc.err == "" && err != nil {
+			if _, err = program.Start(ctx, &memory.Allocator{}); tc.startErr == "" && err != nil {
 				t.Errorf("expected query %q to start successfully but got error %v", tc.q, err)
-			} else if tc.err != "" && err == nil {
+			} else if tc.startErr != "" && err == nil {
 				t.Errorf("expected query %q to start with error but got no error", tc.q)
-			} else if tc.err != "" && err != nil && !strings.Contains(err.Error(), tc.err) {
-				t.Errorf(`expected query to error with "%v" but got "%v"`, tc.err, err)
+			} else if tc.startErr != "" && err != nil && !strings.Contains(err.Error(), tc.startErr) {
+				t.Errorf(`expected query to error with "%v" but got "%v"`, tc.startErr, err)
 			}
 		})
 	}
 }
 
 func TestCompilationError(t *testing.T) {
-	program, err := lang.Compile(`illegal query`, time.Unix(0, 0))
+	program, err := lang.Compile(`illegal query`, runtime.Default, time.Unix(0, 0))
 	if err != nil {
 		// This shouldn't happen, has the script should be evaluated at program Start.
 		t.Fatal(err)
@@ -174,11 +211,13 @@ func TestCompilationError(t *testing.T) {
 
 func TestASTCompiler(t *testing.T) {
 	testcases := []struct {
-		name   string
-		now    time.Time
-		file   *ast.File
-		script string
-		want   plantest.PlanSpec
+		name         string
+		now          time.Time
+		file         *ast.File
+		script       string
+		jsonCompiler []byte
+		want         plantest.PlanSpec
+		startErr     string
 	}{
 		{
 			name: "override now time using now option",
@@ -224,7 +263,7 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 			},
 		},
 		{
-			name: "prepend file",
+			name: "extern",
 			file: &ast.File{
 				Body: []ast.Statement{
 					&ast.OptionStatement{
@@ -257,19 +296,93 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				Now:       parser.MustParseTime("2018-10-10T00:00:00Z").Value,
 			},
 		},
+		{
+			name:     "simple case",
+			now:      parser.MustParseTime("2018-10-10T00:00:00Z").Value,
+			script:   `x = 1`,
+			startErr: "no streaming data",
+		},
+		{
+			name: "json compiler with null keyword",
+			jsonCompiler: []byte(`
+{
+  "extern": null,
+  "ast": {
+    "type": "Package",
+    "package": "main",
+    "files": [
+      {
+        "type": "File",
+        "metadata": "parser-type=rust",
+        "package": null,
+        "imports": [],
+        "body": [
+          {
+            "type": "VariableAssignment",
+            "id": {
+              "name": "x"
+            },
+            "init": {
+              "type": "IntegerLiteral",
+              "value": "1"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "Now": "2018-10-10T00:00:00Z"
+}
+`),
+			startErr: "no streaming data",
+		},
 	}
+	rt := runtime.Default
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			astPkg, err := flux.Parse(tc.script)
-			if err != nil {
-				t.Fatalf("failed to parse script: %v", err)
-			}
+			var c lang.ASTCompiler
+			{
+				if tc.script != "" {
+					astPkg, err := rt.Parse(tc.script)
+					if err != nil {
+						t.Fatalf("failed to parse script: %v", err)
+					}
+					var jsonPkg json.RawMessage
+					jsonPkg, err = parser.HandleToJSON(astPkg)
+					if err != nil {
+						t.Fatal(err)
+					}
 
-			c := lang.ASTCompiler{
-				AST: astPkg,
-				Now: tc.now,
-			}
+					// The JSON produced by Rust does not escape characters like ">", but
+					// Go does, so we need to use HTMLEscape to make the roundtrip the same.
+					var buf bytes.Buffer
+					json.HTMLEscape(&buf, jsonPkg)
+					jsonPkg = buf.Bytes()
 
+					c = lang.ASTCompiler{
+						AST: jsonPkg,
+						Now: tc.now,
+					}
+
+					if tc.file != nil {
+						bs, err := json.Marshal(tc.file)
+						if err != nil {
+							t.Fatal(err)
+						}
+						c.Extern = bs
+					}
+				} else if len(tc.jsonCompiler) > 0 {
+					var bb bytes.Buffer
+					if err := json.Compact(&bb, tc.jsonCompiler); err != nil {
+						t.Fatal(err)
+					}
+					if err := json.Unmarshal(bb.Bytes(), &c); err != nil {
+						t.Fatal(err)
+					}
+				} else {
+					t.Fatal("expected either script of jsonCompiler in test case")
+				}
+			}
 			// serialize and deserialize and make sure they are equal
 			bs, err := json.Marshal(c)
 			if err != nil {
@@ -284,18 +397,22 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				t.Errorf("compiler serialized/deserialized does not match: -want/+got:\n%v", diff)
 			}
 
-			if tc.file != nil {
-				c.PrependFile(tc.file)
-			}
-
-			program, err := c.Compile(context.Background())
+			program, err := c.Compile(context.Background(), runtime.Default)
 			if err != nil {
 				t.Fatalf("failed to compile AST: %v", err)
 			}
 			ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
 			// we need to start the program to get compile errors derived from AST evaluation
 			if _, err := program.Start(ctx, &memory.Allocator{}); err != nil {
-				t.Fatalf("failed to start program: %v", err)
+				if tc.startErr == "" {
+					t.Fatalf("failed to start program: %v", err)
+				} else {
+					// We expect an error, did we get the right one?
+					if !strings.Contains(err.Error(), tc.startErr) {
+						t.Fatalf("expected to get an error containing %q but got %q", tc.startErr, err.Error())
+					}
+					return
+				}
 			}
 
 			got := program.(*lang.AstProgram).PlanSpec
@@ -317,7 +434,7 @@ func TestCompileOptions(t *testing.T) {
 
 	opt := lang.WithLogPlanOpts(plan.OnlyLogicalRules(removeCount{}))
 
-	program, err := lang.Compile(src, now, opt)
+	program, err := lang.Compile(src, runtime.Default, now, opt)
 	if err != nil {
 		t.Fatalf("failed to compile script: %v", err)
 	}
@@ -363,8 +480,6 @@ func TestCompileOptions_FromFluxOptions(t *testing.T) {
 	nowFn := func() time.Time {
 		return parser.MustParseTime("2018-10-10T00:00:00Z").Value
 	}
-
-	plan.RegisterPhysicalRules(&plantest.MergeFromRangePhysicalRule{})
 	plan.RegisterLogicalRules(&removeCount{})
 
 	tcs := []struct {
@@ -381,55 +496,50 @@ import "planner"
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
 			}),
 		},
 		{
-			name: "remove push down range",
+			name: "remove push down filter",
 			files: []string{`
 import "planner"
 
-option planner.disablePhysicalRules = ["fromRangeRule"]
+option planner.disablePhysicalRules = ["influxdata/influxdb.MergeRemoteFilterRule"]
 
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
 					{1, 2},
-					{2, 3},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
 			}),
 		},
 		{
-			name: "remove push down range and count",
+			name: "remove push down filter and count",
 			files: []string{`
 import "planner"
 
-option planner.disablePhysicalRules = ["fromRangeRule"]
+option planner.disablePhysicalRules = ["influxdata/influxdb.MergeRemoteFilterRule"]
 option planner.disableLogicalRules = ["removeCountRule"]
 
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
@@ -438,25 +548,23 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 					{0, 1},
 					{1, 2},
 					{2, 3},
-					{3, 4},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
 			}),
 		},
 		{
-			name: "remove push down range and count - with non existent rule",
+			name: "remove push down filter and count - with non existent rule",
 			files: []string{`
 import "planner"
 
-option planner.disablePhysicalRules = ["fromRangeRule", "non_existent"]
+option planner.disablePhysicalRules = ["influxdata/influxdb.MergeRemoteFilterRule", "non_existent"]
 option planner.disableLogicalRules = ["removeCountRule", "non_existent"]
 
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
@@ -465,7 +573,6 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 					{0, 1},
 					{1, 2},
 					{2, 3},
-					{3, 4},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -482,13 +589,11 @@ option planner.disableLogicalRules = ["foo", "bar", "mew", "buz", "foxtrot"]
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -505,13 +610,11 @@ option planner.disableLogicalRules = [""]
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -526,7 +629,7 @@ option planner.disableLogicalRules = "not an array"
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `'planner.disableLogicalRules' must be an array of string, got string`,
+			wantErr: `type error @4:1-4:52: [string] != string`,
 		},
 		{
 			name: "physical planner option must be an array",
@@ -537,7 +640,7 @@ option planner.disablePhysicalRules = "not an array"
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `'planner.disablePhysicalRules' must be an array of string, got string`,
+			wantErr: `type error @4:1-4:53: [string] != string`,
 		},
 		{
 			name: "logical planner option must be an array of strings",
@@ -548,7 +651,7 @@ option planner.disableLogicalRules = [1.0]
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `'planner.disableLogicalRules' must be an array of string, got an array of float`,
+			wantErr: `type error @4:1-4:43: string != float`,
 		},
 		{
 			name: "physical planner option must be an array of strings",
@@ -559,7 +662,7 @@ option planner.disablePhysicalRules = [1.0]
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `'planner.disablePhysicalRules' must be an array of string, got an array of float`,
+			wantErr: `type error @4:1-4:44: string != float`,
 		},
 		{
 			name: "planner is an object defined by the user",
@@ -573,13 +676,11 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 			// This shouldn't change the plan.
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
 				},
 				Edges: [][2]int{
 					{0, 1},
-					{1, 2},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -590,14 +691,13 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 			files: []string{`
 import pl "planner"
 
-option pl.disablePhysicalRules = ["fromRangeRule"]
+option pl.disablePhysicalRules = ["influxdata/influxdb.MergeRemoteFilterRule"]
 option pl.disableLogicalRules = ["removeCountRule"]
 
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
@@ -606,7 +706,6 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 					{0, 1},
 					{1, 2},
 					{2, 3},
-					{3, 4},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -618,7 +717,7 @@ from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> cou
 				`package main
 import pl "planner"
 
-option pl.disablePhysicalRules = ["fromRangeRule"]
+option pl.disablePhysicalRules = ["influxdata/influxdb.MergeRemoteFilterRule"]
 
 from(bucket: "bkt") |> range(start: 0) |> filter(fn: (r) => r._value > 0) |> count()`,
 				`package foo
@@ -627,8 +726,7 @@ import "planner"
 option planner.disableLogicalRules = ["removeCountRule"]`},
 			want: plantest.CreatePlanSpec(&plantest.PlanSpec{
 				Nodes: []plan.Node{
-					&plan.PhysicalPlanNode{Spec: &influxdb.FromProcedureSpec{}},
-					&plan.PhysicalPlanNode{Spec: &universe.RangeProcedureSpec{}},
+					&plan.PhysicalPlanNode{Spec: &influxdb.FromRemoteProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.FilterProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.CountProcedureSpec{}},
 					&plan.PhysicalPlanNode{Spec: &universe.YieldProcedureSpec{}},
@@ -637,7 +735,6 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 					{0, 1},
 					{1, 2},
 					{2, 3},
-					{3, 4},
 				},
 				Resources: flux.ResourceManagement{ConcurrencyQuota: 1, MemoryBytesQuota: math.MaxInt64},
 				Now:       nowFn(),
@@ -650,25 +747,28 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 			if strings.HasPrefix(tc.name, "multiple files") {
 				t.Skip("how should options behave with multiple files?")
 			}
+
 			if len(tc.files) == 0 {
 				t.Fatal("the test should have at least one file")
 			}
-			astPkg, err := flux.Parse(tc.files[0])
+			astPkg, err := runtime.Parse(tc.files[0])
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			if len(tc.files) > 1 {
 				for _, file := range tc.files[1:] {
-					otherPkg, err := flux.Parse(file)
+					otherPkg, err := runtime.Parse(file)
 					if err != nil {
 						t.Fatal(err)
 					}
-					astPkg.Files = append(astPkg.Files, otherPkg.Files...)
+					if err := runtime.MergePackages(astPkg, otherPkg); err != nil {
+						t.Fatal(err)
+					}
 				}
 			}
 
-			program := lang.CompileAST(astPkg, nowFn())
+			program := lang.CompileAST(astPkg, runtime.Default, nowFn())
 			ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
 			if _, err := program.Start(ctx, &memory.Allocator{}); err != nil {
 				if tc.wantErr == "" {
@@ -761,17 +861,22 @@ csv.from(csv: data)
 	wantRange := getTablesFromRawOrFail(t, rangedDataRaw)
 	wantFilter := getTablesFromRawOrFail(t, filteredDataRaw)
 
-	vs, _, err := flux.Eval(dependenciestest.Default().Inject(context.Background()), script)
+	vs, _, err := runtime.Eval(dependenciestest.Default().Inject(context.Background()), script)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	tos := getTableObjects(vs)
-	if len(tos) != 3 {
-		t.Fatalf("wrong number of table objects, got %d", len(tos))
+	if len(vs) != 1 {
+		t.Fatalf("wrong number of side effect values, got %d", len(vs))
 	}
 
-	fromCsvTO := tos[2]
+	to, ok := vs[0].Value.(*flux.TableObject)
+	if !ok {
+		t.Fatalf("expected TableObject but instead got %T", vs[0].Value)
+	}
+
+	tos := flattenTableObjects(to, []*flux.TableObject{})
+
+	fromCsvTO := tos[0]
 	if fromCsvTO.Kind != csv.FromCSVKind {
 		t.Fatalf("unexpected kind for fromCSV: %s", fromCsvTO.Kind)
 	}
@@ -779,7 +884,7 @@ csv.from(csv: data)
 	if rangeTO.Kind != universe.RangeKind {
 		t.Fatalf("unexpected kind for range: %s", rangeTO.Kind)
 	}
-	filterTO := tos[0]
+	filterTO := tos[2]
 	if filterTO.Kind != universe.FilterKind {
 		t.Fatalf("unexpected kind for filter: %s", filterTO.Kind)
 	}
@@ -862,24 +967,9 @@ func getTablesFromResultOrFail(t *testing.T, result flux.Result) []*executetest.
 	return tables
 }
 
-func getTableObjects(vs []interpreter.SideEffect) []*flux.TableObject {
-	tos := make([]*flux.TableObject, 0)
-	for _, v := range vs {
-		if to, ok := v.Value.(*flux.TableObject); ok {
-			tos = append(tos, to)
-			tos = append(tos, getTableObjectsFromArray(to.Parents)...)
-		}
+func flattenTableObjects(to *flux.TableObject, arr []*flux.TableObject) []*flux.TableObject {
+	for _, parent := range to.Parents {
+		arr = flattenTableObjects(parent, arr)
 	}
-	return tos
-}
-
-func getTableObjectsFromArray(parents values.Array) []*flux.TableObject {
-	tos := make([]*flux.TableObject, 0)
-	parents.Range(func(i int, v values.Value) {
-		if to, ok := v.(*flux.TableObject); ok {
-			tos = append(tos, to)
-			tos = append(tos, getTableObjectsFromArray(to.Parents)...)
-		}
-	})
-	return tos
+	return append(arr, to)
 }
