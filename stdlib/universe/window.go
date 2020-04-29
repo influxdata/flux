@@ -149,6 +149,10 @@ func (s *WindowProcedureSpec) Kind() plan.ProcedureKind {
 func (s *WindowProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(WindowProcedureSpec)
 	ns.Window = s.Window
+	ns.TimeColumn = s.TimeColumn
+	ns.StartColumn = s.StartColumn
+	ns.StopColumn = s.StopColumn
+	ns.CreateEmpty = s.CreateEmpty
 	return ns
 }
 
