@@ -3,6 +3,9 @@
 package stdlib
 
 import (
+	_ "github.com/influxdata/flux/stdlib/contrib/jsternberg/aggregate"
+	_ "github.com/influxdata/flux/stdlib/contrib/jsternberg/influxdb"
+	_ "github.com/influxdata/flux/stdlib/contrib/jsternberg/math"
 	_ "github.com/influxdata/flux/stdlib/csv"
 	_ "github.com/influxdata/flux/stdlib/date"
 	_ "github.com/influxdata/flux/stdlib/experimental"

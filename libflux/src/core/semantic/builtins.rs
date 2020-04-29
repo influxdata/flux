@@ -838,6 +838,40 @@ pub fn builtins() -> Builtins<'static> {
                     ) -> [t0]
                 "#,
             },
+            "contrib/jsternberg/math" => semantic_map! {
+                "minIndex" => r#"
+                    forall [t0] where t0: Numeric (
+                        values: [t0]
+                    ) -> int
+                "#,
+                "maxIndex" => r#"
+                    forall [t0] where t0: Numeric (
+                        values: [t0]
+                    ) -> int
+                "#,
+                "sum" => r#"
+                    forall [t0] where t0: Numeric (
+                        values: [t0]
+                    ) -> t0
+                "#,
+            },
+            "contrib/jsternberg/aggregate" => semantic_map! {
+                "table" => r#"
+                    forall [t0, t1, t2, t3, t4] where t0: Row, t1: Row, t2: Numeric, t4: Row (
+                        <-tables: [t0],
+                        columns: [{
+                            column: string |
+                            with: {
+                                init: (values: [t2]) -> t3 |
+                                reduce: (values: [t2], state: t3) -> t3 |
+                                compute: (state: t3) -> t2 |
+                                t4
+                            } |
+                            as: string
+                        }]
+                    ) -> [t1]
+                "#,
+            },
         },
     }
 }
