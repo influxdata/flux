@@ -26,6 +26,14 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			},
 			ErrMsg: "",
 		}, {
+			Name: "ok snowflake",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "snowflake",
+				DataSourceName: "username:password@accountname.us-east-1/dbname",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
 			Name: "invalid driver",
 			Spec: &FromSQLProcedureSpec{
 				DriverName:     "voltdb",
