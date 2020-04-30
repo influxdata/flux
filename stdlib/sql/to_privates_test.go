@@ -154,7 +154,7 @@ func TestMysqlTranslation(t *testing.T) {
 	}
 
 	columnLabel := "apples"
-	// verify that valid returns expected happiness for postgres
+	// verify that valid returns expected happiness for mysql
 	sqlT, err := getTranslationFunc("mysql")
 	if !cmp.Equal(nil, err) {
 		t.Log(cmp.Diff(nil, err))
@@ -184,7 +184,7 @@ func TestSnowflakeTranslation(t *testing.T) {
 	}
 
 	columnLabel := "apples"
-	// verify that valid returns expected happiness for postgres
+	// verify that valid returns expected happiness for snowflake
 	sqlT, err := getTranslationFunc("snowflake")
 	if !cmp.Equal(nil, err) {
 		t.Log(cmp.Diff(nil, err))
