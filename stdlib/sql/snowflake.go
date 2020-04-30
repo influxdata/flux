@@ -182,17 +182,18 @@ func NewSnowflakeRowReader(r *sql.Rows) (execute.RowReader, error) {
 	return reader, nil
 }
 
+var fluxToSnowflake = map[flux.ColType]string{
+	flux.TFloat:  "FLOAT",
+	flux.TInt:    "NUMBER",
+	flux.TString: "TEXT",
+	flux.TBool:   "BOOLEAN",
+	flux.TTime:   "TIMESTAMP_LTZ",
+}
+
 // SnowflakeTranslateColumn translates flux colTypes into their corresponding Snowflake column type
 func SnowflakeColumnTranslateFunc() translationFunc {
-	c := map[string]string{
-		flux.TFloat.String():  "FLOAT",
-		flux.TInt.String():    "NUMBER",
-		flux.TString.String(): "TEXT",
-		flux.TBool.String():   "BOOLEAN",
-		flux.TTime.String():   "TIMESTAMP_LTZ",
-	}
 	return func(f flux.ColType, colName string) (string, error) {
-		s, found := c[f.String()]
+		s, found := fluxToSnowflake[f]
 		if !found {
 			return "", errors.Newf(codes.Internal, "Snowflake does not support column type %s", f.String())
 		}
