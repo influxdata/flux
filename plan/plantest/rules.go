@@ -153,6 +153,7 @@ func (sr *MultiRootRule) Name() string {
 // RuleTestCase allows for concise creation of test cases that exercise rules
 type RuleTestCase struct {
 	Name          string
+	Context       context.Context
 	Rules         []plan.Rule
 	Before        *PlanSpec
 	After         *PlanSpec
@@ -181,7 +182,12 @@ func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 	}
 	physicalPlanner := plan.NewPhysicalPlanner(opts...)
 
-	pp, err := physicalPlanner.Plan(context.Background(), before)
+	ctx := tc.Context
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	pp, err := physicalPlanner.Plan(ctx, before)
 	if err != nil {
 		if tc.ValidateError != nil {
 			if got, want := err, tc.ValidateError; !cmp.Equal(want, got) {
@@ -238,7 +244,12 @@ func LogicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 		plan.OnlyLogicalRules(tc.Rules...),
 	)
 
-	pp, err := logicalPlanner.Plan(context.Background(), before)
+	ctx := tc.Context
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	pp, err := logicalPlanner.Plan(ctx, before)
 	if err != nil {
 		t.Fatal(err)
 	}
