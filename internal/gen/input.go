@@ -82,7 +82,7 @@ type Schema struct {
 
 // Input constructs a TableIterator with randomly generated
 // data according to the Schema.
-func Input(schema Schema) (flux.TableIterator, error) {
+func Input(ctx context.Context, schema Schema) (flux.TableIterator, error) {
 	tags := schema.Tags
 
 	var seed int64
@@ -144,7 +144,9 @@ func Input(schema Schema) (flux.TableIterator, error) {
 	if alloc == nil {
 		alloc = &memory.Allocator{}
 	}
+
 	g := &dataGenerator{
+		Context:   ctx,
 		Period:    values.ConvertDuration(period),
 		NumPoints: numPoints,
 		Nulls:     schema.Nulls,
@@ -163,8 +165,8 @@ func Input(schema Schema) (flux.TableIterator, error) {
 }
 
 // CsvInput generates a csv input based on the Schema.
-func CsvInput(schema Schema) (string, error) {
-	tables, err := Input(schema)
+func CsvInput(ctx context.Context, schema Schema) (string, error) {
+	tables, err := Input(ctx, schema)
 	if err != nil {
 		return "", err
 	}
@@ -348,6 +350,7 @@ func groupBy(keys []flux.GroupKey, by []string) []seriesGroup {
 }
 
 type dataGenerator struct {
+	Context   context.Context
 	Start     values.Time
 	Period    values.Duration
 	Nulls     float64
@@ -377,7 +380,14 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 			cols[len(cols)-2] = flux.ColMeta{Label: execute.DefaultTimeColLabel, Type: flux.TTime}
 			cols[len(cols)-1] = flux.ColMeta{Label: execute.DefaultValueColLabel, Type: sg.Type}
 
+			// The stream function uses the same random number generator
+			// as the other tables. For this reason, we can only output one table at a time.
+			// Use a channel to signal when the table has been processed to avoid
+			// creating multiple tables at the same time.
+			done := make(chan struct{})
 			tbl, err := table.Stream(s, cols, func(ctx context.Context, w *table.StreamWriter) error {
+				defer close(done)
+
 				// Only construct the key values once for the first table
 				// and then reuse them for each one with a slice.
 				// The first table should always be the biggest because of
@@ -423,6 +433,10 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 			}
 
 			if err := f(tbl); err != nil {
+				return err
+			}
+
+			if err := dg.wait(dg.Context, done); err != nil {
 				return err
 			}
 		}
@@ -510,6 +524,15 @@ func (dg *dataGenerator) generateBufferValues(r *rand.Rand, typ flux.ColType, n 
 		return b.NewArray()
 	default:
 		panic("implement me")
+	}
+}
+
+func (dg *dataGenerator) wait(ctx context.Context, done <-chan struct{}) error {
+	select {
+	case <-done:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
 }
 

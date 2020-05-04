@@ -326,7 +326,7 @@ func TestColListTable_SetNil(t *testing.T) {
 func TestCopyTable(t *testing.T) {
 	alloc := &memory.Allocator{}
 
-	input, err := gen.Input(gen.Schema{
+	input, err := gen.Input(context.Background(), gen.Schema{
 		Tags: []gen.Tag{
 			{Name: "t0", Cardinality: 1},
 		},

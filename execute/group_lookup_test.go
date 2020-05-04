@@ -1,6 +1,7 @@
 package execute_test
 
 import (
+	"context"
 	"math/rand"
 	"reflect"
 	"sort"
@@ -261,7 +262,7 @@ func testGroupLookupHelper(tb testing.TB, run func(name string, keys []flux.Grou
 		},
 		Seed: func(x int64) *int64 { return &x }(0),
 	}
-	input, err := gen.Input(schema)
+	input, err := gen.Input(context.Background(), schema)
 	if err != nil {
 		tb.Fatalf("unexpected error: %s", err)
 	}
