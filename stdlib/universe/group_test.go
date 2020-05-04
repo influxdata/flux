@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -1005,7 +1006,7 @@ func benchmarkGroup(b *testing.B, n int, spec *universe.GroupProcedureSpec) {
 					{Name: "t1", Cardinality: 50},
 				},
 			}
-			return gen.Input(schema)
+			return gen.Input(context.Background(), schema)
 		},
 		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
 			return universe.NewGroupTransformation(spec, id, alloc)

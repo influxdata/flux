@@ -11,10 +11,12 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -732,6 +734,46 @@ func TestFilter_Process(t *testing.T) {
 	}
 }
 
+// TestFilter_ConcurrentTables ensures that filter can handle
+// multiple tables with multiple buffers and not trigger a race
+// condition.
+//
+// It uses the FluxCompiler to execute the query because the consecutive
+// transport is needed to trigger the race condition.
+func TestFilter_ConcurrentTables(t *testing.T) {
+	c := &lang.FluxCompiler{
+		Query: `import "internal/gen"
+gen.tables(n: 2048, tags: [{name: "a", cardinality: 10}])
+	|> filter(fn: (r) => r.a !~ /abc/)
+`,
+	}
+	program, err := c.Compile(context.Background(), runtime.Default)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	alloc := &memory.Allocator{}
+	q, err := program.Start(context.Background(), alloc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer q.Done()
+
+	for res := range q.Results() {
+		if err := res.Tables().Do(func(table flux.Table) error {
+			table.Done()
+			return nil
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	q.Done()
+
+	if err := q.Err(); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func BenchmarkFilter_Values(b *testing.B) {
 	b.Run("1000", func(b *testing.B) {
 		fn := executetest.FunctionExpression(b, `(r) => r._value > 0.0`)
@@ -759,7 +801,7 @@ func benchmarkFilter(b *testing.B, n int, fn *semantic.FunctionExpression) {
 					{Name: "t1", Cardinality: 50},
 				},
 			}
-			return gen.Input(schema)
+			return gen.Input(context.Background(), schema)
 		},
 		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
 			t, d, err := universe.NewFilterTransformation(context.Background(), spec, id, alloc)

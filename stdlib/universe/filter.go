@@ -194,14 +194,19 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	}
 
 	// Filter the table and pass in the indices we have to read.
-	table, err := t.filterTable(tbl, record, indices)
+	table, done, err := t.filterTable(tbl, record, indices)
 	if err != nil {
 		return err
 	} else if table.Empty() && !t.keepEmptyTables {
 		// Drop the table.
 		return nil
 	}
-	return t.d.Process(table)
+	if err := t.d.Process(table); err != nil {
+		return err
+	}
+	// Wait until the full table has been processed and read by the next transformation.
+	// Filter can only process one table at a time.
+	return t.wait(t.ctx, done)
 }
 
 func (t *filterTransformation) canFilterByKey(tbl flux.Table) bool {
@@ -273,8 +278,23 @@ func (t *filterTransformation) filterByKey(tbl flux.Table) error {
 	return t.d.Process(tbl)
 }
 
-func (t *filterTransformation) filterTable(in flux.Table, record values.Object, indices []int) (flux.Table, error) {
-	return table.StreamWithContext(t.ctx, in.Key(), in.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
+func (t *filterTransformation) filterTable(in flux.Table, record values.Object, indices []int) (flux.Table, <-chan struct{}, error) {
+	// The done channel returned here is a workaround for unintentionally shared state.
+	// The row predicate function will modify itself after each Prepare call so filtering multiple
+	// tables at the same time could result in two different tables using the same shared state
+	// for the row predicate function.
+	//
+	// This is not intentional. The row predicate function could be changed to return a new function
+	// that gets used with its own state for each table and we would not need to prevent multiple
+	// tables from being processed at the same time.
+	//
+	// At the moment though, it is easier and less risky to prevent multiple tables from
+	// being filtered than it is to fix the row function evaluation code to remove the
+	// race condition so we are doing that rather than fixing the functions in execute/row_fn.go.
+	// TODO(jsternberg): Remove this after fixing the execute/row_fn.go code.
+	done := make(chan struct{})
+	table, err := table.StreamWithContext(t.ctx, in.Key(), in.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
+		defer close(done)
 		return in.Do(func(cr flux.ColReader) error {
 			bitset, err := t.filter(cr, record, indices)
 			if err != nil {
@@ -300,6 +320,10 @@ func (t *filterTransformation) filterTable(in flux.Table, record values.Object, 
 			return w.Write(vs)
 		})
 	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return table, done, nil
 }
 
 func (t *filterTransformation) filter(cr flux.ColReader, record values.Object, indices []int) (*arrowmem.Buffer, error) {
@@ -319,6 +343,15 @@ func (t *filterTransformation) filter(cr flux.ColReader, record values.Object, i
 		bitutil.SetBitTo(bitset.Buf(), i, val)
 	}
 	return bitset, nil
+}
+
+func (t *filterTransformation) wait(ctx context.Context, done <-chan struct{}) error {
+	select {
+	case <-done:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 func (t *filterTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {

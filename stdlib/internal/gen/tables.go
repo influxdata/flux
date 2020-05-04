@@ -160,7 +160,7 @@ func (s *Source) Run(ctx context.Context) {
 	schema := s.schema
 	schema.Alloc = s.alloc
 
-	tables, err := gen.Input(schema)
+	tables, err := gen.Input(ctx, schema)
 	if err != nil {
 		for _, t := range s.ts {
 			t.Finish(s.id, err)

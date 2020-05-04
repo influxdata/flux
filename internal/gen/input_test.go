@@ -22,7 +22,7 @@ func TestInput_TableTest(t *testing.T) {
 				NumPoints: 100,
 				Alloc:     alloc,
 			}
-			tables, err := gen.Input(schema)
+			tables, err := gen.Input(context.Background(), schema)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -47,12 +47,13 @@ func benchmarkInput(b *testing.B, n int) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		ti, err := gen.Input(schema)
+		ti, err := gen.Input(context.Background(), schema)
 		if err != nil {
 			b.Fatal(err)
 		}
 
 		if err := ti.Do(func(tbl flux.Table) error {
+			tbl.Done()
 			return nil
 		}); err != nil {
 			b.Fatal(err)
