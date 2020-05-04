@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -38,7 +39,7 @@ var get = values.NewFunction(
 			return nil, err
 		}
 		if err := validator.Validate(u); err != nil {
-			return nil, err
+			return nil, errors.New(codes.Invalid, "no such host")
 		}
 
 		// http.NewDefaultClient() does default to 30
@@ -91,6 +92,12 @@ var get = values.NewFunction(
 			req = req.WithContext(ccctx)
 			response, err := dc.Do(req)
 			if err != nil {
+				// Alias the DNS lookup error so as not to disclose the
+				// DNS server address. This error is private in the net/http
+				// package, so string matching is used.
+				if strings.HasSuffix(err.Error(), "no such host") {
+					return 0, nil, nil, errors.New(codes.Invalid, "no such host")
+				}
 				return 0, nil, nil, err
 			}
 			body, err := ioutil.ReadAll(response.Body)
