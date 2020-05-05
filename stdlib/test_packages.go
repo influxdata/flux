@@ -13,6 +13,7 @@ import (
 	secrets "github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
 	v1 "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"
 	promql "github.com/influxdata/flux/stdlib/internal/promql"
+	planner "github.com/influxdata/flux/stdlib/planner"
 	regexp "github.com/influxdata/flux/stdlib/regexp"
 	strings "github.com/influxdata/flux/stdlib/strings"
 	chronograf "github.com/influxdata/flux/stdlib/testing/chronograf"
@@ -36,6 +37,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, secrets.FluxTestPackages...)
 	pkgs = append(pkgs, v1.FluxTestPackages...)
 	pkgs = append(pkgs, promql.FluxTestPackages...)
+	pkgs = append(pkgs, planner.FluxTestPackages...)
 	pkgs = append(pkgs, regexp.FluxTestPackages...)
 	pkgs = append(pkgs, strings.FluxTestPackages...)
 	pkgs = append(pkgs, chronograf.FluxTestPackages...)
