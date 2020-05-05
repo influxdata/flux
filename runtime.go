@@ -69,7 +69,7 @@ func SetOption(pkg, name string, fn func(r Runtime) values.Value) ScopeMutator {
 
 // SetNowOption returns a ScopeMutator that sets the `now` option to the given time.
 func SetNowOption(now time.Time) ScopeMutator {
-	return SetOption(nowPkg, NowOption, generateNowFunc(now))
+	return SetOption(interpreter.NowPkg, interpreter.NowOption, generateNowFunc(now))
 }
 
 func generateNowFunc(now time.Time) func(r Runtime) values.Value {
@@ -82,6 +82,6 @@ func generateNowFunc(now time.Time) func(r Runtime) values.Value {
 		call := func(ctx context.Context, args values.Object) (values.Value, error) {
 			return timeVal, nil
 		}
-		return values.NewFunction(NowOption, ftype, call, false)
+		return values.NewFunction(interpreter.NowOption, ftype, call, false)
 	}
 }
