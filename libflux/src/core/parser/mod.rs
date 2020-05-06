@@ -37,6 +37,11 @@ pub fn parse_string(name: &str, s: &str) -> File {
 //    println!("Parse in Rust {}", str);
 //}
 
+struct TokenError {
+    pub message: String,
+    pub token: Token,
+}
+
 fn format_token(t: TOK) -> &'static str {
     match t {
         TOK_ILLEGAL => "ILLEGAL",
@@ -1071,52 +1076,88 @@ impl Parser {
             }
         }
     }
+
+    fn create_bad_expression(&mut self, t: Token) -> Expression {
+        Expression::Bad(Box::new(BadExpr {
+            // Do not use `self.base_node_*` in order not to steal errors.
+            // The BadExpr is an error per se. We want to leave errors to parents.
+            base: BaseNode {
+                location: self.source_location(
+                    &ast::Position::from(&t.start_pos),
+                    &ast::Position::from(&t.end_pos),
+                ),
+                ..BaseNode::default()
+            },
+            text: format!(
+                "invalid token for primary expression: {}",
+                format_token(t.tok)
+            ),
+            expression: None,
+        }))
+    }
+
     fn parse_primary_expression(&mut self) -> Expression {
         let t = self.peek_with_regex();
         match t.tok {
             TOK_IDENT => Expression::Identifier(self.parse_identifier()),
             TOK_INT => Expression::Integer(self.parse_int_literal()),
-            TOK_FLOAT => Expression::Float(self.parse_float_literal()),
+            TOK_FLOAT => {
+                let lit = self.parse_float_literal();
+                match lit {
+                    Ok(lit) => Expression::Float(lit),
+                    Err(terr) => self.create_bad_expression(terr.token),
+                }
+            }
             TOK_STRING => Expression::StringLit(self.parse_string_literal()),
-            TOK_QUOTE => Expression::StringExpr(Box::new(self.parse_string_expression())),
+            TOK_QUOTE => {
+                let lit = self.parse_string_expression();
+                match lit {
+                    Ok(lit) => Expression::StringExpr(Box::new(lit)),
+                    Err(terr) => self.create_bad_expression(terr.token),
+                }
+            }
             TOK_REGEX => Expression::Regexp(self.parse_regexp_literal()),
-            TOK_TIME => Expression::DateTime(self.parse_time_literal()),
-            TOK_DURATION => Expression::Duration(self.parse_duration_literal()),
+            TOK_TIME => {
+                let lit = self.parse_time_literal();
+                match lit {
+                    Ok(lit) => Expression::DateTime(lit),
+                    Err(terr) => self.create_bad_expression(terr.token),
+                }
+            }
+            TOK_DURATION => {
+                let lit = self.parse_duration_literal();
+
+                match lit {
+                    Ok(lit) => Expression::Duration(lit),
+                    Err(terr) => self.create_bad_expression(terr.token),
+                }
+            }
             TOK_PIPE_RECEIVE => Expression::PipeLit(self.parse_pipe_literal()),
             TOK_LBRACK => Expression::Array(Box::new(self.parse_array_literal())),
             TOK_LBRACE => Expression::Object(Box::new(self.parse_object_literal())),
             TOK_LPAREN => self.parse_paren_expression(),
             // We got a bad token, do not consume it, but use it in the message.
             // Other methods will match BadExpr and consume the token if needed.
-            _ => Expression::Bad(Box::new(BadExpr {
-                // Do not use `self.base_node_*` in order not to steal errors.
-                // The BadExpr is an error per se. We want to leave errors to parents.
-                base: BaseNode {
-                    location: self.source_location(
-                        &ast::Position::from(&t.start_pos),
-                        &ast::Position::from(&t.end_pos),
-                    ),
-                    ..BaseNode::default()
-                },
-                text: format!(
-                    "invalid token for primary expression: {}",
-                    format_token(t.tok)
-                ),
-                expression: None,
-            })),
+            _ => self.create_bad_expression(t),
         }
     }
-    fn parse_string_expression(&mut self) -> StringExpr {
+    fn parse_string_expression(&mut self) -> Result<StringExpr, TokenError> {
         let start = self.expect(TOK_QUOTE);
         let mut parts = Vec::new();
         loop {
             let t = self.s.scan_string_expr();
             match t.tok {
                 TOK_TEXT => {
-                    parts.push(StringExprPart::Text(TextPart {
-                        base: self.base_node_from_token(&t),
-                        value: strconv::parse_text(t.lit.as_str()).unwrap(),
-                    }));
+                    let value = strconv::parse_text(t.lit.as_str());
+                    match value {
+                        Ok(value) => {
+                            parts.push(StringExprPart::Text(TextPart {
+                                base: self.base_node_from_token(&t),
+                                value,
+                            }));
+                        }
+                        Err(message) => return Err(TokenError { token: t, message }),
+                    }
                 }
                 TOK_STRINGEXPR => {
                     let expr = self.parse_expression();
@@ -1127,10 +1168,10 @@ impl Parser {
                     }));
                 }
                 TOK_QUOTE => {
-                    return StringExpr {
+                    return Ok(StringExpr {
                         base: self.base_node_from_tokens(&start, &t),
                         parts,
-                    }
+                    })
                 }
                 _ => {
                     let loc = self.source_location(
@@ -1146,10 +1187,10 @@ impl Parser {
                         loc.end.column,
                         format_token(t.tok)
                     ));
-                    return StringExpr {
+                    return Ok(StringExpr {
                         base: self.base_node_from_tokens(&start, &t),
                         parts: Vec::new(),
-                    };
+                    });
                 }
             }
         }
@@ -1180,11 +1221,20 @@ impl Parser {
             },
         }
     }
-    fn parse_float_literal(&mut self) -> FloatLit {
+    fn parse_float_literal(&mut self) -> Result<FloatLit, TokenError> {
         let t = self.expect(TOK_FLOAT);
-        FloatLit {
-            base: self.base_node_from_token(&t),
-            value: (&t.lit).parse::<f64>().unwrap(),
+
+        let value = (&t.lit).parse::<f64>();
+
+        match value {
+            Ok(value) => Ok(FloatLit {
+                base: self.base_node_from_token(&t),
+                value,
+            }),
+            Err(_) => Err(TokenError {
+                token: t,
+                message: String::from("failed to parse float literal"),
+            }),
         }
     }
     fn parse_string_literal(&mut self) -> StringLit {
@@ -1220,20 +1270,27 @@ impl Parser {
             },
         }
     }
-    fn parse_time_literal(&mut self) -> DateTimeLit {
+    fn parse_time_literal(&mut self) -> Result<DateTimeLit, TokenError> {
         let t = self.expect(TOK_TIME);
-        let value = strconv::parse_time(t.lit.as_str()).unwrap();
-        DateTimeLit {
-            base: self.base_node_from_token(&t),
-            value,
+        let value = strconv::parse_time(t.lit.as_str());
+        match value {
+            Ok(value) => Ok(DateTimeLit {
+                base: self.base_node_from_token(&t),
+                value,
+            }),
+            Err(message) => Err(TokenError { token: t, message }),
         }
     }
-    fn parse_duration_literal(&mut self) -> DurationLit {
+    fn parse_duration_literal(&mut self) -> Result<DurationLit, TokenError> {
         let t = self.expect(TOK_DURATION);
-        let values = strconv::parse_duration(t.lit.as_str()).unwrap();
-        DurationLit {
-            base: self.base_node_from_token(&t),
-            values,
+        let values = strconv::parse_duration(t.lit.as_str());
+
+        match values {
+            Ok(values) => Ok(DurationLit {
+                base: self.base_node_from_token(&t),
+                values,
+            }),
+            Err(message) => Err(TokenError { token: t, message }),
         }
     }
     fn parse_pipe_literal(&mut self) -> PipeLit {
