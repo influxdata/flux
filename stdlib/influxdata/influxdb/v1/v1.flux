@@ -11,6 +11,21 @@ fieldsAsCols = (tables=<-) =>
     tables
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
 
+// FieldKeys returns the list of field keys in a given bucket.
+// The return value is always a single table with a single column, "_value".
+fieldKeys = (bucket, predicate=(r) => true, start=-30d) =>
+    from(bucket: bucket)
+      |> range(start: start)
+      |> filter(fn: predicate)
+      |> keep(columns: ["_field"])
+      |> group()
+      |> distinct(column: "_field")
+
+// MeasurementFieldKeys returns field keys in a given measurement.
+// The return value is always a single table with a single column, "_value".
+measurementFieldKeys = (bucket, measurement, start) =>
+    fieldKeys(bucket: bucket, predicate: (r) => r._measurement == measurement, start: start)
+
 // TagValues returns the unique values for a given tag.
 // The return value is always a single table with a single column "_value".
 tagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>
@@ -43,4 +58,3 @@ measurementTagKeys = (bucket, measurement) =>
 // Measurements returns the list of measurements in a specific bucket.
 measurements = (bucket) =>
     tagValues(bucket: bucket, tag: "_measurement")
-
