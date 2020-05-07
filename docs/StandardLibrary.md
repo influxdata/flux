@@ -8,7 +8,7 @@ The top-level package is called "universe."
 The Flux compiler provides the concept of a "prelude," which is the set of packages whose members
 may be used in a Flux program without namespace qualification.  For example,
 in the vanilla Flux CLI, the prelude includes the `universe` and `influxdata/influxdb`
-packages. 
+packages.
 
 ## The `Universe` Package
 
@@ -110,6 +110,8 @@ Others?
 - `json`
 - `databases`
 - `fieldsAsCols`
+- `fieldKeys`
+- `measurementFieldKeys`
 - `tagValues`
 - `measurementTagValues`
 - `tagKeys`
