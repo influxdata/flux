@@ -10398,6 +10398,78 @@ fn date_literal_in_the_default_location() {
 }
 
 #[test]
+fn data_time_literal_arg() {
+    let mut p = Parser::new(r#"range(start: 2018-11-29T09:00:00)"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 34),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 34),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Call(Box::new(CallExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 34),
+                        errors: vec!["expected RPAREN, got EOF".to_string()],
+                        ..BaseNode::default()
+                    },
+                    arguments: vec![Expression::Object(Box::new(ObjectExpr {
+                        base: BaseNode {
+                            location: loc.get(1, 7, 1, 12),
+                            ..BaseNode::default()
+                        },
+                        lbrace: None,
+                        rbrace: None,
+                        with: None,
+                        properties: vec![Property {
+                            base: BaseNode {
+                                location: loc.get(1, 7, 1, 12),
+                                errors: vec![
+                                    "invalid expression @1:33-1:34: )".to_string(),
+                                    "missing property value".to_string(),
+                                ],
+                                ..BaseNode::default()
+                            },
+                            key: PropertyKey::Identifier(Identifier {
+                                base: BaseNode {
+                                    location: loc.get(1, 7, 1, 12),
+                                    ..BaseNode::default()
+                                },
+                                name: "start".to_string(),
+                            }),
+                            comma: None,
+                            separator: None,
+                            value: None,
+                        }],
+                    }))],
+                    callee: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 1, 1, 6),
+                            ..BaseNode::default()
+                        },
+                        name: "range".to_string(),
+                    }),
+                    lparen: None,
+                    rparen: None,
+                }))
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
 fn date_time_literal() {
     let mut p = Parser::new(r#"now = 2018-11-29T09:00:00Z"#);
     let parsed = p.parse_file("".to_string());
