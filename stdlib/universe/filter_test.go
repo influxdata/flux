@@ -741,10 +741,19 @@ func TestFilter_Process(t *testing.T) {
 // It uses the FluxCompiler to execute the query because the consecutive
 // transport is needed to trigger the race condition.
 func TestFilter_ConcurrentTables(t *testing.T) {
+	// Issue a query that triggers a race condition.
+	// The input to filter results in two buffers for the table
+	// which can trigger the race condition when both are read by
+	// filter at the same time and evaluated together.
+	// The debug.pass() is used to add an additional node after the
+	// filter to ensure that filter() is able to send its results
+	// to the next transformation.
 	c := &lang.FluxCompiler{
 		Query: `import "internal/gen"
+import "internal/debug"
 gen.tables(n: 2048, tags: [{name: "a", cardinality: 10}])
 	|> filter(fn: (r) => r.a !~ /abc/)
+	|> debug.pass()
 `,
 	}
 	program, err := c.Compile(context.Background(), runtime.Default)

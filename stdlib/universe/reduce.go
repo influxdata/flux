@@ -119,10 +119,7 @@ type reduceTransformation struct {
 }
 
 func NewReduceTransformation(ctx context.Context, spec *ReduceProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*reduceTransformation, error) {
-	fn, err := execute.NewRowReduceFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
-	if err != nil {
-		return nil, err
-	}
+	fn := execute.NewRowReduceFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	return &reduceTransformation{
 		d:        d,
 		cache:    cache,
@@ -135,7 +132,8 @@ func NewReduceTransformation(ctx context.Context, spec *ReduceProcedureSpec, d e
 func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	// Prepare the function with the column types list.
 	cols := tbl.Cols()
-	if err := t.fn.Prepare(cols, map[string]semantic.MonoType{"accumulator": t.identity.Type()}); err != nil {
+	fn, err := t.fn.Prepare(cols, map[string]semantic.MonoType{"accumulator": t.identity.Type()})
+	if err != nil {
 		return err
 	}
 
@@ -147,7 +145,7 @@ func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		for i := 0; i < l; i++ {
 			// the RowReduce function type takes a row of values, and an accumulator value, and
 			// computes a new accumulator result.
-			m, err := t.fn.Eval(t.ctx, i, cr, params)
+			m, err := fn.Eval(t.ctx, i, cr, params)
 			if err != nil {
 				return errors.Wrap(err, codes.Inherit, "failed to evaluate reduce function")
 			}

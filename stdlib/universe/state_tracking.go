@@ -161,10 +161,7 @@ type stateTrackingTransformation struct {
 }
 
 func NewStateTrackingTransformation(ctx context.Context, spec *StateTrackingProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*stateTrackingTransformation, error) {
-	fn, err := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
-	if err != nil {
-		return nil, err
-	}
+	fn := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	return &stateTrackingTransformation{
 		d:              d,
 		cache:          cache,
@@ -186,14 +183,13 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	if !created {
 		return errors.Newf(codes.FailedPrecondition, "found duplicate table with key: %v", tbl.Key())
 	}
-	err := execute.AddTableCols(tbl, builder)
-	if err != nil {
+	if err := execute.AddTableCols(tbl, builder); err != nil {
 		return err
 	}
 
 	// Prepare the functions for the column types.
 	cols := tbl.Cols()
-	err = t.fn.Prepare(cols)
+	fn, err := t.fn.Prepare(cols)
 	if err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
 		return err
@@ -240,7 +236,7 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			match, err := t.fn.EvalRow(t.ctx, i, cr)
+			match, err := fn.EvalRow(t.ctx, i, cr)
 			if err != nil {
 				log.Printf("failed to evaluate state tracking expression: %v", err)
 				continue
