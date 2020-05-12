@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -46,5 +47,29 @@ func TestLimitedDefaultClient(t *testing.T) {
 		if diff := cmp.Diff(body[:size], string(bs)); diff != "" {
 			t.Fatalf("got unexpected response body:\n\t%s", diff)
 		}
+	})
+}
+
+func TestInvalidRedirects(t *testing.T) {
+	t.Run("redirects to localhost are rejected", func(t *testing.T) {
+		client := NewDefaultClient()
+
+		testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+			http.Redirect(w, request, "http://localhost", http.StatusMovedPermanently)
+		}))
+		defer testServer.Close()
+
+		req, err := http.NewRequest("GET", testServer.URL, bytes.NewReader([]byte{}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = client.Do(req)
+		if err == nil {
+			t.Fatal("Client did not error")
+		}
+		if !strings.HasSuffix(err.Error(), "url is not valid, it connects to a private IP") {
+			t.Fatal(err)
+		}
+
 	})
 }

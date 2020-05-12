@@ -1,10 +1,13 @@
 package http
 
 import (
+	"errors"
 	"io"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/influxdata/flux/dependencies/url"
 )
 
 // maxResponseBody is the maximum response body we will read before just discarding
@@ -51,10 +54,21 @@ func (l roundTripLimiter) RoundTrip(r *http.Request) (*http.Response, error) {
 	return response, nil
 }
 
+// Check all redirects for invalid URLs.
+func checkRedirect(req *http.Request, via []*http.Request) error {
+	if len(via) >= 10 {
+		return errors.New("stopped after 10 redirects")
+	}
+
+	validator := url.PrivateIPValidator{}
+	return validator.Validate(req.URL)
+}
+
 // NewDefaultClient creates a client with sane defaults.
 func NewDefaultClient() *http.Client {
 	// These defaults are copied from http.DefaultTransport.
 	return &http.Client{
+		CheckRedirect: checkRedirect,
 		Transport: &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 			DialContext: (&net.Dialer{
