@@ -53,21 +53,17 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 		return nil, errors.Newf(codes.Invalid, "expected TableObject but instead got %T", v)
 	}
 
-	var fn *execute.TablePredicateFn
-	if call, err := arguments.GetRequiredFunction(tableFindFunctionArg); err != nil {
+	call, err := arguments.GetRequiredFunction(tableFindFunctionArg)
+	if err != nil {
 		return nil, errors.Newf(codes.Invalid, "missing argument: %s", tableFindFunctionArg)
-	} else {
-		predicate, err := interpreter.ResolveFunction(call)
-		if err != nil {
-			return nil, err
-		}
-
-		fn, err = execute.NewTablePredicateFn(predicate.Fn, compiler.ToScope(predicate.Scope))
-		if err != nil {
-			return nil, err
-		}
 	}
 
+	predicate, err := interpreter.ResolveFunction(call)
+	if err != nil {
+		return nil, err
+	}
+
+	fn := execute.NewTablePredicateFn(predicate.Fn, compiler.ToScope(predicate.Scope))
 	t, err := tableFind(ctx, to, fn)
 	if err != nil {
 		return nil, err
@@ -114,12 +110,12 @@ func tableFind(ctx context.Context, to *flux.TableObject, fn *execute.TablePredi
 				return nil
 			}
 
-			if err := fn.Prepare(tbl); err != nil {
+			preparedFn, err := fn.Prepare(tbl)
+			if err != nil {
 				return err
 			}
 
-			var err error
-			found, err = fn.Eval(ctx, tbl)
+			found, err = preparedFn.Eval(ctx, tbl)
 			if err != nil {
 				return errors.Wrap(err, codes.Inherit, "failed to evaluate group key predicate function")
 			}
@@ -333,20 +329,16 @@ func findColumnCall(ctx context.Context, args values.Object) (values.Value, erro
 		return nil, errors.Newf(codes.Invalid, "expected TableObject but instead got %T", v)
 	}
 
-	var fn *execute.TablePredicateFn
-	if call, err := arguments.GetRequiredFunction(tableFindFunctionArg); err != nil {
+	call, err := arguments.GetRequiredFunction(tableFindFunctionArg)
+	if err != nil {
 		return nil, errors.Newf(codes.Invalid, "missing argument: %s", tableFindFunctionArg)
-	} else {
-		predicate, err := interpreter.ResolveFunction(call)
-		if err != nil {
-			return nil, err
-		}
-
-		fn, err = execute.NewTablePredicateFn(predicate.Fn, compiler.ToScope(predicate.Scope))
-		if err != nil {
-			return nil, err
-		}
 	}
+
+	predicate, err := interpreter.ResolveFunction(call)
+	if err != nil {
+		return nil, err
+	}
+	fn := execute.NewTablePredicateFn(predicate.Fn, compiler.ToScope(predicate.Scope))
 
 	col, err := arguments.GetRequiredString(getColumnColumnArg)
 	if err != nil {
@@ -401,20 +393,16 @@ func findRecordCall(ctx context.Context, args values.Object) (values.Value, erro
 		return nil, errors.Newf(codes.Invalid, "expected TableObject but instead got %T", v)
 	}
 
-	var fn *execute.TablePredicateFn
-	if call, err := arguments.GetRequiredFunction(tableFindFunctionArg); err != nil {
+	call, err := arguments.GetRequiredFunction(tableFindFunctionArg)
+	if err != nil {
 		return nil, errors.Newf(codes.Invalid, "missing argument: %s", tableFindFunctionArg)
-	} else {
-		predicate, err := interpreter.ResolveFunction(call)
-		if err != nil {
-			return nil, err
-		}
-
-		fn, err = execute.NewTablePredicateFn(predicate.Fn, compiler.ToScope(predicate.Scope))
-		if err != nil {
-			return nil, err
-		}
 	}
+
+	predicate, err := interpreter.ResolveFunction(call)
+	if err != nil {
+		return nil, err
+	}
+	fn := execute.NewTablePredicateFn(predicate.Fn, compiler.ToScope(predicate.Scope))
 
 	rowIdx, err := arguments.GetRequiredInt(getRecordIndexArg)
 	if err != nil {

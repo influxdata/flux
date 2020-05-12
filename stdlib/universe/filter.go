@@ -146,11 +146,7 @@ type filterTransformation struct {
 }
 
 func NewFilterTransformation(ctx context.Context, spec *FilterProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
-	fn, err := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
-	if err != nil {
-		return nil, nil, err
-	}
-
+	fn := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	t := &filterTransformation{
 		d:               execute.NewPassthroughDataset(id),
 		fn:              fn,
@@ -168,7 +164,8 @@ func (t *filterTransformation) RetractTable(id execute.DatasetID, key flux.Group
 func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	// Prepare the function for the column types.
 	cols := tbl.Cols()
-	if err := t.fn.Prepare(cols); err != nil {
+	fn, err := t.fn.Prepare(cols)
+	if err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
 		return err
 	}
@@ -176,14 +173,14 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	// Retrieve the inferred input type for the function.
 	// If all of the inferred inputs are part of the group
 	// key, we can evaluate a record with only the group key.
-	if t.canFilterByKey(tbl) {
+	if t.canFilterByKey(fn, tbl) {
 		return t.filterByKey(tbl)
 	}
 
 	// Prefill the columns that can be inferred from the group key.
 	// Retrieve the input type from the function and record the indices
 	// that need to be obtained from the columns.
-	record := values.NewObject(t.fn.InputType())
+	record := values.NewObject(fn.InputType())
 	indices := make([]int, 0, len(tbl.Cols())-len(tbl.Key().Cols()))
 	for j, c := range tbl.Cols() {
 		if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); idx >= 0 {
@@ -194,23 +191,18 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	}
 
 	// Filter the table and pass in the indices we have to read.
-	table, done, err := t.filterTable(tbl, record, indices)
+	table, err := t.filterTable(fn, tbl, record, indices)
 	if err != nil {
 		return err
 	} else if table.Empty() && !t.keepEmptyTables {
 		// Drop the table.
 		return nil
 	}
-	if err := t.d.Process(table); err != nil {
-		return err
-	}
-	// Wait until the full table has been processed and read by the next transformation.
-	// Filter can only process one table at a time.
-	return t.wait(t.ctx, done)
+	return t.d.Process(table)
 }
 
-func (t *filterTransformation) canFilterByKey(tbl flux.Table) bool {
-	inType := t.fn.InferredInputType()
+func (t *filterTransformation) canFilterByKey(fn *execute.RowPredicatePreparedFn, tbl flux.Table) bool {
+	inType := fn.InferredInputType()
 	nargs, err := inType.NumProperties()
 	if err != nil {
 		panic(err)
@@ -246,7 +238,8 @@ func (t *filterTransformation) canFilterByKey(tbl flux.Table) bool {
 func (t *filterTransformation) filterByKey(tbl flux.Table) error {
 	key := tbl.Key()
 	cols := key.Cols()
-	if err := t.fn.Prepare(cols); err != nil {
+	fn, err := t.fn.Prepare(cols)
+	if err != nil {
 		return err
 	}
 
@@ -260,7 +253,7 @@ func (t *filterTransformation) filterByKey(tbl flux.Table) error {
 		return err
 	}
 
-	v, err := t.fn.Eval(t.ctx, record)
+	v, err := fn.Eval(t.ctx, record)
 	if err != nil {
 		return err
 	}
@@ -278,25 +271,10 @@ func (t *filterTransformation) filterByKey(tbl flux.Table) error {
 	return t.d.Process(tbl)
 }
 
-func (t *filterTransformation) filterTable(in flux.Table, record values.Object, indices []int) (flux.Table, <-chan struct{}, error) {
-	// The done channel returned here is a workaround for unintentionally shared state.
-	// The row predicate function will modify itself after each Prepare call so filtering multiple
-	// tables at the same time could result in two different tables using the same shared state
-	// for the row predicate function.
-	//
-	// This is not intentional. The row predicate function could be changed to return a new function
-	// that gets used with its own state for each table and we would not need to prevent multiple
-	// tables from being processed at the same time.
-	//
-	// At the moment though, it is easier and less risky to prevent multiple tables from
-	// being filtered than it is to fix the row function evaluation code to remove the
-	// race condition so we are doing that rather than fixing the functions in execute/row_fn.go.
-	// TODO(jsternberg): Remove this after fixing the execute/row_fn.go code.
-	done := make(chan struct{})
-	table, err := table.StreamWithContext(t.ctx, in.Key(), in.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
-		defer close(done)
+func (t *filterTransformation) filterTable(fn *execute.RowPredicatePreparedFn, in flux.Table, record values.Object, indices []int) (flux.Table, error) {
+	return table.StreamWithContext(t.ctx, in.Key(), in.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
 		return in.Do(func(cr flux.ColReader) error {
-			bitset, err := t.filter(cr, record, indices)
+			bitset, err := t.filter(fn, cr, record, indices)
 			if err != nil {
 				return err
 			}
@@ -320,13 +298,9 @@ func (t *filterTransformation) filterTable(in flux.Table, record values.Object, 
 			return w.Write(vs)
 		})
 	})
-	if err != nil {
-		return nil, nil, err
-	}
-	return table, done, nil
 }
 
-func (t *filterTransformation) filter(cr flux.ColReader, record values.Object, indices []int) (*arrowmem.Buffer, error) {
+func (t *filterTransformation) filter(fn *execute.RowPredicatePreparedFn, cr flux.ColReader, record values.Object, indices []int) (*arrowmem.Buffer, error) {
 	cols, l := cr.Cols(), cr.Len()
 	bitset := arrowmem.NewResizableBuffer(t.alloc)
 	bitset.Resize(l)
@@ -335,7 +309,7 @@ func (t *filterTransformation) filter(cr flux.ColReader, record values.Object, i
 			record.Set(cols[j].Label, execute.ValueForRow(cr, i, j))
 		}
 
-		val, err := t.fn.Eval(t.ctx, record)
+		val, err := fn.Eval(t.ctx, record)
 		if err != nil {
 			bitset.Release()
 			return nil, errors.Wrap(err, codes.Inherit, "failed to evaluate filter function")
@@ -343,15 +317,6 @@ func (t *filterTransformation) filter(cr flux.ColReader, record values.Object, i
 		bitutil.SetBitTo(bitset.Buf(), i, val)
 	}
 	return bitset, nil
-}
-
-func (t *filterTransformation) wait(ctx context.Context, done <-chan struct{}) error {
-	select {
-	case <-done:
-		return nil
-	case <-ctx.Done():
-		return ctx.Err()
-	}
 }
 
 func (t *filterTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {

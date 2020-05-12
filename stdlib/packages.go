@@ -20,6 +20,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/monitor"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"
+	_ "github.com/influxdata/flux/stdlib/internal/debug"
 	_ "github.com/influxdata/flux/stdlib/internal/gen"
 	_ "github.com/influxdata/flux/stdlib/internal/influxql"
 	_ "github.com/influxdata/flux/stdlib/internal/promql"

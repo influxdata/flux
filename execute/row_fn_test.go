@@ -125,12 +125,8 @@ func TestRowMapFn_Eval(t *testing.T) {
 
 			stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
 			fn := stmt.Expression.(*semantic.FunctionExpression)
-			f, err := execute.NewRowMapFn(fn, nil)
+			f, err := execute.NewRowMapFn(fn, nil).Prepare(tc.data.ColMeta)
 			if err != nil {
-				t.Fatalf("unexpected error: %s", err)
-			}
-
-			if err := f.Prepare(tc.data.ColMeta); err != nil {
 				if tc.prepareErr != nil {
 					if !cmp.Equal(tc.prepareErr.Error(), err.Error()) {
 						t.Fatalf("unexpected prepare error -want/+got\n%s", cmp.Diff(tc.prepareErr.Error(), err.Error()))
@@ -175,7 +171,7 @@ func TestRowMapFn_Eval(t *testing.T) {
 }
 
 func testRowPredicateFn_EvalRow(t *testing.T, scope compiler.Scope) {
-	gt2F := func() (*execute.RowPredicateFn, error) {
+	gt2F := func() *execute.RowPredicateFn {
 		pkg, err := runtime.AnalyzeSource(`(r) => r._value > 2.0`)
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err)
@@ -248,11 +244,7 @@ func testRowPredicateFn_EvalRow(t *testing.T, scope compiler.Scope) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			f, err := gt2F()
-			if err != nil {
-				t.Fatal(err)
-			}
-			err = f.Prepare(tc.data.ColMeta)
+			f, err := gt2F().Prepare(tc.data.ColMeta)
 			if err != nil {
 				t.Fatal(err)
 			}

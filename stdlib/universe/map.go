@@ -120,10 +120,7 @@ type mapTransformation struct {
 }
 
 func NewMapTransformation(ctx context.Context, spec *MapProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*mapTransformation, error) {
-	fn, err := execute.NewRowMapFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
-	if err != nil {
-		return nil, err
-	}
+	fn := execute.NewRowMapFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	return &mapTransformation{
 		d:        d,
 		cache:    cache,
@@ -140,7 +137,8 @@ func (t *mapTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey
 func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	// Prepare the functions for the column types.
 	cols := tbl.Cols()
-	if err := t.fn.Prepare(cols); err != nil {
+	fn, err := t.fn.Prepare(cols)
+	if err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
 		return err
 	}
@@ -153,7 +151,7 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			m, err := t.fn.Eval(t.ctx, i, cr)
+			m, err := fn.Eval(t.ctx, i, cr)
 			if err != nil {
 				return errors.Wrap(err, codes.Inherit, "failed to evaluate map function")
 			}
@@ -170,7 +168,7 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 			key := groupKeyForObject(i, cr, m, on)
 			builder, created := t.cache.TableBuilder(key)
 			if created {
-				if err := t.createSchema(builder, m); err != nil {
+				if err := t.createSchema(fn, builder, m); err != nil {
 					return err
 				}
 			}
@@ -233,14 +231,14 @@ func (t *mapTransformation) groupOn(key flux.GroupKey, m semantic.MonoType) (map
 // should be rewritten to use the inferred type from type inference
 // and it should be capable of consolidating schemas from non-uniform
 // tables.
-func (t *mapTransformation) createSchema(b execute.TableBuilder, m values.Object) error {
+func (t *mapTransformation) createSchema(fn *execute.RowMapPreparedFn, b execute.TableBuilder, m values.Object) error {
 	if t.mergeKey {
 		if err := execute.AddTableKeyCols(b.Key(), b); err != nil {
 			return err
 		}
 	}
 
-	returnType := t.fn.Type()
+	returnType := fn.Type()
 
 	numProps, err := returnType.NumProperties()
 	if err != nil {
