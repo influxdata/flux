@@ -68,7 +68,27 @@ http.get(url:"http://127.1.1.1/path/a/b/c", headers: {x:"a",y:"b",z:"c"})
 	if err == nil {
 		t.Fatal("expected failure")
 	}
-	if !strings.Contains(err.Error(), "url is not valid") {
+	if !strings.Contains(err.Error(), "no such host") {
+		t.Errorf("unexpected cause of failure, got err: %v", err)
+	}
+}
+
+func TestGet_DNSFail(t *testing.T) {
+	script := `
+import "experimental/http"
+
+http.get(url:"http://notarealaddressatall/path/a/b/c", headers: {x:"a",y:"b",z:"c"})
+`
+
+	deps := flux.NewDefaultDependencies()
+	deps.Deps.HTTPClient = http.DefaultClient
+	deps.Deps.URLValidator = url.PrivateIPValidator{}
+	ctx := deps.Inject(context.Background())
+	_, _, err := runtime.Eval(ctx, script)
+	if err == nil {
+		t.Fatal("expected failure")
+	}
+	if !strings.Contains(err.Error(), "no such host") {
 		t.Errorf("unexpected cause of failure, got err: %v", err)
 	}
 }
