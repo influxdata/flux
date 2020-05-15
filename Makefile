@@ -144,10 +144,13 @@ libflux-go:
 libflux-wasm:
 	cd libflux/src/flux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev
 
-build-wasm:
-	cd libflux/src/flux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata
+clean-wasm:
+	rm -rf libflux/src/flux/pkg
 
-publish-wasm: build-wasm
+build-wasm:
+	cd libflux/src/flux && CC=clang AR=llvm-ar wasm-pack build -t nodejs --scope influxdata
+
+publish-wasm: clean-wasm build-wasm
 	cd libflux/src/flux/pkg && npm publish --access public
 
 test-valgrind: libflux
@@ -161,6 +164,9 @@ test-valgrind: libflux
 	libflux \
 	libflux-go \
 	libflux-wasm \
+	clean-wasm \
+	build-wasm \
+	publish-wasm \
 	fmt \
 	checkfmt \
 	tidy \
