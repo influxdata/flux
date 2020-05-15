@@ -9,10 +9,11 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/flux/dependencies/url"
 )
 
 func TestNewDefaultClient(t *testing.T) {
-	c := NewDefaultClient()
+	c := NewDefaultClient(url.PassValidator{})
 	if c == nil {
 		t.Fail()
 	}
@@ -21,7 +22,7 @@ func TestNewDefaultClient(t *testing.T) {
 func TestLimitedDefaultClient(t *testing.T) {
 	t.Run("response larger than given size", func(t *testing.T) {
 		var size int64 = 1
-		c := LimitHTTPBody(*NewDefaultClient(), size)
+		c := LimitHTTPBody(*NewDefaultClient(url.PassValidator{}), size)
 		body := "hello"
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
@@ -52,7 +53,7 @@ func TestLimitedDefaultClient(t *testing.T) {
 
 func TestInvalidRedirects(t *testing.T) {
 	t.Run("redirects to localhost are rejected", func(t *testing.T) {
-		client := NewDefaultClient()
+		client := NewDefaultClient(url.PrivateIPValidator{})
 
 		testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
 			http.Redirect(w, request, "http://localhost", http.StatusMovedPermanently)

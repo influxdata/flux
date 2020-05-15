@@ -55,20 +55,21 @@ func (l roundTripLimiter) RoundTrip(r *http.Request) (*http.Response, error) {
 }
 
 // Check all redirects for invalid URLs.
-func checkRedirect(req *http.Request, via []*http.Request) error {
-	if len(via) >= 10 {
-		return errors.New("stopped after 10 redirects")
-	}
+func checkRedirect(validator url.Validator) func(req *http.Request, via []*http.Request) error {
+	return func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 10 {
+			return errors.New("stopped after 10 redirects")
+		}
 
-	validator := url.PrivateIPValidator{}
-	return validator.Validate(req.URL)
+		return validator.Validate(req.URL)
+	}
 }
 
 // NewDefaultClient creates a client with sane defaults.
-func NewDefaultClient() *http.Client {
+func NewDefaultClient(urlValidator url.Validator) *http.Client {
 	// These defaults are copied from http.DefaultTransport.
 	return &http.Client{
-		CheckRedirect: checkRedirect,
+		CheckRedirect: checkRedirect(urlValidator),
 		Transport: &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 			DialContext: (&net.Dialer{
@@ -87,7 +88,7 @@ func NewDefaultClient() *http.Client {
 }
 
 // NewLimitedDefaultClient creates a client with a limit on the response body size.
-func NewLimitedDefaultClient() *http.Client {
-	cli := NewDefaultClient()
+func NewLimitedDefaultClient(urlValidator url.Validator) *http.Client {
+	cli := NewDefaultClient(urlValidator)
 	return LimitHTTPBody(*cli, maxResponseBody)
 }
