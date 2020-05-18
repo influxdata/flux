@@ -629,7 +629,7 @@ option planner.disableLogicalRules = "not an array"
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `type error @4:38-4:52: string != [string]`,
+			wantErr: `type error @4:38-4:52: expected [string] but found string`,
 		},
 		{
 			name: "physical planner option must be an array",
@@ -640,7 +640,7 @@ option planner.disablePhysicalRules = "not an array"
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `type error @4:39-4:53: string != [string]`,
+			wantErr: `type error @4:39-4:53: expected [string] but found string`,
 		},
 		{
 			name: "logical planner option must be an array of strings",
@@ -651,7 +651,7 @@ option planner.disableLogicalRules = [1.0]
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `type error @4:38-4:43: float != string`,
+			wantErr: `type error @4:38-4:43: expected string but found float`,
 		},
 		{
 			name: "physical planner option must be an array of strings",
@@ -662,7 +662,7 @@ option planner.disablePhysicalRules = [1.0]
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `type error @4:39-4:44: float != string`,
+			wantErr: `type error @4:39-4:44: expected string but found float`,
 		},
 		{
 			name: "planner is an object defined by the user",

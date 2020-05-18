@@ -428,15 +428,12 @@ impl OptionStmt {
                 let (env, cons) = stmt.init.infer(env, f)?;
                 let (env, rest) = stmt.member.infer(env, f)?;
 
-                let l = stmt.member.typ.clone();
-                let r = stmt.init.type_of();
-
                 Ok((
                     env,
                     cons + rest
                         + vec![Constraint::Equal {
-                            exp: l,
-                            act: r,
+                            exp: stmt.member.typ.clone(),
+                            act: stmt.init.type_of(),
                             loc: stmt.init.loc().clone(),
                         }]
                         .into(),
