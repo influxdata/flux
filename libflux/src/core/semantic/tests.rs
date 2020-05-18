@@ -3254,7 +3254,7 @@ fn test_error_messages() {
             1 + "1"
         "#,
         // Location points to right expression expression
-        err: "type error @2:17-2:20: int != string",
+        err: "type error @2:17-2:20: string != int",
     }
     test_error_msg! {
         src: r#"
@@ -3291,7 +3291,7 @@ fn test_error_messages() {
             if exists 0 then 0 else "b"
         "#,
         // Location points to else expression
-        err: "type error @2:37-2:40: int != string",
+        err: "type error @2:37-2:40: string != int",
     }
     test_error_msg! {
         src: r#"
@@ -3314,7 +3314,15 @@ fn test_error_messages() {
             a[1] + 1.1
         "#,
         // Location points to right expression
-        err: "type error @3:20-3:23: int != float",
+        err: "type error @3:20-3:23: float != int",
+    }
+    test_error_msg! {
+        src: r#"
+            a = 1
+            a[1]
+        "#,
+        // Location points to the identifier a
+        err: "type error @3:13-3:14: int != [t2]",
     }
     test_error_msg! {
         src: r#"
@@ -3354,6 +3362,22 @@ fn test_error_messages() {
             fn = (r) => match(r)
         "#,
         // Location points to call expression `match(r)`
-        err: "type error @3:25-3:33: missing required argument o",
+        err: "type error @3:25-3:33: found unexpected argument r",
+    }
+    test_error_msg! {
+        src: r#"
+            f = (a, b) => a + b
+            f(a: 0, c: 1)
+        "#,
+        // Location points to call expression `f(a: 0, c: 1)`
+        err: "type error @3:13-3:26: found unexpected argument c",
+    }
+    test_error_msg! {
+        src: r#"
+            f = (a, b) => a + b
+            f(a: 0)
+        "#,
+        // Location points to call expression `f(a: 0)`
+        err: "type error @3:13-3:20: missing required argument b",
     }
 }

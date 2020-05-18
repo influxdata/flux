@@ -1842,7 +1842,7 @@ mod tests {
                 &mut Fresher::default(),
             )
             .unwrap_err();
-        assert_eq!(err.to_string(), String::from("int != string"),);
+        assert_eq!(err.to_string(), String::from("string != int"),);
     }
     #[test]
     fn unify_tvars() {
