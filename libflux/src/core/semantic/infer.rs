@@ -2,6 +2,7 @@ use crate::ast::SourceLocation;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::sub::{Substitutable, Substitution};
+use crate::semantic::types;
 use crate::semantic::types::{minus, Kind, MonoType, PolyType, SubstitutionMap, TvarKinds};
 use std::fmt;
 use std::ops;
@@ -15,10 +16,21 @@ use std::ops;
 // An equality contraint asserts that two types are equivalent
 // and will be unified at some point.
 //
+// A constraint is composed of an expected type, the actual type
+// that was found, and the source location of the actual type.
+//
 #[derive(Debug, PartialEq)]
 pub enum Constraint {
-    Kind(MonoType, Kind, SourceLocation),
-    Equal(MonoType, MonoType, SourceLocation),
+    Kind {
+        exp: Kind,
+        act: MonoType,
+        loc: SourceLocation,
+    },
+    Equal {
+        exp: MonoType,
+        act: MonoType,
+        loc: SourceLocation,
+    },
 }
 
 #[derive(Debug, PartialEq)]
@@ -62,14 +74,15 @@ impl From<Constraint> for Constraints {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Error {
-    msg: String,
+    loc: SourceLocation,
+    err: types::Error,
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.msg)
+        write!(f, "type error {}: {}", self.loc, self.err)
     }
 }
 
@@ -82,23 +95,25 @@ pub fn solve(
     cons.0
         .iter()
         .try_fold(Substitution::empty(), |sub, constraint| match constraint {
-            Constraint::Kind(monotype, kind, loc) => {
+            Constraint::Kind { exp, act, loc } => {
                 // Apply the current substitution to the type, then constrain
-                let s = match monotype.clone().apply(&sub).constrain(*kind, with) {
+                let s = match act.clone().apply(&sub).constrain(*exp, with) {
                     Err(e) => Err(Error {
-                        msg: format!("type error {}: {}", loc, e),
+                        loc: loc.clone(),
+                        err: e,
                     }),
                     Ok(s) => Ok(s),
                 }?;
                 Ok(sub.merge(s))
             }
-            Constraint::Equal(first, second, loc) => {
+            Constraint::Equal { exp, act, loc } => {
                 // Apply the current substitution to the constraint, then unify
-                let l = first.clone().apply(&sub);
-                let r = second.clone().apply(&sub);
-                let s = match l.unify(r, with, fresher) {
+                let exp = exp.clone().apply(&sub);
+                let act = act.clone().apply(&sub);
+                let s = match exp.unify(act, with, fresher) {
                     Err(e) => Err(Error {
-                        msg: format!("type error {}: {}", loc, e),
+                        loc: loc.clone(),
+                        err: e,
                     }),
                     Ok(s) => Ok(s),
                 }?;
@@ -155,7 +170,11 @@ pub fn instantiate(
         .fold(Constraints::empty(), |cons, (tv, kinds)| {
             cons + kinds
                 .into_iter()
-                .map(|kind| Constraint::Kind(sub.apply(tv), kind, loc.clone()))
+                .map(|kind| Constraint::Kind {
+                    exp: kind,
+                    act: sub.apply(tv),
+                    loc: loc.clone(),
+                })
                 .collect::<Vec<Constraint>>()
                 .into()
         });

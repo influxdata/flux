@@ -142,8 +142,10 @@ pub enum Error {
     CannotConstrain(MonoType, Kind),
     OccursCheck(Tvar, MonoType),
     MissingLabel(String),
+    ExtraLabel(String),
     CannotUnifyLabel(String, MonoType, MonoType),
     MissingArgument(String),
+    ExtraArgument(String),
     CannotUnifyArgument(String, Box<Error>),
     CannotUnifyReturn(MonoType, MonoType),
     MissingPipeArgument,
@@ -153,16 +155,20 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Error::CannotUnify(t, with) => write!(f, "{} != {}", t, with),
-            Error::CannotConstrain(t, with) => write!(f, "{} is not {}", t, with),
+            Error::CannotUnify(expected, found) => write!(f, "{} != {}", found, expected),
+            Error::CannotConstrain(found, expected) => write!(f, "{} is not {}", found, expected),
             Error::OccursCheck(tv, ty) => write!(f, "{} != {} (recursive type)", tv, ty),
             Error::MissingLabel(a) => write!(f, "record is missing label {}", a),
+            Error::ExtraLabel(a) => write!(f, "found unexpected label {}", a),
             Error::CannotUnifyLabel(a, t, with) => {
                 write!(f, "{} != {} (record label {})", t, with, a)
             }
             Error::MissingArgument(x) => write!(f, "missing required argument {}", x),
+            Error::ExtraArgument(x) => write!(f, "found unexpected argument {}", x),
             Error::CannotUnifyArgument(x, e) => write!(f, "{} (argument {})", e, x),
-            Error::CannotUnifyReturn(t, with) => write!(f, "return type {} != {}", t, with),
+            Error::CannotUnifyReturn(expected, found) => {
+                write!(f, "return type {} != {}", found, expected)
+            }
             Error::MissingPipeArgument => write!(f, "missing pipe argument"),
             Error::MultiplePipeArguments(a, b) => {
                 write!(f, "inconsistent pipe arguments {} != {}", a, b)
@@ -321,13 +327,14 @@ impl From<Row> for MonoType {
 }
 
 impl MonoType {
+    // self represents the expected type
     pub fn unify(
         self,
-        with: Self,
+        actual: Self,
         cons: &mut TvarKinds,
         f: &mut Fresher,
     ) -> Result<Substitution, Error> {
-        match (self, with) {
+        match (self, actual) {
             (MonoType::Bool, MonoType::Bool)
             | (MonoType::Int, MonoType::Int)
             | (MonoType::Uint, MonoType::Uint)
@@ -342,7 +349,7 @@ impl MonoType {
             (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(*s, cons, f),
             (MonoType::Row(t), MonoType::Row(s)) => t.unify(*s, cons, f),
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(*s, cons, f),
-            (t, with) => Err(Error::CannotUnify(t, with)),
+            (exp, act) => Err(Error::CannotUnify(exp, act)),
         }
     }
 
@@ -556,6 +563,7 @@ impl MaxTvar for Array {
 }
 
 impl Array {
+    // self represents the expected type.
     fn unify(
         self,
         with: Self,
@@ -698,13 +706,15 @@ impl Row {
     // Note rule 2. states that if two records extend the same type variable
     // they must have the same property name otherwise they cannot unify.
     //
+    // self represents the expected type.
+    //
     fn unify(
         self,
-        with: Self,
+        actual: Self,
         cons: &mut TvarKinds,
-        fresher: &mut Fresher,
+        f: &mut Fresher,
     ) -> Result<Substitution, Error> {
-        match (self.clone(), with.clone()) {
+        match (self.clone(), actual.clone()) {
             (Row::Empty, Row::Empty) => Ok(Substitution::empty()),
             (
                 Row::Extension {
@@ -715,7 +725,7 @@ impl Row {
                     head: Property { k: b, v: u },
                     tail: MonoType::Var(r),
                 },
-            ) if a == b && l == r => match t.clone().unify(u.clone(), cons, fresher) {
+            ) if a == b && l == r => match t.clone().unify(u.clone(), cons, f) {
                 Err(_) => Err(Error::CannotUnifyLabel(a, t, u)),
                 Ok(sub) => Ok(sub),
             },
@@ -730,7 +740,7 @@ impl Row {
                 },
             ) if a != b && l == r => Err(Error::CannotUnify(
                 MonoType::Row(Box::new(self)),
-                MonoType::Row(Box::new(with)),
+                MonoType::Row(Box::new(actual)),
             )),
             (
                 Row::Extension {
@@ -742,8 +752,8 @@ impl Row {
                     tail: r,
                 },
             ) if a == b => {
-                let sub = t.unify(u, cons, fresher)?;
-                apply_then_unify(l, r, sub, cons, fresher)
+                let sub = t.unify(u, cons, f)?;
+                apply_then_unify(l, r, sub, cons, f)
             }
             (
                 Row::Extension {
@@ -755,33 +765,19 @@ impl Row {
                     tail: r,
                 },
             ) if a != b => {
-                let var = fresher.fresh();
-                let sub = l.unify(
-                    MonoType::from(Row::Extension {
-                        head: Property { k: b, v: u },
-                        tail: MonoType::Var(var),
-                    }),
-                    cons,
-                    fresher,
-                )?;
-                apply_then_unify(
-                    r,
-                    MonoType::from(Row::Extension {
-                        head: Property { k: a, v: t },
-                        tail: MonoType::Var(var),
-                    }),
-                    sub,
-                    cons,
-                    fresher,
-                )
+                let var = f.fresh();
+                let exp = MonoType::from(Row::Extension {
+                    head: Property { k: a, v: t },
+                    tail: MonoType::Var(var),
+                });
+                let act = MonoType::from(Row::Extension {
+                    head: Property { k: b, v: u },
+                    tail: MonoType::Var(var),
+                });
+                let sub = l.unify(act, cons, f)?;
+                apply_then_unify(exp, r, sub, cons, f)
             }
-            (
-                Row::Empty,
-                Row::Extension {
-                    head: Property { k: a, .. },
-                    ..
-                },
-            ) => Err(Error::MissingLabel(a)),
+            // If we are expecting {a: u | r} but find {}, label `a` is missing.
             (
                 Row::Extension {
                     head: Property { k: a, .. },
@@ -789,9 +785,17 @@ impl Row {
                 },
                 Row::Empty,
             ) => Err(Error::MissingLabel(a)),
+            // If we are expecting {} but find {a: u | r}, label `a` is extra.
+            (
+                Row::Empty,
+                Row::Extension {
+                    head: Property { k: a, .. },
+                    ..
+                },
+            ) => Err(Error::ExtraLabel(a)),
             _ => Err(Error::CannotUnify(
                 MonoType::Row(Box::new(self)),
-                MonoType::Row(Box::new(with)),
+                MonoType::Row(Box::new(actual)),
             )),
         }
     }
@@ -841,13 +845,13 @@ impl Row {
 // is returned.
 //
 fn apply_then_unify(
-    l: MonoType,
-    r: MonoType,
+    exp: MonoType,
+    act: MonoType,
     sub: Substitution,
     cons: &mut TvarKinds,
     f: &mut Fresher,
 ) -> Result<Substitution, Error> {
-    let s = l.apply(&sub).unify(r.apply(&sub), cons, f)?;
+    let s = exp.apply(&sub).unify(act.apply(&sub), cons, f)?;
     Ok(sub.merge(s))
 }
 
@@ -1058,15 +1062,17 @@ impl Function {
     /// Unify 2 and 4: should succeed, the same as 1 and 2.
     ///
     /// Unify 3 and 4: should fail because `a` is not in the arguments of 4.
+    ///
+    /// self represents the expected type.
     fn unify(
         self,
-        with: Self,
+        actual: Self,
         cons: &mut TvarKinds,
         fresh: &mut Fresher,
     ) -> Result<Substitution, Error> {
         // Some aliasing for coherence with the doc.
         let mut f = self;
-        let mut g = with;
+        let mut g = actual;
         // Fix pipe arguments:
         // Make them required arguments with the correct name.
         match (f.pipe, g.pipe) {
@@ -1111,21 +1117,21 @@ impl Function {
         // Now that f has not been consumed yet, check that every required argument in g is in f too.
         for (name, _) in g.req.iter() {
             if !f.req.contains_key(name) && !f.opt.contains_key(name) {
-                return Err(Error::MissingArgument(String::from(name)));
+                return Err(Error::ExtraArgument(String::from(name)));
             }
         }
         let mut sub = Substitution::empty();
         // Unify f's required arguments.
-        for (name, t) in f.req.into_iter() {
-            if let Some(ty) = g.req.remove(&name) {
+        for (name, exp) in f.req.into_iter() {
+            if let Some(act) = g.req.remove(&name) {
                 // The required argument is in g's required arguments.
-                sub = match apply_then_unify(t.clone(), ty.clone(), sub, cons, fresh) {
+                sub = match apply_then_unify(exp.clone(), act.clone(), sub, cons, fresh) {
                     Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
                     Ok(sub) => Ok(sub),
                 }?;
-            } else if let Some(ty) = g.opt.remove(&name) {
+            } else if let Some(act) = g.opt.remove(&name) {
                 // The required argument is in g's optional arguments.
-                sub = match apply_then_unify(t.clone(), ty.clone(), sub, cons, fresh) {
+                sub = match apply_then_unify(exp.clone(), act.clone(), sub, cons, fresh) {
                     Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
                     Ok(sub) => Ok(sub),
                 }?;
@@ -1134,14 +1140,14 @@ impl Function {
             }
         }
         // Unify f's optional arguments.
-        for (name, ty) in f.opt.into_iter() {
-            if let Some(gty) = g.req.remove(&name) {
-                sub = match apply_then_unify(ty.clone(), gty.clone(), sub, cons, fresh) {
+        for (name, exp) in f.opt.into_iter() {
+            if let Some(act) = g.req.remove(&name) {
+                sub = match apply_then_unify(exp.clone(), act.clone(), sub, cons, fresh) {
                     Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
                     Ok(sub) => Ok(sub),
                 }?;
-            } else if let Some(gty) = g.opt.remove(&name) {
-                sub = match apply_then_unify(ty.clone(), gty.clone(), sub, cons, fresh) {
+            } else if let Some(act) = g.opt.remove(&name) {
+                sub = match apply_then_unify(exp.clone(), act.clone(), sub, cons, fresh) {
                     Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
                     Ok(sub) => Ok(sub),
                 }?;
