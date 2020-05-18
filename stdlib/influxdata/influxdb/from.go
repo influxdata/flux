@@ -174,6 +174,21 @@ func (s *FromRemoteProcedureSpec) Kind() plan.ProcedureKind {
 	return FromRemoteKind
 }
 
+// TimeBounds implements plan.BoundsAwareProcedureSpec
+func (s *FromRemoteProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *plan.Bounds {
+	bounds := &plan.Bounds{}
+
+	// set the bounds to the range specified in from call, if there is one
+	if s.Range != nil {
+		bounds.Start = values.ConvertTime(s.Range.Bounds.Start.Time(s.Range.Bounds.Now))
+		bounds.Stop = values.ConvertTime(s.Range.Bounds.Stop.Time(s.Range.Bounds.Now))
+	}
+	if predecessorBounds != nil {
+		bounds = bounds.Intersect(predecessorBounds)
+	}
+	return bounds
+}
+
 func (s *FromRemoteProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FromRemoteProcedureSpec)
 	*ns = *s
