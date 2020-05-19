@@ -64,7 +64,7 @@ func TestEval_error(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error, got none")
 	}
-	if want, got := "type error @1:11-1:16: float != string", err.Error(); want != got {
+	if want, got := "type error @1:11-1:16: expected float but found string", err.Error(); want != got {
 		t.Errorf("wanted error %q, got %q", want, got)
 	}
 

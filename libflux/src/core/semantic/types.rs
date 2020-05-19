@@ -138,34 +138,58 @@ pub fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
 
 #[derive(Debug, PartialEq)]
 pub enum Error {
-    CannotUnify(MonoType, MonoType),
-    CannotConstrain(MonoType, Kind),
+    CannotUnify {
+        exp: MonoType,
+        act: MonoType,
+    },
+    CannotConstrain {
+        exp: Kind,
+        act: MonoType,
+    },
     OccursCheck(Tvar, MonoType),
     MissingLabel(String),
-    CannotUnifyLabel(String, MonoType, MonoType),
+    ExtraLabel(String),
+    CannotUnifyLabel {
+        lab: String,
+        exp: MonoType,
+        act: MonoType,
+    },
     MissingArgument(String),
+    ExtraArgument(String),
     CannotUnifyArgument(String, Box<Error>),
-    CannotUnifyReturn(MonoType, MonoType),
+    CannotUnifyReturn {
+        exp: MonoType,
+        act: MonoType,
+    },
     MissingPipeArgument,
-    MultiplePipeArguments(String, String),
+    MultiplePipeArguments {
+        exp: String,
+        act: String,
+    },
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Error::CannotUnify(t, with) => write!(f, "{} != {}", t, with),
-            Error::CannotConstrain(t, with) => write!(f, "{} is not {}", t, with),
-            Error::OccursCheck(tv, ty) => write!(f, "{} != {} (recursive type)", tv, ty),
+            Error::CannotUnify { exp, act } => write!(f, "expected {} but found {}", exp, act),
+            Error::CannotConstrain { exp, act } => write!(f, "{} is not {}", act, exp),
+            Error::OccursCheck(tv, ty) => {
+                write!(f, "recursive types not supported {} != {}", tv, ty)
+            }
             Error::MissingLabel(a) => write!(f, "record is missing label {}", a),
-            Error::CannotUnifyLabel(a, t, with) => {
-                write!(f, "{} != {} (record label {})", t, with, a)
+            Error::ExtraLabel(a) => write!(f, "found unexpected label {}", a),
+            Error::CannotUnifyLabel { lab, exp, act } => {
+                write!(f, "expected {} but found {} for label {}", exp, act, lab)
             }
             Error::MissingArgument(x) => write!(f, "missing required argument {}", x),
+            Error::ExtraArgument(x) => write!(f, "found unexpected argument {}", x),
             Error::CannotUnifyArgument(x, e) => write!(f, "{} (argument {})", e, x),
-            Error::CannotUnifyReturn(t, with) => write!(f, "return type {} != {}", t, with),
+            Error::CannotUnifyReturn { exp, act } => {
+                write!(f, "expected {} but found {} for return type", exp, act)
+            }
             Error::MissingPipeArgument => write!(f, "missing pipe argument"),
-            Error::MultiplePipeArguments(a, b) => {
-                write!(f, "inconsistent pipe arguments {} != {}", a, b)
+            Error::MultiplePipeArguments { exp, act } => {
+                write!(f, "expected pipe argument {} but found {}", exp, act)
             }
         }
     }
@@ -321,13 +345,14 @@ impl From<Row> for MonoType {
 }
 
 impl MonoType {
+    // self represents the expected type
     pub fn unify(
         self,
-        with: Self,
+        actual: Self,
         cons: &mut TvarKinds,
         f: &mut Fresher,
     ) -> Result<Substitution, Error> {
-        match (self, with) {
+        match (self, actual) {
             (MonoType::Bool, MonoType::Bool)
             | (MonoType::Int, MonoType::Int)
             | (MonoType::Uint, MonoType::Uint)
@@ -342,7 +367,7 @@ impl MonoType {
             (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(*s, cons, f),
             (MonoType::Row(t), MonoType::Row(s)) => t.unify(*s, cons, f),
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(*s, cons, f),
-            (t, with) => Err(Error::CannotUnify(t, with)),
+            (exp, act) => Err(Error::CannotUnify { exp, act }),
         }
     }
 
@@ -350,7 +375,10 @@ impl MonoType {
         match self {
             MonoType::Bool => match with {
                 Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    act: self,
+                    exp: with,
+                }),
             },
             MonoType::Int => match with {
                 Kind::Addable
@@ -361,7 +389,10 @@ impl MonoType {
                 | Kind::Equatable
                 | Kind::Nullable
                 | Kind::Negatable => Ok(Substitution::empty()),
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    act: self,
+                    exp: with,
+                }),
             },
             MonoType::Uint => match with {
                 Kind::Addable
@@ -372,7 +403,10 @@ impl MonoType {
                 | Kind::Equatable
                 | Kind::Nullable
                 | Kind::Negatable => Ok(Substitution::empty()),
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    act: self,
+                    exp: with,
+                }),
             },
             MonoType::Float => match with {
                 Kind::Addable
@@ -383,28 +417,46 @@ impl MonoType {
                 | Kind::Equatable
                 | Kind::Nullable
                 | Kind::Negatable => Ok(Substitution::empty()),
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    act: self,
+                    exp: with,
+                }),
             },
             MonoType::String => match with {
                 Kind::Addable | Kind::Comparable | Kind::Equatable | Kind::Nullable => {
                     Ok(Substitution::empty())
                 }
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    act: self,
+                    exp: with,
+                }),
             },
             MonoType::Duration => match with {
                 Kind::Comparable | Kind::Equatable | Kind::Nullable | Kind::Negatable => {
                     Ok(Substitution::empty())
                 }
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    act: self,
+                    exp: with,
+                }),
             },
             MonoType::Time => match with {
                 Kind::Comparable | Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    act: self,
+                    exp: with,
+                }),
             },
-            MonoType::Regexp => Err(Error::CannotConstrain(self, with)),
+            MonoType::Regexp => Err(Error::CannotConstrain {
+                act: self,
+                exp: with,
+            }),
             MonoType::Bytes => match with {
                 Kind::Equatable => Ok(Substitution::empty()),
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    act: self,
+                    exp: with,
+                }),
             },
             MonoType::Var(tvr) => {
                 tvr.constrain(with, cons);
@@ -556,6 +608,7 @@ impl MaxTvar for Array {
 }
 
 impl Array {
+    // self represents the expected type.
     fn unify(
         self,
         with: Self,
@@ -568,7 +621,10 @@ impl Array {
     fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         match with {
             Kind::Equatable => self.0.constrain(with, cons),
-            _ => Err(Error::CannotConstrain(MonoType::Arr(Box::new(self)), with)),
+            _ => Err(Error::CannotConstrain {
+                act: MonoType::Arr(Box::new(self)),
+                exp: with,
+            }),
         }
     }
 
@@ -698,13 +754,15 @@ impl Row {
     // Note rule 2. states that if two records extend the same type variable
     // they must have the same property name otherwise they cannot unify.
     //
+    // self represents the expected type.
+    //
     fn unify(
         self,
-        with: Self,
+        actual: Self,
         cons: &mut TvarKinds,
-        fresher: &mut Fresher,
+        f: &mut Fresher,
     ) -> Result<Substitution, Error> {
-        match (self.clone(), with.clone()) {
+        match (self.clone(), actual.clone()) {
             (Row::Empty, Row::Empty) => Ok(Substitution::empty()),
             (
                 Row::Extension {
@@ -715,8 +773,12 @@ impl Row {
                     head: Property { k: b, v: u },
                     tail: MonoType::Var(r),
                 },
-            ) if a == b && l == r => match t.clone().unify(u.clone(), cons, fresher) {
-                Err(_) => Err(Error::CannotUnifyLabel(a, t, u)),
+            ) if a == b && l == r => match t.clone().unify(u.clone(), cons, f) {
+                Err(_) => Err(Error::CannotUnifyLabel {
+                    lab: a,
+                    exp: t,
+                    act: u,
+                }),
                 Ok(sub) => Ok(sub),
             },
             (
@@ -728,10 +790,10 @@ impl Row {
                     head: Property { k: b, .. },
                     tail: MonoType::Var(r),
                 },
-            ) if a != b && l == r => Err(Error::CannotUnify(
-                MonoType::Row(Box::new(self)),
-                MonoType::Row(Box::new(with)),
-            )),
+            ) if a != b && l == r => Err(Error::CannotUnify {
+                exp: MonoType::Row(Box::new(self)),
+                act: MonoType::Row(Box::new(actual)),
+            }),
             (
                 Row::Extension {
                     head: Property { k: a, v: t },
@@ -742,8 +804,8 @@ impl Row {
                     tail: r,
                 },
             ) if a == b => {
-                let sub = t.unify(u, cons, fresher)?;
-                apply_then_unify(l, r, sub, cons, fresher)
+                let sub = t.unify(u, cons, f)?;
+                apply_then_unify(l, r, sub, cons, f)
             }
             (
                 Row::Extension {
@@ -755,33 +817,19 @@ impl Row {
                     tail: r,
                 },
             ) if a != b => {
-                let var = fresher.fresh();
-                let sub = l.unify(
-                    MonoType::from(Row::Extension {
-                        head: Property { k: b, v: u },
-                        tail: MonoType::Var(var),
-                    }),
-                    cons,
-                    fresher,
-                )?;
-                apply_then_unify(
-                    r,
-                    MonoType::from(Row::Extension {
-                        head: Property { k: a, v: t },
-                        tail: MonoType::Var(var),
-                    }),
-                    sub,
-                    cons,
-                    fresher,
-                )
+                let var = f.fresh();
+                let exp = MonoType::from(Row::Extension {
+                    head: Property { k: a, v: t },
+                    tail: MonoType::Var(var),
+                });
+                let act = MonoType::from(Row::Extension {
+                    head: Property { k: b, v: u },
+                    tail: MonoType::Var(var),
+                });
+                let sub = l.unify(act, cons, f)?;
+                apply_then_unify(exp, r, sub, cons, f)
             }
-            (
-                Row::Empty,
-                Row::Extension {
-                    head: Property { k: a, .. },
-                    ..
-                },
-            ) => Err(Error::MissingLabel(a)),
+            // If we are expecting {a: u | r} but find {}, label `a` is missing.
             (
                 Row::Extension {
                     head: Property { k: a, .. },
@@ -789,10 +837,18 @@ impl Row {
                 },
                 Row::Empty,
             ) => Err(Error::MissingLabel(a)),
-            _ => Err(Error::CannotUnify(
-                MonoType::Row(Box::new(self)),
-                MonoType::Row(Box::new(with)),
-            )),
+            // If we are expecting {} but find {a: u | r}, label `a` is extra.
+            (
+                Row::Empty,
+                Row::Extension {
+                    head: Property { k: a, .. },
+                    ..
+                },
+            ) => Err(Error::ExtraLabel(a)),
+            _ => Err(Error::CannotUnify {
+                exp: MonoType::Row(Box::new(self)),
+                act: MonoType::Row(Box::new(actual)),
+            }),
         }
     }
 
@@ -806,7 +862,10 @@ impl Row {
                     Ok(sub.merge(tail.constrain(with, cons)?))
                 }
             },
-            _ => Err(Error::CannotConstrain(MonoType::Row(Box::new(self)), with)),
+            _ => Err(Error::CannotConstrain {
+                act: MonoType::Row(Box::new(self)),
+                exp: with,
+            }),
         }
     }
 
@@ -841,13 +900,13 @@ impl Row {
 // is returned.
 //
 fn apply_then_unify(
-    l: MonoType,
-    r: MonoType,
+    exp: MonoType,
+    act: MonoType,
     sub: Substitution,
     cons: &mut TvarKinds,
     f: &mut Fresher,
 ) -> Result<Substitution, Error> {
-    let s = l.apply(&sub).unify(r.apply(&sub), cons, f)?;
+    let s = exp.apply(&sub).unify(act.apply(&sub), cons, f)?;
     Ok(sub.merge(s))
 }
 
@@ -1058,15 +1117,17 @@ impl Function {
     /// Unify 2 and 4: should succeed, the same as 1 and 2.
     ///
     /// Unify 3 and 4: should fail because `a` is not in the arguments of 4.
+    ///
+    /// self represents the expected type.
     fn unify(
         self,
-        with: Self,
+        actual: Self,
         cons: &mut TvarKinds,
         fresh: &mut Fresher,
     ) -> Result<Substitution, Error> {
         // Some aliasing for coherence with the doc.
         let mut f = self;
-        let mut g = with;
+        let mut g = actual;
         // Fix pipe arguments:
         // Make them required arguments with the correct name.
         match (f.pipe, g.pipe) {
@@ -1074,7 +1135,10 @@ impl Function {
             (Some(fp), Some(gp)) => {
                 if fp.k != "<-" && gp.k != "<-" && fp.k != gp.k {
                     // Both are named and the name differs, fail unification.
-                    return Err(Error::MultiplePipeArguments(fp.k, gp.k));
+                    return Err(Error::MultiplePipeArguments {
+                        exp: fp.k,
+                        act: gp.k,
+                    });
                 } else {
                     // At least one is unnamed or they are both named with the same name.
                     // This means they should match. Enforce this condition by inserting
@@ -1111,21 +1175,21 @@ impl Function {
         // Now that f has not been consumed yet, check that every required argument in g is in f too.
         for (name, _) in g.req.iter() {
             if !f.req.contains_key(name) && !f.opt.contains_key(name) {
-                return Err(Error::MissingArgument(String::from(name)));
+                return Err(Error::ExtraArgument(String::from(name)));
             }
         }
         let mut sub = Substitution::empty();
         // Unify f's required arguments.
-        for (name, t) in f.req.into_iter() {
-            if let Some(ty) = g.req.remove(&name) {
+        for (name, exp) in f.req.into_iter() {
+            if let Some(act) = g.req.remove(&name) {
                 // The required argument is in g's required arguments.
-                sub = match apply_then_unify(t.clone(), ty.clone(), sub, cons, fresh) {
+                sub = match apply_then_unify(exp.clone(), act.clone(), sub, cons, fresh) {
                     Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
                     Ok(sub) => Ok(sub),
                 }?;
-            } else if let Some(ty) = g.opt.remove(&name) {
+            } else if let Some(act) = g.opt.remove(&name) {
                 // The required argument is in g's optional arguments.
-                sub = match apply_then_unify(t.clone(), ty.clone(), sub, cons, fresh) {
+                sub = match apply_then_unify(exp.clone(), act.clone(), sub, cons, fresh) {
                     Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
                     Ok(sub) => Ok(sub),
                 }?;
@@ -1134,14 +1198,14 @@ impl Function {
             }
         }
         // Unify f's optional arguments.
-        for (name, ty) in f.opt.into_iter() {
-            if let Some(gty) = g.req.remove(&name) {
-                sub = match apply_then_unify(ty.clone(), gty.clone(), sub, cons, fresh) {
+        for (name, exp) in f.opt.into_iter() {
+            if let Some(act) = g.req.remove(&name) {
+                sub = match apply_then_unify(exp.clone(), act.clone(), sub, cons, fresh) {
                     Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
                     Ok(sub) => Ok(sub),
                 }?;
-            } else if let Some(gty) = g.opt.remove(&name) {
-                sub = match apply_then_unify(ty.clone(), gty.clone(), sub, cons, fresh) {
+            } else if let Some(act) = g.opt.remove(&name) {
+                sub = match apply_then_unify(exp.clone(), act.clone(), sub, cons, fresh) {
                     Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
                     Ok(sub) => Ok(sub),
                 }?;
@@ -1149,13 +1213,19 @@ impl Function {
         }
         // Unify return types.
         match apply_then_unify(f.retn.clone(), g.retn.clone(), sub, cons, fresh) {
-            Err(_) => Err(Error::CannotUnifyReturn(f.retn, g.retn)),
+            Err(_) => Err(Error::CannotUnifyReturn {
+                exp: f.retn,
+                act: g.retn,
+            }),
             Ok(sub) => Ok(sub),
         }
     }
 
     fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
-        Err(Error::CannotConstrain(MonoType::Fun(Box::new(self)), with))
+        Err(Error::CannotConstrain {
+            act: MonoType::Fun(Box::new(self)),
+            exp: with,
+        })
     }
 
     fn contains(&self, tv: Tvar) -> bool {
@@ -1801,7 +1871,13 @@ mod tests {
         }
 
         let sub = MonoType::Int.constrain(Kind::Row, &mut TvarKinds::new());
-        assert_eq!(Err(Error::CannotConstrain(MonoType::Int, Kind::Row)), sub);
+        assert_eq!(
+            Err(Error::CannotConstrain {
+                act: MonoType::Int,
+                exp: Kind::Row
+            }),
+            sub
+        );
     }
     #[test]
     fn constrain_rows() {
@@ -1819,10 +1895,10 @@ mod tests {
         for c in unallowable_cons {
             let sub = Row::Empty.constrain(c, &mut TvarKinds::new());
             assert_eq!(
-                Err(Error::CannotConstrain(
-                    MonoType::Row(Box::new(Row::Empty)),
-                    c
-                )),
+                Err(Error::CannotConstrain {
+                    act: MonoType::Row(Box::new(Row::Empty)),
+                    exp: c
+                }),
                 sub
             );
         }
@@ -1836,7 +1912,10 @@ mod tests {
                 &mut Fresher::default(),
             )
             .unwrap_err();
-        assert_eq!(err.to_string(), String::from("int != string"),);
+        assert_eq!(
+            err.to_string(),
+            String::from("expected int but found string"),
+        );
     }
     #[test]
     fn unify_tvars() {
