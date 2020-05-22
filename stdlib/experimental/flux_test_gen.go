@@ -7236,6 +7236,2529 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Name: "experimental_test",
 			},
 		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 62,
+					Line:   60,
+				},
+				File:   "table_test.flux",
+				Source: "package experimental_test\n\n\nimport \"testing\"\nimport \"experimental\"\n\ndata = \"\n#datatype,string,long,string,string,string,dateTime:RFC3339,boolean\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,0,m0,f0,tagvalue,2018-12-19T22:13:30Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:13:40Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:13:50Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:00Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:10Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:14:20Z,true\n\"\ninput = experimental.table(rows: [{\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:30Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:40Z,\n\t_value: true,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:50Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:00Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:10Z,\n\t_value: true,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:20Z,\n\t_value: true,\n}])\npass = (table=<-) =>\n\t(table)\n\ntest _set = () =>\n\t({input: input, want: testing.loadMem(csv: data), fn: pass})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   18,
+					},
+					File:   "table_test.flux",
+					Source: "data = \"\n#datatype,string,long,string,string,string,dateTime:RFC3339,boolean\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,0,m0,f0,tagvalue,2018-12-19T22:13:30Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:13:40Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:13:50Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:00Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:10Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:14:20Z,true\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   7,
+						},
+						File:   "table_test.flux",
+						Source: "data",
+						Start: ast.Position{
+							Column: 1,
+							Line:   7,
+						},
+					},
+				},
+				Name: "data",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   18,
+						},
+						File:   "table_test.flux",
+						Source: "\"\n#datatype,string,long,string,string,string,dateTime:RFC3339,boolean\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,0,m0,f0,tagvalue,2018-12-19T22:13:30Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:13:40Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:13:50Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:00Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:10Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:14:20Z,true\n\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   7,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string,string,string,dateTime:RFC3339,boolean\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,0,m0,f0,tagvalue,2018-12-19T22:13:30Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:13:40Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:13:50Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:00Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:10Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:14:20Z,true\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 4,
+						Line:   55,
+					},
+					File:   "table_test.flux",
+					Source: "input = experimental.table(rows: [{\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:30Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:40Z,\n\t_value: true,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:50Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:00Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:10Z,\n\t_value: true,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:20Z,\n\t_value: true,\n}])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   19,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   19,
+						},
+						File:   "table_test.flux",
+						Source: "input",
+						Start: ast.Position{
+							Column: 1,
+							Line:   19,
+						},
+					},
+				},
+				Name: "input",
+			},
+			Init: &ast.CallExpression{
+				Arguments: []ast.Expression{&ast.ObjectExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 3,
+								Line:   55,
+							},
+							File:   "table_test.flux",
+							Source: "rows: [{\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:30Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:40Z,\n\t_value: true,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:50Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:00Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:10Z,\n\t_value: true,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:20Z,\n\t_value: true,\n}]",
+							Start: ast.Position{
+								Column: 28,
+								Line:   19,
+							},
+						},
+					},
+					Properties: []*ast.Property{&ast.Property{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 3,
+									Line:   55,
+								},
+								File:   "table_test.flux",
+								Source: "rows: [{\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:30Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:40Z,\n\t_value: true,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:50Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:00Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:10Z,\n\t_value: true,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:20Z,\n\t_value: true,\n}]",
+								Start: ast.Position{
+									Column: 28,
+									Line:   19,
+								},
+							},
+						},
+						Key: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   19,
+									},
+									File:   "table_test.flux",
+									Source: "rows",
+									Start: ast.Position{
+										Column: 28,
+										Line:   19,
+									},
+								},
+							},
+							Name: "rows",
+						},
+						Value: &ast.ArrayExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 3,
+										Line:   55,
+									},
+									File:   "table_test.flux",
+									Source: "[{\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:30Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:40Z,\n\t_value: true,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:50Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:00Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:10Z,\n\t_value: true,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:20Z,\n\t_value: true,\n}]",
+									Start: ast.Position{
+										Column: 34,
+										Line:   19,
+									},
+								},
+							},
+							Elements: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 2,
+											Line:   25,
+										},
+										File:   "table_test.flux",
+										Source: "{\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:30Z,\n\t_value: false,\n}",
+										Start: ast.Position{
+											Column: 35,
+											Line:   19,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   20,
+											},
+											File:   "table_test.flux",
+											Source: "_measurement: \"m0\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   20,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   20,
+												},
+												File:   "table_test.flux",
+												Source: "_measurement",
+												Start: ast.Position{
+													Column: 2,
+													Line:   20,
+												},
+											},
+										},
+										Name: "_measurement",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 20,
+													Line:   20,
+												},
+												File:   "table_test.flux",
+												Source: "\"m0\"",
+												Start: ast.Position{
+													Column: 16,
+													Line:   20,
+												},
+											},
+										},
+										Value: "m0",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   21,
+											},
+											File:   "table_test.flux",
+											Source: "_field: \"f0\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   21,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 8,
+													Line:   21,
+												},
+												File:   "table_test.flux",
+												Source: "_field",
+												Start: ast.Position{
+													Column: 2,
+													Line:   21,
+												},
+											},
+										},
+										Name: "_field",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   21,
+												},
+												File:   "table_test.flux",
+												Source: "\"f0\"",
+												Start: ast.Position{
+													Column: 10,
+													Line:   21,
+												},
+											},
+										},
+										Value: "f0",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   22,
+											},
+											File:   "table_test.flux",
+											Source: "t0: \"tagvalue\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   22,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 4,
+													Line:   22,
+												},
+												File:   "table_test.flux",
+												Source: "t0",
+												Start: ast.Position{
+													Column: 2,
+													Line:   22,
+												},
+											},
+										},
+										Name: "t0",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   22,
+												},
+												File:   "table_test.flux",
+												Source: "\"tagvalue\"",
+												Start: ast.Position{
+													Column: 6,
+													Line:   22,
+												},
+											},
+										},
+										Value: "tagvalue",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   23,
+											},
+											File:   "table_test.flux",
+											Source: "_time: 2018-12-19T22:13:30Z",
+											Start: ast.Position{
+												Column: 2,
+												Line:   23,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 7,
+													Line:   23,
+												},
+												File:   "table_test.flux",
+												Source: "_time",
+												Start: ast.Position{
+													Column: 2,
+													Line:   23,
+												},
+											},
+										},
+										Name: "_time",
+									},
+									Value: &ast.DateTimeLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   23,
+												},
+												File:   "table_test.flux",
+												Source: "2018-12-19T22:13:30Z",
+												Start: ast.Position{
+													Column: 9,
+													Line:   23,
+												},
+											},
+										},
+										Value: parser.MustParseTime("2018-12-19T22:13:30Z"),
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   24,
+											},
+											File:   "table_test.flux",
+											Source: "_value: false",
+											Start: ast.Position{
+												Column: 2,
+												Line:   24,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 8,
+													Line:   24,
+												},
+												File:   "table_test.flux",
+												Source: "_value",
+												Start: ast.Position{
+													Column: 2,
+													Line:   24,
+												},
+											},
+										},
+										Name: "_value",
+									},
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 15,
+													Line:   24,
+												},
+												File:   "table_test.flux",
+												Source: "false",
+												Start: ast.Position{
+													Column: 10,
+													Line:   24,
+												},
+											},
+										},
+										Name: "false",
+									},
+								}},
+								With: nil,
+							}, &ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 2,
+											Line:   31,
+										},
+										File:   "table_test.flux",
+										Source: "{\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:40Z,\n\t_value: true,\n}",
+										Start: ast.Position{
+											Column: 4,
+											Line:   25,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   26,
+											},
+											File:   "table_test.flux",
+											Source: "_measurement: \"m0\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   26,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   26,
+												},
+												File:   "table_test.flux",
+												Source: "_measurement",
+												Start: ast.Position{
+													Column: 2,
+													Line:   26,
+												},
+											},
+										},
+										Name: "_measurement",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 20,
+													Line:   26,
+												},
+												File:   "table_test.flux",
+												Source: "\"m0\"",
+												Start: ast.Position{
+													Column: 16,
+													Line:   26,
+												},
+											},
+										},
+										Value: "m0",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   27,
+											},
+											File:   "table_test.flux",
+											Source: "_field: \"f0\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   27,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 8,
+													Line:   27,
+												},
+												File:   "table_test.flux",
+												Source: "_field",
+												Start: ast.Position{
+													Column: 2,
+													Line:   27,
+												},
+											},
+										},
+										Name: "_field",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   27,
+												},
+												File:   "table_test.flux",
+												Source: "\"f0\"",
+												Start: ast.Position{
+													Column: 10,
+													Line:   27,
+												},
+											},
+										},
+										Value: "f0",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   28,
+											},
+											File:   "table_test.flux",
+											Source: "t0: \"tagvalue\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   28,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 4,
+													Line:   28,
+												},
+												File:   "table_test.flux",
+												Source: "t0",
+												Start: ast.Position{
+													Column: 2,
+													Line:   28,
+												},
+											},
+										},
+										Name: "t0",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   28,
+												},
+												File:   "table_test.flux",
+												Source: "\"tagvalue\"",
+												Start: ast.Position{
+													Column: 6,
+													Line:   28,
+												},
+											},
+										},
+										Value: "tagvalue",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   29,
+											},
+											File:   "table_test.flux",
+											Source: "_time: 2018-12-19T22:13:40Z",
+											Start: ast.Position{
+												Column: 2,
+												Line:   29,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 7,
+													Line:   29,
+												},
+												File:   "table_test.flux",
+												Source: "_time",
+												Start: ast.Position{
+													Column: 2,
+													Line:   29,
+												},
+											},
+										},
+										Name: "_time",
+									},
+									Value: &ast.DateTimeLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   29,
+												},
+												File:   "table_test.flux",
+												Source: "2018-12-19T22:13:40Z",
+												Start: ast.Position{
+													Column: 9,
+													Line:   29,
+												},
+											},
+										},
+										Value: parser.MustParseTime("2018-12-19T22:13:40Z"),
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   30,
+											},
+											File:   "table_test.flux",
+											Source: "_value: true",
+											Start: ast.Position{
+												Column: 2,
+												Line:   30,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 8,
+													Line:   30,
+												},
+												File:   "table_test.flux",
+												Source: "_value",
+												Start: ast.Position{
+													Column: 2,
+													Line:   30,
+												},
+											},
+										},
+										Name: "_value",
+									},
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   30,
+												},
+												File:   "table_test.flux",
+												Source: "true",
+												Start: ast.Position{
+													Column: 10,
+													Line:   30,
+												},
+											},
+										},
+										Name: "true",
+									},
+								}},
+								With: nil,
+							}, &ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 2,
+											Line:   37,
+										},
+										File:   "table_test.flux",
+										Source: "{\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:50Z,\n\t_value: false,\n}",
+										Start: ast.Position{
+											Column: 4,
+											Line:   31,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   32,
+											},
+											File:   "table_test.flux",
+											Source: "_measurement: \"m0\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   32,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   32,
+												},
+												File:   "table_test.flux",
+												Source: "_measurement",
+												Start: ast.Position{
+													Column: 2,
+													Line:   32,
+												},
+											},
+										},
+										Name: "_measurement",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 20,
+													Line:   32,
+												},
+												File:   "table_test.flux",
+												Source: "\"m0\"",
+												Start: ast.Position{
+													Column: 16,
+													Line:   32,
+												},
+											},
+										},
+										Value: "m0",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   33,
+											},
+											File:   "table_test.flux",
+											Source: "_field: \"f0\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   33,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 8,
+													Line:   33,
+												},
+												File:   "table_test.flux",
+												Source: "_field",
+												Start: ast.Position{
+													Column: 2,
+													Line:   33,
+												},
+											},
+										},
+										Name: "_field",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   33,
+												},
+												File:   "table_test.flux",
+												Source: "\"f0\"",
+												Start: ast.Position{
+													Column: 10,
+													Line:   33,
+												},
+											},
+										},
+										Value: "f0",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   34,
+											},
+											File:   "table_test.flux",
+											Source: "t0: \"tagvalue\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   34,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 4,
+													Line:   34,
+												},
+												File:   "table_test.flux",
+												Source: "t0",
+												Start: ast.Position{
+													Column: 2,
+													Line:   34,
+												},
+											},
+										},
+										Name: "t0",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   34,
+												},
+												File:   "table_test.flux",
+												Source: "\"tagvalue\"",
+												Start: ast.Position{
+													Column: 6,
+													Line:   34,
+												},
+											},
+										},
+										Value: "tagvalue",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   35,
+											},
+											File:   "table_test.flux",
+											Source: "_time: 2018-12-19T22:13:50Z",
+											Start: ast.Position{
+												Column: 2,
+												Line:   35,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 7,
+													Line:   35,
+												},
+												File:   "table_test.flux",
+												Source: "_time",
+												Start: ast.Position{
+													Column: 2,
+													Line:   35,
+												},
+											},
+										},
+										Name: "_time",
+									},
+									Value: &ast.DateTimeLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   35,
+												},
+												File:   "table_test.flux",
+												Source: "2018-12-19T22:13:50Z",
+												Start: ast.Position{
+													Column: 9,
+													Line:   35,
+												},
+											},
+										},
+										Value: parser.MustParseTime("2018-12-19T22:13:50Z"),
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   36,
+											},
+											File:   "table_test.flux",
+											Source: "_value: false",
+											Start: ast.Position{
+												Column: 2,
+												Line:   36,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 8,
+													Line:   36,
+												},
+												File:   "table_test.flux",
+												Source: "_value",
+												Start: ast.Position{
+													Column: 2,
+													Line:   36,
+												},
+											},
+										},
+										Name: "_value",
+									},
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 15,
+													Line:   36,
+												},
+												File:   "table_test.flux",
+												Source: "false",
+												Start: ast.Position{
+													Column: 10,
+													Line:   36,
+												},
+											},
+										},
+										Name: "false",
+									},
+								}},
+								With: nil,
+							}, &ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 2,
+											Line:   43,
+										},
+										File:   "table_test.flux",
+										Source: "{\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:00Z,\n\t_value: false,\n}",
+										Start: ast.Position{
+											Column: 4,
+											Line:   37,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   38,
+											},
+											File:   "table_test.flux",
+											Source: "_measurement: \"m0\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   38,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   38,
+												},
+												File:   "table_test.flux",
+												Source: "_measurement",
+												Start: ast.Position{
+													Column: 2,
+													Line:   38,
+												},
+											},
+										},
+										Name: "_measurement",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 20,
+													Line:   38,
+												},
+												File:   "table_test.flux",
+												Source: "\"m0\"",
+												Start: ast.Position{
+													Column: 16,
+													Line:   38,
+												},
+											},
+										},
+										Value: "m0",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   39,
+											},
+											File:   "table_test.flux",
+											Source: "_field: \"f0\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   39,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 8,
+													Line:   39,
+												},
+												File:   "table_test.flux",
+												Source: "_field",
+												Start: ast.Position{
+													Column: 2,
+													Line:   39,
+												},
+											},
+										},
+										Name: "_field",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   39,
+												},
+												File:   "table_test.flux",
+												Source: "\"f0\"",
+												Start: ast.Position{
+													Column: 10,
+													Line:   39,
+												},
+											},
+										},
+										Value: "f0",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   40,
+											},
+											File:   "table_test.flux",
+											Source: "t0: \"tagvalue\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   40,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 4,
+													Line:   40,
+												},
+												File:   "table_test.flux",
+												Source: "t0",
+												Start: ast.Position{
+													Column: 2,
+													Line:   40,
+												},
+											},
+										},
+										Name: "t0",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   40,
+												},
+												File:   "table_test.flux",
+												Source: "\"tagvalue\"",
+												Start: ast.Position{
+													Column: 6,
+													Line:   40,
+												},
+											},
+										},
+										Value: "tagvalue",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   41,
+											},
+											File:   "table_test.flux",
+											Source: "_time: 2018-12-19T22:14:00Z",
+											Start: ast.Position{
+												Column: 2,
+												Line:   41,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 7,
+													Line:   41,
+												},
+												File:   "table_test.flux",
+												Source: "_time",
+												Start: ast.Position{
+													Column: 2,
+													Line:   41,
+												},
+											},
+										},
+										Name: "_time",
+									},
+									Value: &ast.DateTimeLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   41,
+												},
+												File:   "table_test.flux",
+												Source: "2018-12-19T22:14:00Z",
+												Start: ast.Position{
+													Column: 9,
+													Line:   41,
+												},
+											},
+										},
+										Value: parser.MustParseTime("2018-12-19T22:14:00Z"),
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   42,
+											},
+											File:   "table_test.flux",
+											Source: "_value: false",
+											Start: ast.Position{
+												Column: 2,
+												Line:   42,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 8,
+													Line:   42,
+												},
+												File:   "table_test.flux",
+												Source: "_value",
+												Start: ast.Position{
+													Column: 2,
+													Line:   42,
+												},
+											},
+										},
+										Name: "_value",
+									},
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 15,
+													Line:   42,
+												},
+												File:   "table_test.flux",
+												Source: "false",
+												Start: ast.Position{
+													Column: 10,
+													Line:   42,
+												},
+											},
+										},
+										Name: "false",
+									},
+								}},
+								With: nil,
+							}, &ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 2,
+											Line:   49,
+										},
+										File:   "table_test.flux",
+										Source: "{\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:10Z,\n\t_value: true,\n}",
+										Start: ast.Position{
+											Column: 4,
+											Line:   43,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   44,
+											},
+											File:   "table_test.flux",
+											Source: "_measurement: \"m0\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   44,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   44,
+												},
+												File:   "table_test.flux",
+												Source: "_measurement",
+												Start: ast.Position{
+													Column: 2,
+													Line:   44,
+												},
+											},
+										},
+										Name: "_measurement",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 20,
+													Line:   44,
+												},
+												File:   "table_test.flux",
+												Source: "\"m0\"",
+												Start: ast.Position{
+													Column: 16,
+													Line:   44,
+												},
+											},
+										},
+										Value: "m0",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   45,
+											},
+											File:   "table_test.flux",
+											Source: "_field: \"f0\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   45,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 8,
+													Line:   45,
+												},
+												File:   "table_test.flux",
+												Source: "_field",
+												Start: ast.Position{
+													Column: 2,
+													Line:   45,
+												},
+											},
+										},
+										Name: "_field",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   45,
+												},
+												File:   "table_test.flux",
+												Source: "\"f0\"",
+												Start: ast.Position{
+													Column: 10,
+													Line:   45,
+												},
+											},
+										},
+										Value: "f0",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   46,
+											},
+											File:   "table_test.flux",
+											Source: "t0: \"tagvalue\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   46,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 4,
+													Line:   46,
+												},
+												File:   "table_test.flux",
+												Source: "t0",
+												Start: ast.Position{
+													Column: 2,
+													Line:   46,
+												},
+											},
+										},
+										Name: "t0",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   46,
+												},
+												File:   "table_test.flux",
+												Source: "\"tagvalue\"",
+												Start: ast.Position{
+													Column: 6,
+													Line:   46,
+												},
+											},
+										},
+										Value: "tagvalue",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   47,
+											},
+											File:   "table_test.flux",
+											Source: "_time: 2018-12-19T22:14:10Z",
+											Start: ast.Position{
+												Column: 2,
+												Line:   47,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 7,
+													Line:   47,
+												},
+												File:   "table_test.flux",
+												Source: "_time",
+												Start: ast.Position{
+													Column: 2,
+													Line:   47,
+												},
+											},
+										},
+										Name: "_time",
+									},
+									Value: &ast.DateTimeLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   47,
+												},
+												File:   "table_test.flux",
+												Source: "2018-12-19T22:14:10Z",
+												Start: ast.Position{
+													Column: 9,
+													Line:   47,
+												},
+											},
+										},
+										Value: parser.MustParseTime("2018-12-19T22:14:10Z"),
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   48,
+											},
+											File:   "table_test.flux",
+											Source: "_value: true",
+											Start: ast.Position{
+												Column: 2,
+												Line:   48,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 8,
+													Line:   48,
+												},
+												File:   "table_test.flux",
+												Source: "_value",
+												Start: ast.Position{
+													Column: 2,
+													Line:   48,
+												},
+											},
+										},
+										Name: "_value",
+									},
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   48,
+												},
+												File:   "table_test.flux",
+												Source: "true",
+												Start: ast.Position{
+													Column: 10,
+													Line:   48,
+												},
+											},
+										},
+										Name: "true",
+									},
+								}},
+								With: nil,
+							}, &ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 2,
+											Line:   55,
+										},
+										File:   "table_test.flux",
+										Source: "{\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:20Z,\n\t_value: true,\n}",
+										Start: ast.Position{
+											Column: 4,
+											Line:   49,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   50,
+											},
+											File:   "table_test.flux",
+											Source: "_measurement: \"m0\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   50,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   50,
+												},
+												File:   "table_test.flux",
+												Source: "_measurement",
+												Start: ast.Position{
+													Column: 2,
+													Line:   50,
+												},
+											},
+										},
+										Name: "_measurement",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 20,
+													Line:   50,
+												},
+												File:   "table_test.flux",
+												Source: "\"m0\"",
+												Start: ast.Position{
+													Column: 16,
+													Line:   50,
+												},
+											},
+										},
+										Value: "m0",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   51,
+											},
+											File:   "table_test.flux",
+											Source: "_field: \"f0\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   51,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 8,
+													Line:   51,
+												},
+												File:   "table_test.flux",
+												Source: "_field",
+												Start: ast.Position{
+													Column: 2,
+													Line:   51,
+												},
+											},
+										},
+										Name: "_field",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   51,
+												},
+												File:   "table_test.flux",
+												Source: "\"f0\"",
+												Start: ast.Position{
+													Column: 10,
+													Line:   51,
+												},
+											},
+										},
+										Value: "f0",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   52,
+											},
+											File:   "table_test.flux",
+											Source: "t0: \"tagvalue\"",
+											Start: ast.Position{
+												Column: 2,
+												Line:   52,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 4,
+													Line:   52,
+												},
+												File:   "table_test.flux",
+												Source: "t0",
+												Start: ast.Position{
+													Column: 2,
+													Line:   52,
+												},
+											},
+										},
+										Name: "t0",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   52,
+												},
+												File:   "table_test.flux",
+												Source: "\"tagvalue\"",
+												Start: ast.Position{
+													Column: 6,
+													Line:   52,
+												},
+											},
+										},
+										Value: "tagvalue",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   53,
+											},
+											File:   "table_test.flux",
+											Source: "_time: 2018-12-19T22:14:20Z",
+											Start: ast.Position{
+												Column: 2,
+												Line:   53,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 7,
+													Line:   53,
+												},
+												File:   "table_test.flux",
+												Source: "_time",
+												Start: ast.Position{
+													Column: 2,
+													Line:   53,
+												},
+											},
+										},
+										Name: "_time",
+									},
+									Value: &ast.DateTimeLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   53,
+												},
+												File:   "table_test.flux",
+												Source: "2018-12-19T22:14:20Z",
+												Start: ast.Position{
+													Column: 9,
+													Line:   53,
+												},
+											},
+										},
+										Value: parser.MustParseTime("2018-12-19T22:14:20Z"),
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   54,
+											},
+											File:   "table_test.flux",
+											Source: "_value: true",
+											Start: ast.Position{
+												Column: 2,
+												Line:   54,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 8,
+													Line:   54,
+												},
+												File:   "table_test.flux",
+												Source: "_value",
+												Start: ast.Position{
+													Column: 2,
+													Line:   54,
+												},
+											},
+										},
+										Name: "_value",
+									},
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   54,
+												},
+												File:   "table_test.flux",
+												Source: "true",
+												Start: ast.Position{
+													Column: 10,
+													Line:   54,
+												},
+											},
+										},
+										Name: "true",
+									},
+								}},
+								With: nil,
+							}},
+						},
+					}},
+					With: nil,
+				}},
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 4,
+							Line:   55,
+						},
+						File:   "table_test.flux",
+						Source: "experimental.table(rows: [{\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:30Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:40Z,\n\t_value: true,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:13:50Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:00Z,\n\t_value: false,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:10Z,\n\t_value: true,\n}, {\n\t_measurement: \"m0\",\n\t_field: \"f0\",\n\tt0: \"tagvalue\",\n\t_time: 2018-12-19T22:14:20Z,\n\t_value: true,\n}])",
+						Start: ast.Position{
+							Column: 9,
+							Line:   19,
+						},
+					},
+				},
+				Callee: &ast.MemberExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 27,
+								Line:   19,
+							},
+							File:   "table_test.flux",
+							Source: "experimental.table",
+							Start: ast.Position{
+								Column: 9,
+								Line:   19,
+							},
+						},
+					},
+					Object: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 21,
+									Line:   19,
+								},
+								File:   "table_test.flux",
+								Source: "experimental",
+								Start: ast.Position{
+									Column: 9,
+									Line:   19,
+								},
+							},
+						},
+						Name: "experimental",
+					},
+					Property: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 27,
+									Line:   19,
+								},
+								File:   "table_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 22,
+									Line:   19,
+								},
+							},
+						},
+						Name: "table",
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 8,
+						Line:   57,
+					},
+					File:   "table_test.flux",
+					Source: "pass = (table=<-) =>\n\t(table",
+					Start: ast.Position{
+						Column: 1,
+						Line:   56,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   56,
+						},
+						File:   "table_test.flux",
+						Source: "pass",
+						Start: ast.Position{
+							Column: 1,
+							Line:   56,
+						},
+					},
+				},
+				Name: "pass",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   57,
+						},
+						File:   "table_test.flux",
+						Source: "(table=<-) =>\n\t(table",
+						Start: ast.Position{
+							Column: 8,
+							Line:   56,
+						},
+					},
+				},
+				Body: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 8,
+								Line:   57,
+							},
+							File:   "table_test.flux",
+							Source: "table",
+							Start: ast.Position{
+								Column: 3,
+								Line:   57,
+							},
+						},
+					},
+					Name: "table",
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 17,
+								Line:   56,
+							},
+							File:   "table_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 9,
+								Line:   56,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   56,
+								},
+								File:   "table_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 9,
+									Line:   56,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 17,
+								Line:   56,
+							},
+							File:   "table_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 15,
+								Line:   56,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 62,
+							Line:   60,
+						},
+						File:   "table_test.flux",
+						Source: "_set = () =>\n\t({input: input, want: testing.loadMem(csv: data), fn: pass})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   59,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 10,
+								Line:   59,
+							},
+							File:   "table_test.flux",
+							Source: "_set",
+							Start: ast.Position{
+								Column: 6,
+								Line:   59,
+							},
+						},
+					},
+					Name: "_set",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 62,
+								Line:   60,
+							},
+							File:   "table_test.flux",
+							Source: "() =>\n\t({input: input, want: testing.loadMem(csv: data), fn: pass})",
+							Start: ast.Position{
+								Column: 13,
+								Line:   59,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 62,
+									Line:   60,
+								},
+								File:   "table_test.flux",
+								Source: "({input: input, want: testing.loadMem(csv: data), fn: pass})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   60,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 61,
+										Line:   60,
+									},
+									File:   "table_test.flux",
+									Source: "{input: input, want: testing.loadMem(csv: data), fn: pass}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   60,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 16,
+											Line:   60,
+										},
+										File:   "table_test.flux",
+										Source: "input: input",
+										Start: ast.Position{
+											Column: 4,
+											Line:   60,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   60,
+											},
+											File:   "table_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   60,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   60,
+											},
+											File:   "table_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 11,
+												Line:   60,
+											},
+										},
+									},
+									Name: "input",
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 50,
+											Line:   60,
+										},
+										File:   "table_test.flux",
+										Source: "want: testing.loadMem(csv: data)",
+										Start: ast.Position{
+											Column: 18,
+											Line:   60,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 22,
+												Line:   60,
+											},
+											File:   "table_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 18,
+												Line:   60,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 49,
+													Line:   60,
+												},
+												File:   "table_test.flux",
+												Source: "csv: data",
+												Start: ast.Position{
+													Column: 40,
+													Line:   60,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 49,
+														Line:   60,
+													},
+													File:   "table_test.flux",
+													Source: "csv: data",
+													Start: ast.Position{
+														Column: 40,
+														Line:   60,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 43,
+															Line:   60,
+														},
+														File:   "table_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 40,
+															Line:   60,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 49,
+															Line:   60,
+														},
+														File:   "table_test.flux",
+														Source: "data",
+														Start: ast.Position{
+															Column: 45,
+															Line:   60,
+														},
+													},
+												},
+												Name: "data",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 50,
+												Line:   60,
+											},
+											File:   "table_test.flux",
+											Source: "testing.loadMem(csv: data)",
+											Start: ast.Position{
+												Column: 24,
+												Line:   60,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   60,
+												},
+												File:   "table_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 24,
+													Line:   60,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 31,
+														Line:   60,
+													},
+													File:   "table_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 24,
+														Line:   60,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   60,
+													},
+													File:   "table_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 32,
+														Line:   60,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 60,
+											Line:   60,
+										},
+										File:   "table_test.flux",
+										Source: "fn: pass",
+										Start: ast.Position{
+											Column: 52,
+											Line:   60,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 54,
+												Line:   60,
+											},
+											File:   "table_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 52,
+												Line:   60,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 60,
+												Line:   60,
+											},
+											File:   "table_test.flux",
+											Source: "pass",
+											Start: ast.Position{
+												Column: 56,
+												Line:   60,
+											},
+										},
+									},
+									Name: "pass",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 62,
+						Line:   60,
+					},
+					File:   "table_test.flux",
+					Source: "test _set = () =>\n\t({input: input, want: testing.loadMem(csv: data), fn: pass})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   59,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "table_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "table_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   5,
+					},
+					File:   "table_test.flux",
+					Source: "import \"experimental\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   5,
+						},
+						File:   "table_test.flux",
+						Source: "\"experimental\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "experimental",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "table_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   1,
+					},
+					File:   "table_test.flux",
+					Source: "package experimental_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   1,
+						},
+						File:   "table_test.flux",
+						Source: "experimental_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "experimental_test",
+			},
+		},
 	}},
 	Package: "experimental_test",
 	Path:    "experimental",

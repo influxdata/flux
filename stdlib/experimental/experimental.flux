@@ -39,3 +39,8 @@ alignTime = (tables=<-, alignTo=time(v: 0)) =>
       ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })
     )
     |> drop(columns: ["timeDiff"])
+
+
+// Table will construct a new stream of tables from a list of records.
+// All records are placed into a single table.
+builtin table

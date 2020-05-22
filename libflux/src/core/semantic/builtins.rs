@@ -107,6 +107,7 @@ pub fn builtins() -> Builtins<'static> {
                  // https://github.com/influxdata/flux/issues/1660
                  "to" => "forall [t0] where t0: Row (<-tables: [t0], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) -> [t0]",
                  "join" => "forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (left: [t0], right: [t1], fn: (left: t0, right: t1) -> t2) -> [t2]",
+                 "table" => "forall [t0] where t0: Row (rows: [t0]) -> [t0]",
             },
             "generate" => semantic_map! {
                 "from" => "forall [] (start: time, stop: time, count: int, fn: (n: int) -> int) -> [{ _start: time | _stop: time | _time: time | _value:int }]",
