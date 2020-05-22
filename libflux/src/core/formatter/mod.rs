@@ -208,7 +208,7 @@ impl Formatter {
             Node::Package(m) => self.format_package(m),
             Node::BadStmt(_) => self.err = Some(Error::from("bad statement")),
             Node::BadExpr(_) => self.err = Some(Error::from("bad expression")),
-            Node::BuiltinStmt(_) => {} // buildin stmt is not covered in go
+            Node::BuiltinStmt(m) => self.format_builtin(m),
         }
         self.set_indent(curr_ind)
     }
@@ -232,6 +232,11 @@ impl Formatter {
             }
             self.format_file(file, false)
         }
+    }
+
+    fn format_builtin(&mut self, n: &ast::BuiltinStmt) {
+        self.write_string("builtin ");
+        self.format_identifier(&n.id);
     }
 
     fn format_property(&mut self, n: &ast::Property) {
