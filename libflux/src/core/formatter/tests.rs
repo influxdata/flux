@@ -567,3 +567,13 @@ j
 "#,
     );
 }
+
+#[test]
+fn builtin() {
+    assert_unchanged("builtin foo");
+    assert_unchanged(
+        "builtin foo
+
+x = 1",
+    );
+}
