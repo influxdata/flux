@@ -41,6 +41,19 @@ func TestObjectEqual(t *testing.T) {
 	}
 }
 
+func TestObjectEqualMismatchedKeys(t *testing.T) {
+	r := values.NewObjectWithValues(map[string]values.Value{
+		"a": values.NewInt(1),
+	})
+	l := values.NewObjectWithValues(map[string]values.Value{
+		"b": values.NewInt(1),
+	})
+
+	if l.Equal(r) {
+		t.Fatal("expected objects to be unequal")
+	}
+}
+
 func TestBuildObject(t *testing.T) {
 	object, err := values.BuildObject(func(set values.ObjectSetter) error {
 		set("b", values.NewInt(2))
