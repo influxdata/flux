@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 14,
-					Line:   3,
+					Column: 65,
+					Line:   12,
 				},
 				File:   "json.flux",
-				Source: "package json\n\nbuiltin parse",
+				Source: "package json\n\nimport \"experimental\"\nimport \"experimental/http\"\n\n// Parse will consume json data as bytes and return a value.\n// Lists, objects, strings, booleans and float values can be produced.\n// All numeric values are represented using the float type.\nbuiltin parse\n\nfrom = (url) =>\n    experimental.table(rows: parse(data:http.get(url:url).body))",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -38,13 +38,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   3,
+						Line:   9,
 					},
 					File:   "json.flux",
 					Source: "builtin parse",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   9,
 					},
 				},
 			},
@@ -54,20 +54,564 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   3,
+							Line:   9,
 						},
 						File:   "json.flux",
 						Source: "parse",
 						Start: ast.Position{
 							Column: 9,
-							Line:   3,
+							Line:   9,
 						},
 					},
 				},
 				Name: "parse",
 			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 65,
+						Line:   12,
+					},
+					File:   "json.flux",
+					Source: "from = (url) =>\n    experimental.table(rows: parse(data:http.get(url:url).body))",
+					Start: ast.Position{
+						Column: 1,
+						Line:   11,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   11,
+						},
+						File:   "json.flux",
+						Source: "from",
+						Start: ast.Position{
+							Column: 1,
+							Line:   11,
+						},
+					},
+				},
+				Name: "from",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 65,
+							Line:   12,
+						},
+						File:   "json.flux",
+						Source: "(url) =>\n    experimental.table(rows: parse(data:http.get(url:url).body))",
+						Start: ast.Position{
+							Column: 8,
+							Line:   11,
+						},
+					},
+				},
+				Body: &ast.CallExpression{
+					Arguments: []ast.Expression{&ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 64,
+									Line:   12,
+								},
+								File:   "json.flux",
+								Source: "rows: parse(data:http.get(url:url).body)",
+								Start: ast.Position{
+									Column: 24,
+									Line:   12,
+								},
+							},
+						},
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 64,
+										Line:   12,
+									},
+									File:   "json.flux",
+									Source: "rows: parse(data:http.get(url:url).body)",
+									Start: ast.Position{
+										Column: 24,
+										Line:   12,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   12,
+										},
+										File:   "json.flux",
+										Source: "rows",
+										Start: ast.Position{
+											Column: 24,
+											Line:   12,
+										},
+									},
+								},
+								Name: "rows",
+							},
+							Value: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 63,
+												Line:   12,
+											},
+											File:   "json.flux",
+											Source: "data:http.get(url:url).body",
+											Start: ast.Position{
+												Column: 36,
+												Line:   12,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 63,
+													Line:   12,
+												},
+												File:   "json.flux",
+												Source: "data:http.get(url:url).body",
+												Start: ast.Position{
+													Column: 36,
+													Line:   12,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 40,
+														Line:   12,
+													},
+													File:   "json.flux",
+													Source: "data",
+													Start: ast.Position{
+														Column: 36,
+														Line:   12,
+													},
+												},
+											},
+											Name: "data",
+										},
+										Value: &ast.MemberExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 63,
+														Line:   12,
+													},
+													File:   "json.flux",
+													Source: "http.get(url:url).body",
+													Start: ast.Position{
+														Column: 41,
+														Line:   12,
+													},
+												},
+											},
+											Object: &ast.CallExpression{
+												Arguments: []ast.Expression{&ast.ObjectExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 57,
+																Line:   12,
+															},
+															File:   "json.flux",
+															Source: "url:url",
+															Start: ast.Position{
+																Column: 50,
+																Line:   12,
+															},
+														},
+													},
+													Properties: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 57,
+																	Line:   12,
+																},
+																File:   "json.flux",
+																Source: "url:url",
+																Start: ast.Position{
+																	Column: 50,
+																	Line:   12,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 53,
+																		Line:   12,
+																	},
+																	File:   "json.flux",
+																	Source: "url",
+																	Start: ast.Position{
+																		Column: 50,
+																		Line:   12,
+																	},
+																},
+															},
+															Name: "url",
+														},
+														Value: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 57,
+																		Line:   12,
+																	},
+																	File:   "json.flux",
+																	Source: "url",
+																	Start: ast.Position{
+																		Column: 54,
+																		Line:   12,
+																	},
+																},
+															},
+															Name: "url",
+														},
+													}},
+													With: nil,
+												}},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 58,
+															Line:   12,
+														},
+														File:   "json.flux",
+														Source: "http.get(url:url)",
+														Start: ast.Position{
+															Column: 41,
+															Line:   12,
+														},
+													},
+												},
+												Callee: &ast.MemberExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 49,
+																Line:   12,
+															},
+															File:   "json.flux",
+															Source: "http.get",
+															Start: ast.Position{
+																Column: 41,
+																Line:   12,
+															},
+														},
+													},
+													Object: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 45,
+																	Line:   12,
+																},
+																File:   "json.flux",
+																Source: "http",
+																Start: ast.Position{
+																	Column: 41,
+																	Line:   12,
+																},
+															},
+														},
+														Name: "http",
+													},
+													Property: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 49,
+																	Line:   12,
+																},
+																File:   "json.flux",
+																Source: "get",
+																Start: ast.Position{
+																	Column: 46,
+																	Line:   12,
+																},
+															},
+														},
+														Name: "get",
+													},
+												},
+											},
+											Property: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 63,
+															Line:   12,
+														},
+														File:   "json.flux",
+														Source: "body",
+														Start: ast.Position{
+															Column: 59,
+															Line:   12,
+														},
+													},
+												},
+												Name: "body",
+											},
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 64,
+											Line:   12,
+										},
+										File:   "json.flux",
+										Source: "parse(data:http.get(url:url).body)",
+										Start: ast.Position{
+											Column: 30,
+											Line:   12,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 35,
+												Line:   12,
+											},
+											File:   "json.flux",
+											Source: "parse",
+											Start: ast.Position{
+												Column: 30,
+												Line:   12,
+											},
+										},
+									},
+									Name: "parse",
+								},
+							},
+						}},
+						With: nil,
+					}},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 65,
+								Line:   12,
+							},
+							File:   "json.flux",
+							Source: "experimental.table(rows: parse(data:http.get(url:url).body))",
+							Start: ast.Position{
+								Column: 5,
+								Line:   12,
+							},
+						},
+					},
+					Callee: &ast.MemberExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 23,
+									Line:   12,
+								},
+								File:   "json.flux",
+								Source: "experimental.table",
+								Start: ast.Position{
+									Column: 5,
+									Line:   12,
+								},
+							},
+						},
+						Object: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 17,
+										Line:   12,
+									},
+									File:   "json.flux",
+									Source: "experimental",
+									Start: ast.Position{
+										Column: 5,
+										Line:   12,
+									},
+								},
+							},
+							Name: "experimental",
+						},
+						Property: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 23,
+										Line:   12,
+									},
+									File:   "json.flux",
+									Source: "table",
+									Start: ast.Position{
+										Column: 18,
+										Line:   12,
+									},
+								},
+							},
+							Name: "table",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   11,
+							},
+							File:   "json.flux",
+							Source: "url",
+							Start: ast.Position{
+								Column: 9,
+								Line:   11,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   11,
+								},
+								File:   "json.flux",
+								Source: "url",
+								Start: ast.Position{
+									Column: 9,
+									Line:   11,
+								},
+							},
+						},
+						Name: "url",
+					},
+					Value: nil,
+				}},
+			},
 		}},
-		Imports:  nil,
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   3,
+					},
+					File:   "json.flux",
+					Source: "import \"experimental\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   3,
+						},
+						File:   "json.flux",
+						Source: "\"experimental\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 27,
+						Line:   4,
+					},
+					File:   "json.flux",
+					Source: "import \"experimental/http\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 27,
+							Line:   4,
+						},
+						File:   "json.flux",
+						Source: "\"experimental/http\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "experimental/http",
+			},
+		}},
 		Metadata: "parser-type=rust",
 		Name:     "json.flux",
 		Package: &ast.PackageClause{
