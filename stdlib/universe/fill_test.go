@@ -1,9 +1,13 @@
 package universe_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/internal/gen"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
 
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -431,15 +435,49 @@ func TestFill_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			executetest.ProcessTestHelper(
+			executetest.ProcessTestHelper2(
 				t,
 				tc.data,
 				tc.want,
 				nil,
-				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					return universe.NewFillTransformation(d, c, tc.spec)
+				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+					ctx := dependenciestest.Default().Inject(context.Background())
+					return universe.NewFillTransformation(ctx, tc.spec, id, alloc)
 				},
 			)
 		})
 	}
+}
+
+func BenchmarkFill_Values(b *testing.B) {
+	b.Run("1000", func(b *testing.B) {
+		benchmarkFill(b, 1000)
+	})
+}
+
+func benchmarkFill(b *testing.B, n int) {
+	b.ReportAllocs()
+	spec := &universe.FillProcedureSpec{
+		Column: "_value",
+		Value:  values.NewFloat(0),
+	}
+	executetest.ProcessBenchmarkHelper(b,
+		func(alloc *memory.Allocator) (flux.TableIterator, error) {
+			schema := gen.Schema{
+				NumPoints: n,
+				Alloc:     alloc,
+				Tags: []gen.Tag{
+					{Name: "_measurement", Cardinality: 1},
+					{Name: "_field", Cardinality: 6},
+					{Name: "t0", Cardinality: 100},
+					{Name: "t1", Cardinality: 50},
+				},
+				Nulls: 0.4,
+			}
+			return gen.Input(context.Background(), schema)
+		},
+		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+			return universe.NewFillTransformation(context.Background(), spec, id, alloc)
+		},
+	)
 }
