@@ -1,12 +1,17 @@
 package universe
 
 import (
+	"context"
 	"strconv"
 
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/table"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
@@ -167,25 +172,25 @@ func createFillTransformation(id execute.DatasetID, mode execute.AccumulationMod
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-	cache := execute.NewTableBuilderCache(a.Allocator())
-	d := execute.NewDataset(id, mode, cache)
-	t := NewFillTransformation(d, cache, s)
+	t, d := NewFillTransformation(a.Context(), s, id, a.Allocator())
 	return t, d, nil
 }
 
 type fillTransformation struct {
-	d     execute.Dataset
-	cache execute.TableBuilderCache
-
-	spec *FillProcedureSpec
+	d     *execute.PassthroughDataset
+	ctx   context.Context
+	spec  *FillProcedureSpec
+	alloc *memory.Allocator
 }
 
-func NewFillTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *FillProcedureSpec) *fillTransformation {
-	return &fillTransformation{
-		d:     d,
-		cache: cache,
+func NewFillTransformation(ctx context.Context, spec *FillProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (*fillTransformation, execute.Dataset) {
+	t := &fillTransformation{
+		d:     execute.NewPassthroughDataset(id),
+		ctx:   ctx,
 		spec:  spec,
+		alloc: alloc,
 	}
+	return t, t.d
 }
 
 func (t *fillTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
@@ -193,6 +198,11 @@ func (t *fillTransformation) RetractTable(id execute.DatasetID, key flux.GroupKe
 }
 
 func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
+	idx := execute.ColIdx(t.spec.Column, tbl.Cols())
+	if idx < 0 {
+		return errors.Newf(codes.FailedPrecondition, "fill column not found: %s", t.spec.Column)
+	}
+
 	key := tbl.Key()
 	if idx := execute.ColIdx(t.spec.Column, tbl.Key().Cols()); idx >= 0 {
 		var err error
@@ -204,59 +214,63 @@ func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		}
 	}
 
-	builder, created := t.cache.TableBuilder(key)
-	if created {
-		if err := execute.AddTableCols(tbl, builder); err != nil {
-			return err
-		}
-	}
-	idx := execute.ColIdx(t.spec.Column, builder.Cols())
-	if idx < 0 {
-		return errors.Newf(codes.FailedPrecondition, "fill column not found: %s", t.spec.Column)
-	}
-
 	prevNonNull := t.spec.Value
 	if !t.spec.UsePrevious {
-		if builder.Cols()[idx].Type != flux.ColumnType(prevNonNull.Type()) {
-			return errors.Newf(codes.FailedPrecondition, "fill column type mismatch: %s/%s", builder.Cols()[idx].Type.String(), flux.ColumnType(prevNonNull.Type()).String())
+		if tbl.Cols()[idx].Type != flux.ColumnType(prevNonNull.Type()) {
+			return errors.Newf(codes.FailedPrecondition, "fill column type mismatch: %s/%s", tbl.Cols()[idx].Type.String(), flux.ColumnType(prevNonNull.Type()).String())
 		}
 	}
-	return tbl.Do(func(cr flux.ColReader) error {
-		for j := range cr.Cols() {
-			if j == idx {
-				continue
-			}
-			if err := execute.AppendCol(j, j, cr, builder); err != nil {
-				return err
-			}
-		}
-		// Set new value
-		l := cr.Len()
 
-		if l > 0 {
-			if t.spec.UsePrevious {
-				prevNonNull = execute.ValueForRow(cr, 0, idx)
+	table, err := table.StreamWithContext(t.ctx, key, tbl.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
+		return tbl.Do(func(cr flux.ColReader) error {
+			l := cr.Len()
+			if l == 0 {
+				return nil
 			}
-
-			for i := 0; i < l; i++ {
-				v := execute.ValueForRow(cr, i, idx)
-				if v.IsNull() {
-					if err := builder.AppendValue(idx, prevNonNull); err != nil {
-						return err
-					}
+			vs := make([]array.Interface, len(w.Cols()))
+			for j, col := range w.Cols() {
+				if j != idx {
+					vs[j] = table.Values(cr, j)
+					vs[j].Retain()
 				} else {
-					if err := builder.AppendValue(idx, v); err != nil {
-						return err
-					}
 					if t.spec.UsePrevious {
-						prevNonNull = v
+						prevNonNull = execute.ValueForRow(cr, 0, idx)
 					}
-
+					b := arrow.NewBuilder(col.Type, t.alloc)
+					b.Reserve(l)
+					hasNull := false
+					for i := 0; i < l; i++ {
+						v := execute.ValueForRow(cr, i, idx)
+						if v.IsNull() {
+							if err := arrow.AppendValue(b, prevNonNull); err != nil {
+								return err
+							}
+							hasNull = true
+						} else {
+							if err := arrow.AppendValue(b, v); err != nil {
+								return err
+							}
+							if t.spec.UsePrevious {
+								prevNonNull = v
+							}
+						}
+					}
+					if hasNull {
+						vs[j] = b.NewArray()
+					} else {
+						b.Release()
+						vs[j] = table.Values(cr, j)
+						vs[j].Retain()
+					}
 				}
 			}
-		}
-		return nil
+			return w.Write(vs)
+		})
 	})
+	if err != nil {
+		return err
+	}
+	return t.d.Process(table)
 }
 
 func (t *fillTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
