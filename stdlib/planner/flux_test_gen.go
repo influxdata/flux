@@ -11406,6 +11406,2686 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
+					Column: 108,
+					Line:   58,
+				},
+				File:   "window_group_agg_eval_test.flux",
+				Source: "package planner_test\n\nimport \"testing\"\nimport \"planner\"\n\noption planner.disablePhysicalRules = [\"PushDownGroupWindowAggregateRule\"]\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,hostA,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,hostA,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,hostA,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,hostA,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,hostA,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,hostA,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,hostB,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,hostB,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,hostC,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,hostC,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,hostC,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,hostC,load5,1.93\n\"\n\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,long\n#group,false,false,true,true,true,false\n#default,_result,,,,,\n,result,table,_start,_stop,host,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostA,3\n,,1,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostB,2\n,,2,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostC,2\n,,3,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostA,1\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostB,2\n,,5,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostC,3\n,,6,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostA,2\n,,7,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostB,2\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostC,1\n\"\n\ngroup_window_agg_fn = (tables=<-) => tables\n    |> range(start: 0)\n    |> group(columns: [\"host\"])\n    |> window(every: 20s)\n    |> count()\n\ntest group_window_agg_pushdown = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.MemberAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 75,
+							Line:   6,
+						},
+						File:   "window_group_agg_eval_test.flux",
+						Source: "planner.disablePhysicalRules = [\"PushDownGroupWindowAggregateRule\"]",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				Init: &ast.ArrayExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 75,
+								Line:   6,
+							},
+							File:   "window_group_agg_eval_test.flux",
+							Source: "[\"PushDownGroupWindowAggregateRule\"]",
+							Start: ast.Position{
+								Column: 39,
+								Line:   6,
+							},
+						},
+					},
+					Elements: []ast.Expression{&ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 74,
+									Line:   6,
+								},
+								File:   "window_group_agg_eval_test.flux",
+								Source: "\"PushDownGroupWindowAggregateRule\"",
+								Start: ast.Position{
+									Column: 40,
+									Line:   6,
+								},
+							},
+						},
+						Value: "PushDownGroupWindowAggregateRule",
+					}},
+				},
+				Member: &ast.MemberExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 36,
+								Line:   6,
+							},
+							File:   "window_group_agg_eval_test.flux",
+							Source: "planner.disablePhysicalRules",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Object: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   6,
+								},
+								File:   "window_group_agg_eval_test.flux",
+								Source: "planner",
+								Start: ast.Position{
+									Column: 8,
+									Line:   6,
+								},
+							},
+						},
+						Name: "planner",
+					},
+					Property: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   6,
+								},
+								File:   "window_group_agg_eval_test.flux",
+								Source: "disablePhysicalRules",
+								Start: ast.Position{
+									Column: 16,
+									Line:   6,
+								},
+							},
+						},
+						Name: "disablePhysicalRules",
+					},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 75,
+						Line:   6,
+					},
+					File:   "window_group_agg_eval_test.flux",
+					Source: "option planner.disablePhysicalRules = [\"PushDownGroupWindowAggregateRule\"]",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   33,
+					},
+					File:   "window_group_agg_eval_test.flux",
+					Source: "input = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,hostA,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,hostA,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,hostA,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,hostA,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,hostA,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,hostA,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,hostB,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,hostB,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,hostC,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,hostC,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,hostC,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,hostC,load5,1.93\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   8,
+						},
+						File:   "window_group_agg_eval_test.flux",
+						Source: "input",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "input",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   33,
+						},
+						File:   "window_group_agg_eval_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,hostA,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,hostA,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,hostA,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,hostA,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,hostA,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,hostA,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,hostB,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,hostB,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,hostC,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,hostC,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,hostC,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,hostC,load5,1.93\n\"",
+						Start: ast.Position{
+							Column: 9,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,hostA,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,hostA,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,hostA,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,hostA,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,hostA,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,hostA,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,hostB,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,hostB,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,hostC,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,hostC,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,hostC,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,hostC,load5,1.93\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   49,
+					},
+					File:   "window_group_agg_eval_test.flux",
+					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,long\n#group,false,false,true,true,true,false\n#default,_result,,,,,\n,result,table,_start,_stop,host,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostA,3\n,,1,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostB,2\n,,2,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostC,2\n,,3,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostA,1\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostB,2\n,,5,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostC,3\n,,6,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostA,2\n,,7,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostB,2\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostC,1\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   35,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   35,
+						},
+						File:   "window_group_agg_eval_test.flux",
+						Source: "output",
+						Start: ast.Position{
+							Column: 1,
+							Line:   35,
+						},
+					},
+				},
+				Name: "output",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   49,
+						},
+						File:   "window_group_agg_eval_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,long\n#group,false,false,true,true,true,false\n#default,_result,,,,,\n,result,table,_start,_stop,host,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostA,3\n,,1,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostB,2\n,,2,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostC,2\n,,3,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostA,1\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostB,2\n,,5,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostC,3\n,,6,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostA,2\n,,7,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostB,2\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostC,1\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   35,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,long\n#group,false,false,true,true,true,false\n#default,_result,,,,,\n,result,table,_start,_stop,host,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostA,3\n,,1,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostB,2\n,,2,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostC,2\n,,3,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostA,1\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostB,2\n,,5,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostC,3\n,,6,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostA,2\n,,7,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostB,2\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostC,1\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 15,
+						Line:   55,
+					},
+					File:   "window_group_agg_eval_test.flux",
+					Source: "group_window_agg_fn = (tables=<-) => tables\n    |> range(start: 0)\n    |> group(columns: [\"host\"])\n    |> window(every: 20s)\n    |> count()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   51,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   51,
+						},
+						File:   "window_group_agg_eval_test.flux",
+						Source: "group_window_agg_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   51,
+						},
+					},
+				},
+				Name: "group_window_agg_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 15,
+							Line:   55,
+						},
+						File:   "window_group_agg_eval_test.flux",
+						Source: "(tables=<-) => tables\n    |> range(start: 0)\n    |> group(columns: [\"host\"])\n    |> window(every: 20s)\n    |> count()",
+						Start: ast.Position{
+							Column: 23,
+							Line:   51,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 44,
+												Line:   51,
+											},
+											File:   "window_group_agg_eval_test.flux",
+											Source: "tables",
+											Start: ast.Position{
+												Column: 38,
+												Line:   51,
+											},
+										},
+									},
+									Name: "tables",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   52,
+										},
+										File:   "window_group_agg_eval_test.flux",
+										Source: "tables\n    |> range(start: 0)",
+										Start: ast.Position{
+											Column: 38,
+											Line:   51,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 22,
+													Line:   52,
+												},
+												File:   "window_group_agg_eval_test.flux",
+												Source: "start: 0",
+												Start: ast.Position{
+													Column: 14,
+													Line:   52,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 22,
+														Line:   52,
+													},
+													File:   "window_group_agg_eval_test.flux",
+													Source: "start: 0",
+													Start: ast.Position{
+														Column: 14,
+														Line:   52,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 19,
+															Line:   52,
+														},
+														File:   "window_group_agg_eval_test.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 14,
+															Line:   52,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Value: &ast.IntegerLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 22,
+															Line:   52,
+														},
+														File:   "window_group_agg_eval_test.flux",
+														Source: "0",
+														Start: ast.Position{
+															Column: 21,
+															Line:   52,
+														},
+													},
+												},
+												Value: int64(0),
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   52,
+											},
+											File:   "window_group_agg_eval_test.flux",
+											Source: "range(start: 0)",
+											Start: ast.Position{
+												Column: 8,
+												Line:   52,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 13,
+													Line:   52,
+												},
+												File:   "window_group_agg_eval_test.flux",
+												Source: "range",
+												Start: ast.Position{
+													Column: 8,
+													Line:   52,
+												},
+											},
+										},
+										Name: "range",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   53,
+									},
+									File:   "window_group_agg_eval_test.flux",
+									Source: "tables\n    |> range(start: 0)\n    |> group(columns: [\"host\"])",
+									Start: ast.Position{
+										Column: 38,
+										Line:   51,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 31,
+												Line:   53,
+											},
+											File:   "window_group_agg_eval_test.flux",
+											Source: "columns: [\"host\"]",
+											Start: ast.Position{
+												Column: 14,
+												Line:   53,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   53,
+												},
+												File:   "window_group_agg_eval_test.flux",
+												Source: "columns: [\"host\"]",
+												Start: ast.Position{
+													Column: 14,
+													Line:   53,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   53,
+													},
+													File:   "window_group_agg_eval_test.flux",
+													Source: "columns",
+													Start: ast.Position{
+														Column: 14,
+														Line:   53,
+													},
+												},
+											},
+											Name: "columns",
+										},
+										Value: &ast.ArrayExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 31,
+														Line:   53,
+													},
+													File:   "window_group_agg_eval_test.flux",
+													Source: "[\"host\"]",
+													Start: ast.Position{
+														Column: 23,
+														Line:   53,
+													},
+												},
+											},
+											Elements: []ast.Expression{&ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 30,
+															Line:   53,
+														},
+														File:   "window_group_agg_eval_test.flux",
+														Source: "\"host\"",
+														Start: ast.Position{
+															Column: 24,
+															Line:   53,
+														},
+													},
+												},
+												Value: "host",
+											}},
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 32,
+											Line:   53,
+										},
+										File:   "window_group_agg_eval_test.flux",
+										Source: "group(columns: [\"host\"])",
+										Start: ast.Position{
+											Column: 8,
+											Line:   53,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   53,
+											},
+											File:   "window_group_agg_eval_test.flux",
+											Source: "group",
+											Start: ast.Position{
+												Column: 8,
+												Line:   53,
+											},
+										},
+									},
+									Name: "group",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   54,
+								},
+								File:   "window_group_agg_eval_test.flux",
+								Source: "tables\n    |> range(start: 0)\n    |> group(columns: [\"host\"])\n    |> window(every: 20s)",
+								Start: ast.Position{
+									Column: 38,
+									Line:   51,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   54,
+										},
+										File:   "window_group_agg_eval_test.flux",
+										Source: "every: 20s",
+										Start: ast.Position{
+											Column: 15,
+											Line:   54,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   54,
+											},
+											File:   "window_group_agg_eval_test.flux",
+											Source: "every: 20s",
+											Start: ast.Position{
+												Column: 15,
+												Line:   54,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 20,
+													Line:   54,
+												},
+												File:   "window_group_agg_eval_test.flux",
+												Source: "every",
+												Start: ast.Position{
+													Column: 15,
+													Line:   54,
+												},
+											},
+										},
+										Name: "every",
+									},
+									Value: &ast.DurationLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   54,
+												},
+												File:   "window_group_agg_eval_test.flux",
+												Source: "20s",
+												Start: ast.Position{
+													Column: 22,
+													Line:   54,
+												},
+											},
+										},
+										Values: []ast.Duration{ast.Duration{
+											Magnitude: int64(20),
+											Unit:      "s",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   54,
+									},
+									File:   "window_group_agg_eval_test.flux",
+									Source: "window(every: 20s)",
+									Start: ast.Position{
+										Column: 8,
+										Line:   54,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   54,
+										},
+										File:   "window_group_agg_eval_test.flux",
+										Source: "window",
+										Start: ast.Position{
+											Column: 8,
+											Line:   54,
+										},
+									},
+								},
+								Name: "window",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 15,
+								Line:   55,
+							},
+							File:   "window_group_agg_eval_test.flux",
+							Source: "tables\n    |> range(start: 0)\n    |> group(columns: [\"host\"])\n    |> window(every: 20s)\n    |> count()",
+							Start: ast.Position{
+								Column: 38,
+								Line:   51,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   55,
+								},
+								File:   "window_group_agg_eval_test.flux",
+								Source: "count()",
+								Start: ast.Position{
+									Column: 8,
+									Line:   55,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 13,
+										Line:   55,
+									},
+									File:   "window_group_agg_eval_test.flux",
+									Source: "count",
+									Start: ast.Position{
+										Column: 8,
+										Line:   55,
+									},
+								},
+							},
+							Name: "count",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 33,
+								Line:   51,
+							},
+							File:   "window_group_agg_eval_test.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 24,
+								Line:   51,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 30,
+									Line:   51,
+								},
+								File:   "window_group_agg_eval_test.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 24,
+									Line:   51,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 33,
+								Line:   51,
+							},
+							File:   "window_group_agg_eval_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 31,
+								Line:   51,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 108,
+							Line:   58,
+						},
+						File:   "window_group_agg_eval_test.flux",
+						Source: "group_window_agg_pushdown = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   57,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 31,
+								Line:   57,
+							},
+							File:   "window_group_agg_eval_test.flux",
+							Source: "group_window_agg_pushdown",
+							Start: ast.Position{
+								Column: 6,
+								Line:   57,
+							},
+						},
+					},
+					Name: "group_window_agg_pushdown",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 108,
+								Line:   58,
+							},
+							File:   "window_group_agg_eval_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn})",
+							Start: ast.Position{
+								Column: 34,
+								Line:   57,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 108,
+									Line:   58,
+								},
+								File:   "window_group_agg_eval_test.flux",
+								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   58,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 107,
+										Line:   58,
+									},
+									File:   "window_group_agg_eval_test.flux",
+									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   58,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   58,
+										},
+										File:   "window_group_agg_eval_test.flux",
+										Source: "input: testing.loadStorage(csv: input)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   58,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   58,
+											},
+											File:   "window_group_agg_eval_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   58,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   58,
+												},
+												File:   "window_group_agg_eval_test.flux",
+												Source: "csv: input",
+												Start: ast.Position{
+													Column: 34,
+													Line:   58,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   58,
+													},
+													File:   "window_group_agg_eval_test.flux",
+													Source: "csv: input",
+													Start: ast.Position{
+														Column: 34,
+														Line:   58,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   58,
+														},
+														File:   "window_group_agg_eval_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   58,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 44,
+															Line:   58,
+														},
+														File:   "window_group_agg_eval_test.flux",
+														Source: "input",
+														Start: ast.Position{
+															Column: 39,
+															Line:   58,
+														},
+													},
+												},
+												Name: "input",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   58,
+											},
+											File:   "window_group_agg_eval_test.flux",
+											Source: "testing.loadStorage(csv: input)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   58,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   58,
+												},
+												File:   "window_group_agg_eval_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   58,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   58,
+													},
+													File:   "window_group_agg_eval_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   58,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   58,
+													},
+													File:   "window_group_agg_eval_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   58,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   58,
+										},
+										File:   "window_group_agg_eval_test.flux",
+										Source: "want: testing.loadMem(csv: output)",
+										Start: ast.Position{
+											Column: 47,
+											Line:   58,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   58,
+											},
+											File:   "window_group_agg_eval_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 47,
+												Line:   58,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 80,
+													Line:   58,
+												},
+												File:   "window_group_agg_eval_test.flux",
+												Source: "csv: output",
+												Start: ast.Position{
+													Column: 69,
+													Line:   58,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 80,
+														Line:   58,
+													},
+													File:   "window_group_agg_eval_test.flux",
+													Source: "csv: output",
+													Start: ast.Position{
+														Column: 69,
+														Line:   58,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 72,
+															Line:   58,
+														},
+														File:   "window_group_agg_eval_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 69,
+															Line:   58,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 80,
+															Line:   58,
+														},
+														File:   "window_group_agg_eval_test.flux",
+														Source: "output",
+														Start: ast.Position{
+															Column: 74,
+															Line:   58,
+														},
+													},
+												},
+												Name: "output",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 81,
+												Line:   58,
+											},
+											File:   "window_group_agg_eval_test.flux",
+											Source: "testing.loadMem(csv: output)",
+											Start: ast.Position{
+												Column: 53,
+												Line:   58,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   58,
+												},
+												File:   "window_group_agg_eval_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 53,
+													Line:   58,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 60,
+														Line:   58,
+													},
+													File:   "window_group_agg_eval_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 53,
+														Line:   58,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 68,
+														Line:   58,
+													},
+													File:   "window_group_agg_eval_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 61,
+														Line:   58,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 106,
+											Line:   58,
+										},
+										File:   "window_group_agg_eval_test.flux",
+										Source: "fn: group_window_agg_fn",
+										Start: ast.Position{
+											Column: 83,
+											Line:   58,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 85,
+												Line:   58,
+											},
+											File:   "window_group_agg_eval_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 83,
+												Line:   58,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 106,
+												Line:   58,
+											},
+											File:   "window_group_agg_eval_test.flux",
+											Source: "group_window_agg_fn",
+											Start: ast.Position{
+												Column: 87,
+												Line:   58,
+											},
+										},
+									},
+									Name: "group_window_agg_fn",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 108,
+						Line:   58,
+					},
+					File:   "window_group_agg_eval_test.flux",
+					Source: "test group_window_agg_pushdown = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   57,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "window_group_agg_eval_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "window_group_agg_eval_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "window_group_agg_eval_test.flux",
+					Source: "import \"planner\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "window_group_agg_eval_test.flux",
+						Source: "\"planner\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "planner",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "window_group_agg_eval_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 21,
+						Line:   1,
+					},
+					File:   "window_group_agg_eval_test.flux",
+					Source: "package planner_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   1,
+						},
+						File:   "window_group_agg_eval_test.flux",
+						Source: "planner_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "planner_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 108,
+					Line:   55,
+				},
+				File:   "window_group_agg_push_test.flux",
+				Source: "package planner_test\n\nimport \"testing\"\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,hostA,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,hostA,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,hostA,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,hostA,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,hostA,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,hostA,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,hostB,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,hostB,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,hostC,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,hostC,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,hostC,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,hostC,load5,1.93\n\"\n\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,long\n#group,false,false,true,true,true,false\n#default,_result,,,,,\n,result,table,_start,_stop,host,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostA,3\n,,1,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostB,2\n,,2,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostC,2\n,,3,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostA,1\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostB,2\n,,5,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostC,3\n,,6,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostA,2\n,,7,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostB,2\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostC,1\n\"\n\ngroup_window_agg_fn = (tables=<-) => tables\n    |> range(start: 0)\n    |> group(columns: [\"host\"])\n    |> window(every: 20s)\n    |> count()\n\ntest group_window_agg_pushdown = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   30,
+					},
+					File:   "window_group_agg_push_test.flux",
+					Source: "input = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,hostA,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,hostA,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,hostA,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,hostA,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,hostA,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,hostA,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,hostB,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,hostB,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,hostC,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,hostC,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,hostC,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,hostC,load5,1.93\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   5,
+						},
+						File:   "window_group_agg_push_test.flux",
+						Source: "input",
+						Start: ast.Position{
+							Column: 1,
+							Line:   5,
+						},
+					},
+				},
+				Name: "input",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   30,
+						},
+						File:   "window_group_agg_push_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,hostA,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,hostA,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,hostA,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,hostA,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,hostA,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,hostA,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,hostB,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,hostB,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,hostC,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,hostC,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,hostC,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,hostC,load5,1.93\n\"",
+						Start: ast.Position{
+							Column: 9,
+							Line:   5,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,hostA,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,hostA,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,hostA,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,hostA,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,hostA,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,hostA,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,hostB,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,hostB,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,hostC,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,hostC,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,hostC,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,hostC,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,hostC,load5,1.93\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   46,
+					},
+					File:   "window_group_agg_push_test.flux",
+					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,long\n#group,false,false,true,true,true,false\n#default,_result,,,,,\n,result,table,_start,_stop,host,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostA,3\n,,1,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostB,2\n,,2,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostC,2\n,,3,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostA,1\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostB,2\n,,5,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostC,3\n,,6,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostA,2\n,,7,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostB,2\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostC,1\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   32,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   32,
+						},
+						File:   "window_group_agg_push_test.flux",
+						Source: "output",
+						Start: ast.Position{
+							Column: 1,
+							Line:   32,
+						},
+					},
+				},
+				Name: "output",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   46,
+						},
+						File:   "window_group_agg_push_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,long\n#group,false,false,true,true,true,false\n#default,_result,,,,,\n,result,table,_start,_stop,host,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostA,3\n,,1,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostB,2\n,,2,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostC,2\n,,3,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostA,1\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostB,2\n,,5,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostC,3\n,,6,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostA,2\n,,7,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostB,2\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostC,1\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   32,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,long\n#group,false,false,true,true,true,false\n#default,_result,,,,,\n,result,table,_start,_stop,host,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostA,3\n,,1,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostB,2\n,,2,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,hostC,2\n,,3,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostA,1\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostB,2\n,,5,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,hostC,3\n,,6,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostA,2\n,,7,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostB,2\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostC,1\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 15,
+						Line:   52,
+					},
+					File:   "window_group_agg_push_test.flux",
+					Source: "group_window_agg_fn = (tables=<-) => tables\n    |> range(start: 0)\n    |> group(columns: [\"host\"])\n    |> window(every: 20s)\n    |> count()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   48,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   48,
+						},
+						File:   "window_group_agg_push_test.flux",
+						Source: "group_window_agg_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   48,
+						},
+					},
+				},
+				Name: "group_window_agg_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 15,
+							Line:   52,
+						},
+						File:   "window_group_agg_push_test.flux",
+						Source: "(tables=<-) => tables\n    |> range(start: 0)\n    |> group(columns: [\"host\"])\n    |> window(every: 20s)\n    |> count()",
+						Start: ast.Position{
+							Column: 23,
+							Line:   48,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 44,
+												Line:   48,
+											},
+											File:   "window_group_agg_push_test.flux",
+											Source: "tables",
+											Start: ast.Position{
+												Column: 38,
+												Line:   48,
+											},
+										},
+									},
+									Name: "tables",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   49,
+										},
+										File:   "window_group_agg_push_test.flux",
+										Source: "tables\n    |> range(start: 0)",
+										Start: ast.Position{
+											Column: 38,
+											Line:   48,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 22,
+													Line:   49,
+												},
+												File:   "window_group_agg_push_test.flux",
+												Source: "start: 0",
+												Start: ast.Position{
+													Column: 14,
+													Line:   49,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 22,
+														Line:   49,
+													},
+													File:   "window_group_agg_push_test.flux",
+													Source: "start: 0",
+													Start: ast.Position{
+														Column: 14,
+														Line:   49,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 19,
+															Line:   49,
+														},
+														File:   "window_group_agg_push_test.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 14,
+															Line:   49,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Value: &ast.IntegerLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 22,
+															Line:   49,
+														},
+														File:   "window_group_agg_push_test.flux",
+														Source: "0",
+														Start: ast.Position{
+															Column: 21,
+															Line:   49,
+														},
+													},
+												},
+												Value: int64(0),
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   49,
+											},
+											File:   "window_group_agg_push_test.flux",
+											Source: "range(start: 0)",
+											Start: ast.Position{
+												Column: 8,
+												Line:   49,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 13,
+													Line:   49,
+												},
+												File:   "window_group_agg_push_test.flux",
+												Source: "range",
+												Start: ast.Position{
+													Column: 8,
+													Line:   49,
+												},
+											},
+										},
+										Name: "range",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   50,
+									},
+									File:   "window_group_agg_push_test.flux",
+									Source: "tables\n    |> range(start: 0)\n    |> group(columns: [\"host\"])",
+									Start: ast.Position{
+										Column: 38,
+										Line:   48,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 31,
+												Line:   50,
+											},
+											File:   "window_group_agg_push_test.flux",
+											Source: "columns: [\"host\"]",
+											Start: ast.Position{
+												Column: 14,
+												Line:   50,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   50,
+												},
+												File:   "window_group_agg_push_test.flux",
+												Source: "columns: [\"host\"]",
+												Start: ast.Position{
+													Column: 14,
+													Line:   50,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   50,
+													},
+													File:   "window_group_agg_push_test.flux",
+													Source: "columns",
+													Start: ast.Position{
+														Column: 14,
+														Line:   50,
+													},
+												},
+											},
+											Name: "columns",
+										},
+										Value: &ast.ArrayExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 31,
+														Line:   50,
+													},
+													File:   "window_group_agg_push_test.flux",
+													Source: "[\"host\"]",
+													Start: ast.Position{
+														Column: 23,
+														Line:   50,
+													},
+												},
+											},
+											Elements: []ast.Expression{&ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 30,
+															Line:   50,
+														},
+														File:   "window_group_agg_push_test.flux",
+														Source: "\"host\"",
+														Start: ast.Position{
+															Column: 24,
+															Line:   50,
+														},
+													},
+												},
+												Value: "host",
+											}},
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 32,
+											Line:   50,
+										},
+										File:   "window_group_agg_push_test.flux",
+										Source: "group(columns: [\"host\"])",
+										Start: ast.Position{
+											Column: 8,
+											Line:   50,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   50,
+											},
+											File:   "window_group_agg_push_test.flux",
+											Source: "group",
+											Start: ast.Position{
+												Column: 8,
+												Line:   50,
+											},
+										},
+									},
+									Name: "group",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   51,
+								},
+								File:   "window_group_agg_push_test.flux",
+								Source: "tables\n    |> range(start: 0)\n    |> group(columns: [\"host\"])\n    |> window(every: 20s)",
+								Start: ast.Position{
+									Column: 38,
+									Line:   48,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   51,
+										},
+										File:   "window_group_agg_push_test.flux",
+										Source: "every: 20s",
+										Start: ast.Position{
+											Column: 15,
+											Line:   51,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   51,
+											},
+											File:   "window_group_agg_push_test.flux",
+											Source: "every: 20s",
+											Start: ast.Position{
+												Column: 15,
+												Line:   51,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 20,
+													Line:   51,
+												},
+												File:   "window_group_agg_push_test.flux",
+												Source: "every",
+												Start: ast.Position{
+													Column: 15,
+													Line:   51,
+												},
+											},
+										},
+										Name: "every",
+									},
+									Value: &ast.DurationLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   51,
+												},
+												File:   "window_group_agg_push_test.flux",
+												Source: "20s",
+												Start: ast.Position{
+													Column: 22,
+													Line:   51,
+												},
+											},
+										},
+										Values: []ast.Duration{ast.Duration{
+											Magnitude: int64(20),
+											Unit:      "s",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   51,
+									},
+									File:   "window_group_agg_push_test.flux",
+									Source: "window(every: 20s)",
+									Start: ast.Position{
+										Column: 8,
+										Line:   51,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   51,
+										},
+										File:   "window_group_agg_push_test.flux",
+										Source: "window",
+										Start: ast.Position{
+											Column: 8,
+											Line:   51,
+										},
+									},
+								},
+								Name: "window",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 15,
+								Line:   52,
+							},
+							File:   "window_group_agg_push_test.flux",
+							Source: "tables\n    |> range(start: 0)\n    |> group(columns: [\"host\"])\n    |> window(every: 20s)\n    |> count()",
+							Start: ast.Position{
+								Column: 38,
+								Line:   48,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   52,
+								},
+								File:   "window_group_agg_push_test.flux",
+								Source: "count()",
+								Start: ast.Position{
+									Column: 8,
+									Line:   52,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 13,
+										Line:   52,
+									},
+									File:   "window_group_agg_push_test.flux",
+									Source: "count",
+									Start: ast.Position{
+										Column: 8,
+										Line:   52,
+									},
+								},
+							},
+							Name: "count",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 33,
+								Line:   48,
+							},
+							File:   "window_group_agg_push_test.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 24,
+								Line:   48,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 30,
+									Line:   48,
+								},
+								File:   "window_group_agg_push_test.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 24,
+									Line:   48,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 33,
+								Line:   48,
+							},
+							File:   "window_group_agg_push_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 31,
+								Line:   48,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 108,
+							Line:   55,
+						},
+						File:   "window_group_agg_push_test.flux",
+						Source: "group_window_agg_pushdown = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   54,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 31,
+								Line:   54,
+							},
+							File:   "window_group_agg_push_test.flux",
+							Source: "group_window_agg_pushdown",
+							Start: ast.Position{
+								Column: 6,
+								Line:   54,
+							},
+						},
+					},
+					Name: "group_window_agg_pushdown",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 108,
+								Line:   55,
+							},
+							File:   "window_group_agg_push_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn})",
+							Start: ast.Position{
+								Column: 34,
+								Line:   54,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 108,
+									Line:   55,
+								},
+								File:   "window_group_agg_push_test.flux",
+								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   55,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 107,
+										Line:   55,
+									},
+									File:   "window_group_agg_push_test.flux",
+									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   55,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   55,
+										},
+										File:   "window_group_agg_push_test.flux",
+										Source: "input: testing.loadStorage(csv: input)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   55,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   55,
+											},
+											File:   "window_group_agg_push_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   55,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   55,
+												},
+												File:   "window_group_agg_push_test.flux",
+												Source: "csv: input",
+												Start: ast.Position{
+													Column: 34,
+													Line:   55,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   55,
+													},
+													File:   "window_group_agg_push_test.flux",
+													Source: "csv: input",
+													Start: ast.Position{
+														Column: 34,
+														Line:   55,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   55,
+														},
+														File:   "window_group_agg_push_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   55,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 44,
+															Line:   55,
+														},
+														File:   "window_group_agg_push_test.flux",
+														Source: "input",
+														Start: ast.Position{
+															Column: 39,
+															Line:   55,
+														},
+													},
+												},
+												Name: "input",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   55,
+											},
+											File:   "window_group_agg_push_test.flux",
+											Source: "testing.loadStorage(csv: input)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   55,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   55,
+												},
+												File:   "window_group_agg_push_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   55,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   55,
+													},
+													File:   "window_group_agg_push_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   55,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   55,
+													},
+													File:   "window_group_agg_push_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   55,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   55,
+										},
+										File:   "window_group_agg_push_test.flux",
+										Source: "want: testing.loadMem(csv: output)",
+										Start: ast.Position{
+											Column: 47,
+											Line:   55,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   55,
+											},
+											File:   "window_group_agg_push_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 47,
+												Line:   55,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 80,
+													Line:   55,
+												},
+												File:   "window_group_agg_push_test.flux",
+												Source: "csv: output",
+												Start: ast.Position{
+													Column: 69,
+													Line:   55,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 80,
+														Line:   55,
+													},
+													File:   "window_group_agg_push_test.flux",
+													Source: "csv: output",
+													Start: ast.Position{
+														Column: 69,
+														Line:   55,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 72,
+															Line:   55,
+														},
+														File:   "window_group_agg_push_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 69,
+															Line:   55,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 80,
+															Line:   55,
+														},
+														File:   "window_group_agg_push_test.flux",
+														Source: "output",
+														Start: ast.Position{
+															Column: 74,
+															Line:   55,
+														},
+													},
+												},
+												Name: "output",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 81,
+												Line:   55,
+											},
+											File:   "window_group_agg_push_test.flux",
+											Source: "testing.loadMem(csv: output)",
+											Start: ast.Position{
+												Column: 53,
+												Line:   55,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   55,
+												},
+												File:   "window_group_agg_push_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 53,
+													Line:   55,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 60,
+														Line:   55,
+													},
+													File:   "window_group_agg_push_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 53,
+														Line:   55,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 68,
+														Line:   55,
+													},
+													File:   "window_group_agg_push_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 61,
+														Line:   55,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 106,
+											Line:   55,
+										},
+										File:   "window_group_agg_push_test.flux",
+										Source: "fn: group_window_agg_fn",
+										Start: ast.Position{
+											Column: 83,
+											Line:   55,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 85,
+												Line:   55,
+											},
+											File:   "window_group_agg_push_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 83,
+												Line:   55,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 106,
+												Line:   55,
+											},
+											File:   "window_group_agg_push_test.flux",
+											Source: "group_window_agg_fn",
+											Start: ast.Position{
+												Column: 87,
+												Line:   55,
+											},
+										},
+									},
+									Name: "group_window_agg_fn",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 108,
+						Line:   55,
+					},
+					File:   "window_group_agg_push_test.flux",
+					Source: "test group_window_agg_pushdown = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   54,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "window_group_agg_push_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "window_group_agg_push_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "window_group_agg_push_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 21,
+						Line:   1,
+					},
+					File:   "window_group_agg_push_test.flux",
+					Source: "package planner_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   1,
+						},
+						File:   "window_group_agg_push_test.flux",
+						Source: "planner_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "planner_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
 					Column: 98,
 					Line:   64,
 				},
