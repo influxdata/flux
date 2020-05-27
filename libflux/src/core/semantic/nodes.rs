@@ -5,6 +5,7 @@
 //  This is of paramount importance if we decide to add responsibilities to the semantic analysis and
 //  change it independently from the parsing bits.
 //  Uncommented node types are a direct port of the AST ones.
+#![allow(clippy::match_single_binding)]
 
 extern crate chrono;
 extern crate derivative;
