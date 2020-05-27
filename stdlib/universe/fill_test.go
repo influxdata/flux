@@ -450,8 +450,8 @@ func TestFill_Process(t *testing.T) {
 }
 
 func BenchmarkFill_Values(b *testing.B) {
-	b.Run("1000", func(b *testing.B) {
-		benchmarkFill(b, 1000)
+	b.Run("1000000", func(b *testing.B) {
+		benchmarkFill(b, 1000000)
 	})
 }
 
@@ -468,9 +468,13 @@ func benchmarkFill(b *testing.B, n int) {
 				Alloc:     alloc,
 				Tags: []gen.Tag{
 					{Name: "_measurement", Cardinality: 1},
-					{Name: "_field", Cardinality: 6},
-					{Name: "t0", Cardinality: 100},
-					{Name: "t1", Cardinality: 50},
+					{Name: "_field", Cardinality: 1},
+					{Name: "t0", Cardinality: 1},
+					{Name: "t1", Cardinality: 1},
+					{Name: "t2", Cardinality: 1},
+					{Name: "t3", Cardinality: 1},
+					{Name: "t4", Cardinality: 1},
+					{Name: "t5", Cardinality: 1},
 				},
 				Nulls: 0.4,
 			}
