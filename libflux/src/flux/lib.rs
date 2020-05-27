@@ -10,7 +10,6 @@ use core::semantic::flatbuffers::types::build_env;
 use core::semantic::fresh::Fresher;
 use core::semantic::nodes::{infer_pkg_types, inject_pkg_types};
 use core::semantic::Importer;
-use flatbuffers;
 
 pub use core::ast;
 pub use core::formatter;
