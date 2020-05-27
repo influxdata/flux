@@ -5,8 +5,6 @@ use core::semantic::env::Environment;
 use core::semantic::flatbuffers::types as fb;
 use core::semantic::sub::Substitutable;
 
-use flatbuffers;
-
 #[derive(Debug)]
 struct Error {
     msg: String,

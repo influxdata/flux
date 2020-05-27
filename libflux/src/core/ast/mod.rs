@@ -10,7 +10,6 @@ use std::fmt;
 use std::str::FromStr;
 use std::vec::Vec;
 
-use chrono;
 use chrono::FixedOffset;
 
 use serde::de::{Deserialize, Deserializer, Error, Visitor};
