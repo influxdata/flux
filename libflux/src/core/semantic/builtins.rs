@@ -60,6 +60,9 @@ pub fn builtins() -> Builtins<'static> {
                      "getLevel" => "forall [] (token: string) -> int",
                      "s2CellIDToken" => "forall [] (?token: string, ?point: {lat: float | lon: float}, level: int) -> string",
             },
+            "experimental/json" => semantic_map! {
+                "parse" => "forall [t0] (data: bytes) -> t0",
+            },
             "experimental/http" => semantic_map! {
                 "get" => r#"
                     forall [t0, t1] where t0: Row, t1: Row (
