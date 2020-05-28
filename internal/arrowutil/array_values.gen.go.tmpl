@@ -1,0 +1,88 @@
+package arrowutil
+
+import (
+	"fmt"
+
+	"github.com/apache/arrow/go/arrow/array"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
+)
+
+func NewArrayValue(arr array.Interface, typ flux.ColType) values.Array {
+	switch elemType := flux.SemanticType(typ); elemType {
+	{{range .}}
+	case {{.MonoType}}:
+		return New{{.Name}}ArrayValue(arr.(*{{.Type}}))
+	{{end}}
+	default:
+		panic(fmt.Errorf("unsupported column data type: %s", typ))
+	}
+}
+
+{{range .}}
+var _ values.Value = {{.Name}}ArrayValue{}
+var _ values.Array = {{.Name}}ArrayValue{}
+
+type {{.Name}}ArrayValue struct {
+	arr *{{.Type}}
+	typ semantic.MonoType
+}
+
+func New{{.Name}}ArrayValue(arr *{{.Type}}) values.Array {
+	return {{.Name}}ArrayValue{
+		arr: arr,
+		typ: semantic.NewArrayType({{.MonoType}}),
+	}
+}
+
+func (v {{.Name}}ArrayValue) Type() semantic.MonoType { return v.typ }
+func (v {{.Name}}ArrayValue) IsNull() bool { return false }
+func (v {{.Name}}ArrayValue) Str() string { panic(values.UnexpectedKind(semantic.Array, semantic.String)) }
+func (v {{.Name}}ArrayValue) Bytes() []byte { panic(values.UnexpectedKind(semantic.Array, semantic.Bytes)) }
+func (v {{.Name}}ArrayValue) Int() int64 { panic(values.UnexpectedKind(semantic.Array, semantic.Int)) }
+func (v {{.Name}}ArrayValue) UInt() uint64 { panic(values.UnexpectedKind(semantic.Array, semantic.UInt)) }
+func (v {{.Name}}ArrayValue) Float() float64 { panic(values.UnexpectedKind(semantic.Array, semantic.Float)) }
+func (v {{.Name}}ArrayValue) Bool() bool { panic(values.UnexpectedKind(semantic.Array, semantic.Bool)) }
+func (v {{.Name}}ArrayValue) Time() values.Time { panic(values.UnexpectedKind(semantic.Array, semantic.Time)) }
+func (v {{.Name}}ArrayValue) Duration() values.Duration { panic(values.UnexpectedKind(semantic.Array, semantic.Duration)) }
+func (v {{.Name}}ArrayValue) Regexp() *regexp.Regexp { panic(values.UnexpectedKind(semantic.Array, semantic.Regexp)) }
+func (v {{.Name}}ArrayValue) Array() values.Array { return v }
+func (v {{.Name}}ArrayValue) Object() values.Object { panic(values.UnexpectedKind(semantic.Array, semantic.Object)) }
+func (v {{.Name}}ArrayValue) Function() values.Function { panic(values.UnexpectedKind(semantic.Array, semantic.Function)) }
+
+func (v {{.Name}}ArrayValue) Equal(other values.Value) bool {
+	if other.Type().Nature() != semantic.Array {
+		return false
+	} else if v.arr.Len() != other.Array().Len() {
+		return false
+	}
+
+	otherArray := other.Array()
+	for i, n := 0, v.arr.Len(); i < n; i++ {
+		if !v.Get(i).Equal(otherArray.Get(i)) {
+			return false
+		}
+	}
+	return true
+}
+
+func (v {{.Name}}ArrayValue) Get(i int) values.Value {
+	if v.arr.IsNull(i) {
+		return values.Null
+	}
+	return values.New(v.arr.{{.Value}}(i))
+}
+
+func (v {{.Name}}ArrayValue) Set(i int, value values.Value) { panic("cannot set value on immutable array") }
+func (v {{.Name}}ArrayValue) Append(value values.Value) { panic("cannot append to immutable array") }
+
+func (v {{.Name}}ArrayValue) Len() int { return v.arr.Len() }
+func (v {{.Name}}ArrayValue) Range(f func(i int, v values.Value)) {
+	for i, n := 0, v.arr.Len(); i < n; i++ {
+		f(i, v.Get(i))
+	}
+}
+
+func (v {{.Name}}ArrayValue) Sort(f func(i values.Value, j values.Value) bool) { panic("cannot sort immutable array") }
+{{end}}
