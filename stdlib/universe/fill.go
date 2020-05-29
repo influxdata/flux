@@ -183,7 +183,7 @@ type fillTransformation struct {
 	alloc *memory.Allocator
 }
 
-func NewFillTransformation(ctx context.Context, spec *FillProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (*fillTransformation, execute.Dataset) {
+func NewFillTransformation(ctx context.Context, spec *FillProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
 	t := &fillTransformation{
 		d:     execute.NewPassthroughDataset(id),
 		ctx:   ctx,
@@ -198,15 +198,15 @@ func (t *fillTransformation) RetractTable(id execute.DatasetID, key flux.GroupKe
 }
 
 func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	idx := execute.ColIdx(t.spec.Column, tbl.Cols())
-	if idx < 0 {
+	colIdx := execute.ColIdx(t.spec.Column, tbl.Cols())
+	if colIdx < 0 {
 		return errors.Newf(codes.FailedPrecondition, "fill column not found: %s", t.spec.Column)
 	}
 
 	key := tbl.Key()
-	if idx := execute.ColIdx(t.spec.Column, tbl.Key().Cols()); idx >= 0 {
+	if idx := execute.ColIdx(t.spec.Column, key.Cols()); idx >= 0 {
 		var err error
-		gkb := execute.NewGroupKeyBuilder(tbl.Key())
+		gkb := execute.NewGroupKeyBuilder(key)
 		gkb.SetKeyValue(t.spec.Column, values.New(t.spec.Value))
 		key, err = gkb.Build()
 		if err != nil {
@@ -214,57 +214,15 @@ func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		}
 	}
 
-	prevNonNull := t.spec.Value
 	if !t.spec.UsePrevious {
-		if tbl.Cols()[idx].Type != flux.ColumnType(prevNonNull.Type()) {
-			return errors.Newf(codes.FailedPrecondition, "fill column type mismatch: %s/%s", tbl.Cols()[idx].Type.String(), flux.ColumnType(prevNonNull.Type()).String())
+		if tbl.Cols()[colIdx].Type != flux.ColumnType(t.spec.Value.Type()) {
+			return errors.Newf(codes.FailedPrecondition, "fill column type mismatch: %s/%s", tbl.Cols()[colIdx].Type.String(), flux.ColumnType(t.spec.Value.Type()).String())
 		}
 	}
 
 	table, err := table.StreamWithContext(t.ctx, key, tbl.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
 		return tbl.Do(func(cr flux.ColReader) error {
-			l := cr.Len()
-			if l == 0 {
-				return nil
-			}
-			vs := make([]array.Interface, len(w.Cols()))
-			for j, col := range w.Cols() {
-				if j != idx {
-					vs[j] = table.Values(cr, j)
-					vs[j].Retain()
-				} else {
-					if t.spec.UsePrevious {
-						prevNonNull = execute.ValueForRow(cr, 0, idx)
-					}
-					b := arrow.NewBuilder(col.Type, t.alloc)
-					b.Reserve(l)
-					hasNull := false
-					for i := 0; i < l; i++ {
-						v := execute.ValueForRow(cr, i, idx)
-						if v.IsNull() {
-							if err := arrow.AppendValue(b, prevNonNull); err != nil {
-								return err
-							}
-							hasNull = true
-						} else {
-							if err := arrow.AppendValue(b, v); err != nil {
-								return err
-							}
-							if t.spec.UsePrevious {
-								prevNonNull = v
-							}
-						}
-					}
-					if hasNull {
-						vs[j] = b.NewArray()
-					} else {
-						b.Release()
-						vs[j] = table.Values(cr, j)
-						vs[j].Retain()
-					}
-				}
-			}
-			return w.Write(vs)
+			return t.fillTable(w, cr, colIdx)
 		})
 	})
 	if err != nil {
@@ -281,4 +239,43 @@ func (t *fillTransformation) UpdateProcessingTime(id execute.DatasetID, pt execu
 }
 func (t *fillTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
+}
+
+func (t *fillTransformation) fillTable(w *table.StreamWriter, cr flux.ColReader, colIdx int) error {
+	l := cr.Len()
+	if l == 0 {
+		return nil
+	}
+	prevNonNull := t.spec.Value
+	vs := make([]array.Interface, len(w.Cols()))
+	for j, col := range w.Cols() {
+		arr := table.Values(cr, j)
+		if j != colIdx || arr.NullN() == 0 {
+			vs[j] = arr
+			vs[j].Retain()
+			continue
+		}
+		if t.spec.UsePrevious {
+			prevNonNull = execute.ValueForRow(cr, 0, colIdx)
+		}
+		b := arrow.NewBuilder(col.Type, t.alloc)
+		b.Resize(l)
+		for i := 0; i < l; i++ {
+			v := execute.ValueForRow(cr, i, colIdx)
+			if v.IsNull() {
+				if err := arrow.AppendValue(b, prevNonNull); err != nil {
+					return err
+				}
+			} else {
+				if err := arrow.AppendValue(b, v); err != nil {
+					return err
+				}
+				if t.spec.UsePrevious {
+					prevNonNull = v
+				}
+			}
+		}
+		vs[j] = b.NewArray()
+	}
+	return w.Write(vs)
 }
