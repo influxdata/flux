@@ -1,3 +1,5 @@
+package statsModels
+
 import "math"
 import "generate"
 
