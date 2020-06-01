@@ -1,4 +1,4 @@
-package anomalyDetection 
+package anomalydetection 
 
 import "math"
 import "experimental"

@@ -1,4 +1,4 @@
-package statsModels
+package statsmodels
 
 import "math"
 import "generate"

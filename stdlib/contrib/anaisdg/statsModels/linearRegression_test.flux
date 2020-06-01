@@ -1,8 +1,8 @@
-package statsModels_test
-import (
-	"testing"
-  "statsModels" 
-)
+package statsmodels_test
+
+import "testing"
+import "statsmodels" 
+
 
 inData = 
 "#group,false,false,true,true,false,false,true,true,true,true
