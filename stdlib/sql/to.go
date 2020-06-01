@@ -162,7 +162,7 @@ func NewToSQLTransformation(d execute.Dataset, deps flux.Dependencies, cache exe
 		return nil, err
 	}
 	var tx *sql.Tx
-	if spec.Spec.DriverName != "sqlmock" {
+	if supportsTx(spec.Spec.DriverName) {
 		tx, err = db.Begin()
 		if err != nil {
 			return nil, err
@@ -205,7 +205,7 @@ func (t *ToSQLTransformation) UpdateProcessingTime(id execute.DatasetID, pt exec
 }
 
 func (t *ToSQLTransformation) Finish(id execute.DatasetID, err error) {
-	if t.spec.Spec.DriverName != "sqlmock" {
+	if supportsTx(t.spec.Spec.DriverName) {
 		var txErr error
 		if err == nil {
 			txErr = t.tx.Commit()
@@ -268,9 +268,15 @@ func getTranslationFunc(driverName string) (func() translationFunc, error) {
 		return MysqlColumnTranslateFunc, nil
 	case "snowflake":
 		return SnowflakeColumnTranslateFunc, nil
+	case "awsathena": // read-only support for AWS Athena (see awsathena.go)
+		return nil, errors.Newf(codes.Invalid, "writing is not supported for %s", driverName)
 	default:
 		return nil, errors.Newf(codes.Internal, "invalid driverName: %s", driverName)
 	}
+}
+
+func supportsTx(driverName string) bool {
+	return driverName != "sqlmock" && driverName != "awsathena"
 }
 
 func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []string, valStringArray [][]string, valArgsArray [][]interface{}, err error) {
