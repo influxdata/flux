@@ -77,4 +77,3 @@ t_mad = (table=<-) =>
 test _linearRegression = () =>
 ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mad})
 
-© 2020 GitHub, Inc.
