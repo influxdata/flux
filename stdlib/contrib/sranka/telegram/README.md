@@ -1,13 +1,13 @@
 # Telegram Package
 
-Use this Flux Package to send a message to a Telegram channel using the https://core.telegram.org/bots/api#sendmessage API.
+Use this Flux Package to send a message to a Telegram channel using https://core.telegram.org/bots/api#sendmessage API.
 
-The telegram API requires you to know a bot token and channel ID. The following steps were initially used to test this package:
+The telegram API requires you to know a bot token and a channel ID. The following steps were initially used to test this package:
    1. Create a new account in an application downloaded from https://telegram.org , a phone number is required.
    1. Create a new bot: https://core.telegram.org/bots#creating-a-new-bot , you will receive a bot *token* at the end of the registration process.
    1. Create a new channel from the telegram application,
    1. Add the new bot to the channel as an Administrator, the only required permission is to _post messages_. See https://stackoverflow.com/questions/33126743/how-do-i-add-my-bot-to-a-channel to know more.
-   1. Send any message to @YOUR bot in the channel. Then `curl https://api.telegram.org/bot$token/getUpdates` and look for the _id_ of the channel, it is the *channel* argument in telegram functions.
+   1. Send any message to @YOUR bot in the channel. Then `curl https://api.telegram.org/bot$token/getUpdates` and look for the _id_ of the channel, it is the *channel* argument in the telegram package functions.
 
 ## telegram.message
 
@@ -48,7 +48,7 @@ Basic Example:
 
 ## telegram.endpoint 
 
-`endpoint` function creates a factory function that accepts a mapping function `mapFn` that creates a target function for pipeline `|>` that sends messages from table rows. The `mapFn` accepts a table row and returns an object with `channel`, `text`, and `silent` as defined in the `telegram.message` function arguments. Arguments:
+`endpoint` function creates a factory function that accepts a mapping function `mapFn` and creates a target function for pipeline `|>` that sends messages from table rows. The `mapFn` accepts a table row and returns an object with `channel`, `text`, and `silent` as defined in the `telegram.message` function arguments. Arguments:
 
 | Name     | Type   | Description                                                       |
 | ----     | ----   | -----------                                                       |
@@ -72,7 +72,7 @@ Basic Example:
       |> filter(fn: (r) => r._measurement == "statuses")
       |> last()
       |> tableFind(fn: (key) => true)
-      |> telegram.endpoint(token)(mapFn: (r) => ({
+      |> telegram.endpoint(token: token)(mapFn: (r) => ({
               channel: "-12345", 
               text: "Great Scott!- Disk usage is: **${r.status}**.", 
               silent: true
