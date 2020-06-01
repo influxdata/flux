@@ -3,6 +3,8 @@
 package stdlib
 
 import (
+	_ "github.com/influxdata/flux/stdlib/contrib/anaisdg/anomalyDetection"
+	_ "github.com/influxdata/flux/stdlib/contrib/anaisdg/statsModels"
 	_ "github.com/influxdata/flux/stdlib/contrib/chobbs/discord"
 	_ "github.com/influxdata/flux/stdlib/csv"
 	_ "github.com/influxdata/flux/stdlib/date"
