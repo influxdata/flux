@@ -34,6 +34,14 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			},
 			ErrMsg: "",
 		}, {
+			Name: "ok awsathena",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "awsathena",
+				DataSourceName: "s3://bucket/?accessID=ABCD123&region=us-west-1&secretAccessKey=PWD007&db=test",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
 			Name: "invalid driver",
 			Spec: &FromSQLProcedureSpec{
 				DriverName:     "voltdb",
