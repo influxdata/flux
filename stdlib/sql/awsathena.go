@@ -5,9 +5,7 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/values"
 	_ "github.com/uber/athenadriver/go"
 )
@@ -175,6 +173,8 @@ func NewAwsAthenaRowReader(r *sql.Rows) (execute.RowReader, error) {
 	return reader, nil
 }
 
+// This is code for `sql.to`, which is not supported now (or yet).
+/*
 var fluxToAwsAthena = map[flux.ColType]string{
 	flux.TFloat:  "double",
 	flux.TInt:    "bigint",
@@ -194,3 +194,4 @@ func AwsAthenaColumnTranslateFunc() translationFunc {
 		return colName + " " + s, nil
 	}
 }
+*/
