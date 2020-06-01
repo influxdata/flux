@@ -1,7 +1,8 @@
-package anomalydetection_test
-
-import "testing"
-import "anomalydetection" 
+package anomalyDetection_test
+import (
+	"testing"
+  "anomalyDetection" 
+)
 
 inData= "
 #group,false,false,true,true,false,false,true,true,true,true
