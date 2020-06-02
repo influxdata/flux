@@ -12,7 +12,7 @@ package libflux
 // are not tracked by Go's build system.'
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                            "b0745b5aa727c26b41acf768f7def2b918720f1057c608631710da556a5ac7ac",
+	"libflux/Cargo.lock":                                                            "c1a620bfdd8da18b4baa3946ba3bf55a9cce8acde6932c02edb5fd25e8f9c81b",
 	"libflux/Cargo.toml":                                                            "9ef291bc6fcfbdcd7a71946dd306fa2599d17c20be2ca15d59d93cec0a564f77",
 	"libflux/include/influxdata/flux.h":                                             "8a534237a7f7a36cea9c2ed24f10d436217e043b78de2129a820d72fb043ea4d",
 	"libflux/scanner.c":                                                             "dfdd3c93cd9015d893c47179c6aed56d81c8159bbe947fd16498cb21b29f5c5a",
@@ -66,6 +66,10 @@ var sourceHashes = map[string]string{
 	"libflux/src/flux/benches/builtins.rs":                                          "c60908c65ea51c225fccec19c44343af9103c950a91b23071ddb80292da708c8",
 	"libflux/src/flux/build.rs":                                                     "31a4f825297f9b79d1c8692a5fa3ff9211cb87d01650d147128d061588f75abd",
 	"libflux/src/flux/lib.rs":                                                       "814d59476baa5c7f8bc1bc72770fabe803a832707978e3567b56a25a6351b7db",
+	"stdlib/contrib/anaisdg/anomalydetection/mad.flux":                              "77705d8398839a54386e7621c74af627c3c4e96c98938667bc2c0390dcd87364",
+	"stdlib/contrib/anaisdg/anomalydetection/mad_test.flux":                         "780ce06063d8cd0855042aad133bce6e1f4642db5a8159fbd27f5daaab3c3b88",
+	"stdlib/contrib/anaisdg/statsmodels/linearreg.flux":                             "40462dcbd21d19354d40e1795db7bc870fe0e210630e29d1035904438b49f3da",
+	"stdlib/contrib/anaisdg/statsmodels/linearreg_test.flux":                        "dee62e946863cba171845d0b2331ffd66791530ba94dfa83f2089c11d21dc761",
 	"stdlib/contrib/chobbs/discord/discord.flux":                                    "b9f9b1a60fc92f47930fa4252a77bfc1def5ba98084880eddb4ebbab4078a697",
 	"stdlib/contrib/jsternberg/aggregate/aggregate.flux":                            "a80012d988b10134ff4a663d2e01564db04cabd3b749298f1baf9323633c65e1",
 	"stdlib/contrib/jsternberg/influxdb/influxdb.flux":                              "d963178b0135bccd77f113bb371fe5f0a7259f8bc4b5befc761f6a166db0d5a4",

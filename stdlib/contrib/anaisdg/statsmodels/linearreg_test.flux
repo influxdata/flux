@@ -1,7 +1,7 @@
 package statsmodels_test
 
 import "testing"
-import "statsmodels" 
+import "contrib/anaisdg/statsmodels" 
 
 
 inData = 
@@ -33,5 +33,3 @@ t_linearRegression = (table=<-) =>
 
 test _linearRegression = () =>
 ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})
-
-© 2020 GitHub, Inc.
