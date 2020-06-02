@@ -12,6 +12,7 @@
     "IsNumeric": true,
     "IsComparable": true,
     "Value": "Value",
+    "FluxValue": "Int",
     "Append": "Append"
   },
   {
@@ -27,6 +28,7 @@
     "IsNumeric": true,
     "IsComparable": true,
     "Value": "Value",
+    "FluxValue": "UInt",
     "Append": "Append"
   },
   {
@@ -42,6 +44,7 @@
     "IsNumeric": true,
     "IsComparable": true,
     "Value": "Value",
+    "FluxValue": "Float",
     "Append": "Append"
   },
   {
@@ -57,6 +60,7 @@
     "IsNumeric": false,
     "IsComparable": false,
     "Value": "Value",
+    "FluxValue": "Bool",
     "Append": "Append"
   },
   {
@@ -72,6 +76,7 @@
     "IsNumeric": false,
     "IsComparable": true,
     "Value": "ValueString",
+    "FluxValue": "Str",
     "Append": "AppendString"
   },
   {
@@ -87,6 +92,7 @@
     "IsNumeric": true,
     "IsComparable": true,
     "Value": "Value",
+    "FluxValue": "Time",
     "Append": "Append"
   }
 ]

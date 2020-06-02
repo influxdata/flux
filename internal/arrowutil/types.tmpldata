@@ -6,8 +6,7 @@
     "IsNumeric": true,
     "IsComparable": true,
     "Value": "Value",
-    "Append": "Append",
-    "NewArray": "NewInt64Array"
+    "Append": "Append"
   },
   {
     "Name": "Uint64",
@@ -16,8 +15,7 @@
     "IsNumeric": true,
     "IsComparable": true,
     "Value": "Value",
-    "Append": "Append",
-    "NewArray": "NewUint64Array"
+    "Append": "Append"
   },
   {
     "Name": "Float64",
@@ -26,8 +24,7 @@
     "IsNumeric": true,
     "IsComparable": true,
     "Value": "Value",
-    "Append": "Append",
-    "NewArray": "NewFloat64Array"
+    "Append": "Append"
   },
   {
     "Name": "Boolean",
@@ -36,8 +33,7 @@
     "IsNumeric": false,
     "IsComparable": false,
     "Value": "Value",
-    "Append": "Append",
-    "NewArray": "NewBooleanArray"
+    "Append": "Append"
   },
   {
     "Name": "String",
@@ -46,7 +42,6 @@
     "IsNumeric": false,
     "IsComparable": true,
     "Value": "ValueString",
-    "Append": "AppendString",
-    "NewArray": "NewBinaryArray"
+    "Append": "AppendString"
   }
 ]

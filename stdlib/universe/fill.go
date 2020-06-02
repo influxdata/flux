@@ -6,7 +6,6 @@ import (
 
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -17,6 +16,9 @@ import (
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
+
+//go:generate -command tmpl ../../gotool.sh github.com/benbjohnson/tmpl
+//go:generate tmpl -data=@../../internal/types.tmpldata -o fill.gen.go fill.gen.go.tmpl
 
 const FillKind = "fill"
 
@@ -242,40 +244,18 @@ func (t *fillTransformation) Finish(id execute.DatasetID, err error) {
 }
 
 func (t *fillTransformation) fillTable(w *table.StreamWriter, cr flux.ColReader, colIdx int) error {
-	l := cr.Len()
-	if l == 0 {
+	if cr.Len() == 0 {
 		return nil
 	}
-	prevNonNull := t.spec.Value
 	vs := make([]array.Interface, len(w.Cols()))
-	for j, col := range w.Cols() {
-		arr := table.Values(cr, j)
-		if j != colIdx || arr.NullN() == 0 {
-			vs[j] = arr
-			vs[j].Retain()
+	for i, col := range w.Cols() {
+		arr := table.Values(cr, i)
+		if i != colIdx || arr.NullN() == 0 {
+			vs[i] = arr
+			vs[i].Retain()
 			continue
 		}
-		if t.spec.UsePrevious {
-			prevNonNull = execute.ValueForRow(cr, 0, colIdx)
-		}
-		b := arrow.NewBuilder(col.Type, t.alloc)
-		b.Resize(l)
-		for i := 0; i < l; i++ {
-			v := execute.ValueForRow(cr, i, colIdx)
-			if v.IsNull() {
-				if err := arrow.AppendValue(b, prevNonNull); err != nil {
-					return err
-				}
-			} else {
-				if err := arrow.AppendValue(b, v); err != nil {
-					return err
-				}
-				if t.spec.UsePrevious {
-					prevNonNull = v
-				}
-			}
-		}
-		vs[j] = b.NewArray()
+		vs[i] = t.fillColumn(col.Type, arr)
 	}
 	return w.Write(vs)
 }
