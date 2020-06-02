@@ -172,26 +172,3 @@ func NewAwsAthenaRowReader(r *sql.Rows) (execute.RowReader, error) {
 
 	return reader, nil
 }
-
-// This is code for `sql.to`, which is not supported now (or yet).
-/*
-var fluxToAwsAthena = map[flux.ColType]string{
-	flux.TFloat:  "double",
-	flux.TInt:    "bigint",
-	flux.TUInt:   "bigint",
-	flux.TString: "string",
-	flux.TBool:   "boolean",
-	flux.TTime:   "timestamp", // "timestamp with time zone" is not supported (yet?): "Unsupported Hive type: timestamp with time zone"
-}
-
-// AwsAthenaTranslateColumn translates flux colTypes into their corresponding AWS Athena column type
-func AwsAthenaColumnTranslateFunc() translationFunc {
-	return func(f flux.ColType, colName string) (string, error) {
-		s, found := fluxToAwsAthena[f]
-		if !found {
-			return "", errors.Newf(codes.Internal, "AWS Athena does not support column type %s", f.String())
-		}
-		return colName + " " + s, nil
-	}
-}
-*/
