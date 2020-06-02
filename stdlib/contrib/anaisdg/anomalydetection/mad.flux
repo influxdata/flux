@@ -3,7 +3,7 @@ package anomalydetection
 import "math"
 import "experimental"
 
-mad = (table=<-, threshold) => {
+mad = (table=<-, threshold=3.0) => {
     // _value_med = med(x)
     data = table |> group(columns: ["_time"], mode:"by")
     med = data |> median(column: "_value")
@@ -16,7 +16,7 @@ mad = (table=<-, threshold) => {
     )
    
    //The constant b is needed to make the estimator consistent for the parameter of interest.
-    /// In the case of the usual parameter a at Gaussian distributions
+    /// In the case of the usual parameter a at Gaussian distributions b = 1.4826
     b = 1.4826
     
     diff_med =
