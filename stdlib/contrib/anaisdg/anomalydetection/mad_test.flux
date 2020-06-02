@@ -73,5 +73,5 @@ t_mad = (table=<-) =>
 		|> anomalyDetection.mad(threshold: 3.0)
 
 
-test _linearRegression = () =>
+test _mad = () =>
 ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mad})
