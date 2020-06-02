@@ -4,8 +4,6 @@
 use crate::semantic::env::Environment;
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 
-use flatbuffers;
-
 use crate::semantic::fresh::Fresher;
 
 #[rustfmt::skip]

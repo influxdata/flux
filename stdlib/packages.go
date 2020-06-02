@@ -3,6 +3,7 @@
 package stdlib
 
 import (
+	_ "github.com/influxdata/flux/stdlib/contrib/chobbs/discord"
 	_ "github.com/influxdata/flux/stdlib/csv"
 	_ "github.com/influxdata/flux/stdlib/date"
 	_ "github.com/influxdata/flux/stdlib/experimental"
@@ -11,6 +12,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/experimental/csv"
 	_ "github.com/influxdata/flux/stdlib/experimental/geo"
 	_ "github.com/influxdata/flux/stdlib/experimental/http"
+	_ "github.com/influxdata/flux/stdlib/experimental/json"
 	_ "github.com/influxdata/flux/stdlib/experimental/mqtt"
 	_ "github.com/influxdata/flux/stdlib/experimental/prometheus"
 	_ "github.com/influxdata/flux/stdlib/experimental/query"
