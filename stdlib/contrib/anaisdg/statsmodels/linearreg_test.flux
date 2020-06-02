@@ -1,7 +1,7 @@
 package statsmodels_test
 
 import "testing"
-import "statsmodels" 
+import "contrib/anaisdg/statsmodels" 
 
 
 inData = 
