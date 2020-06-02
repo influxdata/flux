@@ -70,7 +70,7 @@ outData = "
 t_mad = (table=<-) =>
 	table
 		|> range(start: 2020-04-29T21:04:00Z, stop: 2020-05-29T21:05:00Z)
-		|> anomalyDetection.mad()
+		|> anomalyDetection.mad(threshold: 3.0)
 
 
 test _linearRegression = () =>

@@ -3,7 +3,7 @@ package anomalydetection
 import "math"
 import "experimental"
 
-mad = (table=<-) => {
+mad = (table=<-, threshold) => {
     // _value_med = med(x)
     data = table |> group(columns: ["_time"], mode:"by")
     med = data |> median(column: "_value")
@@ -24,8 +24,6 @@ mad = (table=<-) => {
         |> median(column: "_value")
         |> map(fn: (r) => ({ r with MAD: b * r._value}))
         |> filter(fn: (r) => r.MAD > 0.0)
-    
-    threshold = 3.0
     
     output = union(tables: [diff, diff_med])
     |> filter(fn: (r) => exists r.MAD)
