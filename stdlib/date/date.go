@@ -27,10 +27,14 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
 
+				if v1 == nil {
+					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
+				}
+
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Second())), nil
 				}
-				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
 		"minute": values.NewFunction(
@@ -42,10 +46,14 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
 
+				if v1 == nil {
+					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
+				}
+
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Minute())), nil
 				}
-				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
 		"hour": values.NewFunction(
@@ -57,10 +65,14 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
 
+				if v1 == nil {
+					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
+				}
+
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Hour())), nil
 				}
-				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
 		"weekDay": values.NewFunction(
@@ -72,10 +84,14 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
 
+				if v1 == nil {
+					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
+				}
+
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Weekday())), nil
 				}
-				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
 		"monthDay": values.NewFunction(
@@ -87,10 +103,14 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
 
+				if v1 == nil {
+					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
+				}
+
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Day())), nil
 				}
-				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
 		"yearDay": values.NewFunction(
@@ -102,10 +122,14 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
 
+				if v1 == nil {
+					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
+				}
+
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().YearDay())), nil
 				}
-				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
 		"month": values.NewFunction(
@@ -117,10 +141,14 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
 
+				if v1 == nil {
+					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
+				}
+
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Month())), nil
 				}
-				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
 		"year": values.NewFunction(
@@ -132,10 +160,14 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
 
+				if v1 == nil {
+					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
+				}
+
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Year())), nil
 				}
-				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
 		"week": values.NewFunction(
@@ -147,11 +179,15 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
 
+				if v1 == nil {
+					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
+				}
+
 				if v1.Type().Nature() == semantic.Time {
 					_, week := v1.Time().Time().ISOWeek()
 					return values.NewInt(int64(week)), nil
 				}
-				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
 		"quarter": values.NewFunction(
@@ -163,11 +199,15 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
 
+				if v1 == nil {
+					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
+				}
+
 				if v1.Type().Nature() == semantic.Time {
 					month := v1.Time().Time().Month()
 					return values.NewInt(int64(math.Ceil(float64(month) / 3.0))), nil
 				}
-				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
 		"millisecond": values.NewFunction(
@@ -179,11 +219,15 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
 
+				if v1 == nil {
+					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
+				}
+
 				if v1.Type().Nature() == semantic.Time {
 					millisecond := int64(time.Nanosecond) * int64(v1.Time().Time().Nanosecond()) / int64(time.Millisecond)
 					return values.NewInt(millisecond), nil
 				}
-				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
 		"microsecond": values.NewFunction(
@@ -195,11 +239,15 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
 
+				if v1 == nil {
+					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
+				}
+
 				if v1.Type().Nature() == semantic.Time {
 					microsecond := int64(time.Nanosecond) * int64(v1.Time().Time().Nanosecond()) / int64(time.Microsecond)
 					return values.NewInt(microsecond), nil
 				}
-				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
 		"nanosecond": values.NewFunction(
@@ -211,10 +259,14 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
 
+				if v1 == nil {
+					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
+				}
+
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Nanosecond())), nil
 				}
-				return nil, fmt.Errorf("cannot convert argument t of type %v to time", v1.Type().Nature())
+				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
 		"truncate": values.NewFunction(
@@ -224,6 +276,10 @@ func init() {
 				v, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
+				}
+
+				if v == nil {
+					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
 
 				u, unitOk := args.Get("unit")
@@ -239,7 +295,7 @@ func init() {
 					b := w.GetEarliestBounds(v.Time())
 					return values.NewTime(b.Start), nil
 				}
-				return nil, fmt.Errorf("cannot truncate argument t of type %v to unit %v", v.Type().Nature(), u)
+				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot truncate argument t of type %v to unit %v", v.Type().Nature(), u))
 			}, false,
 		),
 	}
