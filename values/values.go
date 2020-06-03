@@ -148,71 +148,49 @@ var (
 	Null = null{}
 )
 
-func Unwrap(v Value) (interface{}, error) {
+// Extract the primitive value from the Value interface.
+// This will panic when called on some Values that cannot be unwrapped.
+func Unwrap(v Value) interface{} {
 	if v.IsNull() {
-		return nil, nil
+		return nil
 	}
 	switch n := v.Type().Nature(); n {
 	case semantic.String:
-		return v.Str(), nil
+		return v.Str()
 	case semantic.Bytes:
-		return v.Bytes(), nil
+		return v.Bytes()
 	case semantic.Int:
-		return v.Int(), nil
+		return v.Int()
 	case semantic.UInt:
-		return v.UInt(), nil
+		return v.UInt()
 	case semantic.Float:
-		return v.Float(), nil
+		return v.Float()
 	case semantic.Bool:
-		return v.Bool(), nil
+		return v.Bool()
 	case semantic.Time:
-		return v.Time(), nil
+		return v.Time()
 	case semantic.Duration:
-		return v.Duration(), nil
+		return v.Duration()
 	case semantic.Regexp:
-		return v.Regexp(), nil
+		return v.Regexp()
 	case semantic.Array:
 		arr := v.Array()
 		a := make([]interface{}, arr.Len())
-		var rangeErr error
 		arr.Range(func(i int, v Value) {
-			if rangeErr != nil {
-				return //short circuit if we already hit an error
-			}
-			val, err := Unwrap(v)
-			if err != nil {
-				rangeErr = err
-				return
-			}
+			val := Unwrap(v)
 			a[i] = val
 		})
-		if rangeErr != nil {
-			return nil, rangeErr
-		}
-		return a, nil
+		return a
 	case semantic.Object:
 		obj := v.Object()
 		o := make(map[string]interface{}, obj.Len())
-		var rangeErr error
 		obj.Range(func(k string, v Value) {
-			if rangeErr != nil {
-				return //short circuit if we already hit an error
-			}
-			val, err := Unwrap(v)
-			if err != nil {
-				rangeErr = err
-				return
-			}
+			val := Unwrap(v)
 			o[k] = val
 		})
-		if rangeErr != nil {
-			return nil, rangeErr
-		}
-		return o, nil
-	case semantic.Function:
-		return nil, errors.New(codes.Invalid, "cannot encode a function value")
+		return o
 	default:
-		return nil, errors.Newf(codes.Unknown, "unknown nature %v", n)
+		return nil
 	}
 }
 

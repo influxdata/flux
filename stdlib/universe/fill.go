@@ -217,15 +217,11 @@ func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 	}
 
 	var fillValue interface{}
-	var err error
 	if !t.spec.UsePrevious {
 		if tbl.Cols()[colIdx].Type != flux.ColumnType(t.spec.Value.Type()) {
 			return errors.Newf(codes.FailedPrecondition, "fill column type mismatch: %s/%s", tbl.Cols()[colIdx].Type.String(), flux.ColumnType(t.spec.Value.Type()).String())
 		}
-		fillValue, err = values.Unwrap(t.spec.Value)
-		if err != nil {
-			return err
-		}
+		fillValue = values.Unwrap(t.spec.Value)
 	}
 
 	table, err := table.StreamWithContext(t.ctx, key, tbl.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
