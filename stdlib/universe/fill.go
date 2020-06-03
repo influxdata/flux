@@ -216,15 +216,21 @@ func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		}
 	}
 
+	var fillValue interface{}
+	var err error
 	if !t.spec.UsePrevious {
 		if tbl.Cols()[colIdx].Type != flux.ColumnType(t.spec.Value.Type()) {
 			return errors.Newf(codes.FailedPrecondition, "fill column type mismatch: %s/%s", tbl.Cols()[colIdx].Type.String(), flux.ColumnType(t.spec.Value.Type()).String())
+		}
+		fillValue, err = values.Unwrap(t.spec.Value)
+		if err != nil {
+			return err
 		}
 	}
 
 	table, err := table.StreamWithContext(t.ctx, key, tbl.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
 		return tbl.Do(func(cr flux.ColReader) error {
-			return t.fillTable(w, cr, colIdx)
+			return t.fillTable(w, cr, colIdx, &fillValue)
 		})
 	})
 	if err != nil {
@@ -243,19 +249,19 @@ func (t *fillTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
 
-func (t *fillTransformation) fillTable(w *table.StreamWriter, cr flux.ColReader, colIdx int) error {
+func (t *fillTransformation) fillTable(w *table.StreamWriter, cr flux.ColReader, colIdx int, fillValue *interface{}) error {
 	if cr.Len() == 0 {
 		return nil
 	}
 	vs := make([]array.Interface, len(w.Cols()))
 	for i, col := range w.Cols() {
 		arr := table.Values(cr, i)
-		if i != colIdx || arr.NullN() == 0 {
+		if i != colIdx {
 			vs[i] = arr
 			vs[i].Retain()
 			continue
 		}
-		vs[i] = t.fillColumn(col.Type, arr)
+		vs[i] = t.fillColumn(col.Type, arr, fillValue)
 	}
 	return w.Write(vs)
 }

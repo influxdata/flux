@@ -410,6 +410,40 @@ func TestFill_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "fill previous multiple buffers",
+			spec: &universe.FillProcedureSpec{
+				DefaultCost: plan.DefaultCost{},
+				Column:      "_value",
+				UsePrevious: true,
+			},
+			data: []flux.Table{&executetest.RowWiseTable{
+				Table: &executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), nil},
+						{execute.Time(2), "A"},
+						{execute.Time(3), nil},
+						{execute.Time(4), "B"},
+					},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil},
+					{execute.Time(2), "A"},
+					{execute.Time(3), "A"},
+					{execute.Time(4), "B"},
+				},
+			}},
+		},
+		{
 			name: "fill previous empty table",
 			spec: &universe.FillProcedureSpec{
 				DefaultCost: plan.DefaultCost{},

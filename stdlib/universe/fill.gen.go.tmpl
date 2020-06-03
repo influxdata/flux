@@ -6,12 +6,13 @@ import (
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/values"
 )
 
-func (t *fillTransformation) fillColumn(typ flux.ColType, arr array.Interface) array.Interface {
+func (t *fillTransformation) fillColumn(typ flux.ColType, arr array.Interface, fillValue *interface{}) array.Interface {
 	switch typ {
 	{{range .}}case {{.ColumnType}}:
-		return t.fill{{.Name}}Column(arr.(*{{.ArrowType}}))
+		return t.fill{{.Name}}Column(arr.(*{{.ArrowType}}), fillValue)
 	{{end}}
 	default:
 		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
@@ -19,33 +20,36 @@ func (t *fillTransformation) fillColumn(typ flux.ColType, arr array.Interface) a
 }
 
 {{range .}}
-func (t *fillTransformation) fill{{.Name}}Column(arr *{{.ArrowType}}) array.Interface {
-	var prevValue {{.Type}}
-	prevNull := false
-	if t.spec.UsePrevious {
-		if prevNull = arr.IsNull(0); !prevNull {
-			prevValue = arr.{{.Value}}(0)
-		}
+func (t *fillTransformation) fill{{.Name}}Column(arr *{{.ArrowType}}, fillValue *interface{}) array.Interface {
+	fillValueNull := *fillValue == nil
+	var fillValue{{.Name}} {{.Type}}
+	if !fillValueNull {
+		{{if eq .Name "Time"}}fillValue{{.Name}} = {{.Type}}((*fillValue).(values.Time)){{else}}fillValue{{.Name}} = (*fillValue).({{.Type}}){{end}}
 	} else {
-		{{if eq .Name "Time"}}prevValue = int64(t.spec.Value.{{.FluxValue}}()){{else}}prevValue = t.spec.Value.{{.FluxValue}}(){{end}}
+		if fillValueNull = arr.IsNull(0); !fillValueNull {
+			fillValue{{.Name}} = arr.{{.Value}}(0)
+		}
 	}
 	{{if eq .Name "String"}}b := array.NewBinaryBuilder(t.alloc, arrow.BinaryTypes.String){{else}}b := array.New{{.ArrowName}}Builder(t.alloc){{end}}
 	b.Resize(arr.Len())
 	for i := 0; i < arr.Len(); i++ {
 		if arr.IsNull(i) {
-			if prevNull {
+			if fillValueNull {
 				b.AppendNull()
 			} else {
-				b.{{.Append}}(prevValue)
+				b.{{.Append}}(fillValue{{.Name}})
 			}
 		} else {
 			v := arr.{{.Value}}(i)
 			b.{{.Append}}(v)
 			if t.spec.UsePrevious {
-				prevValue = v
-				prevNull = false
+				fillValue{{.Name}} = v
+				fillValueNull = false
 			}
 		}
+	}
+	if t.spec.UsePrevious && !fillValueNull {
+		*fillValue = fillValue{{.Name}}
 	}
 	return b.NewArray()
 }

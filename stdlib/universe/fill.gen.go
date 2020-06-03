@@ -12,210 +12,229 @@ import (
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/values"
 )
 
-func (t *fillTransformation) fillColumn(typ flux.ColType, arr array.Interface) array.Interface {
+func (t *fillTransformation) fillColumn(typ flux.ColType, arr array.Interface, fillValue *interface{}) array.Interface {
 	switch typ {
 	case flux.TInt:
-		return t.fillIntColumn(arr.(*array.Int64))
+		return t.fillIntColumn(arr.(*array.Int64), fillValue)
 	case flux.TUInt:
-		return t.fillUintColumn(arr.(*array.Uint64))
+		return t.fillUintColumn(arr.(*array.Uint64), fillValue)
 	case flux.TFloat:
-		return t.fillFloatColumn(arr.(*array.Float64))
+		return t.fillFloatColumn(arr.(*array.Float64), fillValue)
 	case flux.TBool:
-		return t.fillBooleanColumn(arr.(*array.Boolean))
+		return t.fillBooleanColumn(arr.(*array.Boolean), fillValue)
 	case flux.TString:
-		return t.fillStringColumn(arr.(*array.Binary))
+		return t.fillStringColumn(arr.(*array.Binary), fillValue)
 	case flux.TTime:
-		return t.fillTimeColumn(arr.(*array.Int64))
+		return t.fillTimeColumn(arr.(*array.Int64), fillValue)
 
 	default:
 		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
 	}
 }
 
-func (t *fillTransformation) fillIntColumn(arr *array.Int64) array.Interface {
-	var prevValue int64
-	prevNull := false
-	if t.spec.UsePrevious {
-		if prevNull = arr.IsNull(0); !prevNull {
-			prevValue = arr.Value(0)
-		}
+func (t *fillTransformation) fillIntColumn(arr *array.Int64, fillValue *interface{}) array.Interface {
+	fillValueNull := *fillValue == nil
+	var fillValueInt int64
+	if !fillValueNull {
+		fillValueInt = (*fillValue).(int64)
 	} else {
-		prevValue = t.spec.Value.Int()
+		if fillValueNull = arr.IsNull(0); !fillValueNull {
+			fillValueInt = arr.Value(0)
+		}
 	}
 	b := array.NewInt64Builder(t.alloc)
 	b.Resize(arr.Len())
 	for i := 0; i < arr.Len(); i++ {
 		if arr.IsNull(i) {
-			if prevNull {
+			if fillValueNull {
 				b.AppendNull()
 			} else {
-				b.Append(prevValue)
+				b.Append(fillValueInt)
 			}
 		} else {
 			v := arr.Value(i)
 			b.Append(v)
 			if t.spec.UsePrevious {
-				prevValue = v
-				prevNull = false
+				fillValueInt = v
+				fillValueNull = false
 			}
 		}
+	}
+	if t.spec.UsePrevious && !fillValueNull {
+		*fillValue = fillValueInt
 	}
 	return b.NewArray()
 }
 
-func (t *fillTransformation) fillUintColumn(arr *array.Uint64) array.Interface {
-	var prevValue uint64
-	prevNull := false
-	if t.spec.UsePrevious {
-		if prevNull = arr.IsNull(0); !prevNull {
-			prevValue = arr.Value(0)
-		}
+func (t *fillTransformation) fillUintColumn(arr *array.Uint64, fillValue *interface{}) array.Interface {
+	fillValueNull := *fillValue == nil
+	var fillValueUint uint64
+	if !fillValueNull {
+		fillValueUint = (*fillValue).(uint64)
 	} else {
-		prevValue = t.spec.Value.UInt()
+		if fillValueNull = arr.IsNull(0); !fillValueNull {
+			fillValueUint = arr.Value(0)
+		}
 	}
 	b := array.NewUint64Builder(t.alloc)
 	b.Resize(arr.Len())
 	for i := 0; i < arr.Len(); i++ {
 		if arr.IsNull(i) {
-			if prevNull {
+			if fillValueNull {
 				b.AppendNull()
 			} else {
-				b.Append(prevValue)
+				b.Append(fillValueUint)
 			}
 		} else {
 			v := arr.Value(i)
 			b.Append(v)
 			if t.spec.UsePrevious {
-				prevValue = v
-				prevNull = false
+				fillValueUint = v
+				fillValueNull = false
 			}
 		}
+	}
+	if t.spec.UsePrevious && !fillValueNull {
+		*fillValue = fillValueUint
 	}
 	return b.NewArray()
 }
 
-func (t *fillTransformation) fillFloatColumn(arr *array.Float64) array.Interface {
-	var prevValue float64
-	prevNull := false
-	if t.spec.UsePrevious {
-		if prevNull = arr.IsNull(0); !prevNull {
-			prevValue = arr.Value(0)
-		}
+func (t *fillTransformation) fillFloatColumn(arr *array.Float64, fillValue *interface{}) array.Interface {
+	fillValueNull := *fillValue == nil
+	var fillValueFloat float64
+	if !fillValueNull {
+		fillValueFloat = (*fillValue).(float64)
 	} else {
-		prevValue = t.spec.Value.Float()
+		if fillValueNull = arr.IsNull(0); !fillValueNull {
+			fillValueFloat = arr.Value(0)
+		}
 	}
 	b := array.NewFloat64Builder(t.alloc)
 	b.Resize(arr.Len())
 	for i := 0; i < arr.Len(); i++ {
 		if arr.IsNull(i) {
-			if prevNull {
+			if fillValueNull {
 				b.AppendNull()
 			} else {
-				b.Append(prevValue)
+				b.Append(fillValueFloat)
 			}
 		} else {
 			v := arr.Value(i)
 			b.Append(v)
 			if t.spec.UsePrevious {
-				prevValue = v
-				prevNull = false
+				fillValueFloat = v
+				fillValueNull = false
 			}
 		}
+	}
+	if t.spec.UsePrevious && !fillValueNull {
+		*fillValue = fillValueFloat
 	}
 	return b.NewArray()
 }
 
-func (t *fillTransformation) fillBooleanColumn(arr *array.Boolean) array.Interface {
-	var prevValue bool
-	prevNull := false
-	if t.spec.UsePrevious {
-		if prevNull = arr.IsNull(0); !prevNull {
-			prevValue = arr.Value(0)
-		}
+func (t *fillTransformation) fillBooleanColumn(arr *array.Boolean, fillValue *interface{}) array.Interface {
+	fillValueNull := *fillValue == nil
+	var fillValueBoolean bool
+	if !fillValueNull {
+		fillValueBoolean = (*fillValue).(bool)
 	} else {
-		prevValue = t.spec.Value.Bool()
+		if fillValueNull = arr.IsNull(0); !fillValueNull {
+			fillValueBoolean = arr.Value(0)
+		}
 	}
 	b := array.NewBooleanBuilder(t.alloc)
 	b.Resize(arr.Len())
 	for i := 0; i < arr.Len(); i++ {
 		if arr.IsNull(i) {
-			if prevNull {
+			if fillValueNull {
 				b.AppendNull()
 			} else {
-				b.Append(prevValue)
+				b.Append(fillValueBoolean)
 			}
 		} else {
 			v := arr.Value(i)
 			b.Append(v)
 			if t.spec.UsePrevious {
-				prevValue = v
-				prevNull = false
+				fillValueBoolean = v
+				fillValueNull = false
 			}
 		}
+	}
+	if t.spec.UsePrevious && !fillValueNull {
+		*fillValue = fillValueBoolean
 	}
 	return b.NewArray()
 }
 
-func (t *fillTransformation) fillStringColumn(arr *array.Binary) array.Interface {
-	var prevValue string
-	prevNull := false
-	if t.spec.UsePrevious {
-		if prevNull = arr.IsNull(0); !prevNull {
-			prevValue = arr.ValueString(0)
-		}
+func (t *fillTransformation) fillStringColumn(arr *array.Binary, fillValue *interface{}) array.Interface {
+	fillValueNull := *fillValue == nil
+	var fillValueString string
+	if !fillValueNull {
+		fillValueString = (*fillValue).(string)
 	} else {
-		prevValue = t.spec.Value.Str()
+		if fillValueNull = arr.IsNull(0); !fillValueNull {
+			fillValueString = arr.ValueString(0)
+		}
 	}
 	b := array.NewBinaryBuilder(t.alloc, arrow.BinaryTypes.String)
 	b.Resize(arr.Len())
 	for i := 0; i < arr.Len(); i++ {
 		if arr.IsNull(i) {
-			if prevNull {
+			if fillValueNull {
 				b.AppendNull()
 			} else {
-				b.AppendString(prevValue)
+				b.AppendString(fillValueString)
 			}
 		} else {
 			v := arr.ValueString(i)
 			b.AppendString(v)
 			if t.spec.UsePrevious {
-				prevValue = v
-				prevNull = false
+				fillValueString = v
+				fillValueNull = false
 			}
 		}
+	}
+	if t.spec.UsePrevious && !fillValueNull {
+		*fillValue = fillValueString
 	}
 	return b.NewArray()
 }
 
-func (t *fillTransformation) fillTimeColumn(arr *array.Int64) array.Interface {
-	var prevValue int64
-	prevNull := false
-	if t.spec.UsePrevious {
-		if prevNull = arr.IsNull(0); !prevNull {
-			prevValue = arr.Value(0)
-		}
+func (t *fillTransformation) fillTimeColumn(arr *array.Int64, fillValue *interface{}) array.Interface {
+	fillValueNull := *fillValue == nil
+	var fillValueTime int64
+	if !fillValueNull {
+		fillValueTime = int64((*fillValue).(values.Time))
 	} else {
-		prevValue = int64(t.spec.Value.Time())
+		if fillValueNull = arr.IsNull(0); !fillValueNull {
+			fillValueTime = arr.Value(0)
+		}
 	}
 	b := array.NewInt64Builder(t.alloc)
 	b.Resize(arr.Len())
 	for i := 0; i < arr.Len(); i++ {
 		if arr.IsNull(i) {
-			if prevNull {
+			if fillValueNull {
 				b.AppendNull()
 			} else {
-				b.Append(prevValue)
+				b.Append(fillValueTime)
 			}
 		} else {
 			v := arr.Value(i)
 			b.Append(v)
 			if t.spec.UsePrevious {
-				prevValue = v
-				prevNull = false
+				fillValueTime = v
+				fillValueNull = false
 			}
 		}
+	}
+	if t.spec.UsePrevious && !fillValueNull {
+		*fillValue = fillValueTime
 	}
 	return b.NewArray()
 }
