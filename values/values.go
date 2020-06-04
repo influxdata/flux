@@ -149,7 +149,6 @@ var (
 )
 
 // Extract the primitive value from the Value interface.
-// This will panic when called on some Values that cannot be unwrapped.
 func Unwrap(v Value) interface{} {
 	if v.IsNull() {
 		return nil
@@ -189,8 +188,11 @@ func Unwrap(v Value) interface{} {
 			o[k] = val
 		})
 		return o
+	case semantic.Function:
+		// there is no primitive value for a Function object, just return itself.
+		return v
 	default:
-		return nil
+		panic(errors.Newf(codes.Unknown, "cannot unwrap a %v type value", n))
 	}
 }
 
