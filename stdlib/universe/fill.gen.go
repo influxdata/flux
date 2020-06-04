@@ -40,10 +40,6 @@ func (t *fillTransformation) fillIntColumn(arr *array.Int64, fillValue *interfac
 	var fillValueInt int64
 	if !fillValueNull {
 		fillValueInt = (*fillValue).(int64)
-	} else {
-		if fillValueNull = arr.IsNull(0); !fillValueNull {
-			fillValueInt = arr.Value(0)
-		}
 	}
 	b := array.NewInt64Builder(t.alloc)
 	b.Resize(arr.Len())
@@ -74,10 +70,6 @@ func (t *fillTransformation) fillUintColumn(arr *array.Uint64, fillValue *interf
 	var fillValueUint uint64
 	if !fillValueNull {
 		fillValueUint = (*fillValue).(uint64)
-	} else {
-		if fillValueNull = arr.IsNull(0); !fillValueNull {
-			fillValueUint = arr.Value(0)
-		}
 	}
 	b := array.NewUint64Builder(t.alloc)
 	b.Resize(arr.Len())
@@ -108,10 +100,6 @@ func (t *fillTransformation) fillFloatColumn(arr *array.Float64, fillValue *inte
 	var fillValueFloat float64
 	if !fillValueNull {
 		fillValueFloat = (*fillValue).(float64)
-	} else {
-		if fillValueNull = arr.IsNull(0); !fillValueNull {
-			fillValueFloat = arr.Value(0)
-		}
 	}
 	b := array.NewFloat64Builder(t.alloc)
 	b.Resize(arr.Len())
@@ -142,10 +130,6 @@ func (t *fillTransformation) fillBooleanColumn(arr *array.Boolean, fillValue *in
 	var fillValueBoolean bool
 	if !fillValueNull {
 		fillValueBoolean = (*fillValue).(bool)
-	} else {
-		if fillValueNull = arr.IsNull(0); !fillValueNull {
-			fillValueBoolean = arr.Value(0)
-		}
 	}
 	b := array.NewBooleanBuilder(t.alloc)
 	b.Resize(arr.Len())
@@ -176,10 +160,6 @@ func (t *fillTransformation) fillStringColumn(arr *array.Binary, fillValue *inte
 	var fillValueString string
 	if !fillValueNull {
 		fillValueString = (*fillValue).(string)
-	} else {
-		if fillValueNull = arr.IsNull(0); !fillValueNull {
-			fillValueString = arr.ValueString(0)
-		}
 	}
 	b := array.NewBinaryBuilder(t.alloc, arrow.BinaryTypes.String)
 	b.Resize(arr.Len())
@@ -210,10 +190,6 @@ func (t *fillTransformation) fillTimeColumn(arr *array.Int64, fillValue *interfa
 	var fillValueTime int64
 	if !fillValueNull {
 		fillValueTime = int64((*fillValue).(values.Time))
-	} else {
-		if fillValueNull = arr.IsNull(0); !fillValueNull {
-			fillValueTime = arr.Value(0)
-		}
 	}
 	b := array.NewInt64Builder(t.alloc)
 	b.Resize(arr.Len())

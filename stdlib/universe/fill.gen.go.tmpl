@@ -25,10 +25,6 @@ func (t *fillTransformation) fill{{.Name}}Column(arr *{{.ArrowType}}, fillValue 
 	var fillValue{{.Name}} {{.Type}}
 	if !fillValueNull {
 		{{if eq .Name "Time"}}fillValue{{.Name}} = {{.Type}}((*fillValue).(values.Time)){{else}}fillValue{{.Name}} = (*fillValue).({{.Type}}){{end}}
-	} else {
-		if fillValueNull = arr.IsNull(0); !fillValueNull {
-			fillValue{{.Name}} = arr.{{.Value}}(0)
-		}
 	}
 	{{if eq .Name "String"}}b := array.NewBinaryBuilder(t.alloc, arrow.BinaryTypes.String){{else}}b := array.New{{.ArrowName}}Builder(t.alloc){{end}}
 	b.Resize(arr.Len())
