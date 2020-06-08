@@ -34,4 +34,3 @@ t_linearRegression = (table=<-) =>
 test _linearRegression = () =>
 ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})
 
-© 2020 GitHub, Inc.
