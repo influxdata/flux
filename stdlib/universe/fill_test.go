@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -463,6 +464,88 @@ func TestFill_Process(t *testing.T) {
 					{Label: "_value", Type: flux.TString},
 				},
 				Data: [][]interface{}(nil),
+			}},
+		},
+		{
+			name: "null group key",
+			spec: &universe.FillProcedureSpec{
+				Column: "tag0",
+				Value:  values.New(0.0),
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "tag0", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil, 2.0},
+					{execute.Time(2), nil, nil},
+					{execute.Time(3), nil, 4.0},
+					{execute.Time(4), nil, nil},
+				},
+				GroupKey: execute.NewGroupKey(
+					[]flux.ColMeta{
+						{Label: "tag0", Type: flux.TFloat},
+					},
+					[]values.Value{values.NewNull(semantic.BasicFloat)},
+				),
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "tag0", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 0.0, 2.0},
+					{execute.Time(2), 0.0, nil},
+					{execute.Time(3), 0.0, 4.0},
+					{execute.Time(4), 0.0, nil},
+				},
+				KeyCols:   []string{"tag0"},
+				KeyValues: []interface{}{0.0},
+			}},
+		},
+		{
+			name: "non null group key",
+			spec: &universe.FillProcedureSpec{
+				Column: "tag0",
+				Value:  values.New(0.0),
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "tag0", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 1.0, 2.0},
+					{execute.Time(2), 1.0, nil},
+					{execute.Time(3), 1.0, 4.0},
+					{execute.Time(4), 1.0, nil},
+				},
+				GroupKey: execute.NewGroupKey(
+					[]flux.ColMeta{
+						{Label: "tag0", Type: flux.TFloat},
+					},
+					[]values.Value{values.NewFloat(1.0)},
+				),
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "tag0", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 1.0, 2.0},
+					{execute.Time(2), 1.0, nil},
+					{execute.Time(3), 1.0, 4.0},
+					{execute.Time(4), 1.0, nil},
+				},
+				KeyCols:   []string{"tag0"},
+				KeyValues: []interface{}{1.0},
 			}},
 		},
 	}

@@ -207,12 +207,16 @@ func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 
 	key := tbl.Key()
 	if idx := execute.ColIdx(t.spec.Column, key.Cols()); idx >= 0 {
-		var err error
-		gkb := execute.NewGroupKeyBuilder(key)
-		gkb.SetKeyValue(t.spec.Column, values.New(t.spec.Value))
-		key, err = gkb.Build()
-		if err != nil {
-			return err
+		if key.IsNull(idx) {
+			var err error
+			gkb := execute.NewGroupKeyBuilder(key)
+			gkb.SetKeyValue(t.spec.Column, t.spec.Value)
+			key, err = gkb.Build()
+			if err != nil {
+				return err
+			}
+		} else {
+			return t.d.Process(tbl)
 		}
 	}
 
