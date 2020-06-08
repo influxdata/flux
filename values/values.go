@@ -148,6 +148,54 @@ var (
 	Null = null{}
 )
 
+// Extract the primitive value from the Value interface.
+func Unwrap(v Value) interface{} {
+	if v.IsNull() {
+		return nil
+	}
+	switch n := v.Type().Nature(); n {
+	case semantic.String:
+		return v.Str()
+	case semantic.Bytes:
+		return v.Bytes()
+	case semantic.Int:
+		return v.Int()
+	case semantic.UInt:
+		return v.UInt()
+	case semantic.Float:
+		return v.Float()
+	case semantic.Bool:
+		return v.Bool()
+	case semantic.Time:
+		return v.Time()
+	case semantic.Duration:
+		return v.Duration()
+	case semantic.Regexp:
+		return v.Regexp()
+	case semantic.Array:
+		arr := v.Array()
+		a := make([]interface{}, arr.Len())
+		arr.Range(func(i int, v Value) {
+			val := Unwrap(v)
+			a[i] = val
+		})
+		return a
+	case semantic.Object:
+		obj := v.Object()
+		o := make(map[string]interface{}, obj.Len())
+		obj.Range(func(k string, v Value) {
+			val := Unwrap(v)
+			o[k] = val
+		})
+		return o
+	case semantic.Function:
+		// there is no primitive value for a Function object, just return itself.
+		return v
+	default:
+		panic(errors.Newf(codes.Unknown, "cannot unwrap a %v type value", n))
+	}
+}
+
 // New constructs a new Value by inferring the type from the interface.
 // Note this method will panic if passed a nil value. If the interface
 // does not translate to a valid Value type, then InvalidValue is returned.
