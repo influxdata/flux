@@ -29,7 +29,7 @@ outData =
 t_linearRegression = (table=<-) =>
 	table
 		|> range(start: 2020-04-28T22:36:00Z, stop: 2020-05-28T22:37:00Z)
-		|> statsModels.linearRegression()
+		|> statsmodels.linearRegression()
 
 test _linearRegression = () =>
 ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})
