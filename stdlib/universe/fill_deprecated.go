@@ -6,7 +6,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/values"
 )
 
 func createDeprecatedFillTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
@@ -41,11 +40,11 @@ func (t *deprecatedFillTransformation) RetractTable(id execute.DatasetID, key fl
 
 func (t *deprecatedFillTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	key := tbl.Key()
-	if idx := execute.ColIdx(t.spec.Column, tbl.Key().Cols()); idx >= 0 && tbl.Key().IsNull(idx) {
+	if idx := execute.ColIdx(t.spec.Column, key.Cols()); idx >= 0 && key.IsNull(idx) {
 		var err error
-		gkb := execute.NewGroupKeyBuilder(tbl.Key())
+		gkb := execute.NewGroupKeyBuilder(key)
 
-		gkb.SetKeyValue(t.spec.Column, values.New(t.spec.Value))
+		gkb.SetKeyValue(t.spec.Column, t.spec.Value)
 		key, err = gkb.Build()
 		if err != nil {
 			return err
