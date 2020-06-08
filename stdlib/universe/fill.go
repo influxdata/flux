@@ -34,8 +34,8 @@ func init() {
 
 	runtime.RegisterPackageValue("universe", FillKind, flux.MustValue(flux.FunctionValue(FillKind, createFillOpSpec, fillSignature)))
 	flux.RegisterOpSpec(FillKind, newFillOp)
-	plan.RegisterProcedureSpec(FillKind, newFillProcedure, FillKind)
-	execute.RegisterTransformation(FillKind, createFillTransformation)
+	plan.RegisterProcedureSpec(FillKind, newDualImplSpec(newFillProcedure), FillKind)
+	execute.RegisterTransformation(FillKind, createDualImplTf(createFillTransformation, createDeprecatedFillTransformation))
 }
 
 func createFillOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
