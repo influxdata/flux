@@ -24,7 +24,7 @@ var pkgAST = &ast.Package{
 					Column: 2,
 					Line:   44,
 				},
-				File:   "linearRegression.flux",
+				File:   "linearreg.flux",
 				Source: "package statsmodels\n\nimport \"math\"\nimport \"generate\"\n\n// performs linear regression, calculates y_hat, and residuals squared (rse) \n\nlinearRegression = (tables=<-) => {\n  renameAndSum = tables\n    |> rename(columns: {_value: \"y\"})\n    |> map(fn: (r) => ({r with x: 1.0}))\n    |> cumulativeSum(columns: [\"x\"])\n\n  t = renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})\n    |> tableFind(fn: (key) => true)\n    |> getRecord(idx: 0)\n\n  xbar = t.sx/t.N \n\n  ybar = t.sy/t.N\n\n  slope = (t.sxy - xbar*ybar*t.N)/(t.sxx - t.N*xbar*xbar)\n\n  intercept = (ybar - slope * xbar)\n\n  y_hat = (r) => ({r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy})\n\n  rse = (r) => ({r with errors: (r.y - r.y_hat)^2.0})\n\n  output = renameAndSum\n    |> map(fn: y_hat)\n    |> map(fn: rse)\n    \n  return output\n}",
 				Start: ast.Position{
 					Column: 1,
@@ -40,7 +40,7 @@ var pkgAST = &ast.Package{
 						Column: 2,
 						Line:   44,
 					},
-					File:   "linearRegression.flux",
+					File:   "linearreg.flux",
 					Source: "linearRegression = (tables=<-) => {\n  renameAndSum = tables\n    |> rename(columns: {_value: \"y\"})\n    |> map(fn: (r) => ({r with x: 1.0}))\n    |> cumulativeSum(columns: [\"x\"])\n\n  t = renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})\n    |> tableFind(fn: (key) => true)\n    |> getRecord(idx: 0)\n\n  xbar = t.sx/t.N \n\n  ybar = t.sy/t.N\n\n  slope = (t.sxy - xbar*ybar*t.N)/(t.sxx - t.N*xbar*xbar)\n\n  intercept = (ybar - slope * xbar)\n\n  y_hat = (r) => ({r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy})\n\n  rse = (r) => ({r with errors: (r.y - r.y_hat)^2.0})\n\n  output = renameAndSum\n    |> map(fn: y_hat)\n    |> map(fn: rse)\n    \n  return output\n}",
 					Start: ast.Position{
 						Column: 1,
@@ -56,7 +56,7 @@ var pkgAST = &ast.Package{
 							Column: 17,
 							Line:   8,
 						},
-						File:   "linearRegression.flux",
+						File:   "linearreg.flux",
 						Source: "linearRegression",
 						Start: ast.Position{
 							Column: 1,
@@ -74,7 +74,7 @@ var pkgAST = &ast.Package{
 							Column: 2,
 							Line:   44,
 						},
-						File:   "linearRegression.flux",
+						File:   "linearreg.flux",
 						Source: "(tables=<-) => {\n  renameAndSum = tables\n    |> rename(columns: {_value: \"y\"})\n    |> map(fn: (r) => ({r with x: 1.0}))\n    |> cumulativeSum(columns: [\"x\"])\n\n  t = renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})\n    |> tableFind(fn: (key) => true)\n    |> getRecord(idx: 0)\n\n  xbar = t.sx/t.N \n\n  ybar = t.sy/t.N\n\n  slope = (t.sxy - xbar*ybar*t.N)/(t.sxx - t.N*xbar*xbar)\n\n  intercept = (ybar - slope * xbar)\n\n  y_hat = (r) => ({r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy})\n\n  rse = (r) => ({r with errors: (r.y - r.y_hat)^2.0})\n\n  output = renameAndSum\n    |> map(fn: y_hat)\n    |> map(fn: rse)\n    \n  return output\n}",
 						Start: ast.Position{
 							Column: 20,
@@ -90,7 +90,7 @@ var pkgAST = &ast.Package{
 								Column: 2,
 								Line:   44,
 							},
-							File:   "linearRegression.flux",
+							File:   "linearreg.flux",
 							Source: "{\n  renameAndSum = tables\n    |> rename(columns: {_value: \"y\"})\n    |> map(fn: (r) => ({r with x: 1.0}))\n    |> cumulativeSum(columns: [\"x\"])\n\n  t = renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})\n    |> tableFind(fn: (key) => true)\n    |> getRecord(idx: 0)\n\n  xbar = t.sx/t.N \n\n  ybar = t.sy/t.N\n\n  slope = (t.sxy - xbar*ybar*t.N)/(t.sxx - t.N*xbar*xbar)\n\n  intercept = (ybar - slope * xbar)\n\n  y_hat = (r) => ({r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy})\n\n  rse = (r) => ({r with errors: (r.y - r.y_hat)^2.0})\n\n  output = renameAndSum\n    |> map(fn: y_hat)\n    |> map(fn: rse)\n    \n  return output\n}",
 							Start: ast.Position{
 								Column: 35,
@@ -106,7 +106,7 @@ var pkgAST = &ast.Package{
 									Column: 37,
 									Line:   12,
 								},
-								File:   "linearRegression.flux",
+								File:   "linearreg.flux",
 								Source: "renameAndSum = tables\n    |> rename(columns: {_value: \"y\"})\n    |> map(fn: (r) => ({r with x: 1.0}))\n    |> cumulativeSum(columns: [\"x\"])",
 								Start: ast.Position{
 									Column: 3,
@@ -122,7 +122,7 @@ var pkgAST = &ast.Package{
 										Column: 15,
 										Line:   9,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "renameAndSum",
 									Start: ast.Position{
 										Column: 3,
@@ -143,7 +143,7 @@ var pkgAST = &ast.Package{
 													Column: 24,
 													Line:   9,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "tables",
 												Start: ast.Position{
 													Column: 18,
@@ -160,7 +160,7 @@ var pkgAST = &ast.Package{
 												Column: 38,
 												Line:   10,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "tables\n    |> rename(columns: {_value: \"y\"})",
 											Start: ast.Position{
 												Column: 18,
@@ -177,7 +177,7 @@ var pkgAST = &ast.Package{
 														Column: 37,
 														Line:   10,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "columns: {_value: \"y\"}",
 													Start: ast.Position{
 														Column: 15,
@@ -193,7 +193,7 @@ var pkgAST = &ast.Package{
 															Column: 37,
 															Line:   10,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "columns: {_value: \"y\"}",
 														Start: ast.Position{
 															Column: 15,
@@ -209,7 +209,7 @@ var pkgAST = &ast.Package{
 																Column: 22,
 																Line:   10,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "columns",
 															Start: ast.Position{
 																Column: 15,
@@ -227,7 +227,7 @@ var pkgAST = &ast.Package{
 																Column: 37,
 																Line:   10,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "{_value: \"y\"}",
 															Start: ast.Position{
 																Column: 24,
@@ -243,7 +243,7 @@ var pkgAST = &ast.Package{
 																	Column: 36,
 																	Line:   10,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "_value: \"y\"",
 																Start: ast.Position{
 																	Column: 25,
@@ -259,7 +259,7 @@ var pkgAST = &ast.Package{
 																		Column: 31,
 																		Line:   10,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "_value",
 																	Start: ast.Position{
 																		Column: 25,
@@ -277,7 +277,7 @@ var pkgAST = &ast.Package{
 																		Column: 36,
 																		Line:   10,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "\"y\"",
 																	Start: ast.Position{
 																		Column: 33,
@@ -300,7 +300,7 @@ var pkgAST = &ast.Package{
 													Column: 38,
 													Line:   10,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "rename(columns: {_value: \"y\"})",
 												Start: ast.Position{
 													Column: 8,
@@ -316,7 +316,7 @@ var pkgAST = &ast.Package{
 														Column: 14,
 														Line:   10,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "rename",
 													Start: ast.Position{
 														Column: 8,
@@ -335,7 +335,7 @@ var pkgAST = &ast.Package{
 											Column: 41,
 											Line:   11,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "tables\n    |> rename(columns: {_value: \"y\"})\n    |> map(fn: (r) => ({r with x: 1.0}))",
 										Start: ast.Position{
 											Column: 18,
@@ -352,7 +352,7 @@ var pkgAST = &ast.Package{
 													Column: 40,
 													Line:   11,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "fn: (r) => ({r with x: 1.0})",
 												Start: ast.Position{
 													Column: 12,
@@ -368,7 +368,7 @@ var pkgAST = &ast.Package{
 														Column: 40,
 														Line:   11,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "fn: (r) => ({r with x: 1.0})",
 													Start: ast.Position{
 														Column: 12,
@@ -384,7 +384,7 @@ var pkgAST = &ast.Package{
 															Column: 14,
 															Line:   11,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 12,
@@ -402,7 +402,7 @@ var pkgAST = &ast.Package{
 															Column: 40,
 															Line:   11,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "(r) => ({r with x: 1.0})",
 														Start: ast.Position{
 															Column: 16,
@@ -418,7 +418,7 @@ var pkgAST = &ast.Package{
 																Column: 40,
 																Line:   11,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "({r with x: 1.0})",
 															Start: ast.Position{
 																Column: 23,
@@ -434,7 +434,7 @@ var pkgAST = &ast.Package{
 																	Column: 39,
 																	Line:   11,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "{r with x: 1.0}",
 																Start: ast.Position{
 																	Column: 24,
@@ -450,7 +450,7 @@ var pkgAST = &ast.Package{
 																		Column: 38,
 																		Line:   11,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "x: 1.0",
 																	Start: ast.Position{
 																		Column: 32,
@@ -466,7 +466,7 @@ var pkgAST = &ast.Package{
 																			Column: 33,
 																			Line:   11,
 																		},
-																		File:   "linearRegression.flux",
+																		File:   "linearreg.flux",
 																		Source: "x",
 																		Start: ast.Position{
 																			Column: 32,
@@ -484,7 +484,7 @@ var pkgAST = &ast.Package{
 																			Column: 38,
 																			Line:   11,
 																		},
-																		File:   "linearRegression.flux",
+																		File:   "linearreg.flux",
 																		Source: "1.0",
 																		Start: ast.Position{
 																			Column: 35,
@@ -503,7 +503,7 @@ var pkgAST = &ast.Package{
 																		Column: 26,
 																		Line:   11,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 25,
@@ -523,7 +523,7 @@ var pkgAST = &ast.Package{
 																Column: 18,
 																Line:   11,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 17,
@@ -539,7 +539,7 @@ var pkgAST = &ast.Package{
 																	Column: 18,
 																	Line:   11,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 17,
@@ -562,7 +562,7 @@ var pkgAST = &ast.Package{
 												Column: 41,
 												Line:   11,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "map(fn: (r) => ({r with x: 1.0}))",
 											Start: ast.Position{
 												Column: 8,
@@ -578,7 +578,7 @@ var pkgAST = &ast.Package{
 													Column: 11,
 													Line:   11,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "map",
 												Start: ast.Position{
 													Column: 8,
@@ -597,7 +597,7 @@ var pkgAST = &ast.Package{
 										Column: 37,
 										Line:   12,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "tables\n    |> rename(columns: {_value: \"y\"})\n    |> map(fn: (r) => ({r with x: 1.0}))\n    |> cumulativeSum(columns: [\"x\"])",
 									Start: ast.Position{
 										Column: 18,
@@ -614,7 +614,7 @@ var pkgAST = &ast.Package{
 												Column: 36,
 												Line:   12,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "columns: [\"x\"]",
 											Start: ast.Position{
 												Column: 22,
@@ -630,7 +630,7 @@ var pkgAST = &ast.Package{
 													Column: 36,
 													Line:   12,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "columns: [\"x\"]",
 												Start: ast.Position{
 													Column: 22,
@@ -646,7 +646,7 @@ var pkgAST = &ast.Package{
 														Column: 29,
 														Line:   12,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "columns",
 													Start: ast.Position{
 														Column: 22,
@@ -664,7 +664,7 @@ var pkgAST = &ast.Package{
 														Column: 36,
 														Line:   12,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "[\"x\"]",
 													Start: ast.Position{
 														Column: 31,
@@ -680,7 +680,7 @@ var pkgAST = &ast.Package{
 															Column: 35,
 															Line:   12,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "\"x\"",
 														Start: ast.Position{
 															Column: 32,
@@ -701,7 +701,7 @@ var pkgAST = &ast.Package{
 											Column: 37,
 											Line:   12,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "cumulativeSum(columns: [\"x\"])",
 										Start: ast.Position{
 											Column: 8,
@@ -717,7 +717,7 @@ var pkgAST = &ast.Package{
 												Column: 21,
 												Line:   12,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "cumulativeSum",
 											Start: ast.Position{
 												Column: 8,
@@ -737,7 +737,7 @@ var pkgAST = &ast.Package{
 									Column: 25,
 									Line:   25,
 								},
-								File:   "linearRegression.flux",
+								File:   "linearreg.flux",
 								Source: "t = renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})\n    |> tableFind(fn: (key) => true)\n    |> getRecord(idx: 0)",
 								Start: ast.Position{
 									Column: 3,
@@ -753,7 +753,7 @@ var pkgAST = &ast.Package{
 										Column: 4,
 										Line:   14,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 3,
@@ -774,7 +774,7 @@ var pkgAST = &ast.Package{
 													Column: 19,
 													Line:   14,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "renameAndSum",
 												Start: ast.Position{
 													Column: 7,
@@ -791,7 +791,7 @@ var pkgAST = &ast.Package{
 												Column: 60,
 												Line:   23,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})",
 											Start: ast.Position{
 												Column: 7,
@@ -808,7 +808,7 @@ var pkgAST = &ast.Package{
 														Column: 59,
 														Line:   23,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0}",
 													Start: ast.Position{
 														Column: 7,
@@ -824,7 +824,7 @@ var pkgAST = &ast.Package{
 															Column: 9,
 															Line:   22,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      })",
 														Start: ast.Position{
 															Column: 7,
@@ -840,7 +840,7 @@ var pkgAST = &ast.Package{
 																Column: 9,
 																Line:   16,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "fn",
 															Start: ast.Position{
 																Column: 7,
@@ -858,7 +858,7 @@ var pkgAST = &ast.Package{
 																Column: 9,
 																Line:   22,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "(r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      })",
 															Start: ast.Position{
 																Column: 11,
@@ -874,7 +874,7 @@ var pkgAST = &ast.Package{
 																	Column: 9,
 																	Line:   22,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      })",
 																Start: ast.Position{
 																	Column: 31,
@@ -890,7 +890,7 @@ var pkgAST = &ast.Package{
 																		Column: 8,
 																		Line:   22,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "{\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }",
 																	Start: ast.Position{
 																		Column: 32,
@@ -906,7 +906,7 @@ var pkgAST = &ast.Package{
 																			Column: 33,
 																			Line:   17,
 																		},
-																		File:   "linearRegression.flux",
+																		File:   "linearreg.flux",
 																		Source: "sx: r.x + accumulator.sx",
 																		Start: ast.Position{
 																			Column: 9,
@@ -922,7 +922,7 @@ var pkgAST = &ast.Package{
 																				Column: 11,
 																				Line:   17,
 																			},
-																			File:   "linearRegression.flux",
+																			File:   "linearreg.flux",
 																			Source: "sx",
 																			Start: ast.Position{
 																				Column: 9,
@@ -940,7 +940,7 @@ var pkgAST = &ast.Package{
 																				Column: 33,
 																				Line:   17,
 																			},
-																			File:   "linearRegression.flux",
+																			File:   "linearreg.flux",
 																			Source: "r.x + accumulator.sx",
 																			Start: ast.Position{
 																				Column: 13,
@@ -956,7 +956,7 @@ var pkgAST = &ast.Package{
 																					Column: 16,
 																					Line:   17,
 																				},
-																				File:   "linearRegression.flux",
+																				File:   "linearreg.flux",
 																				Source: "r.x",
 																				Start: ast.Position{
 																					Column: 13,
@@ -972,7 +972,7 @@ var pkgAST = &ast.Package{
 																						Column: 14,
 																						Line:   17,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "r",
 																					Start: ast.Position{
 																						Column: 13,
@@ -990,7 +990,7 @@ var pkgAST = &ast.Package{
 																						Column: 16,
 																						Line:   17,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "x",
 																					Start: ast.Position{
 																						Column: 15,
@@ -1010,7 +1010,7 @@ var pkgAST = &ast.Package{
 																					Column: 33,
 																					Line:   17,
 																				},
-																				File:   "linearRegression.flux",
+																				File:   "linearreg.flux",
 																				Source: "accumulator.sx",
 																				Start: ast.Position{
 																					Column: 19,
@@ -1026,7 +1026,7 @@ var pkgAST = &ast.Package{
 																						Column: 30,
 																						Line:   17,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "accumulator",
 																					Start: ast.Position{
 																						Column: 19,
@@ -1044,7 +1044,7 @@ var pkgAST = &ast.Package{
 																						Column: 33,
 																						Line:   17,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "sx",
 																					Start: ast.Position{
 																						Column: 31,
@@ -1064,7 +1064,7 @@ var pkgAST = &ast.Package{
 																			Column: 33,
 																			Line:   18,
 																		},
-																		File:   "linearRegression.flux",
+																		File:   "linearreg.flux",
 																		Source: "sy: r.y + accumulator.sy",
 																		Start: ast.Position{
 																			Column: 9,
@@ -1080,7 +1080,7 @@ var pkgAST = &ast.Package{
 																				Column: 11,
 																				Line:   18,
 																			},
-																			File:   "linearRegression.flux",
+																			File:   "linearreg.flux",
 																			Source: "sy",
 																			Start: ast.Position{
 																				Column: 9,
@@ -1098,7 +1098,7 @@ var pkgAST = &ast.Package{
 																				Column: 33,
 																				Line:   18,
 																			},
-																			File:   "linearRegression.flux",
+																			File:   "linearreg.flux",
 																			Source: "r.y + accumulator.sy",
 																			Start: ast.Position{
 																				Column: 13,
@@ -1114,7 +1114,7 @@ var pkgAST = &ast.Package{
 																					Column: 16,
 																					Line:   18,
 																				},
-																				File:   "linearRegression.flux",
+																				File:   "linearreg.flux",
 																				Source: "r.y",
 																				Start: ast.Position{
 																					Column: 13,
@@ -1130,7 +1130,7 @@ var pkgAST = &ast.Package{
 																						Column: 14,
 																						Line:   18,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "r",
 																					Start: ast.Position{
 																						Column: 13,
@@ -1148,7 +1148,7 @@ var pkgAST = &ast.Package{
 																						Column: 16,
 																						Line:   18,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "y",
 																					Start: ast.Position{
 																						Column: 15,
@@ -1168,7 +1168,7 @@ var pkgAST = &ast.Package{
 																					Column: 33,
 																					Line:   18,
 																				},
-																				File:   "linearRegression.flux",
+																				File:   "linearreg.flux",
 																				Source: "accumulator.sy",
 																				Start: ast.Position{
 																					Column: 19,
@@ -1184,7 +1184,7 @@ var pkgAST = &ast.Package{
 																						Column: 30,
 																						Line:   18,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "accumulator",
 																					Start: ast.Position{
 																						Column: 19,
@@ -1202,7 +1202,7 @@ var pkgAST = &ast.Package{
 																						Column: 33,
 																						Line:   18,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "sy",
 																					Start: ast.Position{
 																						Column: 31,
@@ -1222,7 +1222,7 @@ var pkgAST = &ast.Package{
 																			Column: 31,
 																			Line:   19,
 																		},
-																		File:   "linearRegression.flux",
+																		File:   "linearreg.flux",
 																		Source: "N: accumulator.N + 1.0",
 																		Start: ast.Position{
 																			Column: 9,
@@ -1238,7 +1238,7 @@ var pkgAST = &ast.Package{
 																				Column: 10,
 																				Line:   19,
 																			},
-																			File:   "linearRegression.flux",
+																			File:   "linearreg.flux",
 																			Source: "N",
 																			Start: ast.Position{
 																				Column: 9,
@@ -1256,7 +1256,7 @@ var pkgAST = &ast.Package{
 																				Column: 31,
 																				Line:   19,
 																			},
-																			File:   "linearRegression.flux",
+																			File:   "linearreg.flux",
 																			Source: "accumulator.N + 1.0",
 																			Start: ast.Position{
 																				Column: 12,
@@ -1272,7 +1272,7 @@ var pkgAST = &ast.Package{
 																					Column: 25,
 																					Line:   19,
 																				},
-																				File:   "linearRegression.flux",
+																				File:   "linearreg.flux",
 																				Source: "accumulator.N",
 																				Start: ast.Position{
 																					Column: 12,
@@ -1288,7 +1288,7 @@ var pkgAST = &ast.Package{
 																						Column: 23,
 																						Line:   19,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "accumulator",
 																					Start: ast.Position{
 																						Column: 12,
@@ -1306,7 +1306,7 @@ var pkgAST = &ast.Package{
 																						Column: 25,
 																						Line:   19,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "N",
 																					Start: ast.Position{
 																						Column: 24,
@@ -1326,7 +1326,7 @@ var pkgAST = &ast.Package{
 																					Column: 31,
 																					Line:   19,
 																				},
-																				File:   "linearRegression.flux",
+																				File:   "linearreg.flux",
 																				Source: "1.0",
 																				Start: ast.Position{
 																					Column: 28,
@@ -1345,7 +1345,7 @@ var pkgAST = &ast.Package{
 																			Column: 41,
 																			Line:   20,
 																		},
-																		File:   "linearRegression.flux",
+																		File:   "linearreg.flux",
 																		Source: "sxy: r.x * r.y + accumulator.sxy",
 																		Start: ast.Position{
 																			Column: 9,
@@ -1361,7 +1361,7 @@ var pkgAST = &ast.Package{
 																				Column: 12,
 																				Line:   20,
 																			},
-																			File:   "linearRegression.flux",
+																			File:   "linearreg.flux",
 																			Source: "sxy",
 																			Start: ast.Position{
 																				Column: 9,
@@ -1379,7 +1379,7 @@ var pkgAST = &ast.Package{
 																				Column: 41,
 																				Line:   20,
 																			},
-																			File:   "linearRegression.flux",
+																			File:   "linearreg.flux",
 																			Source: "r.x * r.y + accumulator.sxy",
 																			Start: ast.Position{
 																				Column: 14,
@@ -1395,7 +1395,7 @@ var pkgAST = &ast.Package{
 																					Column: 23,
 																					Line:   20,
 																				},
-																				File:   "linearRegression.flux",
+																				File:   "linearreg.flux",
 																				Source: "r.x * r.y",
 																				Start: ast.Position{
 																					Column: 14,
@@ -1411,7 +1411,7 @@ var pkgAST = &ast.Package{
 																						Column: 17,
 																						Line:   20,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "r.x",
 																					Start: ast.Position{
 																						Column: 14,
@@ -1427,7 +1427,7 @@ var pkgAST = &ast.Package{
 																							Column: 15,
 																							Line:   20,
 																						},
-																						File:   "linearRegression.flux",
+																						File:   "linearreg.flux",
 																						Source: "r",
 																						Start: ast.Position{
 																							Column: 14,
@@ -1445,7 +1445,7 @@ var pkgAST = &ast.Package{
 																							Column: 17,
 																							Line:   20,
 																						},
-																						File:   "linearRegression.flux",
+																						File:   "linearreg.flux",
 																						Source: "x",
 																						Start: ast.Position{
 																							Column: 16,
@@ -1465,7 +1465,7 @@ var pkgAST = &ast.Package{
 																						Column: 23,
 																						Line:   20,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "r.y",
 																					Start: ast.Position{
 																						Column: 20,
@@ -1481,7 +1481,7 @@ var pkgAST = &ast.Package{
 																							Column: 21,
 																							Line:   20,
 																						},
-																						File:   "linearRegression.flux",
+																						File:   "linearreg.flux",
 																						Source: "r",
 																						Start: ast.Position{
 																							Column: 20,
@@ -1499,7 +1499,7 @@ var pkgAST = &ast.Package{
 																							Column: 23,
 																							Line:   20,
 																						},
-																						File:   "linearRegression.flux",
+																						File:   "linearreg.flux",
 																						Source: "y",
 																						Start: ast.Position{
 																							Column: 22,
@@ -1520,7 +1520,7 @@ var pkgAST = &ast.Package{
 																					Column: 41,
 																					Line:   20,
 																				},
-																				File:   "linearRegression.flux",
+																				File:   "linearreg.flux",
 																				Source: "accumulator.sxy",
 																				Start: ast.Position{
 																					Column: 26,
@@ -1536,7 +1536,7 @@ var pkgAST = &ast.Package{
 																						Column: 37,
 																						Line:   20,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "accumulator",
 																					Start: ast.Position{
 																						Column: 26,
@@ -1554,7 +1554,7 @@ var pkgAST = &ast.Package{
 																						Column: 41,
 																						Line:   20,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "sxy",
 																					Start: ast.Position{
 																						Column: 38,
@@ -1574,7 +1574,7 @@ var pkgAST = &ast.Package{
 																			Column: 41,
 																			Line:   21,
 																		},
-																		File:   "linearRegression.flux",
+																		File:   "linearreg.flux",
 																		Source: "sxx: r.x * r.x + accumulator.sxx",
 																		Start: ast.Position{
 																			Column: 9,
@@ -1590,7 +1590,7 @@ var pkgAST = &ast.Package{
 																				Column: 12,
 																				Line:   21,
 																			},
-																			File:   "linearRegression.flux",
+																			File:   "linearreg.flux",
 																			Source: "sxx",
 																			Start: ast.Position{
 																				Column: 9,
@@ -1608,7 +1608,7 @@ var pkgAST = &ast.Package{
 																				Column: 41,
 																				Line:   21,
 																			},
-																			File:   "linearRegression.flux",
+																			File:   "linearreg.flux",
 																			Source: "r.x * r.x + accumulator.sxx",
 																			Start: ast.Position{
 																				Column: 14,
@@ -1624,7 +1624,7 @@ var pkgAST = &ast.Package{
 																					Column: 23,
 																					Line:   21,
 																				},
-																				File:   "linearRegression.flux",
+																				File:   "linearreg.flux",
 																				Source: "r.x * r.x",
 																				Start: ast.Position{
 																					Column: 14,
@@ -1640,7 +1640,7 @@ var pkgAST = &ast.Package{
 																						Column: 17,
 																						Line:   21,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "r.x",
 																					Start: ast.Position{
 																						Column: 14,
@@ -1656,7 +1656,7 @@ var pkgAST = &ast.Package{
 																							Column: 15,
 																							Line:   21,
 																						},
-																						File:   "linearRegression.flux",
+																						File:   "linearreg.flux",
 																						Source: "r",
 																						Start: ast.Position{
 																							Column: 14,
@@ -1674,7 +1674,7 @@ var pkgAST = &ast.Package{
 																							Column: 17,
 																							Line:   21,
 																						},
-																						File:   "linearRegression.flux",
+																						File:   "linearreg.flux",
 																						Source: "x",
 																						Start: ast.Position{
 																							Column: 16,
@@ -1694,7 +1694,7 @@ var pkgAST = &ast.Package{
 																						Column: 23,
 																						Line:   21,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "r.x",
 																					Start: ast.Position{
 																						Column: 20,
@@ -1710,7 +1710,7 @@ var pkgAST = &ast.Package{
 																							Column: 21,
 																							Line:   21,
 																						},
-																						File:   "linearRegression.flux",
+																						File:   "linearreg.flux",
 																						Source: "r",
 																						Start: ast.Position{
 																							Column: 20,
@@ -1728,7 +1728,7 @@ var pkgAST = &ast.Package{
 																							Column: 23,
 																							Line:   21,
 																						},
-																						File:   "linearRegression.flux",
+																						File:   "linearreg.flux",
 																						Source: "x",
 																						Start: ast.Position{
 																							Column: 22,
@@ -1749,7 +1749,7 @@ var pkgAST = &ast.Package{
 																					Column: 41,
 																					Line:   21,
 																				},
-																				File:   "linearRegression.flux",
+																				File:   "linearreg.flux",
 																				Source: "accumulator.sxx",
 																				Start: ast.Position{
 																					Column: 26,
@@ -1765,7 +1765,7 @@ var pkgAST = &ast.Package{
 																						Column: 37,
 																						Line:   21,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "accumulator",
 																					Start: ast.Position{
 																						Column: 26,
@@ -1783,7 +1783,7 @@ var pkgAST = &ast.Package{
 																						Column: 41,
 																						Line:   21,
 																					},
-																					File:   "linearRegression.flux",
+																					File:   "linearreg.flux",
 																					Source: "sxx",
 																					Start: ast.Position{
 																						Column: 38,
@@ -1807,7 +1807,7 @@ var pkgAST = &ast.Package{
 																	Column: 13,
 																	Line:   16,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 12,
@@ -1823,7 +1823,7 @@ var pkgAST = &ast.Package{
 																		Column: 13,
 																		Line:   16,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 12,
@@ -1842,7 +1842,7 @@ var pkgAST = &ast.Package{
 																	Column: 26,
 																	Line:   16,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "accumulator",
 																Start: ast.Position{
 																	Column: 15,
@@ -1858,7 +1858,7 @@ var pkgAST = &ast.Package{
 																		Column: 26,
 																		Line:   16,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "accumulator",
 																	Start: ast.Position{
 																		Column: 15,
@@ -1879,7 +1879,7 @@ var pkgAST = &ast.Package{
 															Column: 59,
 															Line:   23,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0}",
 														Start: ast.Position{
 															Column: 7,
@@ -1895,7 +1895,7 @@ var pkgAST = &ast.Package{
 																Column: 15,
 																Line:   23,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "identity",
 															Start: ast.Position{
 																Column: 7,
@@ -1913,7 +1913,7 @@ var pkgAST = &ast.Package{
 																Column: 59,
 																Line:   23,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "{sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0}",
 															Start: ast.Position{
 																Column: 17,
@@ -1929,7 +1929,7 @@ var pkgAST = &ast.Package{
 																	Column: 26,
 																	Line:   23,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "sxy: 0.0",
 																Start: ast.Position{
 																	Column: 18,
@@ -1945,7 +1945,7 @@ var pkgAST = &ast.Package{
 																		Column: 21,
 																		Line:   23,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "sxy",
 																	Start: ast.Position{
 																		Column: 18,
@@ -1963,7 +1963,7 @@ var pkgAST = &ast.Package{
 																		Column: 26,
 																		Line:   23,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "0.0",
 																	Start: ast.Position{
 																		Column: 23,
@@ -1981,7 +1981,7 @@ var pkgAST = &ast.Package{
 																	Column: 34,
 																	Line:   23,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "sx:0.0",
 																Start: ast.Position{
 																	Column: 28,
@@ -1997,7 +1997,7 @@ var pkgAST = &ast.Package{
 																		Column: 30,
 																		Line:   23,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "sx",
 																	Start: ast.Position{
 																		Column: 28,
@@ -2015,7 +2015,7 @@ var pkgAST = &ast.Package{
 																		Column: 34,
 																		Line:   23,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "0.0",
 																	Start: ast.Position{
 																		Column: 31,
@@ -2033,7 +2033,7 @@ var pkgAST = &ast.Package{
 																	Column: 42,
 																	Line:   23,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "sy:0.0",
 																Start: ast.Position{
 																	Column: 36,
@@ -2049,7 +2049,7 @@ var pkgAST = &ast.Package{
 																		Column: 38,
 																		Line:   23,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "sy",
 																	Start: ast.Position{
 																		Column: 36,
@@ -2067,7 +2067,7 @@ var pkgAST = &ast.Package{
 																		Column: 42,
 																		Line:   23,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "0.0",
 																	Start: ast.Position{
 																		Column: 39,
@@ -2085,7 +2085,7 @@ var pkgAST = &ast.Package{
 																	Column: 51,
 																	Line:   23,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "sxx:0.0",
 																Start: ast.Position{
 																	Column: 44,
@@ -2101,7 +2101,7 @@ var pkgAST = &ast.Package{
 																		Column: 47,
 																		Line:   23,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "sxx",
 																	Start: ast.Position{
 																		Column: 44,
@@ -2119,7 +2119,7 @@ var pkgAST = &ast.Package{
 																		Column: 51,
 																		Line:   23,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "0.0",
 																	Start: ast.Position{
 																		Column: 48,
@@ -2137,7 +2137,7 @@ var pkgAST = &ast.Package{
 																	Column: 58,
 																	Line:   23,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "N:0.0",
 																Start: ast.Position{
 																	Column: 53,
@@ -2153,7 +2153,7 @@ var pkgAST = &ast.Package{
 																		Column: 54,
 																		Line:   23,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "N",
 																	Start: ast.Position{
 																		Column: 53,
@@ -2171,7 +2171,7 @@ var pkgAST = &ast.Package{
 																		Column: 58,
 																		Line:   23,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "0.0",
 																	Start: ast.Position{
 																		Column: 55,
@@ -2194,7 +2194,7 @@ var pkgAST = &ast.Package{
 													Column: 60,
 													Line:   23,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})",
 												Start: ast.Position{
 													Column: 8,
@@ -2210,7 +2210,7 @@ var pkgAST = &ast.Package{
 														Column: 14,
 														Line:   15,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "reduce",
 													Start: ast.Position{
 														Column: 8,
@@ -2229,7 +2229,7 @@ var pkgAST = &ast.Package{
 											Column: 36,
 											Line:   24,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})\n    |> tableFind(fn: (key) => true)",
 										Start: ast.Position{
 											Column: 7,
@@ -2246,7 +2246,7 @@ var pkgAST = &ast.Package{
 													Column: 35,
 													Line:   24,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "fn: (key) => true",
 												Start: ast.Position{
 													Column: 18,
@@ -2262,7 +2262,7 @@ var pkgAST = &ast.Package{
 														Column: 35,
 														Line:   24,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "fn: (key) => true",
 													Start: ast.Position{
 														Column: 18,
@@ -2278,7 +2278,7 @@ var pkgAST = &ast.Package{
 															Column: 20,
 															Line:   24,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 18,
@@ -2296,7 +2296,7 @@ var pkgAST = &ast.Package{
 															Column: 35,
 															Line:   24,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "(key) => true",
 														Start: ast.Position{
 															Column: 22,
@@ -2312,7 +2312,7 @@ var pkgAST = &ast.Package{
 																Column: 35,
 																Line:   24,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "true",
 															Start: ast.Position{
 																Column: 31,
@@ -2330,7 +2330,7 @@ var pkgAST = &ast.Package{
 																Column: 26,
 																Line:   24,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "key",
 															Start: ast.Position{
 																Column: 23,
@@ -2346,7 +2346,7 @@ var pkgAST = &ast.Package{
 																	Column: 26,
 																	Line:   24,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "key",
 																Start: ast.Position{
 																	Column: 23,
@@ -2369,7 +2369,7 @@ var pkgAST = &ast.Package{
 												Column: 36,
 												Line:   24,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "tableFind(fn: (key) => true)",
 											Start: ast.Position{
 												Column: 8,
@@ -2385,7 +2385,7 @@ var pkgAST = &ast.Package{
 													Column: 17,
 													Line:   24,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "tableFind",
 												Start: ast.Position{
 													Column: 8,
@@ -2404,7 +2404,7 @@ var pkgAST = &ast.Package{
 										Column: 25,
 										Line:   25,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})\n    |> tableFind(fn: (key) => true)\n    |> getRecord(idx: 0)",
 									Start: ast.Position{
 										Column: 7,
@@ -2421,7 +2421,7 @@ var pkgAST = &ast.Package{
 												Column: 24,
 												Line:   25,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "idx: 0",
 											Start: ast.Position{
 												Column: 18,
@@ -2437,7 +2437,7 @@ var pkgAST = &ast.Package{
 													Column: 24,
 													Line:   25,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "idx: 0",
 												Start: ast.Position{
 													Column: 18,
@@ -2453,7 +2453,7 @@ var pkgAST = &ast.Package{
 														Column: 21,
 														Line:   25,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "idx",
 													Start: ast.Position{
 														Column: 18,
@@ -2471,7 +2471,7 @@ var pkgAST = &ast.Package{
 														Column: 24,
 														Line:   25,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "0",
 													Start: ast.Position{
 														Column: 23,
@@ -2491,7 +2491,7 @@ var pkgAST = &ast.Package{
 											Column: 25,
 											Line:   25,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "getRecord(idx: 0)",
 										Start: ast.Position{
 											Column: 8,
@@ -2507,7 +2507,7 @@ var pkgAST = &ast.Package{
 												Column: 17,
 												Line:   25,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "getRecord",
 											Start: ast.Position{
 												Column: 8,
@@ -2527,7 +2527,7 @@ var pkgAST = &ast.Package{
 									Column: 18,
 									Line:   27,
 								},
-								File:   "linearRegression.flux",
+								File:   "linearreg.flux",
 								Source: "xbar = t.sx/t.N",
 								Start: ast.Position{
 									Column: 3,
@@ -2543,7 +2543,7 @@ var pkgAST = &ast.Package{
 										Column: 7,
 										Line:   27,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "xbar",
 									Start: ast.Position{
 										Column: 3,
@@ -2561,7 +2561,7 @@ var pkgAST = &ast.Package{
 										Column: 18,
 										Line:   27,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "t.sx/t.N",
 									Start: ast.Position{
 										Column: 10,
@@ -2577,7 +2577,7 @@ var pkgAST = &ast.Package{
 											Column: 14,
 											Line:   27,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "t.sx",
 										Start: ast.Position{
 											Column: 10,
@@ -2593,7 +2593,7 @@ var pkgAST = &ast.Package{
 												Column: 11,
 												Line:   27,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "t",
 											Start: ast.Position{
 												Column: 10,
@@ -2611,7 +2611,7 @@ var pkgAST = &ast.Package{
 												Column: 14,
 												Line:   27,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "sx",
 											Start: ast.Position{
 												Column: 12,
@@ -2631,7 +2631,7 @@ var pkgAST = &ast.Package{
 											Column: 18,
 											Line:   27,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "t.N",
 										Start: ast.Position{
 											Column: 15,
@@ -2647,7 +2647,7 @@ var pkgAST = &ast.Package{
 												Column: 16,
 												Line:   27,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "t",
 											Start: ast.Position{
 												Column: 15,
@@ -2665,7 +2665,7 @@ var pkgAST = &ast.Package{
 												Column: 18,
 												Line:   27,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "N",
 											Start: ast.Position{
 												Column: 17,
@@ -2685,7 +2685,7 @@ var pkgAST = &ast.Package{
 									Column: 18,
 									Line:   29,
 								},
-								File:   "linearRegression.flux",
+								File:   "linearreg.flux",
 								Source: "ybar = t.sy/t.N",
 								Start: ast.Position{
 									Column: 3,
@@ -2701,7 +2701,7 @@ var pkgAST = &ast.Package{
 										Column: 7,
 										Line:   29,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "ybar",
 									Start: ast.Position{
 										Column: 3,
@@ -2719,7 +2719,7 @@ var pkgAST = &ast.Package{
 										Column: 18,
 										Line:   29,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "t.sy/t.N",
 									Start: ast.Position{
 										Column: 10,
@@ -2735,7 +2735,7 @@ var pkgAST = &ast.Package{
 											Column: 14,
 											Line:   29,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "t.sy",
 										Start: ast.Position{
 											Column: 10,
@@ -2751,7 +2751,7 @@ var pkgAST = &ast.Package{
 												Column: 11,
 												Line:   29,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "t",
 											Start: ast.Position{
 												Column: 10,
@@ -2769,7 +2769,7 @@ var pkgAST = &ast.Package{
 												Column: 14,
 												Line:   29,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "sy",
 											Start: ast.Position{
 												Column: 12,
@@ -2789,7 +2789,7 @@ var pkgAST = &ast.Package{
 											Column: 18,
 											Line:   29,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "t.N",
 										Start: ast.Position{
 											Column: 15,
@@ -2805,7 +2805,7 @@ var pkgAST = &ast.Package{
 												Column: 16,
 												Line:   29,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "t",
 											Start: ast.Position{
 												Column: 15,
@@ -2823,7 +2823,7 @@ var pkgAST = &ast.Package{
 												Column: 18,
 												Line:   29,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "N",
 											Start: ast.Position{
 												Column: 17,
@@ -2843,7 +2843,7 @@ var pkgAST = &ast.Package{
 									Column: 58,
 									Line:   31,
 								},
-								File:   "linearRegression.flux",
+								File:   "linearreg.flux",
 								Source: "slope = (t.sxy - xbar*ybar*t.N)/(t.sxx - t.N*xbar*xbar)",
 								Start: ast.Position{
 									Column: 3,
@@ -2859,7 +2859,7 @@ var pkgAST = &ast.Package{
 										Column: 8,
 										Line:   31,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "slope",
 									Start: ast.Position{
 										Column: 3,
@@ -2877,7 +2877,7 @@ var pkgAST = &ast.Package{
 										Column: 58,
 										Line:   31,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "(t.sxy - xbar*ybar*t.N)/(t.sxx - t.N*xbar*xbar)",
 									Start: ast.Position{
 										Column: 11,
@@ -2893,7 +2893,7 @@ var pkgAST = &ast.Package{
 											Column: 34,
 											Line:   31,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "(t.sxy - xbar*ybar*t.N)",
 										Start: ast.Position{
 											Column: 11,
@@ -2909,7 +2909,7 @@ var pkgAST = &ast.Package{
 												Column: 33,
 												Line:   31,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "t.sxy - xbar*ybar*t.N",
 											Start: ast.Position{
 												Column: 12,
@@ -2925,7 +2925,7 @@ var pkgAST = &ast.Package{
 													Column: 17,
 													Line:   31,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "t.sxy",
 												Start: ast.Position{
 													Column: 12,
@@ -2941,7 +2941,7 @@ var pkgAST = &ast.Package{
 														Column: 13,
 														Line:   31,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "t",
 													Start: ast.Position{
 														Column: 12,
@@ -2959,7 +2959,7 @@ var pkgAST = &ast.Package{
 														Column: 17,
 														Line:   31,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "sxy",
 													Start: ast.Position{
 														Column: 14,
@@ -2979,7 +2979,7 @@ var pkgAST = &ast.Package{
 													Column: 33,
 													Line:   31,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "xbar*ybar*t.N",
 												Start: ast.Position{
 													Column: 20,
@@ -2995,7 +2995,7 @@ var pkgAST = &ast.Package{
 														Column: 29,
 														Line:   31,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "xbar*ybar",
 													Start: ast.Position{
 														Column: 20,
@@ -3011,7 +3011,7 @@ var pkgAST = &ast.Package{
 															Column: 24,
 															Line:   31,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "xbar",
 														Start: ast.Position{
 															Column: 20,
@@ -3030,7 +3030,7 @@ var pkgAST = &ast.Package{
 															Column: 29,
 															Line:   31,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "ybar",
 														Start: ast.Position{
 															Column: 25,
@@ -3050,7 +3050,7 @@ var pkgAST = &ast.Package{
 														Column: 33,
 														Line:   31,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "t.N",
 													Start: ast.Position{
 														Column: 30,
@@ -3066,7 +3066,7 @@ var pkgAST = &ast.Package{
 															Column: 31,
 															Line:   31,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "t",
 														Start: ast.Position{
 															Column: 30,
@@ -3084,7 +3084,7 @@ var pkgAST = &ast.Package{
 															Column: 33,
 															Line:   31,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "N",
 														Start: ast.Position{
 															Column: 32,
@@ -3107,7 +3107,7 @@ var pkgAST = &ast.Package{
 											Column: 58,
 											Line:   31,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "(t.sxx - t.N*xbar*xbar)",
 										Start: ast.Position{
 											Column: 35,
@@ -3123,7 +3123,7 @@ var pkgAST = &ast.Package{
 												Column: 57,
 												Line:   31,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "t.sxx - t.N*xbar*xbar",
 											Start: ast.Position{
 												Column: 36,
@@ -3139,7 +3139,7 @@ var pkgAST = &ast.Package{
 													Column: 41,
 													Line:   31,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "t.sxx",
 												Start: ast.Position{
 													Column: 36,
@@ -3155,7 +3155,7 @@ var pkgAST = &ast.Package{
 														Column: 37,
 														Line:   31,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "t",
 													Start: ast.Position{
 														Column: 36,
@@ -3173,7 +3173,7 @@ var pkgAST = &ast.Package{
 														Column: 41,
 														Line:   31,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "sxx",
 													Start: ast.Position{
 														Column: 38,
@@ -3193,7 +3193,7 @@ var pkgAST = &ast.Package{
 													Column: 57,
 													Line:   31,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "t.N*xbar*xbar",
 												Start: ast.Position{
 													Column: 44,
@@ -3209,7 +3209,7 @@ var pkgAST = &ast.Package{
 														Column: 52,
 														Line:   31,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "t.N*xbar",
 													Start: ast.Position{
 														Column: 44,
@@ -3225,7 +3225,7 @@ var pkgAST = &ast.Package{
 															Column: 47,
 															Line:   31,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "t.N",
 														Start: ast.Position{
 															Column: 44,
@@ -3241,7 +3241,7 @@ var pkgAST = &ast.Package{
 																Column: 45,
 																Line:   31,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "t",
 															Start: ast.Position{
 																Column: 44,
@@ -3259,7 +3259,7 @@ var pkgAST = &ast.Package{
 																Column: 47,
 																Line:   31,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "N",
 															Start: ast.Position{
 																Column: 46,
@@ -3279,7 +3279,7 @@ var pkgAST = &ast.Package{
 															Column: 52,
 															Line:   31,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "xbar",
 														Start: ast.Position{
 															Column: 48,
@@ -3299,7 +3299,7 @@ var pkgAST = &ast.Package{
 														Column: 57,
 														Line:   31,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "xbar",
 													Start: ast.Position{
 														Column: 53,
@@ -3321,7 +3321,7 @@ var pkgAST = &ast.Package{
 									Column: 36,
 									Line:   33,
 								},
-								File:   "linearRegression.flux",
+								File:   "linearreg.flux",
 								Source: "intercept = (ybar - slope * xbar)",
 								Start: ast.Position{
 									Column: 3,
@@ -3337,7 +3337,7 @@ var pkgAST = &ast.Package{
 										Column: 12,
 										Line:   33,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "intercept",
 									Start: ast.Position{
 										Column: 3,
@@ -3355,7 +3355,7 @@ var pkgAST = &ast.Package{
 										Column: 36,
 										Line:   33,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "(ybar - slope * xbar)",
 									Start: ast.Position{
 										Column: 15,
@@ -3371,7 +3371,7 @@ var pkgAST = &ast.Package{
 											Column: 35,
 											Line:   33,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "ybar - slope * xbar",
 										Start: ast.Position{
 											Column: 16,
@@ -3387,7 +3387,7 @@ var pkgAST = &ast.Package{
 												Column: 20,
 												Line:   33,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "ybar",
 											Start: ast.Position{
 												Column: 16,
@@ -3406,7 +3406,7 @@ var pkgAST = &ast.Package{
 												Column: 35,
 												Line:   33,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "slope * xbar",
 											Start: ast.Position{
 												Column: 23,
@@ -3422,7 +3422,7 @@ var pkgAST = &ast.Package{
 													Column: 28,
 													Line:   33,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "slope",
 												Start: ast.Position{
 													Column: 23,
@@ -3441,7 +3441,7 @@ var pkgAST = &ast.Package{
 													Column: 35,
 													Line:   33,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "xbar",
 												Start: ast.Position{
 													Column: 31,
@@ -3462,7 +3462,7 @@ var pkgAST = &ast.Package{
 									Column: 124,
 									Line:   35,
 								},
-								File:   "linearRegression.flux",
+								File:   "linearreg.flux",
 								Source: "y_hat = (r) => ({r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy})",
 								Start: ast.Position{
 									Column: 3,
@@ -3478,7 +3478,7 @@ var pkgAST = &ast.Package{
 										Column: 8,
 										Line:   35,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "y_hat",
 									Start: ast.Position{
 										Column: 3,
@@ -3496,7 +3496,7 @@ var pkgAST = &ast.Package{
 										Column: 124,
 										Line:   35,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "(r) => ({r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy})",
 									Start: ast.Position{
 										Column: 11,
@@ -3512,7 +3512,7 @@ var pkgAST = &ast.Package{
 											Column: 124,
 											Line:   35,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "({r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy})",
 										Start: ast.Position{
 											Column: 18,
@@ -3528,7 +3528,7 @@ var pkgAST = &ast.Package{
 												Column: 123,
 												Line:   35,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "{r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy}",
 											Start: ast.Position{
 												Column: 19,
@@ -3544,7 +3544,7 @@ var pkgAST = &ast.Package{
 													Column: 57,
 													Line:   35,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "y_hat: slope * r.x + intercept",
 												Start: ast.Position{
 													Column: 27,
@@ -3560,7 +3560,7 @@ var pkgAST = &ast.Package{
 														Column: 32,
 														Line:   35,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "y_hat",
 													Start: ast.Position{
 														Column: 27,
@@ -3578,7 +3578,7 @@ var pkgAST = &ast.Package{
 														Column: 57,
 														Line:   35,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "slope * r.x + intercept",
 													Start: ast.Position{
 														Column: 34,
@@ -3594,7 +3594,7 @@ var pkgAST = &ast.Package{
 															Column: 45,
 															Line:   35,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "slope * r.x",
 														Start: ast.Position{
 															Column: 34,
@@ -3610,7 +3610,7 @@ var pkgAST = &ast.Package{
 																Column: 39,
 																Line:   35,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "slope",
 															Start: ast.Position{
 																Column: 34,
@@ -3629,7 +3629,7 @@ var pkgAST = &ast.Package{
 																Column: 45,
 																Line:   35,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "r.x",
 															Start: ast.Position{
 																Column: 42,
@@ -3645,7 +3645,7 @@ var pkgAST = &ast.Package{
 																	Column: 43,
 																	Line:   35,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 42,
@@ -3663,7 +3663,7 @@ var pkgAST = &ast.Package{
 																	Column: 45,
 																	Line:   35,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "x",
 																Start: ast.Position{
 																	Column: 44,
@@ -3684,7 +3684,7 @@ var pkgAST = &ast.Package{
 															Column: 57,
 															Line:   35,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "intercept",
 														Start: ast.Position{
 															Column: 48,
@@ -3703,7 +3703,7 @@ var pkgAST = &ast.Package{
 													Column: 70,
 													Line:   35,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "slope:slope",
 												Start: ast.Position{
 													Column: 59,
@@ -3719,7 +3719,7 @@ var pkgAST = &ast.Package{
 														Column: 64,
 														Line:   35,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "slope",
 													Start: ast.Position{
 														Column: 59,
@@ -3737,7 +3737,7 @@ var pkgAST = &ast.Package{
 														Column: 70,
 														Line:   35,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "slope",
 													Start: ast.Position{
 														Column: 65,
@@ -3755,7 +3755,7 @@ var pkgAST = &ast.Package{
 													Column: 80,
 													Line:   35,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "sx: t.sx",
 												Start: ast.Position{
 													Column: 72,
@@ -3771,7 +3771,7 @@ var pkgAST = &ast.Package{
 														Column: 74,
 														Line:   35,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "sx",
 													Start: ast.Position{
 														Column: 72,
@@ -3789,7 +3789,7 @@ var pkgAST = &ast.Package{
 														Column: 80,
 														Line:   35,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "t.sx",
 													Start: ast.Position{
 														Column: 76,
@@ -3805,7 +3805,7 @@ var pkgAST = &ast.Package{
 															Column: 77,
 															Line:   35,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "t",
 														Start: ast.Position{
 															Column: 76,
@@ -3823,7 +3823,7 @@ var pkgAST = &ast.Package{
 															Column: 80,
 															Line:   35,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "sx",
 														Start: ast.Position{
 															Column: 78,
@@ -3842,7 +3842,7 @@ var pkgAST = &ast.Package{
 													Column: 92,
 													Line:   35,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "sxy: t.sxy",
 												Start: ast.Position{
 													Column: 82,
@@ -3858,7 +3858,7 @@ var pkgAST = &ast.Package{
 														Column: 85,
 														Line:   35,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "sxy",
 													Start: ast.Position{
 														Column: 82,
@@ -3876,7 +3876,7 @@ var pkgAST = &ast.Package{
 														Column: 92,
 														Line:   35,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "t.sxy",
 													Start: ast.Position{
 														Column: 87,
@@ -3892,7 +3892,7 @@ var pkgAST = &ast.Package{
 															Column: 88,
 															Line:   35,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "t",
 														Start: ast.Position{
 															Column: 87,
@@ -3910,7 +3910,7 @@ var pkgAST = &ast.Package{
 															Column: 92,
 															Line:   35,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "sxy",
 														Start: ast.Position{
 															Column: 89,
@@ -3929,7 +3929,7 @@ var pkgAST = &ast.Package{
 													Column: 104,
 													Line:   35,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "sxx: t.sxx",
 												Start: ast.Position{
 													Column: 94,
@@ -3945,7 +3945,7 @@ var pkgAST = &ast.Package{
 														Column: 97,
 														Line:   35,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "sxx",
 													Start: ast.Position{
 														Column: 94,
@@ -3963,7 +3963,7 @@ var pkgAST = &ast.Package{
 														Column: 104,
 														Line:   35,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "t.sxx",
 													Start: ast.Position{
 														Column: 99,
@@ -3979,7 +3979,7 @@ var pkgAST = &ast.Package{
 															Column: 100,
 															Line:   35,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "t",
 														Start: ast.Position{
 															Column: 99,
@@ -3997,7 +3997,7 @@ var pkgAST = &ast.Package{
 															Column: 104,
 															Line:   35,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "sxx",
 														Start: ast.Position{
 															Column: 101,
@@ -4016,7 +4016,7 @@ var pkgAST = &ast.Package{
 													Column: 112,
 													Line:   35,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "N: t.N",
 												Start: ast.Position{
 													Column: 106,
@@ -4032,7 +4032,7 @@ var pkgAST = &ast.Package{
 														Column: 107,
 														Line:   35,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "N",
 													Start: ast.Position{
 														Column: 106,
@@ -4050,7 +4050,7 @@ var pkgAST = &ast.Package{
 														Column: 112,
 														Line:   35,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "t.N",
 													Start: ast.Position{
 														Column: 109,
@@ -4066,7 +4066,7 @@ var pkgAST = &ast.Package{
 															Column: 110,
 															Line:   35,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "t",
 														Start: ast.Position{
 															Column: 109,
@@ -4084,7 +4084,7 @@ var pkgAST = &ast.Package{
 															Column: 112,
 															Line:   35,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "N",
 														Start: ast.Position{
 															Column: 111,
@@ -4103,7 +4103,7 @@ var pkgAST = &ast.Package{
 													Column: 122,
 													Line:   35,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "sy: t.sy",
 												Start: ast.Position{
 													Column: 114,
@@ -4119,7 +4119,7 @@ var pkgAST = &ast.Package{
 														Column: 116,
 														Line:   35,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "sy",
 													Start: ast.Position{
 														Column: 114,
@@ -4137,7 +4137,7 @@ var pkgAST = &ast.Package{
 														Column: 122,
 														Line:   35,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "t.sy",
 													Start: ast.Position{
 														Column: 118,
@@ -4153,7 +4153,7 @@ var pkgAST = &ast.Package{
 															Column: 119,
 															Line:   35,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "t",
 														Start: ast.Position{
 															Column: 118,
@@ -4171,7 +4171,7 @@ var pkgAST = &ast.Package{
 															Column: 122,
 															Line:   35,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "sy",
 														Start: ast.Position{
 															Column: 120,
@@ -4191,7 +4191,7 @@ var pkgAST = &ast.Package{
 													Column: 21,
 													Line:   35,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "r",
 												Start: ast.Position{
 													Column: 20,
@@ -4211,7 +4211,7 @@ var pkgAST = &ast.Package{
 											Column: 13,
 											Line:   35,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "r",
 										Start: ast.Position{
 											Column: 12,
@@ -4227,7 +4227,7 @@ var pkgAST = &ast.Package{
 												Column: 13,
 												Line:   35,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "r",
 											Start: ast.Position{
 												Column: 12,
@@ -4248,7 +4248,7 @@ var pkgAST = &ast.Package{
 									Column: 54,
 									Line:   37,
 								},
-								File:   "linearRegression.flux",
+								File:   "linearreg.flux",
 								Source: "rse = (r) => ({r with errors: (r.y - r.y_hat)^2.0})",
 								Start: ast.Position{
 									Column: 3,
@@ -4264,7 +4264,7 @@ var pkgAST = &ast.Package{
 										Column: 6,
 										Line:   37,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "rse",
 									Start: ast.Position{
 										Column: 3,
@@ -4282,7 +4282,7 @@ var pkgAST = &ast.Package{
 										Column: 54,
 										Line:   37,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "(r) => ({r with errors: (r.y - r.y_hat)^2.0})",
 									Start: ast.Position{
 										Column: 9,
@@ -4298,7 +4298,7 @@ var pkgAST = &ast.Package{
 											Column: 54,
 											Line:   37,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "({r with errors: (r.y - r.y_hat)^2.0})",
 										Start: ast.Position{
 											Column: 16,
@@ -4314,7 +4314,7 @@ var pkgAST = &ast.Package{
 												Column: 53,
 												Line:   37,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "{r with errors: (r.y - r.y_hat)^2.0}",
 											Start: ast.Position{
 												Column: 17,
@@ -4330,7 +4330,7 @@ var pkgAST = &ast.Package{
 													Column: 52,
 													Line:   37,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "errors: (r.y - r.y_hat)^2.0",
 												Start: ast.Position{
 													Column: 25,
@@ -4346,7 +4346,7 @@ var pkgAST = &ast.Package{
 														Column: 31,
 														Line:   37,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "errors",
 													Start: ast.Position{
 														Column: 25,
@@ -4364,7 +4364,7 @@ var pkgAST = &ast.Package{
 														Column: 52,
 														Line:   37,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "(r.y - r.y_hat)^2.0",
 													Start: ast.Position{
 														Column: 33,
@@ -4380,7 +4380,7 @@ var pkgAST = &ast.Package{
 															Column: 48,
 															Line:   37,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "(r.y - r.y_hat)",
 														Start: ast.Position{
 															Column: 33,
@@ -4396,7 +4396,7 @@ var pkgAST = &ast.Package{
 																Column: 47,
 																Line:   37,
 															},
-															File:   "linearRegression.flux",
+															File:   "linearreg.flux",
 															Source: "r.y - r.y_hat",
 															Start: ast.Position{
 																Column: 34,
@@ -4412,7 +4412,7 @@ var pkgAST = &ast.Package{
 																	Column: 37,
 																	Line:   37,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "r.y",
 																Start: ast.Position{
 																	Column: 34,
@@ -4428,7 +4428,7 @@ var pkgAST = &ast.Package{
 																		Column: 35,
 																		Line:   37,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 34,
@@ -4446,7 +4446,7 @@ var pkgAST = &ast.Package{
 																		Column: 37,
 																		Line:   37,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "y",
 																	Start: ast.Position{
 																		Column: 36,
@@ -4466,7 +4466,7 @@ var pkgAST = &ast.Package{
 																	Column: 47,
 																	Line:   37,
 																},
-																File:   "linearRegression.flux",
+																File:   "linearreg.flux",
 																Source: "r.y_hat",
 																Start: ast.Position{
 																	Column: 40,
@@ -4482,7 +4482,7 @@ var pkgAST = &ast.Package{
 																		Column: 41,
 																		Line:   37,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 40,
@@ -4500,7 +4500,7 @@ var pkgAST = &ast.Package{
 																		Column: 47,
 																		Line:   37,
 																	},
-																	File:   "linearRegression.flux",
+																	File:   "linearreg.flux",
 																	Source: "y_hat",
 																	Start: ast.Position{
 																		Column: 42,
@@ -4522,7 +4522,7 @@ var pkgAST = &ast.Package{
 															Column: 52,
 															Line:   37,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "2.0",
 														Start: ast.Position{
 															Column: 49,
@@ -4542,7 +4542,7 @@ var pkgAST = &ast.Package{
 													Column: 19,
 													Line:   37,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "r",
 												Start: ast.Position{
 													Column: 18,
@@ -4562,7 +4562,7 @@ var pkgAST = &ast.Package{
 											Column: 11,
 											Line:   37,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "r",
 										Start: ast.Position{
 											Column: 10,
@@ -4578,7 +4578,7 @@ var pkgAST = &ast.Package{
 												Column: 11,
 												Line:   37,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "r",
 											Start: ast.Position{
 												Column: 10,
@@ -4599,7 +4599,7 @@ var pkgAST = &ast.Package{
 									Column: 20,
 									Line:   41,
 								},
-								File:   "linearRegression.flux",
+								File:   "linearreg.flux",
 								Source: "output = renameAndSum\n    |> map(fn: y_hat)\n    |> map(fn: rse)",
 								Start: ast.Position{
 									Column: 3,
@@ -4615,7 +4615,7 @@ var pkgAST = &ast.Package{
 										Column: 9,
 										Line:   39,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "output",
 									Start: ast.Position{
 										Column: 3,
@@ -4635,7 +4635,7 @@ var pkgAST = &ast.Package{
 												Column: 24,
 												Line:   39,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "renameAndSum",
 											Start: ast.Position{
 												Column: 12,
@@ -4652,7 +4652,7 @@ var pkgAST = &ast.Package{
 											Column: 22,
 											Line:   40,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "renameAndSum\n    |> map(fn: y_hat)",
 										Start: ast.Position{
 											Column: 12,
@@ -4669,7 +4669,7 @@ var pkgAST = &ast.Package{
 													Column: 21,
 													Line:   40,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "fn: y_hat",
 												Start: ast.Position{
 													Column: 12,
@@ -4685,7 +4685,7 @@ var pkgAST = &ast.Package{
 														Column: 21,
 														Line:   40,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "fn: y_hat",
 													Start: ast.Position{
 														Column: 12,
@@ -4701,7 +4701,7 @@ var pkgAST = &ast.Package{
 															Column: 14,
 															Line:   40,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 12,
@@ -4719,7 +4719,7 @@ var pkgAST = &ast.Package{
 															Column: 21,
 															Line:   40,
 														},
-														File:   "linearRegression.flux",
+														File:   "linearreg.flux",
 														Source: "y_hat",
 														Start: ast.Position{
 															Column: 16,
@@ -4739,7 +4739,7 @@ var pkgAST = &ast.Package{
 												Column: 22,
 												Line:   40,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "map(fn: y_hat)",
 											Start: ast.Position{
 												Column: 8,
@@ -4755,7 +4755,7 @@ var pkgAST = &ast.Package{
 													Column: 11,
 													Line:   40,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "map",
 												Start: ast.Position{
 													Column: 8,
@@ -4774,7 +4774,7 @@ var pkgAST = &ast.Package{
 										Column: 20,
 										Line:   41,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "renameAndSum\n    |> map(fn: y_hat)\n    |> map(fn: rse)",
 									Start: ast.Position{
 										Column: 12,
@@ -4791,7 +4791,7 @@ var pkgAST = &ast.Package{
 												Column: 19,
 												Line:   41,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "fn: rse",
 											Start: ast.Position{
 												Column: 12,
@@ -4807,7 +4807,7 @@ var pkgAST = &ast.Package{
 													Column: 19,
 													Line:   41,
 												},
-												File:   "linearRegression.flux",
+												File:   "linearreg.flux",
 												Source: "fn: rse",
 												Start: ast.Position{
 													Column: 12,
@@ -4823,7 +4823,7 @@ var pkgAST = &ast.Package{
 														Column: 14,
 														Line:   41,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 12,
@@ -4841,7 +4841,7 @@ var pkgAST = &ast.Package{
 														Column: 19,
 														Line:   41,
 													},
-													File:   "linearRegression.flux",
+													File:   "linearreg.flux",
 													Source: "rse",
 													Start: ast.Position{
 														Column: 16,
@@ -4861,7 +4861,7 @@ var pkgAST = &ast.Package{
 											Column: 20,
 											Line:   41,
 										},
-										File:   "linearRegression.flux",
+										File:   "linearreg.flux",
 										Source: "map(fn: rse)",
 										Start: ast.Position{
 											Column: 8,
@@ -4877,7 +4877,7 @@ var pkgAST = &ast.Package{
 												Column: 11,
 												Line:   41,
 											},
-											File:   "linearRegression.flux",
+											File:   "linearreg.flux",
 											Source: "map",
 											Start: ast.Position{
 												Column: 8,
@@ -4898,7 +4898,7 @@ var pkgAST = &ast.Package{
 										Column: 16,
 										Line:   43,
 									},
-									File:   "linearRegression.flux",
+									File:   "linearreg.flux",
 									Source: "output",
 									Start: ast.Position{
 										Column: 10,
@@ -4915,7 +4915,7 @@ var pkgAST = &ast.Package{
 									Column: 16,
 									Line:   43,
 								},
-								File:   "linearRegression.flux",
+								File:   "linearreg.flux",
 								Source: "return output",
 								Start: ast.Position{
 									Column: 3,
@@ -4933,7 +4933,7 @@ var pkgAST = &ast.Package{
 								Column: 30,
 								Line:   8,
 							},
-							File:   "linearRegression.flux",
+							File:   "linearreg.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 21,
@@ -4949,7 +4949,7 @@ var pkgAST = &ast.Package{
 									Column: 27,
 									Line:   8,
 								},
-								File:   "linearRegression.flux",
+								File:   "linearreg.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 21,
@@ -4966,7 +4966,7 @@ var pkgAST = &ast.Package{
 								Column: 30,
 								Line:   8,
 							},
-							File:   "linearRegression.flux",
+							File:   "linearreg.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 28,
@@ -4986,7 +4986,7 @@ var pkgAST = &ast.Package{
 						Column: 14,
 						Line:   3,
 					},
-					File:   "linearRegression.flux",
+					File:   "linearreg.flux",
 					Source: "import \"math\"",
 					Start: ast.Position{
 						Column: 1,
@@ -5002,7 +5002,7 @@ var pkgAST = &ast.Package{
 							Column: 14,
 							Line:   3,
 						},
-						File:   "linearRegression.flux",
+						File:   "linearreg.flux",
 						Source: "\"math\"",
 						Start: ast.Position{
 							Column: 8,
@@ -5021,7 +5021,7 @@ var pkgAST = &ast.Package{
 						Column: 18,
 						Line:   4,
 					},
-					File:   "linearRegression.flux",
+					File:   "linearreg.flux",
 					Source: "import \"generate\"",
 					Start: ast.Position{
 						Column: 1,
@@ -5037,7 +5037,7 @@ var pkgAST = &ast.Package{
 							Column: 18,
 							Line:   4,
 						},
-						File:   "linearRegression.flux",
+						File:   "linearreg.flux",
 						Source: "\"generate\"",
 						Start: ast.Position{
 							Column: 8,
@@ -5049,7 +5049,7 @@ var pkgAST = &ast.Package{
 			},
 		}},
 		Metadata: "parser-type=rust",
-		Name:     "linearRegression.flux",
+		Name:     "linearreg.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -5058,7 +5058,7 @@ var pkgAST = &ast.Package{
 						Column: 20,
 						Line:   1,
 					},
-					File:   "linearRegression.flux",
+					File:   "linearreg.flux",
 					Source: "package statsmodels",
 					Start: ast.Position{
 						Column: 1,
@@ -5074,7 +5074,7 @@ var pkgAST = &ast.Package{
 							Column: 20,
 							Line:   1,
 						},
-						File:   "linearRegression.flux",
+						File:   "linearreg.flux",
 						Source: "statsmodels",
 						Start: ast.Position{
 							Column: 9,
