@@ -36,6 +36,7 @@ GENERATED_TARGETS = \
 	internal/fbsemantic/semantic_generated.go \
 	semantic/flatbuffers_gen.go \
 	internal/fbsemantic/semantic_generated.go \
+	libflux/go/libflux/buildinfo.gen.go \
 	$(LIBFLUX_GENERATED_TARGETS)
 
 LIBFLUX_GENERATED_TARGETS = \
@@ -56,13 +57,15 @@ semantic/flatbuffers_gen.go: semantic/graph.go internal/cmd/fbgen/cmd/semantic.g
 	$(GO_GENERATE) ./semantic
 libflux/src/core/semantic/flatbuffers/semantic_generated.rs: internal/fbsemantic/semantic.fbs
 	flatc --rust -o libflux/src/core/semantic/flatbuffers internal/fbsemantic/semantic.fbs && rustfmt $@
+libflux/go/libflux/buildinfo.gen.go: $(LIBFLUX_GENERATED_TARGETS)
+	$(GO_GENERATE) ./libflux/go/libflux
 
 # Force a second expansion to happen so the call to go_deps works correctly.
 .SECONDEXPANSION:
 ast/asttest/cmpopts.go: ast/ast.go ast/asttest/gen.go $$(call go_deps,./internal/cmd/cmpgen)
 	$(GO_GENERATE) ./ast/asttest
 
-stdlib/packages.go: $(STDLIB_SOURCES) $(LIBFLUX_GENERATED_TARGETS) internal/fbsemantic/semantic_generated.go semantic/flatbuffers_gen.go
+stdlib/packages.go: $(STDLIB_SOURCES) libflux-go internal/fbsemantic/semantic_generated.go semantic/flatbuffers_gen.go
 	$(GO_GENERATE) ./stdlib
 
 internal/scanner/unicode.rl: internal/scanner/unicode2ragel.rb
@@ -138,7 +141,7 @@ libflux/scanner.c: libflux/src/core/scanner/scanner.rl
 
 # This target generates a file that forces the go libflux wrapper
 # to recompile which forces pkg-config to run again.
-libflux-go:
+libflux-go: $(LIBFLUX_GENERATED_TARGETS)
 	$(GO_GENERATE) ./libflux/go/libflux
 
 libflux-wasm:
