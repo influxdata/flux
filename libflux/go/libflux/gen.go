@@ -1,3 +1,3 @@
 package libflux
 
-//go:generate ./genhack.sh
+//go:generate go run ./internal/buildinfo
