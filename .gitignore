@@ -15,3 +15,4 @@ target
 /libflux/.cache
 /libflux/go/libflux/hack.gen.go
 /release-notes.txt
+/flux
