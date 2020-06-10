@@ -2,10 +2,7 @@ project_name: flux
 builds:
   - goos:
     - linux
-    # Darwin cross compilation involves installing
-    # a compiler toolchain for it.
-    # https://github.com/influxdata/flux/issues/2654
-    # - darwin
+    - darwin
     goarch:
     - amd64
     - arm
@@ -15,7 +12,11 @@ builds:
     - 7
     ignore:
       - goos: darwin
-        goarch: 386
+        goarch: 386 
+      - goos: darwin
+        goarch: arm
+      - goos: darwin
+        goarch: arm64 
       - goos: windows
         goarch: 386
     main: ./cmd/flux

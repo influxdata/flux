@@ -159,6 +159,14 @@ publish-wasm: clean-wasm build-wasm
 test-valgrind: libflux
 	cd libflux/c && $(MAKE) test-valgrind
 
+# Build the set of supported cross-compiled binaries
+test-release: Dockerfile_build
+	docker build -t flux-release -f Dockerfile_build .
+	docker run --rm -it -v "$(PWD):/home/builder/src" flux-release /bin/sh -c "\
+		cd src/ &&\
+	    go build -o /go/bin/pkg-config github.com/influxdata/pkg-config &&\
+		./gotool.sh github.com/goreleaser/goreleaser release --rm-dist --snapshot"
+  
 .PHONY: generate \
 	clean \
 	cleangenerate \
