@@ -15,4 +15,8 @@ target
 /libflux/.cache
 /libflux/go/libflux/hack.gen.go
 /release-notes.txt
-/flux
+
+# exclude any files with the name flux but
+# include any directories that share the same name.
+**/flux
+!**/flux/
