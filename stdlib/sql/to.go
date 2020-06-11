@@ -157,7 +157,7 @@ func NewToSQLTransformation(d execute.Dataset, deps flux.Dependencies, cache exe
 	}
 
 	// validate the data driver name and source name.
-	db, err := sql.Open(spec.Spec.DriverName, spec.Spec.DataSourceName)
+	db, err := getOpenFunc(spec.Spec.DriverName, spec.Spec.DataSourceName)()
 	if err != nil {
 		return nil, err
 	}
@@ -268,6 +268,8 @@ func getTranslationFunc(driverName string) (func() translationFunc, error) {
 		return MysqlColumnTranslateFunc, nil
 	case "snowflake":
 		return SnowflakeColumnTranslateFunc, nil
+	case "mssql", "sqlserver":
+		return MssqlColumnTranslateFunc, nil
 	case "awsathena": // read-only support for AWS Athena (see awsathena.go)
 		return nil, errors.Newf(codes.Invalid, "writing is not supported for %s", driverName)
 	default:
@@ -329,7 +331,12 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 		valueArgs := make([]interface{}, 0, l*len(cols))
 
 		if t.spec.Spec.DriverName != "sqlmock" {
-			q := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)", t.spec.Spec.Table, strings.Join(newSQLTableCols, ","))
+			var q string
+			if !isMssqlDriver(t.spec.Spec.DriverName) {
+				q = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)", t.spec.Spec.Table, strings.Join(newSQLTableCols, ","))
+			} else { // SQL Server does not support IF NOT EXIST
+				q = fmt.Sprintf("IF OBJECT_ID('%s', 'U') IS NULL BEGIN CREATE TABLE %s (%s) END", t.spec.Spec.Table, t.spec.Spec.Table, strings.Join(newSQLTableCols, ","))
+			}
 			_, err = t.tx.Exec(q)
 			if err != nil {
 				return err
@@ -414,8 +421,19 @@ func ExecuteQueries(tx *sql.Tx, s *ToSQLOpSpec, colNames []string, valueStrings 
 			concatValueStrings = strings.Replace(concatValueStrings, "?", fmt.Sprintf("$%v", pqCounter), 1)
 		}
 	}
+	// SQLServer uses @p instead of ? for placeholders
+	if isMssqlDriver(s.DriverName) {
+		for pqCounter := 1; strings.Contains(concatValueStrings, "?"); pqCounter++ {
+			concatValueStrings = strings.Replace(concatValueStrings, "?", fmt.Sprintf("@p%v", pqCounter), 1)
+		}
+	}
 
 	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", s.Table, strings.Join(colNames, ","), concatValueStrings)
+	if isMssqlDriver(s.DriverName) && mssqlCheckParameter(s.DataSourceName, mssqlIdentityInsertEnabled) {
+		prologue := fmt.Sprintf("DECLARE @tableHasIdentity INT = OBJECTPROPERTY(OBJECT_ID('%s'), 'TableHasIdentity'); IF @tableHasIdentity = 1 BEGIN SET IDENTITY_INSERT %s ON END", s.Table, s.Table)
+		epilogue := fmt.Sprintf("IF @tableHasIdentity = 1 BEGIN SET IDENTITY_INSERT %s OFF END", s.Table)
+		query = strings.Join([]string{prologue, query, epilogue}, "; ")
+	}
 	if s.DriverName != "sqlmock" {
 		_, err := tx.Exec(query, *valueArgs...)
 		if err != nil {
