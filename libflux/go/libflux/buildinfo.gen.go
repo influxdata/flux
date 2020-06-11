@@ -68,6 +68,7 @@ var sourceHashes = map[string]string{
 	"libflux/src/flux/build.rs":                                                     "31a4f825297f9b79d1c8692a5fa3ff9211cb87d01650d147128d061588f75abd",
 	"libflux/src/flux/lib.rs":                                                       "2ba8ed60affa0dc1a060b3cc86e94308ecdf644d282352cbefabaa4496c7fb24",
 	"stdlib/contrib/chobbs/discord/discord.flux":                                    "8fd42ce1b459969ec3254dc0215a21b3669e01960a203e93c05284384f3eb49a",
+	"stdlib/contrib/sranka/teams/teams.flux":                                        "57d5656dcb2db79f173e84d551efdbeefb643d028eaaecfff8ee7d2a033f9f50",
 	"stdlib/contrib/sranka/telegram/telegram.flux":                                  "37d1614a215c6ca523e4efa5642ec9104936755a403e5bc4481d82a602f7719b",
 	"stdlib/csv/csv.flux":                                                           "1951875e6e55fb63d0df75937f38b5051fc7bff5ab0a1bdaf8793bd70329c9a2",
 	"stdlib/date/date.flux":                                                         "4eef9579c89bb8b302ce9b78737c6b370638c021c36825744b89917be1e38bd2",
