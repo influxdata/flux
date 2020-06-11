@@ -1144,7 +1144,7 @@ impl Function {
                     // This means they should match. Enforce this condition by inserting
                     // the pipe argument into the required ones with the same key.
                     f.req.insert(fp.k.clone(), fp.v);
-                    g.req.insert(fp.k.clone(), gp.v);
+                    g.req.insert(fp.k, gp.v);
                 }
             }
             // F has a pipe argument and g does not.
