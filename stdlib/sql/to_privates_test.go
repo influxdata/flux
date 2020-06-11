@@ -73,6 +73,13 @@ func TestTranslationDriverReturn(t *testing.T) {
 		t.Fail()
 	}
 
+	// verify that valid returns expected happiness for Mssql
+	_, err = getTranslationFunc("sqlserver")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
+
 }
 
 func TestSqliteTranslation(t *testing.T) {
@@ -192,6 +199,36 @@ func TestSnowflakeTranslation(t *testing.T) {
 	}
 
 	for dbTypeString, fluxType := range snowflakeTypeTranslations {
+		v, err := sqlT()(fluxType, columnLabel)
+		if !cmp.Equal(nil, err) {
+			t.Log(cmp.Diff(nil, err))
+			t.Fail()
+		}
+		if !cmp.Equal(columnLabel+" "+dbTypeString, v) {
+			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
+			t.Fail()
+		}
+	}
+}
+
+func TestMssqlTranslation(t *testing.T) {
+	mssqlTypeTranslations := map[string]flux.ColType{
+		"FLOAT":          flux.TFloat,
+		"BIGINT":         flux.TInt,
+		"VARCHAR(MAX)":   flux.TString,
+		"DATETIMEOFFSET": flux.TTime,
+		"BIT":            flux.TBool,
+	}
+
+	columnLabel := "apples"
+	// verify that valid returns expected happiness for mssql
+	sqlT, err := getTranslationFunc("sqlserver")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
+
+	for dbTypeString, fluxType := range mssqlTypeTranslations {
 		v, err := sqlT()(fluxType, columnLabel)
 		if !cmp.Equal(nil, err) {
 			t.Log(cmp.Diff(nil, err))
