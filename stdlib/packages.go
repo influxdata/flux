@@ -4,6 +4,8 @@ package stdlib
 
 import (
 	_ "github.com/influxdata/flux/stdlib/contrib/chobbs/discord"
+	_ "github.com/influxdata/flux/stdlib/contrib/jsternberg/aggregate"
+	_ "github.com/influxdata/flux/stdlib/contrib/jsternberg/math"
 	_ "github.com/influxdata/flux/stdlib/contrib/sranka/teams"
 	_ "github.com/influxdata/flux/stdlib/contrib/sranka/telegram"
 	_ "github.com/influxdata/flux/stdlib/csv"
