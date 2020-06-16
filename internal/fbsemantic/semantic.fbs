@@ -89,6 +89,7 @@ enum Kind : ubyte {
   Nullable,
   Row,
   Negatable,
+  Timeable,
 }
 
 table Constraint {

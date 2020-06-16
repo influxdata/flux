@@ -88,6 +88,7 @@ impl From<fb::Kind> for Kind {
             fb::Kind::Nullable => Kind::Nullable,
             fb::Kind::Row => Kind::Row,
             fb::Kind::Negatable => Kind::Negatable,
+            fb::Kind::Timeable => Kind::Timeable,
         }
     }
 }
@@ -104,6 +105,7 @@ impl From<Kind> for fb::Kind {
             Kind::Nullable => fb::Kind::Nullable,
             Kind::Row => fb::Kind::Row,
             Kind::Negatable => fb::Kind::Negatable,
+            Kind::Timeable => fb::Kind::Timeable,
         }
     }
 }

@@ -207,6 +207,7 @@ pub enum Kind {
     Nullable,
     Row,
     Negatable,
+    Timeable,
 }
 
 impl fmt::Display for Kind {
@@ -221,6 +222,7 @@ impl fmt::Display for Kind {
             Kind::Nullable => f.write_str("Nullable"),
             Kind::Row => f.write_str("Row"),
             Kind::Negatable => f.write_str("Negatable"),
+            Kind::Timeable => f.write_str("Timeable"),
         }
     }
 }
@@ -432,16 +434,20 @@ impl MonoType {
                 }),
             },
             MonoType::Duration => match with {
-                Kind::Comparable | Kind::Equatable | Kind::Nullable | Kind::Negatable => {
-                    Ok(Substitution::empty())
-                }
+                Kind::Comparable
+                | Kind::Equatable
+                | Kind::Nullable
+                | Kind::Negatable
+                | Kind::Timeable => Ok(Substitution::empty()),
                 _ => Err(Error::CannotConstrain {
                     act: self,
                     exp: with,
                 }),
             },
             MonoType::Time => match with {
-                Kind::Comparable | Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
+                Kind::Comparable | Kind::Equatable | Kind::Nullable | Kind::Timeable => {
+                    Ok(Substitution::empty())
+                }
                 _ => Err(Error::CannotConstrain {
                     act: self,
                     exp: with,
