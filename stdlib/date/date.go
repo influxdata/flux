@@ -266,6 +266,20 @@ func init() {
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Nanosecond())), nil
 				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					scope := ctx.Value("scope").(values.Scope)
+					now, ok := scope.Lookup("now")
+					if !ok {
+						return nil, fmt.Errorf("%q option not set", "now")
+					}
+					nowTime, err := now.Function().Call(ctx, nil)
+					if err != nil {
+						return nil, err
+					}
+
+					return values.NewInt(int64(nowTime.Time().Add(v1.Duration()).Time().Nanosecond())), nil
+				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
@@ -287,13 +301,36 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument unit")
 				}
 
-				if v.Type().Nature() == semantic.Time && u.Type().Nature() == semantic.Duration {
-					w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{})
-					if err != nil {
-						return nil, err
+				if values.IsTimeable(v) && u.Type().Nature() == semantic.Duration {
+					if v.Type().Nature() == semantic.Time {
+						w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{})
+						if err != nil {
+							return nil, err
+						}
+						b := w.GetEarliestBounds(v.Time())
+						return values.NewTime(b.Start), nil
 					}
-					b := w.GetEarliestBounds(v.Time())
-					return values.NewTime(b.Start), nil
+
+					if v.Type().Nature() == semantic.Duration {
+
+						w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{})
+						if err != nil {
+							return nil, err
+						}
+
+						scope := ctx.Value("scope").(values.Scope)
+						now, ok := scope.Lookup("now")
+						if !ok {
+							return nil, fmt.Errorf("%q option not set", "now")
+						}
+						nowTime, err := now.Function().Call(ctx, nil)
+						if err != nil {
+							return nil, err
+						}
+						b := w.GetEarliestBounds(nowTime.Time().Add(v.Duration()))
+						return values.NewTime(b.Start), nil
+					}
+
 				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot truncate argument t of type %v to unit %v", v.Type().Nature(), u))
 			}, false,

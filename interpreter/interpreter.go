@@ -578,6 +578,7 @@ func (itrp *Interpreter) doCall(ctx context.Context, call *semantic.CallExpressi
 	}
 
 	// Call the function
+	ctx = context.WithValue(ctx, "scope", scope)
 	value, err := f.Call(ctx, argObj)
 	if err != nil {
 		return nil, err
