@@ -3,13 +3,13 @@ package execute
 import (
 	"context"
 	"fmt"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
+	"go.uber.org/zap/zapcore"
 	"runtime/debug"
 	"sync"
 
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 // Dispatcher schedules work for a query.

@@ -410,6 +410,9 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 
 	s, cctx = opentracing.StartSpanFromContext(ctx, "start-program")
 	defer s.Finish()
+
+	cctx = context.WithValue(cctx, "scope", scope)
+
 	return p.Program.Start(cctx, alloc)
 }
 
