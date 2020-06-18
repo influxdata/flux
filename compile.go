@@ -19,9 +19,6 @@ const (
 	tableKindKey    = "kind"
 	tableParentsKey = "parents"
 	tableSpecKey    = "spec"
-
-	NowOption = "now"
-	nowPkg    = "universe"
 )
 
 type CreateOperationSpec func(args Arguments, a *Administration) (OperationSpec, error)

@@ -9,11 +9,16 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
-const PackageMain = "main"
+const (
+	PackageMain = "main"
+	NowPkg      = "universe"
+	NowOption   = "now"
+)
 
 type Interpreter struct {
 	sideEffects []SideEffect // a list of the side effects occurred during the last call to `Eval`.
@@ -157,6 +162,31 @@ func (itrp *Interpreter) doStatement(ctx context.Context, stmt semantic.Statemen
 	return nil, nil
 }
 
+// If the option is "now", evaluate the function and store in the execution
+// dependencies.
+func (irtp *Interpreter) evaluateNowOption(ctx context.Context, name string, init values.Value) {
+	if name != NowOption {
+		return
+	}
+	if !execdeps.HaveExecutionDependencies(ctx) {
+		return
+	}
+
+	// Evaluate now.
+	nowTime, err := init.Function().Call(ctx, nil)
+	if err != nil {
+		return
+	}
+	now := nowTime.Time().Time()
+
+	// Stash in the execution dependencies. The deps use a pointer and we
+	// overwrite the dest of the pointer. Overwritng the pointer would have no
+	// effect as context changes are passed down only.
+	deps := execdeps.GetExecutionDependencies(ctx)
+	*deps.Now = now
+	deps.Inject(ctx)
+}
+
 func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.OptionStatement, scope values.Scope) (values.Value, error) {
 	switch a := s.Assignment.(type) {
 	case *semantic.NativeVariableAssignment:
@@ -164,6 +194,11 @@ func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.Opti
 		if err != nil {
 			return nil, err
 		}
+
+		// Some functions require access to now from the execution dependencies
+		// (eg tableFind). For those cases we immediately evaluate and store it
+		// in the execution deps.
+		itrp.evaluateNowOption(ctx, a.Identifier.Name, init)
 
 		// Retrieve an option with the name from the scope.
 		// If it exists and is an option, then set the option
