@@ -424,6 +424,48 @@ func TestCompileAndEval(t *testing.T) {
 	}
 }
 
+func TestCompiler_ReturnType(t *testing.T) {
+	testCases := []struct {
+		name   string
+		fn     string
+		inType semantic.MonoType
+		want   string
+	}{
+		{
+			name: "with",
+			fn:   `(r) => ({r with _value: r._value * 2.0})`,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("_value"), Value: semantic.BasicFloat},
+					{Key: []byte("_time"), Value: semantic.BasicTime},
+				})},
+			}),
+			want: `{_time: time | _value: float | _value: float}`,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			pkg, err := runtime.AnalyzeSource(tc.fn)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
+			fn := stmt.Expression.(*semantic.FunctionExpression)
+			f, err := compiler.Compile(nil, fn, tc.inType)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			if got, want := f.Type().String(), tc.want; got != want {
+				t.Fatalf("unexpected return type -want/+got:\n\t- %s\n\t+ %s", want, got)
+			}
+		})
+	}
+}
+
 func TestToScopeNil(t *testing.T) {
 	if compiler.ToScope(nil) != nil {
 		t.Fatal("ToScope made non-nil scope from a nil base")
