@@ -82,6 +82,10 @@ func TestDecoder(t *testing.T) {
 		got = append(got, res)
 	}
 
+	for i := range got {
+		got[i].Normalize()
+	}
+
 	if !cmp.Equal(exp, got) {
 		t.Fatalf("unexpected result -want/+got:\n%s", cmp.Diff(exp, got))
 	}

@@ -288,7 +288,7 @@ func (sfe *serializedFluxError) Error() string {
 }
 
 // readMetadata reads the table annotations and header.
-// If there is no more data, returns (tablMetadata{}, io.EOF).
+// If there is no more data, returns (tableMetadata{}, io.EOF).
 // In case of an actual error:
 //   - if it's error that was serialized to CSV, it will be wrapped in serializedFluxError.
 //   - otherwise, it's a serialization error, it will be returned as-is.
