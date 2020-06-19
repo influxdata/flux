@@ -3,13 +3,16 @@ module github.com/influxdata/flux
 go 1.12
 
 require (
-	cloud.google.com/go v0.43.0
+	cloud.google.com/go v0.57.0
+	cloud.google.com/go/bigtable v1.3.0
+	cloud.google.com/go/pubsub v1.3.1 // indirect
 	github.com/Azure/go-autorest/autorest v0.10.1
 	github.com/Azure/go-autorest/autorest/adal v0.8.3
 	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
 	github.com/DATA-DOG/go-sqlmock v1.4.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/apache/arrow/go/arrow v0.0.0-20191024131854-af6fa24be0db
+	github.com/bonitoo-io/go-sql-bigquery v0.3.3
 	github.com/c-bata/go-prompt v0.2.2
 	github.com/cespare/xxhash v1.1.0
 	github.com/dave/jennifer v1.2.0
@@ -19,7 +22,7 @@ require (
 	github.com/golang/geo v0.0.0-20190916061304-5b978397cfec
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/google/flatbuffers v1.11.0
-	github.com/google/go-cmp v0.3.0
+	github.com/google/go-cmp v0.4.0
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e
@@ -38,7 +41,7 @@ require (
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/term v0.0.0-20180730021639-bffc007b7fd5 // indirect
-	github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
+	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4
 	github.com/prometheus/common v0.6.0
 	github.com/satori/go.uuid v1.2.1-0.20181028125025-b2ce2384e17b
 	github.com/segmentio/kafka-go v0.1.0
@@ -48,9 +51,9 @@ require (
 	github.com/uber/athenadriver v1.1.4
 	go.uber.org/zap v1.14.0
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37 // indirect
-	golang.org/x/exp v0.0.0-20190510132918-efd6b22b2522
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
-	golang.org/x/tools v0.0.0-20200304024140-c4206d458c3f
+	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6
+	golang.org/x/net v0.0.0-20200513185701-a91f0712d120
+	golang.org/x/tools v0.0.0-20200515010526-7d3b6ebf133d
 	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
-	google.golang.org/api v0.7.0
+	google.golang.org/api v0.24.0
 )

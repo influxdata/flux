@@ -80,6 +80,13 @@ func TestTranslationDriverReturn(t *testing.T) {
 		t.Fail()
 	}
 
+	// verify that valid returns expected happiness for BigQuery
+	_, err = getTranslationFunc("bigquery")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
+
 }
 
 func TestSqliteTranslation(t *testing.T) {
@@ -229,6 +236,36 @@ func TestMssqlTranslation(t *testing.T) {
 	}
 
 	for dbTypeString, fluxType := range mssqlTypeTranslations {
+		v, err := sqlT()(fluxType, columnLabel)
+		if !cmp.Equal(nil, err) {
+			t.Log(cmp.Diff(nil, err))
+			t.Fail()
+		}
+		if !cmp.Equal(columnLabel+" "+dbTypeString, v) {
+			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
+			t.Fail()
+		}
+	}
+}
+
+func TestBigQueryTranslation(t *testing.T) {
+	bigqueryTypeTranslations := map[string]flux.ColType{
+		"FLOAT64":       flux.TFloat,
+		"INT64":         flux.TInt,
+		"STRING":        flux.TString,
+		"TIMESTAMP":     flux.TTime,
+		"BOOL":          flux.TBool,
+	}
+
+	columnLabel := "apples"
+	// verify that valid returns expected happiness for bigquery
+	sqlT, err := getTranslationFunc("bigquery")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
+
+	for dbTypeString, fluxType := range bigqueryTypeTranslations {
 		v, err := sqlT()(fluxType, columnLabel)
 		if !cmp.Equal(nil, err) {
 			t.Log(cmp.Diff(nil, err))
