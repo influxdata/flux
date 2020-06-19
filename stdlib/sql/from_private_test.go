@@ -116,6 +116,14 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			V:      url.PrivateIPValidator{},
 			ErrMsg: "it connects to a private IP",
 		}, {
+			Name: "invalid bigquery",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "bigquery",
+				DataSourceName: "biqquery://project1/?dataset=dataset1",
+				Query:          "",
+			},
+			ErrMsg: "invalid prefix",
+		}, {
 			Name: "invalid sqlmock",
 			Spec: &FromSQLProcedureSpec{
 				DriverName:     "sqlmock",
