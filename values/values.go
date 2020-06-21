@@ -294,6 +294,11 @@ func CheckKind(got, exp semantic.Nature) {
 	}
 }
 
+// isTimeable checks if value v is Timeable
+func IsTimeable(v Value) bool {
+	return v.Type().Nature() == semantic.Time || v.Type().Nature() == semantic.Duration
+}
+
 type null struct{}
 
 func (n null) Type() semantic.MonoType { return semantic.MonoType{} }

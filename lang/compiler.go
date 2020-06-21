@@ -408,7 +408,8 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	}
 	p.PlanSpec = ps
 	s.Finish()
-
+	deps := execdeps.NewExecutionDependencies(alloc, &p.Now, p.Logger)
+	ctx = deps.Inject(ctx)
 	s, cctx = opentracing.StartSpanFromContext(ctx, "start-program")
 	defer s.Finish()
 	return p.Program.Start(cctx, alloc)

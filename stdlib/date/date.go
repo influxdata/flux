@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -266,6 +267,7 @@ func init() {
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Nanosecond())), nil
 				}
+
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
@@ -287,13 +289,29 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument unit")
 				}
 
-				if v.Type().Nature() == semantic.Time && u.Type().Nature() == semantic.Duration {
-					w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{})
-					if err != nil {
-						return nil, err
+				if values.IsTimeable(v) && u.Type().Nature() == semantic.Duration {
+					if v.Type().Nature() == semantic.Time {
+						w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{})
+						if err != nil {
+							return nil, err
+						}
+						b := w.GetEarliestBounds(v.Time())
+						return values.NewTime(b.Start), nil
 					}
-					b := w.GetEarliestBounds(v.Time())
-					return values.NewTime(b.Start), nil
+
+					if v.Type().Nature() == semantic.Duration {
+
+						w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{})
+						if err != nil {
+							return nil, err
+						}
+
+						deps := execdeps.GetExecutionDependencies(ctx)
+						nowTime := *deps.Now
+
+						b := w.GetEarliestBounds(values.ConvertTime(nowTime.Add(v.Duration().Duration())))
+						return values.NewTime(b.Start), nil
+					}
 				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot truncate argument t of type %v to unit %v", v.Type().Nature(), u))
 			}, false,
