@@ -114,6 +114,7 @@ pub fn builtins() -> Builtins<'static> {
             "http" => semantic_map! {
                 "post" => "forall [t0] where t0: Row (url: string, ?headers: t0, ?data: bytes) -> int",
                 "basicAuth" => "forall [] (u: string, p: string) -> string",
+                "pathEscape" => "forall [] (x: string) -> string",
             },
             "influxdata/influxdb/secrets" => semantic_map! {
                 "get" => "forall [] (key: string) -> string",
