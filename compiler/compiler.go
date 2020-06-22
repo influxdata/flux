@@ -146,15 +146,19 @@ func substituteTypes(subst map[uint64]semantic.MonoType, inType, in semantic.Mon
 			return err
 		}
 
+		names := make([]string, 0, nproperties)
 		for i := 0; i < nproperties; i++ {
 			lprop, err := inType.RowProperty(i)
 			if err != nil {
 				return err
 			}
 
+			// Record the name of the property in the input type.
+			name := lprop.Name()
+			names = append(names, name)
+
 			// Find the property in the real type if it
 			// exists. If it doesn't exist, then no problem!
-			name := lprop.Name()
 			rprop, ok, err := findProperty(name, in)
 			if err != nil {
 				return err
@@ -173,6 +177,48 @@ func substituteTypes(subst map[uint64]semantic.MonoType, inType, in semantic.Mon
 				return err
 			}
 			if err := substituteTypes(subst, ltyp, rtyp); err != nil {
+				return err
+			}
+		}
+
+		// If this object extends another, then find all of the labels
+		// in the in value that were not referenced by the type.
+		if withType, ok, err := inType.Extends(); err != nil {
+			return err
+		} else if ok {
+			// Construct the input by filtering any of the names
+			// that were referenced above. This way, extends only
+			// includes the unreferenced labels.
+			nproperties, err := in.NumProperties()
+			if err != nil {
+				return err
+			}
+
+			properties := make([]semantic.PropertyType, 0, nproperties)
+			for i := 0; i < nproperties; i++ {
+				prop, err := in.RowProperty(i)
+				if err != nil {
+					return err
+				}
+
+				name := prop.Name()
+				if containsStr(names, name) {
+					// Already referenced so don't pass this
+					// to the extends portion.
+					continue
+				}
+
+				typ, err := prop.TypeOf()
+				if err != nil {
+					return err
+				}
+				properties = append(properties, semantic.PropertyType{
+					Key:   []byte(name),
+					Value: typ,
+				})
+			}
+			with := semantic.NewObjectType(properties)
+			if err := substituteTypes(subst, withType, with); err != nil {
 				return err
 			}
 		}
@@ -598,4 +644,13 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 	default:
 		return nil, errors.Newf(codes.Internal, "unknown semantic node of type %T", n)
 	}
+}
+
+func containsStr(strs []string, str string) bool {
+	for _, s := range strs {
+		if str == s {
+			return true
+		}
+	}
+	return false
 }

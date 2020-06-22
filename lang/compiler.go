@@ -13,6 +13,8 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
@@ -357,13 +359,12 @@ func (p *AstProgram) getSpec(ctx context.Context, runtime flux.Runtime, alloc *m
 		p.Ast = extern
 		p.opts.extern = nil
 	}
-	// The program must inject execution dependencies to make it available
-	// to function calls during the evaluation phase (see `tableFind`).
-	deps := ExecutionDependencies{
-		Allocator: alloc,
-		Logger:    p.Logger,
-	}
+
+	// The program must inject execution dependencies to make it available to
+	// function calls during the evaluation phase (see `tableFind`).
+	deps := execdeps.NewExecutionDependencies(alloc, &p.Now, p.Logger)
 	ctx = deps.Inject(ctx)
+
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
 	sideEffects, scope, err := runtime.Eval(cctx, p.Ast, flux.SetNowOption(p.Now))
 	if err != nil {
@@ -373,9 +374,9 @@ func (p *AstProgram) getSpec(ctx context.Context, runtime flux.Runtime, alloc *m
 
 	s, cctx = opentracing.StartSpanFromContext(ctx, "compile")
 	defer s.Finish()
-	nowOpt, ok := scope.Lookup(flux.NowOption)
+	nowOpt, ok := scope.Lookup(interpreter.NowOption)
 	if !ok {
-		return nil, nil, fmt.Errorf("%q option not set", flux.NowOption)
+		return nil, nil, fmt.Errorf("%q option not set", interpreter.NowOption)
 	}
 	nowTime, err := nowOpt.Function().Call(ctx, nil)
 	if err != nil {

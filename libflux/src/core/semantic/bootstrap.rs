@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::fs;
 use std::io;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::ast;
 use crate::parser;
@@ -82,15 +82,38 @@ impl From<&str> for Error {
 #[allow(clippy::type_complexity)]
 // Infer the types of the standard library returning two importers, one for the prelude
 // and one for the standard library, as well as a type variable fresher.
-pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher), Error> {
+pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>), Error> {
     let (builtins, mut f) = builtin_types()?;
 
-    let files = file_map(parse_flux_files("../../../stdlib")?);
+    let dir = "../../../stdlib";
+    let files = file_map(parse_flux_files(dir)?);
+    let rerun_if_changed = compute_file_dependencies(dir);
 
     let (prelude, importer) = infer_pre(&mut f, &files, &builtins)?;
     let importer = infer_std(&mut f, &files, &builtins, prelude.clone(), importer)?;
 
-    Ok((prelude, importer, f))
+    Ok((prelude, importer, f, rerun_if_changed))
+}
+
+fn compute_file_dependencies(root: &str) -> Vec<String> {
+    // Iterate through each ast file and canonicalize the
+    // file path to an absolute path.
+    // Canonicalize the root path to the absolute directory.
+    let rootpath = std::env::current_dir()
+        .unwrap()
+        .join(root)
+        .canonicalize()
+        .unwrap();
+    WalkDir::new(rootpath)
+        .into_iter()
+        .filter_map(|r| r.ok())
+        .filter(|r| r.path().is_dir() || (r.path().is_file() && r.path().ends_with(".flux")))
+        .map(|r| path_to_string(r.path()))
+        .collect()
+}
+
+fn path_to_string(path: &Path) -> String {
+    path.to_str().expect("valid path").to_string()
 }
 
 #[allow(clippy::type_complexity)]

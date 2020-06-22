@@ -4,7 +4,9 @@ package stdlib
 
 import (
 	_ "github.com/influxdata/flux/stdlib/contrib/chobbs/discord"
-	_ "github.com/influxdata/flux/stdlib/contrib/sanderson/sample"
+	_ "github.com/influxdata/flux/stdlib/contrib/sanderson/samples"
+	_ "github.com/influxdata/flux/stdlib/contrib/sranka/teams"
+	_ "github.com/influxdata/flux/stdlib/contrib/sranka/telegram"
 	_ "github.com/influxdata/flux/stdlib/csv"
 	_ "github.com/influxdata/flux/stdlib/date"
 	_ "github.com/influxdata/flux/stdlib/experimental"

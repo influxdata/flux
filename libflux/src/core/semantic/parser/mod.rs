@@ -401,6 +401,7 @@ impl Parser<'_> {
             "Nullable" => Ok(Kind::Nullable),
             "Equatable" => Ok(Kind::Equatable),
             "Row" => Ok(Kind::Row),
+            "Timeable" => Ok(Kind::Timeable),
             _ => Err("Constraints must have a valid Kind"),
         }
     }

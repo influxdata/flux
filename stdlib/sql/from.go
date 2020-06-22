@@ -121,6 +121,10 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 		newRowReader = NewPostgresRowReader
 	case "snowflake":
 		newRowReader = NewSnowflakeRowReader
+	case "mssql", "sqlserver":
+		newRowReader = NewMssqlRowReader
+	case "awsathena":
+		newRowReader = NewAwsAthenaRowReader
 	default:
 		return nil, errors.Newf(codes.Invalid, "sql driver %s not supported", spec.DriverName)
 	}
@@ -146,7 +150,7 @@ type sqlIterator struct {
 }
 
 func (c *sqlIterator) connect(ctx context.Context) (*sql.DB, error) {
-	db, err := sql.Open(c.spec.DriverName, c.spec.DataSourceName)
+	db, err := getOpenFunc(c.spec.DriverName, c.spec.DataSourceName)()
 	if err != nil {
 		return nil, err
 	}

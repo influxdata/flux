@@ -72,6 +72,24 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 			User:   neturl.UserPassword(cfg.User, cfg.Password),
 			Host:   cfg.Host,
 		}
+	case "mssql", "sqlserver":
+		// URL example: sqlserver://sa:mypass@localhost:1234?database=master
+		// ADO example: server=localhost;user id=sa;database=master
+		cfg, err := mssqlParseDSN(dataSourceName)
+		if err != nil {
+			return errors.Newf(codes.Invalid, "invalid data source dsn: %v", err)
+		}
+		u = &neturl.URL{
+			Scheme: cfg.Scheme,
+			User:   neturl.UserPassword(cfg.User, cfg.Password),
+			Host:   cfg.Host,
+		}
+	case "awsathena":
+		// an example is: s3://bucketname/?region=us-west-1&db=dbname&accessID=AKI...&secretAccessKey=NnQ7...
+		u, err = neturl.Parse(dataSourceName)
+		if err != nil {
+			return errors.Newf(codes.Invalid, "invalid data source url: %v", err)
+		}
 	default:
 		return errors.Newf(codes.Invalid, "sql driver %s not supported", driverName)
 	}

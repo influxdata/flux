@@ -34,6 +34,46 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			},
 			ErrMsg: "",
 		}, {
+			Name: "ok sqlserver (URL connection string)",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlserver",
+				DataSourceName: "sqlserver://sa:mypass@localhost:1234?database=master",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok sqlserver (ADO connection string)",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlserver",
+				DataSourceName: "server=localhost;user id=sa;database=master;",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok sqlserver (ADO connection string, Azure auth option)",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlserver",
+				DataSourceName: "server=localhost;user id=sa;database=master;azure auth=ENV",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok sqlserver (ADO connection string, Azure inline params)",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlserver",
+				DataSourceName: "server=localhost;user id=sa;database=master;azure tenant id=77e7d537;azure client id=58879ce8;azure client secret=0123456789",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok awsathena",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "awsathena",
+				DataSourceName: "s3://bucket/?accessID=ABCD123&region=us-west-1&secretAccessKey=PWD007&db=test",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
 			Name: "invalid driver",
 			Spec: &FromSQLProcedureSpec{
 				DriverName:     "voltdb",
