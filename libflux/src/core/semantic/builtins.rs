@@ -48,7 +48,7 @@ pub fn builtins() -> Builtins<'static> {
                  "quarter" => "forall [] (t: time) -> int",
                  "millisecond" => "forall [] (t: time) -> int",
                  "microsecond" => "forall [] (t: time) -> int",
-                 "nanosecond" => "forall [] (t: time) -> int",
+                 "nanosecond" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "truncate" => "forall [t0] where t0 : Timeable (t: t0, unit: duration) -> time",
             },
             "experimental/bigtable" => semantic_map! {
