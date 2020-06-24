@@ -92,6 +92,13 @@ func init() {
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Weekday())), nil
 				}
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					weekDay := nowTime.Add(v1.Duration().Duration()).Weekday()
+					return values.NewInt(int64(weekDay)), nil
+				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
