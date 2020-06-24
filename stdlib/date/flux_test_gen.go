@@ -1538,10 +1538,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 106,
-					Line:   58,
+					Line:   40,
 				},
-				File:   "microsecond_test.flux",
-				Source: "package date_test\n\nimport \"testing\"\nimport \"date\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:01:00.254819212Z,_m,FF,1\n,,0,2018-05-22T19:02:00.748691723Z,_m,FF,1\n,,0,2018-05-22T19:03:00.947182316Z,_m,FF,1\n,,0,2018-05-22T19:04:00.538816341Z,_m,FF,1\n,,0,2018-05-22T19:05:00.676423456Z,_m,FF,1\n,,0,2018-05-22T19:06:00.982342357Z,_m,FF,1\n,,1,2018-05-22T19:07:00.819823471Z,_m,QQ,1\n,,1,2018-05-22T19:08:00.587284314Z,_m,QQ,1\n,,1,2018-05-22T19:09:00.984375238Z,_m,QQ,1\n,,1,2018-05-22T19:10:00.723847562Z,_m,QQ,1\n,,1,2018-05-22T19:13:00.192983472Z,_m,QQ,1\n,,1,2018-05-22T19:15:00.712938413Z,_m,QQ,1\n,,1,2018-05-22T19:20:00.062103483Z,_m,QQ,1\n,,1,2018-05-22T19:23:00.786432256Z,_m,QQ,1\n,,1,2018-05-22T19:25:00.823748524Z,_m,QQ,1\n\"\n\noutData = \"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:01:00.254819212Z,254819\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:02:00.748691723Z,748691\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:03:00.947182316Z,947182\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,538816\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,676423\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,982342\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:07:00.819823471Z,819823\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:08:00.587284314Z,587284\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:09:00.984375238Z,984375\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:10:00.723847562Z,723847\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:13:00.192983472Z,192983\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:15:00.712938413Z,712938\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:20:00.062103483Z,062103\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:23:00.786432256Z,786432\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:25:00.823748524Z,823748\n\"\n\nt_time_microsecond = (table=<-) =>\n\t(table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.microsecond(t: r._time)})))\n\ntest _time_microsecond = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_microsecond})",
+				File:   "microsecond_duration_test.flux",
+				Source: "package date_test\n\nimport \"testing\"\nimport \"date\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:01:00.254819212Z,_m,FF,-3\n,,0,2018-05-22T19:02:00.748691723Z,_m,FF,-2\n,,0,2018-05-22T19:03:00.947182316Z,_m,FF,-1\n,,0,2018-05-22T19:04:00.538816341Z,_m,FF,0\n,,0,2018-05-22T19:05:00.676423456Z,_m,FF,1\n,,0,2018-05-22T19:06:00.982342357Z,_m,FF,2\n\"\n\noutData = \"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:01:00.254819212Z,999999\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:02:00.748691723Z,999999\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:03:00.947182316Z,999999\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,0\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,0\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,0\n\"\n\nt_time_microsecond = (table=<-) =>\n\t(table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.microsecond(t: duration(v : r._value))})))\n\ntest _time_microsecond = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_microsecond})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -1557,7 +1557,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   6,
 						},
-						File:   "microsecond_test.flux",
+						File:   "microsecond_duration_test.flux",
 						Source: "now = () => (2030-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 8,
@@ -1573,7 +1573,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   6,
 							},
-							File:   "microsecond_test.flux",
+							File:   "microsecond_duration_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
@@ -1591,7 +1591,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   6,
 							},
-							File:   "microsecond_test.flux",
+							File:   "microsecond_duration_test.flux",
 							Source: "() => (2030-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 14,
@@ -1607,7 +1607,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   6,
 								},
-								File:   "microsecond_test.flux",
+								File:   "microsecond_duration_test.flux",
 								Source: "(2030-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 20,
@@ -1623,7 +1623,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   6,
 									},
-									File:   "microsecond_test.flux",
+									File:   "microsecond_duration_test.flux",
 									Source: "2030-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 21,
@@ -1644,7 +1644,1615 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   6,
 					},
-					File:   "microsecond_test.flux",
+					File:   "microsecond_duration_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   19,
+					},
+					File:   "microsecond_duration_test.flux",
+					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:01:00.254819212Z,_m,FF,-3\n,,0,2018-05-22T19:02:00.748691723Z,_m,FF,-2\n,,0,2018-05-22T19:03:00.947182316Z,_m,FF,-1\n,,0,2018-05-22T19:04:00.538816341Z,_m,FF,0\n,,0,2018-05-22T19:05:00.676423456Z,_m,FF,1\n,,0,2018-05-22T19:06:00.982342357Z,_m,FF,2\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "microsecond_duration_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   19,
+						},
+						File:   "microsecond_duration_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:01:00.254819212Z,_m,FF,-3\n,,0,2018-05-22T19:02:00.748691723Z,_m,FF,-2\n,,0,2018-05-22T19:03:00.947182316Z,_m,FF,-1\n,,0,2018-05-22T19:04:00.538816341Z,_m,FF,0\n,,0,2018-05-22T19:05:00.676423456Z,_m,FF,1\n,,0,2018-05-22T19:06:00.982342357Z,_m,FF,2\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:01:00.254819212Z,_m,FF,-3\n,,0,2018-05-22T19:02:00.748691723Z,_m,FF,-2\n,,0,2018-05-22T19:03:00.947182316Z,_m,FF,-1\n,,0,2018-05-22T19:04:00.538816341Z,_m,FF,0\n,,0,2018-05-22T19:05:00.676423456Z,_m,FF,1\n,,0,2018-05-22T19:06:00.982342357Z,_m,FF,2\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   32,
+					},
+					File:   "microsecond_duration_test.flux",
+					Source: "outData = \"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:01:00.254819212Z,999999\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:02:00.748691723Z,999999\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:03:00.947182316Z,999999\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,0\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,0\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,0\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   21,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   21,
+						},
+						File:   "microsecond_duration_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   21,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   32,
+						},
+						File:   "microsecond_duration_test.flux",
+						Source: "\"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:01:00.254819212Z,999999\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:02:00.748691723Z,999999\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:03:00.947182316Z,999999\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,0\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,0\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,0\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   21,
+						},
+					},
+				},
+				Value: "\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:01:00.254819212Z,999999\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:02:00.748691723Z,999999\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:03:00.947182316Z,999999\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,0\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,0\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,0\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 85,
+						Line:   37,
+					},
+					File:   "microsecond_duration_test.flux",
+					Source: "t_time_microsecond = (table=<-) =>\n\t(table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.microsecond(t: duration(v : r._value))})))",
+					Start: ast.Position{
+						Column: 1,
+						Line:   34,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 19,
+							Line:   34,
+						},
+						File:   "microsecond_duration_test.flux",
+						Source: "t_time_microsecond",
+						Start: ast.Position{
+							Column: 1,
+							Line:   34,
+						},
+					},
+				},
+				Name: "t_time_microsecond",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 85,
+							Line:   37,
+						},
+						File:   "microsecond_duration_test.flux",
+						Source: "(table=<-) =>\n\t(table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.microsecond(t: duration(v : r._value))})))",
+						Start: ast.Position{
+							Column: 22,
+							Line:   34,
+						},
+					},
+				},
+				Body: &ast.ParenExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 85,
+								Line:   37,
+							},
+							File:   "microsecond_duration_test.flux",
+							Source: "(table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.microsecond(t: duration(v : r._value))})))",
+							Start: ast.Position{
+								Column: 2,
+								Line:   35,
+							},
+						},
+					},
+					Expression: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 8,
+											Line:   35,
+										},
+										File:   "microsecond_duration_test.flux",
+										Source: "table",
+										Start: ast.Position{
+											Column: 3,
+											Line:   35,
+										},
+									},
+								},
+								Name: "table",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   36,
+									},
+									File:   "microsecond_duration_test.flux",
+									Source: "table\n\t\t|> range(start: 2018-01-01T00:00:00Z)",
+									Start: ast.Position{
+										Column: 3,
+										Line:   35,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   36,
+											},
+											File:   "microsecond_duration_test.flux",
+											Source: "start: 2018-01-01T00:00:00Z",
+											Start: ast.Position{
+												Column: 12,
+												Line:   36,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   36,
+												},
+												File:   "microsecond_duration_test.flux",
+												Source: "start: 2018-01-01T00:00:00Z",
+												Start: ast.Position{
+													Column: 12,
+													Line:   36,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 17,
+														Line:   36,
+													},
+													File:   "microsecond_duration_test.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 12,
+														Line:   36,
+													},
+												},
+											},
+											Name: "start",
+										},
+										Value: &ast.DateTimeLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   36,
+													},
+													File:   "microsecond_duration_test.flux",
+													Source: "2018-01-01T00:00:00Z",
+													Start: ast.Position{
+														Column: 19,
+														Line:   36,
+													},
+												},
+											},
+											Value: parser.MustParseTime("2018-01-01T00:00:00Z"),
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   36,
+										},
+										File:   "microsecond_duration_test.flux",
+										Source: "range(start: 2018-01-01T00:00:00Z)",
+										Start: ast.Position{
+											Column: 6,
+											Line:   36,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   36,
+											},
+											File:   "microsecond_duration_test.flux",
+											Source: "range",
+											Start: ast.Position{
+												Column: 6,
+												Line:   36,
+											},
+										},
+									},
+									Name: "range",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 84,
+									Line:   37,
+								},
+								File:   "microsecond_duration_test.flux",
+								Source: "table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.microsecond(t: duration(v : r._value))}))",
+								Start: ast.Position{
+									Column: 3,
+									Line:   35,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 83,
+											Line:   37,
+										},
+										File:   "microsecond_duration_test.flux",
+										Source: "fn: (r) => ({r with _value: date.microsecond(t: duration(v : r._value))})",
+										Start: ast.Position{
+											Column: 10,
+											Line:   37,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 83,
+												Line:   37,
+											},
+											File:   "microsecond_duration_test.flux",
+											Source: "fn: (r) => ({r with _value: date.microsecond(t: duration(v : r._value))})",
+											Start: ast.Position{
+												Column: 10,
+												Line:   37,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 12,
+													Line:   37,
+												},
+												File:   "microsecond_duration_test.flux",
+												Source: "fn",
+												Start: ast.Position{
+													Column: 10,
+													Line:   37,
+												},
+											},
+										},
+										Name: "fn",
+									},
+									Value: &ast.FunctionExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 83,
+													Line:   37,
+												},
+												File:   "microsecond_duration_test.flux",
+												Source: "(r) => ({r with _value: date.microsecond(t: duration(v : r._value))})",
+												Start: ast.Position{
+													Column: 14,
+													Line:   37,
+												},
+											},
+										},
+										Body: &ast.ParenExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 83,
+														Line:   37,
+													},
+													File:   "microsecond_duration_test.flux",
+													Source: "({r with _value: date.microsecond(t: duration(v : r._value))})",
+													Start: ast.Position{
+														Column: 21,
+														Line:   37,
+													},
+												},
+											},
+											Expression: &ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 82,
+															Line:   37,
+														},
+														File:   "microsecond_duration_test.flux",
+														Source: "{r with _value: date.microsecond(t: duration(v : r._value))}",
+														Start: ast.Position{
+															Column: 22,
+															Line:   37,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 81,
+																Line:   37,
+															},
+															File:   "microsecond_duration_test.flux",
+															Source: "_value: date.microsecond(t: duration(v : r._value))",
+															Start: ast.Position{
+																Column: 30,
+																Line:   37,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 36,
+																	Line:   37,
+																},
+																File:   "microsecond_duration_test.flux",
+																Source: "_value",
+																Start: ast.Position{
+																	Column: 30,
+																	Line:   37,
+																},
+															},
+														},
+														Name: "_value",
+													},
+													Value: &ast.CallExpression{
+														Arguments: []ast.Expression{&ast.ObjectExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 80,
+																		Line:   37,
+																	},
+																	File:   "microsecond_duration_test.flux",
+																	Source: "t: duration(v : r._value)",
+																	Start: ast.Position{
+																		Column: 55,
+																		Line:   37,
+																	},
+																},
+															},
+															Properties: []*ast.Property{&ast.Property{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 80,
+																			Line:   37,
+																		},
+																		File:   "microsecond_duration_test.flux",
+																		Source: "t: duration(v : r._value)",
+																		Start: ast.Position{
+																			Column: 55,
+																			Line:   37,
+																		},
+																	},
+																},
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 56,
+																				Line:   37,
+																			},
+																			File:   "microsecond_duration_test.flux",
+																			Source: "t",
+																			Start: ast.Position{
+																				Column: 55,
+																				Line:   37,
+																			},
+																		},
+																	},
+																	Name: "t",
+																},
+																Value: &ast.CallExpression{
+																	Arguments: []ast.Expression{&ast.ObjectExpression{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 79,
+																					Line:   37,
+																				},
+																				File:   "microsecond_duration_test.flux",
+																				Source: "v : r._value",
+																				Start: ast.Position{
+																					Column: 67,
+																					Line:   37,
+																				},
+																			},
+																		},
+																		Properties: []*ast.Property{&ast.Property{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 79,
+																						Line:   37,
+																					},
+																					File:   "microsecond_duration_test.flux",
+																					Source: "v : r._value",
+																					Start: ast.Position{
+																						Column: 67,
+																						Line:   37,
+																					},
+																				},
+																			},
+																			Key: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 68,
+																							Line:   37,
+																						},
+																						File:   "microsecond_duration_test.flux",
+																						Source: "v",
+																						Start: ast.Position{
+																							Column: 67,
+																							Line:   37,
+																						},
+																					},
+																				},
+																				Name: "v",
+																			},
+																			Value: &ast.MemberExpression{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 79,
+																							Line:   37,
+																						},
+																						File:   "microsecond_duration_test.flux",
+																						Source: "r._value",
+																						Start: ast.Position{
+																							Column: 71,
+																							Line:   37,
+																						},
+																					},
+																				},
+																				Object: &ast.Identifier{
+																					BaseNode: ast.BaseNode{
+																						Errors: nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 72,
+																								Line:   37,
+																							},
+																							File:   "microsecond_duration_test.flux",
+																							Source: "r",
+																							Start: ast.Position{
+																								Column: 71,
+																								Line:   37,
+																							},
+																						},
+																					},
+																					Name: "r",
+																				},
+																				Property: &ast.Identifier{
+																					BaseNode: ast.BaseNode{
+																						Errors: nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 79,
+																								Line:   37,
+																							},
+																							File:   "microsecond_duration_test.flux",
+																							Source: "_value",
+																							Start: ast.Position{
+																								Column: 73,
+																								Line:   37,
+																							},
+																						},
+																					},
+																					Name: "_value",
+																				},
+																			},
+																		}},
+																		With: nil,
+																	}},
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 80,
+																				Line:   37,
+																			},
+																			File:   "microsecond_duration_test.flux",
+																			Source: "duration(v : r._value)",
+																			Start: ast.Position{
+																				Column: 58,
+																				Line:   37,
+																			},
+																		},
+																	},
+																	Callee: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 66,
+																					Line:   37,
+																				},
+																				File:   "microsecond_duration_test.flux",
+																				Source: "duration",
+																				Start: ast.Position{
+																					Column: 58,
+																					Line:   37,
+																				},
+																			},
+																		},
+																		Name: "duration",
+																	},
+																},
+															}},
+															With: nil,
+														}},
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 81,
+																	Line:   37,
+																},
+																File:   "microsecond_duration_test.flux",
+																Source: "date.microsecond(t: duration(v : r._value))",
+																Start: ast.Position{
+																	Column: 38,
+																	Line:   37,
+																},
+															},
+														},
+														Callee: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 54,
+																		Line:   37,
+																	},
+																	File:   "microsecond_duration_test.flux",
+																	Source: "date.microsecond",
+																	Start: ast.Position{
+																		Column: 38,
+																		Line:   37,
+																	},
+																},
+															},
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 42,
+																			Line:   37,
+																		},
+																		File:   "microsecond_duration_test.flux",
+																		Source: "date",
+																		Start: ast.Position{
+																			Column: 38,
+																			Line:   37,
+																		},
+																	},
+																},
+																Name: "date",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 54,
+																			Line:   37,
+																		},
+																		File:   "microsecond_duration_test.flux",
+																		Source: "microsecond",
+																		Start: ast.Position{
+																			Column: 43,
+																			Line:   37,
+																		},
+																	},
+																},
+																Name: "microsecond",
+															},
+														},
+													},
+												}},
+												With: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 24,
+																Line:   37,
+															},
+															File:   "microsecond_duration_test.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 23,
+																Line:   37,
+															},
+														},
+													},
+													Name: "r",
+												},
+											},
+										},
+										Params: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   37,
+													},
+													File:   "microsecond_duration_test.flux",
+													Source: "r",
+													Start: ast.Position{
+														Column: 15,
+														Line:   37,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 16,
+															Line:   37,
+														},
+														File:   "microsecond_duration_test.flux",
+														Source: "r",
+														Start: ast.Position{
+															Column: 15,
+															Line:   37,
+														},
+													},
+												},
+												Name: "r",
+											},
+											Value: nil,
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 84,
+										Line:   37,
+									},
+									File:   "microsecond_duration_test.flux",
+									Source: "map(fn: (r) => ({r with _value: date.microsecond(t: duration(v : r._value))}))",
+									Start: ast.Position{
+										Column: 6,
+										Line:   37,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 9,
+											Line:   37,
+										},
+										File:   "microsecond_duration_test.flux",
+										Source: "map",
+										Start: ast.Position{
+											Column: 6,
+											Line:   37,
+										},
+									},
+								},
+								Name: "map",
+							},
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 31,
+								Line:   34,
+							},
+							File:   "microsecond_duration_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 23,
+								Line:   34,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 28,
+									Line:   34,
+								},
+								File:   "microsecond_duration_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 23,
+									Line:   34,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 31,
+								Line:   34,
+							},
+							File:   "microsecond_duration_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 29,
+								Line:   34,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 106,
+							Line:   40,
+						},
+						File:   "microsecond_duration_test.flux",
+						Source: "_time_microsecond = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_microsecond})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   39,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 23,
+								Line:   39,
+							},
+							File:   "microsecond_duration_test.flux",
+							Source: "_time_microsecond",
+							Start: ast.Position{
+								Column: 6,
+								Line:   39,
+							},
+						},
+					},
+					Name: "_time_microsecond",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 106,
+								Line:   40,
+							},
+							File:   "microsecond_duration_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_microsecond})",
+							Start: ast.Position{
+								Column: 26,
+								Line:   39,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 106,
+									Line:   40,
+								},
+								File:   "microsecond_duration_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_microsecond})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   40,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 105,
+										Line:   40,
+									},
+									File:   "microsecond_duration_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_microsecond}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   40,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   40,
+										},
+										File:   "microsecond_duration_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   40,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   40,
+											},
+											File:   "microsecond_duration_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   40,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   40,
+												},
+												File:   "microsecond_duration_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   40,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   40,
+													},
+													File:   "microsecond_duration_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   40,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   40,
+														},
+														File:   "microsecond_duration_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   40,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   40,
+														},
+														File:   "microsecond_duration_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   40,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   40,
+											},
+											File:   "microsecond_duration_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   40,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   40,
+												},
+												File:   "microsecond_duration_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   40,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   40,
+													},
+													File:   "microsecond_duration_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   40,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   40,
+													},
+													File:   "microsecond_duration_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   40,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   40,
+										},
+										File:   "microsecond_duration_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   40,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   40,
+											},
+											File:   "microsecond_duration_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   40,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   40,
+												},
+												File:   "microsecond_duration_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   40,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   40,
+													},
+													File:   "microsecond_duration_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   40,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   40,
+														},
+														File:   "microsecond_duration_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   40,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   40,
+														},
+														File:   "microsecond_duration_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   40,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   40,
+											},
+											File:   "microsecond_duration_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   40,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   40,
+												},
+												File:   "microsecond_duration_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   40,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   40,
+													},
+													File:   "microsecond_duration_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   40,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   40,
+													},
+													File:   "microsecond_duration_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   40,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 104,
+											Line:   40,
+										},
+										File:   "microsecond_duration_test.flux",
+										Source: "fn: t_time_microsecond",
+										Start: ast.Position{
+											Column: 82,
+											Line:   40,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   40,
+											},
+											File:   "microsecond_duration_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   40,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 104,
+												Line:   40,
+											},
+											File:   "microsecond_duration_test.flux",
+											Source: "t_time_microsecond",
+											Start: ast.Position{
+												Column: 86,
+												Line:   40,
+											},
+										},
+									},
+									Name: "t_time_microsecond",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 106,
+						Line:   40,
+					},
+					File:   "microsecond_duration_test.flux",
+					Source: "test _time_microsecond = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_microsecond})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   39,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "microsecond_duration_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "microsecond_duration_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   4,
+					},
+					File:   "microsecond_duration_test.flux",
+					Source: "import \"date\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   4,
+						},
+						File:   "microsecond_duration_test.flux",
+						Source: "\"date\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "date",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "microsecond_duration_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 18,
+						Line:   1,
+					},
+					File:   "microsecond_duration_test.flux",
+					Source: "package date_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 18,
+							Line:   1,
+						},
+						File:   "microsecond_duration_test.flux",
+						Source: "date_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "date_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 106,
+					Line:   58,
+				},
+				File:   "microsecond_time_test.flux",
+				Source: "package date_test\n\nimport \"testing\"\nimport \"date\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:01:00.254819212Z,_m,FF,1\n,,0,2018-05-22T19:02:00.748691723Z,_m,FF,1\n,,0,2018-05-22T19:03:00.947182316Z,_m,FF,1\n,,0,2018-05-22T19:04:00.538816341Z,_m,FF,1\n,,0,2018-05-22T19:05:00.676423456Z,_m,FF,1\n,,0,2018-05-22T19:06:00.982342357Z,_m,FF,1\n,,1,2018-05-22T19:07:00.819823471Z,_m,QQ,1\n,,1,2018-05-22T19:08:00.587284314Z,_m,QQ,1\n,,1,2018-05-22T19:09:00.984375238Z,_m,QQ,1\n,,1,2018-05-22T19:10:00.723847562Z,_m,QQ,1\n,,1,2018-05-22T19:13:00.192983472Z,_m,QQ,1\n,,1,2018-05-22T19:15:00.712938413Z,_m,QQ,1\n,,1,2018-05-22T19:20:00.062103483Z,_m,QQ,1\n,,1,2018-05-22T19:23:00.786432256Z,_m,QQ,1\n,,1,2018-05-22T19:25:00.823748524Z,_m,QQ,1\n\"\n\noutData = \"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:01:00.254819212Z,254819\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:02:00.748691723Z,748691\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:03:00.947182316Z,947182\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,538816\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,676423\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,982342\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:07:00.819823471Z,819823\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:08:00.587284314Z,587284\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:09:00.984375238Z,984375\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:10:00.723847562Z,723847\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:13:00.192983472Z,192983\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:15:00.712938413Z,712938\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:20:00.062103483Z,062103\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:23:00.786432256Z,786432\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:25:00.823748524Z,823748\n\"\n\nt_time_microsecond = (table=<-) =>\n\t(table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.microsecond(t: r._time)})))\n\ntest _time_microsecond = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_microsecond})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "microsecond_time_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "microsecond_time_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "microsecond_time_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "microsecond_time_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "microsecond_time_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "microsecond_time_test.flux",
 					Source: "option now = () => (2030-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
@@ -1660,7 +3268,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   28,
 					},
-					File:   "microsecond_test.flux",
+					File:   "microsecond_time_test.flux",
 					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:01:00.254819212Z,_m,FF,1\n,,0,2018-05-22T19:02:00.748691723Z,_m,FF,1\n,,0,2018-05-22T19:03:00.947182316Z,_m,FF,1\n,,0,2018-05-22T19:04:00.538816341Z,_m,FF,1\n,,0,2018-05-22T19:05:00.676423456Z,_m,FF,1\n,,0,2018-05-22T19:06:00.982342357Z,_m,FF,1\n,,1,2018-05-22T19:07:00.819823471Z,_m,QQ,1\n,,1,2018-05-22T19:08:00.587284314Z,_m,QQ,1\n,,1,2018-05-22T19:09:00.984375238Z,_m,QQ,1\n,,1,2018-05-22T19:10:00.723847562Z,_m,QQ,1\n,,1,2018-05-22T19:13:00.192983472Z,_m,QQ,1\n,,1,2018-05-22T19:15:00.712938413Z,_m,QQ,1\n,,1,2018-05-22T19:20:00.062103483Z,_m,QQ,1\n,,1,2018-05-22T19:23:00.786432256Z,_m,QQ,1\n,,1,2018-05-22T19:25:00.823748524Z,_m,QQ,1\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1676,7 +3284,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "microsecond_test.flux",
+						File:   "microsecond_time_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
@@ -1694,7 +3302,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   28,
 						},
-						File:   "microsecond_test.flux",
+						File:   "microsecond_time_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:01:00.254819212Z,_m,FF,1\n,,0,2018-05-22T19:02:00.748691723Z,_m,FF,1\n,,0,2018-05-22T19:03:00.947182316Z,_m,FF,1\n,,0,2018-05-22T19:04:00.538816341Z,_m,FF,1\n,,0,2018-05-22T19:05:00.676423456Z,_m,FF,1\n,,0,2018-05-22T19:06:00.982342357Z,_m,FF,1\n,,1,2018-05-22T19:07:00.819823471Z,_m,QQ,1\n,,1,2018-05-22T19:08:00.587284314Z,_m,QQ,1\n,,1,2018-05-22T19:09:00.984375238Z,_m,QQ,1\n,,1,2018-05-22T19:10:00.723847562Z,_m,QQ,1\n,,1,2018-05-22T19:13:00.192983472Z,_m,QQ,1\n,,1,2018-05-22T19:15:00.712938413Z,_m,QQ,1\n,,1,2018-05-22T19:20:00.062103483Z,_m,QQ,1\n,,1,2018-05-22T19:23:00.786432256Z,_m,QQ,1\n,,1,2018-05-22T19:25:00.823748524Z,_m,QQ,1\n\"",
 						Start: ast.Position{
 							Column: 10,
@@ -1712,7 +3320,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   50,
 					},
-					File:   "microsecond_test.flux",
+					File:   "microsecond_time_test.flux",
 					Source: "outData = \"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:01:00.254819212Z,254819\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:02:00.748691723Z,748691\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:03:00.947182316Z,947182\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,538816\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,676423\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,982342\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:07:00.819823471Z,819823\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:08:00.587284314Z,587284\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:09:00.984375238Z,984375\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:10:00.723847562Z,723847\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:13:00.192983472Z,192983\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:15:00.712938413Z,712938\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:20:00.062103483Z,062103\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:23:00.786432256Z,786432\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:25:00.823748524Z,823748\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -1728,7 +3336,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   30,
 						},
-						File:   "microsecond_test.flux",
+						File:   "microsecond_time_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
@@ -1746,7 +3354,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   50,
 						},
-						File:   "microsecond_test.flux",
+						File:   "microsecond_time_test.flux",
 						Source: "\"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:01:00.254819212Z,254819\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:02:00.748691723Z,748691\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:03:00.947182316Z,947182\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,538816\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,676423\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,982342\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:07:00.819823471Z,819823\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:08:00.587284314Z,587284\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:09:00.984375238Z,984375\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:10:00.723847562Z,723847\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:13:00.192983472Z,192983\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:15:00.712938413Z,712938\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:20:00.062103483Z,062103\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:23:00.786432256Z,786432\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T19:25:00.823748524Z,823748\n\"",
 						Start: ast.Position{
 							Column: 11,
@@ -1764,7 +3372,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 70,
 						Line:   55,
 					},
-					File:   "microsecond_test.flux",
+					File:   "microsecond_time_test.flux",
 					Source: "t_time_microsecond = (table=<-) =>\n\t(table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.microsecond(t: r._time)})))",
 					Start: ast.Position{
 						Column: 1,
@@ -1780,7 +3388,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 19,
 							Line:   52,
 						},
-						File:   "microsecond_test.flux",
+						File:   "microsecond_time_test.flux",
 						Source: "t_time_microsecond",
 						Start: ast.Position{
 							Column: 1,
@@ -1798,7 +3406,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 70,
 							Line:   55,
 						},
-						File:   "microsecond_test.flux",
+						File:   "microsecond_time_test.flux",
 						Source: "(table=<-) =>\n\t(table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.microsecond(t: r._time)})))",
 						Start: ast.Position{
 							Column: 22,
@@ -1814,7 +3422,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 70,
 								Line:   55,
 							},
-							File:   "microsecond_test.flux",
+							File:   "microsecond_time_test.flux",
 							Source: "(table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.microsecond(t: r._time)})))",
 							Start: ast.Position{
 								Column: 2,
@@ -1832,7 +3440,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 8,
 											Line:   53,
 										},
-										File:   "microsecond_test.flux",
+										File:   "microsecond_time_test.flux",
 										Source: "table",
 										Start: ast.Position{
 											Column: 3,
@@ -1849,7 +3457,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 40,
 										Line:   54,
 									},
-									File:   "microsecond_test.flux",
+									File:   "microsecond_time_test.flux",
 									Source: "table\n\t\t|> range(start: 2018-01-01T00:00:00Z)",
 									Start: ast.Position{
 										Column: 3,
@@ -1866,7 +3474,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 39,
 												Line:   54,
 											},
-											File:   "microsecond_test.flux",
+											File:   "microsecond_time_test.flux",
 											Source: "start: 2018-01-01T00:00:00Z",
 											Start: ast.Position{
 												Column: 12,
@@ -1882,7 +3490,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 39,
 													Line:   54,
 												},
-												File:   "microsecond_test.flux",
+												File:   "microsecond_time_test.flux",
 												Source: "start: 2018-01-01T00:00:00Z",
 												Start: ast.Position{
 													Column: 12,
@@ -1898,7 +3506,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 17,
 														Line:   54,
 													},
-													File:   "microsecond_test.flux",
+													File:   "microsecond_time_test.flux",
 													Source: "start",
 													Start: ast.Position{
 														Column: 12,
@@ -1916,7 +3524,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 39,
 														Line:   54,
 													},
-													File:   "microsecond_test.flux",
+													File:   "microsecond_time_test.flux",
 													Source: "2018-01-01T00:00:00Z",
 													Start: ast.Position{
 														Column: 19,
@@ -1936,7 +3544,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 40,
 											Line:   54,
 										},
-										File:   "microsecond_test.flux",
+										File:   "microsecond_time_test.flux",
 										Source: "range(start: 2018-01-01T00:00:00Z)",
 										Start: ast.Position{
 											Column: 6,
@@ -1952,7 +3560,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 11,
 												Line:   54,
 											},
-											File:   "microsecond_test.flux",
+											File:   "microsecond_time_test.flux",
 											Source: "range",
 											Start: ast.Position{
 												Column: 6,
@@ -1971,7 +3579,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 69,
 									Line:   55,
 								},
-								File:   "microsecond_test.flux",
+								File:   "microsecond_time_test.flux",
 								Source: "table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.microsecond(t: r._time)}))",
 								Start: ast.Position{
 									Column: 3,
@@ -1988,7 +3596,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 68,
 											Line:   55,
 										},
-										File:   "microsecond_test.flux",
+										File:   "microsecond_time_test.flux",
 										Source: "fn: (r) => ({r with _value: date.microsecond(t: r._time)})",
 										Start: ast.Position{
 											Column: 10,
@@ -2004,7 +3612,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 68,
 												Line:   55,
 											},
-											File:   "microsecond_test.flux",
+											File:   "microsecond_time_test.flux",
 											Source: "fn: (r) => ({r with _value: date.microsecond(t: r._time)})",
 											Start: ast.Position{
 												Column: 10,
@@ -2020,7 +3628,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 12,
 													Line:   55,
 												},
-												File:   "microsecond_test.flux",
+												File:   "microsecond_time_test.flux",
 												Source: "fn",
 												Start: ast.Position{
 													Column: 10,
@@ -2038,7 +3646,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 68,
 													Line:   55,
 												},
-												File:   "microsecond_test.flux",
+												File:   "microsecond_time_test.flux",
 												Source: "(r) => ({r with _value: date.microsecond(t: r._time)})",
 												Start: ast.Position{
 													Column: 14,
@@ -2054,7 +3662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 68,
 														Line:   55,
 													},
-													File:   "microsecond_test.flux",
+													File:   "microsecond_time_test.flux",
 													Source: "({r with _value: date.microsecond(t: r._time)})",
 													Start: ast.Position{
 														Column: 21,
@@ -2070,7 +3678,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 67,
 															Line:   55,
 														},
-														File:   "microsecond_test.flux",
+														File:   "microsecond_time_test.flux",
 														Source: "{r with _value: date.microsecond(t: r._time)}",
 														Start: ast.Position{
 															Column: 22,
@@ -2086,7 +3694,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 66,
 																Line:   55,
 															},
-															File:   "microsecond_test.flux",
+															File:   "microsecond_time_test.flux",
 															Source: "_value: date.microsecond(t: r._time)",
 															Start: ast.Position{
 																Column: 30,
@@ -2102,7 +3710,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 36,
 																	Line:   55,
 																},
-																File:   "microsecond_test.flux",
+																File:   "microsecond_time_test.flux",
 																Source: "_value",
 																Start: ast.Position{
 																	Column: 30,
@@ -2121,7 +3729,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 65,
 																		Line:   55,
 																	},
-																	File:   "microsecond_test.flux",
+																	File:   "microsecond_time_test.flux",
 																	Source: "t: r._time",
 																	Start: ast.Position{
 																		Column: 55,
@@ -2137,7 +3745,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 65,
 																			Line:   55,
 																		},
-																		File:   "microsecond_test.flux",
+																		File:   "microsecond_time_test.flux",
 																		Source: "t: r._time",
 																		Start: ast.Position{
 																			Column: 55,
@@ -2153,7 +3761,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 56,
 																				Line:   55,
 																			},
-																			File:   "microsecond_test.flux",
+																			File:   "microsecond_time_test.flux",
 																			Source: "t",
 																			Start: ast.Position{
 																				Column: 55,
@@ -2171,7 +3779,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 65,
 																				Line:   55,
 																			},
-																			File:   "microsecond_test.flux",
+																			File:   "microsecond_time_test.flux",
 																			Source: "r._time",
 																			Start: ast.Position{
 																				Column: 58,
@@ -2187,7 +3795,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 59,
 																					Line:   55,
 																				},
-																				File:   "microsecond_test.flux",
+																				File:   "microsecond_time_test.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 58,
@@ -2205,7 +3813,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 65,
 																					Line:   55,
 																				},
-																				File:   "microsecond_test.flux",
+																				File:   "microsecond_time_test.flux",
 																				Source: "_time",
 																				Start: ast.Position{
 																					Column: 60,
@@ -2226,7 +3834,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 66,
 																	Line:   55,
 																},
-																File:   "microsecond_test.flux",
+																File:   "microsecond_time_test.flux",
 																Source: "date.microsecond(t: r._time)",
 																Start: ast.Position{
 																	Column: 38,
@@ -2242,7 +3850,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 54,
 																		Line:   55,
 																	},
-																	File:   "microsecond_test.flux",
+																	File:   "microsecond_time_test.flux",
 																	Source: "date.microsecond",
 																	Start: ast.Position{
 																		Column: 38,
@@ -2258,7 +3866,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 42,
 																			Line:   55,
 																		},
-																		File:   "microsecond_test.flux",
+																		File:   "microsecond_time_test.flux",
 																		Source: "date",
 																		Start: ast.Position{
 																			Column: 38,
@@ -2276,7 +3884,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 54,
 																			Line:   55,
 																		},
-																		File:   "microsecond_test.flux",
+																		File:   "microsecond_time_test.flux",
 																		Source: "microsecond",
 																		Start: ast.Position{
 																			Column: 43,
@@ -2297,7 +3905,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 24,
 																Line:   55,
 															},
-															File:   "microsecond_test.flux",
+															File:   "microsecond_time_test.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 23,
@@ -2317,7 +3925,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 16,
 														Line:   55,
 													},
-													File:   "microsecond_test.flux",
+													File:   "microsecond_time_test.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 15,
@@ -2333,7 +3941,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 16,
 															Line:   55,
 														},
-														File:   "microsecond_test.flux",
+														File:   "microsecond_time_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 15,
@@ -2356,7 +3964,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 69,
 										Line:   55,
 									},
-									File:   "microsecond_test.flux",
+									File:   "microsecond_time_test.flux",
 									Source: "map(fn: (r) => ({r with _value: date.microsecond(t: r._time)}))",
 									Start: ast.Position{
 										Column: 6,
@@ -2372,7 +3980,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 9,
 											Line:   55,
 										},
-										File:   "microsecond_test.flux",
+										File:   "microsecond_time_test.flux",
 										Source: "map",
 										Start: ast.Position{
 											Column: 6,
@@ -2393,7 +4001,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 31,
 								Line:   52,
 							},
-							File:   "microsecond_test.flux",
+							File:   "microsecond_time_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 23,
@@ -2409,7 +4017,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 28,
 									Line:   52,
 								},
-								File:   "microsecond_test.flux",
+								File:   "microsecond_time_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 23,
@@ -2426,7 +4034,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 31,
 								Line:   52,
 							},
-							File:   "microsecond_test.flux",
+							File:   "microsecond_time_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 29,
@@ -2445,7 +4053,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 106,
 							Line:   58,
 						},
-						File:   "microsecond_test.flux",
+						File:   "microsecond_time_test.flux",
 						Source: "_time_microsecond = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_microsecond})",
 						Start: ast.Position{
 							Column: 6,
@@ -2461,7 +4069,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 23,
 								Line:   57,
 							},
-							File:   "microsecond_test.flux",
+							File:   "microsecond_time_test.flux",
 							Source: "_time_microsecond",
 							Start: ast.Position{
 								Column: 6,
@@ -2479,7 +4087,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 106,
 								Line:   58,
 							},
-							File:   "microsecond_test.flux",
+							File:   "microsecond_time_test.flux",
 							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_microsecond})",
 							Start: ast.Position{
 								Column: 26,
@@ -2495,7 +4103,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 106,
 									Line:   58,
 								},
-								File:   "microsecond_test.flux",
+								File:   "microsecond_time_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_microsecond})",
 								Start: ast.Position{
 									Column: 2,
@@ -2511,7 +4119,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 105,
 										Line:   58,
 									},
-									File:   "microsecond_test.flux",
+									File:   "microsecond_time_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_microsecond}",
 									Start: ast.Position{
 										Column: 3,
@@ -2527,7 +4135,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 43,
 											Line:   58,
 										},
-										File:   "microsecond_test.flux",
+										File:   "microsecond_time_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
@@ -2543,7 +4151,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 9,
 												Line:   58,
 											},
-											File:   "microsecond_test.flux",
+											File:   "microsecond_time_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 4,
@@ -2562,7 +4170,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 42,
 													Line:   58,
 												},
-												File:   "microsecond_test.flux",
+												File:   "microsecond_time_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 31,
@@ -2578,7 +4186,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 42,
 														Line:   58,
 													},
-													File:   "microsecond_test.flux",
+													File:   "microsecond_time_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 31,
@@ -2594,7 +4202,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 34,
 															Line:   58,
 														},
-														File:   "microsecond_test.flux",
+														File:   "microsecond_time_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 31,
@@ -2612,7 +4220,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 42,
 															Line:   58,
 														},
-														File:   "microsecond_test.flux",
+														File:   "microsecond_time_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 36,
@@ -2632,7 +4240,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 43,
 												Line:   58,
 											},
-											File:   "microsecond_test.flux",
+											File:   "microsecond_time_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
@@ -2648,7 +4256,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   58,
 												},
-												File:   "microsecond_test.flux",
+												File:   "microsecond_time_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 11,
@@ -2664,7 +4272,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 18,
 														Line:   58,
 													},
-													File:   "microsecond_test.flux",
+													File:   "microsecond_time_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
@@ -2682,7 +4290,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   58,
 													},
-													File:   "microsecond_test.flux",
+													File:   "microsecond_time_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 19,
@@ -2702,7 +4310,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 80,
 											Line:   58,
 										},
-										File:   "microsecond_test.flux",
+										File:   "microsecond_time_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
@@ -2718,7 +4326,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 49,
 												Line:   58,
 											},
-											File:   "microsecond_test.flux",
+											File:   "microsecond_time_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 45,
@@ -2737,7 +4345,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 79,
 													Line:   58,
 												},
-												File:   "microsecond_test.flux",
+												File:   "microsecond_time_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 67,
@@ -2753,7 +4361,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 79,
 														Line:   58,
 													},
-													File:   "microsecond_test.flux",
+													File:   "microsecond_time_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 67,
@@ -2769,7 +4377,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 70,
 															Line:   58,
 														},
-														File:   "microsecond_test.flux",
+														File:   "microsecond_time_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 67,
@@ -2787,7 +4395,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 79,
 															Line:   58,
 														},
-														File:   "microsecond_test.flux",
+														File:   "microsecond_time_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 72,
@@ -2807,7 +4415,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 80,
 												Line:   58,
 											},
-											File:   "microsecond_test.flux",
+											File:   "microsecond_time_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
@@ -2823,7 +4431,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 66,
 													Line:   58,
 												},
-												File:   "microsecond_test.flux",
+												File:   "microsecond_time_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 51,
@@ -2839,7 +4447,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 58,
 														Line:   58,
 													},
-													File:   "microsecond_test.flux",
+													File:   "microsecond_time_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 51,
@@ -2857,7 +4465,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 66,
 														Line:   58,
 													},
-													File:   "microsecond_test.flux",
+													File:   "microsecond_time_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 59,
@@ -2877,7 +4485,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 104,
 											Line:   58,
 										},
-										File:   "microsecond_test.flux",
+										File:   "microsecond_time_test.flux",
 										Source: "fn: t_time_microsecond",
 										Start: ast.Position{
 											Column: 82,
@@ -2893,7 +4501,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 84,
 												Line:   58,
 											},
-											File:   "microsecond_test.flux",
+											File:   "microsecond_time_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 82,
@@ -2911,7 +4519,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 104,
 												Line:   58,
 											},
-											File:   "microsecond_test.flux",
+											File:   "microsecond_time_test.flux",
 											Source: "t_time_microsecond",
 											Start: ast.Position{
 												Column: 86,
@@ -2935,7 +4543,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 106,
 						Line:   58,
 					},
-					File:   "microsecond_test.flux",
+					File:   "microsecond_time_test.flux",
 					Source: "test _time_microsecond = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_microsecond})",
 					Start: ast.Position{
 						Column: 1,
@@ -2953,7 +4561,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   3,
 					},
-					File:   "microsecond_test.flux",
+					File:   "microsecond_time_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -2969,7 +4577,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   3,
 						},
-						File:   "microsecond_test.flux",
+						File:   "microsecond_time_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -2988,7 +4596,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 14,
 						Line:   4,
 					},
-					File:   "microsecond_test.flux",
+					File:   "microsecond_time_test.flux",
 					Source: "import \"date\"",
 					Start: ast.Position{
 						Column: 1,
@@ -3004,7 +4612,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   4,
 						},
-						File:   "microsecond_test.flux",
+						File:   "microsecond_time_test.flux",
 						Source: "\"date\"",
 						Start: ast.Position{
 							Column: 8,
@@ -3016,7 +4624,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}},
 		Metadata: "parser-type=rust",
-		Name:     "microsecond_test.flux",
+		Name:     "microsecond_time_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -3025,7 +4633,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 18,
 						Line:   1,
 					},
-					File:   "microsecond_test.flux",
+					File:   "microsecond_time_test.flux",
 					Source: "package date_test",
 					Start: ast.Position{
 						Column: 1,
@@ -3041,7 +4649,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 18,
 							Line:   1,
 						},
-						File:   "microsecond_test.flux",
+						File:   "microsecond_time_test.flux",
 						Source: "date_test",
 						Start: ast.Position{
 							Column: 9,
