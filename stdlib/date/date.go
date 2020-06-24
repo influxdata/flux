@@ -111,6 +111,13 @@ func init() {
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Day())), nil
 				}
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					day := nowTime.Add(v1.Duration().Duration()).Day()
+					return values.NewInt(int64(day)), nil
+				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
