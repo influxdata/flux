@@ -45,7 +45,7 @@ func TestLookupComplexTypes(t *testing.T) {
 			path: "date",
 			id:   "nanosecond",
 			name: "lookup date.nanosecond",
-			want: "(t: time) -> int",
+			want: "(t: t0) -> int",
 		},
 		{
 			path: "date",

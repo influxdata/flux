@@ -35,6 +35,15 @@ func init() {
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Second())), nil
 				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					second := nowTime.Add(v1.Duration().Duration()).Second()
+					return values.NewInt(int64(second)), nil
+				}
+
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
@@ -53,6 +62,13 @@ func init() {
 
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Minute())), nil
+				}
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					minute := nowTime.Add(v1.Duration().Duration()).Minute()
+					return values.NewInt(int64(minute)), nil
 				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
@@ -73,6 +89,14 @@ func init() {
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Hour())), nil
 				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					hour := nowTime.Add(v1.Duration().Duration()).Hour()
+					return values.NewInt(int64(hour)), nil
+				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
@@ -91,6 +115,13 @@ func init() {
 
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Weekday())), nil
+				}
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					weekDay := nowTime.Add(v1.Duration().Duration()).Weekday()
+					return values.NewInt(int64(weekDay)), nil
 				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
@@ -111,6 +142,13 @@ func init() {
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Day())), nil
 				}
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					day := nowTime.Add(v1.Duration().Duration()).Day()
+					return values.NewInt(int64(day)), nil
+				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
@@ -129,6 +167,14 @@ func init() {
 
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().YearDay())), nil
+				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					yearDay := nowTime.Add(v1.Duration().Duration()).YearDay()
+					return values.NewInt(int64(yearDay)), nil
 				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
@@ -149,6 +195,14 @@ func init() {
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Month())), nil
 				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					month := nowTime.Add(v1.Duration().Duration()).Month()
+					return values.NewInt(int64(month)), nil
+				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
@@ -168,6 +222,15 @@ func init() {
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Year())), nil
 				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					year := nowTime.Add(v1.Duration().Duration()).Year()
+					return values.NewInt(int64(year)), nil
+				}
+
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
@@ -188,6 +251,15 @@ func init() {
 					_, week := v1.Time().Time().ISOWeek()
 					return values.NewInt(int64(week)), nil
 				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					_, week := nowTime.Add(v1.Duration().Duration()).ISOWeek()
+					return values.NewInt(int64(week)), nil
+				}
+
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
@@ -206,6 +278,14 @@ func init() {
 
 				if v1.Type().Nature() == semantic.Time {
 					month := v1.Time().Time().Month()
+					return values.NewInt(int64(math.Ceil(float64(month) / 3.0))), nil
+				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					month := nowTime.Add(v1.Duration().Duration()).Month()
 					return values.NewInt(int64(math.Ceil(float64(month) / 3.0))), nil
 				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
@@ -228,6 +308,13 @@ func init() {
 					millisecond := int64(time.Nanosecond) * int64(v1.Time().Time().Nanosecond()) / int64(time.Millisecond)
 					return values.NewInt(millisecond), nil
 				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					return values.NewInt(int64(nowTime.Add(v1.Duration().Duration()).Nanosecond()) / int64(time.Millisecond)), nil
+				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
@@ -248,6 +335,14 @@ func init() {
 					microsecond := int64(time.Nanosecond) * int64(v1.Time().Time().Nanosecond()) / int64(time.Microsecond)
 					return values.NewInt(microsecond), nil
 				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					return values.NewInt(int64(nowTime.Add(v1.Duration().Duration()).Nanosecond()) / int64(time.Microsecond)), nil
+				}
+
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
@@ -266,6 +361,13 @@ func init() {
 
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Nanosecond())), nil
+				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					return values.NewInt(int64(nowTime.Add(v1.Duration().Duration()).Nanosecond())), nil
 				}
 
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
