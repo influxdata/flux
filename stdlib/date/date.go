@@ -149,6 +149,14 @@ func init() {
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Month())), nil
 				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					month := nowTime.Add(v1.Duration().Duration()).Month()
+					return values.NewInt(int64(month)), nil
+				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
