@@ -45,7 +45,7 @@ pub fn builtins() -> Builtins<'static> {
                  "month" => "forall [] (t: time) -> int",
                  "year" => "forall [] (t: time) -> int",
                  "week" => "forall [] (t: time) -> int",
-                 "quarter" => "forall [] (t: time) -> int",
+                 "quarter" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "millisecond" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "microsecond" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "nanosecond" => "forall [t0] where t0 : Timeable (t: t0) -> int",

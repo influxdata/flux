@@ -208,6 +208,14 @@ func init() {
 					month := v1.Time().Time().Month()
 					return values.NewInt(int64(math.Ceil(float64(month) / 3.0))), nil
 				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					month := nowTime.Add(v1.Duration().Duration()).Month()
+					return values.NewInt(int64(math.Ceil(float64(month) / 3.0))), nil
+				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
