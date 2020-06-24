@@ -37,7 +37,7 @@ pub fn builtins() -> Builtins<'static> {
             },
             "date" => semantic_map! {
                  "second" => "forall [] (t: time) -> int",
-                 "minute" => "forall [] (t: time) -> int",
+                 "minute" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "hour" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "weekDay" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "monthDay" => "forall [t0] where t0 : Timeable (t: t0) -> int",
