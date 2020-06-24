@@ -35,6 +35,15 @@ func init() {
 				if v1.Type().Nature() == semantic.Time {
 					return values.NewInt(int64(v1.Time().Time().Second())), nil
 				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					second := nowTime.Add(v1.Duration().Duration()).Second()
+					return values.NewInt(int64(second)), nil
+				}
+
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),

@@ -36,7 +36,7 @@ pub fn builtins() -> Builtins<'static> {
                 "from" => "forall [t0] where t0: Row (?csv: string, ?file: string) -> [t0]",
             },
             "date" => semantic_map! {
-                 "second" => "forall [] (t: time) -> int",
+                 "second" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "minute" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "hour" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "weekDay" => "forall [t0] where t0 : Timeable (t: t0) -> int",
