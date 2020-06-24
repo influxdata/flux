@@ -31,10 +31,10 @@ outData = "
 ,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,0
 "
 
-t_time_microsecond = (table=<-) =>
+t_duration_microsecond = (table=<-) =>
 	(table
 		|> range(start: 2018-01-01T00:00:00Z)
 		|> map(fn: (r) => ({r with _value: date.microsecond(t: duration(v : r._value))})))
 
-test _time_microsecond = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_microsecond})
+test _duration_microsecond = () =>
+	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration_microsecond})
