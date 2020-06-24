@@ -228,6 +228,13 @@ func init() {
 					millisecond := int64(time.Nanosecond) * int64(v1.Time().Time().Nanosecond()) / int64(time.Millisecond)
 					return values.NewInt(millisecond), nil
 				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					return values.NewInt(int64(nowTime.Add(v1.Duration().Duration()).Nanosecond()) / int64(time.Millisecond)), nil
+				}
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
