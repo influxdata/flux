@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 2,
-					Line:   38,
+					Line:   31,
 				},
 				File:   "mad.flux",
-				Source: "package anomalydetection \n\nimport \"math\"\nimport \"experimental\"\n\nmad = (table=<-, threshold=3.0) => {\n    // _value_med = med(x)\n    data = table |> group(columns: [\"_time\"], mode:\"by\")\n    med = data |> median(column: \"_value\")\n    \n    // _value_diff = xi-med(xi)\n    diff = experimental.join(\n    left: data,\n    right: med,\n    fn: (left, right) => ({ right with _value: math.abs(x: left._value - right._value) })\n    )\n   \n   //The constant b is needed to make the estimator consistent for the parameter of interest.\n    /// In the case of the usual parameter a at Gaussian distributions b = 1.4826\n    b = 1.4826\n    \n    diff_med =\n    diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({ r with MAD: b * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    \n    output = union(tables: [diff, diff_med])\n    |> filter(fn: (r) => exists r.MAD)\n    |> map(fn: (r) => ({ r with _value: r._value / r.MAD }))\n    |> map(fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        }))\n\nreturn output\n}",
+				Source: "package anomalydetection \n\nimport \"math\"\nimport \"experimental\"\n\nmad = (table=<-, threshold=3.0) => {\n    // MEDiXi = med(x)\n    data = table |> group(columns: [\"_time\"], mode:\"by\")\n    med = data |> median(column: \"_value\")\n    // diff = |Xi - MEDiXi| = math.abs(xi-med(xi))\n    diff = join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n    |> map(fn: (r) => ({ r with _value: math.abs(x: r._value_data - r._value_med) }))\n    |> drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])\n    // The constant k is needed to make the estimator consistent for the parameter of interest.\n    // In the case of the usual parameter a at Gaussian distributions k = 1.4826\n    k = 1.4826\n    // MAD =  k * MEDi * |Xi - MEDiXi| \n    diff_med =\n    diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({ r with MAD: k * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({ r with _value: r._value_diff/r._value_diff_med}))\n    |> map(fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        }))\nreturn output\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -38,10 +38,10 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   38,
+						Line:   31,
 					},
 					File:   "mad.flux",
-					Source: "mad = (table=<-, threshold=3.0) => {\n    // _value_med = med(x)\n    data = table |> group(columns: [\"_time\"], mode:\"by\")\n    med = data |> median(column: \"_value\")\n    \n    // _value_diff = xi-med(xi)\n    diff = experimental.join(\n    left: data,\n    right: med,\n    fn: (left, right) => ({ right with _value: math.abs(x: left._value - right._value) })\n    )\n   \n   //The constant b is needed to make the estimator consistent for the parameter of interest.\n    /// In the case of the usual parameter a at Gaussian distributions b = 1.4826\n    b = 1.4826\n    \n    diff_med =\n    diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({ r with MAD: b * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    \n    output = union(tables: [diff, diff_med])\n    |> filter(fn: (r) => exists r.MAD)\n    |> map(fn: (r) => ({ r with _value: r._value / r.MAD }))\n    |> map(fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        }))\n\nreturn output\n}",
+					Source: "mad = (table=<-, threshold=3.0) => {\n    // MEDiXi = med(x)\n    data = table |> group(columns: [\"_time\"], mode:\"by\")\n    med = data |> median(column: \"_value\")\n    // diff = |Xi - MEDiXi| = math.abs(xi-med(xi))\n    diff = join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n    |> map(fn: (r) => ({ r with _value: math.abs(x: r._value_data - r._value_med) }))\n    |> drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])\n    // The constant k is needed to make the estimator consistent for the parameter of interest.\n    // In the case of the usual parameter a at Gaussian distributions k = 1.4826\n    k = 1.4826\n    // MAD =  k * MEDi * |Xi - MEDiXi| \n    diff_med =\n    diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({ r with MAD: k * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({ r with _value: r._value_diff/r._value_diff_med}))\n    |> map(fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        }))\nreturn output\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   6,
@@ -72,10 +72,10 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   38,
+							Line:   31,
 						},
 						File:   "mad.flux",
-						Source: "(table=<-, threshold=3.0) => {\n    // _value_med = med(x)\n    data = table |> group(columns: [\"_time\"], mode:\"by\")\n    med = data |> median(column: \"_value\")\n    \n    // _value_diff = xi-med(xi)\n    diff = experimental.join(\n    left: data,\n    right: med,\n    fn: (left, right) => ({ right with _value: math.abs(x: left._value - right._value) })\n    )\n   \n   //The constant b is needed to make the estimator consistent for the parameter of interest.\n    /// In the case of the usual parameter a at Gaussian distributions b = 1.4826\n    b = 1.4826\n    \n    diff_med =\n    diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({ r with MAD: b * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    \n    output = union(tables: [diff, diff_med])\n    |> filter(fn: (r) => exists r.MAD)\n    |> map(fn: (r) => ({ r with _value: r._value / r.MAD }))\n    |> map(fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        }))\n\nreturn output\n}",
+						Source: "(table=<-, threshold=3.0) => {\n    // MEDiXi = med(x)\n    data = table |> group(columns: [\"_time\"], mode:\"by\")\n    med = data |> median(column: \"_value\")\n    // diff = |Xi - MEDiXi| = math.abs(xi-med(xi))\n    diff = join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n    |> map(fn: (r) => ({ r with _value: math.abs(x: r._value_data - r._value_med) }))\n    |> drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])\n    // The constant k is needed to make the estimator consistent for the parameter of interest.\n    // In the case of the usual parameter a at Gaussian distributions k = 1.4826\n    k = 1.4826\n    // MAD =  k * MEDi * |Xi - MEDiXi| \n    diff_med =\n    diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({ r with MAD: k * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({ r with _value: r._value_diff/r._value_diff_med}))\n    |> map(fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        }))\nreturn output\n}",
 						Start: ast.Position{
 							Column: 7,
 							Line:   6,
@@ -88,10 +88,10 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   38,
+								Line:   31,
 							},
 							File:   "mad.flux",
-							Source: "{\n    // _value_med = med(x)\n    data = table |> group(columns: [\"_time\"], mode:\"by\")\n    med = data |> median(column: \"_value\")\n    \n    // _value_diff = xi-med(xi)\n    diff = experimental.join(\n    left: data,\n    right: med,\n    fn: (left, right) => ({ right with _value: math.abs(x: left._value - right._value) })\n    )\n   \n   //The constant b is needed to make the estimator consistent for the parameter of interest.\n    /// In the case of the usual parameter a at Gaussian distributions b = 1.4826\n    b = 1.4826\n    \n    diff_med =\n    diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({ r with MAD: b * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    \n    output = union(tables: [diff, diff_med])\n    |> filter(fn: (r) => exists r.MAD)\n    |> map(fn: (r) => ({ r with _value: r._value / r.MAD }))\n    |> map(fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        }))\n\nreturn output\n}",
+							Source: "{\n    // MEDiXi = med(x)\n    data = table |> group(columns: [\"_time\"], mode:\"by\")\n    med = data |> median(column: \"_value\")\n    // diff = |Xi - MEDiXi| = math.abs(xi-med(xi))\n    diff = join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n    |> map(fn: (r) => ({ r with _value: math.abs(x: r._value_data - r._value_med) }))\n    |> drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])\n    // The constant k is needed to make the estimator consistent for the parameter of interest.\n    // In the case of the usual parameter a at Gaussian distributions k = 1.4826\n    k = 1.4826\n    // MAD =  k * MEDi * |Xi - MEDiXi| \n    diff_med =\n    diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({ r with MAD: k * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({ r with _value: r._value_diff/r._value_diff_med}))\n    |> map(fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        }))\nreturn output\n}",
 							Start: ast.Position{
 								Column: 36,
 								Line:   6,
@@ -522,14 +522,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   16,
+									Column: 71,
+									Line:   13,
 								},
 								File:   "mad.flux",
-								Source: "diff = experimental.join(\n    left: data,\n    right: med,\n    fn: (left, right) => ({ right with _value: math.abs(x: left._value - right._value) })\n    )",
+								Source: "diff = join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n    |> map(fn: (r) => ({ r with _value: math.abs(x: r._value_data - r._value_med) }))\n    |> drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])",
 								Start: ast.Position{
 									Column: 5,
-									Line:   12,
+									Line:   11,
 								},
 							},
 						},
@@ -539,218 +539,84 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   12,
+										Line:   11,
 									},
 									File:   "mad.flux",
 									Source: "diff",
 									Start: ast.Position{
 										Column: 5,
-										Line:   12,
+										Line:   11,
 									},
 								},
 							},
 							Name: "diff",
 						},
-						Init: &ast.CallExpression{
-							Arguments: []ast.Expression{&ast.ObjectExpression{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 90,
-											Line:   15,
-										},
-										File:   "mad.flux",
-										Source: "left: data,\n    right: med,\n    fn: (left, right) => ({ right with _value: math.abs(x: left._value - right._value) })",
-										Start: ast.Position{
-											Column: 5,
-											Line:   13,
-										},
-									},
-								},
-								Properties: []*ast.Property{&ast.Property{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 15,
-												Line:   13,
-											},
-											File:   "mad.flux",
-											Source: "left: data",
-											Start: ast.Position{
-												Column: 5,
-												Line:   13,
-											},
-										},
-									},
-									Key: &ast.Identifier{
+						Init: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 9,
-													Line:   13,
+													Column: 79,
+													Line:   11,
 												},
 												File:   "mad.flux",
-												Source: "left",
+												Source: "tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\"",
 												Start: ast.Position{
-													Column: 5,
-													Line:   13,
+													Column: 17,
+													Line:   11,
 												},
 											},
 										},
-										Name: "left",
-									},
-									Value: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 15,
-													Line:   13,
-												},
-												File:   "mad.flux",
-												Source: "data",
-												Start: ast.Position{
-													Column: 11,
-													Line:   13,
-												},
-											},
-										},
-										Name: "data",
-									},
-								}, &ast.Property{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 15,
-												Line:   14,
-											},
-											File:   "mad.flux",
-											Source: "right: med",
-											Start: ast.Position{
-												Column: 5,
-												Line:   14,
-											},
-										},
-									},
-									Key: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 10,
-													Line:   14,
-												},
-												File:   "mad.flux",
-												Source: "right",
-												Start: ast.Position{
-													Column: 5,
-													Line:   14,
-												},
-											},
-										},
-										Name: "right",
-									},
-									Value: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 15,
-													Line:   14,
-												},
-												File:   "mad.flux",
-												Source: "med",
-												Start: ast.Position{
-													Column: 12,
-													Line:   14,
-												},
-											},
-										},
-										Name: "med",
-									},
-								}, &ast.Property{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 90,
-												Line:   15,
-											},
-											File:   "mad.flux",
-											Source: "fn: (left, right) => ({ right with _value: math.abs(x: left._value - right._value) })",
-											Start: ast.Position{
-												Column: 5,
-												Line:   15,
-											},
-										},
-									},
-									Key: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 7,
-													Line:   15,
-												},
-												File:   "mad.flux",
-												Source: "fn",
-												Start: ast.Position{
-													Column: 5,
-													Line:   15,
-												},
-											},
-										},
-										Name: "fn",
-									},
-									Value: &ast.FunctionExpression{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 90,
-													Line:   15,
-												},
-												File:   "mad.flux",
-												Source: "(left, right) => ({ right with _value: math.abs(x: left._value - right._value) })",
-												Start: ast.Position{
-													Column: 9,
-													Line:   15,
-												},
-											},
-										},
-										Body: &ast.ParenExpression{
+										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 90,
-														Line:   15,
+														Column: 47,
+														Line:   11,
 													},
 													File:   "mad.flux",
-													Source: "({ right with _value: math.abs(x: left._value - right._value) })",
+													Source: "tables: {data: data, med: med}",
 													Start: ast.Position{
-														Column: 26,
-														Line:   15,
+														Column: 17,
+														Line:   11,
 													},
 												},
 											},
-											Expression: &ast.ObjectExpression{
+											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 89,
-															Line:   15,
+															Column: 23,
+															Line:   11,
 														},
 														File:   "mad.flux",
-														Source: "{ right with _value: math.abs(x: left._value - right._value) }",
+														Source: "tables",
 														Start: ast.Position{
-															Column: 27,
-															Line:   15,
+															Column: 17,
+															Line:   11,
+														},
+													},
+												},
+												Name: "tables",
+											},
+											Value: &ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 47,
+															Line:   11,
+														},
+														File:   "mad.flux",
+														Source: "{data: data, med: med}",
+														Start: ast.Position{
+															Column: 25,
+															Line:   11,
 														},
 													},
 												},
@@ -759,14 +625,14 @@ var pkgAST = &ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 87,
-																Line:   15,
+																Column: 36,
+																Line:   11,
 															},
 															File:   "mad.flux",
-															Source: "_value: math.abs(x: left._value - right._value)",
+															Source: "data: data",
 															Start: ast.Position{
-																Column: 40,
-																Line:   15,
+																Column: 26,
+																Line:   11,
 															},
 														},
 													},
@@ -775,300 +641,295 @@ var pkgAST = &ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 46,
-																	Line:   15,
+																	Column: 30,
+																	Line:   11,
 																},
 																File:   "mad.flux",
-																Source: "_value",
+																Source: "data",
 																Start: ast.Position{
-																	Column: 40,
-																	Line:   15,
+																	Column: 26,
+																	Line:   11,
 																},
 															},
 														},
-														Name: "_value",
+														Name: "data",
 													},
-													Value: &ast.CallExpression{
-														Arguments: []ast.Expression{&ast.ObjectExpression{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 86,
-																		Line:   15,
-																	},
-																	File:   "mad.flux",
-																	Source: "x: left._value - right._value",
-																	Start: ast.Position{
-																		Column: 57,
-																		Line:   15,
-																	},
-																},
-															},
-															Properties: []*ast.Property{&ast.Property{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 86,
-																			Line:   15,
-																		},
-																		File:   "mad.flux",
-																		Source: "x: left._value - right._value",
-																		Start: ast.Position{
-																			Column: 57,
-																			Line:   15,
-																		},
-																	},
-																},
-																Key: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 58,
-																				Line:   15,
-																			},
-																			File:   "mad.flux",
-																			Source: "x",
-																			Start: ast.Position{
-																				Column: 57,
-																				Line:   15,
-																			},
-																		},
-																	},
-																	Name: "x",
-																},
-																Value: &ast.BinaryExpression{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 86,
-																				Line:   15,
-																			},
-																			File:   "mad.flux",
-																			Source: "left._value - right._value",
-																			Start: ast.Position{
-																				Column: 60,
-																				Line:   15,
-																			},
-																		},
-																	},
-																	Left: &ast.MemberExpression{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 71,
-																					Line:   15,
-																				},
-																				File:   "mad.flux",
-																				Source: "left._value",
-																				Start: ast.Position{
-																					Column: 60,
-																					Line:   15,
-																				},
-																			},
-																		},
-																		Object: &ast.Identifier{
-																			BaseNode: ast.BaseNode{
-																				Errors: nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 64,
-																						Line:   15,
-																					},
-																					File:   "mad.flux",
-																					Source: "left",
-																					Start: ast.Position{
-																						Column: 60,
-																						Line:   15,
-																					},
-																				},
-																			},
-																			Name: "left",
-																		},
-																		Property: &ast.Identifier{
-																			BaseNode: ast.BaseNode{
-																				Errors: nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 71,
-																						Line:   15,
-																					},
-																					File:   "mad.flux",
-																					Source: "_value",
-																					Start: ast.Position{
-																						Column: 65,
-																						Line:   15,
-																					},
-																				},
-																			},
-																			Name: "_value",
-																		},
-																	},
-																	Operator: 6,
-																	Right: &ast.MemberExpression{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 86,
-																					Line:   15,
-																				},
-																				File:   "mad.flux",
-																				Source: "right._value",
-																				Start: ast.Position{
-																					Column: 74,
-																					Line:   15,
-																				},
-																			},
-																		},
-																		Object: &ast.Identifier{
-																			BaseNode: ast.BaseNode{
-																				Errors: nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 79,
-																						Line:   15,
-																					},
-																					File:   "mad.flux",
-																					Source: "right",
-																					Start: ast.Position{
-																						Column: 74,
-																						Line:   15,
-																					},
-																				},
-																			},
-																			Name: "right",
-																		},
-																		Property: &ast.Identifier{
-																			BaseNode: ast.BaseNode{
-																				Errors: nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 86,
-																						Line:   15,
-																					},
-																					File:   "mad.flux",
-																					Source: "_value",
-																					Start: ast.Position{
-																						Column: 80,
-																						Line:   15,
-																					},
-																				},
-																			},
-																			Name: "_value",
-																		},
-																	},
-																},
-															}},
-															With: nil,
-														}},
+													Value: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 87,
-																	Line:   15,
+																	Column: 36,
+																	Line:   11,
 																},
 																File:   "mad.flux",
-																Source: "math.abs(x: left._value - right._value)",
+																Source: "data",
 																Start: ast.Position{
-																	Column: 48,
-																	Line:   15,
+																	Column: 32,
+																	Line:   11,
 																},
 															},
 														},
-														Callee: &ast.MemberExpression{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 56,
-																		Line:   15,
-																	},
-																	File:   "mad.flux",
-																	Source: "math.abs",
-																	Start: ast.Position{
-																		Column: 48,
-																		Line:   15,
-																	},
-																},
-															},
-															Object: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 52,
-																			Line:   15,
-																		},
-																		File:   "mad.flux",
-																		Source: "math",
-																		Start: ast.Position{
-																			Column: 48,
-																			Line:   15,
-																		},
-																	},
-																},
-																Name: "math",
-															},
-															Property: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 56,
-																			Line:   15,
-																		},
-																		File:   "mad.flux",
-																		Source: "abs",
-																		Start: ast.Position{
-																			Column: 53,
-																			Line:   15,
-																		},
-																	},
-																},
-																Name: "abs",
-															},
-														},
+														Name: "data",
 													},
-												}},
-												With: &ast.Identifier{
+												}, &ast.Property{
 													BaseNode: ast.BaseNode{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 34,
-																Line:   15,
+																Column: 46,
+																Line:   11,
 															},
 															File:   "mad.flux",
-															Source: "right",
+															Source: "med: med",
 															Start: ast.Position{
-																Column: 29,
-																Line:   15,
+																Column: 38,
+																Line:   11,
 															},
 														},
 													},
-													Name: "right",
-												},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 41,
+																	Line:   11,
+																},
+																File:   "mad.flux",
+																Source: "med",
+																Start: ast.Position{
+																	Column: 38,
+																	Line:   11,
+																},
+															},
+														},
+														Name: "med",
+													},
+													Value: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 46,
+																	Line:   11,
+																},
+																File:   "mad.flux",
+																Source: "med",
+																Start: ast.Position{
+																	Column: 43,
+																	Line:   11,
+																},
+															},
+														},
+														Name: "med",
+													},
+												}},
+												With: nil,
 											},
-										},
-										Params: []*ast.Property{&ast.Property{
+										}, &ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 14,
-														Line:   15,
+														Column: 62,
+														Line:   11,
 													},
 													File:   "mad.flux",
-													Source: "left",
+													Source: "on: [\"_time\"]",
 													Start: ast.Position{
-														Column: 10,
-														Line:   15,
+														Column: 49,
+														Line:   11,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 51,
+															Line:   11,
+														},
+														File:   "mad.flux",
+														Source: "on",
+														Start: ast.Position{
+															Column: 49,
+															Line:   11,
+														},
+													},
+												},
+												Name: "on",
+											},
+											Value: &ast.ArrayExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 62,
+															Line:   11,
+														},
+														File:   "mad.flux",
+														Source: "[\"_time\"]",
+														Start: ast.Position{
+															Column: 53,
+															Line:   11,
+														},
+													},
+												},
+												Elements: []ast.Expression{&ast.StringLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 61,
+																Line:   11,
+															},
+															File:   "mad.flux",
+															Source: "\"_time\"",
+															Start: ast.Position{
+																Column: 54,
+																Line:   11,
+															},
+														},
+													},
+													Value: "_time",
+												}},
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   11,
+													},
+													File:   "mad.flux",
+													Source: "method: \"inner\"",
+													Start: ast.Position{
+														Column: 64,
+														Line:   11,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   11,
+														},
+														File:   "mad.flux",
+														Source: "method",
+														Start: ast.Position{
+															Column: 64,
+															Line:   11,
+														},
+													},
+												},
+												Name: "method",
+											},
+											Value: &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   11,
+														},
+														File:   "mad.flux",
+														Source: "\"inner\"",
+														Start: ast.Position{
+															Column: 72,
+															Line:   11,
+														},
+													},
+												},
+												Value: "inner",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   11,
+											},
+											File:   "mad.flux",
+											Source: "join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")",
+											Start: ast.Position{
+												Column: 12,
+												Line:   11,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   11,
+												},
+												File:   "mad.flux",
+												Source: "join",
+												Start: ast.Position{
+													Column: 12,
+													Line:   11,
+												},
+											},
+										},
+										Name: "join",
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 86,
+											Line:   12,
+										},
+										File:   "mad.flux",
+										Source: "join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n    |> map(fn: (r) => ({ r with _value: math.abs(x: r._value_data - r._value_med) }))",
+										Start: ast.Position{
+											Column: 12,
+											Line:   11,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 85,
+													Line:   12,
+												},
+												File:   "mad.flux",
+												Source: "fn: (r) => ({ r with _value: math.abs(x: r._value_data - r._value_med) })",
+												Start: ast.Position{
+													Column: 12,
+													Line:   12,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 85,
+														Line:   12,
+													},
+													File:   "mad.flux",
+													Source: "fn: (r) => ({ r with _value: math.abs(x: r._value_data - r._value_med) })",
+													Start: ast.Position{
+														Column: 12,
+														Line:   12,
 													},
 												},
 											},
@@ -1078,125 +939,630 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
-															Line:   15,
+															Line:   12,
 														},
 														File:   "mad.flux",
-														Source: "left",
+														Source: "fn",
 														Start: ast.Position{
-															Column: 10,
-															Line:   15,
+															Column: 12,
+															Line:   12,
 														},
 													},
 												},
-												Name: "left",
+												Name: "fn",
 											},
-											Value: nil,
-										}, &ast.Property{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 21,
-														Line:   15,
-													},
-													File:   "mad.flux",
-													Source: "right",
-													Start: ast.Position{
-														Column: 16,
-														Line:   15,
-													},
-												},
-											},
-											Key: &ast.Identifier{
+											Value: &ast.FunctionExpression{
 												BaseNode: ast.BaseNode{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 21,
-															Line:   15,
+															Column: 85,
+															Line:   12,
 														},
 														File:   "mad.flux",
-														Source: "right",
+														Source: "(r) => ({ r with _value: math.abs(x: r._value_data - r._value_med) })",
 														Start: ast.Position{
 															Column: 16,
-															Line:   15,
+															Line:   12,
 														},
 													},
 												},
-												Name: "right",
+												Body: &ast.ParenExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 85,
+																Line:   12,
+															},
+															File:   "mad.flux",
+															Source: "({ r with _value: math.abs(x: r._value_data - r._value_med) })",
+															Start: ast.Position{
+																Column: 23,
+																Line:   12,
+															},
+														},
+													},
+													Expression: &ast.ObjectExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 84,
+																	Line:   12,
+																},
+																File:   "mad.flux",
+																Source: "{ r with _value: math.abs(x: r._value_data - r._value_med) }",
+																Start: ast.Position{
+																	Column: 24,
+																	Line:   12,
+																},
+															},
+														},
+														Properties: []*ast.Property{&ast.Property{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 82,
+																		Line:   12,
+																	},
+																	File:   "mad.flux",
+																	Source: "_value: math.abs(x: r._value_data - r._value_med)",
+																	Start: ast.Position{
+																		Column: 33,
+																		Line:   12,
+																	},
+																},
+															},
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 39,
+																			Line:   12,
+																		},
+																		File:   "mad.flux",
+																		Source: "_value",
+																		Start: ast.Position{
+																			Column: 33,
+																			Line:   12,
+																		},
+																	},
+																},
+																Name: "_value",
+															},
+															Value: &ast.CallExpression{
+																Arguments: []ast.Expression{&ast.ObjectExpression{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 81,
+																				Line:   12,
+																			},
+																			File:   "mad.flux",
+																			Source: "x: r._value_data - r._value_med",
+																			Start: ast.Position{
+																				Column: 50,
+																				Line:   12,
+																			},
+																		},
+																	},
+																	Properties: []*ast.Property{&ast.Property{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 81,
+																					Line:   12,
+																				},
+																				File:   "mad.flux",
+																				Source: "x: r._value_data - r._value_med",
+																				Start: ast.Position{
+																					Column: 50,
+																					Line:   12,
+																				},
+																			},
+																		},
+																		Key: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 51,
+																						Line:   12,
+																					},
+																					File:   "mad.flux",
+																					Source: "x",
+																					Start: ast.Position{
+																						Column: 50,
+																						Line:   12,
+																					},
+																				},
+																			},
+																			Name: "x",
+																		},
+																		Value: &ast.BinaryExpression{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 81,
+																						Line:   12,
+																					},
+																					File:   "mad.flux",
+																					Source: "r._value_data - r._value_med",
+																					Start: ast.Position{
+																						Column: 53,
+																						Line:   12,
+																					},
+																				},
+																			},
+																			Left: &ast.MemberExpression{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 66,
+																							Line:   12,
+																						},
+																						File:   "mad.flux",
+																						Source: "r._value_data",
+																						Start: ast.Position{
+																							Column: 53,
+																							Line:   12,
+																						},
+																					},
+																				},
+																				Object: &ast.Identifier{
+																					BaseNode: ast.BaseNode{
+																						Errors: nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 54,
+																								Line:   12,
+																							},
+																							File:   "mad.flux",
+																							Source: "r",
+																							Start: ast.Position{
+																								Column: 53,
+																								Line:   12,
+																							},
+																						},
+																					},
+																					Name: "r",
+																				},
+																				Property: &ast.Identifier{
+																					BaseNode: ast.BaseNode{
+																						Errors: nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 66,
+																								Line:   12,
+																							},
+																							File:   "mad.flux",
+																							Source: "_value_data",
+																							Start: ast.Position{
+																								Column: 55,
+																								Line:   12,
+																							},
+																						},
+																					},
+																					Name: "_value_data",
+																				},
+																			},
+																			Operator: 6,
+																			Right: &ast.MemberExpression{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 81,
+																							Line:   12,
+																						},
+																						File:   "mad.flux",
+																						Source: "r._value_med",
+																						Start: ast.Position{
+																							Column: 69,
+																							Line:   12,
+																						},
+																					},
+																				},
+																				Object: &ast.Identifier{
+																					BaseNode: ast.BaseNode{
+																						Errors: nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 70,
+																								Line:   12,
+																							},
+																							File:   "mad.flux",
+																							Source: "r",
+																							Start: ast.Position{
+																								Column: 69,
+																								Line:   12,
+																							},
+																						},
+																					},
+																					Name: "r",
+																				},
+																				Property: &ast.Identifier{
+																					BaseNode: ast.BaseNode{
+																						Errors: nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 81,
+																								Line:   12,
+																							},
+																							File:   "mad.flux",
+																							Source: "_value_med",
+																							Start: ast.Position{
+																								Column: 71,
+																								Line:   12,
+																							},
+																						},
+																					},
+																					Name: "_value_med",
+																				},
+																			},
+																		},
+																	}},
+																	With: nil,
+																}},
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 82,
+																			Line:   12,
+																		},
+																		File:   "mad.flux",
+																		Source: "math.abs(x: r._value_data - r._value_med)",
+																		Start: ast.Position{
+																			Column: 41,
+																			Line:   12,
+																		},
+																	},
+																},
+																Callee: &ast.MemberExpression{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 49,
+																				Line:   12,
+																			},
+																			File:   "mad.flux",
+																			Source: "math.abs",
+																			Start: ast.Position{
+																				Column: 41,
+																				Line:   12,
+																			},
+																		},
+																	},
+																	Object: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 45,
+																					Line:   12,
+																				},
+																				File:   "mad.flux",
+																				Source: "math",
+																				Start: ast.Position{
+																					Column: 41,
+																					Line:   12,
+																				},
+																			},
+																		},
+																		Name: "math",
+																	},
+																	Property: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 49,
+																					Line:   12,
+																				},
+																				File:   "mad.flux",
+																				Source: "abs",
+																				Start: ast.Position{
+																					Column: 46,
+																					Line:   12,
+																				},
+																			},
+																		},
+																		Name: "abs",
+																	},
+																},
+															},
+														}},
+														With: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 27,
+																		Line:   12,
+																	},
+																	File:   "mad.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   12,
+																	},
+																},
+															},
+															Name: "r",
+														},
+													},
+												},
+												Params: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 18,
+																Line:   12,
+															},
+															File:   "mad.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 17,
+																Line:   12,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 18,
+																	Line:   12,
+																},
+																File:   "mad.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 17,
+																	Line:   12,
+																},
+															},
+														},
+														Name: "r",
+													},
+													Value: nil,
+												}},
 											},
-											Value: nil,
 										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 86,
+												Line:   12,
+											},
+											File:   "mad.flux",
+											Source: "map(fn: (r) => ({ r with _value: math.abs(x: r._value_data - r._value_med) }))",
+											Start: ast.Position{
+												Column: 8,
+												Line:   12,
+											},
+										},
 									},
-								}},
-								With: nil,
-							}},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 11,
+													Line:   12,
+												},
+												File:   "mad.flux",
+												Source: "map",
+												Start: ast.Position{
+													Column: 8,
+													Line:   12,
+												},
+											},
+										},
+										Name: "map",
+									},
+								},
+							},
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 6,
-										Line:   16,
+										Column: 71,
+										Line:   13,
 									},
 									File:   "mad.flux",
-									Source: "experimental.join(\n    left: data,\n    right: med,\n    fn: (left, right) => ({ right with _value: math.abs(x: left._value - right._value) })\n    )",
+									Source: "join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n    |> map(fn: (r) => ({ r with _value: math.abs(x: r._value_data - r._value_med) }))\n    |> drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])",
 									Start: ast.Position{
 										Column: 12,
-										Line:   12,
+										Line:   11,
 									},
 								},
 							},
-							Callee: &ast.MemberExpression{
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 70,
+												Line:   13,
+											},
+											File:   "mad.flux",
+											Source: "columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"]",
+											Start: ast.Position{
+												Column: 13,
+												Line:   13,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 70,
+													Line:   13,
+												},
+												File:   "mad.flux",
+												Source: "columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"]",
+												Start: ast.Position{
+													Column: 13,
+													Line:   13,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 20,
+														Line:   13,
+													},
+													File:   "mad.flux",
+													Source: "columns",
+													Start: ast.Position{
+														Column: 13,
+														Line:   13,
+													},
+												},
+											},
+											Name: "columns",
+										},
+										Value: &ast.ArrayExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 70,
+														Line:   13,
+													},
+													File:   "mad.flux",
+													Source: "[\"_start\", \"_stop\", \"_value_med\", \"_value_data\"]",
+													Start: ast.Position{
+														Column: 22,
+														Line:   13,
+													},
+												},
+											},
+											Elements: []ast.Expression{&ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 31,
+															Line:   13,
+														},
+														File:   "mad.flux",
+														Source: "\"_start\"",
+														Start: ast.Position{
+															Column: 23,
+															Line:   13,
+														},
+													},
+												},
+												Value: "_start",
+											}, &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 40,
+															Line:   13,
+														},
+														File:   "mad.flux",
+														Source: "\"_stop\"",
+														Start: ast.Position{
+															Column: 33,
+															Line:   13,
+														},
+													},
+												},
+												Value: "_stop",
+											}, &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 54,
+															Line:   13,
+														},
+														File:   "mad.flux",
+														Source: "\"_value_med\"",
+														Start: ast.Position{
+															Column: 42,
+															Line:   13,
+														},
+													},
+												},
+												Value: "_value_med",
+											}, &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 69,
+															Line:   13,
+														},
+														File:   "mad.flux",
+														Source: "\"_value_data\"",
+														Start: ast.Position{
+															Column: 56,
+															Line:   13,
+														},
+													},
+												},
+												Value: "_value_data",
+											}},
+										},
+									}},
+									With: nil,
+								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 29,
-											Line:   12,
+											Column: 71,
+											Line:   13,
 										},
 										File:   "mad.flux",
-										Source: "experimental.join",
+										Source: "drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])",
 										Start: ast.Position{
-											Column: 12,
-											Line:   12,
+											Column: 8,
+											Line:   13,
 										},
 									},
 								},
-								Object: &ast.Identifier{
+								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 24,
-												Line:   12,
-											},
-											File:   "mad.flux",
-											Source: "experimental",
-											Start: ast.Position{
 												Column: 12,
-												Line:   12,
-											},
-										},
-									},
-									Name: "experimental",
-								},
-								Property: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 29,
-												Line:   12,
+												Line:   13,
 											},
 											File:   "mad.flux",
-											Source: "join",
+											Source: "drop",
 											Start: ast.Position{
-												Column: 25,
-												Line:   12,
+												Column: 8,
+												Line:   13,
 											},
 										},
 									},
-									Name: "join",
+									Name: "drop",
 								},
 							},
 						},
@@ -1206,13 +1572,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   20,
+									Line:   16,
 								},
 								File:   "mad.flux",
-								Source: "b = 1.4826",
+								Source: "k = 1.4826",
 								Start: ast.Position{
 									Column: 5,
-									Line:   20,
+									Line:   16,
 								},
 							},
 						},
@@ -1222,17 +1588,17 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   20,
+										Line:   16,
 									},
 									File:   "mad.flux",
-									Source: "b",
+									Source: "k",
 									Start: ast.Position{
 										Column: 5,
-										Line:   20,
+										Line:   16,
 									},
 								},
 							},
-							Name: "b",
+							Name: "k",
 						},
 						Init: &ast.FloatLiteral{
 							BaseNode: ast.BaseNode{
@@ -1240,13 +1606,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
-										Line:   20,
+										Line:   16,
 									},
 									File:   "mad.flux",
 									Source: "1.4826",
 									Start: ast.Position{
 										Column: 9,
-										Line:   20,
+										Line:   16,
 									},
 								},
 							},
@@ -1258,13 +1624,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   26,
+									Line:   22,
 								},
 								File:   "mad.flux",
-								Source: "diff_med =\n    diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({ r with MAD: b * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)",
+								Source: "diff_med =\n    diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({ r with MAD: k * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   22,
+									Line:   18,
 								},
 							},
 						},
@@ -1274,13 +1640,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   22,
+										Line:   18,
 									},
 									File:   "mad.flux",
 									Source: "diff_med",
 									Start: ast.Position{
 										Column: 5,
-										Line:   22,
+										Line:   18,
 									},
 								},
 							},
@@ -1295,13 +1661,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 9,
-													Line:   23,
+													Line:   19,
 												},
 												File:   "mad.flux",
 												Source: "diff",
 												Start: ast.Position{
 													Column: 5,
-													Line:   23,
+													Line:   19,
 												},
 											},
 										},
@@ -1312,13 +1678,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 36,
-												Line:   24,
+												Line:   20,
 											},
 											File:   "mad.flux",
 											Source: "diff\n        |> median(column: \"_value\")",
 											Start: ast.Position{
 												Column: 5,
-												Line:   23,
+												Line:   19,
 											},
 										},
 									},
@@ -1329,13 +1695,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 35,
-														Line:   24,
+														Line:   20,
 													},
 													File:   "mad.flux",
 													Source: "column: \"_value\"",
 													Start: ast.Position{
 														Column: 19,
-														Line:   24,
+														Line:   20,
 													},
 												},
 											},
@@ -1345,13 +1711,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 35,
-															Line:   24,
+															Line:   20,
 														},
 														File:   "mad.flux",
 														Source: "column: \"_value\"",
 														Start: ast.Position{
 															Column: 19,
-															Line:   24,
+															Line:   20,
 														},
 													},
 												},
@@ -1361,13 +1727,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 25,
-																Line:   24,
+																Line:   20,
 															},
 															File:   "mad.flux",
 															Source: "column",
 															Start: ast.Position{
 																Column: 19,
-																Line:   24,
+																Line:   20,
 															},
 														},
 													},
@@ -1379,13 +1745,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 35,
-																Line:   24,
+																Line:   20,
 															},
 															File:   "mad.flux",
 															Source: "\"_value\"",
 															Start: ast.Position{
 																Column: 27,
-																Line:   24,
+																Line:   20,
 															},
 														},
 													},
@@ -1399,13 +1765,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 36,
-													Line:   24,
+													Line:   20,
 												},
 												File:   "mad.flux",
 												Source: "median(column: \"_value\")",
 												Start: ast.Position{
 													Column: 12,
-													Line:   24,
+													Line:   20,
 												},
 											},
 										},
@@ -1415,13 +1781,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   24,
+														Line:   20,
 													},
 													File:   "mad.flux",
 													Source: "median",
 													Start: ast.Position{
 														Column: 12,
-														Line:   24,
+														Line:   20,
 													},
 												},
 											},
@@ -1434,13 +1800,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 57,
-											Line:   25,
+											Line:   21,
 										},
 										File:   "mad.flux",
-										Source: "diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({ r with MAD: b * r._value}))",
+										Source: "diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({ r with MAD: k * r._value}))",
 										Start: ast.Position{
 											Column: 5,
-											Line:   23,
+											Line:   19,
 										},
 									},
 								},
@@ -1451,13 +1817,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 56,
-													Line:   25,
+													Line:   21,
 												},
 												File:   "mad.flux",
-												Source: "fn: (r) => ({ r with MAD: b * r._value})",
+												Source: "fn: (r) => ({ r with MAD: k * r._value})",
 												Start: ast.Position{
 													Column: 16,
-													Line:   25,
+													Line:   21,
 												},
 											},
 										},
@@ -1467,13 +1833,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 56,
-														Line:   25,
+														Line:   21,
 													},
 													File:   "mad.flux",
-													Source: "fn: (r) => ({ r with MAD: b * r._value})",
+													Source: "fn: (r) => ({ r with MAD: k * r._value})",
 													Start: ast.Position{
 														Column: 16,
-														Line:   25,
+														Line:   21,
 													},
 												},
 											},
@@ -1483,13 +1849,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 18,
-															Line:   25,
+															Line:   21,
 														},
 														File:   "mad.flux",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 16,
-															Line:   25,
+															Line:   21,
 														},
 													},
 												},
@@ -1501,13 +1867,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 56,
-															Line:   25,
+															Line:   21,
 														},
 														File:   "mad.flux",
-														Source: "(r) => ({ r with MAD: b * r._value})",
+														Source: "(r) => ({ r with MAD: k * r._value})",
 														Start: ast.Position{
 															Column: 20,
-															Line:   25,
+															Line:   21,
 														},
 													},
 												},
@@ -1517,13 +1883,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 56,
-																Line:   25,
+																Line:   21,
 															},
 															File:   "mad.flux",
-															Source: "({ r with MAD: b * r._value})",
+															Source: "({ r with MAD: k * r._value})",
 															Start: ast.Position{
 																Column: 27,
-																Line:   25,
+																Line:   21,
 															},
 														},
 													},
@@ -1533,13 +1899,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 55,
-																	Line:   25,
+																	Line:   21,
 																},
 																File:   "mad.flux",
-																Source: "{ r with MAD: b * r._value}",
+																Source: "{ r with MAD: k * r._value}",
 																Start: ast.Position{
 																	Column: 28,
-																	Line:   25,
+																	Line:   21,
 																},
 															},
 														},
@@ -1549,13 +1915,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 54,
-																		Line:   25,
+																		Line:   21,
 																	},
 																	File:   "mad.flux",
-																	Source: "MAD: b * r._value",
+																	Source: "MAD: k * r._value",
 																	Start: ast.Position{
 																		Column: 37,
-																		Line:   25,
+																		Line:   21,
 																	},
 																},
 															},
@@ -1565,13 +1931,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 40,
-																			Line:   25,
+																			Line:   21,
 																		},
 																		File:   "mad.flux",
 																		Source: "MAD",
 																		Start: ast.Position{
 																			Column: 37,
-																			Line:   25,
+																			Line:   21,
 																		},
 																	},
 																},
@@ -1583,13 +1949,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 54,
-																			Line:   25,
+																			Line:   21,
 																		},
 																		File:   "mad.flux",
-																		Source: "b * r._value",
+																		Source: "k * r._value",
 																		Start: ast.Position{
 																			Column: 42,
-																			Line:   25,
+																			Line:   21,
 																		},
 																	},
 																},
@@ -1599,17 +1965,17 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 43,
-																				Line:   25,
+																				Line:   21,
 																			},
 																			File:   "mad.flux",
-																			Source: "b",
+																			Source: "k",
 																			Start: ast.Position{
 																				Column: 42,
-																				Line:   25,
+																				Line:   21,
 																			},
 																		},
 																	},
-																	Name: "b",
+																	Name: "k",
 																},
 																Operator: 1,
 																Right: &ast.MemberExpression{
@@ -1618,13 +1984,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 54,
-																				Line:   25,
+																				Line:   21,
 																			},
 																			File:   "mad.flux",
 																			Source: "r._value",
 																			Start: ast.Position{
 																				Column: 46,
-																				Line:   25,
+																				Line:   21,
 																			},
 																		},
 																	},
@@ -1634,13 +2000,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 47,
-																					Line:   25,
+																					Line:   21,
 																				},
 																				File:   "mad.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 46,
-																					Line:   25,
+																					Line:   21,
 																				},
 																			},
 																		},
@@ -1652,13 +2018,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 54,
-																					Line:   25,
+																					Line:   21,
 																				},
 																				File:   "mad.flux",
 																				Source: "_value",
 																				Start: ast.Position{
 																					Column: 48,
-																					Line:   25,
+																					Line:   21,
 																				},
 																			},
 																		},
@@ -1673,13 +2039,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 31,
-																		Line:   25,
+																		Line:   21,
 																	},
 																	File:   "mad.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 30,
-																		Line:   25,
+																		Line:   21,
 																	},
 																},
 															},
@@ -1693,13 +2059,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 22,
-																Line:   25,
+																Line:   21,
 															},
 															File:   "mad.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 21,
-																Line:   25,
+																Line:   21,
 															},
 														},
 													},
@@ -1709,13 +2075,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 22,
-																	Line:   25,
+																	Line:   21,
 																},
 																File:   "mad.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 21,
-																	Line:   25,
+																	Line:   21,
 																},
 															},
 														},
@@ -1732,13 +2098,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 57,
-												Line:   25,
+												Line:   21,
 											},
 											File:   "mad.flux",
-											Source: "map(fn: (r) => ({ r with MAD: b * r._value}))",
+											Source: "map(fn: (r) => ({ r with MAD: k * r._value}))",
 											Start: ast.Position{
 												Column: 12,
-												Line:   25,
+												Line:   21,
 											},
 										},
 									},
@@ -1748,13 +2114,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
-													Line:   25,
+													Line:   21,
 												},
 												File:   "mad.flux",
 												Source: "map",
 												Start: ast.Position{
 													Column: 12,
-													Line:   25,
+													Line:   21,
 												},
 											},
 										},
@@ -1767,13 +2133,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 42,
-										Line:   26,
+										Line:   22,
 									},
 									File:   "mad.flux",
-									Source: "diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({ r with MAD: b * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)",
+									Source: "diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({ r with MAD: k * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)",
 									Start: ast.Position{
 										Column: 5,
-										Line:   23,
+										Line:   19,
 									},
 								},
 							},
@@ -1784,13 +2150,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   26,
+												Line:   22,
 											},
 											File:   "mad.flux",
 											Source: "fn: (r) => r.MAD > 0.0",
 											Start: ast.Position{
 												Column: 19,
-												Line:   26,
+												Line:   22,
 											},
 										},
 									},
@@ -1800,13 +2166,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   26,
+													Line:   22,
 												},
 												File:   "mad.flux",
 												Source: "fn: (r) => r.MAD > 0.0",
 												Start: ast.Position{
 													Column: 19,
-													Line:   26,
+													Line:   22,
 												},
 											},
 										},
@@ -1816,13 +2182,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   26,
+														Line:   22,
 													},
 													File:   "mad.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 19,
-														Line:   26,
+														Line:   22,
 													},
 												},
 											},
@@ -1834,13 +2200,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 41,
-														Line:   26,
+														Line:   22,
 													},
 													File:   "mad.flux",
 													Source: "(r) => r.MAD > 0.0",
 													Start: ast.Position{
 														Column: 23,
-														Line:   26,
+														Line:   22,
 													},
 												},
 											},
@@ -1850,13 +2216,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
-															Line:   26,
+															Line:   22,
 														},
 														File:   "mad.flux",
 														Source: "r.MAD > 0.0",
 														Start: ast.Position{
 															Column: 30,
-															Line:   26,
+															Line:   22,
 														},
 													},
 												},
@@ -1866,13 +2232,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 35,
-																Line:   26,
+																Line:   22,
 															},
 															File:   "mad.flux",
 															Source: "r.MAD",
 															Start: ast.Position{
 																Column: 30,
-																Line:   26,
+																Line:   22,
 															},
 														},
 													},
@@ -1882,13 +2248,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 31,
-																	Line:   26,
+																	Line:   22,
 																},
 																File:   "mad.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 30,
-																	Line:   26,
+																	Line:   22,
 																},
 															},
 														},
@@ -1900,13 +2266,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 35,
-																	Line:   26,
+																	Line:   22,
 																},
 																File:   "mad.flux",
 																Source: "MAD",
 																Start: ast.Position{
 																	Column: 32,
-																	Line:   26,
+																	Line:   22,
 																},
 															},
 														},
@@ -1920,13 +2286,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
-																Line:   26,
+																Line:   22,
 															},
 															File:   "mad.flux",
 															Source: "0.0",
 															Start: ast.Position{
 																Column: 38,
-																Line:   26,
+																Line:   22,
 															},
 														},
 													},
@@ -1939,13 +2305,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 25,
-															Line:   26,
+															Line:   22,
 														},
 														File:   "mad.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 24,
-															Line:   26,
+															Line:   22,
 														},
 													},
 												},
@@ -1955,13 +2321,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 25,
-																Line:   26,
+																Line:   22,
 															},
 															File:   "mad.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 24,
-																Line:   26,
+																Line:   22,
 															},
 														},
 													},
@@ -1978,13 +2344,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 42,
-											Line:   26,
+											Line:   22,
 										},
 										File:   "mad.flux",
 										Source: "filter(fn: (r) => r.MAD > 0.0)",
 										Start: ast.Position{
 											Column: 12,
-											Line:   26,
+											Line:   22,
 										},
 									},
 								},
@@ -1994,13 +2360,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   26,
+												Line:   22,
 											},
 											File:   "mad.flux",
 											Source: "filter",
 											Start: ast.Position{
 												Column: 12,
-												Line:   26,
+												Line:   22,
 											},
 										},
 									},
@@ -2014,13 +2380,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   35,
+									Line:   29,
 								},
 								File:   "mad.flux",
-								Source: "output = union(tables: [diff, diff_med])\n    |> filter(fn: (r) => exists r.MAD)\n    |> map(fn: (r) => ({ r with _value: r._value / r.MAD }))\n    |> map(fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        }))",
+								Source: "output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({ r with _value: r._value_diff/r._value_diff_med}))\n    |> map(fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        }))",
 								Start: ast.Position{
 									Column: 5,
-									Line:   28,
+									Line:   23,
 								},
 							},
 						},
@@ -2030,13 +2396,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 11,
-										Line:   28,
+										Line:   23,
 									},
 									File:   "mad.flux",
 									Source: "output",
 									Start: ast.Position{
 										Column: 5,
-										Line:   28,
+										Line:   23,
 									},
 								},
 							},
@@ -2044,387 +2410,350 @@ var pkgAST = &ast.Package{
 						},
 						Init: &ast.PipeExpression{
 							Argument: &ast.PipeExpression{
-								Argument: &ast.PipeExpression{
-									Argument: &ast.CallExpression{
-										Arguments: []ast.Expression{&ast.ObjectExpression{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 44,
-														Line:   28,
-													},
-													File:   "mad.flux",
-													Source: "tables: [diff, diff_med]",
-													Start: ast.Position{
-														Column: 20,
-														Line:   28,
-													},
-												},
-											},
-											Properties: []*ast.Property{&ast.Property{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 44,
-															Line:   28,
-														},
-														File:   "mad.flux",
-														Source: "tables: [diff, diff_med]",
-														Start: ast.Position{
-															Column: 20,
-															Line:   28,
-														},
-													},
-												},
-												Key: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 26,
-																Line:   28,
-															},
-															File:   "mad.flux",
-															Source: "tables",
-															Start: ast.Position{
-																Column: 20,
-																Line:   28,
-															},
-														},
-													},
-													Name: "tables",
-												},
-												Value: &ast.ArrayExpression{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 44,
-																Line:   28,
-															},
-															File:   "mad.flux",
-															Source: "[diff, diff_med]",
-															Start: ast.Position{
-																Column: 28,
-																Line:   28,
-															},
-														},
-													},
-													Elements: []ast.Expression{&ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 33,
-																	Line:   28,
-																},
-																File:   "mad.flux",
-																Source: "diff",
-																Start: ast.Position{
-																	Column: 29,
-																	Line:   28,
-																},
-															},
-														},
-														Name: "diff",
-													}, &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 43,
-																	Line:   28,
-																},
-																File:   "mad.flux",
-																Source: "diff_med",
-																Start: ast.Position{
-																	Column: 35,
-																	Line:   28,
-																},
-															},
-														},
-														Name: "diff_med",
-													}},
-												},
-											}},
-											With: nil,
-										}},
+								Argument: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 45,
-													Line:   28,
+													Column: 91,
+													Line:   23,
 												},
 												File:   "mad.flux",
-												Source: "union(tables: [diff, diff_med])",
+												Source: "tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\"",
 												Start: ast.Position{
-													Column: 14,
-													Line:   28,
+													Column: 19,
+													Line:   23,
 												},
 											},
 										},
-										Callee: &ast.Identifier{
+										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
+														Column: 59,
+														Line:   23,
+													},
+													File:   "mad.flux",
+													Source: "tables: {diff: diff, diff_med: diff_med}",
+													Start: ast.Position{
 														Column: 19,
-														Line:   28,
-													},
-													File:   "mad.flux",
-													Source: "union",
-													Start: ast.Position{
-														Column: 14,
-														Line:   28,
+														Line:   23,
 													},
 												},
 											},
-											Name: "union",
-										},
-									},
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 39,
-												Line:   29,
-											},
-											File:   "mad.flux",
-											Source: "union(tables: [diff, diff_med])\n    |> filter(fn: (r) => exists r.MAD)",
-											Start: ast.Position{
-												Column: 14,
-												Line:   28,
-											},
-										},
-									},
-									Call: &ast.CallExpression{
-										Arguments: []ast.Expression{&ast.ObjectExpression{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 38,
-														Line:   29,
-													},
-													File:   "mad.flux",
-													Source: "fn: (r) => exists r.MAD",
-													Start: ast.Position{
-														Column: 15,
-														Line:   29,
-													},
-												},
-											},
-											Properties: []*ast.Property{&ast.Property{
+											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 38,
-															Line:   29,
+															Column: 25,
+															Line:   23,
 														},
 														File:   "mad.flux",
-														Source: "fn: (r) => exists r.MAD",
+														Source: "tables",
 														Start: ast.Position{
-															Column: 15,
-															Line:   29,
+															Column: 19,
+															Line:   23,
 														},
 													},
 												},
-												Key: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 17,
-																Line:   29,
-															},
-															File:   "mad.flux",
-															Source: "fn",
-															Start: ast.Position{
-																Column: 15,
-																Line:   29,
-															},
+												Name: "tables",
+											},
+											Value: &ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 59,
+															Line:   23,
+														},
+														File:   "mad.flux",
+														Source: "{diff: diff, diff_med: diff_med}",
+														Start: ast.Position{
+															Column: 27,
+															Line:   23,
 														},
 													},
-													Name: "fn",
 												},
-												Value: &ast.FunctionExpression{
+												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 38,
-																Line:   29,
+																Line:   23,
 															},
 															File:   "mad.flux",
-															Source: "(r) => exists r.MAD",
+															Source: "diff: diff",
 															Start: ast.Position{
-																Column: 19,
-																Line:   29,
+																Column: 28,
+																Line:   23,
 															},
 														},
 													},
-													Body: &ast.UnaryExpression{
-														Argument: &ast.MemberExpression{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 38,
-																		Line:   29,
-																	},
-																	File:   "mad.flux",
-																	Source: "r.MAD",
-																	Start: ast.Position{
-																		Column: 33,
-																		Line:   29,
-																	},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 32,
+																	Line:   23,
 																},
-															},
-															Object: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 34,
-																			Line:   29,
-																		},
-																		File:   "mad.flux",
-																		Source: "r",
-																		Start: ast.Position{
-																			Column: 33,
-																			Line:   29,
-																		},
-																	},
+																File:   "mad.flux",
+																Source: "diff",
+																Start: ast.Position{
+																	Column: 28,
+																	Line:   23,
 																},
-																Name: "r",
-															},
-															Property: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 38,
-																			Line:   29,
-																		},
-																		File:   "mad.flux",
-																		Source: "MAD",
-																		Start: ast.Position{
-																			Column: 35,
-																			Line:   29,
-																		},
-																	},
-																},
-																Name: "MAD",
 															},
 														},
+														Name: "diff",
+													},
+													Value: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 38,
-																	Line:   29,
+																	Line:   23,
 																},
 																File:   "mad.flux",
-																Source: "exists r.MAD",
+																Source: "diff",
 																Start: ast.Position{
-																	Column: 26,
-																	Line:   29,
+																	Column: 34,
+																	Line:   23,
 																},
 															},
 														},
-														Operator: 14,
+														Name: "diff",
 													},
-													Params: []*ast.Property{&ast.Property{
+												}, &ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 58,
+																Line:   23,
+															},
+															File:   "mad.flux",
+															Source: "diff_med: diff_med",
+															Start: ast.Position{
+																Column: 40,
+																Line:   23,
+															},
+														},
+													},
+													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 21,
-																	Line:   29,
+																	Column: 48,
+																	Line:   23,
 																},
 																File:   "mad.flux",
-																Source: "r",
+																Source: "diff_med",
 																Start: ast.Position{
-																	Column: 20,
-																	Line:   29,
+																	Column: 40,
+																	Line:   23,
 																},
 															},
 														},
-														Key: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 21,
-																		Line:   29,
-																	},
-																	File:   "mad.flux",
-																	Source: "r",
-																	Start: ast.Position{
-																		Column: 20,
-																		Line:   29,
-																	},
+														Name: "diff_med",
+													},
+													Value: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 58,
+																	Line:   23,
+																},
+																File:   "mad.flux",
+																Source: "diff_med",
+																Start: ast.Position{
+																	Column: 50,
+																	Line:   23,
 																},
 															},
-															Name: "r",
 														},
-														Value: nil,
-													}},
-												},
-											}},
-											With: nil,
-										}},
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 39,
-													Line:   29,
-												},
-												File:   "mad.flux",
-												Source: "filter(fn: (r) => exists r.MAD)",
-												Start: ast.Position{
-													Column: 8,
-													Line:   29,
-												},
+														Name: "diff_med",
+													},
+												}},
+												With: nil,
 											},
-										},
-										Callee: &ast.Identifier{
+										}, &ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 14,
-														Line:   29,
+														Column: 74,
+														Line:   23,
 													},
 													File:   "mad.flux",
-													Source: "filter",
+													Source: "on: [\"_time\"]",
 													Start: ast.Position{
-														Column: 8,
-														Line:   29,
+														Column: 61,
+														Line:   23,
 													},
 												},
 											},
-											Name: "filter",
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 63,
+															Line:   23,
+														},
+														File:   "mad.flux",
+														Source: "on",
+														Start: ast.Position{
+															Column: 61,
+															Line:   23,
+														},
+													},
+												},
+												Name: "on",
+											},
+											Value: &ast.ArrayExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 74,
+															Line:   23,
+														},
+														File:   "mad.flux",
+														Source: "[\"_time\"]",
+														Start: ast.Position{
+															Column: 65,
+															Line:   23,
+														},
+													},
+												},
+												Elements: []ast.Expression{&ast.StringLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 73,
+																Line:   23,
+															},
+															File:   "mad.flux",
+															Source: "\"_time\"",
+															Start: ast.Position{
+																Column: 66,
+																Line:   23,
+															},
+														},
+													},
+													Value: "_time",
+												}},
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 91,
+														Line:   23,
+													},
+													File:   "mad.flux",
+													Source: "method: \"inner\"",
+													Start: ast.Position{
+														Column: 76,
+														Line:   23,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 82,
+															Line:   23,
+														},
+														File:   "mad.flux",
+														Source: "method",
+														Start: ast.Position{
+															Column: 76,
+															Line:   23,
+														},
+													},
+												},
+												Name: "method",
+											},
+											Value: &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 91,
+															Line:   23,
+														},
+														File:   "mad.flux",
+														Source: "\"inner\"",
+														Start: ast.Position{
+															Column: 84,
+															Line:   23,
+														},
+													},
+												},
+												Value: "inner",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 92,
+												Line:   23,
+											},
+											File:   "mad.flux",
+											Source: "join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")",
+											Start: ast.Position{
+												Column: 14,
+												Line:   23,
+											},
 										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   23,
+												},
+												File:   "mad.flux",
+												Source: "join",
+												Start: ast.Position{
+													Column: 14,
+													Line:   23,
+												},
+											},
+										},
+										Name: "join",
 									},
 								},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 61,
-											Line:   30,
+											Column: 79,
+											Line:   24,
 										},
 										File:   "mad.flux",
-										Source: "union(tables: [diff, diff_med])\n    |> filter(fn: (r) => exists r.MAD)\n    |> map(fn: (r) => ({ r with _value: r._value / r.MAD }))",
+										Source: "join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({ r with _value: r._value_diff/r._value_diff_med}))",
 										Start: ast.Position{
 											Column: 14,
-											Line:   28,
+											Line:   23,
 										},
 									},
 								},
@@ -2434,14 +2763,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 60,
-													Line:   30,
+													Column: 78,
+													Line:   24,
 												},
 												File:   "mad.flux",
-												Source: "fn: (r) => ({ r with _value: r._value / r.MAD })",
+												Source: "fn: (r) => ({ r with _value: r._value_diff/r._value_diff_med})",
 												Start: ast.Position{
-													Column: 12,
-													Line:   30,
+													Column: 16,
+													Line:   24,
 												},
 											},
 										},
@@ -2450,14 +2779,14 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 60,
-														Line:   30,
+														Column: 78,
+														Line:   24,
 													},
 													File:   "mad.flux",
-													Source: "fn: (r) => ({ r with _value: r._value / r.MAD })",
+													Source: "fn: (r) => ({ r with _value: r._value_diff/r._value_diff_med})",
 													Start: ast.Position{
-														Column: 12,
-														Line:   30,
+														Column: 16,
+														Line:   24,
 													},
 												},
 											},
@@ -2466,14 +2795,14 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 14,
-															Line:   30,
+															Column: 18,
+															Line:   24,
 														},
 														File:   "mad.flux",
 														Source: "fn",
 														Start: ast.Position{
-															Column: 12,
-															Line:   30,
+															Column: 16,
+															Line:   24,
 														},
 													},
 												},
@@ -2484,14 +2813,14 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 60,
-															Line:   30,
+															Column: 78,
+															Line:   24,
 														},
 														File:   "mad.flux",
-														Source: "(r) => ({ r with _value: r._value / r.MAD })",
+														Source: "(r) => ({ r with _value: r._value_diff/r._value_diff_med})",
 														Start: ast.Position{
-															Column: 16,
-															Line:   30,
+															Column: 20,
+															Line:   24,
 														},
 													},
 												},
@@ -2500,14 +2829,14 @@ var pkgAST = &ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 60,
-																Line:   30,
+																Column: 78,
+																Line:   24,
 															},
 															File:   "mad.flux",
-															Source: "({ r with _value: r._value / r.MAD })",
+															Source: "({ r with _value: r._value_diff/r._value_diff_med})",
 															Start: ast.Position{
-																Column: 23,
-																Line:   30,
+																Column: 27,
+																Line:   24,
 															},
 														},
 													},
@@ -2516,14 +2845,14 @@ var pkgAST = &ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 59,
-																	Line:   30,
+																	Column: 77,
+																	Line:   24,
 																},
 																File:   "mad.flux",
-																Source: "{ r with _value: r._value / r.MAD }",
+																Source: "{ r with _value: r._value_diff/r._value_diff_med}",
 																Start: ast.Position{
-																	Column: 24,
-																	Line:   30,
+																	Column: 28,
+																	Line:   24,
 																},
 															},
 														},
@@ -2532,14 +2861,14 @@ var pkgAST = &ast.Package{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 57,
-																		Line:   30,
+																		Column: 76,
+																		Line:   24,
 																	},
 																	File:   "mad.flux",
-																	Source: "_value: r._value / r.MAD",
+																	Source: "_value: r._value_diff/r._value_diff_med",
 																	Start: ast.Position{
-																		Column: 33,
-																		Line:   30,
+																		Column: 37,
+																		Line:   24,
 																	},
 																},
 															},
@@ -2548,14 +2877,14 @@ var pkgAST = &ast.Package{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 39,
-																			Line:   30,
+																			Column: 43,
+																			Line:   24,
 																		},
 																		File:   "mad.flux",
 																		Source: "_value",
 																		Start: ast.Position{
-																			Column: 33,
-																			Line:   30,
+																			Column: 37,
+																			Line:   24,
 																		},
 																	},
 																},
@@ -2566,14 +2895,14 @@ var pkgAST = &ast.Package{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 57,
-																			Line:   30,
+																			Column: 76,
+																			Line:   24,
 																		},
 																		File:   "mad.flux",
-																		Source: "r._value / r.MAD",
+																		Source: "r._value_diff/r._value_diff_med",
 																		Start: ast.Position{
-																			Column: 41,
-																			Line:   30,
+																			Column: 45,
+																			Line:   24,
 																		},
 																	},
 																},
@@ -2582,14 +2911,14 @@ var pkgAST = &ast.Package{
 																		Errors: nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 49,
-																				Line:   30,
+																				Column: 58,
+																				Line:   24,
 																			},
 																			File:   "mad.flux",
-																			Source: "r._value",
+																			Source: "r._value_diff",
 																			Start: ast.Position{
-																				Column: 41,
-																				Line:   30,
+																				Column: 45,
+																				Line:   24,
 																			},
 																		},
 																	},
@@ -2598,14 +2927,14 @@ var pkgAST = &ast.Package{
 																			Errors: nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 42,
-																					Line:   30,
+																					Column: 46,
+																					Line:   24,
 																				},
 																				File:   "mad.flux",
 																				Source: "r",
 																				Start: ast.Position{
-																					Column: 41,
-																					Line:   30,
+																					Column: 45,
+																					Line:   24,
 																				},
 																			},
 																		},
@@ -2616,18 +2945,18 @@ var pkgAST = &ast.Package{
 																			Errors: nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 49,
-																					Line:   30,
+																					Column: 58,
+																					Line:   24,
 																				},
 																				File:   "mad.flux",
-																				Source: "_value",
+																				Source: "_value_diff",
 																				Start: ast.Position{
-																					Column: 43,
-																					Line:   30,
+																					Column: 47,
+																					Line:   24,
 																				},
 																			},
 																		},
-																		Name: "_value",
+																		Name: "_value_diff",
 																	},
 																},
 																Operator: 2,
@@ -2636,14 +2965,14 @@ var pkgAST = &ast.Package{
 																		Errors: nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 57,
-																				Line:   30,
+																				Column: 76,
+																				Line:   24,
 																			},
 																			File:   "mad.flux",
-																			Source: "r.MAD",
+																			Source: "r._value_diff_med",
 																			Start: ast.Position{
-																				Column: 52,
-																				Line:   30,
+																				Column: 59,
+																				Line:   24,
 																			},
 																		},
 																	},
@@ -2652,14 +2981,14 @@ var pkgAST = &ast.Package{
 																			Errors: nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 53,
-																					Line:   30,
+																					Column: 60,
+																					Line:   24,
 																				},
 																				File:   "mad.flux",
 																				Source: "r",
 																				Start: ast.Position{
-																					Column: 52,
-																					Line:   30,
+																					Column: 59,
+																					Line:   24,
 																				},
 																			},
 																		},
@@ -2670,18 +2999,18 @@ var pkgAST = &ast.Package{
 																			Errors: nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 57,
-																					Line:   30,
+																					Column: 76,
+																					Line:   24,
 																				},
 																				File:   "mad.flux",
-																				Source: "MAD",
+																				Source: "_value_diff_med",
 																				Start: ast.Position{
-																					Column: 54,
-																					Line:   30,
+																					Column: 61,
+																					Line:   24,
 																				},
 																			},
 																		},
-																		Name: "MAD",
+																		Name: "_value_diff_med",
 																	},
 																},
 															},
@@ -2691,14 +3020,14 @@ var pkgAST = &ast.Package{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 27,
-																		Line:   30,
+																		Column: 31,
+																		Line:   24,
 																	},
 																	File:   "mad.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 26,
-																		Line:   30,
+																		Column: 30,
+																		Line:   24,
 																	},
 																},
 															},
@@ -2711,14 +3040,14 @@ var pkgAST = &ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 18,
-																Line:   30,
+																Column: 22,
+																Line:   24,
 															},
 															File:   "mad.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 17,
-																Line:   30,
+																Column: 21,
+																Line:   24,
 															},
 														},
 													},
@@ -2727,14 +3056,14 @@ var pkgAST = &ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 18,
-																	Line:   30,
+																	Column: 22,
+																	Line:   24,
 																},
 																File:   "mad.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 17,
-																	Line:   30,
+																	Column: 21,
+																	Line:   24,
 																},
 															},
 														},
@@ -2750,14 +3079,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 61,
-												Line:   30,
+												Column: 79,
+												Line:   24,
 											},
 											File:   "mad.flux",
-											Source: "map(fn: (r) => ({ r with _value: r._value / r.MAD }))",
+											Source: "map(fn: (r) => ({ r with _value: r._value_diff/r._value_diff_med}))",
 											Start: ast.Position{
-												Column: 8,
-												Line:   30,
+												Column: 12,
+												Line:   24,
 											},
 										},
 									},
@@ -2766,14 +3095,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 11,
-													Line:   30,
+													Column: 15,
+													Line:   24,
 												},
 												File:   "mad.flux",
 												Source: "map",
 												Start: ast.Position{
-													Column: 8,
-													Line:   30,
+													Column: 12,
+													Line:   24,
 												},
 											},
 										},
@@ -2786,13 +3115,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   35,
+										Line:   29,
 									},
 									File:   "mad.flux",
-									Source: "union(tables: [diff, diff_med])\n    |> filter(fn: (r) => exists r.MAD)\n    |> map(fn: (r) => ({ r with _value: r._value / r.MAD }))\n    |> map(fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        }))",
+									Source: "join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({ r with _value: r._value_diff/r._value_diff_med}))\n    |> map(fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        }))",
 									Start: ast.Position{
 										Column: 14,
-										Line:   28,
+										Line:   23,
 									},
 								},
 							},
@@ -2803,13 +3132,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   35,
+												Line:   29,
 											},
 											File:   "mad.flux",
 											Source: "fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        })",
 											Start: ast.Position{
 												Column: 12,
-												Line:   31,
+												Line:   25,
 											},
 										},
 									},
@@ -2819,13 +3148,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   35,
+													Line:   29,
 												},
 												File:   "mad.flux",
 												Source: "fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        })",
 												Start: ast.Position{
 													Column: 12,
-													Line:   31,
+													Line:   25,
 												},
 											},
 										},
@@ -2835,13 +3164,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   31,
+														Line:   25,
 													},
 													File:   "mad.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 12,
-														Line:   31,
+														Line:   25,
 													},
 												},
 											},
@@ -2853,13 +3182,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   35,
+														Line:   29,
 													},
 													File:   "mad.flux",
 													Source: "(r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        })",
 													Start: ast.Position{
 														Column: 16,
-														Line:   31,
+														Line:   25,
 													},
 												},
 											},
@@ -2869,13 +3198,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 11,
-															Line:   35,
+															Line:   29,
 														},
 														File:   "mad.flux",
 														Source: "({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        })",
 														Start: ast.Position{
 															Column: 23,
-															Line:   31,
+															Line:   25,
 														},
 													},
 												},
@@ -2885,13 +3214,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 10,
-																Line:   35,
+																Line:   29,
 															},
 															File:   "mad.flux",
 															Source: "{ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        }",
 															Start: ast.Position{
 																Column: 24,
-																Line:   31,
+																Line:   25,
 															},
 														},
 													},
@@ -2901,13 +3230,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
-																	Line:   34,
+																	Line:   28,
 																},
 																File:   "mad.flux",
 																Source: "level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"",
 																Start: ast.Position{
 																	Column: 13,
-																	Line:   32,
+																	Line:   26,
 																},
 															},
 														},
@@ -2917,13 +3246,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 18,
-																		Line:   32,
+																		Line:   26,
 																	},
 																	File:   "mad.flux",
 																	Source: "level",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   32,
+																		Line:   26,
 																	},
 																},
 															},
@@ -2936,13 +3265,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 30,
-																			Line:   34,
+																			Line:   28,
 																		},
 																		File:   "mad.flux",
 																		Source: "\"normal\"",
 																		Start: ast.Position{
 																			Column: 22,
-																			Line:   34,
+																			Line:   28,
 																		},
 																	},
 																},
@@ -2953,13 +3282,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 30,
-																		Line:   34,
+																		Line:   28,
 																	},
 																	File:   "mad.flux",
 																	Source: "if r._value >= threshold then \"anomaly\"\n                else \"normal\"",
 																	Start: ast.Position{
 																		Column: 17,
-																		Line:   33,
+																		Line:   27,
 																	},
 																},
 															},
@@ -2969,13 +3298,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 56,
-																			Line:   33,
+																			Line:   27,
 																		},
 																		File:   "mad.flux",
 																		Source: "\"anomaly\"",
 																		Start: ast.Position{
 																			Column: 47,
-																			Line:   33,
+																			Line:   27,
 																		},
 																	},
 																},
@@ -2987,13 +3316,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 41,
-																			Line:   33,
+																			Line:   27,
 																		},
 																		File:   "mad.flux",
 																		Source: "r._value >= threshold",
 																		Start: ast.Position{
 																			Column: 20,
-																			Line:   33,
+																			Line:   27,
 																		},
 																	},
 																},
@@ -3003,13 +3332,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 28,
-																				Line:   33,
+																				Line:   27,
 																			},
 																			File:   "mad.flux",
 																			Source: "r._value",
 																			Start: ast.Position{
 																				Column: 20,
-																				Line:   33,
+																				Line:   27,
 																			},
 																		},
 																	},
@@ -3019,13 +3348,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 21,
-																					Line:   33,
+																					Line:   27,
 																				},
 																				File:   "mad.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 20,
-																					Line:   33,
+																					Line:   27,
 																				},
 																			},
 																		},
@@ -3037,13 +3366,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 28,
-																					Line:   33,
+																					Line:   27,
 																				},
 																				File:   "mad.flux",
 																				Source: "_value",
 																				Start: ast.Position{
 																					Column: 22,
-																					Line:   33,
+																					Line:   27,
 																				},
 																			},
 																		},
@@ -3057,13 +3386,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 41,
-																				Line:   33,
+																				Line:   27,
 																			},
 																			File:   "mad.flux",
 																			Source: "threshold",
 																			Start: ast.Position{
 																				Column: 32,
-																				Line:   33,
+																				Line:   27,
 																			},
 																		},
 																	},
@@ -3078,13 +3407,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 27,
-																	Line:   31,
+																	Line:   25,
 																},
 																File:   "mad.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 26,
-																	Line:   31,
+																	Line:   25,
 																},
 															},
 														},
@@ -3098,13 +3427,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 18,
-															Line:   31,
+															Line:   25,
 														},
 														File:   "mad.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 17,
-															Line:   31,
+															Line:   25,
 														},
 													},
 												},
@@ -3114,13 +3443,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 18,
-																Line:   31,
+																Line:   25,
 															},
 															File:   "mad.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 17,
-																Line:   31,
+																Line:   25,
 															},
 														},
 													},
@@ -3137,13 +3466,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
-											Line:   35,
+											Line:   29,
 										},
 										File:   "mad.flux",
 										Source: "map(fn: (r) => ({ r with\n            level:\n                if r._value >= threshold then \"anomaly\"\n                else \"normal\"\n        }))",
 										Start: ast.Position{
 											Column: 8,
-											Line:   31,
+											Line:   25,
 										},
 									},
 								},
@@ -3153,13 +3482,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   31,
+												Line:   25,
 											},
 											File:   "mad.flux",
 											Source: "map",
 											Start: ast.Position{
 												Column: 8,
-												Line:   31,
+												Line:   25,
 											},
 										},
 									},
@@ -3174,13 +3503,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 14,
-										Line:   37,
+										Line:   30,
 									},
 									File:   "mad.flux",
 									Source: "output",
 									Start: ast.Position{
 										Column: 8,
-										Line:   37,
+										Line:   30,
 									},
 								},
 							},
@@ -3191,13 +3520,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   37,
+									Line:   30,
 								},
 								File:   "mad.flux",
 								Source: "return output",
 								Start: ast.Position{
 									Column: 1,
-									Line:   37,
+									Line:   30,
 								},
 							},
 						},
