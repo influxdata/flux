@@ -251,6 +251,15 @@ func init() {
 					_, week := v1.Time().Time().ISOWeek()
 					return values.NewInt(int64(week)), nil
 				}
+
+				if v1.Type().Nature() == semantic.Duration {
+					deps := execdeps.GetExecutionDependencies(ctx)
+					nowTime := *deps.Now
+
+					_, week := nowTime.Add(v1.Duration().Duration()).ISOWeek()
+					return values.NewInt(int64(week)), nil
+				}
+
 				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),

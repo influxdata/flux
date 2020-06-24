@@ -34937,11 +34937,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 99,
-					Line:   52,
+					Column: 103,
+					Line:   40,
 				},
-				File:   "week_test.flux",
-				Source: "package date_test\n\nimport \"testing\"\nimport \"date\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-01-22T19:53:00Z,_m,FF,1\n,,0,2018-02-22T19:53:10Z,_m,FF,1\n,,0,2018-03-22T19:53:20Z,_m,FF,1\n,,0,2018-04-22T19:53:30Z,_m,FF,1\n,,0,2018-05-22T19:53:40Z,_m,FF,1\n,,0,2018-06-22T19:53:50Z,_m,FF,1\n,,1,2018-07-22T19:53:00Z,_m,QQ,1\n,,1,2018-08-22T19:53:10Z,_m,QQ,1\n,,1,2018-09-22T19:53:20Z,_m,QQ,1\n,,1,2018-10-22T19:53:30Z,_m,QQ,1\n,,1,2018-11-22T19:53:40Z,_m,QQ,1\n,,1,2018-12-22T19:53:50Z,_m,QQ,1\n\"\n\noutData = \"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-01-22T19:53:00Z,4\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-02-22T19:53:10Z,8\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-03-22T19:53:20Z,12\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-04-22T19:53:30Z,16\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:53:40Z,21\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-06-22T19:53:50Z,25\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-07-22T19:53:00Z,29\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-08-22T19:53:10Z,34\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-09-22T19:53:20Z,38\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-10-22T19:53:30Z,43\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-11-22T19:53:40Z,47\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-12-22T19:53:50Z,51\n\"\n\nt_time_week = (table=<-) =>\n\t(table\n\t    |> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.week(t: r._time)})))\n\ntest _time_week = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_week})",
+				File:   "week_duration_test.flux",
+				Source: "package date_test\n\nimport \"testing\"\nimport \"date\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:01:00.254819212Z,_m,FF,-3\n,,0,2018-05-22T19:02:00.748691723Z,_m,FF,-2\n,,0,2018-05-22T19:03:00.947182316Z,_m,FF,-1\n,,0,2018-05-22T19:04:00.538816341Z,_m,FF,0\n,,0,2018-05-22T19:05:00.676423456Z,_m,FF,1\n,,0,2018-05-22T19:06:00.982342357Z,_m,FF,2\n\"\n\noutData = \"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:01:00.254819212Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:02:00.748691723Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:03:00.947182316Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,1\n\"\n\nt_duration_week = (table=<-) =>\n\t(table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.week(t: duration(v : r._value))})))\n\ntest _duration_week = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration_week})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -34957,7 +34957,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 42,
 							Line:   6,
 						},
-						File:   "week_test.flux",
+						File:   "week_duration_test.flux",
 						Source: "now = () => (2030-01-01T00:00:00Z)",
 						Start: ast.Position{
 							Column: 8,
@@ -34973,7 +34973,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 11,
 								Line:   6,
 							},
-							File:   "week_test.flux",
+							File:   "week_duration_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
@@ -34991,7 +34991,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 42,
 								Line:   6,
 							},
-							File:   "week_test.flux",
+							File:   "week_duration_test.flux",
 							Source: "() => (2030-01-01T00:00:00Z)",
 							Start: ast.Position{
 								Column: 14,
@@ -35007,7 +35007,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 42,
 									Line:   6,
 								},
-								File:   "week_test.flux",
+								File:   "week_duration_test.flux",
 								Source: "(2030-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 20,
@@ -35023,7 +35023,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 41,
 										Line:   6,
 									},
-									File:   "week_test.flux",
+									File:   "week_duration_test.flux",
 									Source: "2030-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 21,
@@ -35044,7 +35044,1615 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 42,
 						Line:   6,
 					},
-					File:   "week_test.flux",
+					File:   "week_duration_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   19,
+					},
+					File:   "week_duration_test.flux",
+					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:01:00.254819212Z,_m,FF,-3\n,,0,2018-05-22T19:02:00.748691723Z,_m,FF,-2\n,,0,2018-05-22T19:03:00.947182316Z,_m,FF,-1\n,,0,2018-05-22T19:04:00.538816341Z,_m,FF,0\n,,0,2018-05-22T19:05:00.676423456Z,_m,FF,1\n,,0,2018-05-22T19:06:00.982342357Z,_m,FF,2\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "week_duration_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   19,
+						},
+						File:   "week_duration_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:01:00.254819212Z,_m,FF,-3\n,,0,2018-05-22T19:02:00.748691723Z,_m,FF,-2\n,,0,2018-05-22T19:03:00.947182316Z,_m,FF,-1\n,,0,2018-05-22T19:04:00.538816341Z,_m,FF,0\n,,0,2018-05-22T19:05:00.676423456Z,_m,FF,1\n,,0,2018-05-22T19:06:00.982342357Z,_m,FF,2\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:01:00.254819212Z,_m,FF,-3\n,,0,2018-05-22T19:02:00.748691723Z,_m,FF,-2\n,,0,2018-05-22T19:03:00.947182316Z,_m,FF,-1\n,,0,2018-05-22T19:04:00.538816341Z,_m,FF,0\n,,0,2018-05-22T19:05:00.676423456Z,_m,FF,1\n,,0,2018-05-22T19:06:00.982342357Z,_m,FF,2\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   32,
+					},
+					File:   "week_duration_test.flux",
+					Source: "outData = \"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:01:00.254819212Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:02:00.748691723Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:03:00.947182316Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,1\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   21,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   21,
+						},
+						File:   "week_duration_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   21,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   32,
+						},
+						File:   "week_duration_test.flux",
+						Source: "\"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:01:00.254819212Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:02:00.748691723Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:03:00.947182316Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,1\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   21,
+						},
+					},
+				},
+				Value: "\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:01:00.254819212Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:02:00.748691723Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:03:00.947182316Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,1\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,1\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 78,
+						Line:   37,
+					},
+					File:   "week_duration_test.flux",
+					Source: "t_duration_week = (table=<-) =>\n\t(table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.week(t: duration(v : r._value))})))",
+					Start: ast.Position{
+						Column: 1,
+						Line:   34,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 16,
+							Line:   34,
+						},
+						File:   "week_duration_test.flux",
+						Source: "t_duration_week",
+						Start: ast.Position{
+							Column: 1,
+							Line:   34,
+						},
+					},
+				},
+				Name: "t_duration_week",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 78,
+							Line:   37,
+						},
+						File:   "week_duration_test.flux",
+						Source: "(table=<-) =>\n\t(table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.week(t: duration(v : r._value))})))",
+						Start: ast.Position{
+							Column: 19,
+							Line:   34,
+						},
+					},
+				},
+				Body: &ast.ParenExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 78,
+								Line:   37,
+							},
+							File:   "week_duration_test.flux",
+							Source: "(table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.week(t: duration(v : r._value))})))",
+							Start: ast.Position{
+								Column: 2,
+								Line:   35,
+							},
+						},
+					},
+					Expression: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 8,
+											Line:   35,
+										},
+										File:   "week_duration_test.flux",
+										Source: "table",
+										Start: ast.Position{
+											Column: 3,
+											Line:   35,
+										},
+									},
+								},
+								Name: "table",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   36,
+									},
+									File:   "week_duration_test.flux",
+									Source: "table\n\t\t|> range(start: 2018-01-01T00:00:00Z)",
+									Start: ast.Position{
+										Column: 3,
+										Line:   35,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   36,
+											},
+											File:   "week_duration_test.flux",
+											Source: "start: 2018-01-01T00:00:00Z",
+											Start: ast.Position{
+												Column: 12,
+												Line:   36,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   36,
+												},
+												File:   "week_duration_test.flux",
+												Source: "start: 2018-01-01T00:00:00Z",
+												Start: ast.Position{
+													Column: 12,
+													Line:   36,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 17,
+														Line:   36,
+													},
+													File:   "week_duration_test.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 12,
+														Line:   36,
+													},
+												},
+											},
+											Name: "start",
+										},
+										Value: &ast.DateTimeLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   36,
+													},
+													File:   "week_duration_test.flux",
+													Source: "2018-01-01T00:00:00Z",
+													Start: ast.Position{
+														Column: 19,
+														Line:   36,
+													},
+												},
+											},
+											Value: parser.MustParseTime("2018-01-01T00:00:00Z"),
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   36,
+										},
+										File:   "week_duration_test.flux",
+										Source: "range(start: 2018-01-01T00:00:00Z)",
+										Start: ast.Position{
+											Column: 6,
+											Line:   36,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   36,
+											},
+											File:   "week_duration_test.flux",
+											Source: "range",
+											Start: ast.Position{
+												Column: 6,
+												Line:   36,
+											},
+										},
+									},
+									Name: "range",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 77,
+									Line:   37,
+								},
+								File:   "week_duration_test.flux",
+								Source: "table\n\t\t|> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.week(t: duration(v : r._value))}))",
+								Start: ast.Position{
+									Column: 3,
+									Line:   35,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 76,
+											Line:   37,
+										},
+										File:   "week_duration_test.flux",
+										Source: "fn: (r) => ({r with _value: date.week(t: duration(v : r._value))})",
+										Start: ast.Position{
+											Column: 10,
+											Line:   37,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 76,
+												Line:   37,
+											},
+											File:   "week_duration_test.flux",
+											Source: "fn: (r) => ({r with _value: date.week(t: duration(v : r._value))})",
+											Start: ast.Position{
+												Column: 10,
+												Line:   37,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 12,
+													Line:   37,
+												},
+												File:   "week_duration_test.flux",
+												Source: "fn",
+												Start: ast.Position{
+													Column: 10,
+													Line:   37,
+												},
+											},
+										},
+										Name: "fn",
+									},
+									Value: &ast.FunctionExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 76,
+													Line:   37,
+												},
+												File:   "week_duration_test.flux",
+												Source: "(r) => ({r with _value: date.week(t: duration(v : r._value))})",
+												Start: ast.Position{
+													Column: 14,
+													Line:   37,
+												},
+											},
+										},
+										Body: &ast.ParenExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 76,
+														Line:   37,
+													},
+													File:   "week_duration_test.flux",
+													Source: "({r with _value: date.week(t: duration(v : r._value))})",
+													Start: ast.Position{
+														Column: 21,
+														Line:   37,
+													},
+												},
+											},
+											Expression: &ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 75,
+															Line:   37,
+														},
+														File:   "week_duration_test.flux",
+														Source: "{r with _value: date.week(t: duration(v : r._value))}",
+														Start: ast.Position{
+															Column: 22,
+															Line:   37,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 74,
+																Line:   37,
+															},
+															File:   "week_duration_test.flux",
+															Source: "_value: date.week(t: duration(v : r._value))",
+															Start: ast.Position{
+																Column: 30,
+																Line:   37,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 36,
+																	Line:   37,
+																},
+																File:   "week_duration_test.flux",
+																Source: "_value",
+																Start: ast.Position{
+																	Column: 30,
+																	Line:   37,
+																},
+															},
+														},
+														Name: "_value",
+													},
+													Value: &ast.CallExpression{
+														Arguments: []ast.Expression{&ast.ObjectExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 73,
+																		Line:   37,
+																	},
+																	File:   "week_duration_test.flux",
+																	Source: "t: duration(v : r._value)",
+																	Start: ast.Position{
+																		Column: 48,
+																		Line:   37,
+																	},
+																},
+															},
+															Properties: []*ast.Property{&ast.Property{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 73,
+																			Line:   37,
+																		},
+																		File:   "week_duration_test.flux",
+																		Source: "t: duration(v : r._value)",
+																		Start: ast.Position{
+																			Column: 48,
+																			Line:   37,
+																		},
+																	},
+																},
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 49,
+																				Line:   37,
+																			},
+																			File:   "week_duration_test.flux",
+																			Source: "t",
+																			Start: ast.Position{
+																				Column: 48,
+																				Line:   37,
+																			},
+																		},
+																	},
+																	Name: "t",
+																},
+																Value: &ast.CallExpression{
+																	Arguments: []ast.Expression{&ast.ObjectExpression{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 72,
+																					Line:   37,
+																				},
+																				File:   "week_duration_test.flux",
+																				Source: "v : r._value",
+																				Start: ast.Position{
+																					Column: 60,
+																					Line:   37,
+																				},
+																			},
+																		},
+																		Properties: []*ast.Property{&ast.Property{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 72,
+																						Line:   37,
+																					},
+																					File:   "week_duration_test.flux",
+																					Source: "v : r._value",
+																					Start: ast.Position{
+																						Column: 60,
+																						Line:   37,
+																					},
+																				},
+																			},
+																			Key: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 61,
+																							Line:   37,
+																						},
+																						File:   "week_duration_test.flux",
+																						Source: "v",
+																						Start: ast.Position{
+																							Column: 60,
+																							Line:   37,
+																						},
+																					},
+																				},
+																				Name: "v",
+																			},
+																			Value: &ast.MemberExpression{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 72,
+																							Line:   37,
+																						},
+																						File:   "week_duration_test.flux",
+																						Source: "r._value",
+																						Start: ast.Position{
+																							Column: 64,
+																							Line:   37,
+																						},
+																					},
+																				},
+																				Object: &ast.Identifier{
+																					BaseNode: ast.BaseNode{
+																						Errors: nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 65,
+																								Line:   37,
+																							},
+																							File:   "week_duration_test.flux",
+																							Source: "r",
+																							Start: ast.Position{
+																								Column: 64,
+																								Line:   37,
+																							},
+																						},
+																					},
+																					Name: "r",
+																				},
+																				Property: &ast.Identifier{
+																					BaseNode: ast.BaseNode{
+																						Errors: nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 72,
+																								Line:   37,
+																							},
+																							File:   "week_duration_test.flux",
+																							Source: "_value",
+																							Start: ast.Position{
+																								Column: 66,
+																								Line:   37,
+																							},
+																						},
+																					},
+																					Name: "_value",
+																				},
+																			},
+																		}},
+																		With: nil,
+																	}},
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 73,
+																				Line:   37,
+																			},
+																			File:   "week_duration_test.flux",
+																			Source: "duration(v : r._value)",
+																			Start: ast.Position{
+																				Column: 51,
+																				Line:   37,
+																			},
+																		},
+																	},
+																	Callee: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 59,
+																					Line:   37,
+																				},
+																				File:   "week_duration_test.flux",
+																				Source: "duration",
+																				Start: ast.Position{
+																					Column: 51,
+																					Line:   37,
+																				},
+																			},
+																		},
+																		Name: "duration",
+																	},
+																},
+															}},
+															With: nil,
+														}},
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 74,
+																	Line:   37,
+																},
+																File:   "week_duration_test.flux",
+																Source: "date.week(t: duration(v : r._value))",
+																Start: ast.Position{
+																	Column: 38,
+																	Line:   37,
+																},
+															},
+														},
+														Callee: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 47,
+																		Line:   37,
+																	},
+																	File:   "week_duration_test.flux",
+																	Source: "date.week",
+																	Start: ast.Position{
+																		Column: 38,
+																		Line:   37,
+																	},
+																},
+															},
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 42,
+																			Line:   37,
+																		},
+																		File:   "week_duration_test.flux",
+																		Source: "date",
+																		Start: ast.Position{
+																			Column: 38,
+																			Line:   37,
+																		},
+																	},
+																},
+																Name: "date",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 47,
+																			Line:   37,
+																		},
+																		File:   "week_duration_test.flux",
+																		Source: "week",
+																		Start: ast.Position{
+																			Column: 43,
+																			Line:   37,
+																		},
+																	},
+																},
+																Name: "week",
+															},
+														},
+													},
+												}},
+												With: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 24,
+																Line:   37,
+															},
+															File:   "week_duration_test.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 23,
+																Line:   37,
+															},
+														},
+													},
+													Name: "r",
+												},
+											},
+										},
+										Params: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   37,
+													},
+													File:   "week_duration_test.flux",
+													Source: "r",
+													Start: ast.Position{
+														Column: 15,
+														Line:   37,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 16,
+															Line:   37,
+														},
+														File:   "week_duration_test.flux",
+														Source: "r",
+														Start: ast.Position{
+															Column: 15,
+															Line:   37,
+														},
+													},
+												},
+												Name: "r",
+											},
+											Value: nil,
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 77,
+										Line:   37,
+									},
+									File:   "week_duration_test.flux",
+									Source: "map(fn: (r) => ({r with _value: date.week(t: duration(v : r._value))}))",
+									Start: ast.Position{
+										Column: 6,
+										Line:   37,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 9,
+											Line:   37,
+										},
+										File:   "week_duration_test.flux",
+										Source: "map",
+										Start: ast.Position{
+											Column: 6,
+											Line:   37,
+										},
+									},
+								},
+								Name: "map",
+							},
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 28,
+								Line:   34,
+							},
+							File:   "week_duration_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 20,
+								Line:   34,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   34,
+								},
+								File:   "week_duration_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 20,
+									Line:   34,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 28,
+								Line:   34,
+							},
+							File:   "week_duration_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 26,
+								Line:   34,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 103,
+							Line:   40,
+						},
+						File:   "week_duration_test.flux",
+						Source: "_duration_week = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration_week})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   39,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 20,
+								Line:   39,
+							},
+							File:   "week_duration_test.flux",
+							Source: "_duration_week",
+							Start: ast.Position{
+								Column: 6,
+								Line:   39,
+							},
+						},
+					},
+					Name: "_duration_week",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 103,
+								Line:   40,
+							},
+							File:   "week_duration_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration_week})",
+							Start: ast.Position{
+								Column: 23,
+								Line:   39,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 103,
+									Line:   40,
+								},
+								File:   "week_duration_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration_week})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   40,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 102,
+										Line:   40,
+									},
+									File:   "week_duration_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration_week}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   40,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   40,
+										},
+										File:   "week_duration_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   40,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   40,
+											},
+											File:   "week_duration_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   40,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   40,
+												},
+												File:   "week_duration_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   40,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   40,
+													},
+													File:   "week_duration_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   40,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   40,
+														},
+														File:   "week_duration_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   40,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   40,
+														},
+														File:   "week_duration_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   40,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   40,
+											},
+											File:   "week_duration_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   40,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   40,
+												},
+												File:   "week_duration_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   40,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   40,
+													},
+													File:   "week_duration_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   40,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   40,
+													},
+													File:   "week_duration_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   40,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   40,
+										},
+										File:   "week_duration_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   40,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   40,
+											},
+											File:   "week_duration_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   40,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   40,
+												},
+												File:   "week_duration_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   40,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   40,
+													},
+													File:   "week_duration_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   40,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   40,
+														},
+														File:   "week_duration_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   40,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   40,
+														},
+														File:   "week_duration_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   40,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   40,
+											},
+											File:   "week_duration_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   40,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   40,
+												},
+												File:   "week_duration_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   40,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   40,
+													},
+													File:   "week_duration_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   40,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   40,
+													},
+													File:   "week_duration_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   40,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 101,
+											Line:   40,
+										},
+										File:   "week_duration_test.flux",
+										Source: "fn: t_duration_week",
+										Start: ast.Position{
+											Column: 82,
+											Line:   40,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   40,
+											},
+											File:   "week_duration_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   40,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 101,
+												Line:   40,
+											},
+											File:   "week_duration_test.flux",
+											Source: "t_duration_week",
+											Start: ast.Position{
+												Column: 86,
+												Line:   40,
+											},
+										},
+									},
+									Name: "t_duration_week",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 103,
+						Line:   40,
+					},
+					File:   "week_duration_test.flux",
+					Source: "test _duration_week = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration_week})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   39,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "week_duration_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "week_duration_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   4,
+					},
+					File:   "week_duration_test.flux",
+					Source: "import \"date\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   4,
+						},
+						File:   "week_duration_test.flux",
+						Source: "\"date\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "date",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "week_duration_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 18,
+						Line:   1,
+					},
+					File:   "week_duration_test.flux",
+					Source: "package date_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 18,
+							Line:   1,
+						},
+						File:   "week_duration_test.flux",
+						Source: "date_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "date_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 99,
+					Line:   52,
+				},
+				File:   "week_time_test.flux",
+				Source: "package date_test\n\nimport \"testing\"\nimport \"date\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-01-22T19:53:00Z,_m,FF,1\n,,0,2018-02-22T19:53:10Z,_m,FF,1\n,,0,2018-03-22T19:53:20Z,_m,FF,1\n,,0,2018-04-22T19:53:30Z,_m,FF,1\n,,0,2018-05-22T19:53:40Z,_m,FF,1\n,,0,2018-06-22T19:53:50Z,_m,FF,1\n,,1,2018-07-22T19:53:00Z,_m,QQ,1\n,,1,2018-08-22T19:53:10Z,_m,QQ,1\n,,1,2018-09-22T19:53:20Z,_m,QQ,1\n,,1,2018-10-22T19:53:30Z,_m,QQ,1\n,,1,2018-11-22T19:53:40Z,_m,QQ,1\n,,1,2018-12-22T19:53:50Z,_m,QQ,1\n\"\n\noutData = \"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-01-22T19:53:00Z,4\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-02-22T19:53:10Z,8\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-03-22T19:53:20Z,12\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-04-22T19:53:30Z,16\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:53:40Z,21\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-06-22T19:53:50Z,25\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-07-22T19:53:00Z,29\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-08-22T19:53:10Z,34\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-09-22T19:53:20Z,38\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-10-22T19:53:30Z,43\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-11-22T19:53:40Z,47\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-12-22T19:53:50Z,51\n\"\n\nt_time_week = (table=<-) =>\n\t(table\n\t    |> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.week(t: r._time)})))\n\ntest _time_week = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_week})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "week_time_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "week_time_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "week_time_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "week_time_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "week_time_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "week_time_test.flux",
 					Source: "option now = () => (2030-01-01T00:00:00Z)",
 					Start: ast.Position{
 						Column: 1,
@@ -35060,7 +36668,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   25,
 					},
-					File:   "week_test.flux",
+					File:   "week_time_test.flux",
 					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-01-22T19:53:00Z,_m,FF,1\n,,0,2018-02-22T19:53:10Z,_m,FF,1\n,,0,2018-03-22T19:53:20Z,_m,FF,1\n,,0,2018-04-22T19:53:30Z,_m,FF,1\n,,0,2018-05-22T19:53:40Z,_m,FF,1\n,,0,2018-06-22T19:53:50Z,_m,FF,1\n,,1,2018-07-22T19:53:00Z,_m,QQ,1\n,,1,2018-08-22T19:53:10Z,_m,QQ,1\n,,1,2018-09-22T19:53:20Z,_m,QQ,1\n,,1,2018-10-22T19:53:30Z,_m,QQ,1\n,,1,2018-11-22T19:53:40Z,_m,QQ,1\n,,1,2018-12-22T19:53:50Z,_m,QQ,1\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -35076,7 +36684,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   8,
 						},
-						File:   "week_test.flux",
+						File:   "week_time_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
@@ -35094,7 +36702,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   25,
 						},
-						File:   "week_test.flux",
+						File:   "week_time_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-01-22T19:53:00Z,_m,FF,1\n,,0,2018-02-22T19:53:10Z,_m,FF,1\n,,0,2018-03-22T19:53:20Z,_m,FF,1\n,,0,2018-04-22T19:53:30Z,_m,FF,1\n,,0,2018-05-22T19:53:40Z,_m,FF,1\n,,0,2018-06-22T19:53:50Z,_m,FF,1\n,,1,2018-07-22T19:53:00Z,_m,QQ,1\n,,1,2018-08-22T19:53:10Z,_m,QQ,1\n,,1,2018-09-22T19:53:20Z,_m,QQ,1\n,,1,2018-10-22T19:53:30Z,_m,QQ,1\n,,1,2018-11-22T19:53:40Z,_m,QQ,1\n,,1,2018-12-22T19:53:50Z,_m,QQ,1\n\"",
 						Start: ast.Position{
 							Column: 10,
@@ -35112,7 +36720,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   44,
 					},
-					File:   "week_test.flux",
+					File:   "week_time_test.flux",
 					Source: "outData = \"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-01-22T19:53:00Z,4\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-02-22T19:53:10Z,8\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-03-22T19:53:20Z,12\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-04-22T19:53:30Z,16\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:53:40Z,21\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-06-22T19:53:50Z,25\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-07-22T19:53:00Z,29\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-08-22T19:53:10Z,34\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-09-22T19:53:20Z,38\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-10-22T19:53:30Z,43\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-11-22T19:53:40Z,47\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-12-22T19:53:50Z,51\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -35128,7 +36736,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 8,
 							Line:   27,
 						},
-						File:   "week_test.flux",
+						File:   "week_time_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
@@ -35146,7 +36754,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   44,
 						},
-						File:   "week_test.flux",
+						File:   "week_time_test.flux",
 						Source: "\"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,_time,_value\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-01-22T19:53:00Z,4\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-02-22T19:53:10Z,8\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-03-22T19:53:20Z,12\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-04-22T19:53:30Z,16\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:53:40Z,21\n,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-06-22T19:53:50Z,25\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-07-22T19:53:00Z,29\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-08-22T19:53:10Z,34\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-09-22T19:53:20Z,38\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-10-22T19:53:30Z,43\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-11-22T19:53:40Z,47\n,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-12-22T19:53:50Z,51\n\"",
 						Start: ast.Position{
 							Column: 11,
@@ -35164,7 +36772,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 63,
 						Line:   49,
 					},
-					File:   "week_test.flux",
+					File:   "week_time_test.flux",
 					Source: "t_time_week = (table=<-) =>\n\t(table\n\t    |> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.week(t: r._time)})))",
 					Start: ast.Position{
 						Column: 1,
@@ -35180,7 +36788,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 12,
 							Line:   46,
 						},
-						File:   "week_test.flux",
+						File:   "week_time_test.flux",
 						Source: "t_time_week",
 						Start: ast.Position{
 							Column: 1,
@@ -35198,7 +36806,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 63,
 							Line:   49,
 						},
-						File:   "week_test.flux",
+						File:   "week_time_test.flux",
 						Source: "(table=<-) =>\n\t(table\n\t    |> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.week(t: r._time)})))",
 						Start: ast.Position{
 							Column: 15,
@@ -35214,7 +36822,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 63,
 								Line:   49,
 							},
-							File:   "week_test.flux",
+							File:   "week_time_test.flux",
 							Source: "(table\n\t    |> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.week(t: r._time)})))",
 							Start: ast.Position{
 								Column: 2,
@@ -35232,7 +36840,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 8,
 											Line:   47,
 										},
-										File:   "week_test.flux",
+										File:   "week_time_test.flux",
 										Source: "table",
 										Start: ast.Position{
 											Column: 3,
@@ -35249,7 +36857,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 43,
 										Line:   48,
 									},
-									File:   "week_test.flux",
+									File:   "week_time_test.flux",
 									Source: "table\n\t    |> range(start: 2018-01-01T00:00:00Z)",
 									Start: ast.Position{
 										Column: 3,
@@ -35266,7 +36874,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 42,
 												Line:   48,
 											},
-											File:   "week_test.flux",
+											File:   "week_time_test.flux",
 											Source: "start: 2018-01-01T00:00:00Z",
 											Start: ast.Position{
 												Column: 15,
@@ -35282,7 +36890,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 42,
 													Line:   48,
 												},
-												File:   "week_test.flux",
+												File:   "week_time_test.flux",
 												Source: "start: 2018-01-01T00:00:00Z",
 												Start: ast.Position{
 													Column: 15,
@@ -35298,7 +36906,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 20,
 														Line:   48,
 													},
-													File:   "week_test.flux",
+													File:   "week_time_test.flux",
 													Source: "start",
 													Start: ast.Position{
 														Column: 15,
@@ -35316,7 +36924,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 42,
 														Line:   48,
 													},
-													File:   "week_test.flux",
+													File:   "week_time_test.flux",
 													Source: "2018-01-01T00:00:00Z",
 													Start: ast.Position{
 														Column: 22,
@@ -35336,7 +36944,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 43,
 											Line:   48,
 										},
-										File:   "week_test.flux",
+										File:   "week_time_test.flux",
 										Source: "range(start: 2018-01-01T00:00:00Z)",
 										Start: ast.Position{
 											Column: 9,
@@ -35352,7 +36960,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 14,
 												Line:   48,
 											},
-											File:   "week_test.flux",
+											File:   "week_time_test.flux",
 											Source: "range",
 											Start: ast.Position{
 												Column: 9,
@@ -35371,7 +36979,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 62,
 									Line:   49,
 								},
-								File:   "week_test.flux",
+								File:   "week_time_test.flux",
 								Source: "table\n\t    |> range(start: 2018-01-01T00:00:00Z)\n\t\t|> map(fn: (r) => ({r with _value: date.week(t: r._time)}))",
 								Start: ast.Position{
 									Column: 3,
@@ -35388,7 +36996,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 61,
 											Line:   49,
 										},
-										File:   "week_test.flux",
+										File:   "week_time_test.flux",
 										Source: "fn: (r) => ({r with _value: date.week(t: r._time)})",
 										Start: ast.Position{
 											Column: 10,
@@ -35404,7 +37012,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 61,
 												Line:   49,
 											},
-											File:   "week_test.flux",
+											File:   "week_time_test.flux",
 											Source: "fn: (r) => ({r with _value: date.week(t: r._time)})",
 											Start: ast.Position{
 												Column: 10,
@@ -35420,7 +37028,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 12,
 													Line:   49,
 												},
-												File:   "week_test.flux",
+												File:   "week_time_test.flux",
 												Source: "fn",
 												Start: ast.Position{
 													Column: 10,
@@ -35438,7 +37046,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 61,
 													Line:   49,
 												},
-												File:   "week_test.flux",
+												File:   "week_time_test.flux",
 												Source: "(r) => ({r with _value: date.week(t: r._time)})",
 												Start: ast.Position{
 													Column: 14,
@@ -35454,7 +37062,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 61,
 														Line:   49,
 													},
-													File:   "week_test.flux",
+													File:   "week_time_test.flux",
 													Source: "({r with _value: date.week(t: r._time)})",
 													Start: ast.Position{
 														Column: 21,
@@ -35470,7 +37078,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 60,
 															Line:   49,
 														},
-														File:   "week_test.flux",
+														File:   "week_time_test.flux",
 														Source: "{r with _value: date.week(t: r._time)}",
 														Start: ast.Position{
 															Column: 22,
@@ -35486,7 +37094,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 59,
 																Line:   49,
 															},
-															File:   "week_test.flux",
+															File:   "week_time_test.flux",
 															Source: "_value: date.week(t: r._time)",
 															Start: ast.Position{
 																Column: 30,
@@ -35502,7 +37110,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 36,
 																	Line:   49,
 																},
-																File:   "week_test.flux",
+																File:   "week_time_test.flux",
 																Source: "_value",
 																Start: ast.Position{
 																	Column: 30,
@@ -35521,7 +37129,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 58,
 																		Line:   49,
 																	},
-																	File:   "week_test.flux",
+																	File:   "week_time_test.flux",
 																	Source: "t: r._time",
 																	Start: ast.Position{
 																		Column: 48,
@@ -35537,7 +37145,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 58,
 																			Line:   49,
 																		},
-																		File:   "week_test.flux",
+																		File:   "week_time_test.flux",
 																		Source: "t: r._time",
 																		Start: ast.Position{
 																			Column: 48,
@@ -35553,7 +37161,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 49,
 																				Line:   49,
 																			},
-																			File:   "week_test.flux",
+																			File:   "week_time_test.flux",
 																			Source: "t",
 																			Start: ast.Position{
 																				Column: 48,
@@ -35571,7 +37179,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Column: 58,
 																				Line:   49,
 																			},
-																			File:   "week_test.flux",
+																			File:   "week_time_test.flux",
 																			Source: "r._time",
 																			Start: ast.Position{
 																				Column: 51,
@@ -35587,7 +37195,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 52,
 																					Line:   49,
 																				},
-																				File:   "week_test.flux",
+																				File:   "week_time_test.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 51,
@@ -35605,7 +37213,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Column: 58,
 																					Line:   49,
 																				},
-																				File:   "week_test.flux",
+																				File:   "week_time_test.flux",
 																				Source: "_time",
 																				Start: ast.Position{
 																					Column: 53,
@@ -35626,7 +37234,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 59,
 																	Line:   49,
 																},
-																File:   "week_test.flux",
+																File:   "week_time_test.flux",
 																Source: "date.week(t: r._time)",
 																Start: ast.Position{
 																	Column: 38,
@@ -35642,7 +37250,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 47,
 																		Line:   49,
 																	},
-																	File:   "week_test.flux",
+																	File:   "week_time_test.flux",
 																	Source: "date.week",
 																	Start: ast.Position{
 																		Column: 38,
@@ -35658,7 +37266,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 42,
 																			Line:   49,
 																		},
-																		File:   "week_test.flux",
+																		File:   "week_time_test.flux",
 																		Source: "date",
 																		Start: ast.Position{
 																			Column: 38,
@@ -35676,7 +37284,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Column: 47,
 																			Line:   49,
 																		},
-																		File:   "week_test.flux",
+																		File:   "week_time_test.flux",
 																		Source: "week",
 																		Start: ast.Position{
 																			Column: 43,
@@ -35697,7 +37305,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 24,
 																Line:   49,
 															},
-															File:   "week_test.flux",
+															File:   "week_time_test.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 23,
@@ -35717,7 +37325,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 16,
 														Line:   49,
 													},
-													File:   "week_test.flux",
+													File:   "week_time_test.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 15,
@@ -35733,7 +37341,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 16,
 															Line:   49,
 														},
-														File:   "week_test.flux",
+														File:   "week_time_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 15,
@@ -35756,7 +37364,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 62,
 										Line:   49,
 									},
-									File:   "week_test.flux",
+									File:   "week_time_test.flux",
 									Source: "map(fn: (r) => ({r with _value: date.week(t: r._time)}))",
 									Start: ast.Position{
 										Column: 6,
@@ -35772,7 +37380,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 9,
 											Line:   49,
 										},
-										File:   "week_test.flux",
+										File:   "week_time_test.flux",
 										Source: "map",
 										Start: ast.Position{
 											Column: 6,
@@ -35793,7 +37401,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 24,
 								Line:   46,
 							},
-							File:   "week_test.flux",
+							File:   "week_time_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 16,
@@ -35809,7 +37417,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 21,
 									Line:   46,
 								},
-								File:   "week_test.flux",
+								File:   "week_time_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 16,
@@ -35826,7 +37434,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 24,
 								Line:   46,
 							},
-							File:   "week_test.flux",
+							File:   "week_time_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 22,
@@ -35845,7 +37453,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 99,
 							Line:   52,
 						},
-						File:   "week_test.flux",
+						File:   "week_time_test.flux",
 						Source: "_time_week = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_week})",
 						Start: ast.Position{
 							Column: 6,
@@ -35861,7 +37469,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 16,
 								Line:   51,
 							},
-							File:   "week_test.flux",
+							File:   "week_time_test.flux",
 							Source: "_time_week",
 							Start: ast.Position{
 								Column: 6,
@@ -35879,7 +37487,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 99,
 								Line:   52,
 							},
-							File:   "week_test.flux",
+							File:   "week_time_test.flux",
 							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_week})",
 							Start: ast.Position{
 								Column: 19,
@@ -35895,7 +37503,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 99,
 									Line:   52,
 								},
-								File:   "week_test.flux",
+								File:   "week_time_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_week})",
 								Start: ast.Position{
 									Column: 2,
@@ -35911,7 +37519,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 98,
 										Line:   52,
 									},
-									File:   "week_test.flux",
+									File:   "week_time_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_week}",
 									Start: ast.Position{
 										Column: 3,
@@ -35927,7 +37535,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 43,
 											Line:   52,
 										},
-										File:   "week_test.flux",
+										File:   "week_time_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
@@ -35943,7 +37551,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 9,
 												Line:   52,
 											},
-											File:   "week_test.flux",
+											File:   "week_time_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 4,
@@ -35962,7 +37570,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 42,
 													Line:   52,
 												},
-												File:   "week_test.flux",
+												File:   "week_time_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 31,
@@ -35978,7 +37586,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 42,
 														Line:   52,
 													},
-													File:   "week_test.flux",
+													File:   "week_time_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 31,
@@ -35994,7 +37602,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 34,
 															Line:   52,
 														},
-														File:   "week_test.flux",
+														File:   "week_time_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 31,
@@ -36012,7 +37620,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 42,
 															Line:   52,
 														},
-														File:   "week_test.flux",
+														File:   "week_time_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 36,
@@ -36032,7 +37640,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 43,
 												Line:   52,
 											},
-											File:   "week_test.flux",
+											File:   "week_time_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
@@ -36048,7 +37656,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 30,
 													Line:   52,
 												},
-												File:   "week_test.flux",
+												File:   "week_time_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 11,
@@ -36064,7 +37672,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 18,
 														Line:   52,
 													},
-													File:   "week_test.flux",
+													File:   "week_time_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
@@ -36082,7 +37690,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   52,
 													},
-													File:   "week_test.flux",
+													File:   "week_time_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 19,
@@ -36102,7 +37710,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 80,
 											Line:   52,
 										},
-										File:   "week_test.flux",
+										File:   "week_time_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
@@ -36118,7 +37726,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 49,
 												Line:   52,
 											},
-											File:   "week_test.flux",
+											File:   "week_time_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 45,
@@ -36137,7 +37745,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 79,
 													Line:   52,
 												},
-												File:   "week_test.flux",
+												File:   "week_time_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 67,
@@ -36153,7 +37761,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 79,
 														Line:   52,
 													},
-													File:   "week_test.flux",
+													File:   "week_time_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 67,
@@ -36169,7 +37777,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 70,
 															Line:   52,
 														},
-														File:   "week_test.flux",
+														File:   "week_time_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 67,
@@ -36187,7 +37795,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 79,
 															Line:   52,
 														},
-														File:   "week_test.flux",
+														File:   "week_time_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 72,
@@ -36207,7 +37815,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 80,
 												Line:   52,
 											},
-											File:   "week_test.flux",
+											File:   "week_time_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
@@ -36223,7 +37831,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 66,
 													Line:   52,
 												},
-												File:   "week_test.flux",
+												File:   "week_time_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 51,
@@ -36239,7 +37847,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 58,
 														Line:   52,
 													},
-													File:   "week_test.flux",
+													File:   "week_time_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 51,
@@ -36257,7 +37865,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 66,
 														Line:   52,
 													},
-													File:   "week_test.flux",
+													File:   "week_time_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 59,
@@ -36277,7 +37885,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 97,
 											Line:   52,
 										},
-										File:   "week_test.flux",
+										File:   "week_time_test.flux",
 										Source: "fn: t_time_week",
 										Start: ast.Position{
 											Column: 82,
@@ -36293,7 +37901,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 84,
 												Line:   52,
 											},
-											File:   "week_test.flux",
+											File:   "week_time_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 82,
@@ -36311,7 +37919,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 97,
 												Line:   52,
 											},
-											File:   "week_test.flux",
+											File:   "week_time_test.flux",
 											Source: "t_time_week",
 											Start: ast.Position{
 												Column: 86,
@@ -36335,7 +37943,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 99,
 						Line:   52,
 					},
-					File:   "week_test.flux",
+					File:   "week_time_test.flux",
 					Source: "test _time_week = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_week})",
 					Start: ast.Position{
 						Column: 1,
@@ -36353,7 +37961,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   3,
 					},
-					File:   "week_test.flux",
+					File:   "week_time_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -36369,7 +37977,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   3,
 						},
-						File:   "week_test.flux",
+						File:   "week_time_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -36388,7 +37996,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 14,
 						Line:   4,
 					},
-					File:   "week_test.flux",
+					File:   "week_time_test.flux",
 					Source: "import \"date\"",
 					Start: ast.Position{
 						Column: 1,
@@ -36404,7 +38012,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   4,
 						},
-						File:   "week_test.flux",
+						File:   "week_time_test.flux",
 						Source: "\"date\"",
 						Start: ast.Position{
 							Column: 8,
@@ -36416,7 +38024,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}},
 		Metadata: "parser-type=rust",
-		Name:     "week_test.flux",
+		Name:     "week_time_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -36425,7 +38033,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 18,
 						Line:   1,
 					},
-					File:   "week_test.flux",
+					File:   "week_time_test.flux",
 					Source: "package date_test",
 					Start: ast.Position{
 						Column: 1,
@@ -36441,7 +38049,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 18,
 							Line:   1,
 						},
-						File:   "week_test.flux",
+						File:   "week_time_test.flux",
 						Source: "date_test",
 						Start: ast.Position{
 							Column: 9,
