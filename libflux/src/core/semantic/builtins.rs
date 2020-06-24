@@ -41,7 +41,7 @@ pub fn builtins() -> Builtins<'static> {
                  "hour" => "forall [] (t: time) -> int",
                  "weekDay" => "forall [] (t: time) -> int",
                  "monthDay" => "forall [] (t: time) -> int",
-                 "yearDay" => "forall [] (t: time) -> int",
+                 "yearDay" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "month" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "year" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "week" => "forall [] (t: time) -> int",
