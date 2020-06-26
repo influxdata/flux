@@ -67,7 +67,7 @@ func (ti *TableIterator) Do(f func(flux.Table) error) error {
 	return nil
 }
 
-// EqualResults compares two lists of Flux Results for equlity
+// EqualResults compares two lists of Flux Results for equality
 func EqualResults(want, got []flux.Result) error {
 	if len(want) != len(got) {
 		return fmt.Errorf("unexpected number of results - want %d results, got %d results", len(want), len(got))
@@ -81,7 +81,7 @@ func EqualResults(want, got []flux.Result) error {
 	return nil
 }
 
-// EqualResultIterators compares two ResultIterators for equlity
+// EqualResultIterators compares two ResultIterators for equality
 func EqualResultIterators(want, got flux.ResultIterator) error {
 	for {
 		if w, g := want.More(), got.More(); w != g {
