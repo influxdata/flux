@@ -11,9 +11,9 @@ import (
 // some characters
 // want those escaped
 
-func TestUrlEncode(t *testing.T) {
+func TestPathEscape(t *testing.T) {
 	x := "random:/#"
-	want := values.NewString("random")
+	want := values.NewString("random:%2F%23")
 
 	args := interpreter.NewArguments(values.NewObjectWithValues(
 		map[string]values.Value{
