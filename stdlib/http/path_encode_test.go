@@ -12,7 +12,7 @@ import (
 // want those escaped
 
 func TestUrlEncode(t *testing.T) {
-	x:= "random:/#"
+	x := "random:/#"
 	want := values.NewString("random")
 
 	args := interpreter.NewArguments(values.NewObjectWithValues(
