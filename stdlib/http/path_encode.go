@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/url"
 
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
-	"github.com/influxdata/flux/interpreter"
 )
 
 func init() {
@@ -23,7 +23,6 @@ var pathEscapeFunc = values.NewFunction(
 	},
 	false,
 )
-
 
 func PathEncode(args interpreter.Arguments) (values.Value, error) {
 	x, err := args.GetRequiredString(inputStringArg)

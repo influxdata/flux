@@ -1848,6 +1848,1701 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Name: "http_test",
 			},
 		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 107,
+					Line:   37,
+				},
+				File:   "http_path_encode_endpoint_test.flux",
+				Source: "package http_test\n\nimport \"testing\"\nimport \"http\"\nimport \"json\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/hellohi!@#\n,,1,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,./random$^%\n,,2,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/#$name#$\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true,true\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path,_sent\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/hellohi!@#,%2Fhellohi%21@%23\n,,1,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,./random$^%,.%2Frandom$%5E%25\n,,2,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/#$name#$,%23$name%23$\n\"\n\n\npath_encode_test = (table=<-) =>\n    table\n        |> range(start:2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with _sent: http.pathEscape(x : r.path)}))\n\ntest _path_encode = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: path_encode_test})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   7,
+						},
+						File:   "http_path_encode_endpoint_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   7,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   7,
+							},
+							File:   "http_path_encode_endpoint_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   7,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   7,
+							},
+							File:   "http_path_encode_endpoint_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   7,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   7,
+								},
+								File:   "http_path_encode_endpoint_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   7,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   7,
+									},
+									File:   "http_path_encode_endpoint_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   7,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   7,
+					},
+					File:   "http_path_encode_endpoint_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   17,
+					},
+					File:   "http_path_encode_endpoint_test.flux",
+					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/hellohi!@#\n,,1,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,./random$^%\n,,2,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/#$name#$\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   9,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   9,
+						},
+						File:   "http_path_encode_endpoint_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   9,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   17,
+						},
+						File:   "http_path_encode_endpoint_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/hellohi!@#\n,,1,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,./random$^%\n,,2,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/#$name#$\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   9,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/hellohi!@#\n,,1,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,./random$^%\n,,2,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/#$name#$\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   27,
+					},
+					File:   "http_path_encode_endpoint_test.flux",
+					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true,true\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path,_sent\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/hellohi!@#,%2Fhellohi%21@%23\n,,1,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,./random$^%,.%2Frandom$%5E%25\n,,2,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/#$name#$,%23$name%23$\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   19,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   19,
+						},
+						File:   "http_path_encode_endpoint_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   19,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   27,
+						},
+						File:   "http_path_encode_endpoint_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true,true\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path,_sent\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/hellohi!@#,%2Fhellohi%21@%23\n,,1,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,./random$^%,.%2Frandom$%5E%25\n,,2,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/#$name#$,%23$name%23$\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   19,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true,true\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path,_sent\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/hellohi!@#,%2Fhellohi%21@%23\n,,1,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,./random$^%,.%2Frandom$%5E%25\n,,2,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/#$name#$,%23$name%23$\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 73,
+						Line:   34,
+					},
+					File:   "http_path_encode_endpoint_test.flux",
+					Source: "path_encode_test = (table=<-) =>\n    table\n        |> range(start:2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with _sent: http.pathEscape(x : r.path)}))",
+					Start: ast.Position{
+						Column: 1,
+						Line:   30,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   30,
+						},
+						File:   "http_path_encode_endpoint_test.flux",
+						Source: "path_encode_test",
+						Start: ast.Position{
+							Column: 1,
+							Line:   30,
+						},
+					},
+				},
+				Name: "path_encode_test",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 73,
+							Line:   34,
+						},
+						File:   "http_path_encode_endpoint_test.flux",
+						Source: "(table=<-) =>\n    table\n        |> range(start:2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with _sent: http.pathEscape(x : r.path)}))",
+						Start: ast.Position{
+							Column: 20,
+							Line:   30,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 10,
+											Line:   31,
+										},
+										File:   "http_path_encode_endpoint_test.flux",
+										Source: "table",
+										Start: ast.Position{
+											Column: 5,
+											Line:   31,
+										},
+									},
+								},
+								Name: "table",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 45,
+										Line:   32,
+									},
+									File:   "http_path_encode_endpoint_test.flux",
+									Source: "table\n        |> range(start:2018-05-22T00:00:00Z)",
+									Start: ast.Position{
+										Column: 5,
+										Line:   31,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 44,
+												Line:   32,
+											},
+											File:   "http_path_encode_endpoint_test.flux",
+											Source: "start:2018-05-22T00:00:00Z",
+											Start: ast.Position{
+												Column: 18,
+												Line:   32,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   32,
+												},
+												File:   "http_path_encode_endpoint_test.flux",
+												Source: "start:2018-05-22T00:00:00Z",
+												Start: ast.Position{
+													Column: 18,
+													Line:   32,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 23,
+														Line:   32,
+													},
+													File:   "http_path_encode_endpoint_test.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 18,
+														Line:   32,
+													},
+												},
+											},
+											Name: "start",
+										},
+										Value: &ast.DateTimeLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   32,
+													},
+													File:   "http_path_encode_endpoint_test.flux",
+													Source: "2018-05-22T00:00:00Z",
+													Start: ast.Position{
+														Column: 24,
+														Line:   32,
+													},
+												},
+											},
+											Value: parser.MustParseTime("2018-05-22T00:00:00Z"),
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   32,
+										},
+										File:   "http_path_encode_endpoint_test.flux",
+										Source: "range(start:2018-05-22T00:00:00Z)",
+										Start: ast.Position{
+											Column: 12,
+											Line:   32,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 17,
+												Line:   32,
+											},
+											File:   "http_path_encode_endpoint_test.flux",
+											Source: "range",
+											Start: ast.Position{
+												Column: 12,
+												Line:   32,
+											},
+										},
+									},
+									Name: "range",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 46,
+									Line:   33,
+								},
+								File:   "http_path_encode_endpoint_test.flux",
+								Source: "table\n        |> range(start:2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 5,
+									Line:   31,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   33,
+										},
+										File:   "http_path_encode_endpoint_test.flux",
+										Source: "columns: [\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 17,
+											Line:   33,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   33,
+											},
+											File:   "http_path_encode_endpoint_test.flux",
+											Source: "columns: [\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 17,
+												Line:   33,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   33,
+												},
+												File:   "http_path_encode_endpoint_test.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 17,
+													Line:   33,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   33,
+												},
+												File:   "http_path_encode_endpoint_test.flux",
+												Source: "[\"_start\", \"_stop\"]",
+												Start: ast.Position{
+													Column: 26,
+													Line:   33,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 35,
+														Line:   33,
+													},
+													File:   "http_path_encode_endpoint_test.flux",
+													Source: "\"_start\"",
+													Start: ast.Position{
+														Column: 27,
+														Line:   33,
+													},
+												},
+											},
+											Value: "_start",
+										}, &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   33,
+													},
+													File:   "http_path_encode_endpoint_test.flux",
+													Source: "\"_stop\"",
+													Start: ast.Position{
+														Column: 37,
+														Line:   33,
+													},
+												},
+											},
+											Value: "_stop",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 46,
+										Line:   33,
+									},
+									File:   "http_path_encode_endpoint_test.flux",
+									Source: "drop(columns: [\"_start\", \"_stop\"])",
+									Start: ast.Position{
+										Column: 12,
+										Line:   33,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 16,
+											Line:   33,
+										},
+										File:   "http_path_encode_endpoint_test.flux",
+										Source: "drop",
+										Start: ast.Position{
+											Column: 12,
+											Line:   33,
+										},
+									},
+								},
+								Name: "drop",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 73,
+								Line:   34,
+							},
+							File:   "http_path_encode_endpoint_test.flux",
+							Source: "table\n        |> range(start:2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> map(fn: (r) => ({r with _sent: http.pathEscape(x : r.path)}))",
+							Start: ast.Position{
+								Column: 5,
+								Line:   31,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 72,
+										Line:   34,
+									},
+									File:   "http_path_encode_endpoint_test.flux",
+									Source: "fn: (r) => ({r with _sent: http.pathEscape(x : r.path)})",
+									Start: ast.Position{
+										Column: 16,
+										Line:   34,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 72,
+											Line:   34,
+										},
+										File:   "http_path_encode_endpoint_test.flux",
+										Source: "fn: (r) => ({r with _sent: http.pathEscape(x : r.path)})",
+										Start: ast.Position{
+											Column: 16,
+											Line:   34,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   34,
+											},
+											File:   "http_path_encode_endpoint_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 16,
+												Line:   34,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.FunctionExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 72,
+												Line:   34,
+											},
+											File:   "http_path_encode_endpoint_test.flux",
+											Source: "(r) => ({r with _sent: http.pathEscape(x : r.path)})",
+											Start: ast.Position{
+												Column: 20,
+												Line:   34,
+											},
+										},
+									},
+									Body: &ast.ParenExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 72,
+													Line:   34,
+												},
+												File:   "http_path_encode_endpoint_test.flux",
+												Source: "({r with _sent: http.pathEscape(x : r.path)})",
+												Start: ast.Position{
+													Column: 27,
+													Line:   34,
+												},
+											},
+										},
+										Expression: &ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 71,
+														Line:   34,
+													},
+													File:   "http_path_encode_endpoint_test.flux",
+													Source: "{r with _sent: http.pathEscape(x : r.path)}",
+													Start: ast.Position{
+														Column: 28,
+														Line:   34,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   34,
+														},
+														File:   "http_path_encode_endpoint_test.flux",
+														Source: "_sent: http.pathEscape(x : r.path)",
+														Start: ast.Position{
+															Column: 36,
+															Line:   34,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 41,
+																Line:   34,
+															},
+															File:   "http_path_encode_endpoint_test.flux",
+															Source: "_sent",
+															Start: ast.Position{
+																Column: 36,
+																Line:   34,
+															},
+														},
+													},
+													Name: "_sent",
+												},
+												Value: &ast.CallExpression{
+													Arguments: []ast.Expression{&ast.ObjectExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 69,
+																	Line:   34,
+																},
+																File:   "http_path_encode_endpoint_test.flux",
+																Source: "x : r.path",
+																Start: ast.Position{
+																	Column: 59,
+																	Line:   34,
+																},
+															},
+														},
+														Properties: []*ast.Property{&ast.Property{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 69,
+																		Line:   34,
+																	},
+																	File:   "http_path_encode_endpoint_test.flux",
+																	Source: "x : r.path",
+																	Start: ast.Position{
+																		Column: 59,
+																		Line:   34,
+																	},
+																},
+															},
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 60,
+																			Line:   34,
+																		},
+																		File:   "http_path_encode_endpoint_test.flux",
+																		Source: "x",
+																		Start: ast.Position{
+																			Column: 59,
+																			Line:   34,
+																		},
+																	},
+																},
+																Name: "x",
+															},
+															Value: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 69,
+																			Line:   34,
+																		},
+																		File:   "http_path_encode_endpoint_test.flux",
+																		Source: "r.path",
+																		Start: ast.Position{
+																			Column: 63,
+																			Line:   34,
+																		},
+																	},
+																},
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 64,
+																				Line:   34,
+																			},
+																			File:   "http_path_encode_endpoint_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 63,
+																				Line:   34,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 69,
+																				Line:   34,
+																			},
+																			File:   "http_path_encode_endpoint_test.flux",
+																			Source: "path",
+																			Start: ast.Position{
+																				Column: 65,
+																				Line:   34,
+																			},
+																		},
+																	},
+																	Name: "path",
+																},
+															},
+														}},
+														With: nil,
+													}},
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 70,
+																Line:   34,
+															},
+															File:   "http_path_encode_endpoint_test.flux",
+															Source: "http.pathEscape(x : r.path)",
+															Start: ast.Position{
+																Column: 43,
+																Line:   34,
+															},
+														},
+													},
+													Callee: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 58,
+																	Line:   34,
+																},
+																File:   "http_path_encode_endpoint_test.flux",
+																Source: "http.pathEscape",
+																Start: ast.Position{
+																	Column: 43,
+																	Line:   34,
+																},
+															},
+														},
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 47,
+																		Line:   34,
+																	},
+																	File:   "http_path_encode_endpoint_test.flux",
+																	Source: "http",
+																	Start: ast.Position{
+																		Column: 43,
+																		Line:   34,
+																	},
+																},
+															},
+															Name: "http",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 58,
+																		Line:   34,
+																	},
+																	File:   "http_path_encode_endpoint_test.flux",
+																	Source: "pathEscape",
+																	Start: ast.Position{
+																		Column: 48,
+																		Line:   34,
+																	},
+																},
+															},
+															Name: "pathEscape",
+														},
+													},
+												},
+											}},
+											With: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 30,
+															Line:   34,
+														},
+														File:   "http_path_encode_endpoint_test.flux",
+														Source: "r",
+														Start: ast.Position{
+															Column: 29,
+															Line:   34,
+														},
+													},
+												},
+												Name: "r",
+											},
+										},
+									},
+									Params: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 22,
+													Line:   34,
+												},
+												File:   "http_path_encode_endpoint_test.flux",
+												Source: "r",
+												Start: ast.Position{
+													Column: 21,
+													Line:   34,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 22,
+														Line:   34,
+													},
+													File:   "http_path_encode_endpoint_test.flux",
+													Source: "r",
+													Start: ast.Position{
+														Column: 21,
+														Line:   34,
+													},
+												},
+											},
+											Name: "r",
+										},
+										Value: nil,
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 73,
+									Line:   34,
+								},
+								File:   "http_path_encode_endpoint_test.flux",
+								Source: "map(fn: (r) => ({r with _sent: http.pathEscape(x : r.path)}))",
+								Start: ast.Position{
+									Column: 12,
+									Line:   34,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   34,
+									},
+									File:   "http_path_encode_endpoint_test.flux",
+									Source: "map",
+									Start: ast.Position{
+										Column: 12,
+										Line:   34,
+									},
+								},
+							},
+							Name: "map",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 29,
+								Line:   30,
+							},
+							File:   "http_path_encode_endpoint_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 21,
+								Line:   30,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   30,
+								},
+								File:   "http_path_encode_endpoint_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 21,
+									Line:   30,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 29,
+								Line:   30,
+							},
+							File:   "http_path_encode_endpoint_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 27,
+								Line:   30,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 107,
+							Line:   37,
+						},
+						File:   "http_path_encode_endpoint_test.flux",
+						Source: "_path_encode = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: path_encode_test})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   36,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   36,
+							},
+							File:   "http_path_encode_endpoint_test.flux",
+							Source: "_path_encode",
+							Start: ast.Position{
+								Column: 6,
+								Line:   36,
+							},
+						},
+					},
+					Name: "_path_encode",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 107,
+								Line:   37,
+							},
+							File:   "http_path_encode_endpoint_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: path_encode_test})",
+							Start: ast.Position{
+								Column: 21,
+								Line:   36,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 107,
+									Line:   37,
+								},
+								File:   "http_path_encode_endpoint_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: path_encode_test})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   37,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 106,
+										Line:   37,
+									},
+									File:   "http_path_encode_endpoint_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: path_encode_test}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   37,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   37,
+										},
+										File:   "http_path_encode_endpoint_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   37,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   37,
+											},
+											File:   "http_path_encode_endpoint_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   37,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   37,
+												},
+												File:   "http_path_encode_endpoint_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 34,
+													Line:   37,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   37,
+													},
+													File:   "http_path_encode_endpoint_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 34,
+														Line:   37,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   37,
+														},
+														File:   "http_path_encode_endpoint_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   37,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 45,
+															Line:   37,
+														},
+														File:   "http_path_encode_endpoint_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 39,
+															Line:   37,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 46,
+												Line:   37,
+											},
+											File:   "http_path_encode_endpoint_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   37,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   37,
+												},
+												File:   "http_path_encode_endpoint_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   37,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   37,
+													},
+													File:   "http_path_encode_endpoint_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   37,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   37,
+													},
+													File:   "http_path_encode_endpoint_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   37,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 83,
+											Line:   37,
+										},
+										File:   "http_path_encode_endpoint_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 48,
+											Line:   37,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 52,
+												Line:   37,
+											},
+											File:   "http_path_encode_endpoint_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 48,
+												Line:   37,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 82,
+													Line:   37,
+												},
+												File:   "http_path_encode_endpoint_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 70,
+													Line:   37,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 82,
+														Line:   37,
+													},
+													File:   "http_path_encode_endpoint_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 70,
+														Line:   37,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 73,
+															Line:   37,
+														},
+														File:   "http_path_encode_endpoint_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 70,
+															Line:   37,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 82,
+															Line:   37,
+														},
+														File:   "http_path_encode_endpoint_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 75,
+															Line:   37,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 83,
+												Line:   37,
+											},
+											File:   "http_path_encode_endpoint_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 54,
+												Line:   37,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 69,
+													Line:   37,
+												},
+												File:   "http_path_encode_endpoint_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 54,
+													Line:   37,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 61,
+														Line:   37,
+													},
+													File:   "http_path_encode_endpoint_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 54,
+														Line:   37,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   37,
+													},
+													File:   "http_path_encode_endpoint_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 62,
+														Line:   37,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 105,
+											Line:   37,
+										},
+										File:   "http_path_encode_endpoint_test.flux",
+										Source: "fn: path_encode_test",
+										Start: ast.Position{
+											Column: 85,
+											Line:   37,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 87,
+												Line:   37,
+											},
+											File:   "http_path_encode_endpoint_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 85,
+												Line:   37,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 105,
+												Line:   37,
+											},
+											File:   "http_path_encode_endpoint_test.flux",
+											Source: "path_encode_test",
+											Start: ast.Position{
+												Column: 89,
+												Line:   37,
+											},
+										},
+									},
+									Name: "path_encode_test",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 107,
+						Line:   37,
+					},
+					File:   "http_path_encode_endpoint_test.flux",
+					Source: "test _path_encode = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: path_encode_test})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   36,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "http_path_encode_endpoint_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "http_path_encode_endpoint_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   4,
+					},
+					File:   "http_path_encode_endpoint_test.flux",
+					Source: "import \"http\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   4,
+						},
+						File:   "http_path_encode_endpoint_test.flux",
+						Source: "\"http\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "http",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   5,
+					},
+					File:   "http_path_encode_endpoint_test.flux",
+					Source: "import \"json\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   5,
+						},
+						File:   "http_path_encode_endpoint_test.flux",
+						Source: "\"json\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "json",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "http_path_encode_endpoint_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 18,
+						Line:   1,
+					},
+					File:   "http_path_encode_endpoint_test.flux",
+					Source: "package http_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 18,
+							Line:   1,
+						},
+						File:   "http_path_encode_endpoint_test.flux",
+						Source: "http_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "http_test",
+			},
+		},
 	}},
 	Package: "http_test",
 	Path:    "http",
