@@ -683,7 +683,7 @@ pub fn builtins() -> Builtins<'static> {
                 // Also, we should remove the column arguments so we can reuse t0 in the return type:
                 //   https://github.com/influxdata/flux/issues/2253
                 "range" => r#"
-                    forall [t0, t1, t2, t3] where t0: Row, t3: Row (
+                    forall [t0, t1, t2, t3] where t0: Row, t1: Timeable, t2: Timeable, t3: Row (
                         <-tables: [t0],
                         start: t1,
                         ?stop: t2,
