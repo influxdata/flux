@@ -169,9 +169,14 @@ type FluxCompiler struct {
 }
 
 func wrapFileJSONInPkg(bs []byte) []byte {
+	source := string(bs)
+	pkgHeader := `{"type":"Package"`
+	if source[0:len(pkgHeader)] == pkgHeader {
+		return bs
+	}
 	return []byte(fmt.Sprintf(
 		`{"type":"Package","package":"main","files":[%s]}`,
-		string(bs)))
+		source))
 }
 
 func IsNonNullJSON(bs json.RawMessage) bool {
@@ -344,7 +349,8 @@ type AstProgram struct {
 	Now time.Time
 }
 
-func (p *AstProgram) getSpec(ctx context.Context, runtime flux.Runtime, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
+// Prepare the AstProgram for semantic analysis
+func (p *AstProgram) Normalize() error {
 	if p.opts == nil {
 		p.opts = defaultOptions()
 	}
@@ -353,20 +359,26 @@ func (p *AstProgram) getSpec(ctx context.Context, runtime flux.Runtime, alloc *m
 	}
 	if p.opts.extern != nil {
 		extern := p.opts.extern
-		if err := runtime.MergePackages(extern, p.Ast); err != nil {
-			return nil, nil, err
+		if err := p.Runtime.MergePackages(extern, p.Ast); err != nil {
+			return err
 		}
 		p.Ast = extern
 		p.opts.extern = nil
 	}
+	return nil
+}
 
+func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
+	if err := p.Normalize(); err != nil {
+		return nil, nil, err
+	}
 	// The program must inject execution dependencies to make it available to
 	// function calls during the evaluation phase (see `tableFind`).
 	deps := execdeps.NewExecutionDependencies(alloc, &p.Now, p.Logger)
 	ctx = deps.Inject(ctx)
 
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-	sideEffects, scope, err := runtime.Eval(cctx, p.Ast, flux.SetNowOption(p.Now))
+	sideEffects, scope, err := p.Runtime.Eval(cctx, p.Ast, flux.SetNowOption(p.Now))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -391,7 +403,7 @@ func (p *AstProgram) getSpec(ctx context.Context, runtime flux.Runtime, alloc *m
 }
 
 func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
-	sp, scope, err := p.getSpec(ctx, p.Runtime, alloc)
+	sp, scope, err := p.getSpec(ctx, alloc)
 	if err != nil {
 		return nil, err
 	}
