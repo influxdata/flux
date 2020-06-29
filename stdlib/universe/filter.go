@@ -359,3 +359,5 @@ func (RemoveTrivialFilterRule) Rewrite(ctx context.Context, filterNode plan.Node
 	anyNode := filterNode.Predecessors()[0]
 	return anyNode, true, nil
 }
+
+// MergeFiltersRule merges Filter nodes whose body is a single return to create one Filter node.
