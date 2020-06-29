@@ -82,7 +82,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/jsternberg/rows/rows.flux":                                      "0340fe93cf14f021b0f2c39ea555c7801fe6504739180acc6f0e6f2fb2b9fec2",
 =======
 	"libflux/src/flux/lib.rs":                                                       "2ba8ed60affa0dc1a060b3cc86e94308ecdf644d282352cbefabaa4496c7fb24",
-	"stdlib/contrib/anaisdg/anomalydetection/mad.flux":                              "1499fbceaa35d47d0370b3b4d49d9bad9e698e9ee81e3f266cf31b2c5a703575",
+	"stdlib/contrib/anaisdg/anomalydetection/mad.flux":                              "2c746c88b89c7eda52286d6b8a7c87870891fccc93e44b1a7d79282e5d659f40",
 	"stdlib/contrib/anaisdg/anomalydetection/mad_test.flux":                         "b2ae12b269d8829c090e1b648b69add685de2a7ba8a99727ce65faadc4f28762",
 	"stdlib/contrib/anaisdg/statsmodels/linearreg.flux":                             "40462dcbd21d19354d40e1795db7bc870fe0e210630e29d1035904438b49f3da",
 	"stdlib/contrib/anaisdg/statsmodels/linearreg_test.flux":                        "a1700ed0a26ea9fe2b1eb4a7fa74eb86662578cb523737b70ede2b4ca0c346bd",
