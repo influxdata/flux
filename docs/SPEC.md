@@ -569,6 +569,64 @@ This is structural polymorphism, records of differing types can be used as the s
 
 This form of polymorphism means that these checks are performed during type inference and not during runtime. Type errors are found and reported before runtime.
 
+#### Kind Constraints
+
+Kind constraints are a type system concept that allow for constraining polymorphic types.
+For example, `add = (a, b) => a + b` is a function that is defined only for `Addable` types.
+If one were to pass a record to `add` like so:
+
+    add(a: {}, b: {})
+
+the result would be a compile-time type error because records are not addable.
+Just like types, kind constraints are never explicitly declared but rather inferred from the context.
+
+##### Addable Constraint
+
+Addable types are those the binary arithmetic operator `+` accepts.
+Int, Uint, Float, and String types are Addable.
+
+##### Subtractable Constraint
+
+Subtractable types are those the binary arithmetic operator `-` accepts.
+Int, Uint, and Float types are Subtractable.
+
+##### Divisible Constraint
+
+Divisible types are those the binary arithmetic operator `\` accepts.
+Int, Uint, and Float types are Divisible.
+
+##### Numeric Constraint
+
+Int, Uint, and Float types are Numeric.
+
+##### Comparable Constraint
+
+Comparable types are those the binary comparison operators `<`, `<=`, `>`, or `>=` accept.
+Int, Uint, Float, String, Duration, and Time types are Comparable.
+
+##### Equatable Constraint
+
+Equatable types are those that can be compared for equality using the `==` or `!=` operators.
+Bool, Int, Uint, Float, String, Duration, Time, Bytes, Array, and Record types are Equatable.
+
+##### Nullable Constraint
+
+Nullable types are those that can be null.
+Bool, Int, Uint, Float, String, Duration, and Time types are Nullable.
+
+##### Row Constraint
+
+Records are the only types of kind Row.
+
+##### Negatable Constraint
+
+Negatable types ore those the unary arithmetic operator `-` accepts.
+Int, Uint, Float, and Duration types are Negatable.
+
+##### Timeable Constraint
+
+Duration and Time types are Timeable.
+
 ### Blocks
 
 A _block_ is a possibly empty sequence of statements within matching brace brackets.
