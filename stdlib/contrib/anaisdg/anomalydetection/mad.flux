@@ -12,7 +12,7 @@ mad = (table=<-, threshold=3.0) => {
     |> map(fn: (r) => ({ r with _value: math.abs(x: r._value_data - r._value_med) }))
     |> drop(columns: ["_start", "_stop", "_value_med", "_value_data"])
     // The constant k is needed to make the estimator consistent for the parameter of interest.
-    // In the case of the usual parameter a at Gaussian distributions k = 1.4826
+    // In the case of the usual parameter at Gaussian distributions k = 1.4826
     k = 1.4826
     // MAD =  k * MEDi * |Xi - MEDiXi| 
     diff_med =
