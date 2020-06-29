@@ -361,3 +361,39 @@ func (RemoveTrivialFilterRule) Rewrite(ctx context.Context, filterNode plan.Node
 }
 
 // MergeFiltersRule merges Filter nodes whose body is a single return to create one Filter node.
+type MergeFiltersRule struct{}
+
+func (MergeFiltersRule) Name() string {
+	return "MergeFiltersRule"
+}
+
+// need to think of pattern
+func (MergeFiltersRule) Pattern() plan.Pattern {
+	return plan.Pat(FilterKind, plan.Pat(FilterKind, plan.Any()))
+}
+
+// need to edit this
+func (MergeFiltersRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan.Node, bool, error) {
+	// rewrite only iff both have single expression and make it one expressom and anynode = current node but get rid of one below
+	// change where filter is pointing
+	filterNode = filterNode.Successors()[0]
+	// conditions
+	filterSpec := filterNode.ProcedureSpec().(*FilterProcedureSpec)
+	if filterSpec.Fn.Fn == nil ||
+		filterSpec.Fn.Fn.Block == nil ||
+		filterSpec.Fn.Fn.Block.Body == nil {
+		return filterNode, false, nil
+	}
+
+	if bodyExpr, ok := filterSpec.Fn.Fn.GetFunctionBodyExpression(); !ok {
+		// Not an expression.
+		return filterNode, false, nil
+	} else if expr, ok := bodyExpr.(*semantic.BooleanLiteral); !ok || !expr.Value {
+		// Either not a boolean at all, or evaluates to false.
+		return filterNode, false, nil
+	}
+
+	// return should stay the same
+	anyNode := filterNode.Predecessors()[0]
+	return anyNode, true, nil
+}
