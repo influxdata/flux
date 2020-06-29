@@ -185,6 +185,7 @@ func NewSnowflakeRowReader(r *sql.Rows) (execute.RowReader, error) {
 var fluxToSnowflake = map[flux.ColType]string{
 	flux.TFloat:  "FLOAT",
 	flux.TInt:    "NUMBER",
+	flux.TUInt:   "NUMBER",
 	flux.TString: "TEXT",
 	flux.TBool:   "BOOLEAN",
 	flux.TTime:   "TIMESTAMP_LTZ",
