@@ -49,6 +49,7 @@ jobs:
   test-race:
     docker:
       - image: quay.io/influxdb/flux-build:latest
+    resource_class: large
     environment:
       GOPATH: /tmp/go
       GOFLAGS: -p=8
