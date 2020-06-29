@@ -79,8 +79,8 @@ github.com/aws/aws-sdk-go v1.29.16 h1:Gbtod7Y4W/Ai7wPtesdvgGVTkFN8JxAaGouRLlcQfQ
 github.com/aws/aws-sdk-go v1.29.16/go.mod h1:1KvfttTE3SPKMpo8g2c6jL3ZKfXtFvKscTgahTma5Xg=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
-github.com/bonitoo-io/go-sql-bigquery v0.3.3 h1:6FGqqt/ZvIFGTlQ9bG3yqcROVZb3MRoRopZFj7nMi8g=
-github.com/bonitoo-io/go-sql-bigquery v0.3.3/go.mod h1:NZ1qs5SiF6P18zpqsRKi1ZMm9PFCYFZ3BGvI3OIE/Vk=
+github.com/bonitoo-io/go-sql-bigquery v0.3.4 h1:6zWRxBxJ3tzkkQeTvbRrMuO4zU5FfpT8NWRrkUesA3I=
+github.com/bonitoo-io/go-sql-bigquery v0.3.4/go.mod h1:zsdVEN/2BfaHBrw956U8lq7rDMk3TLaraEVdRwwvxzk=
 github.com/c-bata/go-prompt v0.2.2 h1:uyKRz6Z6DUyj49QVijyM339UJV9yhbr70gESwbNU3e0=
 github.com/c-bata/go-prompt v0.2.2/go.mod h1:VzqtzE2ksDBcdln8G7mk2RX9QyGjH+OVqOCSiVIqS34=
 github.com/cactus/go-statsd-client/statsd v0.0.0-20191106001114-12b4e2b38748/go.mod h1:l/bIBLeOl9eX+wxJAzxS4TveKRtAqlyDpHjhkfO0MEI=

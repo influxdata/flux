@@ -5,14 +5,13 @@ go 1.12
 require (
 	cloud.google.com/go v0.57.0
 	cloud.google.com/go/bigtable v1.3.0
-	cloud.google.com/go/pubsub v1.3.1 // indirect
 	github.com/Azure/go-autorest/autorest v0.10.1
 	github.com/Azure/go-autorest/autorest/adal v0.8.3
 	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
 	github.com/DATA-DOG/go-sqlmock v1.4.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/apache/arrow/go/arrow v0.0.0-20191024131854-af6fa24be0db
-	github.com/bonitoo-io/go-sql-bigquery v0.3.3
+	github.com/bonitoo-io/go-sql-bigquery v0.3.4
 	github.com/c-bata/go-prompt v0.2.2
 	github.com/cespare/xxhash v1.1.0
 	github.com/dave/jennifer v1.2.0
