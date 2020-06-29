@@ -25,8 +25,11 @@ func NewBuilderContext(tbl flux.Table) *BuilderContext {
 		colMap[i] = i
 	}
 
+	cols := make([]flux.ColMeta, len(tbl.Cols()))
+	copy(cols, tbl.Cols())
+
 	return &BuilderContext{
-		TableColumns: tbl.Cols(),
+		TableColumns: cols,
 		TableKey:     tbl.Key(),
 		ColIdxMap:    colMap,
 	}
