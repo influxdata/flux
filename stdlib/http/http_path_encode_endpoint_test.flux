@@ -31,7 +31,7 @@ path_encode_test = (table=<-) =>
     table
         |> range(start:2018-05-22T00:00:00Z)
         |> drop(columns: ["_start", "_stop"])
-        |> map(fn: (r) => ({r with _sent: http.pathEscape(x : r.path)}))
+        |> map(fn: (r) => ({r with _sent: http.pathEscape(inputString : r.path)}))
 
 test _path_encode = () =>
     ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: path_encode_test})

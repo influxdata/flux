@@ -13,7 +13,7 @@ func init() {
 	runtime.RegisterPackageValue("http", "pathEscape", pathEscapeFunc)
 }
 
-const inputStringArg = "x"
+const inputStringArg = "inputString"
 
 var pathEscapeFunc = values.NewFunction(
 	"pathEscape",
@@ -25,9 +25,9 @@ var pathEscapeFunc = values.NewFunction(
 )
 
 func PathEncode(args interpreter.Arguments) (values.Value, error) {
-	x, err := args.GetRequiredString(inputStringArg)
+	inputString, err := args.GetRequiredString(inputStringArg)
 	if err != nil {
 		return nil, err
 	}
-	return values.NewString(url.PathEscape(x)), nil
+	return values.NewString(url.PathEscape(inputString)), nil
 }

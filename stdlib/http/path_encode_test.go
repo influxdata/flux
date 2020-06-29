@@ -8,16 +8,13 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-// some characters
-// want those escaped
-
 func TestPathEscape(t *testing.T) {
-	x := "random:/#"
+	inputString := "random:/#"
 	want := values.NewString("random:%2F%23")
 
 	args := interpreter.NewArguments(values.NewObjectWithValues(
 		map[string]values.Value{
-			"x": values.NewString(x),
+			"inputString": values.NewString(inputString),
 		}),
 	)
 
