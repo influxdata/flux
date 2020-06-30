@@ -364,8 +364,9 @@ func (p *AstProgram) GetAst() (flux.ASTHandle, error) {
 }
 
 func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
-	if _, err := p.GetAst(); err != nil {
-		return nil, nil, err
+	ast, astErr := p.GetAst()
+	if astErr != nil {
+		return nil, nil, astErr
 	}
 
 	// The program must inject execution dependencies to make it available to
@@ -374,7 +375,7 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 	ctx = deps.Inject(ctx)
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
 
-	sideEffects, scope, err := p.Runtime.Eval(cctx, p.Ast, flux.SetNowOption(p.Now))
+	sideEffects, scope, err := p.Runtime.Eval(cctx, ast, flux.SetNowOption(p.Now))
 	if err != nil {
 		return nil, nil, err
 	}
