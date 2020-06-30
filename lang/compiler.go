@@ -344,35 +344,36 @@ type AstProgram struct {
 	Now time.Time
 }
 
-// Merge the extern code into the main package.
-func (p *AstProgram) MergeExtern() error {
-	if p.opts != nil && p.opts.extern != nil {
-		extern := p.opts.extern
-		if err := p.Runtime.MergePackages(extern, p.Ast); err != nil {
-			return err
-		}
-		p.Ast = extern
-		p.opts.extern = nil
-	}
-	return nil
-}
-
-func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
+// Prepare the Ast for semantic analysis
+func (p *AstProgram) GetAst() (flux.ASTHandle, error) {
 	if p.Now.IsZero() {
 		p.Now = time.Now()
 	}
 	if p.opts == nil {
 		p.opts = defaultOptions()
 	}
-	if err := p.MergeExtern(); err != nil {
+	if p.opts.extern != nil {
+		extern := p.opts.extern
+		if err := p.Runtime.MergePackages(extern, p.Ast); err != nil {
+			return nil, err
+		}
+		p.Ast = extern
+		p.opts.extern = nil
+	}
+	return p.Ast, nil
+}
+
+func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
+	if _, err := p.GetAst(); err != nil {
 		return nil, nil, err
 	}
+
 	// The program must inject execution dependencies to make it available to
 	// function calls during the evaluation phase (see `tableFind`).
 	deps := execdeps.NewExecutionDependencies(alloc, &p.Now, p.Logger)
 	ctx = deps.Inject(ctx)
-
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
+
 	sideEffects, scope, err := p.Runtime.Eval(cctx, p.Ast, flux.SetNowOption(p.Now))
 	if err != nil {
 		return nil, nil, err
