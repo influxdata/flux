@@ -8,276 +8,13 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/querytest"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values/valuestest"
 )
 
-func TestSchemaMutions_NewQueries(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
-		{
-			Name: "test rename query",
-			Raw:  `from(bucket:"mybucket") |> rename(columns:{old:"new"}) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID: "from0",
-						Spec: &influxdb.FromOpSpec{
-							Bucket: influxdb.NameOrID{Name: "mybucket"},
-						},
-					},
-					{
-						ID: "rename1",
-						Spec: &universe.RenameOpSpec{
-							Columns: map[string]string{
-								"old": "new",
-							},
-						},
-					},
-					{
-						ID: "sum2",
-						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
-						},
-					},
-				},
-				Edges: []flux.Edge{
-					{Parent: "from0", Child: "rename1"},
-					{Parent: "rename1", Child: "sum2"},
-				},
-			},
-		},
-		{
-			Name: "test drop query",
-			Raw:  `from(bucket:"mybucket") |> drop(columns:["col1", "col2", "col3"]) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID: "from0",
-						Spec: &influxdb.FromOpSpec{
-							Bucket: influxdb.NameOrID{Name: "mybucket"},
-						},
-					},
-					{
-						ID: "drop1",
-						Spec: &universe.DropOpSpec{
-							Columns: []string{"col1", "col2", "col3"},
-						},
-					},
-					{
-						ID: "sum2",
-						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
-						},
-					},
-				},
-				Edges: []flux.Edge{
-					{Parent: "from0", Child: "drop1"},
-					{Parent: "drop1", Child: "sum2"},
-				},
-			},
-		},
-		{
-			Name: "test keep query",
-			Raw:  `from(bucket:"mybucket") |> keep(columns:["col1", "col2", "col3"]) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID: "from0",
-						Spec: &influxdb.FromOpSpec{
-							Bucket: influxdb.NameOrID{Name: "mybucket"},
-						},
-					},
-					{
-						ID: "keep1",
-						Spec: &universe.KeepOpSpec{
-							Columns: []string{"col1", "col2", "col3"},
-						},
-					},
-					{
-						ID: "sum2",
-						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
-						},
-					},
-				},
-				Edges: []flux.Edge{
-					{Parent: "from0", Child: "keep1"},
-					{Parent: "keep1", Child: "sum2"},
-				},
-			},
-		},
-		{
-			Name: "test duplicate query",
-			Raw:  `from(bucket:"mybucket") |> duplicate(column: "col1", as: "col1_new") |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID: "from0",
-						Spec: &influxdb.FromOpSpec{
-							Bucket: influxdb.NameOrID{Name: "mybucket"},
-						},
-					},
-					{
-						ID: "duplicate1",
-						Spec: &universe.DuplicateOpSpec{
-							Column: "col1",
-							As:     "col1_new",
-						},
-					},
-					{
-						ID: "sum2",
-						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
-						},
-					},
-				},
-				Edges: []flux.Edge{
-					{Parent: "from0", Child: "duplicate1"},
-					{Parent: "duplicate1", Child: "sum2"},
-				},
-			},
-		},
-		{
-			Name: "test drop query fn param",
-			Raw:  `from(bucket:"mybucket") |> drop(fn: (column) => column =~ /reg*/) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID: "from0",
-						Spec: &influxdb.FromOpSpec{
-							Bucket: influxdb.NameOrID{Name: "mybucket"},
-						},
-					},
-					{
-						ID: "drop1",
-						Spec: &universe.DropOpSpec{
-							Predicate: interpreter.ResolvedFunction{
-								Fn:    executetest.FunctionExpression(t, "(column) => column =~ /reg*/"),
-								Scope: valuestest.Scope(),
-							},
-						},
-					},
-					{
-						ID: "sum2",
-						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
-						},
-					},
-				},
-				Edges: []flux.Edge{
-					{Parent: "from0", Child: "drop1"},
-					{Parent: "drop1", Child: "sum2"},
-				},
-			},
-		},
-		{
-			Name: "test keep query fn param",
-			Raw:  `from(bucket:"mybucket") |> keep(fn: (column) => column =~ /reg*/) |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID: "from0",
-						Spec: &influxdb.FromOpSpec{
-							Bucket: influxdb.NameOrID{Name: "mybucket"},
-						},
-					},
-					{
-						ID: "keep1",
-						Spec: &universe.KeepOpSpec{
-							Predicate: interpreter.ResolvedFunction{
-								Fn:    executetest.FunctionExpression(t, "(column) => column =~ /reg*/"),
-								Scope: valuestest.Scope(),
-							},
-						},
-					},
-					{
-						ID: "sum2",
-						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
-						},
-					},
-				},
-				Edges: []flux.Edge{
-					{Parent: "from0", Child: "keep1"},
-					{Parent: "keep1", Child: "sum2"},
-				},
-			},
-		},
-		{
-			Name: "test rename query fn param",
-			Raw:  `from(bucket:"mybucket") |> rename(fn: (column) => "new_name") |> sum()`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID: "from0",
-						Spec: &influxdb.FromOpSpec{
-							Bucket: influxdb.NameOrID{Name: "mybucket"},
-						},
-					},
-					{
-						ID: "rename1",
-						Spec: &universe.RenameOpSpec{
-							Fn: interpreter.ResolvedFunction{
-								Fn:    executetest.FunctionExpression(t, `(column) => "new_name"`),
-								Scope: valuestest.Scope(),
-							},
-						},
-					},
-					{
-						ID: "sum2",
-						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
-						},
-					},
-				},
-				Edges: []flux.Edge{
-					{Parent: "from0", Child: "rename1"},
-					{Parent: "rename1", Child: "sum2"},
-				},
-			},
-		},
-		{
-			Name:    "test rename query invalid",
-			Raw:     `from(bucket:"mybucket") |> rename(fn: (column) => "new_name", columns: {a:"b", c:"d"}) |> sum()`,
-			Want:    nil,
-			WantErr: true,
-		},
-		{
-			Name:    "test drop query invalid",
-			Raw:     `from(bucket:"mybucket") |> drop(fn: (column) => column == target, columns: ["a", "b"]) |> sum()`,
-			Want:    nil,
-			WantErr: true,
-		},
-		{
-			Name:    "test keep query invalid",
-			Raw:     `from(bucket:"mybucket") |> keep(fn: (column) => column == target, columns: ["a", "b"]) |> sum()`,
-			Want:    nil,
-			WantErr: true,
-		},
-		{
-			Name:    "test duplicate query invalid",
-			Raw:     `from(bucket:"mybucket") |> duplicate(columns: ["a", "b"], n: -1) |> sum()`,
-			Want:    nil,
-			WantErr: true,
-		},
-	}
-
-	for _, tc := range tests {
-		tc := tc
-		t.Run(tc.Name, func(t *testing.T) {
-			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
-		})
-	}
-}
-
-func TestDropRenameKeep_Process(t *testing.T) {
+func TestDropRenameKeep_Deprecated_Process(t *testing.T) {
 	testCases := []struct {
 		name    string
 		spec    plan.ProcedureSpec
@@ -439,19 +176,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			want: []*executetest.Table{{
-				ColMeta: []flux.ColMeta{
-					{Label: "a", Type: flux.TString},
-					{Label: "c", Type: flux.TFloat},
-				},
-				KeyCols: []string{"a"},
-				Data: [][]interface{}{
-					{"one", 3.0},
-					{"one", 13.0},
-					{"one", nil},
-					{"one", nil},
-				},
-			}},
+			wantErr: errors.New("requested operation merges tables with different numbers of columns for group key {a=one}"),
 		},
 		{
 			name: "drop key col merge error column type",
@@ -488,7 +213,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			wantErr: errors.New("schema collision detected: column \"c\" is both of type string and float"),
+			wantErr: errors.New("requested operation merges tables with different schemas for group key {a=one}"),
 		},
 		{
 			name: "drop no exist",
@@ -639,19 +364,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			want: []*executetest.Table{{
-				ColMeta: []flux.ColMeta{
-					{Label: "a", Type: flux.TString},
-					{Label: "c", Type: flux.TFloat},
-				},
-				KeyCols: []string{"a"},
-				Data: [][]interface{}{
-					{"one", 3.0},
-					{"one", 13.0},
-					{"one", nil},
-					{"one", nil},
-				},
-			}},
+			wantErr: errors.New("requested operation merges tables with different numbers of columns for group key {a=one}"),
 		},
 		{
 			name: "keep one key col merge error column type",
@@ -688,7 +401,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			wantErr: errors.New("schema collision detected: column \"c\" is both of type string and float"),
+			wantErr: errors.New("requested operation merges tables with different schemas for group key {a=one}"),
 		},
 		{
 			name: "duplicate single col",
@@ -750,7 +463,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					{21.0, 22.0, 23.0},
 				},
 			}},
-			wantErr: errors.New("column 0 and 1 have the same name (\"new_name\") which is not allowed"),
+			wantErr: errors.New("table builder already has column with label new_name"),
 		},
 		{
 			name: "drop predicate (column) => column ~= /reg/",
@@ -942,8 +655,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []flux.ColMeta{},
-				Data:    [][]interface{}(nil),
+				Data: [][]interface{}(nil),
 			}},
 		},
 		{
@@ -1499,121 +1211,20 @@ func TestDropRenameKeep_Process(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// t.Skip("https://github.com/influxdata/flux/issues/2490")
-			executetest.ProcessTestHelper2(
+			executetest.ProcessTestHelper(
 				t,
 				tc.data,
 				tc.want,
 				tc.wantErr,
-				func(id execute.DatasetID, mem *memory.Allocator) (execute.Transformation, execute.Dataset) {
+				func(d execute.Dataset, cache execute.TableBuilderCache) execute.Transformation {
 					spec := tc.spec.(*universe.SchemaMutationProcedureSpec)
-					tr, d, err := universe.NewSchemaMutationTransformation(context.Background(), spec, id, mem)
+					tr, err := universe.NewDeprecatedSchemaMutationTransformation(context.Background(), spec, d, cache)
 					if err != nil {
 						t.Fatal(err)
 					}
-					return tr, d
+					return tr
 				},
 			)
 		})
 	}
-}
-
-// TODO: determine SchemaMutationProcedureSpec pushdown/rewrite rules
-/*
-func TestRenameDrop_PushDown(t *testing.T) {
-	m1, _ := functions.NewRenameMutator(&functions.RenameOpSpec{
-		Cols: map[string]string{},
-	})
-
-	root := &plan.Procedure{
-		Spec: &functions.SchemaMutationProcedureSpec{
-			Mutations: []functions.SchemaMutator{m1},
-		},
-	}
-
-	m2, _ := functions.NewDropKeepMutator(&functions.DropOpSpec{
-		Cols: []string{},
-	})
-
-	m3, _ := functions.NewDropKeepMutator(&functions.KeepOpSpec{
-		Cols: []string{},
-	})
-
-	spec := &functions.SchemaMutationProcedureSpec{
-		Mutations: []functions.SchemaMutator{m2, m3},
-	}
-
-	want := &plan.Procedure{
-		Spec: &functions.SchemaMutationProcedureSpec{
-			Mutations: []functions.SchemaMutator{m1, m2, m3},
-		},
-	}
-	plantest.PhysicalPlan_PushDown_TestHelper(t, spec, root, false, want)
-}
-*/
-
-func BenchmarkKeep_Values(b *testing.B) {
-	b.Run("1000", func(b *testing.B) {
-		benchmarkSchemaMutator(b, 1000, &universe.KeepOpSpec{
-			Columns: []string{"_measurement", "t0"},
-		})
-	})
-}
-
-func BenchmarkDrop_Values(b *testing.B) {
-	b.Run("1000", func(b *testing.B) {
-		benchmarkSchemaMutator(b, 1000, &universe.DropOpSpec{
-			Columns: []string{"_measurement", "_field"},
-		})
-	})
-}
-
-func BenchmarkRename_Values(b *testing.B) {
-	b.Run("1000", func(b *testing.B) {
-		benchmarkSchemaMutator(b, 1000, &universe.RenameOpSpec{
-			Columns: map[string]string{
-				"_measurement": "m",
-				"_field":       "f",
-			},
-		})
-	})
-}
-
-func BenchmarkDuplicate_Values(b *testing.B) {
-	b.Run("1000", func(b *testing.B) {
-		benchmarkSchemaMutator(b, 1000, &universe.DuplicateOpSpec{
-			Column: "_value",
-			As:     "_prev_value",
-		})
-	})
-}
-
-func benchmarkSchemaMutator(b *testing.B, n int, m universe.SchemaMutation) {
-	b.ReportAllocs()
-	spec := &universe.SchemaMutationProcedureSpec{
-		Mutations: []universe.SchemaMutation{m},
-	}
-	executetest.ProcessBenchmarkHelper(b,
-		func(alloc *memory.Allocator) (flux.TableIterator, error) {
-			schema := gen.Schema{
-				NumPoints: n,
-				Alloc:     alloc,
-				Tags: []gen.Tag{
-					{Name: "_measurement", Cardinality: 1},
-					{Name: "_field", Cardinality: 6},
-					{Name: "t0", Cardinality: 100},
-					{Name: "t1", Cardinality: 50},
-				},
-				Nulls: 0.1,
-			}
-			return gen.Input(context.Background(), schema)
-		},
-		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-			t, d, err := universe.NewSchemaMutationTransformation(context.Background(), spec, id, alloc)
-			if err != nil {
-				b.Fatal(err)
-			}
-			return t, d
-		},
-	)
 }
