@@ -349,15 +349,9 @@ type AstProgram struct {
 	Now time.Time
 }
 
-// Prepare the AstProgram for semantic analysis
-func (p *AstProgram) Normalize() error {
-	if p.opts == nil {
-		p.opts = defaultOptions()
-	}
-	if p.Now.IsZero() {
-		p.Now = time.Now()
-	}
-	if p.opts.extern != nil {
+// Merge the extern code into the main package.
+func (p *AstProgram) MergeExtern() error {
+	if p.opts != nil && p.opts.extern != nil {
 		extern := p.opts.extern
 		if err := p.Runtime.MergePackages(extern, p.Ast); err != nil {
 			return err
@@ -369,7 +363,13 @@ func (p *AstProgram) Normalize() error {
 }
 
 func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
-	if err := p.Normalize(); err != nil {
+	if p.Now.IsZero() {
+		p.Now = time.Now()
+	}
+	if p.opts == nil {
+		p.opts = defaultOptions()
+	}
+	if err := p.MergeExtern(); err != nil {
 		return nil, nil, err
 	}
 	// The program must inject execution dependencies to make it available to
