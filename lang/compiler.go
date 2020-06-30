@@ -169,14 +169,9 @@ type FluxCompiler struct {
 }
 
 func wrapFileJSONInPkg(bs []byte) []byte {
-	source := string(bs)
-	pkgHeader := `{"type":"Package"`
-	if source[0:len(pkgHeader)] == pkgHeader {
-		return bs
-	}
 	return []byte(fmt.Sprintf(
 		`{"type":"Package","package":"main","files":[%s]}`,
-		source))
+		string(bs)))
 }
 
 func IsNonNullJSON(bs json.RawMessage) bool {
