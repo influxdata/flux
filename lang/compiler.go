@@ -344,29 +344,38 @@ type AstProgram struct {
 	Now time.Time
 }
 
-func (p *AstProgram) getSpec(ctx context.Context, runtime flux.Runtime, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
-	if p.opts == nil {
-		p.opts = defaultOptions()
-	}
+// Prepare the Ast for semantic analysis
+func (p *AstProgram) GetAst() (flux.ASTHandle, error) {
 	if p.Now.IsZero() {
 		p.Now = time.Now()
 	}
+	if p.opts == nil {
+		p.opts = defaultOptions()
+	}
 	if p.opts.extern != nil {
 		extern := p.opts.extern
-		if err := runtime.MergePackages(extern, p.Ast); err != nil {
-			return nil, nil, err
+		if err := p.Runtime.MergePackages(extern, p.Ast); err != nil {
+			return nil, err
 		}
 		p.Ast = extern
 		p.opts.extern = nil
+	}
+	return p.Ast, nil
+}
+
+func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
+	ast, astErr := p.GetAst()
+	if astErr != nil {
+		return nil, nil, astErr
 	}
 
 	// The program must inject execution dependencies to make it available to
 	// function calls during the evaluation phase (see `tableFind`).
 	deps := execdeps.NewExecutionDependencies(alloc, &p.Now, p.Logger)
 	ctx = deps.Inject(ctx)
-
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-	sideEffects, scope, err := runtime.Eval(cctx, p.Ast, flux.SetNowOption(p.Now))
+
+	sideEffects, scope, err := p.Runtime.Eval(cctx, ast, flux.SetNowOption(p.Now))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -391,7 +400,7 @@ func (p *AstProgram) getSpec(ctx context.Context, runtime flux.Runtime, alloc *m
 }
 
 func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
-	sp, scope, err := p.getSpec(ctx, p.Runtime, alloc)
+	sp, scope, err := p.getSpec(ctx, alloc)
 	if err != nil {
 		return nil, err
 	}

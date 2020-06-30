@@ -11,7 +11,7 @@ pub type Result<T> = result::Result<T, SemanticError>;
 /// the provided fresher.
 ///
 /// Note: most external callers of this function will want to use the analyze()
-/// function in the libstd crate instead, which is aware of everything in the Flux stdlib and prelude.
+/// function in the flux crate instead, which is aware of everything in the Flux stdlib and prelude.
 ///
 /// The function explicitly moves the ast::Package because it adds information to it.
 /// We follow here the principle that every compilation step should be isolated and should add meaning
