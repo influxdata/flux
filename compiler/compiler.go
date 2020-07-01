@@ -127,7 +127,7 @@ func substituteTypes(subst map[uint64]semantic.MonoType, inType, in semantic.Mon
 			return err
 		}
 
-		rt, err := inType.ElemType()
+		rt, err := in.ElemType()
 		if err != nil {
 			return err
 		}
