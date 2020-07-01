@@ -127,6 +127,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/query/from.flux":                                           "1b09f777b01b83777d5c0d8754ef6f012ef1e7f4124882292dac3b36b35101fc",
 	"stdlib/experimental/set_test.flux":                                             "8a713dc4c5b4bce0d160ff3e86ae7b259c576b97243498d65e8e7e3a75404ed3",
 	"stdlib/generate/generate.flux":                                                 "9ffd4df719629da7c31acaf8b6079fa2fed57f14c74e2a7b326b6bfdcb0c5f90",
+	"stdlib/generate/generate_time_test.flux":                                       "76bba0c8a45da1191eb4e7966c17e1afabd1305d4de0f2605f3b96beed029bd9",
 	"stdlib/http/http.flux":                                                         "8d31c3bd77a395d5a52014544b214d08e0790abf7bad534b95a39b04830008d1",
 	"stdlib/http/http_endpoint_test.flux":                                           "5fd57fe9ae7f57ddbd7ba430ffc558f749dad7b8f26d23ec6c3d9487b2233431",
 	"stdlib/http/http_path_encode_endpoint_test.flux":                               "e863b8826344dd7e0accd4497e1eb8cfa7754f3bf024c066e574b40f6c94c72c",

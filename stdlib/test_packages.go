@@ -9,6 +9,7 @@ import (
 	aggregate "github.com/influxdata/flux/stdlib/experimental/aggregate"
 	geo "github.com/influxdata/flux/stdlib/experimental/geo"
 	json "github.com/influxdata/flux/stdlib/experimental/json"
+	generate "github.com/influxdata/flux/stdlib/generate"
 	http "github.com/influxdata/flux/stdlib/http"
 	monitor "github.com/influxdata/flux/stdlib/influxdata/influxdb/monitor"
 	secrets "github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
@@ -34,6 +35,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, aggregate.FluxTestPackages...)
 	pkgs = append(pkgs, geo.FluxTestPackages...)
 	pkgs = append(pkgs, json.FluxTestPackages...)
+	pkgs = append(pkgs, generate.FluxTestPackages...)
 	pkgs = append(pkgs, http.FluxTestPackages...)
 	pkgs = append(pkgs, monitor.FluxTestPackages...)
 	pkgs = append(pkgs, secrets.FluxTestPackages...)
