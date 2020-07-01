@@ -273,6 +273,25 @@ func TestCompileAndEval(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "array access",
+			fn:   `(values) => values[0]`,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("values"), Value: semantic.NewArrayType(semantic.BasicFloat)},
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"values": values.NewArrayWithBacking(
+					semantic.NewArrayType(semantic.BasicFloat),
+					[]values.Value{
+						values.NewFloat(1),
+						values.NewFloat(2),
+						values.NewFloat(3),
+					},
+				),
+			}),
+			want:    values.NewFloat(1),
+			wantErr: false,
+		},
+		{
 			name: "logical expression",
 			fn:   `(a, b) => a or b`,
 			inType: semantic.NewObjectType([]semantic.PropertyType{
@@ -441,6 +460,14 @@ func TestCompiler_ReturnType(t *testing.T) {
 				})},
 			}),
 			want: `{_time: time | _value: float | _value: float}`,
+		},
+		{
+			name: "array access",
+			fn:   `(values) => values[0]`,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("values"), Value: semantic.NewArrayType(semantic.BasicFloat)},
+			}),
+			want: `float`,
 		},
 	}
 
