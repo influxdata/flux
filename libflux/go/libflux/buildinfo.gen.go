@@ -401,6 +401,8 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/quantile_aggregate_test.flux":                                  "5af954cf00573adb026fcccb3886770ba97564edc7c479429641ae6138bf63f1",
 	"stdlib/universe/quantile_tdigest_test.flux":                                    "c2063bf1c67c324b048c2ac3886d6e6a9c19f1f83924d05090b3090fc8ed7e4b",
 	"stdlib/universe/quantile_test.flux":                                            "56b7e04de071ec2852d92c1a113d825d186e0e983b86c706f2f519afea579e30",
+	"stdlib/universe/range_duration_test.flux":                                      "9cc9eaec0e47f57a8a9fb9cb47ccce74f5c826bccf42850ddf7b7e0981c7d48a",
+	"stdlib/universe/range_int_test.flux":                                           "8811a9d74e6aba94f18639339dec52a7338faaf2e01c8e38c75d0b0b12fbdff0",
 	"stdlib/universe/range_stop_test.flux":                                          "6c6d94af38f096664938330b874c7eb458e4ecee877b785bd8e1230a0aed5fd3",
 	"stdlib/universe/range_test.flux":                                               "2ca583cc6e42775b44a68835f1beaab0eb510d77885a426ab6536913854a9df1",
 	"stdlib/universe/reduce_noref_test.flux":                                        "6fe7082d839fe2a2aed1c1c0e22a82c03a1531d6dc0f50f8b90c3dfea1de3c29",
