@@ -9,6 +9,7 @@ import (
 	arrowmem "github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
+	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
@@ -374,26 +375,25 @@ func (MergeFiltersRule) Pattern() plan.Pattern {
 
 // need to edit this
 func (MergeFiltersRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan.Node, bool, error) {
-	// rewrite only iff both have single expression and make it one expressom and anynode = current node but get rid of one below
-	// change where filter is pointing
-	filterNode = filterNode.Successors()[0]
 	// conditions
-	filterSpec := filterNode.ProcedureSpec().(*FilterProcedureSpec)
-	if filterSpec.Fn.Fn == nil ||
-		filterSpec.Fn.Fn.Block == nil ||
-		filterSpec.Fn.Fn.Block.Body == nil {
-		return filterNode, false, nil
-	}
-
-	if bodyExpr, ok := filterSpec.Fn.Fn.GetFunctionBodyExpression(); !ok {
+	filterSpec1 := filterNode.ProcedureSpec().(*FilterProcedureSpec)
+	bodyExpr1, ok := filterSpec1.Fn.Fn.GetFunctionBodyExpression()
+	if !ok {
 		// Not an expression.
 		return filterNode, false, nil
-	} else if expr, ok := bodyExpr.(*semantic.BooleanLiteral); !ok || !expr.Value {
-		// Either not a boolean at all, or evaluates to false.
+	}
+	filterSpec2 := filterNode.Predecessors()[0].ProcedureSpec().(*FilterProcedureSpec)
+	bodyExpr2, ok := filterSpec2.Fn.Fn.GetFunctionBodyExpression()
+	if !ok {
+		// Not an expression.
 		return filterNode, false, nil
 	}
-
-	// return should stay the same
+	// created an instance of LogicalExpression to 'and' two different arguements
+	expr := &semantic.LogicalExpression{Left: bodyExpr1, Operator: ast.AndOperator, Right: bodyExpr2}
+	// set a new variables that convereted the single body statement to a return type that can used with expr
+	ret := filterSpec2.Fn.Fn.Block.Body[0].(*semantic.ReturnStatement)
+	ret.Argument = expr
+	// return the pred node
 	anyNode := filterNode.Predecessors()[0]
 	return anyNode, true, nil
 }

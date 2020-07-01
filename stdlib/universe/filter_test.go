@@ -783,6 +783,56 @@ gen.tables(n: 2048, tags: [{name: "a", cardinality: 10}])
 	}
 }
 
+func TestFilter_MergeFilterRule(t *testing.T) {
+	var (
+		from    = &influxdb.FromProcedureSpec{}
+		filter0 = &universe.FilterProcedureSpec{
+			Fn: interpreter.ResolvedFunction{
+				Fn: executetest.FunctionExpression(t, `(r) => r._field == "usage_idle"`),
+			},
+		}
+		filter1 = &universe.FilterProcedureSpec{
+			Fn: interpreter.ResolvedFunction{
+				Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu"`),
+			},
+		}
+		filter2 = &universe.FilterProcedureSpec{
+			Fn: interpreter.ResolvedFunction{
+				Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu" and r._field == "usage_idle"`),
+			},
+		}
+	)
+	test := []plantest.RuleTestCase{
+		{
+			Name: "filterOther",
+			// from -> filter => from -> filter
+			Rules: []plan.Rule{universe.MergeFiltersRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter0", filter0),
+					plan.CreatePhysicalNode("filter1", filter1),
+				},
+				Edges: [][2]int{{0, 1}, {1, 2}},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter0", filter2),
+				},
+				Edges: [][2]int{{0, 1}},
+			},
+		},
+	}
+	for _, tc := range test {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			plantest.LogicalRuleTestHelper(t, &tc)
+		})
+	}
+}
+
 func BenchmarkFilter_Values(b *testing.B) {
 	b.Run("1000", func(b *testing.B) {
 		fn := executetest.FunctionExpression(b, `(r) => r._value > 0.0`)
