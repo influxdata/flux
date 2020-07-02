@@ -804,7 +804,7 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 	)
 	test := []plantest.RuleTestCase{
 		{
-			Name: "filterOther",
+			Name: "filterAdd",
 			// from -> filter => from -> filter
 			Rules: []plan.Rule{universe.MergeFiltersRule{}},
 			Before: &plantest.PlanSpec{
