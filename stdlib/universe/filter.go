@@ -368,12 +368,10 @@ func (MergeFiltersRule) Name() string {
 	return "MergeFiltersRule"
 }
 
-// need to think of pattern
 func (MergeFiltersRule) Pattern() plan.Pattern {
 	return plan.Pat(FilterKind, plan.Pat(FilterKind, plan.Any()))
 }
 
-// need to edit this
 func (MergeFiltersRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan.Node, bool, error) {
 	// conditions
 	filterSpec1 := filterNode.ProcedureSpec().(*FilterProcedureSpec)
@@ -388,9 +386,9 @@ func (MergeFiltersRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan
 		// Not an expression.
 		return filterNode, false, nil
 	}
-	// created an instance of LogicalExpression to 'and' two different arguements
+	// created an instance of LogicalExpression to 'and' two different arguments
 	expr := &semantic.LogicalExpression{Left: bodyExpr1, Operator: ast.AndOperator, Right: bodyExpr2}
-	// set a new variables that convereted the single body statement to a return type that can used with expr
+	// set a new variables that converted the single body statement to a return type that can used with expr
 	ret := filterSpec2.Fn.Fn.Block.Body[0].(*semantic.ReturnStatement)
 	ret.Argument = expr
 	// return the pred node
