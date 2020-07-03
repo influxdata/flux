@@ -49,6 +49,21 @@ func TestWindow_NewQuery(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name:    "from with window negative every",
+			Raw:     `from(bucket:"mybucket") |> window(every:-1h, offset: -5m)`,
+			WantErr: true,
+		},
+		{
+			Name:    "from with window negative every variable indirection",
+			Raw:     `x = 1h from(bucket:"mybucket") |> window(every:-x, offset: -5m)`,
+			WantErr: true,
+		},
+		{
+			Name:    "from with aggregateWindow negative every variable indirection",
+			Raw:     `x = 1h from(bucket:"mybucket") |> aggregateWindow(every:-x, fn: mean)`,
+			WantErr: true,
+		},
 	}
 	for _, tc := range tests {
 		tc := tc
