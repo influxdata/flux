@@ -49,6 +49,9 @@ func createWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		return nil, err
 	}
 	if everySet {
+		if every.IsNegative() {
+			return nil, errors.New(codes.Invalid, `every parameter must be nonnegative`)
+		}
 		spec.Every = every
 	}
 	period, periodSet, err := args.GetDuration("period")
