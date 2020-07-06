@@ -391,6 +391,8 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/median_compression_test.flux":                                  "5b047abe93996ec455d09aa8f9ff97b45f6a0441288529393546d9c54e925fed",
 	"stdlib/universe/median_method_test.flux":                                       "727e3b9f8dee5225dd13c278785488018f4f6991576833b90526431cbbfcd286",
 	"stdlib/universe/median_test.flux":                                              "cbbcaea655ac7514f050d0ae1d0fb7c4384fc5483679e900e49f5e895477a878",
+	"stdlib/universe/merge_filter_flag_off_test.flux":                               "bc047aec0d7ad96a72f6d7960bd926ac69b24c5e915a3b203980bde0c066db5e",
+	"stdlib/universe/merge_filter_flag_on_test.flux":                                "c21b786a6f80736102e17b6d82b20bffda1e3b61ba23984efe78fbeca84073ad",
 	"stdlib/universe/meta_query_keys_test.flux":                                     "958014bdcc611c720556ce6552ba2edb9575a04db7acf3b02a75ffade9a16f96",
 	"stdlib/universe/min_test.flux":                                                 "b136fc3b5c0322c52943ae399dd759b2f2d2de436e913feab88d4ac748f51bf3",
 	"stdlib/universe/mode_string_test.flux":                                         "c488542740875e65fe13fe3dd5bb6905dca91235a6967b02bcf9bdf142190f06",
