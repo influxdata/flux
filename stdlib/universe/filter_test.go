@@ -801,6 +801,14 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 				Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu" and r._field == "usage_idle"`),
 			},
 		}
+		filter3 = &universe.FilterProcedureSpec{
+			Fn: interpreter.ResolvedFunction{
+				Fn: executetest.FunctionExpression(t, `(r) => {
+																		x = 10 
+																		return x
+																		}`),
+			},
+		}
 	)
 	test := []plantest.RuleTestCase{
 		{
@@ -833,6 +841,20 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 					plan.CreatePhysicalNode("filter0", filter0),
 				},
 				Edges: [][2]int{{0, 1}},
+			},
+			NoChange: true,
+		},
+		{
+			Name: "filterNoChange1",
+			// from -> filter => from -> filter
+			Rules: []plan.Rule{universe.MergeFiltersRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter3", filter3),
+					plan.CreatePhysicalNode("filter0", filter0),
+				},
+				Edges: [][2]int{{0, 1}, {1, 2}},
 			},
 			NoChange: true,
 		},
