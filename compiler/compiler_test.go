@@ -21,7 +21,8 @@ func TestCompileAndEval(t *testing.T) {
 		inType  semantic.MonoType
 		input   values.Object
 		want    values.Value
-		wantErr bool
+		wantCompileErr bool
+		wantEvalErr    bool
 	}{
 		{
 			name: "interpolated string expression",
@@ -51,7 +52,7 @@ func TestCompileAndEval(t *testing.T) {
 					"n": values.NewInt(10),
 				}),
 			}),
-			wantErr: true,
+			wantCompileErr: true,
 		},
 		{
 			name: "simple ident return",
@@ -62,8 +63,7 @@ func TestCompileAndEval(t *testing.T) {
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"r": values.NewInt(4),
 			}),
-			want:    values.NewInt(4),
-			wantErr: false,
+			want: values.NewInt(4),
 		},
 		{
 			name: "call function",
@@ -74,8 +74,7 @@ func TestCompileAndEval(t *testing.T) {
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"r": values.NewInt(4),
 			}),
-			want:    values.NewInt(5),
-			wantErr: false,
+			want: values.NewInt(5),
 		},
 		{
 			name: "call function with defaults",
@@ -86,8 +85,7 @@ func TestCompileAndEval(t *testing.T) {
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"r": values.NewInt(4),
 			}),
-			want:    values.NewInt(4),
-			wantErr: false,
+			want: values.NewInt(4),
 		},
 		{
 			name: "call function via identifier",
@@ -101,8 +99,7 @@ func TestCompileAndEval(t *testing.T) {
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"r": values.NewInt(4),
 			}),
-			want:    values.NewInt(5),
-			wantErr: false,
+			want: values.NewInt(5),
 		},
 		{
 			name: "call function via identifier with different types",
@@ -116,8 +113,7 @@ func TestCompileAndEval(t *testing.T) {
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"r": values.NewInt(4),
 			}),
-			want:    values.NewInt(5),
-			wantErr: false,
+			want: values.NewInt(5),
 		},
 		{
 			name: "call filter function with index expression",
@@ -132,8 +128,7 @@ func TestCompileAndEval(t *testing.T) {
 					values.NewInt(3),
 				}),
 			}),
-			want:    values.NewBool(true),
-			wantErr: false,
+			want: values.NewBool(true),
 		},
 		{
 			name: "call filter function with complex index expression",
@@ -148,8 +143,7 @@ func TestCompileAndEval(t *testing.T) {
 					values.NewInt(3),
 				}),
 			}),
-			want:    values.NewBool(true),
-			wantErr: false,
+			want: values.NewBool(true),
 		},
 		{
 			name: "conditional",
@@ -227,8 +221,7 @@ func TestCompileAndEval(t *testing.T) {
 					"m": values.NewString("cpu"),
 				}),
 			}),
-			want:    values.NewBool(true),
-			wantErr: false,
+			want: values.NewBool(true),
 		},
 		{
 			name: "regex literal filter",
@@ -239,8 +232,7 @@ func TestCompileAndEval(t *testing.T) {
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"r": values.NewString("cpu"),
 			}),
-			want:    values.NewBool(true),
-			wantErr: false,
+			want: values.NewBool(true),
 		},
 		{
 			name: "block statement with conditional",
@@ -254,8 +246,7 @@ func TestCompileAndEval(t *testing.T) {
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"r": values.NewInt(-3),
 			}),
-			want:    values.NewInt(9),
-			wantErr: false,
+			want: values.NewInt(9),
 		},
 		{
 			name:   "array literal",
@@ -270,7 +261,6 @@ func TestCompileAndEval(t *testing.T) {
 					values.NewFloat(3),
 				},
 			),
-			wantErr: false,
 		},
 		{
 			name: "array access",
@@ -288,8 +278,43 @@ func TestCompileAndEval(t *testing.T) {
 					},
 				),
 			}),
-			want:    values.NewFloat(1),
-			wantErr: false,
+			want: values.NewFloat(1),
+		},
+		{
+			name: "array access out of bounds low",
+			fn:   `(values) => values[-1]`,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("values"), Value: semantic.NewArrayType(semantic.BasicFloat)},
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"values": values.NewArrayWithBacking(
+					semantic.NewArrayType(semantic.BasicFloat),
+					[]values.Value{
+						values.NewFloat(1),
+						values.NewFloat(2),
+						values.NewFloat(3),
+					},
+				),
+			}),
+			wantEvalErr: true,
+		},
+		{
+			name: "array access out of bounds high",
+			fn:   `(values) => values[3]`,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("values"), Value: semantic.NewArrayType(semantic.BasicFloat)},
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"values": values.NewArrayWithBacking(
+					semantic.NewArrayType(semantic.BasicFloat),
+					[]values.Value{
+						values.NewFloat(1),
+						values.NewFloat(2),
+						values.NewFloat(3),
+					},
+				),
+			}),
+			wantEvalErr: true,
 		},
 		{
 			name: "logical expression",
@@ -302,8 +327,7 @@ func TestCompileAndEval(t *testing.T) {
 				"a": values.NewBool(true),
 				"b": values.NewBool(false),
 			}),
-			want:    values.NewBool(true),
-			wantErr: false,
+			want: values.NewBool(true),
 		},
 		{
 			name: "call with nonexistant value",
@@ -422,17 +446,17 @@ func TestCompileAndEval(t *testing.T) {
 			fn := stmt.Expression.(*semantic.FunctionExpression)
 			f, err := compiler.Compile(nil, fn, tc.inType)
 			if err != nil {
-				if !tc.wantErr {
+				if !tc.wantCompileErr {
 					t.Fatalf("unexpected error: %s", err)
 				}
 				return
-			} else if tc.wantErr {
+			} else if tc.wantCompileErr {
 				t.Fatal("wanted error but got nothing")
 			}
 
 			// ctx := dependenciestest.Default().Inject(context.Background())
 			got, err := f.Eval(context.TODO(), tc.input)
-			if tc.wantErr != (err != nil) {
+			if tc.wantEvalErr != (err != nil) {
 				t.Errorf("unexpected error: %s", err)
 			}
 
