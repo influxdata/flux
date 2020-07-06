@@ -823,6 +823,19 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 				Edges: [][2]int{{0, 1}},
 			},
 		},
+		{
+			Name: "filterNoChange",
+			// from -> filter => from -> filter
+			Rules: []plan.Rule{universe.MergeFiltersRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter0", filter0),
+				},
+				Edges: [][2]int{{0, 1}},
+			},
+			NoChange: true,
+		},
 	}
 	for _, tc := range test {
 		tc := tc
