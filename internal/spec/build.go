@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/opentracing/opentracing-go"
@@ -69,8 +71,9 @@ func FromEvaluation(ctx context.Context, ses []interpreter.SideEffect, now time.
 
 	if len(spec.Operations) == 0 {
 		return nil,
-			fmt.Errorf("this Flux script returns no streaming data. " +
-				"Consider adding a \"yield\" or invoking streaming functions directly, without performing an assignment")
+			errors.New(codes.Invalid,
+				"this Flux script returns no streaming data. "+
+					"Consider adding a \"yield\" or invoking streaming functions directly, without performing an assignment")
 	}
 
 	return spec, nil
