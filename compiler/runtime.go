@@ -516,7 +516,12 @@ func (e *arrayIndexEvaluator) Eval(ctx context.Context, scope Scope) (values.Val
 	if err != nil {
 		return nil, err
 	}
-	return a.Array().Get(int(i.Int())), nil
+	ix := int(i.Int())
+	l := a.Array().Len()
+	if ix < 0 || ix >= l {
+		return nil, errors.Newf(codes.OutOfRange, "cannot access element %v of array of length %v", ix, l)
+	}
+	return a.Array().Get(ix), nil
 }
 
 type callEvaluator struct {

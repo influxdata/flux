@@ -273,6 +273,24 @@ func TestEval(t *testing.T) {
 			`,
 		},
 		{
+			name: "array index expression out of bounds low",
+			query: `
+				a = [1, 2, 3]
+				i = -1
+				x = a[i]
+			`,
+			wantErr: true,
+		},
+		{
+			name: "array index expression out of bounds high",
+			query: `
+				a = [1, 2, 3]
+				i = 3 
+				x = a[i]
+			`,
+			wantErr: true,
+		},
+		{
 			name: "array with complex index expression",
 			query: `
 				f = () => ({l: 0, m: 1, n: 2})
