@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // LogicalPlanner translates a flux.Spec into a plan.Spec and applies any
@@ -195,7 +197,7 @@ func (v *fluxSpecVisitor) addYieldName(pn Node) error {
 	name := yieldSpec.YieldName()
 	_, isDup := v.yieldNames[name]
 	if isDup {
-		return fmt.Errorf("duplicate yield name \"%v\" found on plan node: %v", name, pn.ID())
+		return errors.Newf(codes.Invalid, "found more than one call to yield() with the name %q", name)
 	}
 
 	v.yieldNames[name] = struct{}{}
