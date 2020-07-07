@@ -24,6 +24,7 @@ type NewQueryTestCase struct {
 	Raw     string
 	Want    *flux.Spec
 	WantErr bool
+	Now     time.Time
 }
 
 var opts = append(
