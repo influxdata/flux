@@ -11,11 +11,11 @@ input = "
 #default,_result,,,,,,
 ,result,table,_time,_measurement,host,_field,_value
 ,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83
-,,0,2018-05-22T19:53:36Z,system,host.local,load3,1.72
-,,0,2018-05-22T19:53:37Z,system,host.local,load4,1.77
-,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63
-,,0,2018-05-22T19:54:06Z,system,host.local,load4,1.78
-,,0,2018-05-22T19:54:16Z,system,host.local,load4,1.77
+,,0,2018-05-22T19:53:26Z,system,host.local,load3,1.72
+,,0,2018-05-22T19:53:26Z,system,host.local,load4,1.77
+,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.63
+,,0,2018-05-22T19:53:26Z,system,host.local,load4,1.78
+,,0,2018-05-22T19:53:26Z,system,host.local,load4,1.77
 "
 
 output = "
