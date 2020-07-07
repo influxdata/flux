@@ -786,28 +786,36 @@ gen.tables(n: 2048, tags: [{name: "a", cardinality: 10}])
 func TestFilter_MergeFilterRule(t *testing.T) {
 	var (
 		from    = &influxdb.FromProcedureSpec{}
-		filter0 = &universe.FilterProcedureSpec{
-			Fn: interpreter.ResolvedFunction{
-				Fn: executetest.FunctionExpression(t, `(r) => r._field == "usage_idle"`),
-			},
+		filter0 = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._field == "usage_idle"`),
+				},
+			}
 		}
-		filter1 = &universe.FilterProcedureSpec{
-			Fn: interpreter.ResolvedFunction{
-				Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu"`),
-			},
+		filter1 = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu"`),
+				},
+			}
 		}
-		filter2 = &universe.FilterProcedureSpec{
-			Fn: interpreter.ResolvedFunction{
-				Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu" and r._field == "usage_idle"`),
-			},
+		filter2 = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu" and r._field == "usage_idle"`),
+				},
+			}
 		}
-		filter3 = &universe.FilterProcedureSpec{
-			Fn: interpreter.ResolvedFunction{
-				Fn: executetest.FunctionExpression(t, `(r) => {
+		filter3 = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => {
 																		x = 10 
 																		return x
 																		}`),
-			},
+				},
+			}
 		}
 	)
 	test := []plantest.RuleTestCase{
@@ -818,15 +826,15 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from", from),
-					plan.CreatePhysicalNode("filter0", filter0),
-					plan.CreatePhysicalNode("filter1", filter1),
+					plan.CreatePhysicalNode("filter0", filter0()),
+					plan.CreatePhysicalNode("filter1", filter1()),
 				},
 				Edges: [][2]int{{0, 1}, {1, 2}},
 			},
 			After: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from", from),
-					plan.CreatePhysicalNode("filter0", filter2),
+					plan.CreatePhysicalNode("filter0", filter2()),
 				},
 				Edges: [][2]int{{0, 1}},
 			},
@@ -838,7 +846,7 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from", from),
-					plan.CreatePhysicalNode("filter0", filter0),
+					plan.CreatePhysicalNode("filter0", filter0()),
 				},
 				Edges: [][2]int{{0, 1}},
 			},
@@ -851,8 +859,8 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from", from),
-					plan.CreatePhysicalNode("filter3", filter3),
-					plan.CreatePhysicalNode("filter0", filter0),
+					plan.CreatePhysicalNode("filter3", filter3()),
+					plan.CreatePhysicalNode("filter0", filter0()),
 				},
 				Edges: [][2]int{{0, 1}, {1, 2}},
 			},
