@@ -844,8 +844,7 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 	)
 	test := []plantest.RuleTestCase{
 		{
-			Name: "filterAdd",
-			// from -> filter => from -> filter
+			Name:  "filterAdd",
 			Rules: []plan.Rule{universe.MergeFiltersRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.Node{
@@ -864,8 +863,7 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 			},
 		},
 		{
-			Name: "filterNoChange",
-			// from -> filter => from -> filter
+			Name:  "filterNoChange",
 			Rules: []plan.Rule{universe.MergeFiltersRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.Node{
@@ -877,8 +875,7 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 			NoChange: true,
 		},
 		{
-			Name: "filterNoChange1",
-			// from -> filter => from -> filter
+			Name:  "filterNoChange1",
 			Rules: []plan.Rule{universe.MergeFiltersRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.Node{
@@ -891,8 +888,7 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 			NoChange: true,
 		},
 		{
-			Name: "filterNoChange2",
-			// from -> filter => from -> filter
+			Name:  "filterNoChange2",
 			Rules: []plan.Rule{universe.MergeFiltersRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.Node{
@@ -905,8 +901,7 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 			NoChange: true,
 		},
 		{
-			Name: "filterEmptymerge",
-			// from -> filter => from -> filter
+			Name:  "filterEmptyMerge",
 			Rules: []plan.Rule{universe.MergeFiltersRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.Node{
