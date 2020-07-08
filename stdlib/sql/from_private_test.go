@@ -197,14 +197,6 @@ func TestFromSqliteUrlValidation(t *testing.T) {
 			},
 			ErrMsg: "sql driver sqlite4 not supported",
 		}, {
-			Name: "bad sqlite path1",
-			Spec: &FromSQLProcedureSpec{
-				DriverName:     "sqlite3",
-				DataSourceName: ":cool_pragma",
-				Query:          "",
-			},
-			ErrMsg: "invalid data source url: parse :cool_pragma: missing protocol scheme",
-		}, {
 			Name: "bad sqlite path2",
 			Spec: &FromSQLProcedureSpec{
 				DriverName:     "sqlite3",
