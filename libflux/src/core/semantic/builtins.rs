@@ -109,7 +109,7 @@ pub fn builtins() -> Builtins<'static> {
                  "join" => "forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (left: [t0], right: [t1], fn: (left: t0, right: t1) -> t2) -> [t2]",
             },
             "generate" => semantic_map! {
-                "from" => "forall [] (start: time, stop: time, count: int, fn: (n: int) -> int) -> [{ _start: time | _stop: time | _time: time | _value:int }]",
+                "from" => "forall [t0] where t0: Timeable (start: t0, stop: t0, count: int, fn: (n: int) -> int) -> [{ _start: time | _stop: time | _time: time | _value:int }]",
             },
             "http" => semantic_map! {
                 "post" => "forall [t0] where t0: Row (url: string, ?headers: t0, ?data: bytes) -> int",

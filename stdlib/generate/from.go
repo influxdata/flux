@@ -21,8 +21,8 @@ import (
 const FromGeneratorKind = "fromGenerator"
 
 type FromGeneratorOpSpec struct {
-	Start time.Time                    `json:"start"`
-	Stop  time.Time                    `json:"stop"`
+	Start flux.Time                    `json:"start"`
+	Stop  flux.Time                    `json:"stop"`
 	Count int64                        `json:"count"`
 	Fn    interpreter.ResolvedFunction `json:"fn"`
 }
@@ -41,13 +41,12 @@ func createFromGeneratorOpSpec(args flux.Arguments, a *flux.Administration) (flu
 	if t, err := args.GetRequiredTime("start"); err != nil {
 		return nil, err
 	} else {
-		spec.Start = t.Time(time.Now())
+		spec.Start = t
 	}
-
 	if t, err := args.GetRequiredTime("stop"); err != nil {
 		return nil, err
 	} else {
-		spec.Stop = t.Time(time.Now())
+		spec.Stop = t
 	}
 
 	if i, err := args.GetRequiredInt("count"); err != nil {
@@ -94,8 +93,8 @@ func newFromGeneratorProcedure(qs flux.OperationSpec, pa plan.Administration) (p
 
 	return &FromGeneratorProcedureSpec{
 		Count: spec.Count,
-		Start: spec.Start,
-		Stop:  spec.Stop,
+		Start: spec.Start.Time(pa.Now()),
+		Stop:  spec.Stop.Time(pa.Now()),
 		Fn:    spec.Fn,
 	}, nil
 }

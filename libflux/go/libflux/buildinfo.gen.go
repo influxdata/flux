@@ -40,7 +40,7 @@ var sourceHashes = map[string]string{
 	"libflux/src/core/scanner/unicode.rl":                                           "f923f3b385ddfa65c74427b11971785fc25ea806ca03d547045de808e16ef9a1",
 	"libflux/src/core/scanner/unicode.rl.COPYING":                                   "6cf2d5d26d52772ded8a5f0813f49f83dfa76006c5f398713be3854fe7bc4c7e",
 	"libflux/src/core/semantic/bootstrap.rs":                                        "790f89309492a3cc6fddcf49b03155bef445c8f3f47f677a8b674ccbbd13cac4",
-	"libflux/src/core/semantic/builtins.rs":                                         "6fcc39944827c63f2cce73679fd9a194f7d83bcbf22c9b284e0d7bffe4c5845e",
+	"libflux/src/core/semantic/builtins.rs":                                         "85b27c75499acaa6aad312579d00a43c010587236287c1e4e8e03b3f52aa6cf2",
 	"libflux/src/core/semantic/check.rs":                                            "acb29602ee01f636818ba3522b3f110018abca3e7b4a6b75c29eec97856a324e",
 	"libflux/src/core/semantic/convert.rs":                                          "e0e11c8b3111a7d87e256bb553a3a9e72b90af045a94671f437f4a3109d5d0e2",
 	"libflux/src/core/semantic/env.rs":                                              "2a0806d1619e2de8b11e2380b26328686ef7073649538da26df508a68daae50e",
