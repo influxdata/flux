@@ -47,7 +47,7 @@ The following terms are used to denote specific Unicode character classes:
     unicode_letter = /* a Unicode code point classified as "Letter" */ .
     unicode_digit  = /* a Unicode code point classified as "Number, decimal digit" */ .
 
-In The Unicode Standard 8.0, Section 4.5 "General Category" defines a set of character categories.
+[The Unicode Standard 8.0](https://www.unicode.org/versions/Unicode8.0.0/), Section 4.5 "General Category" defines a set of character categories.
 Flux treats all characters in any of the Letter categories Lu, Ll, Lt, Lm, or Lo as Unicode letters, and those in the Number category Nd as Unicode digits.
 
 #### Letters and digits
@@ -61,7 +61,7 @@ The underscore character _ (U+005F) is considered a letter.
 
 #### Comments
 
-Comment serve as documentation.
+Comments serve as documentation.
 Comments begin with the character sequence `//` and stop at the end of the line.
 
 Comments cannot start inside string or regexp literals.
