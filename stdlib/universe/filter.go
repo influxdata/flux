@@ -387,7 +387,7 @@ func (MergeFiltersRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan
 		// Not an expression.
 		return filterNode, false, nil
 	}
-	if filterSpec1.KeepEmptyTables != filterSpec2.KeepEmptyTables && filterSpec2.KeepEmptyTables == false {
+	if filterSpec1.KeepEmptyTables != filterSpec2.KeepEmptyTables && !filterSpec2.KeepEmptyTables {
 		return filterNode, false, nil
 	}
 
