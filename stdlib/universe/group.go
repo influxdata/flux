@@ -237,7 +237,7 @@ func (t *groupTransformation) getTableKey(tbl flux.Table) (flux.GroupKey, bool, 
 
 func (t *groupTransformation) appendTable(ab *table.BufferedBuilder, tbl flux.Table) error {
 	// Read the table and append each of the columns.
-	return tbl.Do(ab.AppendBuffer)
+	return ab.AppendTable(tbl)
 }
 
 // groupByRow will determine which table each row belongs to
