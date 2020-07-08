@@ -131,7 +131,7 @@ func CompileTableObject(ctx context.Context, to *flux.TableObject, now time.Time
 	if o.verbose {
 		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
 	}
-	ps, err := buildPlan(context.Background(), s, o)
+	ps, err := buildPlan(ctx, s, o)
 	if err != nil {
 		return nil, err
 	}

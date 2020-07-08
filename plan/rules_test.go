@@ -6,12 +6,15 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/internal/spec"
+	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/influxdata/flux/values"
 )
 
 func init() {
@@ -130,6 +133,52 @@ func TestRewriteWithContext(t *testing.T) {
 
 	if !rewrite {
 		t.Fatal("physical planning did not call rewrite on the function rule")
+	} else if value == nil {
+		t.Fatal("value wasn't present in the context")
+	}
+}
+
+func TestRewriteWithContext_TableObjectCompiler(t *testing.T) {
+	plan.ClearRegisteredRules()
+
+	var (
+		ctxKey  = "contextKey"
+		rewrite = false
+		value   interface{}
+	)
+	functionRule := plantest.FunctionRule{
+		RewriteFn: func(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+			rewrite = true
+			value = ctx.Value(ctxKey)
+			return node, false, nil
+		},
+	}
+
+	// Define the context after the above to ensure we don't end up accidentally reading
+	// from the outer context rather than the one passed to the function.
+	ctx := context.WithValue(context.Background(), ctxKey, true)
+	// Register the rule.
+	plan.RegisterLogicalRules(&functionRule)
+
+	prelude := runtime.Prelude()
+	buckets, _ := prelude.Lookup("buckets")
+	args := values.NewObjectWithValues(map[string]values.Value{
+		"host": values.NewString("http://localhost:9999"),
+	})
+	res, err := buckets.Function().Call(ctx, args)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	to := res.(*flux.TableObject)
+
+	now := time.Now().UTC()
+	if _, err := lang.CompileTableObject(ctx, to, now); err != nil {
+		t.Fatal(err)
+	}
+
+	if !rewrite {
+		t.Fatal("planning did not call rewrite on the function rule")
 	} else if value == nil {
 		t.Fatal("value wasn't present in the context")
 	}
