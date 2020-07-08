@@ -111,6 +111,7 @@ func (s *FilterProcedureSpec) Kind() plan.ProcedureKind {
 func (s *FilterProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FilterProcedureSpec)
 	ns.Fn = s.Fn.Copy()
+	ns.KeepEmptyTables = s.KeepEmptyTables
 	return ns
 }
 
@@ -386,6 +387,10 @@ func (MergeFiltersRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan
 		// Not an expression.
 		return filterNode, false, nil
 	}
+	if filterSpec1.KeepEmptyTables != filterSpec2.KeepEmptyTables && filterSpec2.KeepEmptyTables == false {
+		return filterNode, false, nil
+	}
+
 	// created an instance of LogicalExpression to 'and' two different arguments
 	expr := &semantic.LogicalExpression{Left: bodyExpr1, Operator: ast.AndOperator, Right: bodyExpr2}
 	// set a new variables that converted the single body statement to a return type that can used with expr

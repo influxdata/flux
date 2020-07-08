@@ -800,20 +800,44 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 				},
 			}
 		}
-		filter2 = func() *universe.FilterProcedureSpec {
+		filterMerge = func() *universe.FilterProcedureSpec {
 			return &universe.FilterProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu" and r._field == "usage_idle"`),
 				},
 			}
 		}
-		filter3 = func() *universe.FilterProcedureSpec {
+		filterTwoStat = func() *universe.FilterProcedureSpec {
 			return &universe.FilterProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
 					Fn: executetest.FunctionExpression(t, `(r) => {
 																		x = 10 
 																		return x
 																		}`),
+				},
+			}
+		}
+		filterDrop = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				KeepEmptyTables: false,
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._field == "usage_idle"`),
+				},
+			}
+		}
+		filterKeep = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				KeepEmptyTables: true,
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu"`),
+				},
+			}
+		}
+		filterEmptyMerge = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				KeepEmptyTables: true,
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._field == "usage_idle" and r._measurement == "cpu"`),
 				},
 			}
 		}
@@ -834,7 +858,7 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 			After: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from", from),
-					plan.CreatePhysicalNode("filter0", filter2()),
+					plan.CreatePhysicalNode("filter0", filterMerge()),
 				},
 				Edges: [][2]int{{0, 1}},
 			},
@@ -859,12 +883,46 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("from", from),
-					plan.CreatePhysicalNode("filter3", filter3()),
+					plan.CreatePhysicalNode("filter3", filterTwoStat()),
 					plan.CreatePhysicalNode("filter0", filter0()),
 				},
 				Edges: [][2]int{{0, 1}, {1, 2}},
 			},
 			NoChange: true,
+		},
+		{
+			Name: "filterNoChange2",
+			// from -> filter => from -> filter
+			Rules: []plan.Rule{universe.MergeFiltersRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter5", filterDrop()),
+					plan.CreatePhysicalNode("filter4", filterKeep()),
+				},
+				Edges: [][2]int{{0, 1}, {1, 2}},
+			},
+			NoChange: true,
+		},
+		{
+			Name: "filterEmptymerge",
+			// from -> filter => from -> filter
+			Rules: []plan.Rule{universe.MergeFiltersRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter4", filterKeep()),
+					plan.CreatePhysicalNode("filter5", filterDrop()),
+				},
+				Edges: [][2]int{{0, 1}, {1, 2}},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter4", filterEmptyMerge()),
+				},
+				Edges: [][2]int{{0, 1}},
+			},
 		},
 	}
 	for _, tc := range test {
