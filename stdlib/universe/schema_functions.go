@@ -458,8 +458,7 @@ func NewSchemaMutationTransformation(ctx context.Context, spec *SchemaMutationPr
 func (t *schemaMutationTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	ctx := NewBuilderContext(tbl)
 	for _, m := range t.mutators {
-		err := m.Mutate(t.ctx, ctx)
-		if err != nil {
+		if err := m.Mutate(t.ctx, ctx); err != nil {
 			return err
 		}
 	}
@@ -470,7 +469,7 @@ func (t *schemaMutationTransformation) Process(id execute.DatasetID, tbl flux.Ta
 		return err
 	}
 	builder, _ := table.GetBufferedBuilder(mutTable.Key(), &t.cache)
-	return mutTable.Do(builder.AppendBuffer)
+	return builder.AppendTable(mutTable)
 }
 
 func (t *schemaMutationTransformation) mutateTable(in flux.Table, ctx *BuilderContext) (flux.Table, error) {
@@ -485,8 +484,8 @@ func (t *schemaMutationTransformation) mutateTable(in flux.Table, ctx *BuilderCo
 	}
 
 	return &mutateTable{
-		Table: in,
-		ctx:   ctx,
+		in:  in,
+		ctx: ctx,
 	}, nil
 }
 
@@ -507,19 +506,21 @@ func (t *schemaMutationTransformation) Finish(id execute.DatasetID, err error) {
 }
 
 type mutateTable struct {
-	flux.Table
+	in  flux.Table
 	ctx *BuilderContext
 }
 
 func (m *mutateTable) Key() flux.GroupKey   { return m.ctx.Key() }
 func (m *mutateTable) Cols() []flux.ColMeta { return m.ctx.Cols() }
+func (m *mutateTable) Empty() bool          { return m.in.Empty() }
+func (m *mutateTable) Done()                { m.in.Done() }
 
 func (m *mutateTable) Do(f func(flux.ColReader) error) error {
-	return m.Table.Do(func(cr flux.ColReader) error {
+	return m.in.Do(func(cr flux.ColReader) error {
 		indices := m.ctx.ColMap()
 		buffer := &arrow.TableBuffer{
-			GroupKey: m.Key(),
-			Columns:  m.Cols(),
+			GroupKey: m.ctx.Key(),
+			Columns:  m.ctx.Cols(),
 			Values:   make([]array.Interface, len(indices)),
 		}
 		for j, idx := range indices {
