@@ -10,9 +10,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/runtime"
-	_ "github.com/influxdata/flux/stdlib"
 	"github.com/influxdata/flux/stdlib/generate"
-	_ "github.com/influxdata/flux/stdlib/generate"
 	"github.com/influxdata/flux/values/valuestest"
 )
 
