@@ -392,32 +392,3 @@ func (r MergeGroupRule) Rewrite(ctx context.Context, lastGroup plan.Node) (plan.
 
 	return merged, true, nil
 }
-
-// `OrderFilterGroup` orders the nodes to be in order of filter and then group
-type OrderFilterGroup struct{}
-
-func (r OrderFilterGroup) Name() string {
-	return "OrderFilterGroup"
-}
-
-// returns the pattern that matches `|> group |> filter`
-func (r OrderFilterGroup) Pattern() plan.Pattern {
-	return plan.Pat(GroupKind, plan.Pat(FilterKind, plan.Any()))
-}
-
-func (r OrderFilterGroup) Rewrite(ctx context.Context, lastGroup plan.Node) (plan.Node, bool, error) {
-	firstGroup := lastGroup.Predecessors()[0]
-	lastSpec := lastGroup.ProcedureSpec().(*GroupProcedureSpec)
-
-	if lastSpec.GroupMode != flux.GroupModeBy &&
-		lastSpec.GroupMode != flux.GroupModeExcept {
-		return lastGroup, false, nil
-	}
-
-	merged, err := plan.MergeToLogicalNode(lastGroup, firstGroup, lastSpec.Copy())
-	if err != nil {
-		return nil, false, err
-	}
-
-	return merged, true, nil
-}
