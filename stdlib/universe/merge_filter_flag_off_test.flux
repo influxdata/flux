@@ -3,7 +3,7 @@ package universe_test
 import "testing"
 import "planner"
 
-option planner.disablePhysicalRules = ["PushDownWindowAggregateRule"]
+option planner.disableLogicalRules = ["MergeFiltersRule"]
 
 input = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double

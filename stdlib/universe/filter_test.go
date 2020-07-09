@@ -810,10 +810,7 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 		filterTwoStat = func() *universe.FilterProcedureSpec {
 			return &universe.FilterProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
-					Fn: executetest.FunctionExpression(t, `(r) => {
-																		x = 10 
-																		return x
-																		}`),
+					Fn: executetest.FunctionExpression(t, `(r) => {x = 10 return x}`),
 				},
 			}
 		}
