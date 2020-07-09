@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/apache/arrow/go/arrow/array"
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
@@ -383,6 +385,206 @@ func TestCopyTable(t *testing.T) {
 	// Ensure there has been no memory leak.
 	if got, want := alloc.Allocated(), int64(0); got != want {
 		t.Errorf("memory leak -want/+got:\n\t- %d\n\t+ %d", want, got)
+	}
+}
+
+func TestColListTableBuilder_AppendValues(t *testing.T) {
+	for _, tt := range []struct {
+		name   string
+		typ    flux.ColType
+		values array.Interface
+		want   *executetest.Table
+	}{
+		{
+			name: "Ints",
+			typ:  flux.TInt,
+			values: func() array.Interface {
+				b := array.NewInt64Builder(memory.DefaultAllocator)
+				b.Append(2)
+				b.Append(3)
+				b.AppendNull()
+				b.Append(8)
+				b.AppendNull()
+				b.Append(6)
+				return b.NewArray()
+			}(),
+			want: &executetest.Table{
+				ColMeta: []flux.ColMeta{{
+					Label: "_value",
+					Type:  flux.TInt,
+				}},
+				Data: [][]interface{}{
+					{int64(2)}, {int64(3)}, {nil}, {int64(8)}, {nil}, {int64(6)},
+				},
+			},
+		},
+		{
+			name: "UInts",
+			typ:  flux.TUInt,
+			values: func() array.Interface {
+				b := array.NewUint64Builder(memory.DefaultAllocator)
+				b.Append(2)
+				b.Append(3)
+				b.AppendNull()
+				b.Append(8)
+				b.AppendNull()
+				b.Append(6)
+				return b.NewArray()
+			}(),
+			want: &executetest.Table{
+				ColMeta: []flux.ColMeta{{
+					Label: "_value",
+					Type:  flux.TUInt,
+				}},
+				Data: [][]interface{}{
+					{uint64(2)}, {uint64(3)}, {nil}, {uint64(8)}, {nil}, {uint64(6)},
+				},
+			},
+		},
+		{
+			name: "Floats",
+			typ:  flux.TFloat,
+			values: func() array.Interface {
+				b := array.NewFloat64Builder(memory.DefaultAllocator)
+				b.Append(2)
+				b.Append(3)
+				b.AppendNull()
+				b.Append(8)
+				b.AppendNull()
+				b.Append(6)
+				return b.NewArray()
+			}(),
+			want: &executetest.Table{
+				ColMeta: []flux.ColMeta{{
+					Label: "_value",
+					Type:  flux.TFloat,
+				}},
+				Data: [][]interface{}{
+					{2.0}, {3.0}, {nil}, {8.0}, {nil}, {6.0},
+				},
+			},
+		},
+		{
+			name: "Strings",
+			typ:  flux.TString,
+			values: func() array.Interface {
+				b := arrow.NewStringBuilder(&memory.Allocator{})
+				b.AppendString("a")
+				b.AppendString("d")
+				b.AppendNull()
+				b.AppendString("b")
+				b.AppendNull()
+				b.AppendString("e")
+				return b.NewArray()
+			}(),
+			want: &executetest.Table{
+				ColMeta: []flux.ColMeta{{
+					Label: "_value",
+					Type:  flux.TString,
+				}},
+				Data: [][]interface{}{
+					{"a"}, {"d"}, {nil}, {"b"}, {nil}, {"e"},
+				},
+			},
+		},
+		{
+			name: "Bools",
+			typ:  flux.TBool,
+			values: func() array.Interface {
+				b := array.NewBooleanBuilder(memory.DefaultAllocator)
+				b.Append(true)
+				b.Append(false)
+				b.AppendNull()
+				b.Append(false)
+				b.AppendNull()
+				b.Append(true)
+				return b.NewArray()
+			}(),
+			want: &executetest.Table{
+				ColMeta: []flux.ColMeta{{
+					Label: "_value",
+					Type:  flux.TBool,
+				}},
+				Data: [][]interface{}{
+					{true}, {false}, {nil}, {false}, {nil}, {true},
+				},
+			},
+		},
+		{
+			name: "Times",
+			typ:  flux.TTime,
+			values: func() array.Interface {
+				b := array.NewInt64Builder(memory.DefaultAllocator)
+				b.Append(2)
+				b.Append(3)
+				b.AppendNull()
+				b.Append(8)
+				b.AppendNull()
+				b.Append(6)
+				return b.NewArray()
+			}(),
+			want: &executetest.Table{
+				ColMeta: []flux.ColMeta{{
+					Label: "_value",
+					Type:  flux.TTime,
+				}},
+				Data: [][]interface{}{
+					{execute.Time(2)}, {execute.Time(3)}, {nil}, {execute.Time(8)}, {nil}, {execute.Time(6)},
+				},
+			},
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			key := execute.NewGroupKey(nil, nil)
+			b := execute.NewColListTableBuilder(key, &memory.Allocator{})
+			if _, err := b.AddCol(flux.ColMeta{Label: "_value", Type: tt.typ}); err != nil {
+				t.Fatal(err)
+			}
+
+			switch tt.typ {
+			case flux.TBool:
+				if err := b.AppendBools(0, tt.values.(*array.Boolean)); err != nil {
+					t.Fatal(err)
+				}
+			case flux.TInt:
+				if err := b.AppendInts(0, tt.values.(*array.Int64)); err != nil {
+					t.Fatal(err)
+				}
+			case flux.TUInt:
+				if err := b.AppendUInts(0, tt.values.(*array.Uint64)); err != nil {
+					t.Fatal(err)
+				}
+			case flux.TFloat:
+				if err := b.AppendFloats(0, tt.values.(*array.Float64)); err != nil {
+					t.Fatal(err)
+				}
+			case flux.TString:
+				if err := b.AppendStrings(0, tt.values.(*array.Binary)); err != nil {
+					t.Fatal(err)
+				}
+			case flux.TTime:
+				if err := b.AppendTimes(0, tt.values.(*array.Int64)); err != nil {
+					t.Fatal(err)
+				}
+			default:
+				execute.PanicUnknownType(tt.typ)
+			}
+
+			table, err := b.Table()
+			if err != nil {
+				t.Fatal(err)
+			}
+			got, err := executetest.ConvertTable(table)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got.Normalize()
+			tt.want.Normalize()
+
+			if !cmp.Equal(tt.want, got) {
+				t.Fatalf("unexpected output -want/+got:\n%s", cmp.Diff(tt.want, got))
+			}
+		})
 	}
 }
 

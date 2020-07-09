@@ -801,13 +801,12 @@ func (b *ColListTableBuilder) AppendBools(j int, vs *array.Boolean) error {
 	}
 
 	for i := 0; i < vs.Len(); i++ {
-		if err := b.AppendValue(j, values.NewBool(vs.Value(i))); err != nil {
-			return err
-		}
 		if vs.IsNull(i) {
-			if err := b.SetNil(b.nrows, j); err != nil {
+			if err := b.AppendNil(j); err != nil {
 				return err
 			}
+		} else if err := b.AppendBool(j, vs.Value(i)); err != nil {
+			return err
 		}
 	}
 
