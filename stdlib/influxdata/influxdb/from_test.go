@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
@@ -179,52 +178,11 @@ func TestFrom_Run(t *testing.T) {
 				Params: url.Values{
 					"org": []string{"influxdata"},
 				},
-				Ast: &ast.Package{
-					Package: "main",
-					Files: []*ast.File{{
-						Name: "query.flux",
-						Package: &ast.PackageClause{
-							Name: &ast.Identifier{Name: "main"},
-						},
-						Body: []ast.Statement{
-							&ast.ExpressionStatement{
-								Expression: &ast.PipeExpression{
-									Argument: &ast.CallExpression{
-										Callee: &ast.Identifier{Name: "from"},
-										Arguments: []ast.Expression{
-											&ast.ObjectExpression{
-												Properties: []*ast.Property{
-													{
-														Key:   &ast.Identifier{Name: "bucket"},
-														Value: &ast.StringLiteral{Value: "telegraf"},
-													},
-												},
-											},
-										},
-									},
-									Call: &ast.CallExpression{
-										Callee: &ast.Identifier{Name: "range"},
-										Arguments: []ast.Expression{
-											&ast.ObjectExpression{
-												Properties: []*ast.Property{
-													{
-														Key: &ast.Identifier{Name: "start"},
-														Value: &ast.UnaryExpression{
-															Operator: ast.SubtractionOperator,
-															Argument: &ast.DurationLiteral{Values: []ast.Duration{
-																{Magnitude: 1, Unit: "m"},
-															}},
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					}},
-				},
+				Query: `package main
+
+
+from(bucket: "telegraf")
+	|> range(start: -1m)`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -252,52 +210,11 @@ func TestFrom_Run(t *testing.T) {
 				Params: url.Values{
 					"orgID": []string{"97aa81cc0e247dc4"},
 				},
-				Ast: &ast.Package{
-					Package: "main",
-					Files: []*ast.File{{
-						Name: "query.flux",
-						Package: &ast.PackageClause{
-							Name: &ast.Identifier{Name: "main"},
-						},
-						Body: []ast.Statement{
-							&ast.ExpressionStatement{
-								Expression: &ast.PipeExpression{
-									Argument: &ast.CallExpression{
-										Callee: &ast.Identifier{Name: "from"},
-										Arguments: []ast.Expression{
-											&ast.ObjectExpression{
-												Properties: []*ast.Property{
-													{
-														Key:   &ast.Identifier{Name: "bucketID"},
-														Value: &ast.StringLiteral{Value: "1e01ac57da723035"},
-													},
-												},
-											},
-										},
-									},
-									Call: &ast.CallExpression{
-										Callee: &ast.Identifier{Name: "range"},
-										Arguments: []ast.Expression{
-											&ast.ObjectExpression{
-												Properties: []*ast.Property{
-													{
-														Key: &ast.Identifier{Name: "start"},
-														Value: &ast.UnaryExpression{
-															Operator: ast.SubtractionOperator,
-															Argument: &ast.DurationLiteral{Values: []ast.Duration{
-																{Magnitude: 1, Unit: "m"},
-															}},
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					}},
-				},
+				Query: `package main
+
+
+from(bucketID: "1e01ac57da723035")
+	|> range(start: -1m)`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -324,55 +241,11 @@ func TestFrom_Run(t *testing.T) {
 				Params: url.Values{
 					"org": []string{"influxdata"},
 				},
-				Ast: &ast.Package{
-					Package: "main",
-					Files: []*ast.File{{
-						Name: "query.flux",
-						Package: &ast.PackageClause{
-							Name: &ast.Identifier{Name: "main"},
-						},
-						Body: []ast.Statement{
-							&ast.ExpressionStatement{
-								Expression: &ast.PipeExpression{
-									Argument: &ast.CallExpression{
-										Callee: &ast.Identifier{Name: "from"},
-										Arguments: []ast.Expression{
-											&ast.ObjectExpression{
-												Properties: []*ast.Property{
-													{
-														Key:   &ast.Identifier{Name: "bucket"},
-														Value: &ast.StringLiteral{Value: "telegraf"},
-													},
-												},
-											},
-										},
-									},
-									Call: &ast.CallExpression{
-										Callee: &ast.Identifier{Name: "range"},
-										Arguments: []ast.Expression{
-											&ast.ObjectExpression{
-												Properties: []*ast.Property{
-													{
-														Key: &ast.Identifier{Name: "start"},
-														Value: &ast.DateTimeLiteral{
-															Value: mustParseTime("2018-05-30T09:00:00Z"),
-														},
-													},
-													{
-														Key: &ast.Identifier{Name: "stop"},
-														Value: &ast.DateTimeLiteral{
-															Value: mustParseTime("2018-05-30T10:00:00Z"),
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					}},
-				},
+				Query: `package main
+
+
+from(bucket: "telegraf")
+	|> range(start: 2018-05-30T09:00:00Z, stop: 2018-05-30T10:00:00Z)`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -408,85 +281,14 @@ func TestFrom_Run(t *testing.T) {
 				Params: url.Values{
 					"org": []string{"influxdata"},
 				},
-				Ast: &ast.Package{
-					Package: "main",
-					Files: []*ast.File{{
-						Name: "query.flux",
-						Package: &ast.PackageClause{
-							Name: &ast.Identifier{Name: "main"},
-						},
-						Body: []ast.Statement{
-							&ast.ExpressionStatement{
-								Expression: &ast.PipeExpression{
-									Argument: &ast.PipeExpression{
-										Argument: &ast.CallExpression{
-											Callee: &ast.Identifier{Name: "from"},
-											Arguments: []ast.Expression{
-												&ast.ObjectExpression{
-													Properties: []*ast.Property{
-														{
-															Key:   &ast.Identifier{Name: "bucket"},
-															Value: &ast.StringLiteral{Value: "telegraf"},
-														},
-													},
-												},
-											},
-										},
-										Call: &ast.CallExpression{
-											Callee: &ast.Identifier{Name: "range"},
-											Arguments: []ast.Expression{
-												&ast.ObjectExpression{
-													Properties: []*ast.Property{
-														{
-															Key: &ast.Identifier{Name: "start"},
-															Value: &ast.UnaryExpression{
-																Operator: ast.SubtractionOperator,
-																Argument: &ast.DurationLiteral{Values: []ast.Duration{
-																	{Magnitude: 1, Unit: "m"},
-																}},
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-									Call: &ast.CallExpression{
-										Callee: &ast.Identifier{Name: "filter"},
-										Arguments: []ast.Expression{
-											&ast.ObjectExpression{
-												Properties: []*ast.Property{
-													{
-														Key: &ast.Identifier{Name: "fn"},
-														Value: &ast.FunctionExpression{
-															Params: []*ast.Property{{
-																Key: &ast.Identifier{Name: "r"},
-															}},
-															Body: &ast.Block{
-																Body: []ast.Statement{
-																	&ast.ReturnStatement{
-																		Argument: &ast.BinaryExpression{
-																			Operator: ast.GreaterThanEqualOperator,
-																			Left: &ast.MemberExpression{
-																				Object:   &ast.Identifier{Name: "r"},
-																				Property: &ast.StringLiteral{Value: "_value"},
-																			},
-																			Right: &ast.FloatLiteral{Value: 0.0},
-																		},
-																	},
-																},
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					}},
-				},
+				Query: `package main
+
+
+from(bucket: "telegraf")
+	|> range(start: -1m)
+	|> filter(fn: (r) => {
+		return r["_value"] >= 0.0
+	})`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -523,89 +325,14 @@ func TestFrom_Run(t *testing.T) {
 				Params: url.Values{
 					"org": []string{"influxdata"},
 				},
-				Ast: &ast.Package{
-					Package: "main",
-					Files: []*ast.File{{
-						Name: "query.flux",
-						Package: &ast.PackageClause{
-							Name: &ast.Identifier{Name: "main"},
-						},
-						Body: []ast.Statement{
-							&ast.ExpressionStatement{
-								Expression: &ast.PipeExpression{
-									Argument: &ast.PipeExpression{
-										Argument: &ast.CallExpression{
-											Callee: &ast.Identifier{Name: "from"},
-											Arguments: []ast.Expression{
-												&ast.ObjectExpression{
-													Properties: []*ast.Property{
-														{
-															Key:   &ast.Identifier{Name: "bucket"},
-															Value: &ast.StringLiteral{Value: "telegraf"},
-														},
-													},
-												},
-											},
-										},
-										Call: &ast.CallExpression{
-											Callee: &ast.Identifier{Name: "range"},
-											Arguments: []ast.Expression{
-												&ast.ObjectExpression{
-													Properties: []*ast.Property{
-														{
-															Key: &ast.Identifier{Name: "start"},
-															Value: &ast.UnaryExpression{
-																Operator: ast.SubtractionOperator,
-																Argument: &ast.DurationLiteral{Values: []ast.Duration{
-																	{Magnitude: 1, Unit: "m"},
-																}},
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-									Call: &ast.CallExpression{
-										Callee: &ast.Identifier{Name: "filter"},
-										Arguments: []ast.Expression{
-											&ast.ObjectExpression{
-												Properties: []*ast.Property{
-													{
-														Key: &ast.Identifier{Name: "fn"},
-														Value: &ast.FunctionExpression{
-															Params: []*ast.Property{{
-																Key: &ast.Identifier{Name: "r"},
-															}},
-															Body: &ast.Block{
-																Body: []ast.Statement{
-																	&ast.ReturnStatement{
-																		Argument: &ast.BinaryExpression{
-																			Operator: ast.GreaterThanEqualOperator,
-																			Left: &ast.MemberExpression{
-																				Object:   &ast.Identifier{Name: "r"},
-																				Property: &ast.StringLiteral{Value: "_value"},
-																			},
-																			Right: &ast.FloatLiteral{Value: 0.0},
-																		},
-																	},
-																},
-															},
-														},
-													},
-													{
-														Key:   &ast.Identifier{Name: "onEmpty"},
-														Value: &ast.StringLiteral{Value: "keep"},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					}},
-				},
+				Query: `package main
+
+
+from(bucket: "telegraf")
+	|> range(start: -1m)
+	|> filter(fn: (r) => {
+		return r["_value"] >= 0.0
+	}, onEmpty: "keep")`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -659,98 +386,16 @@ import "math"
 				Params: url.Values{
 					"org": []string{"influxdata"},
 				},
-				Ast: &ast.Package{
-					Package: "main",
-					Files: []*ast.File{{
-						Name: "query.flux",
-						Package: &ast.PackageClause{
-							Name: &ast.Identifier{Name: "main"},
-						},
-						Imports: []*ast.ImportDeclaration{
-							{
-								Path: &ast.StringLiteral{Value: "math"},
-								As:   &ast.Identifier{Name: "math"},
-							},
-						},
-						Body: []ast.Statement{
-							&ast.ExpressionStatement{
-								Expression: &ast.PipeExpression{
-									Argument: &ast.PipeExpression{
-										Argument: &ast.CallExpression{
-											Callee: &ast.Identifier{Name: "from"},
-											Arguments: []ast.Expression{
-												&ast.ObjectExpression{
-													Properties: []*ast.Property{
-														{
-															Key:   &ast.Identifier{Name: "bucket"},
-															Value: &ast.StringLiteral{Value: "telegraf"},
-														},
-													},
-												},
-											},
-										},
-										Call: &ast.CallExpression{
-											Callee: &ast.Identifier{Name: "range"},
-											Arguments: []ast.Expression{
-												&ast.ObjectExpression{
-													Properties: []*ast.Property{
-														{
-															Key: &ast.Identifier{Name: "start"},
-															Value: &ast.UnaryExpression{
-																Operator: ast.SubtractionOperator,
-																Argument: &ast.DurationLiteral{Values: []ast.Duration{
-																	{Magnitude: 1, Unit: "m"},
-																}},
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-									Call: &ast.CallExpression{
-										Callee: &ast.Identifier{Name: "filter"},
-										Arguments: []ast.Expression{
-											&ast.ObjectExpression{
-												Properties: []*ast.Property{
-													{
-														Key: &ast.Identifier{Name: "fn"},
-														Value: &ast.FunctionExpression{
-															Params: []*ast.Property{{
-																Key: &ast.Identifier{Name: "r"},
-															}},
-															Body: &ast.Block{
-																Body: []ast.Statement{
-																	&ast.ReturnStatement{
-																		Argument: &ast.BinaryExpression{
-																			Operator: ast.GreaterThanEqualOperator,
-																			Left: &ast.MemberExpression{
-																				Object:   &ast.Identifier{Name: "r"},
-																				Property: &ast.StringLiteral{Value: "_value"},
-																			},
-																			Right: &ast.MemberExpression{
-																				Object:   &ast.Identifier{Name: "math"},
-																				Property: &ast.StringLiteral{Value: "pi"},
-																			},
-																		},
-																	},
-																},
-															},
-														},
-													},
-													{
-														Key:   &ast.Identifier{Name: "onEmpty"},
-														Value: &ast.StringLiteral{Value: "keep"},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					}},
-				},
+				Query: `package main
+
+
+import math "math"
+
+from(bucket: "telegraf")
+	|> range(start: -1m)
+	|> filter(fn: (r) => {
+		return r["_value"] >= math["pi"]
+	}, onEmpty: "keep")`,
 				Tables: defaultTablesFn,
 			},
 		},

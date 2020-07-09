@@ -125,40 +125,6 @@ func TestFromRemoteRule_WithoutHostValidation(t *testing.T) {
 	plantest.PhysicalRuleTestHelper(t, &tc)
 }
 
-func TestFromRemoteRule_WithoutOrgValidation(t *testing.T) {
-	fromSpec := influxdb.FromProcedureSpec{
-		Bucket: influxdb.NameOrID{Name: "telegraf"},
-		Host:   stringPtr("http://localhost:9999"),
-	}
-	rangeSpec := universe.RangeProcedureSpec{
-		Bounds: flux.Bounds{
-			Start: flux.Time{
-				IsRelative: true,
-				Relative:   -time.Minute,
-			},
-			Stop: flux.Time{
-				IsRelative: true,
-			},
-		},
-	}
-
-	tc := plantest.RuleTestCase{
-		Name: "without org validation",
-		Rules: []plan.Rule{
-			influxdb.FromRemoteRule{},
-		},
-		Before: &plantest.PlanSpec{
-			Nodes: []plan.Node{
-				plan.CreateLogicalNode("from", &fromSpec),
-				plan.CreateLogicalNode("range", &rangeSpec),
-			},
-			Edges: [][2]int{{0, 1}},
-		},
-		ValidateError: errors.New(codes.Invalid, "reading from a remote host requires an organization to be set"),
-	}
-	plantest.PhysicalRuleTestHelper(t, &tc)
-}
-
 func TestFromRemoteRule_WithoutRangeValidation(t *testing.T) {
 	fromSpec := influxdb.FromProcedureSpec{
 		Org:    &influxdb.NameOrID{Name: "influxdata"},

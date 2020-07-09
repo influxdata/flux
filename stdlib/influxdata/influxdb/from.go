@@ -206,9 +206,7 @@ func (s *FromRemoteProcedureSpec) Copy() plan.ProcedureSpec {
 }
 
 func (s *FromRemoteProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
-	if s.Org == nil {
-		return errors.New(codes.Invalid, "reading from a remote host requires an organization to be set")
-	} else if s.Range == nil {
+	if s.Range == nil {
 		var bucket string
 		if s.Bucket.Name != "" {
 			bucket = s.Bucket.Name
