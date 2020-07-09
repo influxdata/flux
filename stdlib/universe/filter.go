@@ -9,6 +9,7 @@ import (
 	arrowmem "github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
+	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
@@ -110,6 +111,7 @@ func (s *FilterProcedureSpec) Kind() plan.ProcedureKind {
 func (s *FilterProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FilterProcedureSpec)
 	ns.Fn = s.Fn.Copy()
+	ns.KeepEmptyTables = s.KeepEmptyTables
 	return ns
 }
 
@@ -356,6 +358,46 @@ func (RemoveTrivialFilterRule) Rewrite(ctx context.Context, filterNode plan.Node
 		return filterNode, false, nil
 	}
 
+	anyNode := filterNode.Predecessors()[0]
+	return anyNode, true, nil
+}
+
+// MergeFiltersRule merges Filter nodes whose body is a single return to create one Filter node.
+type MergeFiltersRule struct{}
+
+func (MergeFiltersRule) Name() string {
+	return "MergeFiltersRule"
+}
+
+func (MergeFiltersRule) Pattern() plan.Pattern {
+	return plan.Pat(FilterKind, plan.Pat(FilterKind, plan.Any()))
+}
+
+func (MergeFiltersRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan.Node, bool, error) {
+	// conditions
+	filterSpec1 := filterNode.ProcedureSpec().(*FilterProcedureSpec)
+	bodyExpr1, ok := filterSpec1.Fn.Fn.GetFunctionBodyExpression()
+	if !ok {
+		// Not an expression.
+		return filterNode, false, nil
+	}
+	filterSpec2 := filterNode.Predecessors()[0].ProcedureSpec().(*FilterProcedureSpec)
+	bodyExpr2, ok := filterSpec2.Fn.Fn.GetFunctionBodyExpression()
+	if !ok {
+		// Not an expression.
+		return filterNode, false, nil
+	}
+	//checks if the fields of KeepEmptyTables are different and only allows merge if 1) they are the same 2) keep is the Predecessors field
+	if filterSpec1.KeepEmptyTables != filterSpec2.KeepEmptyTables && !filterSpec2.KeepEmptyTables {
+		return filterNode, false, nil
+	}
+
+	// created an instance of LogicalExpression to 'and' two different arguments
+	expr := &semantic.LogicalExpression{Left: bodyExpr1, Operator: ast.AndOperator, Right: bodyExpr2}
+	// set a new variables that converted the single body statement to a return type that can used with expr
+	ret := filterSpec2.Fn.Fn.Block.Body[0].(*semantic.ReturnStatement)
+	ret.Argument = expr
+	// return the pred node
 	anyNode := filterNode.Predecessors()[0]
 	return anyNode, true, nil
 }

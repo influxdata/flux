@@ -783,6 +783,149 @@ gen.tables(n: 2048, tags: [{name: "a", cardinality: 10}])
 	}
 }
 
+func TestFilter_MergeFilterRule(t *testing.T) {
+	var (
+		from    = &influxdb.FromProcedureSpec{}
+		filter0 = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._field == "usage_idle"`),
+				},
+			}
+		}
+		filter1 = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu"`),
+				},
+			}
+		}
+		filterMerge = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu" and r._field == "usage_idle"`),
+				},
+			}
+		}
+		filterTwoStat = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => {x = 10 return x}`),
+				},
+			}
+		}
+		filterDrop = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				KeepEmptyTables: false,
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._field == "usage_idle"`),
+				},
+			}
+		}
+		filterKeep = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				KeepEmptyTables: true,
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu"`),
+				},
+			}
+		}
+		filterEmptyMerge = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				KeepEmptyTables: true,
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._field == "usage_idle" and r._measurement == "cpu"`),
+				},
+			}
+		}
+	)
+	test := []plantest.RuleTestCase{
+		{
+			Name:  "filterAdd",
+			Rules: []plan.Rule{universe.MergeFiltersRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter0", filter0()),
+					plan.CreatePhysicalNode("filter1", filter1()),
+				},
+				Edges: [][2]int{{0, 1}, {1, 2}},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter0", filterMerge()),
+				},
+				Edges: [][2]int{{0, 1}},
+			},
+		},
+		{
+			Name:  "filterNoChange",
+			Rules: []plan.Rule{universe.MergeFiltersRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter0", filter0()),
+				},
+				Edges: [][2]int{{0, 1}},
+			},
+			NoChange: true,
+		},
+		{
+			Name:  "filterNoChange1",
+			Rules: []plan.Rule{universe.MergeFiltersRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter3", filterTwoStat()),
+					plan.CreatePhysicalNode("filter0", filter0()),
+				},
+				Edges: [][2]int{{0, 1}, {1, 2}},
+			},
+			NoChange: true,
+		},
+		{
+			Name:  "filterNoChange2",
+			Rules: []plan.Rule{universe.MergeFiltersRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter5", filterDrop()),
+					plan.CreatePhysicalNode("filter4", filterKeep()),
+				},
+				Edges: [][2]int{{0, 1}, {1, 2}},
+			},
+			NoChange: true,
+		},
+		{
+			Name:  "filterEmptyMerge",
+			Rules: []plan.Rule{universe.MergeFiltersRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter4", filterKeep()),
+					plan.CreatePhysicalNode("filter5", filterDrop()),
+				},
+				Edges: [][2]int{{0, 1}, {1, 2}},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("from", from),
+					plan.CreatePhysicalNode("filter4", filterEmptyMerge()),
+				},
+				Edges: [][2]int{{0, 1}},
+			},
+		},
+	}
+	for _, tc := range test {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			plantest.LogicalRuleTestHelper(t, &tc)
+		})
+	}
+}
+
 func BenchmarkFilter_Values(b *testing.B) {
 	b.Run("1000", func(b *testing.B) {
 		fn := executetest.FunctionExpression(b, `(r) => r._value > 0.0`)
