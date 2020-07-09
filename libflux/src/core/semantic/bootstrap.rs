@@ -256,7 +256,7 @@ pub fn build_polytype(from: PolyTypeMap, f: &mut Fresher) -> Result<PolyType, Er
     let mut kinds = TvarKinds::new();
     let sub = infer::solve(&cons, &mut kinds, f)?;
     Ok(infer::generalize(
-        &Environment::empty(),
+        &Environment::empty(false),
         &kinds,
         MonoType::Row(Box::new(r)).apply(&sub),
     ))

@@ -12,22 +12,45 @@ use crate::semantic::types::{union, PolyType, PolyTypeMap, Tvar};
 pub struct Environment {
     pub parent: Option<Box<Environment>>,
     pub values: PolyTypeMap,
+    pub readwrite: bool,
 }
 
 impl Substitutable for Environment {
     fn apply(self, sub: &Substitution) -> Self {
-        match self.parent {
-            Some(env) => Environment {
+        match (self.readwrite, self.parent) {
+            // This is a performance optimization where false implies
+            // this is the top-level of the type environment and apply
+            // is a no-op.
+            (false, None) => Environment {
+                parent: None,
+                values: self.values,
+                readwrite: false,
+            },
+            (false, parent) => Environment {
+                parent,
+                values: self.values,
+                readwrite: false,
+            },
+            // Even though this is the top-level of the type environment
+            // and apply should be a no-op, readwrite is set to true so
+            // we apply anyway.
+            (true, None) => Environment {
+                parent: None,
+                values: self.values.apply(sub),
+                readwrite: true,
+            },
+            (true, Some(env)) => Environment {
                 parent: Some(Box::new(env.apply(sub))),
                 values: self.values.apply(sub),
+                readwrite: true,
             },
-            None => self,
         }
     }
     fn free_vars(&self) -> Vec<Tvar> {
-        match &self.parent {
-            Some(env) => union(env.free_vars(), self.values.free_vars()),
-            None => Vec::new(),
+        match (self.readwrite, &self.parent) {
+            (false, None) | (false, _) => Vec::new(),
+            (true, None) => self.values.free_vars(),
+            (true, Some(env)) => union(env.free_vars(), self.values.free_vars()),
         }
     }
 }
@@ -47,15 +70,17 @@ impl From<PolyTypeMap> for Environment {
         Environment {
             parent: None,
             values: bindings,
+            readwrite: false,
         }
     }
 }
 
 impl Environment {
-    pub fn empty() -> Environment {
+    pub fn empty(readwrite: bool) -> Environment {
         Environment {
             parent: None,
             values: PolyTypeMap::new(),
+            readwrite,
         }
     }
     // The following clippy lint is ignored due to taking a `Self` type as the
@@ -67,6 +92,7 @@ impl Environment {
         Environment {
             parent: Some(Box::new(from)),
             values: PolyTypeMap::new(),
+            readwrite: true,
         }
     }
     pub fn lookup(&self, v: &str) -> Option<&PolyType> {

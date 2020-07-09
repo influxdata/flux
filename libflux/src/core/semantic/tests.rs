@@ -30,8 +30,7 @@ use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
 use crate::semantic::nodes;
 use crate::semantic::parser::parse;
-use crate::semantic::sub::Substitutable;
-use crate::semantic::types::{MaxTvar, MonoType, PolyType, PolyTypeMap, SemanticMap};
+use crate::semantic::types::{MaxTvar, PolyType, PolyTypeMap, SemanticMap};
 
 use crate::ast;
 use crate::parser::parse_string;
@@ -49,27 +48,10 @@ fn parse_program(src: &str) -> ast::Package {
     }
 }
 
-fn validate(t: PolyType) -> Result<PolyType, String> {
-    if let MonoType::Var(_) = t.expr {
-        return Err(format!(
-            "polymorphic values not allowed in type environment: {}",
-            t
-        ));
-    }
-    if !t.free_vars().is_empty() {
-        return Err(format!(
-            "free variables not allowed in type environment: {}",
-            t
-        ));
-    }
-    return Ok(t);
-}
-
 fn parse_map(m: HashMap<&str, &str>) -> PolyTypeMap {
     m.into_iter()
         .map(|(name, expr)| {
-            let init = parse(expr).expect(format!("failed to parse {}", name).as_str());
-            let poly = validate(init).expect(format!("failed to validate {}", name).as_str());
+            let poly = parse(expr).expect(format!("failed to parse {}", name).as_str());
             return (name.to_string(), poly);
         })
         .collect()
@@ -124,13 +106,16 @@ fn infer_types(
         max
     };
 
+    let mut env: Environment = env.into();
+    env.readwrite = true;
+
     let mut f = Fresher::from(max.0 + 1);
 
     let pkg = parse_program(src);
 
     let got = match nodes::infer_pkg_types(
         &mut convert_with(pkg, &mut f).expect("analysis failed"),
-        Environment::new(env.into()),
+        Environment::new(env),
         &mut f,
         &importer,
         &None,
@@ -314,6 +299,26 @@ macro_rules! package {
     }}
 }
 
+#[test]
+fn free_vars_in_env() {
+    test_infer! {
+        env: map![
+            "v" => "forall [] t0",
+        ],
+        src: r#"
+            a = v.b + 1
+            b = {v with c: 1.1}
+            c = b.d
+            d = v
+        "#,
+        exp: map![
+            "a" => "forall [] int",
+            "b" => "forall [] {c: float | d: t0 | b: int | t1}",
+            "c" => "forall [] t0",
+            "d" => "forall [] {d: t0 | b: int | t1}",
+        ],
+    }
+}
 #[test]
 fn instantiation_0() {
     test_infer! {
