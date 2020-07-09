@@ -158,7 +158,7 @@ func TestBufferedBuilder_AppendTable(t *testing.T) {
 				t.Fatalf("unexpected error: %s", err)
 			}
 
-			if diff := table.Diff(t, tt.want, out); diff != "" {
+			if diff := table.Diff(tt.want, out); diff != "" {
 				t.Fatalf("unexpected diff -want/+got:\n%s", diff)
 			}
 		})
