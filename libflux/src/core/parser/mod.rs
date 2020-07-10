@@ -526,7 +526,9 @@ impl Parser {
     }
     fn parse_builtin_statement(&mut self) -> Statement {
         let t = self.expect(TOK_BUILTIN);
+        print!("parse_builtin_statement called\n");
         let id = self.parse_identifier();
+        print!("\t{}\n", id.name);
         Statement::Builtin(Box::new(BuiltinStmt {
             base: self.base_node_from_other_end(&t, &id.base),
             id,
