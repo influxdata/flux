@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -125,28 +124,12 @@ func TestDatabases_Run(t *testing.T) {
 				Params: url.Values{
 					"org": []string{"influxdata"},
 				},
-				Ast: &ast.Package{
-					Package: "main",
-					Files: []*ast.File{{
-						Name: "query.flux",
-						Package: &ast.PackageClause{
-							Name: &ast.Identifier{Name: "main"},
-						},
-						Imports: []*ast.ImportDeclaration{{
-							Path: &ast.StringLiteral{Value: "influxdata/influxdb/v1"},
-						}},
-						Body: []ast.Statement{
-							&ast.ExpressionStatement{
-								Expression: &ast.CallExpression{
-									Callee: &ast.MemberExpression{
-										Object:   &ast.Identifier{Name: "v1"},
-										Property: &ast.Identifier{Name: "databases"},
-									},
-								},
-							},
-						},
-					}},
-				},
+				Query: `package main
+
+
+import "influxdata/influxdb/v1"
+
+v1.databases()`,
 				Tables: defaultTablesFn,
 			},
 		},

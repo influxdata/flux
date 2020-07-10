@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -118,22 +117,10 @@ func TestBuckets_Run(t *testing.T) {
 				Params: url.Values{
 					"org": []string{"influxdata"},
 				},
-				Ast: &ast.Package{
-					Package: "main",
-					Files: []*ast.File{{
-						Name: "query.flux",
-						Package: &ast.PackageClause{
-							Name: &ast.Identifier{Name: "main"},
-						},
-						Body: []ast.Statement{
-							&ast.ExpressionStatement{
-								Expression: &ast.CallExpression{
-									Callee: &ast.Identifier{Name: "buckets"},
-								},
-							},
-						},
-					}},
-				},
+				Query: `package main
+
+
+buckets()`,
 				Tables: defaultTablesFn,
 			},
 		},

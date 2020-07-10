@@ -30,7 +30,7 @@ type (
 
 type Want struct {
 	Params url.Values
-	Ast    *ast.Package
+	Query  string
 	Tables func() []*executetest.Table
 }
 
@@ -50,7 +50,7 @@ func RunSourceTestHelper(t *testing.T, spec SourceProcedureSpec, want Want) {
 		}
 
 		var req struct {
-			AST     *ast.Package `json:"ast"`
+			Query   string `json:"query"`
 			Dialect struct {
 				Header         bool     `json:"header"`
 				DateTimeFormat string   `json:"dateTimeFormat"`
@@ -62,8 +62,8 @@ func RunSourceTestHelper(t *testing.T, spec SourceProcedureSpec, want Want) {
 			return
 		}
 
-		if want, got := want.Ast, req.AST; !cmp.Equal(want, got) {
-			t.Errorf("unexpected ast in request body -want/+got:\n%s", cmp.Diff(want, got))
+		if want, got := want.Query, req.Query; !cmp.Equal(want, got) {
+			t.Errorf("unexpected query in request body -want/+got:\n%s", cmp.Diff(want, got))
 		}
 
 		w.Header().Add("Content-Type", "text/csv")

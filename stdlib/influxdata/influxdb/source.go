@@ -44,13 +44,6 @@ type source struct {
 }
 
 func CreateSource(id execute.DatasetID, spec RemoteProcedureSpec, a execute.Administration) (execute.Source, error) {
-	// These parameters are only required for the remote influxdb
-	// source. If running flux within influxdb, these aren't
-	// required.
-	if spec.GetOrg() == nil {
-		return nil, errors.Newf(codes.Invalid, "org must be set")
-	}
-
 	deps := flux.GetDependencies(a.Context())
 	s := &source{
 		id:   id,
@@ -117,15 +110,17 @@ func (s *source) newRequest(ctx context.Context) (*http.Request, error) {
 		return nil, err
 	}
 	u.Path += "/api/v2/query"
-	u.RawQuery = func() string {
-		params := make(url.Values)
-		if org := s.spec.GetOrg(); org.ID != "" {
-			params.Set("orgID", org.ID)
-		} else {
-			params.Set("org", org.Name)
-		}
-		return params.Encode()
-	}()
+	if org := s.spec.GetOrg(); org != nil {
+		u.RawQuery = func() string {
+			params := make(url.Values)
+			if org.ID != "" {
+				params.Set("orgID", org.ID)
+			} else {
+				params.Set("org", org.Name)
+			}
+			return params.Encode()
+		}()
+	}
 
 	// Validate that the produced url is allowed.
 	urlv, err := s.deps.URLValidator()
@@ -155,7 +150,7 @@ func (s *source) newRequest(ctx context.Context) (*http.Request, error) {
 
 func (s *source) newRequestBody() ([]byte, error) {
 	var req struct {
-		AST     *ast.Package `json:"ast"`
+		Query   string `json:"query"`
 		Dialect struct {
 			Header         bool     `json:"header"`
 			DateTimeFormat string   `json:"dateTimeFormat"`
@@ -164,10 +159,7 @@ func (s *source) newRequestBody() ([]byte, error) {
 	}
 	// Build the query. This needs to be done first to build
 	// up the list of imports.
-	req.AST = &ast.Package{
-		Package: "main",
-		Files:   []*ast.File{s.spec.BuildQuery()},
-	}
+	req.Query = ast.Format(s.spec.BuildQuery())
 	req.Dialect.Header = true
 	req.Dialect.DateTimeFormat = "RFC3339Nano"
 	req.Dialect.Annotations = []string{"group", "datatype", "default"}
