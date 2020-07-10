@@ -6,9 +6,10 @@ use core::semantic::builtins::builtins;
 use core::semantic::check;
 use core::semantic::env::Environment;
 use core::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
-use core::semantic::flatbuffers::types::build_env;
+use core::semantic::flatbuffers::types::{build_env, build_type};
 use core::semantic::fresh::Fresher;
-use core::semantic::nodes::{infer_pkg_types, inject_pkg_types};
+use core::semantic::nodes::{infer_pkg_types, inject_pkg_types, Package};
+use core::semantic::sub::Substitution;
 use core::semantic::Importer;
 
 pub use core::ast;
@@ -18,9 +19,11 @@ pub use core::scanner;
 pub use core::semantic;
 pub use core::*;
 
+use core::semantic::types::{MonoType, PolyType, TvarKinds};
 use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;
+use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
@@ -331,6 +334,38 @@ pub unsafe extern "C" fn flux_analyze(
     }
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn flux_find_var_type(
+    ast_pkg: Box<ast::Package>,
+    var_name: *const c_char,
+    out_type: *mut flux_buffer_t,
+) -> Option<Box<ErrorHandle>> {
+    let buf = CStr::from_ptr(var_name).to_bytes(); // Unsafe
+    let name = String::from_utf8(buf.to_vec()).unwrap();
+    find_var_type(*ast_pkg, name).map_or_else(
+        |e| {
+            let handle = ErrorHandle { err: Box::new(e) };
+            Some(Box::new(handle))
+        },
+        |t| {
+            let mut builder = flatbuffers::FlatBufferBuilder::new();
+            let (fb_mono_type, typ_type) = build_type(&mut builder, t);
+            let fb_mono_type_holder = fb::MonoTypeHolder::create(&mut builder, &MonoTypeHolderArgs {
+                typ_type,
+                typ: Some(fb_mono_type)
+            });
+            builder.finish(fb_mono_type_holder, None);
+            let (mut vec, offset) = builder.collapse();
+            // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
+            let data = vec.split_off(offset);
+            let out_type = &mut *out_type; // Unsafe
+            out_type.len = data.len();
+            out_type.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
+            None
+        },
+    )
+}
+
 pub struct SemanticAnalyzer {
     f: Fresher,
     env: Environment,
@@ -458,7 +493,20 @@ pub unsafe extern "C" fn flux_analyze_with(
 /// analyze consumes the given AST package and returns a semantic package
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
-pub fn analyze(ast_pkg: ast::Package) -> Result<core::semantic::nodes::Package, core::Error> {
+pub fn analyze(ast_pkg: ast::Package) -> Result<Package, Error> {
+    let (sem_pkg, _, sub) = infer_with_env(ast_pkg, fresher(), None)?;
+    Ok(inject_pkg_types(sem_pkg, &sub))
+}
+
+/// infer_with_env consumes the given AST package, inject the type bindings from the given
+/// type environment, and returns a semantic package that has not been type-inferred and an
+/// inferred type environment and substitution.
+/// This function is aware of the standard library and prelude.
+pub fn infer_with_env(
+    ast_pkg: ast::Package,
+    mut f: Fresher,
+    env: Option<Environment>,
+) -> Result<(Package, Environment, Substitution), Error> {
     // First check to see if there are any errors in the AST.
     let errs = ast::check::check(ast::walk::Node::Package(&ast_pkg));
     if !errs.is_empty() {
@@ -466,23 +514,38 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<core::semantic::nodes::Package, 
     }
 
     let pkgpath = ast_pkg.path.clone();
-    let mut f = fresher();
     let mut sem_pkg = core::semantic::convert::convert_with(ast_pkg, &mut f)?;
 
     check::check(&sem_pkg)?;
 
-    let prelude = match prelude() {
+    let mut prelude = match prelude() {
         Some(prelude) => Environment::new(prelude),
         None => return Err(core::Error::from("missing prelude")),
     };
+    env.map(|e| prelude.copy_bindings_from(&e));
     let imports = match imports() {
         Some(imports) => imports,
         None => return Err(core::Error::from("missing stdlib imports")),
     };
     let builtin_importer = builtins().importer_for(&pkgpath, &mut f);
-    let (_, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, &imports, &builtin_importer)?;
-    sem_pkg = inject_pkg_types(sem_pkg, &sub);
-    Ok(sem_pkg)
+
+    let (env, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, &imports, &builtin_importer)?;
+    Ok((sem_pkg, env, sub))
+}
+
+pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType, Error> {
+    let mut f = fresher();
+    let tvar = f.fresh();
+    let mut env = Environment::empty();
+    env.add(
+        var_name,
+        PolyType {
+            vars: Vec::new(),
+            cons: TvarKinds::new(),
+            expr: MonoType::Var(tvar.clone()),
+        },
+    );
+    infer_with_env(ast_pkg, f, Some(env)).map(|(_, _, sub)| sub.apply(tvar))
 }
 
 /// # Safety

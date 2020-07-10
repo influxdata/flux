@@ -980,6 +980,154 @@ pub mod fbsemantic {
         }
     }
 
+    pub enum MonoTypeHolderOffset {}
+    #[derive(Copy, Clone, Debug, PartialEq)]
+
+    pub struct MonoTypeHolder<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for MonoTypeHolder<'a> {
+        type Inner = MonoTypeHolder<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf: buf, loc: loc },
+            }
+        }
+    }
+
+    impl<'a> MonoTypeHolder<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            MonoTypeHolder { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args MonoTypeHolderArgs,
+        ) -> flatbuffers::WIPOffset<MonoTypeHolder<'bldr>> {
+            let mut builder = MonoTypeHolderBuilder::new(_fbb);
+            if let Some(x) = args.typ {
+                builder.add_typ(x);
+            }
+            builder.add_typ_type(args.typ_type);
+            builder.finish()
+        }
+
+        pub const VT_TYP_TYPE: flatbuffers::VOffsetT = 4;
+        pub const VT_TYP: flatbuffers::VOffsetT = 6;
+
+        #[inline]
+        pub fn typ_type(&self) -> MonoType {
+            self._tab
+                .get::<MonoType>(MonoTypeHolder::VT_TYP_TYPE, Some(MonoType::NONE))
+                .unwrap()
+        }
+        #[inline]
+        pub fn typ(&self) -> Option<flatbuffers::Table<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
+                    MonoTypeHolder::VT_TYP,
+                    None,
+                )
+        }
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
+            if self.typ_type() == MonoType::Basic {
+                self.typ().map(|u| Basic::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_var(&self) -> Option<Var<'a>> {
+            if self.typ_type() == MonoType::Var {
+                self.typ().map(|u| Var::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
+            if self.typ_type() == MonoType::Arr {
+                self.typ().map(|u| Arr::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_row(&self) -> Option<Row<'a>> {
+            if self.typ_type() == MonoType::Row {
+                self.typ().map(|u| Row::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
+            if self.typ_type() == MonoType::Fun {
+                self.typ().map(|u| Fun::init_from_table(u))
+            } else {
+                None
+            }
+        }
+    }
+
+    pub struct MonoTypeHolderArgs {
+        pub typ_type: MonoType,
+        pub typ: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+    }
+    impl<'a> Default for MonoTypeHolderArgs {
+        #[inline]
+        fn default() -> Self {
+            MonoTypeHolderArgs {
+                typ_type: MonoType::NONE,
+                typ: None,
+            }
+        }
+    }
+    pub struct MonoTypeHolderBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> MonoTypeHolderBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_typ_type(&mut self, typ_type: MonoType) {
+            self.fbb_
+                .push_slot::<MonoType>(MonoTypeHolder::VT_TYP_TYPE, typ_type, MonoType::NONE);
+        }
+        #[inline]
+        pub fn add_typ(&mut self, typ: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(MonoTypeHolder::VT_TYP, typ);
+        }
+        #[inline]
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        ) -> MonoTypeHolderBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            MonoTypeHolderBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<MonoTypeHolder<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
     pub enum VarOffset {}
     #[derive(Copy, Clone, Debug, PartialEq)]
 

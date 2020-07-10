@@ -593,7 +593,7 @@ type fbTyper interface {
 func getMonoType(fbExpr fbTyper) (MonoType, error) {
 	var tbl flatbuffers.Table
 	if !fbExpr.Typ(&tbl) {
-		return MonoType{}, errors.Newf(codes.Internal, "missing monotype")
+		return MonoType{}, errors.New(codes.Internal, "missing monotype")
 	}
 
 	t := fbExpr.TypType()

@@ -57,3 +57,50 @@ func TestAnalyze(t *testing.T) {
 		})
 	}
 }
+
+func TestFindVarType(t *testing.T) {
+	tcs := []struct {
+		name string
+		flx  string
+		ty   string
+		err  error
+	}{
+		{
+			name: "success",
+			flx: `
+vint = v.int + 2
+f = (v) => v.shadow
+g = () => v.sweet
+x = g()
+vstr = v.str + "hello"`,
+			ty: "{int: int | sweet: t0 | t1}",
+		},
+		{
+			name: "failure",
+			flx:  `x = "foo" + 10`,
+			err:  errors.New("type error @1:13-1:15: expected string but found int"),
+		},
+	}
+	for _, tc := range tcs {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			ast := libflux.ParseString(tc.flx)
+			monotype, err := libflux.FindVarType(ast, "v")
+			if err != nil {
+				if tc.err == nil {
+					t.Fatalf("expected no error, got: %q", err)
+				}
+				if diff := cmp.Diff(tc.err.Error(), err.Error()); diff != "" {
+					t.Fatalf("unexpected error: -want/+got: %v", diff)
+				}
+				return
+			}
+			if tc.err != nil {
+				t.Fatalf("got no error, expected: %q", tc.err)
+			}
+			if diff := cmp.Diff(tc.ty, monotype.CanonicalString()); diff != "" {
+				t.Fatalf("unexpected type: -want/+got: %v", diff)
+			}
+		})
+	}
+}

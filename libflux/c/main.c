@@ -99,6 +99,32 @@ void test_semantic() {
     flux_free_error(err);
   }
 
+  {
+    printf("Parsing to AST\n");
+    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + 1");
+    assert(ast_pkg_foo !=  NULL);
+    printf("Find variable type v (expect success)\n");
+    struct flux_buffer_t buf;
+    struct flux_error_t* err = flux_find_var_type(ast_pkg_foo, "v", &buf);
+    assert(err == NULL);
+    printf("  FlatBuffer is length %ld\n", buf.len);
+    flux_free_bytes(buf.data);
+  }
+
+  {
+    printf("Parsing to AST\n");
+    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + 1.0");
+    assert(ast_pkg_foo !=  NULL);
+    printf("Find variable type v (expect failure)\n");
+    struct flux_buffer_t buf;
+    struct flux_error_t* err = flux_find_var_type(ast_pkg_foo, "v", &buf);
+    assert(err != NULL);
+    const char* err_str = flux_error_str(err);
+    printf("  error: %s\n", err_str);
+    flux_free_bytes(err_str);
+    flux_free_error(err);
+  }
+
   printf("\n");
 }
 

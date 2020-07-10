@@ -32,6 +32,7 @@ use crate::semantic::fresh::Fresher;
 // This needs to be public so libstd can access it.
 // Once we merge libstd and flux this can be made private again.
 pub use crate::semantic::import::Importer;
+use crate::semantic::types::{MonoType, PolyType, Tvar, TvarKinds};
 use std::fmt;
 
 #[derive(Debug)]
@@ -61,7 +62,9 @@ impl From<String> for Error {
 
 impl Importer for Option<()> {}
 
-pub fn convert_source(source: &str) -> Result<nodes::Package, Error> {
+/// Get a semantic package from the given source and fresher
+/// The returned semantic package is not type-inferred.
+fn get_sem_pkg_from_source(source: &str, fresher: &mut Fresher) -> Result<nodes::Package, Error> {
     let file = parse_string("", source);
     let errs = ast::check::check(ast::walk::Node::File(&file));
     if !errs.is_empty() {
@@ -70,8 +73,13 @@ pub fn convert_source(source: &str) -> Result<nodes::Package, Error> {
         });
     }
     let ast_pkg: ast::Package = file.into();
+    convert_with(ast_pkg, fresher).map_err(|err| Error::from(err))
+}
+
+/// Get a type-inferred semantic package from the given Flux source.
+pub fn convert_source(source: &str) -> Result<nodes::Package, Error> {
     let mut f = Fresher::default();
-    let mut sem_pkg = convert_with(ast_pkg, &mut f)?;
+    let mut sem_pkg = get_sem_pkg_from_source(source, &mut f)?;
     // TODO(affo): add a stdlib Importer.
     let (_, sub) = nodes::infer_pkg_types(
         &mut sem_pkg,
@@ -81,4 +89,24 @@ pub fn convert_source(source: &str) -> Result<nodes::Package, Error> {
         &None,
     )?;
     Ok(nodes::inject_pkg_types(sem_pkg, &sub))
+}
+
+/// Given a Flux source and a variable name, find out the type of that variable in the Flux script.
+/// A type variable will be automatically generated and injected into the type environment that
+/// will be used in semantic analysis. The Flux source itself should not contain any definition
+/// for that variable.
+pub fn find_var_type(source: &str, var_name: &str) -> Result<MonoType, Error> {
+    let mut f = Fresher::default();
+    let mut env = Environment::empty(true);
+    env.add(
+        var_name.to_string(),
+        PolyType {
+            vars: Vec::new(),
+            cons: TvarKinds::new(),
+            expr: MonoType::Var(f.fresh()),
+        },
+    );
+    let mut sem_pkg = get_sem_pkg_from_source(source, &mut f)?;
+    let (_, sub) = nodes::infer_pkg_types(&mut sem_pkg, env, &mut f, &None, &None)?;
+    Ok(sub.apply(Tvar(0)))
 }

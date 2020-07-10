@@ -8,8 +8,11 @@ import (
 	"runtime"
 	"unsafe"
 
+	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/fbsemantic"
+	"github.com/influxdata/flux/semantic"
 )
 
 // SemanticPkg is a Rust pointer to a semantic package.
@@ -72,6 +75,27 @@ func Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 	p := &SemanticPkg{ptr: semPkg}
 	runtime.SetFinalizer(p, free)
 	return p, nil
+}
+
+func FindVarType(astPkg *ASTPkg, varName string) (semantic.MonoType, error) {
+	var buf C.struct_flux_buffer_t
+	defer C.flux_free_bytes(buf.data)
+	cVarName := C.CString(varName)
+	defer C.free(unsafe.Pointer(cVarName))
+	if err := C.flux_find_var_type(astPkg.ptr, cVarName, &buf); err != nil {
+		defer C.flux_free_error(err)
+		cstr := C.flux_error_str(err)
+		defer C.flux_free_bytes(cstr)
+		str := C.GoString(cstr)
+		return semantic.MonoType{}, errors.New(codes.Invalid, str)
+	}
+	bytes := C.GoBytes(unsafe.Pointer(buf.data), C.int(buf.len))
+	monotype := fbsemantic.GetRootAsMonoTypeHolder(bytes, 0)
+	var table flatbuffers.Table
+	if !monotype.Typ(&table) {
+		return semantic.MonoType{}, errors.New(codes.Internal, "missing monotype")
+	}
+	return semantic.NewMonoType(table, monotype.TypType())
 }
 
 type Analyzer struct {

@@ -1,10 +1,70 @@
 use core::ast;
-use core::semantic::convert_source;
 use core::semantic::nodes::*;
-use core::semantic::types::{Function, MonoType, SemanticMap, Tvar};
+use core::semantic::types::{Function, MonoType, Property as TypeProperty, Row, SemanticMap, Tvar};
 use core::semantic::walk::{walk_mut, NodeMut};
+use core::semantic::{convert_source, find_var_type};
 
 use pretty_assertions::assert_eq;
+
+#[test]
+fn find_var_ref() {
+    let source = r#"
+vint = v.int + 2
+f = (v) => v.shadow
+g = () => v.sweet
+x = g()
+vstr = v.str + "hello"
+"#;
+    let t = find_var_type(source, "v").expect("Should be able to get a MonoType.");
+    assert_eq!(
+        t,
+        MonoType::Row(Box::new(Row::Extension {
+            head: TypeProperty {
+                k: "str".to_string(),
+                v: MonoType::String,
+            },
+            tail: MonoType::Row(Box::new(Row::Extension {
+                head: TypeProperty {
+                    k: "sweet".to_string(),
+                    v: MonoType::Var(Tvar(8)),
+                },
+                tail: MonoType::Row(Box::new(Row::Extension {
+                    head: TypeProperty {
+                        k: "int".to_string(),
+                        v: MonoType::Int,
+                    },
+                    tail: MonoType::Var(Tvar(23))
+                })),
+            }))
+        }))
+    );
+}
+
+#[test]
+fn find_var_ref_obj_with() {
+    let source = r#"
+vint = v.int + 2
+o = {v with x: 256}
+p = o.ethan
+"#;
+    let t = find_var_type(source, "v").expect("Should be able to get a MonoType.");
+    assert_eq!(
+        t,
+        MonoType::Row(Box::new(Row::Extension {
+            head: TypeProperty {
+                k: "int".to_string(),
+                v: MonoType::Int,
+            },
+            tail: MonoType::Row(Box::new(Row::Extension {
+                head: TypeProperty {
+                    k: "ethan".to_string(),
+                    v: MonoType::Var(Tvar(7)),
+                },
+                tail: MonoType::Var(Tvar(13)),
+            }))
+        }))
+    );
+}
 
 #[test]
 fn analyze_end_to_end() {
