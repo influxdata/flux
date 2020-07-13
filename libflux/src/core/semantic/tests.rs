@@ -30,7 +30,6 @@ use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
 use crate::semantic::nodes;
 use crate::semantic::parser::parse;
-use crate::semantic::sub::Substitutable;
 use crate::semantic::types::{MaxTvar, MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds};
 
 use crate::ast;
@@ -3287,7 +3286,7 @@ fn function_default_arguments_and_pipes() {
 
 #[test]
 fn copy_bindings_from_other_env() {
-    let mut env = Environment::empty();
+    let mut env = Environment::empty(true);
     let mut f = Fresher::default();
     env.add(
         "a".to_string(),
@@ -3311,6 +3310,7 @@ fn copy_bindings_from_other_env() {
         sub_env,
         Environment {
             parent: Some(env.clone().into()),
+            readwrite: true,
             values: semantic_map!(
                 "b".to_string() => PolyType {
                     vars: Vec::new(),

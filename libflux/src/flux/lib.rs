@@ -536,7 +536,7 @@ pub fn infer_with_env(
 pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType, Error> {
     let mut f = fresher();
     let tvar = f.fresh();
-    let mut env = Environment::empty();
+    let mut env = Environment::empty(true);
     env.add(
         var_name,
         PolyType {
@@ -569,11 +569,29 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{analyze, flux_ast_get_error, merge_packages};
+    use crate::{analyze, flux_ast_get_error, merge_packages, find_var_type};
     use core::semantic::convert::convert_file;
     use core::semantic::env::Environment;
     use core::semantic::nodes::infer_file;
     use core::{ast, semantic};
+    use core::parser::Parser;
+
+    #[test]
+    fn test_find_var_type() {
+        let source = r#"
+vint = v.int + 2
+f = (v) => v.shadow
+h = () => v.wow
+g = () => v.sweet
+x = g()
+vstr = v.str + "hello"
+"#;
+        let mut p = Parser::new(&source);
+        let pkg: ast::Package = p.parse_file("".to_string()).into();
+        let ty = find_var_type(pkg, "v".to_string())
+            .expect("should be able to find var type");
+        println!("{}", ty);
+    }
 
     #[test]
     fn ok_merge_multi_file() {
