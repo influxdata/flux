@@ -10,7 +10,7 @@
 single quotes ('') indicate a literal value
 
 
-polytype    = 'forall' '[' vars? ']' ('where' constraints)? monotype
+polytype    = monotype ('where' constraints)?
 
 vars        = type_var (',' type_var)* 
 constraints = constraint ( (',' | 'and') constraint)* 
@@ -19,7 +19,7 @@ kinds       = kind ( '+' kind)*
 kind        = IDENTIFIER 
 monotype    = type_var | primitive | array | row | function
 
-type_var    = 't' ([0-9])*
+type_var    = ([A-Z])+
 primitive   = INT | FLOAT | STRING | BOOL | DURATION | TIME | REGEXP | BYTES
 array       = '[' monotype ']'
 row         = '{' properties? '}'

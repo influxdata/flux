@@ -526,9 +526,7 @@ impl Parser {
     }
     fn parse_builtin_statement(&mut self) -> Statement {
         let t = self.expect(TOK_BUILTIN);
-        print!("parse_builtin_statement called\n");
         let id = self.parse_identifier();
-        print!("\t{}\n", id.name);
         Statement::Builtin(Box::new(BuiltinStmt {
             base: self.base_node_from_other_end(&t, &id.base),
             id,
@@ -1730,6 +1728,207 @@ impl Parser {
             }
         }
     }
+
+    // we start hererere
+    // parse_monotype parses a monotype
+    // fn parse_monotype(&mut self) -> Result<MonoType, &'static str> {
+    //     let next_token = self.peek();
+    //     match next_token.token_type {
+    //         TokenType::INT
+    //         | TokenType::UINT
+    //         | TokenType::FLOAT
+    //         | TokenType::STRING
+    //         | TokenType::BOOL
+    //         | TokenType::DURATION
+    //         | TokenType::TIME
+    //         | TokenType::REGEXP
+    //         | TokenType::BYTES => self.parse_primitives(&next_token),
+    //         TokenType::IDENTIFIER => match self.parse_type_var(&next_token) {
+    //             Ok(tv) => Ok(MonoType::Var(tv)),
+    //             Err(e) => Err(e),
+    //         },
+    //         TokenType::LEFTSQUAREBRAC => self.parse_array(&next_token),
+    //         TokenType::LEFTPAREN => self.parse_function(&next_token),
+    //         TokenType::LEFTCURLYBRAC => self.parse_row(&next_token),
+    //         _ => Err("Monotype was not in valid format"),
+    //     }
+    // }
+    //
+    // // parse_primitives a single primitive monotype
+    // fn parse_primitives(&mut self, token: &Token) -> Result<MonoType, &'static str> {
+    //     match token.token_type {
+    //         TokenType::BOOL => {
+    //             self.next();
+    //             Ok(MonoType::Bool)
+    //         }
+    //         TokenType::INT => {
+    //             self.next();
+    //             Ok(MonoType::Int)
+    //         }
+    //         TokenType::UINT => {
+    //             self.next();
+    //             Ok(MonoType::Uint)
+    //         }
+    //         TokenType::FLOAT => {
+    //             self.next();
+    //             Ok(MonoType::Float)
+    //         }
+    //         TokenType::STRING => {
+    //             self.next();
+    //             Ok(MonoType::String)
+    //         }
+    //         TokenType::DURATION => {
+    //             self.next();
+    //             Ok(MonoType::Duration)
+    //         }
+    //         TokenType::TIME => {
+    //             self.next();
+    //             Ok(MonoType::Time)
+    //         }
+    //         TokenType::REGEXP => {
+    //             self.next();
+    //             Ok(MonoType::Regexp)
+    //         }
+    //         TokenType::BYTES => {
+    //             self.next();
+    //             Ok(MonoType::Bytes)
+    //         }
+    //         _ => Err("Not a valid basic type"),
+    //     }
+    // }
+    //
+    // // parse_var parses a single type_var
+    // fn parse_type_var(&mut self, token: &Token) -> Result<Tvar, &'static str> {
+    //     match &token.text {
+    //         Some(text) => {
+    //             let num = text.trim_start_matches('T').parse::<u64>(); // match [A-Z]+
+    //             match num {
+    //                 Err(_e) => Err("Not a valid type variable"),
+    //                 Ok(num) => {
+    //                     self.next();
+    //                     Ok(Tvar(num))
+    //                 }
+    //             }
+    //         }
+    //         None => Err("Type variable must have text"),
+    //     }
+    // }
+    //
+    // // parse_array parses an array monotype
+    // fn parse_array(&mut self, token: &Token) -> Result<MonoType, &'static str> {
+    //     if token.token_type != TokenType::LEFTSQUAREBRAC {
+    //         Err("Not a valid array monotype")
+    //     } else {
+    //         let _ = self.next();
+    //
+    //         // recursively parse the array's monotype
+    //         let monotype = self.parse_monotype();
+    //         match monotype {
+    //             Ok(monotype) => {
+    //                 let token = self.next();
+    //                 if token.token_type == TokenType::RIGHTSQUAREBRAC {
+    //                     Ok(MonoType::Arr(Box::new(Array(monotype))))
+    //                 } else {
+    //                     Err("Array monotype must have right square bracket")
+    //                 }
+    //             }
+    //             Err(e) => Err(e),
+    //         }
+    //     }
+    // }
+    //
+    // // parse_function parses a single function monotype
+    // fn parse_function(&mut self, token: &Token) -> Result<MonoType, &'static str> {
+    //     if token.token_type != TokenType::LEFTPAREN {
+    //         return Err("Function must start with a left paren");
+    //     }
+    //
+    //     self.next();
+    //     let mut token = self.next();
+    //
+    //     let mut req_args = MonoTypeMap::new();
+    //     let mut opt_args = MonoTypeMap::new();
+    //     let mut pipe_arg = None;
+    //     let mut need_comma = false;
+    //     loop {
+    //         if token.token_type == TokenType::RIGHTPAREN {
+    //             // end of arguments
+    //             break;
+    //         }
+    //
+    //         if need_comma {
+    //             if token.token_type == TokenType::COMMA {
+    //                 token = self.next();
+    //             } else {
+    //                 return Err("expected comma between arguments");
+    //             }
+    //         }
+    //
+    //         if token.token_type == TokenType::IDENTIFIER {
+    //             if let Ok(arg) = self.parse_required_optional(&token) {
+    //                 req_args.insert(arg.0, arg.1);
+    //             } else {
+    //                 return Err("Must have valid required arguments");
+    //             }
+    //         } else if token.token_type == TokenType::QUESTIONMARK {
+    //             token = self.next(); // skip question mark
+    //
+    //             // now we can parse this optional argument the same way
+    //             // that we parse required arguments
+    //             if let Ok(arg) = self.parse_required_optional(&token) {
+    //                 opt_args.insert(arg.0, arg.1);
+    //             } else {
+    //                 return Err("Invalid format for optional arguments");
+    //             }
+    //         } else if token.token_type == TokenType::PIPE {
+    //             let arg = self.parse_pipe();
+    //             if arg.is_none() {
+    //                 return Err("Invalid format for pipe arguments");
+    //             } else {
+    //                 pipe_arg = arg;
+    //             }
+    //         } else {
+    //             return Err("Invalid arguments for this function.");
+    //         }
+    //
+    //         token = self.next();
+    //         need_comma = true;
+    //     }
+    //
+    //     if token.token_type != TokenType::RIGHTPAREN {
+    //         return Err("Function arguments must be follow by a right paren");
+    //     }
+    //
+    //     token = self.next(); // move to arrow
+    //
+    //     if token.token_type != TokenType::ARROW {
+    //         return Err("Function must have an arrow before return monotype");
+    //     }
+    //
+    //     // recursively parse the function's return type
+    //     let return_type = self.parse_monotype();
+    //
+    //     if let Ok(return_val) = return_type {
+    //         Ok(MonoType::Fun(Box::new(Function {
+    //             req: req_args,
+    //             opt: opt_args,
+    //             pipe: pipe_arg,
+    //             retn: return_val,
+    //         })))
+    //     } else {
+    //         Err("Function must have a valid return type")
+    //     }
+    // }
+    //
+    // // parse_row parses a row monotype as a series of nested row extensions
+    // fn parse_row(&mut self, token: &Token) -> Result<MonoType, &'static str> {
+    //     if token.token_type != TokenType::LEFTCURLYBRAC {
+    //         return Err("Not a valid row monotype");
+    //     }
+    //     self.next(); // move to left curly brac
+    //     let token = self.next();
+    //     self.parse_record(&token)
+    // }
 }
 
 #[cfg(test)]
