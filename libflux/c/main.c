@@ -109,7 +109,6 @@ void test_semantic() {
     assert(err == NULL);
     printf("  FlatBuffer is length %ld\n", buf.len);
     flux_free_bytes(buf.data);
-    flux_free_ast_pkg(ast_pkg_foo);
   }
 
   {
@@ -124,7 +123,6 @@ void test_semantic() {
     printf("  error: %s\n", err_str);
     flux_free_bytes(err_str);
     flux_free_error(err);
-    flux_free_ast_pkg(ast_pkg_foo);
   }
 
   printf("\n");
