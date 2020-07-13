@@ -19,11 +19,11 @@ pub use core::scanner;
 pub use core::semantic;
 pub use core::*;
 
+use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 use core::semantic::types::{MonoType, PolyType, TvarKinds};
 use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;
-use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
@@ -350,10 +350,13 @@ pub unsafe extern "C" fn flux_find_var_type(
         |t| {
             let mut builder = flatbuffers::FlatBufferBuilder::new();
             let (fb_mono_type, typ_type) = build_type(&mut builder, t);
-            let fb_mono_type_holder = fb::MonoTypeHolder::create(&mut builder, &MonoTypeHolderArgs {
-                typ_type,
-                typ: Some(fb_mono_type)
-            });
+            let fb_mono_type_holder = fb::MonoTypeHolder::create(
+                &mut builder,
+                &MonoTypeHolderArgs {
+                    typ_type,
+                    typ: Some(fb_mono_type),
+                },
+            );
             builder.finish(fb_mono_type_holder, None);
             let (mut vec, offset) = builder.collapse();
             // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
@@ -545,7 +548,8 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
             expr: MonoType::Var(tvar.clone()),
         },
     );
-    infer_with_env(ast_pkg, f, Some(env)).map(|(_, env, _)| env.lookup(var_name.as_str()).unwrap().expr.clone())
+    infer_with_env(ast_pkg, f, Some(env))
+        .map(|(_, env, _)| env.lookup(var_name.as_str()).unwrap().expr.clone())
 }
 
 /// # Safety
@@ -569,12 +573,12 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{analyze, flux_ast_get_error, merge_packages, find_var_type};
+    use crate::{analyze, find_var_type, flux_ast_get_error, merge_packages};
+    use core::parser::Parser;
     use core::semantic::convert::convert_file;
     use core::semantic::env::Environment;
     use core::semantic::nodes::infer_file;
     use core::{ast, semantic};
-    use core::parser::Parser;
 
     #[test]
     fn test_find_var_type() {
@@ -588,8 +592,7 @@ vstr = v.str + "hello"
 "#;
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let ty = find_var_type(pkg, "v".to_string())
-            .expect("should be able to find var type");
+        let ty = find_var_type(pkg, "v".to_string()).expect("should be able to find var type");
         println!("{}", ty);
     }
 

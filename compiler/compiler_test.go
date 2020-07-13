@@ -16,11 +16,11 @@ var CmpOptions = semantictest.CmpOptions
 
 func TestCompileAndEval(t *testing.T) {
 	testCases := []struct {
-		name    string
-		fn      string
-		inType  semantic.MonoType
-		input   values.Object
-		want    values.Value
+		name           string
+		fn             string
+		inType         semantic.MonoType
+		input          values.Object
+		want           values.Value
 		wantCompileErr bool
 		wantEvalErr    bool
 	}{
