@@ -405,7 +405,7 @@ The default value is set using the time zone of the running process.
 ### Types
 
 A type defines a set of values and operations on those values.
-Types are never explicitly declared as part of the syntax.
+Types are never explicitly declared as part of the syntax except as part of a [builtin statement](#built-ins).
 Types are always inferred from the usage of the value.
 Type inference follows a Hindley-Milner style inference system.
 
@@ -1085,11 +1085,29 @@ These preassigned values are defined in the source files for the various built-i
 When a built-in value is not expressible in Flux its value may be defined by the hosting environment.
 All such values must have a corresponding builtin statement to declare the existence and type of the built-in value.
 
-    BuiltinStatement = "builtin" identifer ":" TypeExpression
+    BuiltinStatement = "builtin" identifer ":" TypeExpression .
+    TypeExpression   = MonoType ["where" Constraints] .
+
+    MonoType = Tvar | Basic | Array | Record | Function .
+    Tvar     = "A" … "Z" .
+    Basic    = "int" | "uint" | "float" | "string" | "bool" | "time" | "duration" | "bytes" | "regexp" .
+    Array    = "[" MonoType "]" .
+    Record   = ( "{" [Properties] "}" ) | ( "{" Tvar "with" Properties "}" ) .
+    Function = "(" [Parameters] ")" "=>" MonoType .
+
+    Properties = Property { "," Property } .
+    Property   = identifier ":" MonoType .
+
+    Parameters = Parameter { "," Parameter } .
+    Parameter  = [ "<-" | "?" ] identifier ":" MonoType .
+
+    Constraints = Constraint { "," Constraint } .
+    Constraint  = Tvar ":" Kinds .
+    Kinds       = identifier { "+" identifier } .
 
 Example
 
-    builtin from : (bucket: string, bucketID: string) -> stream
+    builtin filter : (<-tables: [T], fn: (r: T) -> bool) -> [T]
 
 ### Date/Time constants
 
