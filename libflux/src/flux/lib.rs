@@ -538,14 +538,14 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
     let tvar = f.fresh();
     let mut env = Environment::empty(true);
     env.add(
-        var_name,
+        var_name.clone(),
         PolyType {
             vars: Vec::new(),
             cons: TvarKinds::new(),
             expr: MonoType::Var(tvar.clone()),
         },
     );
-    infer_with_env(ast_pkg, f, Some(env)).map(|(_, _, sub)| sub.apply(tvar))
+    infer_with_env(ast_pkg, f, Some(env)).map(|(_, env, _)| env.lookup(var_name.as_str()).unwrap().expr.clone())
 }
 
 /// # Safety

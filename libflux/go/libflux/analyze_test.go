@@ -73,7 +73,7 @@ f = (v) => v.shadow
 g = () => v.sweet
 x = g()
 vstr = v.str + "hello"`,
-			ty: "{int: int | sweet: t0 | t1}",
+			ty: "{int: int | str: string | sweet: t0 | t1}",
 		},
 		{
 			name: "failure",

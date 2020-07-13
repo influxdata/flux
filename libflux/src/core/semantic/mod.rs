@@ -32,7 +32,7 @@ use crate::semantic::fresh::Fresher;
 // This needs to be public so libstd can access it.
 // Once we merge libstd and flux this can be made private again.
 pub use crate::semantic::import::Importer;
-use crate::semantic::types::{MonoType, PolyType, Tvar, TvarKinds};
+use crate::semantic::types::{MonoType, PolyType, TvarKinds};
 use std::fmt;
 
 #[derive(Debug)]
@@ -107,6 +107,7 @@ pub fn find_var_type(source: &str, var_name: &str) -> Result<MonoType, Error> {
         },
     );
     let mut sem_pkg = get_sem_pkg_from_source(source, &mut f)?;
-    let (_, sub) = nodes::infer_pkg_types(&mut sem_pkg, env, &mut f, &None, &None)?;
-    Ok(sub.apply(Tvar(0)))
+    let (env, _) = nodes::infer_pkg_types(&mut sem_pkg, env, &mut f, &None, &None)?;
+
+    Ok(env.lookup(var_name).unwrap().expr.clone())
 }

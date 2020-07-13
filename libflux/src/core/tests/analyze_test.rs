@@ -20,20 +20,20 @@ vstr = v.str + "hello"
         t,
         MonoType::Row(Box::new(Row::Extension {
             head: TypeProperty {
-                k: "str".to_string(),
-                v: MonoType::String,
+                k: "int".to_string(),
+                v: MonoType::Int,
             },
             tail: MonoType::Row(Box::new(Row::Extension {
                 head: TypeProperty {
                     k: "sweet".to_string(),
-                    v: MonoType::Var(Tvar(8)),
+                    v: MonoType::Var(Tvar(11)),
                 },
                 tail: MonoType::Row(Box::new(Row::Extension {
                     head: TypeProperty {
-                        k: "int".to_string(),
-                        v: MonoType::Int,
+                        k: "str".to_string(),
+                        v: MonoType::String,
                     },
-                    tail: MonoType::Var(Tvar(23))
+                    tail: MonoType::Var(Tvar(22))
                 })),
             }))
         }))
@@ -60,7 +60,7 @@ p = o.ethan
                     k: "ethan".to_string(),
                     v: MonoType::Var(Tvar(7)),
                 },
-                tail: MonoType::Var(Tvar(13)),
+                tail: MonoType::Var(Tvar(11)),
             }))
         }))
     );
