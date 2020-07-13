@@ -78,6 +78,9 @@ func Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 }
 
 func FindVarType(astPkg *ASTPkg, varName string) (semantic.MonoType, error) {
+	defer func() {
+		astPkg.ptr = nil
+	}()
 	var buf C.struct_flux_buffer_t
 	defer C.flux_free_bytes(buf.data)
 	cVarName := C.CString(varName)
