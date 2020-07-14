@@ -534,7 +534,9 @@ pub fn infer_with_env(
         Some(prelude) => Environment::new(prelude),
         None => return Err(core::Error::from("missing prelude")),
     };
-    if let Some(e) = env { prelude.copy_bindings_from(&e) }
+    if let Some(e) = env {
+        prelude.copy_bindings_from(&e);
+    }
     let imports = match imports() {
         Some(imports) => imports,
         None => return Err(core::Error::from("missing stdlib imports")),
