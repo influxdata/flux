@@ -25,6 +25,7 @@ output = "
 "
 
 merge_filter_fn = (tables=<-) => tables
+    |> range(start: 2018-12-15T00:00:00Z)
     |> filter(fn: (r) => r["_value"] == 1.77)
     |> filter(fn: (r) => r["_field"] == "load4")
 
