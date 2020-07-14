@@ -2,7 +2,7 @@ use core::ast;
 use core::semantic::nodes::*;
 use core::semantic::types::{Function, MonoType, Property as TypeProperty, Row, SemanticMap, Tvar};
 use core::semantic::walk::{walk_mut, NodeMut};
-use core::semantic::{convert_source, find_var_type, wasm_find_var_type};
+use core::semantic::{convert_source, find_var_type};
 
 use pretty_assertions::assert_eq;
 
