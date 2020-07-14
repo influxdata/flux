@@ -20,10 +20,11 @@ pub use core::semantic;
 pub use core::*;
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
-use core::semantic::types::{MonoType, PolyType, TvarKinds};
+use core::semantic::types::{MonoType, PolyType, TvarKinds, Tvar};
 use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;
+use wasm_bindgen::prelude::*;
 
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
@@ -534,6 +535,14 @@ pub fn infer_with_env(
 
     let (env, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, &imports, &builtin_importer)?;
     Ok((sem_pkg, env, sub))
+}
+
+#[wasm_bindgen]
+pub fn wasm_find_var_type(source: &str, file_name: &str, var_name: &str) -> JsValue {
+    let mut p = Parser::new(source);
+    let pkg: ast::Package = p.parse_file(file_name.to_string()).into();
+    let ty = find_var_type(pkg, var_name.to_string()).unwrap_or(MonoType::Var(Tvar(0)));
+    JsValue::from_serde(&ty).unwrap()
 }
 
 pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType, Error> {
