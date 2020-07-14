@@ -6,6 +6,7 @@ use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
     fmt,
 };
+use serde::{Serialize, Serializer};
 
 // For use in generics where the specific type of map is not not mentioned.
 pub type SemanticMap<K, V> = BTreeMap<K, V>;
@@ -242,7 +243,7 @@ impl cmp::PartialOrd for Kind {
 }
 
 // MonoType represents a specific named type
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum MonoType {
     Bool,
     Int,
@@ -516,6 +517,15 @@ impl MaxTvar for Tvar {
     }
 }
 
+impl Serialize for Tvar {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_newtype_struct("Tvar", &self.0)
+    }
+}
+
 impl Tvar {
     fn unify(self, with: MonoType, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         match with {
@@ -593,6 +603,15 @@ impl Tvar {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Array(pub MonoType);
 
+impl Serialize for Array {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+    {
+        serializer.serialize_newtype_struct("Array", &self.0)
+    }
+}
+
 impl fmt::Display for Array {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[{}]", self.0)
@@ -649,7 +668,8 @@ impl Array {
 // variable. A row variable is a type variable that
 // represents an unknown record type.
 //
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
+#[serde(tag = "type")]
 pub enum Row {
     Empty,
     Extension { head: Property, tail: MonoType },
@@ -918,7 +938,7 @@ fn apply_then_unify(
 }
 
 // A key value pair representing a property type in a record
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Property {
     pub k: String,
     pub v: MonoType,
@@ -954,7 +974,7 @@ impl MaxTvar for Property {
 // a set of optional arguments, an optional pipe argument, and
 // a required return type.
 //
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Function {
     pub req: MonoTypeMap,
     pub opt: MonoTypeMap,

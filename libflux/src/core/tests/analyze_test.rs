@@ -2,7 +2,7 @@ use core::ast;
 use core::semantic::nodes::*;
 use core::semantic::types::{Function, MonoType, Property as TypeProperty, Row, SemanticMap, Tvar};
 use core::semantic::walk::{walk_mut, NodeMut};
-use core::semantic::{convert_source, find_var_type};
+use core::semantic::{convert_source, find_var_type, wasm_find_var_type};
 
 use pretty_assertions::assert_eq;
 
@@ -38,6 +38,21 @@ vstr = v.str + "hello"
             }))
         }))
     );
+
+    let serialized = serde_json::to_string_pretty(&t).unwrap();
+    println!("{}", serialized);
+}
+
+#[test]
+fn find_var_ref_non_row_type() {
+    let source = r#"
+vint = v + 2
+"#;
+    let t = find_var_type(source, "v").expect("Should be able to get a MonoType.");
+    assert_eq!(t, MonoType::Int);
+
+    let serialized = serde_json::to_string_pretty(&t).unwrap();
+    println!("{}", serialized);
 }
 
 #[test]

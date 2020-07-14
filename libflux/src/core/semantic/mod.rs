@@ -32,8 +32,9 @@ use crate::semantic::fresh::Fresher;
 // This needs to be public so libstd can access it.
 // Once we merge libstd and flux this can be made private again.
 pub use crate::semantic::import::Importer;
-use crate::semantic::types::{MonoType, PolyType, TvarKinds};
+use crate::semantic::types::{MonoType, PolyType, Tvar, TvarKinds};
 use std::fmt;
+use wasm_bindgen::prelude::*;
 
 #[derive(Debug)]
 pub struct Error {
@@ -73,7 +74,7 @@ fn get_sem_pkg_from_source(source: &str, fresher: &mut Fresher) -> Result<nodes:
         });
     }
     let ast_pkg: ast::Package = file.into();
-    convert_with(ast_pkg, fresher).map_err(|err| Error::from(err))
+    convert_with(ast_pkg, fresher).map_err(|err| err.into())
 }
 
 /// Get a type-inferred semantic package from the given Flux source.
@@ -89,6 +90,12 @@ pub fn convert_source(source: &str) -> Result<nodes::Package, Error> {
         &None,
     )?;
     Ok(nodes::inject_pkg_types(sem_pkg, &sub))
+}
+
+#[wasm_bindgen]
+pub fn wasm_find_var_type(source: &str, var_name: &str) -> JsValue {
+    let ty = find_var_type(source, var_name).unwrap_or(MonoType::Var(Tvar(0)));
+    JsValue::from_serde(&ty).unwrap()
 }
 
 /// Given a Flux source and a variable name, find out the type of that variable in the Flux script.
