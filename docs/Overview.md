@@ -1,6 +1,6 @@
 # Design Overview
 
-This document provides an overview of the design of the query engine.
+This document provides an overview of the design of the Flux query engine.
 
 ## Concepts
 
@@ -10,7 +10,7 @@ There are several different concepts that make up the complete query engine.
     A query is represented as a directed acyclic graph (DAG).
 * Flux - Functional Language for defining a query to execute.
 * Parser - Parses a Flux script and produces a query.
-* Data Frame - A data frame is a matrix of time series data where one dimension is time and the other is series.
+* Table - Data is modeled as a sequence of records in table.
 * Query Node - A query node represents a single step in the DAG of a query.
 * Planner - The planner creates a plan of execution from a query.
 * Plan - A plan is also a DAG of node the explicitly state how a query will be performed.
@@ -84,7 +84,7 @@ type Predicate interface {}
 // Storage provides an interface to the storage layer.
 type Storage interface {
     // Read gets data from the underlying storage system and returns a data frame or error state.
-    Read(context.Context, []Predicate, TimeRange, Grouping) (DataFrame, ErrorState)
+    Read(context.Context, []Predicate, TimeRange, Grouping) (Table, ErrorState)
     // Capabilities exposes the capabilities of the storage interface.
     Capabilities() []Capability
     // Hints provides hints about the characteristics of the data.
@@ -117,7 +117,7 @@ type Capability interface{
 
 // Executor processes a plan and returns the resulting data frames or an error state.
 type Executor interface{
-    Execute(context.Context, Plan) ([]DataFrame, ErrorState)
+    Execute(context.Context, Plan) ([]Table, ErrorState)
 }
 
 // ErrorState describes precisely the state of an errored operation such that appropraite recovery may be attempted.
