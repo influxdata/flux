@@ -20,7 +20,7 @@ pub use core::semantic;
 pub use core::*;
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
-use core::semantic::types::{MonoType, PolyType, TvarKinds, Tvar};
+use core::semantic::types::{MonoType, PolyType, Tvar, TvarKinds};
 use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;

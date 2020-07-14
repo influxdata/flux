@@ -1,12 +1,12 @@
 use crate::semantic::fresh::{Fresh, Fresher};
 use crate::semantic::sub::{Substitutable, Substitution};
 
+use serde::{Serialize, Serializer};
 use std::{
     cmp,
     collections::{BTreeMap, BTreeSet, HashMap},
     fmt,
 };
-use serde::{Serialize, Serializer};
 
 // For use in generics where the specific type of map is not not mentioned.
 pub type SemanticMap<K, V> = BTreeMap<K, V>;
@@ -605,8 +605,8 @@ pub struct Array(pub MonoType);
 
 impl Serialize for Array {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         serializer.serialize_newtype_struct("Array", &self.0)
     }

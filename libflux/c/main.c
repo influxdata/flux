@@ -106,6 +106,8 @@ void test_semantic() {
     printf("Find variable type v (expect success)\n");
     struct flux_buffer_t buf;
     struct flux_error_t* err = flux_find_var_type(ast_pkg_foo, "v", &buf);
+    // Note that we do not call flux_free_ast_pkg(ast_pkg_foo); here because we will
+    // consume the AST package during the conversion from the AST package to the semantic package.
     assert(err == NULL);
     printf("  FlatBuffer is length %ld\n", buf.len);
     flux_free_bytes(buf.data);
