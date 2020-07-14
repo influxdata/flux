@@ -343,6 +343,7 @@ pub unsafe extern "C" fn flux_analyze(
 ///
 /// This function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
+#[allow(clippy::boxed_local)]
 pub unsafe extern "C" fn flux_find_var_type(
     ast_pkg: Box<ast::Package>,
     var_name: *const c_char,
@@ -533,7 +534,7 @@ pub fn infer_with_env(
         Some(prelude) => Environment::new(prelude),
         None => return Err(core::Error::from("missing prelude")),
     };
-    env.map(|e| prelude.copy_bindings_from(&e));
+    if let Some(e) = env { prelude.copy_bindings_from(&e) }
     let imports = match imports() {
         Some(imports) => imports,
         None => return Err(core::Error::from("missing stdlib imports")),
@@ -558,7 +559,7 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
         PolyType {
             vars: Vec::new(),
             cons: TvarKinds::new(),
-            expr: MonoType::Var(tvar.clone()),
+            expr: MonoType::Var(tvar),
         },
     );
     infer_with_env(ast_pkg, f, Some(env))
