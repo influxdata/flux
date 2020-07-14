@@ -335,6 +335,13 @@ pub unsafe extern "C" fn flux_analyze(
     }
 }
 
+/// flux_find_var_type() is a C-compatible wrapper around the find_var_type() function below.
+/// Note that Box<T> is used to indicate we are receiving/returning a C pointer and also
+/// transferring ownership.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
 pub unsafe extern "C" fn flux_find_var_type(
     ast_pkg: Box<ast::Package>,
@@ -503,7 +510,7 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<Package, Error> {
 }
 
 /// infer_with_env consumes the given AST package, inject the type bindings from the given
-/// type environment, and returns a semantic package that has not been type-inferred and an
+/// type environment, and returns a semantic package that has not been type-injected and an
 /// inferred type environment and substitution.
 /// This function is aware of the standard library and prelude.
 pub fn infer_with_env(
@@ -537,14 +544,11 @@ pub fn infer_with_env(
     Ok((sem_pkg, env, sub))
 }
 
-#[wasm_bindgen]
-pub fn wasm_find_var_type(source: &str, file_name: &str, var_name: &str) -> JsValue {
-    let mut p = Parser::new(source);
-    let pkg: ast::Package = p.parse_file(file_name.to_string()).into();
-    let ty = find_var_type(pkg, var_name.to_string()).unwrap_or(MonoType::Var(Tvar(0)));
-    JsValue::from_serde(&ty).unwrap()
-}
-
+/// Given a Flux source and a variable name, find out the type of that variable in the Flux source code.
+/// A type variable will be automatically generated and injected into the type environment that
+/// will be used in semantic analysis. The Flux source code itself should not contain any definition
+/// for that variable.
+/// This version of find_var_type is aware of the prelude and builtins.
 pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType, Error> {
     let mut f = fresher();
     let tvar = f.fresh();
@@ -559,6 +563,16 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
     );
     infer_with_env(ast_pkg, f, Some(env))
         .map(|(_, env, _)| env.lookup(var_name.as_str()).unwrap().expr.clone())
+}
+
+/// wasm version of the flux_find_var_type() API. Instead of returning a flat buffer that contains
+/// the MonoType, it returns a JsValue。
+#[wasm_bindgen]
+pub fn wasm_find_var_type(source: &str, file_name: &str, var_name: &str) -> JsValue {
+    let mut p = Parser::new(source);
+    let pkg: ast::Package = p.parse_file(file_name.to_string()).into();
+    let ty = find_var_type(pkg, var_name.to_string()).unwrap_or(MonoType::Var(Tvar(0)));
+    JsValue::from_serde(&ty).unwrap()
 }
 
 /// # Safety
@@ -591,18 +605,18 @@ mod tests {
 
     #[test]
     fn test_find_var_type() {
+        // Test the find_var_type() function with some calls to stdlib functions.
         let source = r#"
-vint = v.int + 2
-f = (v) => v.shadow
-h = () => v.wow
-g = () => v.sweet
-x = g()
-vstr = v.str + "hello"
+from(bucket: v.bucket)
+|> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+|> filter(fn: (r) => r._measurement == v.measurement or r._measurement == "cpu")
+|> filter(fn: (r) => r.host == "host.local")
+|> aggregateWindow(every: 30s, fn: count)
 "#;
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let ty = find_var_type(pkg, "v".to_string()).expect("should be able to find var type");
-        println!("{}", ty);
+        assert_eq!(format!("{}", ty), "{measurement:t4960 | timeRangeStart:t4970 | timeRangeStop:t4972 | bucket:string | t5008}");
     }
 
     #[test]

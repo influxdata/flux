@@ -91,13 +91,14 @@ pub fn convert_source(source: &str) -> Result<nodes::Package, Error> {
     Ok(nodes::inject_pkg_types(sem_pkg, &sub))
 }
 
-/// Given a Flux source and a variable name, find out the type of that variable in the Flux script.
+/// Given a Flux source and a variable name, find out the type of that variable in the Flux source code.
 /// A type variable will be automatically generated and injected into the type environment that
-/// will be used in semantic analysis. The Flux source itself should not contain any definition
+/// will be used in semantic analysis. The Flux source code itself should not contain any definition
 /// for that variable.
 pub fn find_var_type(source: &str, var_name: &str) -> Result<MonoType, Error> {
     let mut f = Fresher::default();
     let mut env = Environment::empty(true);
+    // We generate and inject a type variable for the designated variable in the Flux source.
     env.add(
         var_name.to_string(),
         PolyType {
