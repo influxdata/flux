@@ -1,6 +1,6 @@
 use core::ast;
 use core::semantic::nodes::*;
-use core::semantic::types::{Function, MonoType, Property as TypeProperty, Row, SemanticMap, Tvar};
+use core::semantic::types::{Function, MonoType, SemanticMap, Tvar};
 use core::semantic::walk::{walk_mut, NodeMut};
 use core::semantic::{convert_source, find_var_type};
 
@@ -16,31 +16,43 @@ x = g()
 vstr = v.str + "hello"
 "#;
     let t = find_var_type(source, "v").expect("Should be able to get a MonoType.");
-    assert_eq!(
-        t,
-        MonoType::Row(Box::new(Row::Extension {
-            head: TypeProperty {
-                k: "int".to_string(),
-                v: MonoType::Int,
-            },
-            tail: MonoType::Row(Box::new(Row::Extension {
-                head: TypeProperty {
-                    k: "sweet".to_string(),
-                    v: MonoType::Var(Tvar(11)),
-                },
-                tail: MonoType::Row(Box::new(Row::Extension {
-                    head: TypeProperty {
-                        k: "str".to_string(),
-                        v: MonoType::String,
-                    },
-                    tail: MonoType::Var(Tvar(22))
-                })),
-            }))
-        }))
-    );
+    assert_eq!(format!("{}", t), "{int:int | sweet:t11 | str:string | t22}");
 
-    let serialized = serde_json::to_string_pretty(&t).unwrap();
-    println!("{}", serialized);
+    assert_eq!(
+        serde_json::to_string_pretty(&t).unwrap(),
+        r#"{
+  "Row": {
+    "type": "Extension",
+    "head": {
+      "k": "int",
+      "v": "Int"
+    },
+    "tail": {
+      "Row": {
+        "type": "Extension",
+        "head": {
+          "k": "sweet",
+          "v": {
+            "Var": 11
+          }
+        },
+        "tail": {
+          "Row": {
+            "type": "Extension",
+            "head": {
+              "k": "str",
+              "v": "String"
+            },
+            "tail": {
+              "Var": 22
+            }
+          }
+        }
+      }
+    }
+  }
+}"#
+    );
 }
 
 #[test]
@@ -51,8 +63,7 @@ vint = v + 2
     let t = find_var_type(source, "v").expect("Should be able to get a MonoType.");
     assert_eq!(t, MonoType::Int);
 
-    let serialized = serde_json::to_string_pretty(&t).unwrap();
-    println!("{}", serialized);
+    assert_eq!(serde_json::to_string_pretty(&t).unwrap(), "\"Int\"");
 }
 
 #[test]
@@ -63,22 +74,32 @@ o = {v with x: 256}
 p = o.ethan
 "#;
     let t = find_var_type(source, "v").expect("Should be able to get a MonoType.");
-    assert_eq!(
-        t,
-        MonoType::Row(Box::new(Row::Extension {
-            head: TypeProperty {
-                k: "int".to_string(),
-                v: MonoType::Int,
-            },
-            tail: MonoType::Row(Box::new(Row::Extension {
-                head: TypeProperty {
-                    k: "ethan".to_string(),
-                    v: MonoType::Var(Tvar(7)),
-                },
-                tail: MonoType::Var(Tvar(11)),
-            }))
-        }))
-    );
+    assert_eq!(format!("{}", t), "{int:int | ethan:t7 | t11}");
+
+    assert_eq!(serde_json::to_string_pretty(&t).unwrap(),
+               r#"{
+  "Row": {
+    "type": "Extension",
+    "head": {
+      "k": "int",
+      "v": "Int"
+    },
+    "tail": {
+      "Row": {
+        "type": "Extension",
+        "head": {
+          "k": "ethan",
+          "v": {
+            "Var": 7
+          }
+        },
+        "tail": {
+          "Var": 11
+        }
+      }
+    }
+  }
+}"#);
 }
 
 #[test]

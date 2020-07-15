@@ -1,7 +1,6 @@
 use crate::semantic::fresh::{Fresh, Fresher};
 use crate::semantic::sub::{Substitutable, Substitution};
 
-use serde::{Serialize, Serializer};
 use std::{
     cmp,
     collections::{BTreeMap, BTreeSet, HashMap},
@@ -497,7 +496,7 @@ impl MonoType {
 
 // Tvar stands for type variable.
 // A type variable holds an unknown type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct Tvar(pub u64);
 
 // TvarKinds is a map from type variables to their constraining kinds.
@@ -514,15 +513,6 @@ impl fmt::Display for Tvar {
 impl MaxTvar for Tvar {
     fn max_tvar(&self) -> Tvar {
         *self
-    }
-}
-
-impl Serialize for Tvar {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_newtype_struct("Tvar", &self.0)
     }
 }
 
@@ -600,17 +590,8 @@ impl Tvar {
 }
 
 // Array is a homogeneous list type
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Array(pub MonoType);
-
-impl Serialize for Array {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_newtype_struct("Array", &self.0)
-    }
-}
 
 impl fmt::Display for Array {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
