@@ -76,8 +76,9 @@ p = o.ethan
     let t = find_var_type(source, "v").expect("Should be able to get a MonoType.");
     assert_eq!(format!("{}", t), "{int:int | ethan:t7 | t11}");
 
-    assert_eq!(serde_json::to_string_pretty(&t).unwrap(),
-               r#"{
+    assert_eq!(
+        serde_json::to_string_pretty(&t).unwrap(),
+        r#"{
   "Row": {
     "type": "Extension",
     "head": {
@@ -99,7 +100,8 @@ p = o.ethan
       }
     }
   }
-}"#);
+}"#
+    );
 }
 
 #[test]
