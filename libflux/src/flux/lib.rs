@@ -604,10 +604,118 @@ mod tests {
     use core::semantic::convert::convert_file;
     use core::semantic::env::Environment;
     use core::semantic::nodes::infer_file;
+    use core::semantic::types::MonoType;
     use core::{ast, semantic};
 
     #[test]
-    fn test_find_var_type() {
+    fn find_var_ref() {
+        let source = r#"
+vint = v.int + 2
+f = (v) => v.shadow
+g = () => v.sweet
+x = g()
+vstr = v.str + "hello"
+"#;
+        let mut p = Parser::new(&source);
+        let pkg: ast::Package = p.parse_file("".to_string()).into();
+        let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
+        assert_eq!(
+            format!("{}", t),
+            "{int:int | sweet:t4955 | str:string | t4966}"
+        );
+
+        assert_eq!(
+            serde_json::to_string_pretty(&t).unwrap(),
+            r#"{
+  "Row": {
+    "type": "Extension",
+    "head": {
+      "k": "int",
+      "v": "Int"
+    },
+    "tail": {
+      "Row": {
+        "type": "Extension",
+        "head": {
+          "k": "sweet",
+          "v": {
+            "Var": 4955
+          }
+        },
+        "tail": {
+          "Row": {
+            "type": "Extension",
+            "head": {
+              "k": "str",
+              "v": "String"
+            },
+            "tail": {
+              "Var": 4966
+            }
+          }
+        }
+      }
+    }
+  }
+}"#
+        );
+    }
+
+    #[test]
+    fn find_var_ref_non_row_type() {
+        let source = r#"
+vint = v + 2
+"#;
+        let mut p = Parser::new(&source);
+        let pkg: ast::Package = p.parse_file("".to_string()).into();
+        let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
+        assert_eq!(t, MonoType::Int);
+
+        assert_eq!(serde_json::to_string_pretty(&t).unwrap(), "\"Int\"");
+    }
+
+    #[test]
+    fn find_var_ref_obj_with() {
+        let source = r#"
+vint = v.int + 2
+o = {v with x: 256}
+p = o.ethan
+"#;
+        let mut p = Parser::new(&source);
+        let pkg: ast::Package = p.parse_file("".to_string()).into();
+        let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
+        assert_eq!(format!("{}", t), "{int:int | ethan:t4951 | t4955}");
+
+        assert_eq!(
+            serde_json::to_string_pretty(&t).unwrap(),
+            r#"{
+  "Row": {
+    "type": "Extension",
+    "head": {
+      "k": "int",
+      "v": "Int"
+    },
+    "tail": {
+      "Row": {
+        "type": "Extension",
+        "head": {
+          "k": "ethan",
+          "v": {
+            "Var": 4951
+          }
+        },
+        "tail": {
+          "Var": 4955
+        }
+      }
+    }
+  }
+}"#
+        );
+    }
+
+    #[test]
+    fn find_var_ref_query() {
         // Test the find_var_type() function with some calls to stdlib functions.
         let source = r#"
 from(bucket: v.bucket)

@@ -32,7 +32,6 @@ use crate::semantic::fresh::Fresher;
 // This needs to be public so libstd can access it.
 // Once we merge libstd and flux this can be made private again.
 pub use crate::semantic::import::Importer;
-use crate::semantic::types::{MonoType, PolyType, TvarKinds};
 use std::fmt;
 
 #[derive(Debug)]
@@ -89,26 +88,4 @@ pub fn convert_source(source: &str) -> Result<nodes::Package, Error> {
         &None,
     )?;
     Ok(nodes::inject_pkg_types(sem_pkg, &sub))
-}
-
-/// Given a Flux source and a variable name, find out the type of that variable in the Flux source code.
-/// A type variable will be automatically generated and injected into the type environment that
-/// will be used in semantic analysis. The Flux source code itself should not contain any definition
-/// for that variable.
-pub fn find_var_type(source: &str, var_name: &str) -> Result<MonoType, Error> {
-    let mut f = Fresher::default();
-    let mut env = Environment::empty(true);
-    // We generate and inject a type variable for the designated variable in the Flux source.
-    env.add(
-        var_name.to_string(),
-        PolyType {
-            vars: Vec::new(),
-            cons: TvarKinds::new(),
-            expr: MonoType::Var(f.fresh()),
-        },
-    );
-    let mut sem_pkg = get_sem_pkg_from_source(source, &mut f)?;
-    let (env, _) = nodes::infer_pkg_types(&mut sem_pkg, env, &mut f, &None, &None)?;
-
-    Ok(env.lookup(var_name).unwrap().expr.clone())
 }

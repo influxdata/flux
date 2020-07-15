@@ -1,108 +1,10 @@
 use core::ast;
+use core::semantic::convert_source;
 use core::semantic::nodes::*;
 use core::semantic::types::{Function, MonoType, SemanticMap, Tvar};
 use core::semantic::walk::{walk_mut, NodeMut};
-use core::semantic::{convert_source, find_var_type};
 
 use pretty_assertions::assert_eq;
-
-#[test]
-fn find_var_ref() {
-    let source = r#"
-vint = v.int + 2
-f = (v) => v.shadow
-g = () => v.sweet
-x = g()
-vstr = v.str + "hello"
-"#;
-    let t = find_var_type(source, "v").expect("Should be able to get a MonoType.");
-    assert_eq!(format!("{}", t), "{int:int | sweet:t11 | str:string | t22}");
-
-    assert_eq!(
-        serde_json::to_string_pretty(&t).unwrap(),
-        r#"{
-  "Row": {
-    "type": "Extension",
-    "head": {
-      "k": "int",
-      "v": "Int"
-    },
-    "tail": {
-      "Row": {
-        "type": "Extension",
-        "head": {
-          "k": "sweet",
-          "v": {
-            "Var": 11
-          }
-        },
-        "tail": {
-          "Row": {
-            "type": "Extension",
-            "head": {
-              "k": "str",
-              "v": "String"
-            },
-            "tail": {
-              "Var": 22
-            }
-          }
-        }
-      }
-    }
-  }
-}"#
-    );
-}
-
-#[test]
-fn find_var_ref_non_row_type() {
-    let source = r#"
-vint = v + 2
-"#;
-    let t = find_var_type(source, "v").expect("Should be able to get a MonoType.");
-    assert_eq!(t, MonoType::Int);
-
-    assert_eq!(serde_json::to_string_pretty(&t).unwrap(), "\"Int\"");
-}
-
-#[test]
-fn find_var_ref_obj_with() {
-    let source = r#"
-vint = v.int + 2
-o = {v with x: 256}
-p = o.ethan
-"#;
-    let t = find_var_type(source, "v").expect("Should be able to get a MonoType.");
-    assert_eq!(format!("{}", t), "{int:int | ethan:t7 | t11}");
-
-    assert_eq!(
-        serde_json::to_string_pretty(&t).unwrap(),
-        r#"{
-  "Row": {
-    "type": "Extension",
-    "head": {
-      "k": "int",
-      "v": "Int"
-    },
-    "tail": {
-      "Row": {
-        "type": "Extension",
-        "head": {
-          "k": "ethan",
-          "v": {
-            "Var": 7
-          }
-        },
-        "tail": {
-          "Var": 11
-        }
-      }
-    }
-  }
-}"#
-    );
-}
 
 #[test]
 fn analyze_end_to_end() {
