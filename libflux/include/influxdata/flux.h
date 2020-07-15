@@ -113,6 +113,13 @@ struct flux_error_t *flux_analyze_with(struct flux_semantic_analyzer_t *, struct
 // flux_ast_pkg_t* argument, so it should not be reused after calling this function.
 struct flux_error_t *flux_analyze(struct flux_ast_pkg_t *, struct flux_semantic_pkg_t **);
 
+// Find out the type of a variable referenced in the given Flux AST and return a MonoType flat buffer for it.
+// The Flux AST should not contain any definition for the referenced variable.
+// A type variable for the designated variable will be automatically injected into the type environment
+// that will be used in semantic analysis.
+// The second parameter is the variable identifier string.
+struct flux_error_t *flux_find_var_type(struct flux_ast_pkg_t *, const char *, struct flux_buffer_t *);
+
 // flux_free_semantic_pkg will release the memory associated with the given pointer.
 void flux_free_semantic_pkg(struct flux_semantic_pkg_t*);
 

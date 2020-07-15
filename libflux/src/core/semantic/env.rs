@@ -135,4 +135,12 @@ impl Environment {
             None => panic!("cannot pop final stack frame from type environment"),
         }
     }
+
+    // Copy all the variable bindings from another Environment to the current environment.
+    // This does not change the current environment's parent and readwrite flag.
+    pub fn copy_bindings_from(&mut self, other: &Environment) {
+        for (name, t) in other.values.iter() {
+            self.add(name.clone(), t.clone());
+        }
+    }
 }

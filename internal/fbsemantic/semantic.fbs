@@ -21,6 +21,10 @@ union MonoType {
   Fun,
 }
 
+table MonoTypeHolder {
+  typ:MonoType;
+}
+
 enum Type : ubyte {
   Bool,
   Int,

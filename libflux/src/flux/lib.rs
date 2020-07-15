@@ -6,9 +6,10 @@ use core::semantic::builtins::builtins;
 use core::semantic::check;
 use core::semantic::env::Environment;
 use core::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
-use core::semantic::flatbuffers::types::build_env;
+use core::semantic::flatbuffers::types::{build_env, build_type};
 use core::semantic::fresh::Fresher;
-use core::semantic::nodes::{infer_pkg_types, inject_pkg_types};
+use core::semantic::nodes::{infer_pkg_types, inject_pkg_types, Package};
+use core::semantic::sub::Substitution;
 use core::semantic::Importer;
 
 pub use core::ast;
@@ -18,9 +19,12 @@ pub use core::scanner;
 pub use core::semantic;
 pub use core::*;
 
+use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
+use core::semantic::types::{MonoType, PolyType, Tvar, TvarKinds};
 use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;
+use wasm_bindgen::prelude::*;
 
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
@@ -331,6 +335,49 @@ pub unsafe extern "C" fn flux_analyze(
     }
 }
 
+/// flux_find_var_type() is a C-compatible wrapper around the find_var_type() function below.
+/// Note that Box<T> is used to indicate we are receiving/returning a C pointer and also
+/// transferring ownership.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences a raw pointer.
+#[no_mangle]
+#[allow(clippy::boxed_local)]
+pub unsafe extern "C" fn flux_find_var_type(
+    ast_pkg: Box<ast::Package>,
+    var_name: *const c_char,
+    out_type: *mut flux_buffer_t,
+) -> Option<Box<ErrorHandle>> {
+    let buf = CStr::from_ptr(var_name).to_bytes(); // Unsafe
+    let name = String::from_utf8(buf.to_vec()).unwrap();
+    find_var_type(*ast_pkg, name).map_or_else(
+        |e| {
+            let handle = ErrorHandle { err: Box::new(e) };
+            Some(Box::new(handle))
+        },
+        |t| {
+            let mut builder = flatbuffers::FlatBufferBuilder::new();
+            let (fb_mono_type, typ_type) = build_type(&mut builder, t);
+            let fb_mono_type_holder = fb::MonoTypeHolder::create(
+                &mut builder,
+                &MonoTypeHolderArgs {
+                    typ_type,
+                    typ: Some(fb_mono_type),
+                },
+            );
+            builder.finish(fb_mono_type_holder, None);
+            let (mut vec, offset) = builder.collapse();
+            // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
+            let data = vec.split_off(offset);
+            let out_type = &mut *out_type; // Unsafe
+            out_type.len = data.len();
+            out_type.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
+            None
+        },
+    )
+}
+
 pub struct SemanticAnalyzer {
     f: Fresher,
     env: Environment,
@@ -458,7 +505,20 @@ pub unsafe extern "C" fn flux_analyze_with(
 /// analyze consumes the given AST package and returns a semantic package
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
-pub fn analyze(ast_pkg: ast::Package) -> Result<core::semantic::nodes::Package, core::Error> {
+pub fn analyze(ast_pkg: ast::Package) -> Result<Package, Error> {
+    let (sem_pkg, _, sub) = infer_with_env(ast_pkg, fresher(), None)?;
+    Ok(inject_pkg_types(sem_pkg, &sub))
+}
+
+/// infer_with_env consumes the given AST package, inject the type bindings from the given
+/// type environment, and returns a semantic package that has not been type-injected and an
+/// inferred type environment and substitution.
+/// This function is aware of the standard library and prelude.
+pub fn infer_with_env(
+    ast_pkg: ast::Package,
+    mut f: Fresher,
+    env: Option<Environment>,
+) -> Result<(Package, Environment, Substitution), Error> {
     // First check to see if there are any errors in the AST.
     let errs = ast::check::check(ast::walk::Node::Package(&ast_pkg));
     if !errs.is_empty() {
@@ -466,23 +526,56 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<core::semantic::nodes::Package, 
     }
 
     let pkgpath = ast_pkg.path.clone();
-    let mut f = fresher();
     let mut sem_pkg = core::semantic::convert::convert_with(ast_pkg, &mut f)?;
 
     check::check(&sem_pkg)?;
 
-    let prelude = match prelude() {
+    let mut prelude = match prelude() {
         Some(prelude) => Environment::new(prelude),
         None => return Err(core::Error::from("missing prelude")),
     };
+    if let Some(e) = env {
+        prelude.copy_bindings_from(&e);
+    }
     let imports = match imports() {
         Some(imports) => imports,
         None => return Err(core::Error::from("missing stdlib imports")),
     };
     let builtin_importer = builtins().importer_for(&pkgpath, &mut f);
-    let (_, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, &imports, &builtin_importer)?;
-    sem_pkg = inject_pkg_types(sem_pkg, &sub);
-    Ok(sem_pkg)
+
+    let (env, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, &imports, &builtin_importer)?;
+    Ok((sem_pkg, env, sub))
+}
+
+/// Given a Flux source and a variable name, find out the type of that variable in the Flux source code.
+/// A type variable will be automatically generated and injected into the type environment that
+/// will be used in semantic analysis. The Flux source code itself should not contain any definition
+/// for that variable.
+/// This version of find_var_type is aware of the prelude and builtins.
+pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType, Error> {
+    let mut f = fresher();
+    let tvar = f.fresh();
+    let mut env = Environment::empty(true);
+    env.add(
+        var_name.clone(),
+        PolyType {
+            vars: Vec::new(),
+            cons: TvarKinds::new(),
+            expr: MonoType::Var(tvar),
+        },
+    );
+    infer_with_env(ast_pkg, f, Some(env))
+        .map(|(_, env, _)| env.lookup(var_name.as_str()).unwrap().expr.clone())
+}
+
+/// wasm version of the flux_find_var_type() API. Instead of returning a flat buffer that contains
+/// the MonoType, it returns a JsValue。
+#[wasm_bindgen]
+pub fn wasm_find_var_type(source: &str, file_name: &str, var_name: &str) -> JsValue {
+    let mut p = Parser::new(source);
+    let pkg: ast::Package = p.parse_file(file_name.to_string()).into();
+    let ty = find_var_type(pkg, var_name.to_string()).unwrap_or(MonoType::Var(Tvar(0)));
+    JsValue::from_serde(&ty).unwrap()
 }
 
 /// # Safety
@@ -506,11 +599,136 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{analyze, flux_ast_get_error, merge_packages};
+    use crate::{analyze, find_var_type, flux_ast_get_error, merge_packages};
+    use core::parser::Parser;
     use core::semantic::convert::convert_file;
     use core::semantic::env::Environment;
     use core::semantic::nodes::infer_file;
+    use core::semantic::types::MonoType;
     use core::{ast, semantic};
+
+    #[test]
+    fn find_var_ref() {
+        let source = r#"
+vint = v.int + 2
+f = (v) => v.shadow
+g = () => v.sweet
+x = g()
+vstr = v.str + "hello"
+"#;
+        let mut p = Parser::new(&source);
+        let pkg: ast::Package = p.parse_file("".to_string()).into();
+        let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
+        assert_eq!(
+            format!("{}", t),
+            "{int:int | sweet:t4955 | str:string | t4966}"
+        );
+
+        assert_eq!(
+            serde_json::to_string_pretty(&t).unwrap(),
+            r#"{
+  "Row": {
+    "type": "Extension",
+    "head": {
+      "k": "int",
+      "v": "Int"
+    },
+    "tail": {
+      "Row": {
+        "type": "Extension",
+        "head": {
+          "k": "sweet",
+          "v": {
+            "Var": 4955
+          }
+        },
+        "tail": {
+          "Row": {
+            "type": "Extension",
+            "head": {
+              "k": "str",
+              "v": "String"
+            },
+            "tail": {
+              "Var": 4966
+            }
+          }
+        }
+      }
+    }
+  }
+}"#
+        );
+    }
+
+    #[test]
+    fn find_var_ref_non_row_type() {
+        let source = r#"
+vint = v + 2
+"#;
+        let mut p = Parser::new(&source);
+        let pkg: ast::Package = p.parse_file("".to_string()).into();
+        let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
+        assert_eq!(t, MonoType::Int);
+
+        assert_eq!(serde_json::to_string_pretty(&t).unwrap(), "\"Int\"");
+    }
+
+    #[test]
+    fn find_var_ref_obj_with() {
+        let source = r#"
+vint = v.int + 2
+o = {v with x: 256}
+p = o.ethan
+"#;
+        let mut p = Parser::new(&source);
+        let pkg: ast::Package = p.parse_file("".to_string()).into();
+        let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
+        assert_eq!(format!("{}", t), "{int:int | ethan:t4951 | t4955}");
+
+        assert_eq!(
+            serde_json::to_string_pretty(&t).unwrap(),
+            r#"{
+  "Row": {
+    "type": "Extension",
+    "head": {
+      "k": "int",
+      "v": "Int"
+    },
+    "tail": {
+      "Row": {
+        "type": "Extension",
+        "head": {
+          "k": "ethan",
+          "v": {
+            "Var": 4951
+          }
+        },
+        "tail": {
+          "Var": 4955
+        }
+      }
+    }
+  }
+}"#
+        );
+    }
+
+    #[test]
+    fn find_var_ref_query() {
+        // Test the find_var_type() function with some calls to stdlib functions.
+        let source = r#"
+from(bucket: v.bucket)
+|> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+|> filter(fn: (r) => r._measurement == v.measurement or r._measurement == "cpu")
+|> filter(fn: (r) => r.host == "host.local")
+|> aggregateWindow(every: 30s, fn: count)
+"#;
+        let mut p = Parser::new(&source);
+        let pkg: ast::Package = p.parse_file("".to_string()).into();
+        let ty = find_var_type(pkg, "v".to_string()).expect("should be able to find var type");
+        assert_eq!(format!("{}", ty), "{measurement:t4960 | timeRangeStart:t4970 | timeRangeStop:t4972 | bucket:string | t5008}");
+    }
 
     #[test]
     fn ok_merge_multi_file() {

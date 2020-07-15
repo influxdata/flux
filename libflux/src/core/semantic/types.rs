@@ -242,7 +242,7 @@ impl cmp::PartialOrd for Kind {
 }
 
 // MonoType represents a specific named type
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum MonoType {
     Bool,
     Int,
@@ -496,7 +496,7 @@ impl MonoType {
 
 // Tvar stands for type variable.
 // A type variable holds an unknown type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct Tvar(pub u64);
 
 // TvarKinds is a map from type variables to their constraining kinds.
@@ -590,7 +590,7 @@ impl Tvar {
 }
 
 // Array is a homogeneous list type
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Array(pub MonoType);
 
 impl fmt::Display for Array {
@@ -649,7 +649,8 @@ impl Array {
 // variable. A row variable is a type variable that
 // represents an unknown record type.
 //
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
+#[serde(tag = "type")]
 pub enum Row {
     Empty,
     Extension { head: Property, tail: MonoType },
@@ -918,7 +919,7 @@ fn apply_then_unify(
 }
 
 // A key value pair representing a property type in a record
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Property {
     pub k: String,
     pub v: MonoType,
@@ -954,7 +955,7 @@ impl MaxTvar for Property {
 // a set of optional arguments, an optional pipe argument, and
 // a required return type.
 //
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Function {
     pub req: MonoTypeMap,
     pub opt: MonoTypeMap,

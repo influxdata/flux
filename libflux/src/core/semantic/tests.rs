@@ -30,7 +30,7 @@ use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
 use crate::semantic::nodes;
 use crate::semantic::parser::parse;
-use crate::semantic::types::{MaxTvar, PolyType, PolyTypeMap, SemanticMap};
+use crate::semantic::types::{MaxTvar, MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds};
 
 use crate::ast;
 use crate::parser::parse_string;
@@ -3283,6 +3283,50 @@ fn function_default_arguments_and_pipes() {
         ],
     }
 }
+
+#[test]
+fn copy_bindings_from_other_env() {
+    let mut env = Environment::empty(true);
+    let mut f = Fresher::default();
+    env.add(
+        "a".to_string(),
+        PolyType {
+            vars: Vec::new(),
+            cons: TvarKinds::new(),
+            expr: MonoType::Bool,
+        },
+    );
+    let mut sub_env = Environment::new(env.clone());
+    sub_env.add(
+        "b".to_string(),
+        PolyType {
+            vars: Vec::new(),
+            cons: TvarKinds::new(),
+            expr: MonoType::Var(f.fresh()),
+        },
+    );
+    sub_env.copy_bindings_from(&env);
+    assert_eq!(
+        sub_env,
+        Environment {
+            parent: Some(env.clone().into()),
+            readwrite: true,
+            values: semantic_map!(
+                "b".to_string() => PolyType {
+                    vars: Vec::new(),
+                    cons: TvarKinds::new(),
+                    expr: MonoType::Var(f.fresh()),
+                },
+                "a".to_string() => PolyType {
+                    vars: Vec::new(),
+                    cons: TvarKinds::new(),
+                    expr: MonoType::Bool,
+                }
+            )
+        }
+    );
+}
+
 #[test]
 fn test_error_messages() {
     test_error_msg! {

@@ -379,6 +379,60 @@ func TypeAssignmentEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 
+type MonoTypeHolder struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsMonoTypeHolder(buf []byte, offset flatbuffers.UOffsetT) *MonoTypeHolder {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &MonoTypeHolder{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *MonoTypeHolder) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *MonoTypeHolder) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *MonoTypeHolder) TypType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *MonoTypeHolder) MutateTypType(n byte) bool {
+	return rcv._tab.MutateByteSlot(4, n)
+}
+
+func (rcv *MonoTypeHolder) Typ(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func MonoTypeHolderStart(builder *flatbuffers.Builder) {
+	builder.StartObject(2)
+}
+func MonoTypeHolderAddTypType(builder *flatbuffers.Builder, typType byte) {
+	builder.PrependByteSlot(0, typType, 0)
+}
+func MonoTypeHolderAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(typ), 0)
+}
+func MonoTypeHolderEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
 type Var struct {
 	_tab flatbuffers.Table
 }
