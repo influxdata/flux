@@ -62,7 +62,7 @@ var sourceHashes = map[string]string{
 	"libflux/src/core/semantic/walk/mod.rs":                                         "f0167952d639b075c45212d895aee87997e477a76446912a29ab6ed6a9c21325",
 	"libflux/src/core/semantic/walk/test_utils.rs":                                  "317606227b28f607273e4ff6ac431e148f753cc20ea1812fa7b97ecb262b3f90",
 	"libflux/src/core/semantic/walk/walk_mut.rs":                                    "d3870f38cb8269acf637d6f6338a52e751dd984c1cb4442f341bada11e8b84de",
-	"libflux/src/core/tests/analyze_test.rs":                                        "b7774e4790951b16ad94061b9c4b71df4e5bafe400d339ca8c0472dff4f2fbba",
+	"libflux/src/core/tests/analyze_test.rs":                                        "d05e05cc0451664f74404a8202d6d5f977dea1f883dd5a70815d306323b1f5ee",
 	"libflux/src/flux/Cargo.toml":                                                   "ede8860c53d1fd5cc7bc730a090e615b5668b0c340ccc8b1b9dbed426b5c8f76",
 	"libflux/src/flux/benches/builtins.rs":                                          "c60908c65ea51c225fccec19c44343af9103c950a91b23071ddb80292da708c8",
 	"libflux/src/flux/build.rs":                                                     "31a4f825297f9b79d1c8692a5fa3ff9211cb87d01650d147128d061588f75abd",
