@@ -3,8 +3,8 @@ package table_test
 import (
 	"testing"
 
+	"github.com/influxdata/flux/execute/table/static"
 	"github.com/influxdata/flux/internal/execute/table"
-	"github.com/influxdata/flux/internal/execute/table/static"
 	"github.com/influxdata/flux/memory"
 )
 

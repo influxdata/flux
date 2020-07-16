@@ -180,7 +180,7 @@ func BooleanKey(v interface{}) Column {
 // string or an integer. If an integer is used, then it is in seconds.
 func TimeKey(v interface{}) Column {
 	if iv, _, ok := mustTimeValue(v, 0, time.Second); ok {
-		return keyColumn{v: iv, t: flux.TTime}
+		return keyColumn{v: execute.Time(iv), t: flux.TTime}
 	}
 	return keyColumn{t: flux.TTime}
 }
@@ -531,4 +531,17 @@ func mustTimeValue(v interface{}, offset int64, unit time.Duration) (t int64, ab
 	default:
 		panic(fmt.Sprintf("unable to convert type %T to a time value", v))
 	}
+}
+
+// Extend will copy the spec from the table and add or override
+// any columns for the extended table.
+func (s Table) Extend(table Table) Table {
+	ns := make(Table, len(s)+len(table))
+	for label, column := range s {
+		ns[label] = column
+	}
+	for label, column := range table {
+		ns[label] = column
+	}
+	return ns
 }
