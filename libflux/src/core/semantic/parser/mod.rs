@@ -324,9 +324,6 @@ impl Parser<'_> {
     }
     // parse_var parses a single type_var
     fn parse_type_var(&mut self, token: &Token) -> Result<Tvar, &'static str> {
-
-        print!("token.type : {:?}\n", &token.token_type);
-        print!("token.text : {:?}\n", &token.text);
         match &token.text {
             Some(text) => {
                 let num = text.trim_start_matches('t').parse::<u64>();

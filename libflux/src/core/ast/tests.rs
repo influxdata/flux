@@ -517,23 +517,23 @@ fn test_json_option_statement() {
     want: `{"type":"BuiltinStatement","id":{"type":"Identifier","name":"task"}}`,
 },
 */
-#[test]
-fn test_json_builtin_statement() {
-    let n = Statement::Builtin(Box::new(BuiltinStmt {
-        base: BaseNode::default(),
-        id: Identifier {
-            base: BaseNode::default(),
-            name: "task".to_string(),
-        },
-    }));
-    let serialized = serde_json::to_string(&n).unwrap();
-    assert_eq!(
-        serialized,
-        r#"{"type":"BuiltinStatement","id":{"name":"task"}}"#
-    );
-    let deserialized: Statement = serde_json::from_str(serialized.as_str()).unwrap();
-    assert_eq!(deserialized, n)
-}
+// #[test]
+// fn test_json_builtin_statement() {
+//     let n = Statement::Builtin(Box::new(BuiltinStmt {
+//         base: BaseNode::default(),
+//         id: Identifier {
+//             base: BaseNode::default(),
+//             name: "task".to_string(),
+//         },
+//     }));
+//     let serialized = serde_json::to_string(&n).unwrap();
+//     assert_eq!(
+//         serialized,
+//         r#"{"type":"BuiltinStatement","id":{"name":"task"}}"#
+//     );
+//     let deserialized: Statement = serde_json::from_str(serialized.as_str()).unwrap();
+//     assert_eq!(deserialized, n)
+// }
 /*
 {
     name: "test statement",

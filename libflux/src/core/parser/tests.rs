@@ -1149,16 +1149,50 @@ fn qualified_option() {
     )
 }
 
+// #[test]
+// fn builtin() {
+//     let mut p = Parser::new(r#"builtin from"#);
+//     let parsed = p.parse_file("".to_string());
+//     let loc = Locator::new(&p.source[..]);
+//     assert_eq!(
+//         parsed,
+//         File {
+//             base: BaseNode {
+//                 location: loc.get(1, 1, 1, 13),
+//                 ..BaseNode::default()
+//             },
+//             name: "".to_string(),
+//             metadata: "parser-type=rust".to_string(),
+//             package: None,
+//             imports: vec![],
+//             body: vec![Statement::Builtin(Box::new(BuiltinStmt {
+//                 base: BaseNode {
+//                     location: loc.get(1, 1, 1, 13),
+//                     ..BaseNode::default()
+//                 },
+//                 id: Identifier {
+//                     base: BaseNode {
+//                         location: loc.get(1, 9, 1, 13),
+//                         ..BaseNode::default()
+//                     },
+//                     name: "from".to_string()
+//                 }
+//             }))],
+//             eof: None,
+//         },
+//     )
+// }
+
 #[test]
-fn builtin() {
-    let mut p = Parser::new(r#"builtin from"#);
+fn builtin_tvar() {
+    let mut p = Parser::new(r#"builtin hour : A"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 13),
+                location: loc.get(1, 1, 1, 17),
                 ..BaseNode::default()
             },
             name: "".to_string(),
@@ -1167,7 +1201,53 @@ fn builtin() {
             imports: vec![],
             body: vec![Statement::Builtin(Box::new(BuiltinStmt {
                 base: BaseNode {
-                    location: loc.get(1, 1, 1, 13),
+                    location: loc.get(1, 1, 1, 17),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 9, 1, 13),
+                        ..BaseNode::default()
+                    },
+                    name: "hour".to_string()
+                },
+                _type: TypeExpression{
+                    monotype: MonoType::Tvar(TvarType{
+                        base: BaseNode{
+                            location: loc.get(1, 16, 1, 17),
+                            ..BaseNode::default()
+                        }
+                    }),
+                    base: BaseNode{
+                        location: loc.get(1, 16, 1, 17),
+                        ..BaseNode::default()
+                    }
+                }
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn builtin_uint() {
+    let mut p = Parser::new(r#"builtin from : uint"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 20),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Builtin(Box::new(BuiltinStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 20),
                     ..BaseNode::default()
                 },
                 id: Identifier {
@@ -1176,6 +1256,340 @@ fn builtin() {
                         ..BaseNode::default()
                     },
                     name: "from".to_string()
+                },
+                _type: TypeExpression{
+                    monotype: MonoType::Uint(Uint{
+                        base: BaseNode{
+                            location: loc.get(1, 16, 1, 20),
+                            ..BaseNode::default()
+                        }
+                    }),
+                    base: BaseNode{
+                        location: loc.get(1, 16, 1, 20),
+                        ..BaseNode::default()
+                    }
+                }
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn builtin_float() {
+    let mut p = Parser::new(r#"builtin from : float"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 21),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Builtin(Box::new(BuiltinStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 21),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 9, 1, 13),
+                        ..BaseNode::default()
+                    },
+                    name: "from".to_string()
+                },
+                _type: TypeExpression{
+                    monotype: MonoType::Float(Float{
+                        base: BaseNode{
+                            location: loc.get(1, 16, 1, 21),
+                            ..BaseNode::default()
+                        }
+                    }),
+                    base: BaseNode{
+                        location: loc.get(1, 16, 1, 21),
+                        ..BaseNode::default()
+                    }
+                }
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn builtin_string() {
+    let mut p = Parser::new(r#"builtin from : string"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 22),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Builtin(Box::new(BuiltinStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 22),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 9, 1, 13),
+                        ..BaseNode::default()
+                    },
+                    name: "from".to_string()
+                },
+                _type: TypeExpression{
+                    monotype: MonoType::String(StringType{
+                        base: BaseNode{
+                            location: loc.get(1, 16, 1, 22),
+                            ..BaseNode::default()
+                        }
+                    }),
+                    base: BaseNode{
+                        location: loc.get(1, 16, 1, 22),
+                        ..BaseNode::default()
+                    }
+                }
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn builtin_bool() {
+    let mut p = Parser::new(r#"builtin from : bool"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 20),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Builtin(Box::new(BuiltinStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 20),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 9, 1, 13),
+                        ..BaseNode::default()
+                    },
+                    name: "from".to_string()
+                },
+                _type: TypeExpression{
+                    monotype: MonoType::Bool(Bool{
+                        base: BaseNode{
+                            location: loc.get(1, 16, 1, 20),
+                            ..BaseNode::default()
+                        }
+                    }),
+                    base: BaseNode{
+                        location: loc.get(1, 16, 1, 20),
+                        ..BaseNode::default()
+                    }
+                }
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn builtin_time() {
+    let mut p = Parser::new(r#"builtin from : time"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 20),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Builtin(Box::new(BuiltinStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 20),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 9, 1, 13),
+                        ..BaseNode::default()
+                    },
+                    name: "from".to_string()
+                },
+                _type: TypeExpression{
+                    monotype: MonoType::Time(Time{
+                        base: BaseNode{
+                            location: loc.get(1, 16, 1, 20),
+                            ..BaseNode::default()
+                        }
+                    }),
+                    base: BaseNode{
+                        location: loc.get(1, 16, 1, 20),
+                        ..BaseNode::default()
+                    }
+                }
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn builtin_duration() {
+    let mut p = Parser::new(r#"builtin from : duration"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 24),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Builtin(Box::new(BuiltinStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 24),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 9, 1, 13),
+                        ..BaseNode::default()
+                    },
+                    name: "from".to_string()
+                },
+                _type: TypeExpression{
+                    monotype: MonoType::Duration(DurationType{
+                        base: BaseNode{
+                            location: loc.get(1, 16, 1, 24),
+                            ..BaseNode::default()
+                        }
+                    }),
+                    base: BaseNode{
+                        location: loc.get(1, 16, 1, 24),
+                        ..BaseNode::default()
+                    }
+                }
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn builtin_bytes() {
+    let mut p = Parser::new(r#"builtin from : bytes"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 21),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Builtin(Box::new(BuiltinStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 21),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 9, 1, 13),
+                        ..BaseNode::default()
+                    },
+                    name: "from".to_string()
+                },
+                _type: TypeExpression{
+                    monotype: MonoType::Bytes(Bytes{
+                        base: BaseNode{
+                            location: loc.get(1, 16, 1, 21),
+                            ..BaseNode::default()
+                        }
+                    }),
+                    base: BaseNode{
+                        location: loc.get(1, 16, 1, 21),
+                        ..BaseNode::default()
+                    }
+                }
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn builtin_regexp() {
+    let mut p = Parser::new(r#"builtin from : regexp"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 22),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Builtin(Box::new(BuiltinStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 22),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 9, 1, 13),
+                        ..BaseNode::default()
+                    },
+                    name: "from".to_string()
+                },
+                _type: TypeExpression{
+                    monotype: MonoType::Regexp(Regexp{
+                        base: BaseNode{
+                            location: loc.get(1, 16, 1, 22),
+                            ..BaseNode::default()
+                        }
+                    }),
+                    base: BaseNode{
+                        location: loc.get(1, 16, 1, 22),
+                        ..BaseNode::default()
+                    }
                 }
             }))],
             eof: None,

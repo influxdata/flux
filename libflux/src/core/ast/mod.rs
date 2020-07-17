@@ -492,7 +492,130 @@ pub struct BuiltinStmt {
     #[serde(flatten)]
     pub base: BaseNode,
     pub id: Identifier,
+    pub _type: TypeExpression,
 }
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub enum MonoType {
+    Tvar(TvarType),
+    Int(Int),
+    Uint(Uint),
+    Float(Float),
+    String(StringType),
+    Bool(Bool),
+    Time(Time),
+    Duration(DurationType),
+    Bytes(Bytes),
+    Regexp(Regexp),
+    Invalid,
+}
+
+pub fn base_from_monotype(m : &MonoType) -> BaseNode{
+    match m {
+        MonoType::Tvar(t) => t.base.clone(),
+        MonoType::Int(t) => t.base.clone(),
+        MonoType::Uint(t) => t.base.clone(),
+        MonoType::Float(t) => t.base.clone(),
+        MonoType::String(t) => t.base.clone(),
+        MonoType::Bool(t) => t.base.clone(),
+        MonoType::Time(t) => t.base.clone(),
+        MonoType::Duration(t) => t.base.clone(),
+        MonoType::Bytes(t) => t.base.clone(),
+        MonoType::Regexp(t) => t.base.clone(),
+        _ =>  BaseNode::default(),
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct TvarType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Int {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Uint {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Float {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct StringType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Bool {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Time {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct DurationType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Bytes {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Regexp {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct TypeExpression {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub monotype: MonoType,
+    // pub constraints: Option<Constraints>,
+}
+
 
 // TestStmt declares a Flux test case
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
