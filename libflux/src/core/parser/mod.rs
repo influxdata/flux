@@ -532,6 +532,82 @@ impl Parser {
             id,
         }))
     }
+    fn parse_type_expression(&mut self) -> TypeExpression {
+        let monotype = self.parse_monotype(); // monotype
+
+        // let t = self.peek();
+        // if t.tok == TOK_IDENT {
+        //     t = self.expect(TOK_INDENT); // where
+        //     if t.lit != "where" {
+        //         // handle error if where was not found
+        //         self.errs.push(format!(
+        //             "expected \"where\" but found : {}",
+        //             t.lit
+        //         ));
+        //     }
+        //
+        //     let constraints = self.parse_constraints();
+        //     // return the typeexpression
+        //     Expression::TypeExpression {
+        //         Monotype: monotype,
+        //         Constraints: constraints
+        //     }
+        // }
+        // return the typeexpression
+        TypeExpression{
+            monotype: monotype.clone(),
+            // constraints: None
+            base: base_from_monotype(&monotype) ,
+        }
+    }
+
+    fn parse_monotype(&mut self) -> MonoType {
+        // Tvar | Basic | Array | Record | Function
+
+        // worry about Basic only rn.
+        let t = self.peek();
+        match t.tok {
+            TOK_IDENT => if t.lit.len() == 1 { self.parse_tvar() }
+            else { self.parse_basic() }
+            _ => MonoType::Invalid
+        }
+    }
+    fn parse_basic(&mut self) -> MonoType {
+        let t = self.expect(TOK_IDENT);
+        match &*t.lit {
+            "int" => MonoType::Int(Int{
+                base: self.base_node_from_token(&t)}),
+            "uint" => MonoType::Uint(Uint{
+                base: self.base_node_from_token(&t)}),
+            "float" => MonoType::Float(Float{
+                base: self.base_node_from_token(&t)}),
+            "string" => MonoType::String(StringType{
+                base: self.base_node_from_token(&t)}),
+            "bool" => MonoType::Bool(Bool{
+                base: self.base_node_from_token(&t)}),
+            "time" => MonoType::Time(Time{
+                base: self.base_node_from_token(&t)}),
+            "duration" => MonoType::Duration(DurationType{
+                base: self.base_node_from_token(&t)}),
+            "bytes" => MonoType::Bytes(Bytes{
+                base: self.base_node_from_token(&t)}),
+            "regexp" => MonoType::Regexp(Regexp{
+                base: self.base_node_from_token(&t)}),
+            _ => MonoType::Invalid,
+        }
+    }
+    fn parse_tvar(&mut self) -> MonoType {
+        let t = self.expect(TOK_IDENT);
+        if t.lit.to_uppercase() == (t.lit) {
+            MonoType::Tvar(TvarType{
+                base: self.base_node_from_token(&t)})
+        }
+        else { MonoType::Invalid }
+    }
+    // fn parse_constraints(&mut self) -> Constraints {
+    //     // Constraint { "," Constraint }
+    //     self.parse_constraint()
+    // }
     fn parse_test_statement(&mut self) -> Statement {
         let t = self.expect(TOK_TEST);
         let id = self.parse_identifier();
