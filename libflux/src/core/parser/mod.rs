@@ -532,6 +532,7 @@ impl Parser {
             id,
         }))
     }
+    #[cfg(test)]
     fn parse_type_expression(&mut self) -> TypeExpression {
         let monotype = self.parse_monotype(); // monotype
 
@@ -561,6 +562,7 @@ impl Parser {
         }
     }
 
+    #[cfg(test)]
     fn parse_monotype(&mut self) -> MonoType {
         // Tvar | Basic | Array | Record | Function
 
@@ -572,30 +574,34 @@ impl Parser {
             _ => MonoType::Invalid
         }
     }
+
+    #[cfg(test)]
     fn parse_basic(&mut self) -> MonoType {
         let t = self.expect(TOK_IDENT);
         match &*t.lit {
-            "int" => MonoType::Int(Int{
+            "int" => MonoType::Int(IntType{
                 base: self.base_node_from_token(&t)}),
-            "uint" => MonoType::Uint(Uint{
+            "uint" => MonoType::Uint(UintType{
                 base: self.base_node_from_token(&t)}),
-            "float" => MonoType::Float(Float{
+            "float" => MonoType::Float(FloatType{
                 base: self.base_node_from_token(&t)}),
             "string" => MonoType::String(StringType{
                 base: self.base_node_from_token(&t)}),
-            "bool" => MonoType::Bool(Bool{
+            "bool" => MonoType::Bool(BoolType{
                 base: self.base_node_from_token(&t)}),
-            "time" => MonoType::Time(Time{
+            "time" => MonoType::Time(TimeType{
                 base: self.base_node_from_token(&t)}),
             "duration" => MonoType::Duration(DurationType{
                 base: self.base_node_from_token(&t)}),
-            "bytes" => MonoType::Bytes(Bytes{
+            "bytes" => MonoType::Bytes(BytesType{
                 base: self.base_node_from_token(&t)}),
-            "regexp" => MonoType::Regexp(Regexp{
+            "regexp" => MonoType::Regexp(RegexpType{
                 base: self.base_node_from_token(&t)}),
             _ => MonoType::Invalid,
         }
     }
+
+    #[cfg(test)]
     fn parse_tvar(&mut self) -> MonoType {
         let t = self.expect(TOK_IDENT);
         if t.lit.to_uppercase() == (t.lit) {
