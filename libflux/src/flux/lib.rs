@@ -606,6 +606,7 @@ mod tests {
     use core::semantic::nodes::infer_file;
     use core::semantic::types::MonoType;
     use core::{ast, semantic};
+    use regex::Regex;
 
     #[test]
     fn find_var_ref() {
@@ -619,13 +620,17 @@ vstr = v.str + "hello"
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
+        // the following asserts use regexp to replace names of generated types
         assert_eq!(
-            format!("{}", t),
-            "{int:int | sweet:t4955 | str:string | t4966}"
+            Regex::new(r"\d+")
+                .unwrap()
+                .replace_all(&format!("{}", t), ""),
+            "{int:int | sweet:t | str:string | t}"
         );
-
         assert_eq!(
-            serde_json::to_string_pretty(&t).unwrap(),
+            Regex::new(r"\d+")
+                .unwrap()
+                .replace_all(&serde_json::to_string_pretty(&t).unwrap(), "1"),
             r#"{
   "Row": {
     "type": "Extension",
@@ -639,7 +644,7 @@ vstr = v.str + "hello"
         "head": {
           "k": "sweet",
           "v": {
-            "Var": 4955
+            "Var": 1
           }
         },
         "tail": {
@@ -650,7 +655,7 @@ vstr = v.str + "hello"
               "v": "String"
             },
             "tail": {
-              "Var": 4966
+              "Var": 1
             }
           }
         }
@@ -684,10 +689,17 @@ p = o.ethan
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
-        assert_eq!(format!("{}", t), "{int:int | ethan:t4951 | t4955}");
-
+        // the following asserts use regexp to replace names of generated types
         assert_eq!(
-            serde_json::to_string_pretty(&t).unwrap(),
+            Regex::new(r"\d+")
+                .unwrap()
+                .replace_all(&format!("{}", t), ""),
+            "{int:int | ethan:t | t}"
+        );
+        assert_eq!(
+            Regex::new(r"\d+")
+                .unwrap()
+                .replace_all(&serde_json::to_string_pretty(&t).unwrap(), "1"),
             r#"{
   "Row": {
     "type": "Extension",
@@ -701,11 +713,11 @@ p = o.ethan
         "head": {
           "k": "ethan",
           "v": {
-            "Var": 4951
+            "Var": 1
           }
         },
         "tail": {
-          "Var": 4955
+          "Var": 1
         }
       }
     }
@@ -727,7 +739,13 @@ from(bucket: v.bucket)
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let ty = find_var_type(pkg, "v".to_string()).expect("should be able to find var type");
-        assert_eq!(format!("{}", ty), "{measurement:t4960 | timeRangeStart:t4970 | timeRangeStop:t4972 | bucket:string | t5008}");
+        // use regexp to replace names of generated types
+        assert_eq!(
+            Regex::new(r"\d+")
+                .unwrap()
+                .replace_all(&format!("{}", ty), ""),
+            "{measurement:t | timeRangeStart:t | timeRangeStop:t | bucket:string | t}"
+        );
     }
 
     #[test]

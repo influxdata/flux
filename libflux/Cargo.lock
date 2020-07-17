@@ -386,6 +386,7 @@ dependencies = [
  "criterion",
  "flatbuffers",
  "maplit",
+ "regex",
  "serde",
  "serde-aux",
  "serde_derive",
