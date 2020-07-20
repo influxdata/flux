@@ -21,18 +21,87 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 2,
-					Line:   26,
+					Column: 15,
+					Line:   47,
 				},
 				File:   "discord.flux",
-				Source: "package discord\n\nimport \"http\"\nimport \"json\"\n\n// `webhookToken` - string - the secure token of the webhook.\n// `webhookID` - string - the ID of the webhook.\n// `username` - string - username posting the message.\n// `content` - string - the text to display in discord.\n// `avatar_url` -  override the default avatar of the webhook.\n\nsend = (webhookToken, webhookID, username, content, avatar_url=\"\") => {\n  data = {\n      username: username,\n      content: content,\n      avatar_url: avatar_url\n    }\n\n  headers = {\n      \"Content-Type\": \"application/json\"\n    }\n  encode = json.encode(v:data)\n\n  discordURL = \"https://discordapp.com/api/webhooks/\"\n  return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}",
+				Source: "package discord\n\nimport \"http\"\nimport \"json\"\n\noption discordURL = \"https://discordapp.com/api/webhooks/\"\n \n// `webhookToken` - string - the secure token of the webhook.\n// `webhookID` - string - the ID of the webhook.\n// `username` - string - username posting the message.\n// `content` - string - the text to display in discord.\n// `avatar_url` -  override the default avatar of the webhook.\nsend = (webhookToken, webhookID, username, content, avatar_url=\"\") => {\n  data = {\n      username: username,\n      content: content,\n      avatar_url: avatar_url\n    }\n\n  headers = {\n      \"Content-Type\": \"application/json\"\n    }\n  encode = json.encode(v:data)\n\n  return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send messages to discord for each table row.\n// `webhookToken` - string - the secure token of the webhook.\n// `webhookID` - string - the ID of the webhook.\n// `username` - string - username posting the message.\n// `avatar_url` -  override the default avatar of the webhook.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `content`, as defined in the `send` function arguments.\nendpoint = (webhookToken, webhookID, username, avatar_url=\"\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)}\n            })",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
 				},
 			},
 		},
-		Body: []ast.Statement{&ast.VariableAssignment{
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 59,
+							Line:   6,
+						},
+						File:   "discord.flux",
+						Source: "discordURL = \"https://discordapp.com/api/webhooks/\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   6,
+							},
+							File:   "discord.flux",
+							Source: "discordURL",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "discordURL",
+				},
+				Init: &ast.StringLiteral{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 59,
+								Line:   6,
+							},
+							File:   "discord.flux",
+							Source: "\"https://discordapp.com/api/webhooks/\"",
+							Start: ast.Position{
+								Column: 21,
+								Line:   6,
+							},
+						},
+					},
+					Value: "https://discordapp.com/api/webhooks/",
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 59,
+						Line:   6,
+					},
+					File:   "discord.flux",
+					Source: "option discordURL = \"https://discordapp.com/api/webhooks/\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
@@ -41,10 +110,10 @@ var pkgAST = &ast.Package{
 						Line:   26,
 					},
 					File:   "discord.flux",
-					Source: "send = (webhookToken, webhookID, username, content, avatar_url=\"\") => {\n  data = {\n      username: username,\n      content: content,\n      avatar_url: avatar_url\n    }\n\n  headers = {\n      \"Content-Type\": \"application/json\"\n    }\n  encode = json.encode(v:data)\n\n  discordURL = \"https://discordapp.com/api/webhooks/\"\n  return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}",
+					Source: "send = (webhookToken, webhookID, username, content, avatar_url=\"\") => {\n  data = {\n      username: username,\n      content: content,\n      avatar_url: avatar_url\n    }\n\n  headers = {\n      \"Content-Type\": \"application/json\"\n    }\n  encode = json.encode(v:data)\n\n  return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   12,
+						Line:   13,
 					},
 				},
 			},
@@ -54,13 +123,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   12,
+							Line:   13,
 						},
 						File:   "discord.flux",
 						Source: "send",
 						Start: ast.Position{
 							Column: 1,
-							Line:   12,
+							Line:   13,
 						},
 					},
 				},
@@ -75,10 +144,10 @@ var pkgAST = &ast.Package{
 							Line:   26,
 						},
 						File:   "discord.flux",
-						Source: "(webhookToken, webhookID, username, content, avatar_url=\"\") => {\n  data = {\n      username: username,\n      content: content,\n      avatar_url: avatar_url\n    }\n\n  headers = {\n      \"Content-Type\": \"application/json\"\n    }\n  encode = json.encode(v:data)\n\n  discordURL = \"https://discordapp.com/api/webhooks/\"\n  return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}",
+						Source: "(webhookToken, webhookID, username, content, avatar_url=\"\") => {\n  data = {\n      username: username,\n      content: content,\n      avatar_url: avatar_url\n    }\n\n  headers = {\n      \"Content-Type\": \"application/json\"\n    }\n  encode = json.encode(v:data)\n\n  return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}",
 						Start: ast.Position{
 							Column: 8,
-							Line:   12,
+							Line:   13,
 						},
 					},
 				},
@@ -91,10 +160,10 @@ var pkgAST = &ast.Package{
 								Line:   26,
 							},
 							File:   "discord.flux",
-							Source: "{\n  data = {\n      username: username,\n      content: content,\n      avatar_url: avatar_url\n    }\n\n  headers = {\n      \"Content-Type\": \"application/json\"\n    }\n  encode = json.encode(v:data)\n\n  discordURL = \"https://discordapp.com/api/webhooks/\"\n  return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}",
+							Source: "{\n  data = {\n      username: username,\n      content: content,\n      avatar_url: avatar_url\n    }\n\n  headers = {\n      \"Content-Type\": \"application/json\"\n    }\n  encode = json.encode(v:data)\n\n  return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}",
 							Start: ast.Position{
 								Column: 71,
-								Line:   12,
+								Line:   13,
 							},
 						},
 					},
@@ -104,13 +173,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   17,
+									Line:   18,
 								},
 								File:   "discord.flux",
 								Source: "data = {\n      username: username,\n      content: content,\n      avatar_url: avatar_url\n    }",
 								Start: ast.Position{
 									Column: 3,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -120,13 +189,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 7,
-										Line:   13,
+										Line:   14,
 									},
 									File:   "discord.flux",
 									Source: "data",
 									Start: ast.Position{
 										Column: 3,
-										Line:   13,
+										Line:   14,
 									},
 								},
 							},
@@ -138,13 +207,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   17,
+										Line:   18,
 									},
 									File:   "discord.flux",
 									Source: "{\n      username: username,\n      content: content,\n      avatar_url: avatar_url\n    }",
 									Start: ast.Position{
 										Column: 10,
-										Line:   13,
+										Line:   14,
 									},
 								},
 							},
@@ -154,13 +223,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   14,
+											Line:   15,
 										},
 										File:   "discord.flux",
 										Source: "username: username",
 										Start: ast.Position{
 											Column: 7,
-											Line:   14,
+											Line:   15,
 										},
 									},
 								},
@@ -170,13 +239,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   14,
+												Line:   15,
 											},
 											File:   "discord.flux",
 											Source: "username",
 											Start: ast.Position{
 												Column: 7,
-												Line:   14,
+												Line:   15,
 											},
 										},
 									},
@@ -188,13 +257,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   14,
+												Line:   15,
 											},
 											File:   "discord.flux",
 											Source: "username",
 											Start: ast.Position{
 												Column: 17,
-												Line:   14,
+												Line:   15,
 											},
 										},
 									},
@@ -206,13 +275,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   15,
+											Line:   16,
 										},
 										File:   "discord.flux",
 										Source: "content: content",
 										Start: ast.Position{
 											Column: 7,
-											Line:   15,
+											Line:   16,
 										},
 									},
 								},
@@ -222,13 +291,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   15,
+												Line:   16,
 											},
 											File:   "discord.flux",
 											Source: "content",
 											Start: ast.Position{
 												Column: 7,
-												Line:   15,
+												Line:   16,
 											},
 										},
 									},
@@ -240,13 +309,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   15,
+												Line:   16,
 											},
 											File:   "discord.flux",
 											Source: "content",
 											Start: ast.Position{
 												Column: 16,
-												Line:   15,
+												Line:   16,
 											},
 										},
 									},
@@ -258,13 +327,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   16,
+											Line:   17,
 										},
 										File:   "discord.flux",
 										Source: "avatar_url: avatar_url",
 										Start: ast.Position{
 											Column: 7,
-											Line:   16,
+											Line:   17,
 										},
 									},
 								},
@@ -274,13 +343,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   16,
+												Line:   17,
 											},
 											File:   "discord.flux",
 											Source: "avatar_url",
 											Start: ast.Position{
 												Column: 7,
-												Line:   16,
+												Line:   17,
 											},
 										},
 									},
@@ -292,13 +361,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   16,
+												Line:   17,
 											},
 											File:   "discord.flux",
 											Source: "avatar_url",
 											Start: ast.Position{
 												Column: 19,
-												Line:   16,
+												Line:   17,
 											},
 										},
 									},
@@ -313,13 +382,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   21,
+									Line:   22,
 								},
 								File:   "discord.flux",
 								Source: "headers = {\n      \"Content-Type\": \"application/json\"\n    }",
 								Start: ast.Position{
 									Column: 3,
-									Line:   19,
+									Line:   20,
 								},
 							},
 						},
@@ -329,13 +398,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   19,
+										Line:   20,
 									},
 									File:   "discord.flux",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 3,
-										Line:   19,
+										Line:   20,
 									},
 								},
 							},
@@ -347,13 +416,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   21,
+										Line:   22,
 									},
 									File:   "discord.flux",
 									Source: "{\n      \"Content-Type\": \"application/json\"\n    }",
 									Start: ast.Position{
 										Column: 13,
-										Line:   19,
+										Line:   20,
 									},
 								},
 							},
@@ -363,13 +432,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 41,
-											Line:   20,
+											Line:   21,
 										},
 										File:   "discord.flux",
 										Source: "\"Content-Type\": \"application/json\"",
 										Start: ast.Position{
 											Column: 7,
-											Line:   20,
+											Line:   21,
 										},
 									},
 								},
@@ -379,13 +448,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   20,
+												Line:   21,
 											},
 											File:   "discord.flux",
 											Source: "\"Content-Type\"",
 											Start: ast.Position{
 												Column: 7,
-												Line:   20,
+												Line:   21,
 											},
 										},
 									},
@@ -397,13 +466,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   20,
+												Line:   21,
 											},
 											File:   "discord.flux",
 											Source: "\"application/json\"",
 											Start: ast.Position{
 												Column: 23,
-												Line:   20,
+												Line:   21,
 											},
 										},
 									},
@@ -418,13 +487,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   22,
+									Line:   23,
 								},
 								File:   "discord.flux",
 								Source: "encode = json.encode(v:data)",
 								Start: ast.Position{
 									Column: 3,
-									Line:   22,
+									Line:   23,
 								},
 							},
 						},
@@ -434,13 +503,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   22,
+										Line:   23,
 									},
 									File:   "discord.flux",
 									Source: "encode",
 									Start: ast.Position{
 										Column: 3,
-										Line:   22,
+										Line:   23,
 									},
 								},
 							},
@@ -453,13 +522,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   22,
+											Line:   23,
 										},
 										File:   "discord.flux",
 										Source: "v:data",
 										Start: ast.Position{
 											Column: 24,
-											Line:   22,
+											Line:   23,
 										},
 									},
 								},
@@ -469,13 +538,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   22,
+												Line:   23,
 											},
 											File:   "discord.flux",
 											Source: "v:data",
 											Start: ast.Position{
 												Column: 24,
-												Line:   22,
+												Line:   23,
 											},
 										},
 									},
@@ -485,13 +554,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   22,
+													Line:   23,
 												},
 												File:   "discord.flux",
 												Source: "v",
 												Start: ast.Position{
 													Column: 24,
-													Line:   22,
+													Line:   23,
 												},
 											},
 										},
@@ -503,13 +572,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   22,
+													Line:   23,
 												},
 												File:   "discord.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 26,
-													Line:   22,
+													Line:   23,
 												},
 											},
 										},
@@ -523,13 +592,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   22,
+										Line:   23,
 									},
 									File:   "discord.flux",
 									Source: "json.encode(v:data)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   22,
+										Line:   23,
 									},
 								},
 							},
@@ -539,13 +608,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   22,
+											Line:   23,
 										},
 										File:   "discord.flux",
 										Source: "json.encode",
 										Start: ast.Position{
 											Column: 12,
-											Line:   22,
+											Line:   23,
 										},
 									},
 								},
@@ -555,13 +624,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   22,
+												Line:   23,
 											},
 											File:   "discord.flux",
 											Source: "json",
 											Start: ast.Position{
 												Column: 12,
-												Line:   22,
+												Line:   23,
 											},
 										},
 									},
@@ -573,71 +642,19 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   22,
+												Line:   23,
 											},
 											File:   "discord.flux",
 											Source: "encode",
 											Start: ast.Position{
 												Column: 17,
-												Line:   22,
+												Line:   23,
 											},
 										},
 									},
 									Name: "encode",
 								},
 							},
-						},
-					}, &ast.VariableAssignment{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 54,
-									Line:   24,
-								},
-								File:   "discord.flux",
-								Source: "discordURL = \"https://discordapp.com/api/webhooks/\"",
-								Start: ast.Position{
-									Column: 3,
-									Line:   24,
-								},
-							},
-						},
-						ID: &ast.Identifier{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 13,
-										Line:   24,
-									},
-									File:   "discord.flux",
-									Source: "discordURL",
-									Start: ast.Position{
-										Column: 3,
-										Line:   24,
-									},
-								},
-							},
-							Name: "discordURL",
-						},
-						Init: &ast.StringLiteral{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 54,
-										Line:   24,
-									},
-									File:   "discord.flux",
-									Source: "\"https://discordapp.com/api/webhooks/\"",
-									Start: ast.Position{
-										Column: 16,
-										Line:   24,
-									},
-								},
-							},
-							Value: "https://discordapp.com/api/webhooks/",
 						},
 					}, &ast.ReturnStatement{
 						Argument: &ast.CallExpression{
@@ -1016,13 +1033,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 21,
-								Line:   12,
+								Line:   13,
 							},
 							File:   "discord.flux",
 							Source: "webhookToken",
 							Start: ast.Position{
 								Column: 9,
-								Line:   12,
+								Line:   13,
 							},
 						},
 					},
@@ -1032,13 +1049,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 21,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "discord.flux",
 								Source: "webhookToken",
 								Start: ast.Position{
 									Column: 9,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -1051,13 +1068,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   12,
+								Line:   13,
 							},
 							File:   "discord.flux",
 							Source: "webhookID",
 							Start: ast.Position{
 								Column: 23,
-								Line:   12,
+								Line:   13,
 							},
 						},
 					},
@@ -1067,13 +1084,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "discord.flux",
 								Source: "webhookID",
 								Start: ast.Position{
 									Column: 23,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -1086,13 +1103,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
-								Line:   12,
+								Line:   13,
 							},
 							File:   "discord.flux",
 							Source: "username",
 							Start: ast.Position{
 								Column: 34,
-								Line:   12,
+								Line:   13,
 							},
 						},
 					},
@@ -1102,13 +1119,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "discord.flux",
 								Source: "username",
 								Start: ast.Position{
 									Column: 34,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -1121,13 +1138,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 51,
-								Line:   12,
+								Line:   13,
 							},
 							File:   "discord.flux",
 							Source: "content",
 							Start: ast.Position{
 								Column: 44,
-								Line:   12,
+								Line:   13,
 							},
 						},
 					},
@@ -1137,13 +1154,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "discord.flux",
 								Source: "content",
 								Start: ast.Position{
 									Column: 44,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -1156,13 +1173,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 66,
-								Line:   12,
+								Line:   13,
 							},
 							File:   "discord.flux",
 							Source: "avatar_url=\"\"",
 							Start: ast.Position{
 								Column: 53,
-								Line:   12,
+								Line:   13,
 							},
 						},
 					},
@@ -1172,13 +1189,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 63,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "discord.flux",
 								Source: "avatar_url",
 								Start: ast.Position{
 									Column: 53,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -1190,13 +1207,1271 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 66,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "discord.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 64,
-									Line:   12,
+									Line:   13,
+								},
+							},
+						},
+						Value: "",
+					},
+				}},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 15,
+						Line:   47,
+					},
+					File:   "discord.flux",
+					Source: "endpoint = (webhookToken, webhookID, username, avatar_url=\"\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)}\n            })",
+					Start: ast.Position{
+						Column: 1,
+						Line:   35,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 9,
+							Line:   35,
+						},
+						File:   "discord.flux",
+						Source: "endpoint",
+						Start: ast.Position{
+							Column: 1,
+							Line:   35,
+						},
+					},
+				},
+				Name: "endpoint",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 15,
+							Line:   47,
+						},
+						File:   "discord.flux",
+						Source: "(webhookToken, webhookID, username, avatar_url=\"\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)}\n            })",
+						Start: ast.Position{
+							Column: 12,
+							Line:   35,
+						},
+					},
+				},
+				Body: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 15,
+								Line:   47,
+							},
+							File:   "discord.flux",
+							Source: "(mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)}\n            })",
+							Start: ast.Position{
+								Column: 5,
+								Line:   36,
+							},
+						},
+					},
+					Body: &ast.FunctionExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   47,
+								},
+								File:   "discord.flux",
+								Source: "(tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)}\n            })",
+								Start: ast.Position{
+									Column: 9,
+									Line:   37,
+								},
+							},
+						},
+						Body: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 30,
+											Line:   37,
+										},
+										File:   "discord.flux",
+										Source: "tables",
+										Start: ast.Position{
+											Column: 24,
+											Line:   37,
+										},
+									},
+								},
+								Name: "tables",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   47,
+									},
+									File:   "discord.flux",
+									Source: "tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)}\n            })",
+									Start: ast.Position{
+										Column: 24,
+										Line:   37,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   47,
+											},
+											File:   "discord.flux",
+											Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)}\n            }",
+											Start: ast.Position{
+												Column: 20,
+												Line:   38,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   47,
+												},
+												File:   "discord.flux",
+												Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)}\n            }",
+												Start: ast.Position{
+													Column: 20,
+													Line:   38,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 22,
+														Line:   38,
+													},
+													File:   "discord.flux",
+													Source: "fn",
+													Start: ast.Position{
+														Column: 20,
+														Line:   38,
+													},
+												},
+											},
+											Name: "fn",
+										},
+										Value: &ast.FunctionExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 14,
+														Line:   47,
+													},
+													File:   "discord.flux",
+													Source: "(r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)}\n            }",
+													Start: ast.Position{
+														Column: 24,
+														Line:   38,
+													},
+												},
+											},
+											Body: &ast.Block{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 14,
+															Line:   47,
+														},
+														File:   "discord.flux",
+														Source: "{\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)}\n            }",
+														Start: ast.Position{
+															Column: 31,
+															Line:   38,
+														},
+													},
+												},
+												Body: []ast.Statement{&ast.VariableAssignment{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 34,
+																Line:   39,
+															},
+															File:   "discord.flux",
+															Source: "obj = mapFn(r: r)",
+															Start: ast.Position{
+																Column: 17,
+																Line:   39,
+															},
+														},
+													},
+													ID: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 20,
+																	Line:   39,
+																},
+																File:   "discord.flux",
+																Source: "obj",
+																Start: ast.Position{
+																	Column: 17,
+																	Line:   39,
+																},
+															},
+														},
+														Name: "obj",
+													},
+													Init: &ast.CallExpression{
+														Arguments: []ast.Expression{&ast.ObjectExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 33,
+																		Line:   39,
+																	},
+																	File:   "discord.flux",
+																	Source: "r: r",
+																	Start: ast.Position{
+																		Column: 29,
+																		Line:   39,
+																	},
+																},
+															},
+															Properties: []*ast.Property{&ast.Property{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 33,
+																			Line:   39,
+																		},
+																		File:   "discord.flux",
+																		Source: "r: r",
+																		Start: ast.Position{
+																			Column: 29,
+																			Line:   39,
+																		},
+																	},
+																},
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 30,
+																				Line:   39,
+																			},
+																			File:   "discord.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 29,
+																				Line:   39,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Value: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 33,
+																				Line:   39,
+																			},
+																			File:   "discord.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 32,
+																				Line:   39,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+															}},
+															With: nil,
+														}},
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 34,
+																	Line:   39,
+																},
+																File:   "discord.flux",
+																Source: "mapFn(r: r)",
+																Start: ast.Position{
+																	Column: 23,
+																	Line:   39,
+																},
+															},
+														},
+														Callee: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 28,
+																		Line:   39,
+																	},
+																	File:   "discord.flux",
+																	Source: "mapFn",
+																	Start: ast.Position{
+																		Column: 23,
+																		Line:   39,
+																	},
+																},
+															},
+															Name: "mapFn",
+														},
+													},
+												}, &ast.ReturnStatement{
+													Argument: &ast.ObjectExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 26,
+																	Line:   46,
+																},
+																File:   "discord.flux",
+																Source: "{r with _sent: string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)}",
+																Start: ast.Position{
+																	Column: 24,
+																	Line:   40,
+																},
+															},
+														},
+														Properties: []*ast.Property{&ast.Property{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 25,
+																		Line:   46,
+																	},
+																	File:   "discord.flux",
+																	Source: "_sent: string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)",
+																	Start: ast.Position{
+																		Column: 32,
+																		Line:   40,
+																	},
+																},
+															},
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 37,
+																			Line:   40,
+																		},
+																		File:   "discord.flux",
+																		Source: "_sent",
+																		Start: ast.Position{
+																			Column: 32,
+																			Line:   40,
+																		},
+																	},
+																},
+																Name: "_sent",
+															},
+															Value: &ast.CallExpression{
+																Arguments: []ast.Expression{&ast.ObjectExpression{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 24,
+																				Line:   46,
+																			},
+																			File:   "discord.flux",
+																			Source: "v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100",
+																			Start: ast.Position{
+																				Column: 46,
+																				Line:   40,
+																			},
+																		},
+																	},
+																	Properties: []*ast.Property{&ast.Property{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 24,
+																					Line:   46,
+																				},
+																				File:   "discord.flux",
+																				Source: "v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100",
+																				Start: ast.Position{
+																					Column: 46,
+																					Line:   40,
+																				},
+																			},
+																		},
+																		Key: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 47,
+																						Line:   40,
+																					},
+																					File:   "discord.flux",
+																					Source: "v",
+																					Start: ast.Position{
+																						Column: 46,
+																						Line:   40,
+																					},
+																				},
+																			},
+																			Name: "v",
+																		},
+																		Value: &ast.BinaryExpression{
+																			BaseNode: ast.BaseNode{
+																				Errors: nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 24,
+																						Line:   46,
+																					},
+																					File:   "discord.flux",
+																					Source: "2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100",
+																					Start: ast.Position{
+																						Column: 49,
+																						Line:   40,
+																					},
+																				},
+																			},
+																			Left: &ast.IntegerLiteral{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 50,
+																							Line:   40,
+																						},
+																						File:   "discord.flux",
+																						Source: "2",
+																						Start: ast.Position{
+																							Column: 49,
+																							Line:   40,
+																						},
+																					},
+																				},
+																				Value: int64(2),
+																			},
+																			Operator: 17,
+																			Right: &ast.BinaryExpression{
+																				BaseNode: ast.BaseNode{
+																					Errors: nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 24,
+																							Line:   46,
+																						},
+																						File:   "discord.flux",
+																						Source: "send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100",
+																						Start: ast.Position{
+																							Column: 54,
+																							Line:   40,
+																						},
+																					},
+																				},
+																				Left: &ast.CallExpression{
+																					Arguments: []ast.Expression{&ast.ObjectExpression{
+																						BaseNode: ast.BaseNode{
+																							Errors: nil,
+																							Loc: &ast.SourceLocation{
+																								End: ast.Position{
+																									Column: 41,
+																									Line:   45,
+																								},
+																								File:   "discord.flux",
+																								Source: "webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content",
+																								Start: ast.Position{
+																									Column: 21,
+																									Line:   41,
+																								},
+																							},
+																						},
+																						Properties: []*ast.Property{&ast.Property{
+																							BaseNode: ast.BaseNode{
+																								Errors: nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 47,
+																										Line:   41,
+																									},
+																									File:   "discord.flux",
+																									Source: "webhookToken: webhookToken",
+																									Start: ast.Position{
+																										Column: 21,
+																										Line:   41,
+																									},
+																								},
+																							},
+																							Key: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Errors: nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 33,
+																											Line:   41,
+																										},
+																										File:   "discord.flux",
+																										Source: "webhookToken",
+																										Start: ast.Position{
+																											Column: 21,
+																											Line:   41,
+																										},
+																									},
+																								},
+																								Name: "webhookToken",
+																							},
+																							Value: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Errors: nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 47,
+																											Line:   41,
+																										},
+																										File:   "discord.flux",
+																										Source: "webhookToken",
+																										Start: ast.Position{
+																											Column: 35,
+																											Line:   41,
+																										},
+																									},
+																								},
+																								Name: "webhookToken",
+																							},
+																						}, &ast.Property{
+																							BaseNode: ast.BaseNode{
+																								Errors: nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 41,
+																										Line:   42,
+																									},
+																									File:   "discord.flux",
+																									Source: "webhookID: webhookID",
+																									Start: ast.Position{
+																										Column: 21,
+																										Line:   42,
+																									},
+																								},
+																							},
+																							Key: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Errors: nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 30,
+																											Line:   42,
+																										},
+																										File:   "discord.flux",
+																										Source: "webhookID",
+																										Start: ast.Position{
+																											Column: 21,
+																											Line:   42,
+																										},
+																									},
+																								},
+																								Name: "webhookID",
+																							},
+																							Value: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Errors: nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 41,
+																											Line:   42,
+																										},
+																										File:   "discord.flux",
+																										Source: "webhookID",
+																										Start: ast.Position{
+																											Column: 32,
+																											Line:   42,
+																										},
+																									},
+																								},
+																								Name: "webhookID",
+																							},
+																						}, &ast.Property{
+																							BaseNode: ast.BaseNode{
+																								Errors: nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 39,
+																										Line:   43,
+																									},
+																									File:   "discord.flux",
+																									Source: "username: username",
+																									Start: ast.Position{
+																										Column: 21,
+																										Line:   43,
+																									},
+																								},
+																							},
+																							Key: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Errors: nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 29,
+																											Line:   43,
+																										},
+																										File:   "discord.flux",
+																										Source: "username",
+																										Start: ast.Position{
+																											Column: 21,
+																											Line:   43,
+																										},
+																									},
+																								},
+																								Name: "username",
+																							},
+																							Value: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Errors: nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 39,
+																											Line:   43,
+																										},
+																										File:   "discord.flux",
+																										Source: "username",
+																										Start: ast.Position{
+																											Column: 31,
+																											Line:   43,
+																										},
+																									},
+																								},
+																								Name: "username",
+																							},
+																						}, &ast.Property{
+																							BaseNode: ast.BaseNode{
+																								Errors: nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 43,
+																										Line:   44,
+																									},
+																									File:   "discord.flux",
+																									Source: "avatar_url: avatar_url",
+																									Start: ast.Position{
+																										Column: 21,
+																										Line:   44,
+																									},
+																								},
+																							},
+																							Key: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Errors: nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 31,
+																											Line:   44,
+																										},
+																										File:   "discord.flux",
+																										Source: "avatar_url",
+																										Start: ast.Position{
+																											Column: 21,
+																											Line:   44,
+																										},
+																									},
+																								},
+																								Name: "avatar_url",
+																							},
+																							Value: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Errors: nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 43,
+																											Line:   44,
+																										},
+																										File:   "discord.flux",
+																										Source: "avatar_url",
+																										Start: ast.Position{
+																											Column: 33,
+																											Line:   44,
+																										},
+																									},
+																								},
+																								Name: "avatar_url",
+																							},
+																						}, &ast.Property{
+																							BaseNode: ast.BaseNode{
+																								Errors: nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 41,
+																										Line:   45,
+																									},
+																									File:   "discord.flux",
+																									Source: "content: obj.content",
+																									Start: ast.Position{
+																										Column: 21,
+																										Line:   45,
+																									},
+																								},
+																							},
+																							Key: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Errors: nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 28,
+																											Line:   45,
+																										},
+																										File:   "discord.flux",
+																										Source: "content",
+																										Start: ast.Position{
+																											Column: 21,
+																											Line:   45,
+																										},
+																									},
+																								},
+																								Name: "content",
+																							},
+																							Value: &ast.MemberExpression{
+																								BaseNode: ast.BaseNode{
+																									Errors: nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 41,
+																											Line:   45,
+																										},
+																										File:   "discord.flux",
+																										Source: "obj.content",
+																										Start: ast.Position{
+																											Column: 30,
+																											Line:   45,
+																										},
+																									},
+																								},
+																								Object: &ast.Identifier{
+																									BaseNode: ast.BaseNode{
+																										Errors: nil,
+																										Loc: &ast.SourceLocation{
+																											End: ast.Position{
+																												Column: 33,
+																												Line:   45,
+																											},
+																											File:   "discord.flux",
+																											Source: "obj",
+																											Start: ast.Position{
+																												Column: 30,
+																												Line:   45,
+																											},
+																										},
+																									},
+																									Name: "obj",
+																								},
+																								Property: &ast.Identifier{
+																									BaseNode: ast.BaseNode{
+																										Errors: nil,
+																										Loc: &ast.SourceLocation{
+																											End: ast.Position{
+																												Column: 41,
+																												Line:   45,
+																											},
+																											File:   "discord.flux",
+																											Source: "content",
+																											Start: ast.Position{
+																												Column: 34,
+																												Line:   45,
+																											},
+																										},
+																									},
+																									Name: "content",
+																								},
+																							},
+																						}},
+																						With: nil,
+																					}},
+																					BaseNode: ast.BaseNode{
+																						Errors: nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 18,
+																								Line:   46,
+																							},
+																							File:   "discord.flux",
+																							Source: "send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                )",
+																							Start: ast.Position{
+																								Column: 54,
+																								Line:   40,
+																							},
+																						},
+																					},
+																					Callee: &ast.Identifier{
+																						BaseNode: ast.BaseNode{
+																							Errors: nil,
+																							Loc: &ast.SourceLocation{
+																								End: ast.Position{
+																									Column: 58,
+																									Line:   40,
+																								},
+																								File:   "discord.flux",
+																								Source: "send",
+																								Start: ast.Position{
+																									Column: 54,
+																									Line:   40,
+																								},
+																							},
+																						},
+																						Name: "send",
+																					},
+																				},
+																				Operator: 2,
+																				Right: &ast.IntegerLiteral{
+																					BaseNode: ast.BaseNode{
+																						Errors: nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 24,
+																								Line:   46,
+																							},
+																							File:   "discord.flux",
+																							Source: "100",
+																							Start: ast.Position{
+																								Column: 21,
+																								Line:   46,
+																							},
+																						},
+																					},
+																					Value: int64(100),
+																				},
+																			},
+																		},
+																	}},
+																	With: nil,
+																}},
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 25,
+																			Line:   46,
+																		},
+																		File:   "discord.flux",
+																		Source: "string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)",
+																		Start: ast.Position{
+																			Column: 39,
+																			Line:   40,
+																		},
+																	},
+																},
+																Callee: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 45,
+																				Line:   40,
+																			},
+																			File:   "discord.flux",
+																			Source: "string",
+																			Start: ast.Position{
+																				Column: 39,
+																				Line:   40,
+																			},
+																		},
+																	},
+																	Name: "string",
+																},
+															},
+														}},
+														With: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 26,
+																		Line:   40,
+																	},
+																	File:   "discord.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 25,
+																		Line:   40,
+																	},
+																},
+															},
+															Name: "r",
+														},
+													},
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 26,
+																Line:   46,
+															},
+															File:   "discord.flux",
+															Source: "return {r with _sent: string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)}",
+															Start: ast.Position{
+																Column: 17,
+																Line:   40,
+															},
+														},
+													},
+												}},
+											},
+											Params: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 26,
+															Line:   38,
+														},
+														File:   "discord.flux",
+														Source: "r",
+														Start: ast.Position{
+															Column: 25,
+															Line:   38,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 26,
+																Line:   38,
+															},
+															File:   "discord.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 25,
+																Line:   38,
+															},
+														},
+													},
+													Name: "r",
+												},
+												Value: nil,
+											}},
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   47,
+										},
+										File:   "discord.flux",
+										Source: "map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == send(\n                    webhookToken: webhookToken,\n                    webhookID: webhookID,\n                    username: username,\n                    avatar_url: avatar_url,\n                    content: obj.content,\n                ) / 100)}\n            })",
+										Start: ast.Position{
+											Column: 16,
+											Line:   38,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   38,
+											},
+											File:   "discord.flux",
+											Source: "map",
+											Start: ast.Position{
+												Column: 16,
+												Line:   38,
+											},
+										},
+									},
+									Name: "map",
+								},
+							},
+						},
+						Params: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 19,
+										Line:   37,
+									},
+									File:   "discord.flux",
+									Source: "tables=<-",
+									Start: ast.Position{
+										Column: 10,
+										Line:   37,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 16,
+											Line:   37,
+										},
+										File:   "discord.flux",
+										Source: "tables",
+										Start: ast.Position{
+											Column: 10,
+											Line:   37,
+										},
+									},
+								},
+								Name: "tables",
+							},
+							Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 19,
+										Line:   37,
+									},
+									File:   "discord.flux",
+									Source: "<-",
+									Start: ast.Position{
+										Column: 17,
+										Line:   37,
+									},
+								},
+							}},
+						}},
+					},
+					Params: []*ast.Property{&ast.Property{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 11,
+									Line:   36,
+								},
+								File:   "discord.flux",
+								Source: "mapFn",
+								Start: ast.Position{
+									Column: 6,
+									Line:   36,
+								},
+							},
+						},
+						Key: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 11,
+										Line:   36,
+									},
+									File:   "discord.flux",
+									Source: "mapFn",
+									Start: ast.Position{
+										Column: 6,
+										Line:   36,
+									},
+								},
+							},
+							Name: "mapFn",
+						},
+						Value: nil,
+					}},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 25,
+								Line:   35,
+							},
+							File:   "discord.flux",
+							Source: "webhookToken",
+							Start: ast.Position{
+								Column: 13,
+								Line:   35,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   35,
+								},
+								File:   "discord.flux",
+								Source: "webhookToken",
+								Start: ast.Position{
+									Column: 13,
+									Line:   35,
+								},
+							},
+						},
+						Name: "webhookToken",
+					},
+					Value: nil,
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 36,
+								Line:   35,
+							},
+							File:   "discord.flux",
+							Source: "webhookID",
+							Start: ast.Position{
+								Column: 27,
+								Line:   35,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   35,
+								},
+								File:   "discord.flux",
+								Source: "webhookID",
+								Start: ast.Position{
+									Column: 27,
+									Line:   35,
+								},
+							},
+						},
+						Name: "webhookID",
+					},
+					Value: nil,
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 46,
+								Line:   35,
+							},
+							File:   "discord.flux",
+							Source: "username",
+							Start: ast.Position{
+								Column: 38,
+								Line:   35,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 46,
+									Line:   35,
+								},
+								File:   "discord.flux",
+								Source: "username",
+								Start: ast.Position{
+									Column: 38,
+									Line:   35,
+								},
+							},
+						},
+						Name: "username",
+					},
+					Value: nil,
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 61,
+								Line:   35,
+							},
+							File:   "discord.flux",
+							Source: "avatar_url=\"\"",
+							Start: ast.Position{
+								Column: 48,
+								Line:   35,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 58,
+									Line:   35,
+								},
+								File:   "discord.flux",
+								Source: "avatar_url",
+								Start: ast.Position{
+									Column: 48,
+									Line:   35,
+								},
+							},
+						},
+						Name: "avatar_url",
+					},
+					Value: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 61,
+									Line:   35,
+								},
+								File:   "discord.flux",
+								Source: "\"\"",
+								Start: ast.Position{
+									Column: 59,
+									Line:   35,
 								},
 							},
 						},
