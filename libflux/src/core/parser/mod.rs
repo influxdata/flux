@@ -583,7 +583,7 @@ impl Parser {
     #[cfg(test)]
     fn parse_basic(&mut self) -> MonoType {
         let t = self.peek();
-        MonoType::Basic(BasicType {
+        MonoType::Basic(NamedType {
             base: self.base_node_from_token(&t),
             name: self.parse_identifier(),
         })

@@ -1217,7 +1217,7 @@ fn test_parse_type_expression_int() {
                 location: loc.get(1, 1, 1, 4),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Basic(BasicType {
+            monotype: MonoType::Basic(NamedType {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 4),
                     ..BaseNode::default()
@@ -1246,7 +1246,7 @@ fn test_parse_type_expression_uint() {
                 location: loc.get(1, 1, 1, 5),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Basic(BasicType {
+            monotype: MonoType::Basic(NamedType {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 5),
                     ..BaseNode::default()
@@ -1275,7 +1275,7 @@ fn test_parse_type_expression_float() {
                 location: loc.get(1, 1, 1, 6),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Basic(BasicType {
+            monotype: MonoType::Basic(NamedType {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 6),
                     ..BaseNode::default()
@@ -1304,7 +1304,7 @@ fn test_parse_type_expression_string() {
                 location: loc.get(1, 1, 1, 7),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Basic(BasicType {
+            monotype: MonoType::Basic(NamedType {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 7),
                     ..BaseNode::default()
@@ -1333,7 +1333,7 @@ fn test_parse_type_expression_bool() {
                 location: loc.get(1, 1, 1, 5),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Basic(BasicType {
+            monotype: MonoType::Basic(NamedType {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 5),
                     ..BaseNode::default()
@@ -1362,7 +1362,7 @@ fn test_parse_type_expression_time() {
                 location: loc.get(1, 1, 1, 5),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Basic(BasicType {
+            monotype: MonoType::Basic(NamedType {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 5),
                     ..BaseNode::default()
@@ -1391,7 +1391,7 @@ fn test_parse_type_expression_duration() {
                 location: loc.get(1, 1, 1, 9),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Basic(BasicType {
+            monotype: MonoType::Basic(NamedType {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 9),
                     ..BaseNode::default()
@@ -1420,7 +1420,7 @@ fn test_parse_type_expression_bytes() {
                 location: loc.get(1, 1, 1, 6),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Basic(BasicType {
+            monotype: MonoType::Basic(NamedType {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 6),
                     ..BaseNode::default()
@@ -1449,7 +1449,7 @@ fn test_parse_type_expression_regexp() {
                 location: loc.get(1, 1, 1, 7),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Basic(BasicType {
+            monotype: MonoType::Basic(NamedType {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 7),
                     ..BaseNode::default()

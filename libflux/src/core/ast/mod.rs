@@ -497,7 +497,7 @@ pub struct BuiltinStmt {
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum MonoType {
     Tvar(TvarType),
-    Basic(BasicType),
+    Basic(NamedType),
     Invalid,
 }
 
@@ -509,7 +509,7 @@ pub fn base_from_monotype(m: &MonoType) -> BaseNode {
     }
 }
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct BasicType {
+pub struct NamedType {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
