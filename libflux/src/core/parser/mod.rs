@@ -535,29 +535,8 @@ impl Parser {
     #[cfg(test)]
     fn parse_type_expression(&mut self) -> TypeExpression {
         let monotype = self.parse_monotype(); // monotype
-
-        // let t = self.peek();
-        // if t.tok == TOK_IDENT {
-        //     t = self.expect(TOK_INDENT); // where
-        //     if t.lit != "where" {
-        //         // handle error if where was not found
-        //         self.errs.push(format!(
-        //             "expected \"where\" but found : {}",
-        //             t.lit
-        //         ));
-        //     }
-        //
-        //     let constraints = self.parse_constraints();
-        //     // return the typeexpression
-        //     Expression::TypeExpression {
-        //         Monotype: monotype,
-        //         Constraints: constraints
-        //     }
-        // }
-        // return the typeexpression
         TypeExpression {
             monotype: monotype.clone(),
-            // constraints: None
             base: base_from_monotype(&monotype),
         }
     }
@@ -565,8 +544,6 @@ impl Parser {
     #[cfg(test)]
     fn parse_monotype(&mut self) -> MonoType {
         // Tvar | Basic | Array | Record | Function
-
-        // worry about Basic only rn.
         let t = self.peek();
         match t.tok {
             TOK_IDENT => {
@@ -600,10 +577,6 @@ impl Parser {
             MonoType::Invalid
         }
     }
-    // fn parse_constraints(&mut self) -> Constraints {
-    //     // Constraint { "," Constraint }
-    //     self.parse_constraint()
-    // }
     fn parse_test_statement(&mut self) -> Statement {
         let t = self.expect(TOK_TEST);
         let id = self.parse_identifier();
