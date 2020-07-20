@@ -66,7 +66,7 @@ var sourceHashes = map[string]string{
 	"libflux/src/flux/Cargo.toml":                                                   "ede8860c53d1fd5cc7bc730a090e615b5668b0c340ccc8b1b9dbed426b5c8f76",
 	"libflux/src/flux/benches/builtins.rs":                                          "c60908c65ea51c225fccec19c44343af9103c950a91b23071ddb80292da708c8",
 	"libflux/src/flux/build.rs":                                                     "31a4f825297f9b79d1c8692a5fa3ff9211cb87d01650d147128d061588f75abd",
-	"libflux/src/flux/lib.rs":                                                       "76c8b6c69a296e718e8bcf600c0b44b7eb571fb63c5d8562c7c1c85589191d51",
+	"libflux/src/flux/lib.rs":                                                       "0120e3dceaa7ea8df69e4be95e32256691e20466dc89f80eb91500374461cf42",
 	"stdlib/contrib/chobbs/discord/discord.flux":                                    "8fd42ce1b459969ec3254dc0215a21b3669e01960a203e93c05284384f3eb49a",
 	"stdlib/contrib/sranka/teams/teams.flux":                                        "57d5656dcb2db79f173e84d551efdbeefb643d028eaaecfff8ee7d2a033f9f50",
 	"stdlib/contrib/sranka/telegram/telegram.flux":                                  "37d1614a215c6ca523e4efa5642ec9104936755a403e5bc4481d82a602f7719b",
