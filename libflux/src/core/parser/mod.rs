@@ -532,6 +532,51 @@ impl Parser {
             id,
         }))
     }
+    #[cfg(test)]
+    fn parse_type_expression(&mut self) -> TypeExpression {
+        let monotype = self.parse_monotype(); // monotype
+        TypeExpression {
+            monotype: monotype.clone(),
+            base: base_from_monotype(&monotype),
+        }
+    }
+
+    #[cfg(test)]
+    fn parse_monotype(&mut self) -> MonoType {
+        // Tvar | Basic | Array | Record | Function
+        let t = self.peek();
+        match t.tok {
+            TOK_IDENT => {
+                if t.lit.len() == 1 {
+                    self.parse_tvar()
+                } else {
+                    self.parse_basic()
+                }
+            }
+            _ => MonoType::Invalid,
+        }
+    }
+
+    #[cfg(test)]
+    fn parse_basic(&mut self) -> MonoType {
+        let t = self.peek();
+        MonoType::Basic(NamedType {
+            base: self.base_node_from_token(&t),
+            name: self.parse_identifier(),
+        })
+    }
+
+    #[cfg(test)]
+    fn parse_tvar(&mut self) -> MonoType {
+        let t = self.expect(TOK_IDENT);
+        if t.lit.to_uppercase() == (t.lit) {
+            MonoType::Tvar(TvarType {
+                base: self.base_node_from_token(&t),
+            })
+        } else {
+            MonoType::Invalid
+        }
+    }
     fn parse_test_statement(&mut self) -> Statement {
         let t = self.expect(TOK_TEST);
         let id = self.parse_identifier();

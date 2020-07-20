@@ -494,6 +494,44 @@ pub struct BuiltinStmt {
     pub id: Identifier,
 }
 
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub enum MonoType {
+    Tvar(TvarType),
+    Basic(NamedType),
+    Invalid,
+}
+
+pub fn base_from_monotype(m: &MonoType) -> BaseNode {
+    match m {
+        MonoType::Basic(t) => t.base.clone(),
+        MonoType::Tvar(t) => t.base.clone(),
+        _ => BaseNode::default(),
+    }
+}
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct NamedType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub name: Identifier,
+}
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct TvarType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+}
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct TypeExpression {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub monotype: MonoType,
+}
+
 // TestStmt declares a Flux test case
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TestStmt {
