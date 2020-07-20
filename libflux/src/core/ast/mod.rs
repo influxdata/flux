@@ -530,7 +530,6 @@ pub struct TypeExpression {
     #[serde(flatten)]
     pub base: BaseNode,
     pub monotype: MonoType,
-    // pub constraints: Option<Constraints>,
 }
 
 // TestStmt declares a Flux test case
