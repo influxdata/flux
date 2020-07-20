@@ -622,12 +622,12 @@ mod tests {
         }
 
         pub fn normalize(&mut self, t: &mut MonoType) {
-            // This is to avoid using self directly inside a closure,
-            // otherwise it will be captured by that closure and the compiler
-            // will complain that closure requires unique access to `self`
-            let f = &mut self.f;
             match t {
                 MonoType::Var(tv) => {
+                    // This is to avoid using self directly inside a closure,
+                    // otherwise it will be captured by that closure and the compiler
+                    // will complain that closure requires unique access to `self`
+                    let f = &mut self.f;
                     let v = self.tv_map.entry(*tv).or_insert_with(|| f.fresh());
                     *tv = *v;
                 }
@@ -690,7 +690,10 @@ mod tests {
                 })),
             })),
         }));
-        assert_eq!(format!("{}", ty), "{a:t4949 | b:t4949 | e:t4957 | f:t4957 | g:t4957 | t4972}");
+        assert_eq!(
+            format!("{}", ty),
+            "{a:t4949 | b:t4949 | e:t4957 | f:t4957 | g:t4957 | t4972}"
+        );
         let mut v = MonoTypeNormalizer::new();
         v.normalize(&mut ty);
         assert_eq!(format!("{}", ty), "{a:t0 | b:t0 | e:t1 | f:t1 | g:t1 | t2}");
