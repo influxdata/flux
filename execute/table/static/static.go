@@ -11,14 +11,16 @@ package static
 
 import (
 	"fmt"
-	"sort"
 	"time"
 
 	stdarrow "github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
 )
@@ -27,49 +29,44 @@ import (
 // It is a mapping between column names and the column.
 //
 // This is not a performant section of code and it is primarily
-// meant to make writing unit tests easy. Do not use in
+// meant to make writing unit tests easily. Do not use in
 // production code.
-type Table map[string]Column
+//
+// The Table struct implements the TableIterator interface
+// and not the Table interface. To retrieve a flux.Table compatible
+// implementation, the Table() method can be used.
+type Table []Column
 
-func (s Table) Key() flux.GroupKey {
-	var cols []flux.ColMeta
-	for label, c := range s {
-		if c.IsKey() {
-			cols = append(cols, flux.ColMeta{
-				Label: label,
-				Type:  c.Type(),
-			})
-		}
-	}
-	sort.Slice(cols, func(i, j int) bool {
-		return cols[i].Label < cols[j].Label
-	})
-
-	vs := make([]values.Value, len(cols))
-	for i, col := range cols {
-		vs[i] = s[col.Label].KeyValue()
-	}
-	return execute.NewGroupKey(cols, vs)
+// Do will produce the Table and then invoke the function
+// on that flux.Table.
+//
+// If the produced Table is invalid, then this method
+// will panic.
+func (s Table) Do(f func(flux.Table) error) error {
+	return f(s.Table())
 }
 
-func (s Table) Cols() []flux.ColMeta {
-	cols := make([]flux.ColMeta, 0, len(s))
-	for label, c := range s {
-		cols = append(cols, flux.ColMeta{
-			Label: label,
-			Type:  c.Type(),
-		})
-	}
-	sort.Slice(cols, func(i, j int) bool {
-		return cols[i].Label < cols[j].Label
-	})
-	return cols
+func (s Table) Build(template *[]Column) []flux.Table {
+	t := make(Table, 0, len(*template)+len(s))
+	t = append(t, *template...)
+	t = append(t, s...)
+	return []flux.Table{t.Table()}
 }
 
-func (s Table) Do(f func(flux.ColReader) error) error {
-	buffer := arrow.TableBuffer{
-		GroupKey: s.Key(),
-		Columns:  s.Cols(),
+// Table will produce a flux.Table using the Column values
+// that are part of this Table.
+//
+// If the Table produces an invalid buffer, then this method
+// will panic.
+func (s Table) Table() flux.Table {
+	if len(s) == 0 {
+		panic(errors.New(codes.Internal, "static table has no columns"))
+	}
+
+	key, cols := s.buildSchema()
+	buffer := &arrow.TableBuffer{
+		GroupKey: key,
+		Columns:  cols,
 	}
 
 	// Determine the size by looking at the first non-key column.
@@ -82,36 +79,41 @@ func (s Table) Do(f func(flux.ColReader) error) error {
 		break
 	}
 
-	// Table is empty.
-	if n == 0 {
-		return nil
-	}
-
 	// Construct each of the buffers.
 	buffer.Values = make([]array.Interface, len(buffer.Columns))
-	for i, col := range buffer.Columns {
-		buffer.Values[i] = s[col.Label].Make(n)
+	for i, c := range s {
+		buffer.Values[i] = c.Make(n)
 	}
 
 	if err := buffer.Validate(); err != nil {
-		return err
+		panic(err)
 	}
-	return f(&buffer)
+	return table.FromBuffer(buffer)
 }
 
-func (s Table) Done() {}
-
-func (s Table) Empty() bool {
+// buildSchema will construct the schema from the columns.
+func (s Table) buildSchema() (flux.GroupKey, []flux.ColMeta) {
+	var (
+		keyCols []flux.ColMeta
+		keyVals []values.Value
+		cols    []flux.ColMeta
+	)
 	for _, c := range s {
-		if !c.IsKey() && c.Len() > 0 {
-			return false
+		col := flux.ColMeta{Label: c.Label(), Type: c.Type()}
+		if c.IsKey() {
+			keyCols = append(keyCols, col)
+			keyVals = append(keyVals, c.KeyValue())
 		}
+		cols = append(cols, col)
 	}
-	return true
+	return execute.NewGroupKey(keyCols, keyVals), cols
 }
 
 // Column is the definition for how to construct a column for the table.
 type Column interface {
+	// Label returns the label associated with this column.
+	Label() string
+
 	// Type returns the column type for this column.
 	Type() flux.ColType
 
@@ -129,80 +131,93 @@ type Column interface {
 	// KeyValue will return the key value if this column is part
 	// of the group key.
 	KeyValue() values.Value
+
+	// TableBuilder allows this column to add itself to a template.
+	TableBuilder
 }
 
 // IntKey will construct a group key with the integer type.
 // The value can be an int, int64, or nil.
-func IntKey(v interface{}) Column {
+func IntKey(k string, v interface{}) KeyColumn {
 	if iv, ok := mustIntValue(v); ok {
-		return keyColumn{v: iv, t: flux.TInt}
+		return KeyColumn{k: k, v: iv, t: flux.TInt}
 	}
-	return keyColumn{t: flux.TInt}
+	return KeyColumn{k: k, t: flux.TInt}
 }
 
 // UintKey will construct a group key with the unsigned type.
 // The value can be a uint, uint64, int, int64, or nil.
-func UintKey(v interface{}) Column {
+func UintKey(k string, v interface{}) KeyColumn {
 	if iv, ok := mustUintValue(v); ok {
-		return keyColumn{v: iv, t: flux.TUInt}
+		return KeyColumn{k: k, v: iv, t: flux.TUInt}
 	}
-	return keyColumn{t: flux.TUInt}
+	return KeyColumn{k: k, t: flux.TUInt}
 }
 
 // FloatKey will construct a group key with the float type.
 // The value can be a float64, int, int64, or nil.
-func FloatKey(v interface{}) Column {
+func FloatKey(k string, v interface{}) KeyColumn {
 	if iv, ok := mustFloatValue(v); ok {
-		return keyColumn{v: iv, t: flux.TFloat}
+		return KeyColumn{k: k, v: iv, t: flux.TFloat}
 	}
-	return keyColumn{t: flux.TFloat}
+	return KeyColumn{k: k, t: flux.TFloat}
 }
 
 // StringKey will construct a group key with the string type.
 // The value can be a string or nil.
-func StringKey(v interface{}) Column {
+func StringKey(k string, v interface{}) KeyColumn {
 	if iv, ok := mustStringValue(v); ok {
-		return keyColumn{v: iv, t: flux.TString}
+		return KeyColumn{k: k, v: iv, t: flux.TString}
 	}
-	return keyColumn{t: flux.TString}
+	return KeyColumn{k: k, t: flux.TString}
 }
 
 // BooleanKey will construct a group key with the boolean type.
 // The value can be a bool or nil.
-func BooleanKey(v interface{}) Column {
+func BooleanKey(k string, v interface{}) KeyColumn {
 	if iv, ok := mustBooleanValue(v); ok {
-		return keyColumn{v: iv, t: flux.TBool}
+		return KeyColumn{k: k, v: iv, t: flux.TBool}
 	}
-	return keyColumn{t: flux.TBool}
+	return KeyColumn{k: k, t: flux.TBool}
 }
 
 // TimeKey will construct a group key with the given time using either a
 // string or an integer. If an integer is used, then it is in seconds.
-func TimeKey(v interface{}) Column {
+func TimeKey(k string, v interface{}) KeyColumn {
 	if iv, _, ok := mustTimeValue(v, 0, time.Second); ok {
-		return keyColumn{v: execute.Time(iv), t: flux.TTime}
+		return KeyColumn{k: k, v: execute.Time(iv), t: flux.TTime}
 	}
-	return keyColumn{t: flux.TTime}
+	return KeyColumn{k: k, t: flux.TTime}
 }
 
-type keyColumn struct {
+type KeyColumn struct {
+	k string
 	v interface{}
 	t flux.ColType
 }
 
-func (s keyColumn) Make(n int) array.Interface {
+func (s KeyColumn) Make(n int) array.Interface {
 	return arrow.Repeat(s.KeyValue(), n, memory.DefaultAllocator)
 }
 
-func (s keyColumn) Type() flux.ColType     { return s.t }
-func (s keyColumn) Len() int               { return -1 }
-func (s keyColumn) IsKey() bool            { return true }
-func (s keyColumn) KeyValue() values.Value { return values.New(s.v) }
+func (s KeyColumn) Label() string          { return s.k }
+func (s KeyColumn) Type() flux.ColType     { return s.t }
+func (s KeyColumn) Len() int               { return -1 }
+func (s KeyColumn) IsKey() bool            { return true }
+func (s KeyColumn) KeyValue() values.Value { return values.New(s.v) }
+
+func (s KeyColumn) Build(template *[]Column) []flux.Table {
+	*template = append(*template, s)
+	return nil
+}
 
 // Ints will construct an array of integers.
 // Each value can be an int, int64, or nil.
-func Ints(v ...interface{}) Column {
-	c := intColumn{v: make([]int64, len(v))}
+func Ints(k string, v ...interface{}) Column {
+	c := intColumn{
+		column: column{k: k},
+		v:      make([]int64, len(v)),
+	}
 	for i, iv := range v {
 		val, ok := mustIntValue(iv)
 		if !ok {
@@ -219,9 +234,17 @@ func Ints(v ...interface{}) Column {
 	return c
 }
 
-type intColumn struct {
-	v     []int64
+type column struct {
+	k     string
 	valid []bool
+}
+
+func (s column) Label() string { return s.k }
+func (s column) IsKey() bool   { return false }
+
+type intColumn struct {
+	column
+	v []int64
 }
 
 func (s intColumn) Make(n int) array.Interface {
@@ -233,8 +256,12 @@ func (s intColumn) Make(n int) array.Interface {
 
 func (s intColumn) Type() flux.ColType     { return flux.TInt }
 func (s intColumn) Len() int               { return len(s.v) }
-func (s intColumn) IsKey() bool            { return false }
 func (s intColumn) KeyValue() values.Value { return values.InvalidValue }
+
+func (s intColumn) Build(template *[]Column) []flux.Table {
+	*template = append(*template, s)
+	return nil
+}
 
 func mustIntValue(v interface{}) (int64, bool) {
 	if v == nil {
@@ -253,8 +280,11 @@ func mustIntValue(v interface{}) (int64, bool) {
 
 // Uints will construct an array of unsigned integers.
 // Each value can be a uint, uint64, int, int64, or nil.
-func Uints(v ...interface{}) Column {
-	c := uintColumn{v: make([]uint64, len(v))}
+func Uints(k string, v ...interface{}) Column {
+	c := uintColumn{
+		column: column{k: k},
+		v:      make([]uint64, len(v)),
+	}
 	for i, iv := range v {
 		val, ok := mustUintValue(iv)
 		if !ok {
@@ -272,8 +302,8 @@ func Uints(v ...interface{}) Column {
 }
 
 type uintColumn struct {
-	v     []uint64
-	valid []bool
+	column
+	v []uint64
 }
 
 func (s uintColumn) Make(n int) array.Interface {
@@ -285,8 +315,12 @@ func (s uintColumn) Make(n int) array.Interface {
 
 func (s uintColumn) Type() flux.ColType     { return flux.TUInt }
 func (s uintColumn) Len() int               { return len(s.v) }
-func (s uintColumn) IsKey() bool            { return false }
 func (s uintColumn) KeyValue() values.Value { return values.InvalidValue }
+
+func (s uintColumn) Build(template *[]Column) []flux.Table {
+	*template = append(*template, s)
+	return nil
+}
 
 func mustUintValue(v interface{}) (uint64, bool) {
 	if v == nil {
@@ -309,8 +343,11 @@ func mustUintValue(v interface{}) (uint64, bool) {
 
 // Floats will construct an array of floats.
 // Each value can be a float64, int, int64, or nil.
-func Floats(v ...interface{}) Column {
-	c := floatColumn{v: make([]float64, len(v))}
+func Floats(k string, v ...interface{}) Column {
+	c := floatColumn{
+		column: column{k: k},
+		v:      make([]float64, len(v)),
+	}
 	for i, iv := range v {
 		val, ok := mustFloatValue(iv)
 		if !ok {
@@ -328,8 +365,8 @@ func Floats(v ...interface{}) Column {
 }
 
 type floatColumn struct {
-	v     []float64
-	valid []bool
+	column
+	v []float64
 }
 
 func (s floatColumn) Make(n int) array.Interface {
@@ -341,8 +378,12 @@ func (s floatColumn) Make(n int) array.Interface {
 
 func (s floatColumn) Type() flux.ColType     { return flux.TFloat }
 func (s floatColumn) Len() int               { return len(s.v) }
-func (s floatColumn) IsKey() bool            { return false }
 func (s floatColumn) KeyValue() values.Value { return values.InvalidValue }
+
+func (s floatColumn) Build(template *[]Column) []flux.Table {
+	*template = append(*template, s)
+	return nil
+}
 
 func mustFloatValue(v interface{}) (float64, bool) {
 	if v == nil {
@@ -363,8 +404,11 @@ func mustFloatValue(v interface{}) (float64, bool) {
 
 // Strings will construct an array of strings.
 // Each value can be a string or nil.
-func Strings(v ...interface{}) Column {
-	c := stringColumn{v: make([]string, len(v))}
+func Strings(k string, v ...interface{}) Column {
+	c := stringColumn{
+		column: column{k: k},
+		v:      make([]string, len(v)),
+	}
 	for i, iv := range v {
 		val, ok := mustStringValue(iv)
 		if !ok {
@@ -382,8 +426,8 @@ func Strings(v ...interface{}) Column {
 }
 
 type stringColumn struct {
-	v     []string
-	valid []bool
+	column
+	v []string
 }
 
 func (s stringColumn) Make(n int) array.Interface {
@@ -395,8 +439,12 @@ func (s stringColumn) Make(n int) array.Interface {
 
 func (s stringColumn) Type() flux.ColType     { return flux.TString }
 func (s stringColumn) Len() int               { return len(s.v) }
-func (s stringColumn) IsKey() bool            { return false }
 func (s stringColumn) KeyValue() values.Value { return values.InvalidValue }
+
+func (s stringColumn) Build(template *[]Column) []flux.Table {
+	*template = append(*template, s)
+	return nil
+}
 
 func mustStringValue(v interface{}) (string, bool) {
 	if v == nil {
@@ -413,8 +461,11 @@ func mustStringValue(v interface{}) (string, bool) {
 
 // Booleans will construct an array of booleans.
 // Each value can be a bool or nil.
-func Booleans(v ...interface{}) Column {
-	c := booleanColumn{v: make([]bool, len(v))}
+func Booleans(k string, v ...interface{}) Column {
+	c := booleanColumn{
+		column: column{k: k},
+		v:      make([]bool, len(v)),
+	}
 	for i, iv := range v {
 		val, ok := mustBooleanValue(iv)
 		if !ok {
@@ -432,8 +483,8 @@ func Booleans(v ...interface{}) Column {
 }
 
 type booleanColumn struct {
-	v     []bool
-	valid []bool
+	column
+	v []bool
 }
 
 func (s booleanColumn) Make(n int) array.Interface {
@@ -445,8 +496,12 @@ func (s booleanColumn) Make(n int) array.Interface {
 
 func (s booleanColumn) Type() flux.ColType     { return flux.TBool }
 func (s booleanColumn) Len() int               { return len(s.v) }
-func (s booleanColumn) IsKey() bool            { return false }
 func (s booleanColumn) KeyValue() values.Value { return values.InvalidValue }
+
+func (s booleanColumn) Build(template *[]Column) []flux.Table {
+	*template = append(*template, s)
+	return nil
+}
 
 func mustBooleanValue(v interface{}) (bool, bool) {
 	if v == nil {
@@ -466,9 +521,12 @@ func mustBooleanValue(v interface{}) (bool, bool) {
 //
 // If strings and integers are mixed, the integers will be treates as offsets
 // from the last string time that was used.
-func Times(v ...interface{}) Column {
+func Times(k string, v ...interface{}) Column {
 	var offset int64
-	c := timeColumn{v: make([]int64, len(v))}
+	c := timeColumn{
+		column: column{k: k},
+		v:      make([]int64, len(v)),
+	}
 	for i, iv := range v {
 		val, abs, ok := mustTimeValue(iv, offset, time.Second)
 		if !ok {
@@ -489,8 +547,8 @@ func Times(v ...interface{}) Column {
 }
 
 type timeColumn struct {
-	v     []int64
-	valid []bool
+	column
+	v []int64
 }
 
 func (s timeColumn) Make(n int) array.Interface {
@@ -502,8 +560,12 @@ func (s timeColumn) Make(n int) array.Interface {
 
 func (s timeColumn) Type() flux.ColType     { return flux.TTime }
 func (s timeColumn) Len() int               { return len(s.v) }
-func (s timeColumn) IsKey() bool            { return false }
 func (s timeColumn) KeyValue() values.Value { return values.InvalidValue }
+
+func (s timeColumn) Build(template *[]Column) []flux.Table {
+	*template = append(*template, s)
+	return nil
+}
 
 // mustTimeValue will convert the interface into a time value.
 // This must either be an int-like value or a string that can be
@@ -533,15 +595,109 @@ func mustTimeValue(v interface{}, offset int64, unit time.Duration) (t int64, ab
 	}
 }
 
-// Extend will copy the spec from the table and add or override
-// any columns for the extended table.
-func (s Table) Extend(table Table) Table {
-	ns := make(Table, len(s)+len(table))
-	for label, column := range s {
-		ns[label] = column
+// TableBuilder is used to construct a set of Tables.
+type TableBuilder interface {
+	// Build will construct a set of tables using the
+	// template as input.
+	//
+	// The template is a pointer as a builder is allowed
+	// to modify the template. For implementors, the
+	// template pointer must be non-nil.
+	Build(template *[]Column) []flux.Table
+}
+
+// TableGroup will construct a group of Tables
+// that have common values. It includes any TableBuilder
+// values.
+type TableGroup []TableBuilder
+
+func (t TableGroup) Do(f func(flux.Table) error) error {
+	// Use an empty template.
+	var template []Column
+	tables := t.Build(&template)
+	return table.Iterator(tables).Do(f)
+}
+
+// Build will construct Tables using the given template.
+func (t TableGroup) Build(template *[]Column) []flux.Table {
+	// Copy over the template.
+	gtemplate := make([]Column, len(*template))
+	copy(gtemplate, *template)
+
+	var tables []flux.Table
+	for _, tb := range t {
+		tables = append(tables, tb.Build(&gtemplate)...)
 	}
-	for label, column := range table {
-		ns[label] = column
+	return tables
+}
+
+// TableList will produce a Table using the template and
+// each of the table builders.
+//
+// Changes to the template are not shared between each of the
+// entries. If the TableBuilder does not produce tables,
+// this will force a single Table to be created.
+type TableList []TableBuilder
+
+func (t TableList) Build(template *[]Column) []flux.Table {
+	var tables []flux.Table
+	for _, tb := range t {
+		// Copy over the group template for each of these.
+		gtemplate := make([]Column, len(*template), len(*template)+1)
+		copy(gtemplate, *template)
+
+		if ntables := tb.Build(&gtemplate); len(ntables) > 0 {
+			tables = append(tables, ntables...)
+		} else {
+			tables = append(tables, Table(gtemplate).Table())
+		}
 	}
-	return ns
+	return tables
+}
+
+// StringKeys creates a TableList with the given key values.
+func StringKeys(k string, v ...interface{}) TableList {
+	list := make(TableList, len(v))
+	for i := range v {
+		list[i] = StringKey(k, v[i])
+	}
+	return list
+}
+
+// TableMatrix will produce a set of Tables by producing the
+// cross product of each of the TableBuilders with each other.
+type TableMatrix []TableList
+
+func (t TableMatrix) Build(template *[]Column) []flux.Table {
+	if len(t) == 0 {
+		return nil
+	} else if len(t) == 1 {
+		return t[0].Build(template)
+	}
+
+	// Split the TableList into their own distinct TableGroups
+	// so we can produce a cross product of groups.
+	builders := make([]TableGroup, len(t[0]))
+	for i, b := range t[0] {
+		builders[i] = append(builders[i], b)
+	}
+
+	for i := 1; i < len(t); i++ {
+		product := make([]TableGroup, 0, len(builders)*len(t[i]))
+		for _, bs := range t[i] {
+			a := make([]TableGroup, len(builders))
+			copy(a, builders)
+			for j := range a {
+				a[j] = append(a[j], bs)
+			}
+			product = append(product, a...)
+		}
+		builders = product
+	}
+
+	var tables []flux.Table
+	for _, b := range builders {
+		tables = append(tables, b.Build(template)...)
+	}
+	return tables
 }

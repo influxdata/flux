@@ -8,20 +8,10 @@ import (
 	"github.com/influxdata/flux"
 )
 
-// Diff will perform a diff between two tables.
-// If the tables are the same, the output will be an empty string.
-// This will produce a fatal error if there was any problem reading
-// either table.
-func Diff(want, got flux.Table, opts ...DiffOption) string {
-	wantS, gotS := Stringify(want), Stringify(got)
-	differ := newDiffer(opts...)
-	return differ.diff(wantS, gotS)
-}
-
-// DiffIterator will perform a diff between two table iterators.
+// Diff will perform a diff between two table iterators.
 // This will sort the tables within the table iterators and produce
 // a diff of the full output.
-func DiffIterator(want, got flux.TableIterator, opts ...DiffOption) string {
+func Diff(want, got flux.TableIterator, opts ...DiffOption) string {
 	var wantS string
 	if wantT, err := Sort(want); err != nil {
 		wantS = fmt.Sprintf("table error: %s\n", err)
