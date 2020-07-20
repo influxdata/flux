@@ -1184,7 +1184,7 @@ fn builtin() {
 }
 
 #[test]
-fn test_parse_type_expression_tvar(){
+fn test_parse_type_expression_tvar() {
     let mut p = Parser::new(r#"A"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
@@ -1195,8 +1195,7 @@ fn test_parse_type_expression_tvar(){
                 location: loc.get(1, 1, 1, 2),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Tvar(
-                TvarType{
+            monotype: MonoType::Tvar(TvarType {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 2),
                     ..BaseNode::default()
@@ -1223,7 +1222,7 @@ fn test_parse_type_expression_int() {
                     location: loc.get(1, 1, 1, 4),
                     ..BaseNode::default()
                 },
-                name: Identifier{
+                name: Identifier {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 4),
                         ..BaseNode::default()
@@ -1252,7 +1251,7 @@ fn test_parse_type_expression_uint() {
                     location: loc.get(1, 1, 1, 5),
                     ..BaseNode::default()
                 },
-                name: Identifier{
+                name: Identifier {
                     name: "uint".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 5),
@@ -1281,7 +1280,7 @@ fn test_parse_type_expression_float() {
                     location: loc.get(1, 1, 1, 6),
                     ..BaseNode::default()
                 },
-                name: Identifier{
+                name: Identifier {
                     name: "float".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
@@ -1310,7 +1309,7 @@ fn test_parse_type_expression_string() {
                     location: loc.get(1, 1, 1, 7),
                     ..BaseNode::default()
                 },
-                name: Identifier{
+                name: Identifier {
                     name: "string".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 7),
@@ -1339,7 +1338,7 @@ fn test_parse_type_expression_bool() {
                     location: loc.get(1, 1, 1, 5),
                     ..BaseNode::default()
                 },
-                name: Identifier{
+                name: Identifier {
                     name: "bool".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 5),
@@ -1368,7 +1367,7 @@ fn test_parse_type_expression_time() {
                     location: loc.get(1, 1, 1, 5),
                     ..BaseNode::default()
                 },
-                name: Identifier{
+                name: Identifier {
                     name: "time".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 5),
@@ -1397,7 +1396,7 @@ fn test_parse_type_expression_duration() {
                     location: loc.get(1, 1, 1, 9),
                     ..BaseNode::default()
                 },
-                name: Identifier{
+                name: Identifier {
                     name: "duration".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 9),
@@ -1426,7 +1425,7 @@ fn test_parse_type_expression_bytes() {
                     location: loc.get(1, 1, 1, 6),
                     ..BaseNode::default()
                 },
-                name: Identifier{
+                name: Identifier {
                     name: "bytes".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
@@ -1455,7 +1454,7 @@ fn test_parse_type_expression_regexp() {
                     location: loc.get(1, 1, 1, 7),
                     ..BaseNode::default()
                 },
-                name: Identifier{
+                name: Identifier {
                     name: "regexp".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 7),
