@@ -603,9 +603,55 @@ mod tests {
     use core::parser::Parser;
     use core::semantic::convert::convert_file;
     use core::semantic::env::Environment;
+    use core::semantic::fresh::Fresher;
     use core::semantic::nodes::infer_file;
-    use core::semantic::types::MonoType;
+    use core::semantic::types::{MonoType, Row, Tvar, TvarMap};
     use core::{ast, semantic};
+
+    pub struct MonoTypeNormalizer {
+        tv_map: TvarMap,
+        f: Fresher,
+    }
+
+    impl MonoTypeNormalizer {
+        pub fn new() -> Self {
+            Self {
+                tv_map: TvarMap::new(),
+                f: Fresher::default(),
+            }
+        }
+
+        pub fn normalize(&mut self, t: &mut MonoType) {
+            match t {
+                MonoType::Var(tv) => {
+                    let v = self.tv_map.entry(*tv).or_insert(self.f.fresh());
+                    *tv = *v;
+                }
+                MonoType::Arr(arr) => {
+                    self.normalize(&mut arr.as_mut().0);
+                }
+                MonoType::Row(r) => {
+                    if let Row::Extension { head, tail } = r.as_mut() {
+                        self.normalize(&mut head.v);
+                        self.normalize(tail);
+                    }
+                }
+                MonoType::Fun(f) => {
+                    for (_, mut v) in f.req.iter_mut() {
+                        self.normalize(&mut v);
+                    }
+                    for (_, mut v) in f.opt.iter_mut() {
+                        self.normalize(&mut v);
+                    }
+                    if let Some(p) = &mut f.pipe {
+                        self.normalize(&mut p.v);
+                    }
+                    self.normalize(&mut f.retn);
+                }
+                _ => {}
+            }
+        }
+    }
 
     #[test]
     fn find_var_ref() {
@@ -618,11 +664,10 @@ vstr = v.str + "hello"
 "#;
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
-        assert_eq!(
-            format!("{}", t),
-            "{int:int | sweet:t4955 | str:string | t4966}"
-        );
+        let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
+        let mut v = MonoTypeNormalizer::new();
+        v.normalize(&mut t);
+        assert_eq!(format!("{}", t), "{int:int | sweet:t0 | str:string | t1}");
 
         assert_eq!(
             serde_json::to_string_pretty(&t).unwrap(),
@@ -639,7 +684,7 @@ vstr = v.str + "hello"
         "head": {
           "k": "sweet",
           "v": {
-            "Var": 4955
+            "Var": 0
           }
         },
         "tail": {
@@ -650,7 +695,7 @@ vstr = v.str + "hello"
               "v": "String"
             },
             "tail": {
-              "Var": 4966
+              "Var": 1
             }
           }
         }
@@ -683,8 +728,10 @@ p = o.ethan
 "#;
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
-        assert_eq!(format!("{}", t), "{int:int | ethan:t4951 | t4955}");
+        let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
+        let mut v = MonoTypeNormalizer::new();
+        v.normalize(&mut t);
+        assert_eq!(format!("{}", t), "{int:int | ethan:t0 | t1}");
 
         assert_eq!(
             serde_json::to_string_pretty(&t).unwrap(),
@@ -701,11 +748,11 @@ p = o.ethan
         "head": {
           "k": "ethan",
           "v": {
-            "Var": 4951
+            "Var": 0
           }
         },
         "tail": {
-          "Var": 4955
+          "Var": 1
         }
       }
     }
@@ -726,8 +773,13 @@ from(bucket: v.bucket)
 "#;
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let ty = find_var_type(pkg, "v".to_string()).expect("should be able to find var type");
-        assert_eq!(format!("{}", ty), "{measurement:t4960 | timeRangeStart:t4970 | timeRangeStop:t4972 | bucket:string | t5008}");
+        let mut ty = find_var_type(pkg, "v".to_string()).expect("should be able to find var type");
+        let mut v = MonoTypeNormalizer::new();
+        v.normalize(&mut ty);
+        assert_eq!(
+            format!("{}", ty),
+            "{measurement:t0 | timeRangeStart:t1 | timeRangeStop:t2 | bucket:string | t3}"
+        );
     }
 
     #[test]
