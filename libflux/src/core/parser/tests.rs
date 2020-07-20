@@ -1207,7 +1207,7 @@ fn test_parse_type_expression_tvar(){
 }
 
 #[test]
-fn test_parse_type_expression_int(){
+fn test_parse_type_expression_int() {
     let mut p = Parser::new(r#"int"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
@@ -1218,19 +1218,25 @@ fn test_parse_type_expression_int(){
                 location: loc.get(1, 1, 1, 4),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Int(
-                IntType{
+            monotype: MonoType::Basic(BasicType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 4),
+                    ..BaseNode::default()
+                },
+                name: Identifier{
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 4),
                         ..BaseNode::default()
                     },
-                })
+                    name: "int".to_string(),
+                }
+            })
         },
     )
 }
 
 #[test]
-fn test_parse_type_expression_uint(){
+fn test_parse_type_expression_uint() {
     let mut p = Parser::new(r#"uint"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
@@ -1241,19 +1247,25 @@ fn test_parse_type_expression_uint(){
                 location: loc.get(1, 1, 1, 5),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Uint(
-                UintType{
+            monotype: MonoType::Basic(BasicType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 5),
+                    ..BaseNode::default()
+                },
+                name: Identifier{
+                    name: "uint".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 5),
                         ..BaseNode::default()
                     },
-                })
+                }
+            })
         },
     )
 }
 
 #[test]
-fn test_parse_type_expression_float(){
+fn test_parse_type_expression_float() {
     let mut p = Parser::new(r#"float"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
@@ -1264,19 +1276,25 @@ fn test_parse_type_expression_float(){
                 location: loc.get(1, 1, 1, 6),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Float(
-                FloatType{
+            monotype: MonoType::Basic(BasicType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 6),
+                    ..BaseNode::default()
+                },
+                name: Identifier{
+                    name: "float".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         ..BaseNode::default()
                     },
-                })
+                }
+            })
         },
     )
 }
 
 #[test]
-fn test_parse_type_expression_string(){
+fn test_parse_type_expression_string() {
     let mut p = Parser::new(r#"string"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
@@ -1287,19 +1305,25 @@ fn test_parse_type_expression_string(){
                 location: loc.get(1, 1, 1, 7),
                 ..BaseNode::default()
             },
-            monotype: MonoType::String(
-                StringType{
+            monotype: MonoType::Basic(BasicType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 7),
+                    ..BaseNode::default()
+                },
+                name: Identifier{
+                    name: "string".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 7),
                         ..BaseNode::default()
                     },
-                })
+                }
+            })
         },
     )
 }
 
 #[test]
-fn test_parse_type_expression_bool(){
+fn test_parse_type_expression_bool() {
     let mut p = Parser::new(r#"bool"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
@@ -1310,19 +1334,25 @@ fn test_parse_type_expression_bool(){
                 location: loc.get(1, 1, 1, 5),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Bool(
-                BoolType{
+            monotype: MonoType::Basic(BasicType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 5),
+                    ..BaseNode::default()
+                },
+                name: Identifier{
+                    name: "bool".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 5),
                         ..BaseNode::default()
                     },
-                })
+                }
+            })
         },
     )
 }
 
 #[test]
-fn test_parse_type_expression_time(){
+fn test_parse_type_expression_time() {
     let mut p = Parser::new(r#"time"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
@@ -1333,19 +1363,25 @@ fn test_parse_type_expression_time(){
                 location: loc.get(1, 1, 1, 5),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Time(
-                TimeType{
+            monotype: MonoType::Basic(BasicType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 5),
+                    ..BaseNode::default()
+                },
+                name: Identifier{
+                    name: "time".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 5),
                         ..BaseNode::default()
                     },
-                })
+                }
+            })
         },
     )
 }
 
 #[test]
-fn test_parse_type_expression_duration(){
+fn test_parse_type_expression_duration() {
     let mut p = Parser::new(r#"duration"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
@@ -1356,19 +1392,25 @@ fn test_parse_type_expression_duration(){
                 location: loc.get(1, 1, 1, 9),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Duration(
-                DurationType{
+            monotype: MonoType::Basic(BasicType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 9),
+                    ..BaseNode::default()
+                },
+                name: Identifier{
+                    name: "duration".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 9),
                         ..BaseNode::default()
                     },
-                })
+                }
+            })
         },
     )
 }
 
 #[test]
-fn test_parse_type_expression_bytes(){
+fn test_parse_type_expression_bytes() {
     let mut p = Parser::new(r#"bytes"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
@@ -1379,19 +1421,25 @@ fn test_parse_type_expression_bytes(){
                 location: loc.get(1, 1, 1, 6),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Bytes(
-                BytesType{
+            monotype: MonoType::Basic(BasicType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 6),
+                    ..BaseNode::default()
+                },
+                name: Identifier{
+                    name: "bytes".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 6),
                         ..BaseNode::default()
                     },
-                })
+                }
+            })
         },
     )
 }
 
 #[test]
-fn test_parse_type_expression_regexp(){
+fn test_parse_type_expression_regexp() {
     let mut p = Parser::new(r#"regexp"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
@@ -1402,13 +1450,19 @@ fn test_parse_type_expression_regexp(){
                 location: loc.get(1, 1, 1, 7),
                 ..BaseNode::default()
             },
-            monotype: MonoType::Regexp(
-                RegexpType{
+            monotype: MonoType::Basic(BasicType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 7),
+                    ..BaseNode::default()
+                },
+                name: Identifier{
+                    name: "regexp".to_string(),
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 7),
                         ..BaseNode::default()
                     },
-                })
+                }
+            })
         },
     )
 }

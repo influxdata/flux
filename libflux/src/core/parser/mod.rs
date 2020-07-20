@@ -555,10 +555,10 @@ impl Parser {
         //     }
         // }
         // return the typeexpression
-        TypeExpression{
+        TypeExpression {
             monotype: monotype.clone(),
             // constraints: None
-            base: base_from_monotype(&monotype) ,
+            base: base_from_monotype(&monotype),
         }
     }
 
@@ -569,46 +569,36 @@ impl Parser {
         // worry about Basic only rn.
         let t = self.peek();
         match t.tok {
-            TOK_IDENT => if t.lit.len() == 1 { self.parse_tvar() }
-            else { self.parse_basic() }
-            _ => MonoType::Invalid
+            TOK_IDENT => {
+                if t.lit.len() == 1 {
+                    self.parse_tvar()
+                } else {
+                    self.parse_basic()
+                }
+            }
+            _ => MonoType::Invalid,
         }
     }
 
     #[cfg(test)]
     fn parse_basic(&mut self) -> MonoType {
-        let t = self.expect(TOK_IDENT);
-        match &*t.lit {
-            "int" => MonoType::Int(IntType{
-                base: self.base_node_from_token(&t)}),
-            "uint" => MonoType::Uint(UintType{
-                base: self.base_node_from_token(&t)}),
-            "float" => MonoType::Float(FloatType{
-                base: self.base_node_from_token(&t)}),
-            "string" => MonoType::String(StringType{
-                base: self.base_node_from_token(&t)}),
-            "bool" => MonoType::Bool(BoolType{
-                base: self.base_node_from_token(&t)}),
-            "time" => MonoType::Time(TimeType{
-                base: self.base_node_from_token(&t)}),
-            "duration" => MonoType::Duration(DurationType{
-                base: self.base_node_from_token(&t)}),
-            "bytes" => MonoType::Bytes(BytesType{
-                base: self.base_node_from_token(&t)}),
-            "regexp" => MonoType::Regexp(RegexpType{
-                base: self.base_node_from_token(&t)}),
-            _ => MonoType::Invalid,
-        }
+        let t = self.peek();
+        MonoType::Basic(BasicType {
+            base: self.base_node_from_token(&t),
+            name: self.parse_identifier(),
+        })
     }
 
     #[cfg(test)]
     fn parse_tvar(&mut self) -> MonoType {
         let t = self.expect(TOK_IDENT);
         if t.lit.to_uppercase() == (t.lit) {
-            MonoType::Tvar(TvarType{
-                base: self.base_node_from_token(&t)})
+            MonoType::Tvar(TvarType {
+                base: self.base_node_from_token(&t),
+            })
+        } else {
+            MonoType::Invalid
         }
-        else { MonoType::Invalid }
     }
     // fn parse_constraints(&mut self) -> Constraints {
     //     // Constraint { "," Constraint }
