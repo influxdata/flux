@@ -7,26 +7,22 @@ import (
 	"github.com/influxdata/flux/execute/table/static"
 )
 
-func TestDiffIterator(t *testing.T) {
-	wantI := table.Iterator{
-		static.Table{
-			"_measurement": static.StringKey("m0"),
-			"_field":       static.StringKey("f0"),
-			"t0":           static.StringKey("a"),
-			"_time":        static.Times("2020-01-01T00:00:00Z", 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110),
-			"_value":       static.Ints(6, 7, 4, 12, 3, 9, 5, 6, 5, 1, 8, 4),
-		},
+func TestDiff(t *testing.T) {
+	wantI := static.Table{
+		static.StringKey("_measurement", "m0"),
+		static.StringKey("_field", "f0"),
+		static.StringKey("t0", "a"),
+		static.Times("_time", "2020-01-01T00:00:00Z", 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110),
+		static.Ints("_value", 6, 7, 4, 12, 3, 9, 5, 6, 5, 1, 8, 4),
 	}
-	gotI := table.Iterator{
-		static.Table{
-			"_measurement": static.StringKey("m0"),
-			"_field":       static.StringKey("f0"),
-			"t0":           static.StringKey("a"),
-			"_time":        static.Times("2020-01-01T00:00:00Z", 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110),
-			"_value":       static.Ints(6, 7, 3, 12, 3, 9, 5, 6, 5, 1, 8, 4),
-		},
+	gotI := static.Table{
+		static.StringKey("_measurement", "m0"),
+		static.StringKey("_field", "f0"),
+		static.StringKey("t0", "a"),
+		static.Times("_time", "2020-01-01T00:00:00Z", 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110),
+		static.Ints("_value", 6, 7, 3, 12, 3, 9, 5, 6, 5, 1, 8, 4),
 	}
-	got := table.DiffIterator(wantI, gotI)
+	got := table.Diff(wantI, gotI)
 
 	want := ` # _field=f0,_measurement=m0,t0=a _time=time,_value=int
  _field=f0,_measurement=m0,t0=a _time=2020-01-01T00:00:00Z,_value=6i
