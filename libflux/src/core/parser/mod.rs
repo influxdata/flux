@@ -550,6 +550,9 @@ impl Parser {
                 if t.lit.len() == 1 {
                     self.parse_tvar()
                 } else {
+                    if self.peek() == "[" {
+                        self.parse_array()
+                    }
                     self.parse_basic()
                 }
             }
@@ -577,6 +580,19 @@ impl Parser {
             MonoType::Invalid
         }
     }
+
+    #[cfg(test)]
+    fn parse_array(&mut self) -> MonoType {
+        let _ = self.expect(TOK_LBRACK);
+        let mt = MonoType::Array(ArrayType {
+            base: self.base_node_from_token(&t),
+            monotype: self.parse_monotype(),
+        });
+        let _ = self.expect(TOK_RBRACK);
+        return mt
+    }
+
+
     fn parse_test_statement(&mut self) -> Statement {
         let t = self.expect(TOK_TEST);
         let id = self.parse_identifier();

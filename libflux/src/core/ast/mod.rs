@@ -498,6 +498,7 @@ pub struct BuiltinStmt {
 pub enum MonoType {
     Tvar(TvarType),
     Basic(NamedType),
+    Array(ArrayType),
     Invalid,
 }
 
@@ -505,6 +506,7 @@ pub fn base_from_monotype(m: &MonoType) -> BaseNode {
     match m {
         MonoType::Basic(t) => t.base.clone(),
         MonoType::Tvar(t) => t.base.clone(),
+        MonoType::Array(t) => t.base.clone(),
         _ => BaseNode::default(),
     }
 }
@@ -523,6 +525,16 @@ pub struct TvarType {
     #[serde(flatten)]
     pub base: BaseNode,
 }
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct ArrayType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub monotype: MonoType,
+}
+
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypeExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]

@@ -1467,6 +1467,34 @@ fn test_parse_type_expression_regexp() {
 }
 
 #[test]
+fn test_parse_type_expression_array() {
+    let mut p = Parser::new(r#"[int]"#);
+    let parsed = p.parse_type_expression();
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        TypeExpression {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 6),
+                ..BaseNode::default()
+            },
+            monotype: MonoType::Array(ArrayType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 6),
+                    ..BaseNode::default()
+                },
+                monotype: MonoType::Array(ArrayType {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 6),
+                        ..BaseNode::default()
+                    },
+                }
+            })
+        },
+    )
+}
+
+#[test]
 fn test_statement() {
     let mut p = Parser::new(r#"test mean = {want: 0, got: 0}"#);
     let parsed = p.parse_file("".to_string());
