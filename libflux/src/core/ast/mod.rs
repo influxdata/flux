@@ -498,7 +498,7 @@ pub struct BuiltinStmt {
 pub enum MonoType {
     Tvar(TvarType),
     Basic(NamedType),
-    Array(ArrayType),
+    Array(Box<ArrayType>),
     Invalid,
 }
 

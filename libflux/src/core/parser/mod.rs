@@ -550,11 +550,11 @@ impl Parser {
                 if t.lit.len() == 1 {
                     self.parse_tvar()
                 } else {
-                    if self.peek() == "[" {
-                        self.parse_array()
-                    }
                     self.parse_basic()
                 }
+            }
+            TOK_LBRACK => {
+                self.parse_array()
             }
             _ => MonoType::Invalid,
         }
@@ -583,14 +583,12 @@ impl Parser {
 
     #[cfg(test)]
     fn parse_array(&mut self) -> MonoType {
-        let _ = self.expect(TOK_LBRACK);
-        let mt = MonoType::Array(ArrayType {
-            base: self.base_node_from_token(&t),
-            monotype: self.parse_monotype(),
-        });
-        let _ = self.expect(TOK_RBRACK);
-        return mt
-    }
+        let start = self.expect(TOK_LBRACK);
+        // match statement
+        let mt = self.parse_monotype();
+        let end = self.expect(TOK_RBRACK);
+        return MonoType::Array(Box::new(ArrayType { base: self.base_node_from_tokens(&start, &end),  monotype:  mt}))
+        }
 
 
     fn parse_test_statement(&mut self) -> Statement {
