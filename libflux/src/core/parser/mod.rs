@@ -577,6 +577,59 @@ impl Parser {
             MonoType::Invalid
         }
     }
+
+    #[cfg(test)]
+    fn parse_record(&mut self) -> Record {
+        //( "{" [Properties] "}" ) | ( "{" Tvar "with" Properties "}" )
+        let _ = self.expect(TOK_LBRACE);
+        // can be (Properties) or (Tvar "with" Properties)
+        let t = self.peek();
+        // properties
+        if t.lit.to_uppercase() != (t.lit) {
+            let properties = self.parse_properties();
+            let record = Record{
+                base: self.base_node_from_token(&t),
+                tvar: None,
+                properties,
+            };
+            self.expect(TOK_RBRACE);
+            return record;
+        }
+        else {
+            let _tvar = self.parse_tvar();
+            let _ = self.expect(TOK_IDENT); // with
+            let properties = self.parse_properties();
+            let record = Record{
+                base: self.base_node_from_token(&t),
+                tvar : Some(_tvar),
+                properties,
+            };
+            self.expect(TOK_RBRACE);
+            return record;
+        }
+    }
+    #[cfg(test)]
+    fn parse_properties(&mut self) -> Option<Vec<PropertyType>>{
+        let mut properties = Vec::<PropertyType>::new();
+        properties.push(self.parse_property());
+        // check for more properties
+        while self.peek().tok == TOK_COMMA {
+            self.consume();
+            properties.push(self.parse_property());
+        }
+        return Some(properties);
+    }
+    #[cfg(test)]
+    fn parse_property(&mut self) -> PropertyType {
+        let identifier = self.parse_identifier(); // identifier
+        self.expect(TOK_COLON); // :
+        let monotype = self.parse_monotype();
+        PropertyType{
+            base: base_from_monotype(&monotype),
+            identifier,
+            monotype,
+        }
+    }
     fn parse_test_statement(&mut self) -> Statement {
         let t = self.expect(TOK_TEST);
         let id = self.parse_identifier();

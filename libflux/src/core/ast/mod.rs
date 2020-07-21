@@ -531,7 +531,24 @@ pub struct TypeExpression {
     pub base: BaseNode,
     pub monotype: MonoType,
 }
-
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Record {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub tvar: Option<MonoType>,
+    pub properties: Option<Vec<PropertyType>>,
+}
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct PropertyType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub identifier: Identifier,
+    pub monotype: MonoType,
+}
 // TestStmt declares a Flux test case
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TestStmt {
