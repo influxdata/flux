@@ -553,9 +553,7 @@ impl Parser {
                     self.parse_basic()
                 }
             }
-            TOK_LBRACK => {
-                self.parse_array()
-            }
+            TOK_LBRACK => self.parse_array(),
             _ => MonoType::Invalid,
         }
     }
@@ -587,9 +585,11 @@ impl Parser {
         // match statement
         let mt = self.parse_monotype();
         let end = self.expect(TOK_RBRACK);
-        return MonoType::Array(Box::new(ArrayType { base: self.base_node_from_tokens(&start, &end),  monotype:  mt}))
-        }
-
+        return MonoType::Array(Box::new(ArrayType {
+            base: self.base_node_from_tokens(&start, &end),
+            monotype: mt,
+        }));
+    }
 
     fn parse_test_statement(&mut self) -> Statement {
         let t = self.expect(TOK_TEST);
