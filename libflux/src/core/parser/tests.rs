@@ -109,7 +109,7 @@ fn string_interpolation_simple() {
                         }),
                     ],
                 })),
-            })), ],
+            })),],
             eof: None,
         },
     )
@@ -184,7 +184,7 @@ fn string_interpolation_multiple() {
                         }),
                     ],
                 })),
-            })), ],
+            })),],
             eof: None,
         },
     )
@@ -281,7 +281,7 @@ fn string_interpolation_nested() {
                         }),
                     ],
                 })),
-            })), ],
+            })),],
             eof: None,
         },
     )
@@ -343,7 +343,7 @@ fn string_interp_with_escapes() {
                         }),
                     ],
                 })),
-            })), ],
+            })),],
             eof: None,
         },
     )
@@ -1482,57 +1482,57 @@ fn test_parse_record_only_properties() {
             tvar: None,
             properties: Some(vec![
                 PropertyType {
-                base: BaseNode {
-                    location: loc.get(1, 4, 1, 7),
-                    ..BaseNode::default()
-                },
-                identifier: Identifier {
-                    name: "a".to_string(),
-                    base: BaseNode {
-                        location: loc.get(1, 2, 1, 3),
-                        ..BaseNode::default()
-                    },
-                },
-                monotype: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 4, 1, 7),
                         ..BaseNode::default()
                     },
-                    name: Identifier {
-                        name: "int".to_string(),
+                    identifier: Identifier {
+                        name: "a".to_string(),
+                        base: BaseNode {
+                            location: loc.get(1, 2, 1, 3),
+                            ..BaseNode::default()
+                        },
+                    },
+                    monotype: MonoType::Basic(NamedType {
                         base: BaseNode {
                             location: loc.get(1, 4, 1, 7),
                             ..BaseNode::default()
                         },
-                    }
-                })
-            },
+                        name: Identifier {
+                            name: "int".to_string(),
+                            base: BaseNode {
+                                location: loc.get(1, 4, 1, 7),
+                                ..BaseNode::default()
+                            },
+                        }
+                    })
+                },
                 PropertyType {
-                base: BaseNode {
-                    location: loc.get(1, 11, 1, 15),
-                    ..BaseNode::default()
-                },
-                identifier: Identifier {
-                    name: "b".to_string(),
-                    base: BaseNode {
-                        location: loc.get(1, 9, 1, 10),
-                        ..BaseNode::default()
-                    },
-                },
-                monotype: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 11, 1, 15),
                         ..BaseNode::default()
                     },
-                    name: Identifier {
-                        name: "uint".to_string(),
+                    identifier: Identifier {
+                        name: "b".to_string(),
+                        base: BaseNode {
+                            location: loc.get(1, 9, 1, 10),
+                            ..BaseNode::default()
+                        },
+                    },
+                    monotype: MonoType::Basic(NamedType {
                         base: BaseNode {
                             location: loc.get(1, 11, 1, 15),
                             ..BaseNode::default()
                         },
-                    }
-                })
-            }
+                        name: Identifier {
+                            name: "uint".to_string(),
+                            base: BaseNode {
+                                location: loc.get(1, 11, 1, 15),
+                                ..BaseNode::default()
+                            },
+                        }
+                    })
+                }
             ])
         },
     )
@@ -1555,8 +1555,7 @@ fn test_parse_record_tvar_properties() {
                     location: loc.get(1, 2, 1, 3),
                     ..BaseNode::default()
                 }
-            })
-            ),
+            })),
             properties: Some(vec![
                 PropertyType {
                     base: BaseNode {

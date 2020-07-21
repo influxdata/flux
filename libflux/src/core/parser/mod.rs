@@ -584,24 +584,22 @@ impl Parser {
         let _ = self.expect(TOK_LBRACE);
         // can be (Properties) or (Tvar "with" Properties)
         let t = self.peek();
-        // properties
         if t.lit.to_uppercase() != (t.lit) {
             let properties = self.parse_properties();
-            let record = Record{
+            let record = Record {
                 base: self.base_node_from_token(&t),
                 tvar: None,
                 properties,
             };
             self.expect(TOK_RBRACE);
             return record;
-        }
-        else {
+        } else {
             let _tvar = self.parse_tvar();
             let _ = self.expect(TOK_IDENT); // with
             let properties = self.parse_properties();
-            let record = Record{
+            let record = Record {
                 base: self.base_node_from_token(&t),
-                tvar : Some(_tvar),
+                tvar: Some(_tvar),
                 properties,
             };
             self.expect(TOK_RBRACE);
@@ -609,7 +607,7 @@ impl Parser {
         }
     }
     #[cfg(test)]
-    fn parse_properties(&mut self) -> Option<Vec<PropertyType>>{
+    fn parse_properties(&mut self) -> Option<Vec<PropertyType>> {
         let mut properties = Vec::<PropertyType>::new();
         properties.push(self.parse_property());
         // check for more properties
@@ -624,7 +622,7 @@ impl Parser {
         let identifier = self.parse_identifier(); // identifier
         self.expect(TOK_COLON); // :
         let monotype = self.parse_monotype();
-        PropertyType{
+        PropertyType {
             base: base_from_monotype(&monotype),
             identifier,
             monotype,
