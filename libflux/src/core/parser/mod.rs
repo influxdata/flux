@@ -582,7 +582,6 @@ impl Parser {
     #[cfg(test)]
     fn parse_array(&mut self) -> MonoType {
         let start = self.expect(TOK_LBRACK);
-        // match statement
         let mt = self.parse_monotype();
         let end = self.expect(TOK_RBRACK);
         return MonoType::Array(Box::new(ArrayType {
