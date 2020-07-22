@@ -1200,7 +1200,8 @@ fn test_parse_type_expression_tvar() {
                     location: loc.get(1, 1, 1, 2),
                     ..BaseNode::default()
                 },
-            })
+            }),
+            constraints: None,
         },
     )
 }
@@ -1229,7 +1230,8 @@ fn test_parse_type_expression_int() {
                     },
                     name: "int".to_string(),
                 }
-            })
+            }),
+            constraints: None,
         },
     )
 }
@@ -1258,7 +1260,8 @@ fn test_parse_type_expression_uint() {
                         ..BaseNode::default()
                     },
                 }
-            })
+            }),
+            constraints: None,
         },
     )
 }
@@ -1287,7 +1290,8 @@ fn test_parse_type_expression_float() {
                         ..BaseNode::default()
                     },
                 }
-            })
+            }),
+            constraints: None,
         },
     )
 }
@@ -1316,7 +1320,8 @@ fn test_parse_type_expression_string() {
                         ..BaseNode::default()
                     },
                 }
-            })
+            }),
+            constraints: None,
         },
     )
 }
@@ -1345,7 +1350,8 @@ fn test_parse_type_expression_bool() {
                         ..BaseNode::default()
                     },
                 }
-            })
+            }),
+            constraints: None
         },
     )
 }
@@ -1374,7 +1380,8 @@ fn test_parse_type_expression_time() {
                         ..BaseNode::default()
                     },
                 }
-            })
+            }),
+            constraints: None
         },
     )
 }
@@ -1403,7 +1410,8 @@ fn test_parse_type_expression_duration() {
                         ..BaseNode::default()
                     },
                 }
-            })
+            }),
+            constraints: None
         },
     )
 }
@@ -1432,7 +1440,8 @@ fn test_parse_type_expression_bytes() {
                         ..BaseNode::default()
                     },
                 }
-            })
+            }),
+            constraints: None
         },
     )
 }
@@ -1461,7 +1470,8 @@ fn test_parse_type_expression_regexp() {
                         ..BaseNode::default()
                     },
                 }
-            })
+            }),
+            constraints: None,
         },
     )
 }
@@ -1496,7 +1506,8 @@ fn test_parse_type_expression_array_int() {
                         name: "int".to_string(),
                     }
                 })
-            }))
+            })),
+            constraints: None,
         },
     )
 }
@@ -1531,8 +1542,39 @@ fn test_parse_type_expression_array_string() {
                         name: "string".to_string(),
                     }
                 })
-            }))
+            })),
+            constraints: None
         },
+    )
+}
+
+#[test]
+fn test_parse_constraints() {
+    let mut p = Parser::new(r#"A : date"#);
+    let parsed = p.parse_constraints();
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        vec![Constraints {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 2),
+                ..BaseNode::default()
+            },
+            tvar: Identifier {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 2),
+                    ..BaseNode::default()
+                },
+                name: "A".to_string(),
+            },
+            cons: vec![Identifier {
+                base: BaseNode {
+                    location: loc.get(1, 5, 1, 9),
+                    ..BaseNode::default()
+                },
+                name: "date".to_string(),
+            }]
+        }],
     )
 }
 
