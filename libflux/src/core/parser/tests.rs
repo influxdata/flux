@@ -1201,7 +1201,7 @@ fn test_parse_type_expression_tvar() {
                     ..BaseNode::default()
                 },
             }),
-            constraints: None,
+            constraint: None,
         },
     )
 }
@@ -1231,7 +1231,7 @@ fn test_parse_type_expression_int() {
                     name: "int".to_string(),
                 }
             }),
-            constraints: None,
+            constraint: None,
         },
     )
 }
@@ -1261,7 +1261,7 @@ fn test_parse_type_expression_uint() {
                     },
                 }
             }),
-            constraints: None,
+            constraint: None,
         },
     )
 }
@@ -1291,7 +1291,7 @@ fn test_parse_type_expression_float() {
                     },
                 }
             }),
-            constraints: None,
+            constraint: None,
         },
     )
 }
@@ -1321,7 +1321,7 @@ fn test_parse_type_expression_string() {
                     },
                 }
             }),
-            constraints: None,
+            constraint: None,
         },
     )
 }
@@ -1351,7 +1351,7 @@ fn test_parse_type_expression_bool() {
                     },
                 }
             }),
-            constraints: None
+            constraint: None
         },
     )
 }
@@ -1381,7 +1381,7 @@ fn test_parse_type_expression_time() {
                     },
                 }
             }),
-            constraints: None
+            constraint: None
         },
     )
 }
@@ -1411,7 +1411,7 @@ fn test_parse_type_expression_duration() {
                     },
                 }
             }),
-            constraints: None
+            constraint: None
         },
     )
 }
@@ -1441,7 +1441,7 @@ fn test_parse_type_expression_bytes() {
                     },
                 }
             }),
-            constraints: None
+            constraint: None
         },
     )
 }
@@ -1471,7 +1471,7 @@ fn test_parse_type_expression_regexp() {
                     },
                 }
             }),
-            constraints: None,
+            constraint: None,
         },
     )
 }
@@ -1507,7 +1507,7 @@ fn test_parse_type_expression_array_int() {
                     }
                 })
             })),
-            constraints: None,
+            constraint: None,
         },
     )
 }
@@ -1543,21 +1543,21 @@ fn test_parse_type_expression_array_string() {
                     }
                 })
             })),
-            constraints: None
+            constraint: None
         },
     )
 }
 
 #[test]
-fn test_parse_constraints() {
+fn test_parse_constraint_one_ident() {
     let mut p = Parser::new(r#"A : date"#);
     let parsed = p.parse_constraints();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
-        vec![Constraints {
+        vec![Constraint {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 2),
+                location: loc.get(1, 1, 1, 9),
                 ..BaseNode::default()
             },
             tvar: Identifier {
@@ -1567,7 +1567,7 @@ fn test_parse_constraints() {
                 },
                 name: "A".to_string(),
             },
-            cons: vec![Identifier {
+            kinds: vec![Identifier {
                 base: BaseNode {
                     location: loc.get(1, 5, 1, 9),
                     ..BaseNode::default()
@@ -1575,6 +1575,97 @@ fn test_parse_constraints() {
                 name: "date".to_string(),
             }]
         }],
+    )
+}
+
+#[test]
+fn test_parse_constraint_two_ident() {
+    let mut p = Parser::new(r#"A: Addable + Subtractable"#);
+    let parsed = p.parse_constraints();
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        vec![Constraint {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 26),
+                ..BaseNode::default()
+            },
+            tvar: Identifier {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 2),
+                    ..BaseNode::default()
+                },
+                name: "A".to_string(),
+            },
+            kinds: vec![
+                Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 4, 1, 11),
+                        ..BaseNode::default()
+                    },
+                    name: "Addable".to_string(),
+                },
+                Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 14, 1, 26),
+                        ..BaseNode::default()
+                    },
+                    name: "Subtractable".to_string(),
+                }
+            ]
+        }],
+    )
+}
+
+#[test]
+fn test_parse_constraint_two_con() {
+    let mut p = Parser::new(r#"A: Addable, B: Subtractable"#);
+    let parsed = p.parse_constraints();
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        vec![
+            Constraint {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 11),
+                    ..BaseNode::default()
+                },
+                tvar: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 2),
+                        ..BaseNode::default()
+                    },
+                    name: "A".to_string(),
+                },
+                kinds: vec![Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 4, 1, 11),
+                        ..BaseNode::default()
+                    },
+                    name: "Addable".to_string(),
+                }]
+            },
+            Constraint {
+                base: BaseNode {
+                    location: loc.get(1, 13, 1, 28),
+                    ..BaseNode::default()
+                },
+                tvar: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 13, 1, 14),
+                        ..BaseNode::default()
+                    },
+                    name: "B".to_string(),
+                },
+                kinds: vec![Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 16, 1, 28),
+                        ..BaseNode::default()
+                    },
+                    name: "Subtractable".to_string(),
+                }]
+            }
+        ],
     )
 }
 
