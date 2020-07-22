@@ -1475,7 +1475,7 @@ fn test_parse_record_only_properties() {
         parsed,
         Record {
             base: BaseNode {
-                location: loc.get(1, 2, 1, 3),
+                location: loc.get(1, 1, 1, 16),
                 ..BaseNode::default()
             },
             tvar: None,
@@ -1538,6 +1538,24 @@ fn test_parse_record_only_properties() {
 }
 
 #[test]
+fn test_parse_record_blank() {
+    let mut p = Parser::new(r#"{}"#);
+    let parsed = p.parse_record();
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        Record {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 3),
+                ..BaseNode::default()
+            },
+            tvar: None,
+            properties: None,
+        },
+    )
+}
+
+#[test]
 fn test_parse_record_tvar_properties() {
     let mut p = Parser::new(r#"{A with a:int, b:uint}"#);
     let parsed = p.parse_record();
@@ -1546,49 +1564,24 @@ fn test_parse_record_tvar_properties() {
         parsed,
         Record {
             base: BaseNode {
-                location: loc.get(1, 2, 1, 3),
+                location: loc.get(1, 1, 1, 23),
                 ..BaseNode::default()
             },
-            tvar: Some(MonoType::Tvar(TvarType {
+            tvar: Some(Identifier {
                 base: BaseNode {
                     location: loc.get(1, 2, 1, 3),
                     ..BaseNode::default()
-                }
-            })),
+                },
+                name: "A".to_string(),
+            }),
             properties: Some(vec![
                 PropertyType {
                     base: BaseNode {
-                        location: loc.get(1, 4, 1, 7),
+                        location: loc.get(1, 11, 1, 14),
                         ..BaseNode::default()
                     },
                     identifier: Identifier {
                         name: "a".to_string(),
-                        base: BaseNode {
-                            location: loc.get(1, 2, 1, 3),
-                            ..BaseNode::default()
-                        },
-                    },
-                    monotype: MonoType::Basic(NamedType {
-                        base: BaseNode {
-                            location: loc.get(1, 4, 1, 7),
-                            ..BaseNode::default()
-                        },
-                        name: Identifier {
-                            name: "int".to_string(),
-                            base: BaseNode {
-                                location: loc.get(1, 4, 1, 7),
-                                ..BaseNode::default()
-                            },
-                        }
-                    })
-                },
-                PropertyType {
-                    base: BaseNode {
-                        location: loc.get(1, 11, 1, 15),
-                        ..BaseNode::default()
-                    },
-                    identifier: Identifier {
-                        name: "b".to_string(),
                         base: BaseNode {
                             location: loc.get(1, 9, 1, 10),
                             ..BaseNode::default()
@@ -1596,13 +1589,39 @@ fn test_parse_record_tvar_properties() {
                     },
                     monotype: MonoType::Basic(NamedType {
                         base: BaseNode {
-                            location: loc.get(1, 11, 1, 15),
+                            location: loc.get(1, 11, 1, 14),
+                            ..BaseNode::default()
+                        },
+                        name: Identifier {
+                            name: "int".to_string(),
+                            base: BaseNode {
+                                location: loc.get(1, 11, 1, 14),
+                                ..BaseNode::default()
+                            },
+                        }
+                    })
+                },
+                PropertyType {
+                    base: BaseNode {
+                        location: loc.get(1, 18, 1, 22),
+                        ..BaseNode::default()
+                    },
+                    identifier: Identifier {
+                        name: "b".to_string(),
+                        base: BaseNode {
+                            location: loc.get(1, 16, 1, 17),
+                            ..BaseNode::default()
+                        },
+                    },
+                    monotype: MonoType::Basic(NamedType {
+                        base: BaseNode {
+                            location: loc.get(1, 18, 1, 22),
                             ..BaseNode::default()
                         },
                         name: Identifier {
                             name: "uint".to_string(),
                             base: BaseNode {
-                                location: loc.get(1, 11, 1, 15),
+                                location: loc.get(1, 18, 1, 22),
                                 ..BaseNode::default()
                             },
                         }

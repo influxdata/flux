@@ -537,7 +537,7 @@ pub struct Record {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub tvar: Option<MonoType>,
+    pub tvar: Option<Identifier>,
     pub properties: Option<Vec<PropertyType>>,
 }
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]

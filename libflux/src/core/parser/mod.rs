@@ -578,32 +578,51 @@ impl Parser {
         }
     }
 
+    // Record = "{" [ Identifier (Suffix1 | Suffix2) ] "}"
+    // Suffix1 = ":" MonoType { "," Property }
+    // Suffix2 = "with" [Properties]
     #[cfg(test)]
     fn parse_record(&mut self) -> Record {
-        //( "{" [Properties] "}" ) | ( "{" Tvar "with" Properties "}" )
-        let _ = self.expect(TOK_LBRACE);
-        // can be (Properties) or (Tvar "with" Properties)
+        let start = self.open(TOK_LBRACE, TOK_RBRACE);
+        let mut properties: Option<Vec<PropertyType>> = None;
+        let property: PropertyType;
+
+        let mut id: Option<Identifier> = None;
+        let _id;
         let t = self.peek();
-        if t.lit.to_uppercase() != (t.lit) {
-            let properties = self.parse_properties();
-            let record = Record {
-                base: self.base_node_from_token(&t),
-                tvar: None,
-                properties,
-            };
-            self.expect(TOK_RBRACE);
-            return record;
-        } else {
-            let _tvar = self.parse_tvar();
-            let _ = self.expect(TOK_IDENT); // with
-            let properties = self.parse_properties();
-            let record = Record {
-                base: self.base_node_from_token(&t),
-                tvar: Some(_tvar),
-                properties,
-            };
-            self.expect(TOK_RBRACE);
-            return record;
+        if t.tok == TOK_IDENT {
+            // Indentifier
+            _id = self.parse_identifier();
+            // suffix one needs attention
+            let t2 = self.peek();
+            if t2.tok == TOK_COLON {
+                let mut ps = Vec::<PropertyType>::new();
+                self.consume(); // :
+                let mt = self.parse_monotype();
+                property = PropertyType {
+                    base: base_from_monotype(&mt),
+                    identifier: _id,
+                    monotype: mt,
+                };
+                ps.push(property);
+                while self.peek().tok == TOK_COMMA {
+                    self.consume(); // ,
+                    ps.push(self.parse_property());
+                }
+                properties = Some(ps);
+            } else if t2.lit == "with" {
+                self.consume(); // consume the with
+                properties = self.parse_properties();
+                id = Some(_id);
+            }
+        }
+
+        let end = self.close(TOK_RBRACE);
+
+        Record {
+            base: self.base_node_from_tokens(&start, &end),
+            tvar: id,
+            properties,
         }
     }
     #[cfg(test)]
