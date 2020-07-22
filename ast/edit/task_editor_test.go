@@ -8,7 +8,28 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/asttest"
 	"github.com/influxdata/flux/ast/edit"
+	"github.com/influxdata/flux/parser"
 )
+
+func TestGetOptionProperty(t *testing.T) {
+	src := `option task = {a: 5, b: "6"}`
+
+	f := parser.ParseSource(src).Files[0]
+
+	obj, err := edit.GetOption(f, "task")
+	if err != nil {
+		t.Fatalf("unexpected error retrieving option: %v", err)
+	}
+
+	expr, err := edit.GetProperty(obj.(*ast.ObjectExpression), "b")
+	if err != nil {
+		t.Fatalf("unexpected error retrieving property: %v", err)
+	}
+
+	if want, got := "6", ast.StringFromLiteral(expr.(*ast.StringLiteral)); want != got {
+		t.Errorf("expected \"6\" but got %s", got)
+	}
+}
 
 func TestGetOption(t *testing.T) {
 	testCases := []struct {
