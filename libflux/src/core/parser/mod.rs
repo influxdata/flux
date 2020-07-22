@@ -587,11 +587,11 @@ impl Parser {
         let mut properties: Option<Vec<PropertyType>> = None;
         let mut id: Option<Identifier> = None;
 
-        let _id;
+
         let t = self.peek();
         if t.tok == TOK_IDENT {
             // Indentifier
-            _id = self.parse_identifier();
+            let _id = self.parse_identifier();
             // suffix one needs attention
             let t2 = self.peek();
             if t2.tok == TOK_COLON {
