@@ -542,8 +542,18 @@ pub struct TypeExpression {
     #[serde(flatten)]
     pub base: BaseNode,
     pub monotype: MonoType,
+    pub constraint: Option<TypeConstraint>,
 }
 
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct TypeConstraint {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub tvar: Identifier,
+    pub kinds: Vec<Identifier>,
+}
 // TestStmt declares a Flux test case
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TestStmt {

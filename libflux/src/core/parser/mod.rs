@@ -538,6 +538,7 @@ impl Parser {
         TypeExpression {
             monotype: monotype.clone(),
             base: base_from_monotype(&monotype),
+            constraint: None,
         }
     }
 
@@ -588,6 +589,37 @@ impl Parser {
             base: self.base_node_from_tokens(&start, &end),
             monotype: mt,
         }));
+    }
+
+    #[cfg(test)]
+    fn parse_constraints(&mut self) -> Vec<TypeConstraint> {
+        let mut constraints = Vec::<TypeConstraint>::new();
+        constraints.push(self.parse_constraint());
+        while self.peek().tok == TOK_COMMA {
+            self.consume();
+            constraints.push(self.parse_constraint());
+        }
+        return constraints;
+    }
+
+    #[cfg(test)]
+    fn parse_constraint(&mut self) -> TypeConstraint {
+        let mut id = Vec::<Identifier>::new();
+        let _tvar = self.parse_identifier();
+        self.expect(TOK_COLON);
+        let identifier = self.parse_identifier();
+        id.push(identifier);
+        while self.peek().tok == TOK_ADD {
+            self.consume();
+            let identifier = self.parse_identifier();
+            id.push(identifier);
+        }
+        let con = TypeConstraint {
+            base: self.base_node_from_others(&_tvar.base, &id[id.len() - 1].base),
+            tvar: _tvar,
+            kinds: id,
+        };
+        return con;
     }
 
     fn parse_test_statement(&mut self) -> Statement {
