@@ -596,7 +596,7 @@ impl Parser {
             let t2 = self.peek();
             if t2.tok == TOK_COLON {
                 let mut ps = Vec::<PropertyType>::new();
-                self.consume(); // :
+                self.expect(TOK_IDENT); // consume the :
                 let mt = self.parse_monotype();
                 let property = PropertyType {
                     base: base_from_monotype(&mt),
