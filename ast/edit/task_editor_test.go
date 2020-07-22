@@ -112,6 +112,41 @@ func TestSetDeleteOption(t *testing.T) {
 		opt      ast.Expression
 	}{
 		{
+			testName: "test set new option",
+			testType: "setOption",
+			optionID: "bar",
+			got: &ast.File{
+				Name: "foo.flux",
+				Body: []ast.Statement{
+					&ast.OptionStatement{
+						Assignment: &ast.VariableAssignment{
+							ID:   &ast.Identifier{Name: "foo"},
+							Init: nil,
+						},
+					},
+				},
+			},
+			opt: &ast.IntegerLiteral{
+				Value: 100,
+			},
+			want: &ast.File{
+				Name: "foo.flux",
+				Body: []ast.Statement{
+					&ast.OptionStatement{
+						Assignment: &ast.VariableAssignment{
+							ID:   &ast.Identifier{Name: "bar"},
+							Init: &ast.IntegerLiteral{Value: 100},
+						},
+					},
+					&ast.OptionStatement{
+						Assignment: &ast.VariableAssignment{
+							ID: &ast.Identifier{Name: "foo"},
+						},
+					},
+				},
+			},
+		},
+		{
 			testName: "test set option",
 			testType: "setOption",
 			optionID: "foo",
@@ -294,6 +329,44 @@ func TestSetDeleteProperty(t *testing.T) {
 		obj      *ast.ObjectExpression
 		value    ast.Expression
 	}{
+		{
+			testName: "test set new property",
+			testType: "setProperty",
+			key:      "baz",
+			obj: &ast.ObjectExpression{
+				With: nil,
+				Properties: []*ast.Property{
+					{
+						Key:   &ast.StringLiteral{Value: "foo"},
+						Value: &ast.StringLiteral{Value: "hello"},
+					},
+					{
+						Key:   &ast.StringLiteral{Value: "bar"},
+						Value: &ast.IntegerLiteral{Value: 100},
+					},
+				},
+			},
+			value: &ast.FloatLiteral{
+				Value: 1.23,
+			},
+			want: &ast.ObjectExpression{
+				With: nil,
+				Properties: []*ast.Property{
+					{
+						Key:   &ast.StringLiteral{Value: "foo"},
+						Value: &ast.StringLiteral{Value: "hello"},
+					},
+					{
+						Key:   &ast.StringLiteral{Value: "bar"},
+						Value: &ast.IntegerLiteral{Value: 100},
+					},
+					{
+						Key:   &ast.Identifier{Name: "baz"},
+						Value: &ast.FloatLiteral{Value: 1.23},
+					},
+				},
+			},
+		},
 		{
 			testName: "test setProperty with float",
 			testType: "setProperty",
