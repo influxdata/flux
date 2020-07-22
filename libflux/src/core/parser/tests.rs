@@ -1508,7 +1508,7 @@ fn test_parse_record_only_properties() {
                 },
                 PropertyType {
                     base: BaseNode {
-                        location: loc.get(1, 11, 1, 15),
+                        location: loc.get(1, 9, 1, 15),
                         ..BaseNode::default()
                     },
                     identifier: Identifier {
@@ -1577,7 +1577,7 @@ fn test_parse_record_tvar_properties() {
             properties: Some(vec![
                 PropertyType {
                     base: BaseNode {
-                        location: loc.get(1, 11, 1, 14),
+                        location: loc.get(1, 9, 1, 14),
                         ..BaseNode::default()
                     },
                     identifier: Identifier {
@@ -1603,7 +1603,7 @@ fn test_parse_record_tvar_properties() {
                 },
                 PropertyType {
                     base: BaseNode {
-                        location: loc.get(1, 18, 1, 22),
+                        location: loc.get(1, 16, 1, 22),
                         ..BaseNode::default()
                     },
                     identifier: Identifier {

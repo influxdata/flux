@@ -585,9 +585,8 @@ impl Parser {
     fn parse_record(&mut self) -> Record {
         let start = self.open(TOK_LBRACE, TOK_RBRACE);
         let mut properties: Option<Vec<PropertyType>> = None;
-        let property: PropertyType;
-
         let mut id: Option<Identifier> = None;
+
         let _id;
         let t = self.peek();
         if t.tok == TOK_IDENT {
@@ -599,7 +598,7 @@ impl Parser {
                 let mut ps = Vec::<PropertyType>::new();
                 self.consume(); // :
                 let mt = self.parse_monotype();
-                property = PropertyType {
+                let property = PropertyType {
                     base: base_from_monotype(&mt),
                     identifier: _id,
                     monotype: mt,
@@ -611,7 +610,7 @@ impl Parser {
                 }
                 properties = Some(ps);
             } else if t2.lit == "with" {
-                self.consume(); // consume the with
+                self.expect(TOK_IDENT); // consume the with
                 properties = self.parse_properties();
                 id = Some(_id);
             }
@@ -642,7 +641,7 @@ impl Parser {
         self.expect(TOK_COLON); // :
         let monotype = self.parse_monotype();
         PropertyType {
-            base: base_from_monotype(&monotype),
+            base: self.base_node_from_others(&identifier.base, &base_from_monotype(&monotype)),
             identifier,
             monotype,
         }
