@@ -542,11 +542,11 @@ pub struct TypeExpression {
     #[serde(flatten)]
     pub base: BaseNode,
     pub monotype: MonoType,
-    pub constraint: Option<Constraint>,
+    pub constraint: Option<TypeConstraint>,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct Constraint {
+pub struct TypeConstraint {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]

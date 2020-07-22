@@ -1555,7 +1555,7 @@ fn test_parse_constraint_one_ident() {
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
-        vec![Constraint {
+        vec![TypeConstraint {
             base: BaseNode {
                 location: loc.get(1, 1, 1, 9),
                 ..BaseNode::default()
@@ -1585,7 +1585,7 @@ fn test_parse_constraint_two_ident() {
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
-        vec![Constraint {
+        vec![TypeConstraint {
             base: BaseNode {
                 location: loc.get(1, 1, 1, 26),
                 ..BaseNode::default()
@@ -1625,7 +1625,7 @@ fn test_parse_constraint_two_con() {
     assert_eq!(
         parsed,
         vec![
-            Constraint {
+            TypeConstraint {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 11),
                     ..BaseNode::default()
@@ -1645,7 +1645,7 @@ fn test_parse_constraint_two_con() {
                     name: "Addable".to_string(),
                 }]
             },
-            Constraint {
+            TypeConstraint {
                 base: BaseNode {
                     location: loc.get(1, 13, 1, 28),
                     ..BaseNode::default()

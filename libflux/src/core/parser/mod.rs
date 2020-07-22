@@ -592,8 +592,8 @@ impl Parser {
     }
 
     #[cfg(test)]
-    fn parse_constraints(&mut self) -> Vec<Constraint> {
-        let mut constraints = Vec::<Constraint>::new();
+    fn parse_constraints(&mut self) -> Vec<TypeConstraint> {
+        let mut constraints = Vec::<TypeConstraint>::new();
         constraints.push(self.parse_constraint());
         while self.peek().tok == TOK_COMMA {
             self.consume();
@@ -603,7 +603,7 @@ impl Parser {
     }
 
     #[cfg(test)]
-    fn parse_constraint(&mut self) -> Constraint {
+    fn parse_constraint(&mut self) -> TypeConstraint {
         let mut id = Vec::<Identifier>::new();
         let _tvar = self.parse_identifier();
         self.expect(TOK_COLON);
@@ -614,7 +614,7 @@ impl Parser {
             let identifier = self.parse_identifier();
             id.push(identifier);
         }
-        let con = Constraint {
+        let con = TypeConstraint {
             base: self.base_node_from_others(&_tvar.base, &id[id.len() - 1].base),
             tvar: _tvar,
             kinds: id,
