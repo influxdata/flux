@@ -499,6 +499,7 @@ pub enum MonoType {
     Tvar(TvarType),
     Basic(NamedType),
     Array(Box<ArrayType>),
+    Record(RecordType),
     Invalid,
 }
 
@@ -544,7 +545,6 @@ pub struct TypeExpression {
     pub monotype: MonoType,
     pub constraint: Option<TypeConstraint>,
 }
-
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypeConstraint {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
@@ -553,6 +553,24 @@ pub struct TypeConstraint {
     pub base: BaseNode,
     pub tvar: Identifier,
     pub kinds: Vec<Identifier>,
+}
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct RecordType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub tvar: Option<Identifier>,
+    pub properties: Option<Vec<PropertyType>>,
+}
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct PropertyType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub identifier: Identifier,
+    pub monotype: MonoType,
 }
 // TestStmt declares a Flux test case
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
