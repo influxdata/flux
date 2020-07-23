@@ -2196,21 +2196,21 @@ type emptyTable struct {
 // NewEmptyTable constructs a new empty table with the given
 // group key and columns.
 func NewEmptyTable(key flux.GroupKey, cols []flux.ColMeta) flux.Table {
-	return emptyTable{
+	return &emptyTable{
 		key:  key,
 		cols: cols,
 	}
 }
 
-func (t emptyTable) Key() flux.GroupKey {
+func (t *emptyTable) Key() flux.GroupKey {
 	return t.key
 }
 
-func (t emptyTable) Cols() []flux.ColMeta {
+func (t *emptyTable) Cols() []flux.ColMeta {
 	return t.cols
 }
 
-func (t emptyTable) Do(f func(flux.ColReader) error) error {
+func (t *emptyTable) Do(f func(flux.ColReader) error) error {
 	if !atomic.CompareAndSwapInt32(&t.used, 0, 1) {
 		return errors.New(codes.Internal, "table already read")
 	}
@@ -2230,10 +2230,10 @@ func (t emptyTable) Do(f func(flux.ColReader) error) error {
 	return f(&buf)
 }
 
-func (t emptyTable) Done() {
+func (t *emptyTable) Done() {
 	atomic.StoreInt32(&t.used, 1)
 }
 
-func (t emptyTable) Empty() bool {
+func (t *emptyTable) Empty() bool {
 	return true
 }
