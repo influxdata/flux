@@ -1473,7 +1473,7 @@ fn test_parse_record_only_properties() {
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
-        Record {
+        RecordType {
             base: BaseNode {
                 location: loc.get(1, 1, 1, 16),
                 ..BaseNode::default()
@@ -1482,7 +1482,7 @@ fn test_parse_record_only_properties() {
             properties: Some(vec![
                 PropertyType {
                     base: BaseNode {
-                        location: loc.get(1, 4, 1, 7),
+                        location: loc.get(1, 2, 1, 7),
                         ..BaseNode::default()
                     },
                     identifier: Identifier {
@@ -1544,7 +1544,7 @@ fn test_parse_record_blank() {
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
-        Record {
+        RecordType {
             base: BaseNode {
                 location: loc.get(1, 1, 1, 3),
                 ..BaseNode::default()
@@ -1562,7 +1562,7 @@ fn test_parse_record_tvar_properties() {
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
-        Record {
+        RecordType {
             base: BaseNode {
                 location: loc.get(1, 1, 1, 23),
                 ..BaseNode::default()

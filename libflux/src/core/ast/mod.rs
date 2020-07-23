@@ -498,6 +498,7 @@ pub struct BuiltinStmt {
 pub enum MonoType {
     Tvar(TvarType),
     Basic(NamedType),
+    Record(RecordType),
     Invalid,
 }
 
@@ -532,7 +533,7 @@ pub struct TypeExpression {
     pub monotype: MonoType,
 }
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct Record {
+pub struct RecordType {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
