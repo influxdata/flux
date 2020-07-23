@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
@@ -181,19 +182,6 @@ func TestTablesEqual(t *testing.T) {
 	}
 }
 
-type TableIterator struct {
-	Tables []flux.Table
-}
-
-func (ti TableIterator) Do(f func(flux.Table) error) error {
-	for _, tbl := range ti.Tables {
-		if err := f(tbl); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func TestColListTable(t *testing.T) {
 	executetest.RunTableTests(t, executetest.TableTest{
 		NewFn: func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator {
@@ -236,9 +224,7 @@ func TestColListTable(t *testing.T) {
 			_, _ = b2.AddCol(flux.ColMeta{Label: "_value", Type: flux.TFloat})
 			tbl2, _ := b2.Table()
 			b2.Release()
-			return TableIterator{
-				Tables: []flux.Table{tbl1, tbl2},
-			}
+			return table.Iterator{tbl1, tbl2}
 		},
 		IsDone: func(tbl flux.Table) bool {
 			return tbl.(*execute.ColListTable).IsDone()
@@ -613,4 +599,39 @@ func TestCopyTable_Empty(t *testing.T) {
 	if !cpy.Empty() {
 		t.Fatal("expected copied table to be empty, but it wasn't")
 	}
+}
+
+func TestEmptyWindowTable(t *testing.T) {
+	executetest.RunTableTests(t, executetest.TableTest{
+		NewFn: func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator {
+			// Prime the allocator with an allocation to avoid
+			// an error happening for no allocations.
+			// No allocations is expected but the table tests check that
+			// an allocation happened.
+			alloc.Free(alloc.Allocate(1))
+
+			key := execute.NewGroupKey(
+				[]flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_field", Type: flux.TString},
+				},
+				[]values.Value{
+					values.NewString("m0"),
+					values.NewString("f0"),
+				},
+			)
+			cols := []flux.ColMeta{
+				{Label: "_measurement", Type: flux.TString},
+				{Label: "_field", Type: flux.TString},
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_value", Type: flux.TInt},
+			}
+			return table.Iterator{
+				execute.NewEmptyTable(key, cols),
+			}
+		},
+		IsDone: func(tbl flux.Table) bool {
+			return true
+		},
+	})
 }

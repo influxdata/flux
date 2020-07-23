@@ -498,7 +498,6 @@ pub struct BuiltinStmt {
 pub enum MonoType {
     Tvar(TvarType),
     Basic(NamedType),
-    Record(RecordType),
     Invalid,
 }
 
@@ -532,24 +531,7 @@ pub struct TypeExpression {
     pub base: BaseNode,
     pub monotype: MonoType,
 }
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct RecordType {
-    #[serde(skip_serializing_if = "BaseNode::is_empty")]
-    #[serde(default)]
-    #[serde(flatten)]
-    pub base: BaseNode,
-    pub tvar: Option<Identifier>,
-    pub properties: Option<Vec<PropertyType>>,
-}
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct PropertyType {
-    #[serde(skip_serializing_if = "BaseNode::is_empty")]
-    #[serde(default)]
-    #[serde(flatten)]
-    pub base: BaseNode,
-    pub identifier: Identifier,
-    pub monotype: MonoType,
-}
+
 // TestStmt declares a Flux test case
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TestStmt {
