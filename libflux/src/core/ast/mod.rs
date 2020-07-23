@@ -499,7 +499,7 @@ pub enum MonoType {
     Tvar(TvarType),
     Basic(NamedType),
     Array(Box<ArrayType>),
-    Function(FunctionType),
+    Function(Box<FunctionType>),
     Invalid,
 }
 
@@ -553,7 +553,7 @@ pub struct ParameterType {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub indentifer: Indentifer,
+    pub identifier : Identifier,
     pub parameter: MonoType,
 }
 

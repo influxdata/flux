@@ -1549,6 +1549,68 @@ fn test_parse_type_expression_array_string() {
 }
 
 #[test]
+fn test_parse_type_expression_function() {
+    let mut p = Parser::new(r#"(A : int => uint)"#);
+    let parsed = p.parse_type_expression();
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        TypeExpression {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 16),
+                ..BaseNode::default()
+            },
+            monotype: MonoType::Function(Box::new(FunctionType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 16),
+                    ..BaseNode::default()
+                },
+                parameters : Some(vec![ParameterType {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 8),
+                        ..BaseNode::default()
+                    },
+                    identifier : Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 2, 1, 8),
+                            ..BaseNode::default()
+                        },
+                        name: "A".to_string(),
+                    },
+                    parameter: MonoType::Basic(NamedType {
+                        base: BaseNode {
+                            location: loc.get(1, 5, 1, 8),
+                            ..BaseNode::default()
+                        },
+                        name: Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 2, 1, 8),
+                                ..BaseNode::default()
+                            },
+                            name: "int".to_string(),
+                        }
+                    }),
+                }]),
+                monotype: MonoType::Basic(NamedType {
+                    base: BaseNode {
+                        location: loc.get(1, 2, 1, 8),
+                        ..BaseNode::default()
+                    },
+                    name: Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 2, 1, 8),
+                            ..BaseNode::default()
+                        },
+                        name: "uint".to_string(),
+                    }
+                })
+            })),
+            constraint: None
+        },
+    )
+}
+
+#[test]
 fn test_parse_constraint_one_ident() {
     let mut p = Parser::new(r#"A : date"#);
     let parsed = p.parse_constraints();

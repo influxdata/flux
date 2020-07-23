@@ -556,6 +556,7 @@ impl Parser {
                 }
             }
             TOK_LBRACK => self.parse_array(),
+            TOK_LPAREN => self.parse_function(),
             _ => MonoType::Invalid,
         }
     }
@@ -594,39 +595,48 @@ impl Parser {
 
     #[cfg(test)]
     fn parse_function(&mut self) -> MonoType {
-        let start = self.expect(TOK_LPAREN);
-        let mut parameters = Vec::<ParameterType>::new();
+        let l_paren = self.expect(TOK_LPAREN);
+        let mut params = Vec::<ParameterType>::new();
+        let parameter = self.parse_parameter_type();
+        params.push(parameter);
         while self.peek().tok == TOK_COMMA {
             self.consume();
-            let parameter = self.parse_parameters();
-            parameters.push(parameter);
+            let parameter = self.parse_parameter_type();
+            params.push(parameter);
         }
         self.expect(TOK_RPAREN);
-        // =>
         self.expect(TOK_ARROW);
-        mt = self.parse_monotype();
-        return MonoType::Function(FunctionType {
-            base: base_node_from_other_end(&start, &mt.base),
-            parameters: parameters,
+        let mt = self.parse_monotype();
+        return MonoType::Function(Box::new(FunctionType {
+            base: self.base_node_from_other_end(&l_paren, &base_from_monotype(&mt)),
+            parameters: Some(params),
             monotype: mt,
-        });
+        }));
     }
 
     #[cfg(test)]
-    fn parse_parameters(&mut self) -> ParameterType {
-        if (self.peek() == TOK_PIPE_FORWARD) {
-            let start = self.expect(TOK_PIPE_FORWARD);
+    fn parse_parameter_type(&mut self) -> ParameterType {
+        let start;
+        if self.peek().tok == TOK_PIPE_FORWARD {
+            start = self.expect(TOK_PIPE_FORWARD);
         }
         else {
-            let start = self.expect(TOK_QUESTION_MARK);
+            start = self.expect(TOK_QUESTION_MARK);
         }
         let id = self.parse_identifier();
         self.expect(TOK_COLON);
-        let mono = self.parse_monotype();
+        let mt = self.parse_monotype();
+        let basenode;
+        if start.tok != TOK_PIPE_FORWARD && start.tok != TOK_QUESTION_MARK {
+            basenode = self.base_node_from_other_end(&start, &base_from_monotype(&mt));
+        }
+        else {
+            basenode = self.base_node_from_others(&id.base, &base_from_monotype(&mt));
+        }
         let para = ParameterType {
-            base: base_node_from_other_end(&start, &mono.base),
-            indentifer : id,
-            monotype : mono,
+            base: basenode,
+            identifier : id,
+            parameter : mt,
         };
         return para;
     }
