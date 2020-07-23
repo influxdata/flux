@@ -499,6 +499,7 @@ pub enum MonoType {
     Tvar(TvarType),
     Basic(NamedType),
     Array(Box<ArrayType>),
+    Function(FunctionType),
     Invalid,
 }
 
@@ -507,6 +508,7 @@ pub fn base_from_monotype(m: &MonoType) -> BaseNode {
         MonoType::Basic(t) => t.base.clone(),
         MonoType::Tvar(t) => t.base.clone(),
         MonoType::Array(t) => t.base.clone(),
+        MonoType::Function(t) => t.base.clone(),
         _ => BaseNode::default(),
     }
 }
@@ -533,6 +535,26 @@ pub struct ArrayType {
     #[serde(flatten)]
     pub base: BaseNode,
     pub monotype: MonoType,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct FunctionType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub parameters: Option<Vec<ParameterType>>,
+    pub monotype: MonoType,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct ParameterType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub indentifer: Indentifer,
+    pub parameter: MonoType,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
