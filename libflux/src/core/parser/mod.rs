@@ -577,7 +577,6 @@ impl Parser {
             MonoType::Invalid
         }
     }
-
     // Record = "{" [ Identifier (Suffix1 | Suffix2) ] "}"
     // Suffix1 = ":" MonoType { "," Property }
     // Suffix2 = "with" [Properties]
