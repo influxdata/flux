@@ -1544,8 +1544,9 @@ fn test_parse_type_expression_array_string() {
                 })
             })),
             constraint: None
-            })
-    }
+        }
+    )
+}
 
 #[test]
 fn test_parse_record_only_properties() {
