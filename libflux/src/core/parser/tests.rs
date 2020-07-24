@@ -1565,7 +1565,7 @@ fn test_parse_type_expression_function_no_params() {
                     location: loc.get(1, 1, 1, 11),
                     ..BaseNode::default()
                 },
-                parameters : None,
+                parameters: None,
                 monotype: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 7, 1, 11),
@@ -1602,7 +1602,7 @@ fn test_parse_type_expression_function_with_params() {
                     location: loc.get(1, 1, 1, 28),
                     ..BaseNode::default()
                 },
-                parameters : Some(vec![
+                parameters: Some(vec![
                     ParameterType {
                         base: BaseNode {
                             location: loc.get(1, 2, 1, 8),
@@ -1615,7 +1615,7 @@ fn test_parse_type_expression_function_with_params() {
                             },
                             name: "A".to_string(),
                         },
-                        parameter: MonoType::Basic(NamedType{
+                        parameter: MonoType::Basic(NamedType {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 8),
                                 ..BaseNode::default()
@@ -1641,7 +1641,7 @@ fn test_parse_type_expression_function_with_params() {
                             },
                             name: "B".to_string(),
                         },
-                        parameter: MonoType::Basic(NamedType{
+                        parameter: MonoType::Basic(NamedType {
                             base: BaseNode {
                                 location: loc.get(1, 13, 1, 19),
                                 ..BaseNode::default()
@@ -1655,7 +1655,6 @@ fn test_parse_type_expression_function_with_params() {
                             }
                         })
                     }
-
                 ]),
                 monotype: MonoType::Basic(NamedType {
                     base: BaseNode {

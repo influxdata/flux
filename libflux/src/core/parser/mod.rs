@@ -599,7 +599,10 @@ impl Parser {
         let _lparen = self.expect(TOK_LPAREN);
 
         let mut params = Vec::<ParameterType>::new();
-        if self.peek().tok == TOK_PIPE_RECEIVE || self.peek().tok == TOK_QUESTION_MARK || self.peek().tok == TOK_IDENT {
+        if self.peek().tok == TOK_PIPE_RECEIVE
+            || self.peek().tok == TOK_QUESTION_MARK
+            || self.peek().tok == TOK_IDENT
+        {
             params = self.parse_parameters();
         }
         let _rparen = self.expect(TOK_RPAREN);
@@ -640,32 +643,28 @@ impl Parser {
         let mut start = None;
         if self.peek().tok == TOK_IDENT {
             id = self.parse_identifier();
-        }
-        else if self.peek().tok == TOK_PIPE_RECEIVE {
+        } else if self.peek().tok == TOK_PIPE_RECEIVE {
             start = Some(self.expect(TOK_PIPE_RECEIVE));
             id = self.parse_identifier();
-        }
-        else if self.peek().tok == TOK_QUESTION_MARK {
+        } else if self.peek().tok == TOK_QUESTION_MARK {
             start = Some(self.expect(TOK_QUESTION_MARK));
             id = self.parse_identifier();
-        }
-        else {
+        } else {
             id = self.parse_identifier();
         }
         self.expect(TOK_COLON);
         let mt = self.parse_monotype();
         if start == None {
-            ParameterType{
+            ParameterType {
                 base: self.base_node_from_others(&id.base, &base_from_monotype(&mt)),
                 identifier: id,
-                parameter: mt
+                parameter: mt,
             }
-        }
-        else {
-            ParameterType{
+        } else {
+            ParameterType {
                 base: self.base_node_from_other_end(&(start.unwrap()), &base_from_monotype(&mt)),
                 identifier: id,
-                parameter: mt
+                parameter: mt,
             }
         }
     }
