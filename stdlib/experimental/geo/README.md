@@ -28,9 +28,7 @@ bike,id=biker-007,pt=via,s2_cell_id=89c25dc lat=40.753944,lon=-73.992035,tid=157
 
 Some functions in this package works on row-wise sets (as it very likely appears in line protocol),
 with fields `lat`, `lon` (and possibly `tid`) as columns.
-That is achieved by correlation by `_time` (and `id` if present) using `pivot()` or provided convenience `geo.toRows()` function.
-Therefore it is advised to store time with nanoseconds precision to avoid false matches in deployments
-where `id` (or any other source identifying) tag is no present.
+That can be achieved by calling `v1.fieldsAsCols()` or `toRows()` before these functions.
 
 **Fundamental transformations:**
 - `gridFilter`
@@ -45,6 +43,15 @@ where `id` (or any other source identifying) tag is no present.
 
 **S2 geometry functions:**
 - `s2CellIDToken`
+- `s2CellLatLon`
+
+**GIS functions:**
+- `ST_Contains`
+- `ST_Distance`
+- `ST_DWithin`
+- `ST_Intersects`
+- `ST_Length`
+- `ST_LineString` (proprietary)
 
 **The package uses the following types:**
 - `region` - depending on shape, it has the following named float values:
@@ -52,6 +59,30 @@ where `id` (or any other source identifying) tag is no present.
   - circle (cap) - `lat`, `lon`, `radius` (in decimal km)
   - point - `lat`, `lon`
   - polygon - `points` - array of points
+- `geometry` - can be any region type (typically point), and also:
+  - path  - `linestring` - string with comma-separated pairs of longitude and latitude
+
+**Units:**
+
+Supported units are:
+- distance - `m`, `km`, `mile`
+
+Default units:
+```js
+option units = {
+  distance: "km"
+}
+```
+
+To change units, assign a new value the to `units` option, eg:
+```js
+import "experimental/geo"
+
+option geo.units = {distance:"mile"}
+
+from(bucket:"rides")
+  ...
+```
 
 ### Function `gridFilter`
 
@@ -110,10 +141,11 @@ For best performance, it should be used together with `griFilter()`.
 
 ### Function `toRows`
 
+_Note: this function is equivalent to `v1.fieldsAsCols()` and will be removed in the future._
+
 Collects values to row-wise sets.
 For geo-temporal data sets the result contains rows with `lat` and `lon`, ie. suitable
 for visualization and for functions such as `strictFilter` or `groupByArea`.
-
 
 Example:
 ```js
@@ -126,13 +158,9 @@ from(bucket: "rides")
 #### Function definition
 
 ```js
-toRows = (tables=<-, correlationKey=["_time"]) =>
+toRows = (tables=<-) =>
   tables
-    |> pivot(
-      rowKey: correlationKey,
-      columnKey: ["_field"],
-      valueColumn: "_value"
-    )
+    |> v1.fieldsAsCols()
 ```
 
 ### Function `filterRows`
@@ -156,11 +184,20 @@ By default it applies strict filtering (`strict=true`).
 #### Function definition
 
 ```js
-filterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, correlationKey=["_time"], strict=true) => {
-  _rows =
+filterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, strict=true) => {
+  _columns =
     tables
-      |> gridFilter(region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)
-      |> toRows(correlationKey)
+      |> columns(column: "_value")
+      |> tableFind(fn: (key) => true )
+      |> getColumn(column: "_value")
+  _rows =
+    if contains(value: "lat", set: _columns) then
+      tables
+        |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)
+    else
+      tables
+        |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)
+        |> toRows()
   _result =
     if strict then
       _rows
@@ -189,8 +226,9 @@ from(bucket: "rides")
 ```
 
 #### Function definition
+
 ```js
-shapeData = (tables=<-, latField, lonField, level, correlationKey=["_time"]) =>
+shapeData = (tables=<-, latField, lonField, level) =>
   tables
     |> map(fn: (r) => ({ r with
         _field:
@@ -199,7 +237,7 @@ shapeData = (tables=<-, latField, lonField, level, correlationKey=["_time"]) =>
           else r._field
       })
     )
-    |> toRows(correlationKey: correlationKey)
+    |> toRows()
     |> map(fn: (r) => ({ r with
         s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)
       })
@@ -238,7 +276,7 @@ from(bucket: "rides")
   |> range(start: 2019-11-01T00:00:00Z)
   |> filter(fn: (r) => r._measurement == "bike")
   |> geo.gridFilter(region: {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875})
-  |> geo.toRows(correlationKey: ["_time", "id"])
+  |> geo.toRows()
   |> geo.asTracks()
 ```
 
@@ -254,14 +292,231 @@ asTracks = (tables=<-, groupBy=["id","tid"], orderBy=["_time"]) =>
 ### Function `s2CellIDToken`
 
 Returns S2 cell ID token.
+
 Input parameters are:
-- `token` - source position token
-- `point` - source position coordinates
-- `level` - cell level of the target token
+- `token` - source token
+- `point` - source coordinates
+- `level` - requested cell level of the target token
 
 Either `token` or `point` must be specified.
 
 Example:
-```
+```js
 t = geo.s2CellIDToken(point: {lat: 40.51757813, lon: -73.65234375}, level: 10)
 ```
+
+### Function `s2CellLatLon`
+
+Returns coordinates of the S2 cell center.
+
+Input parameters are:
+- `token` - cell ID token
+
+Example:
+```js
+ll = geo.s2CellLatLon(token: "89c284")
+```
+
+### Function `ST_Contains`
+
+Returns boolean value whether the region contains geometry or not.
+Parameter `geometry` can be either a point or a linestring.
+
+Input parameters are:
+- `region`
+- `geometry`
+
+Example:
+```js
+box = {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}
+
+from(bucket:"mta")
+    ...
+    |> geo.toRows()
+    |> map(fn: (r) => ({
+      r with st_contains: ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon})
+    }))
+```
+
+```js
+box = {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}
+
+from(bucket:"mta")
+    ...
+    |> geo.toRows()
+    |> geo.asTracks()
+    |> geo.ST_LineString()
+    |> map(fn: (r) => ({
+      r with st_contains: ST_Contains(region: region, geometry: {linestring: r.st_linestring})
+    }))
+```
+
+### Function `ST_Distance`
+
+Returns distance between specified region and geometry.
+Parameter `geometry` can be either a point or a linestring.
+
+Input parameters are:
+- `region`
+- `geometry`
+
+Example:
+```js
+box = {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}
+
+from(bucket:"mta")
+    ...
+    |> geo.toRows()
+    |> map(fn: (r) => ({
+      r with st_distance: ST_Distance(region: region, geometry: {lat: r.lat, lon: r.lon})
+    }))
+```
+
+### Function `ST_DWithin`
+
+Returns boolean if geometry is within a distance to specified region.
+Parameter `geometry` can be either a point or a linestring.
+
+Input parameters are:
+- `region`
+- `geometry`
+
+Example:
+```js
+box = {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}
+
+from(bucket:"mta")
+    ...
+    |> geo.toRows()
+    |> map(fn: (r) => ({
+      r with st_within: ST_DWithin(region: region, geometry: {lat: r.lat, lon: r.lon}, distance: 15.0)
+    }))
+```
+
+#### Function definition
+
+```js
+ST_DWithin = (region, distance, geometry) =>
+  ST_Distance(region: region, geometry: geometry) <= distance
+```
+
+### Function `ST_Intersects`
+
+Returns boolean whether geometry intersects specified region.
+Parameter `geometry` can be either a point or a linestring.
+
+Example:
+```js
+box = {minLat: 40.51757813, maxLat: 40.86914063, minLon: -73.65234375, maxLon: -72.94921875}
+
+from(bucket:"mta")
+    ...
+    |> geo.toRows()
+    |> geo.asTracks()
+    |> geo.ST_LineString()
+    |> map(fn: (r) => ({
+      r with st_intersects: ST_Intersects(region: region, geometry: {linestring: r.st_linestring})
+    }))
+```
+
+#### Function definition
+
+```js
+ST_Intersects = (region, geometry) =>
+  ST_Contains(region: region, geometry: geometry)
+```
+
+### Function `ST_Length`
+
+Returns spherical length of specified geometry.
+Parameter `geometry` can be either a point (result is 0.0) or a linestring.
+
+Example:
+```js
+from(bucket:"mta")
+    ...
+    |> geo.toRows()
+    |> geo.asTracks()
+    |> geo.ST_LineString()
+    |> map(fn: (r) => ({
+      r with st_length: ST_Length(geometry: {linestring: r.st_linestring})
+    }))
+```
+
+### Function `ST_LineString`
+
+_This is a proprietary function._
+
+Returns string representing path.
+Input data should be grouped in such way that they represent a meaningful path before calling this function.
+Output is a reduced table with `st_linestring` column holding the result.
+
+Example:
+```js
+from(bucket:"mta")
+    ...
+    |> geo.toRows()
+    |> geo.asTracks()
+    |> geo.ST_LineString()
+```
+
+### Function definition
+
+```js
+ST_LineString = (tables=<-) =>
+  tables
+    |> reduce(fn: (r, accumulator) => ({
+        r with
+        __linestring: accumulator.__linestring + (if accumulator.__count > 0 then ", " else "") + string(v: r.lat) + " " + string(v: r.lon),
+        __count: accumulator.__count + 1
+      }), identity: {
+        __linestring: "",
+        __count: 0
+      }
+    )
+    |> rename(columns: {__linestring: "st_linestring"})
+```
+
+### Geofencing
+
+Geofencing use case can be realized using custom check query.
+In the following example, a point that is outside the region is evaluated as `"warn"` level status.
+Then, in the notification rule, change from `"ok"` to `"warn"` signals that object left specified region,
+and vice versa.
+
+Example:
+```js
+import "influxdata/influxdb/monitor"
+import "experimental/geo"
+
+// Injected
+option task = {name: "Geofencing", every: 1m}
+
+// Injected
+check = {
+    _check_id: "0000000000000001",
+    _check_name: "Central Long Island check",
+    _type: "custom",
+    tags: {},
+}
+
+box = {
+    minLat: 40.5880775,
+    maxLat: 40.8247008,
+    minLon: -73.80014,
+    maxLon: -73.4630336,
+}
+
+from(bucket: "mta")
+  |> range(start: -task.every)
+  |> geo.toRows()
+  |> keep(columns: ["_measurement", "_time", "id", "lat", "lon")
+  |> monitor.check(
+      data: check,
+      messageFn: messageFn: (r) => (if r._level == monitor.levelWarn then "Train ${r.id} is out" else "Train ${r.id} is in"),
+      warn: (r) => not geo.ST_Contains(region: box, geometry: {lat: r.lat, lon: r.lon})
+  )
+```
+_Notes: in this example, only a subset of columns is kept, but of course,
+it is optional step (columns `_measurement` and `_time` are required
+by `monitor.check()`)._

@@ -11,37 +11,42 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-func TestContainsLatLon_NewQuery(t *testing.T) {
+func TestSTContains_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
 			Name:    "no args",
-			Raw:     `import "experimental/geo" geo.containsLatLon()`,
+			Raw:     `import "experimental/geo" geo.ST_Contains()`,
 			WantErr: true, // missing required parameter(s)
 		},
 		{
-			Name:    "missing lat lon args",
-			Raw:     `import "experimental/geo" geo.containsLatLon(region: { lat: 40.5, lon: -74.5, radius: 15.0 })`,
+			Name:    "missing geometry arg",
+			Raw:     `import "experimental/geo" geo.ST_Contains(region: { lat: 40.5, lon: -74.5, radius: 15.0 })`,
 			WantErr: true, // missing required parameter(s)
 		},
 		{
 			Name:    "invalid args - invalid box",
-			Raw:     `import "experimental/geo" geo.containsLatLon(region: { minLat: 40.5, minLon: -74.5, maxLat: 41.5 } , lat: 40.5, lon: -74.5)`,
+			Raw:     `import "experimental/geo" geo.ST_Contains(region: { minLat: 40.5, minLon: -74.5, maxLat: 41.5 }, geometry: {lat: 40.5, lon: -74.5})`,
 			WantErr: true, // missing maxLon
 		},
 		{
 			Name:    "invalid args - invalid circle",
-			Raw:     `import "experimental/geo" geo.containsLatLon(region: { lat: 40.5, radius: 15.0 }, lat: 40.5, lon: -74.5)`,
+			Raw:     `import "experimental/geo" geo.ST_Contains(region: { lat: 40.5, radius: 15.0 }, geometry: {lat: 40.5, lon: -74.5})`,
 			WantErr: true, // missing lon
 		},
 		{
 			Name:    "invalid args - invalid polygon",
-			Raw:     `import "experimental/geo" geo.containsLatLon(region: { points: [{ lat: 40.5, lon: -74.5 }] }, lat: 40.5, lon: -74.5)`,
+			Raw:     `import "experimental/geo" geo.ST_Contains(region: { points: [{ lat: 40.5, lon: -74.5 }] }, geometry: {lat: 40.5, lon: -74.5})`,
 			WantErr: true, // polygon must have at least 3 points
 		},
 		{
-			Name:    "invalid args - unknown region",
-			Raw:     `import "experimental/geo" geo.containsLatLon(region: { lat: 40.5, lon: -74.5 }, lat: 40.5, lon: -74.5)`,
-			WantErr: true, // cannot infer region
+			Name:    "invalid args - unsupported region",
+			Raw:     `import "experimental/geo" geo.ST_Contains(region: { x: 1.0, y: 0.0 }, geometry: {lat: 40.5, lon: -74.5})`,
+			WantErr: true, // cannot infer region type
+		},
+		{
+			Name:    "invalid args - invalid units",
+			Raw:     `import "experimental/geo" geo.ST_Contains(region: { lat: 40.5, lon: -74.5, radius: 15.0 }, geometry: {lat: 40.5, lon: -74.5}, units: { distance: "yd" })`,
+			WantErr: true, // unsupported unit
 		},
 	}
 	for _, tc := range tests {
@@ -53,7 +58,7 @@ func TestContainsLatLon_NewQuery(t *testing.T) {
 	}
 }
 
-func TestContainsLatLon_Process(t *testing.T) {
+func TestSTContains_Process(t *testing.T) {
 	type box struct {
 		minLat float64
 		maxLat float64
@@ -69,11 +74,15 @@ func TestContainsLatLon_Process(t *testing.T) {
 		lat float64
 		lon float64
 	}
+	var defaultUnits = map[string]string{
+		"distance": "km",
+	}
 	testCases := []struct {
 		name    string
 		box     *box
 		circle  *circle
 		polygon *[]point
+		units   *map[string]string
 		lat     float64
 		lon     float64
 		want    bool
@@ -93,30 +102,51 @@ func TestContainsLatLon_Process(t *testing.T) {
 			want:   true,
 		},
 		{
+			name:   "circle contains - m units",
+			circle: &circle{lat: 40.7090214, lon: -73.61846, radius: 15000.0},
+			lat:    40.710594,
+			lon:    -73.652183,
+			units:  &map[string]string{"distance": "m"},
+			want:   true,
+		},
+		{
 			name: "polygon contains",
 			polygon: &[]point{
-				{lat: 40.776527, lon: -73.338811},
-				{lat: 40.788093, lon: -73.776396},
-				{lat: 40.475939, lon: -73.751854},
-				{lat: 40.576506, lon: -73.573634},
+				{lat: 40.671659, lon: -73.936631},
+				{lat: 40.706543, lon: -73.749177},
+				{lat: 40.791333, lon: -73.880327},
 			},
-			lat:  40.710594,
-			lon:  -73.652183,
+			lat:  40.702594,
+			lon:  -73.909699,
 			want: true,
 		},
 		{
-			name: "not contains",
+			name: "box not contains",
 			box:  &box{minLat: 40.5880775, maxLat: 40.8247008, minLon: -73.80014, maxLon: -73.4630336},
 			lat:  40.690732,
 			lon:  -74.046267,
+			want: false,
+		},
+		{
+			name: "polygon not contains",
+			polygon: &[]point{
+				{lat: 40.671659, lon: -73.936631},
+				{lat: 40.706543, lon: -73.749177},
+				{lat: 40.791333, lon: -73.880327},
+			},
+			lat:  40.6892,
+			lon:  -74.0445,
 			want: false,
 		},
 	}
 
 	for _, tc := range testCases {
 		tc := tc
-		containsLatLon := geo.Functions["containsLatLon"]
+		stContains := geo.Functions["stContains"]
 		var owv values.Object
+		if tc.units == nil {
+			tc.units = &defaultUnits
+		}
 		if tc.box != nil {
 			owv = values.NewObjectWithValues(map[string]values.Value{
 				"region": values.NewObjectWithValues(map[string]values.Value{
@@ -125,8 +155,11 @@ func TestContainsLatLon_Process(t *testing.T) {
 					"maxLat": values.NewFloat(tc.box.maxLat),
 					"maxLon": values.NewFloat(tc.box.maxLon),
 				}),
-				"lat": values.NewFloat(tc.lat),
-				"lon": values.NewFloat(tc.lon),
+				"geometry": values.NewObjectWithValues(map[string]values.Value{
+					"lat": values.NewFloat(tc.lat),
+					"lon": values.NewFloat(tc.lon),
+				}),
+				"units": unitsToValue(*tc.units),
 			})
 		} else if tc.circle != nil {
 			owv = values.NewObjectWithValues(map[string]values.Value{
@@ -135,8 +168,11 @@ func TestContainsLatLon_Process(t *testing.T) {
 					"lon":    values.NewFloat(tc.circle.lon),
 					"radius": values.NewFloat(tc.circle.radius),
 				}),
-				"lat": values.NewFloat(tc.lat),
-				"lon": values.NewFloat(tc.lon),
+				"geometry": values.NewObjectWithValues(map[string]values.Value{
+					"lat": values.NewFloat(tc.lat),
+					"lon": values.NewFloat(tc.lon),
+				}),
+				"units": unitsToValue(*tc.units),
 			})
 		} else if tc.polygon != nil {
 			array := values.NewArray(semantic.NewArrayType(pointT))
@@ -150,11 +186,14 @@ func TestContainsLatLon_Process(t *testing.T) {
 				"region": values.NewObjectWithValues(map[string]values.Value{
 					"points": array,
 				}),
-				"lat": values.NewFloat(tc.lat),
-				"lon": values.NewFloat(tc.lon),
+				"geometry": values.NewObjectWithValues(map[string]values.Value{
+					"lat": values.NewFloat(tc.lat),
+					"lon": values.NewFloat(tc.lon),
+				}),
+				"units": unitsToValue(*tc.units),
 			})
 		}
-		result, err := containsLatLon.Call(context.Background(), owv)
+		result, err := stContains.Call(context.Background(), owv)
 		if err != nil {
 			t.Error(err.Error())
 		} else if tc.want != result.Bool() {

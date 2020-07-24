@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strconv"
+	"strings"
 
 	"github.com/golang/geo/r1"
 	"github.com/golang/geo/s1"
@@ -15,6 +17,49 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
+type point struct {
+	lat, lon float64
+}
+
+type box struct {
+	minLat, minLon, maxLat, maxLon float64
+}
+
+type circle struct {
+	point
+	radius float64
+}
+
+type polygon struct {
+	points []s2.Point
+}
+
+type polyline struct {
+	latlngs []s2.LatLng
+}
+
+type units struct {
+	distance    string
+	earthRadius float64
+}
+
+func (u *units) distanceToRad(v float64) float64 {
+	return v / u.earthRadius
+}
+
+func (u *units) distanceToUser(v float64) float64 {
+	return v * u.earthRadius
+}
+
+// WGS-84 Earth's mean radius in kilometers
+const earthRadiusKm = 6371.01
+
+var earthRadiuses = map[string]float64{
+	"m":    earthRadiusKm * 1000,
+	"km":   earthRadiusKm,
+	"mile": earthRadiusKm / 1.609344,
+}
+
 func generateGetGridFunc() values.Function {
 	getGridSignature := runtime.MustLookupBuiltinType("experimental/geo", "getGrid")
 	return values.NewFunction(
@@ -22,12 +67,21 @@ func generateGetGridFunc() values.Function {
 		getGridSignature,
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
+			unitsArg, err := a.GetRequiredObject("units")
+			if err != nil {
+				return nil, err
+			}
+			units, err := parseUnitsArgument(unitsArg)
+			if err != nil {
+				return nil, err
+			}
+
 			regionArg, err := a.GetRequiredObject("region")
 			if err != nil {
 				return nil, err
 			}
 
-			box, boxOk, circle, circleOk, polygon, polygonOk, err := parseRegionArgument(regionArg)
+			geom, err := parseGeometryArgument("region", regionArg, units)
 			if err != nil {
 				return nil, err
 			}
@@ -71,42 +125,15 @@ func generateGetGridFunc() values.Function {
 			}
 
 			var region s2.Region
-
-			if isObjectArgumentOk(box, boxOk) {
-				minLat, minLatOk := box.Get("minLat")
-				minLon, minLonOk := box.Get("minLon")
-				maxLat, maxLatOk := box.Get("maxLat")
-				maxLon, maxLonOk := box.Get("maxLon")
-
-				if !minLatOk || !minLonOk || !maxLatOk || !maxLonOk {
-					return nil, fmt.Errorf("code %d: invalid box specification - must have minLat, minLon, maxLat, maxLon fields", codes.Invalid)
-				}
-
-				region = getRectRegion(minLat.Float(), minLon.Float(), maxLat.Float(), maxLon.Float())
-			} else if isObjectArgumentOk(circle, circleOk) {
-				lat, latOk := circle.Get("lat")
-				lon, lonOk := circle.Get("lon")
-				radius, radiusOk := circle.Get("radius")
-
-				if !latOk || !lonOk || !radiusOk {
-					return nil, fmt.Errorf("code %d: invalid circle specification - must have lat, lon and radius fields", codes.Invalid)
-				}
-
-				region = getCapRegion(lat.Float(), lon.Float(), radius.Float())
-			} else if isArrayArgumentOk(polygon, polygonOk) {
-				points := make([]s2.Point, polygon.Len())
-				for i := 0; i < polygon.Len(); i++ {
-					point := polygon.Get(i).Object()
-					lat, latOk := point.Get("lat")
-					lon, lonOk := point.Get("lon")
-
-					if !latOk || !lonOk {
-						return nil, fmt.Errorf("code %d: invalid polygon point specification - must have lat, lon fields", codes.Invalid)
-					}
-					points[i] = s2.PointFromLatLng(s2.LatLngFromDegrees(lat.Float(), lon.Float()))
-				}
-
-				region = getLoopRegion(points)
+			switch v := geom.(type) {
+			case box:
+				region = getS2RectRegion(v)
+			case circle:
+				region = getS2CapRegion(v)
+			case polygon:
+				region = getS2LoopRegion(v)
+			default:
+				return nil, fmt.Errorf("code %d: unsupported point type: %T", codes.Invalid, geom)
 			}
 
 			grid, err := getGrid(region, int(level), int(maxLevel), int(minSize), int(maxSize))
@@ -131,11 +158,30 @@ func generateGetGridFunc() values.Function {
 	)
 }
 
+func generateGetLevelFunc() values.Function {
+	getLevelSignature := runtime.MustLookupBuiltinType("experimental/geo", "getLevel")
+	return values.NewFunction(
+		"getLevel",
+		getLevelSignature,
+		func(ctx context.Context, args values.Object) (values.Value, error) {
+			a := interpreter.NewArguments(args)
+
+			token, err := a.GetRequiredString("token")
+			if err != nil {
+				return nil, err
+			}
+			level, err := getLevel(token)
+
+			return values.NewInt(int64(level)), err
+		}, false,
+	)
+}
+
 func generateS2CellIDTokenFunc() values.Function {
-	getParentSignature := runtime.MustLookupBuiltinType("experimental/geo", "s2CellIDToken")
+	s2CellIDTokenSignature := runtime.MustLookupBuiltinType("experimental/geo", "s2CellIDToken")
 	return values.NewFunction(
 		"s2CellIDToken",
-		getParentSignature,
+		s2CellIDTokenSignature,
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
 
@@ -152,7 +198,6 @@ func generateS2CellIDTokenFunc() values.Function {
 				return nil, fmt.Errorf("code %d: either token or point parameter must be specified", codes.Invalid)
 			}
 
-			// TODO (alespour@bonitoo.io) would not be needed if we knew how to specify default null object/array value in flux
 			if tokenOk && pointOk {
 				if (len(token) == 0 && point.Len() == 0) || (len(token) > 0 && point.Len() > 0) {
 					return nil, fmt.Errorf("code %d: either token or point parameter must be specified and must not be empty", codes.Invalid)
@@ -184,11 +229,11 @@ func generateS2CellIDTokenFunc() values.Function {
 	)
 }
 
-func generateGetLevelFunc() values.Function {
-	getLevelSignature := runtime.MustLookupBuiltinType("experimental/geo", "getLevel")
+func generateS2CellLatLonFunc() values.Function {
+	s2CellLatLonSignature := runtime.MustLookupBuiltinType("experimental/geo", "s2CellLatLon")
 	return values.NewFunction(
-		"getLevel",
-		getLevelSignature,
+		"s2CellLatLon",
+		s2CellLatLonSignature,
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
 
@@ -196,83 +241,16 @@ func generateGetLevelFunc() values.Function {
 			if err != nil {
 				return nil, err
 			}
-			level, err := getLevel(token)
 
-			return values.NewInt(int64(level)), err
-		}, false,
-	)
-}
-
-func generateContainsLatLonFunc() values.Function {
-	containsLatLonSignature := runtime.MustLookupBuiltinType("experimental/geo", "containsLatLon")
-	return values.NewFunction(
-		"containsLatLon",
-		containsLatLonSignature,
-		func(ctx context.Context, args values.Object) (values.Value, error) {
-			a := interpreter.NewArguments(args)
-			regionArg, err := a.GetRequiredObject("region")
+			ll, err := getLatLng(token)
 			if err != nil {
 				return nil, err
 			}
 
-			box, boxOk, circle, circleOk, polygon, polygonOk, err := parseRegionArgument(regionArg)
-			if err != nil {
-				return nil, err
-			}
-
-			lat, err := a.GetRequiredFloat("lat")
-			if err != nil {
-				return nil, err
-			}
-			lon, err := a.GetRequiredFloat("lon")
-			if err != nil {
-				return nil, err
-			}
-
-			var region s2.Region
-
-			if isObjectArgumentOk(box, boxOk) {
-				minLat, minLatOk := box.Get("minLat")
-				minLon, minLonOk := box.Get("minLon")
-				maxLat, maxLatOk := box.Get("maxLat")
-				maxLon, maxLonOk := box.Get("maxLon")
-
-				if !minLatOk || !minLonOk || !maxLatOk || !maxLonOk {
-					return nil, fmt.Errorf("code %d: invalid box specification - must have minLat, minLon, maxLat, maxLon fields", codes.Invalid)
-				}
-
-				region = getRectRegion(minLat.Float(), minLon.Float(), maxLat.Float(), maxLon.Float())
-			} else if isObjectArgumentOk(circle, circleOk) {
-				centerLat, centerLatOk := circle.Get("lat")
-				centerLon, centerLonOk := circle.Get("lon")
-				radius, radiusOk := circle.Get("radius")
-
-				if !centerLatOk || !centerLonOk || !radiusOk {
-					return nil, fmt.Errorf("code %d: invalid circle specification - must have lat, lon, radius fields", codes.Invalid)
-				}
-
-				region = getCapRegion(centerLat.Float(), centerLon.Float(), radius.Float())
-			} else if isArrayArgumentOk(polygon, polygonOk) {
-				points := make([]s2.Point, polygon.Len())
-				for i := 0; i < polygon.Len(); i++ {
-					point := polygon.Get(i).Object()
-					pointLat, pointLatOk := point.Get("lat")
-					pointLon, pointLonOk := point.Get("lon")
-
-					if !pointLatOk || !pointLonOk {
-						return nil, fmt.Errorf("code %d: invalid polygon point specification - must have lat, lon fields", codes.Invalid)
-					}
-
-					points[i] = s2.PointFromLatLng(s2.LatLngFromDegrees(pointLat.Float(), pointLon.Float()))
-				}
-
-				region = getLoopRegion(points)
-			}
-
-			point := s2.PointFromLatLng(s2.LatLngFromDegrees(lat, lon))
-			retVal := region.ContainsPoint(point)
-
-			return values.NewBool(retVal), nil
+			return values.NewObjectWithValues(map[string]values.Value{
+				"lat": values.NewFloat(ll.Lat.Degrees()),
+				"lon": values.NewFloat(ll.Lng.Degrees()),
+			}), nil
 		}, false,
 	)
 }
@@ -280,51 +258,158 @@ func generateContainsLatLonFunc() values.Function {
 func init() {
 	runtime.RegisterPackageValue("experimental/geo", "getGrid", generateGetGridFunc())
 	runtime.RegisterPackageValue("experimental/geo", "getLevel", generateGetLevelFunc())
-	runtime.RegisterPackageValue("experimental/geo", "containsLatLon", generateContainsLatLonFunc())
 	runtime.RegisterPackageValue("experimental/geo", "s2CellIDToken", generateS2CellIDTokenFunc())
+	runtime.RegisterPackageValue("experimental/geo", "s2CellLatLon", generateS2CellLatLonFunc())
+	runtime.RegisterPackageValue("experimental/geo", "stContains", generateSTContainsFunc())
+	runtime.RegisterPackageValue("experimental/geo", "stDistance", generateSTDistanceFunc())
+	runtime.RegisterPackageValue("experimental/geo", "stLength", generateSTLengthFunc())
 }
 
 //
 // Flux helpers
 //
 
-func parseRegionArgument(regionArg values.Object) (box values.Object, boxOk bool, circle values.Object, circleOk bool, polygon values.Array, polygonOk bool, err error) {
-	oks := 0
-	_, boxOk = regionArg.Get("minLat")
-	if boxOk {
-		oks++
-		box = regionArg
-	}
-	_, circleOk = regionArg.Get("radius")
-	if circleOk {
-		oks++
-		circle = regionArg
-	}
-	points, polygonOk := regionArg.Get("points")
-	if polygonOk {
-		oks++
-		polygon = points.Array()
-		if polygon.Len() < 3 {
-			err = fmt.Errorf("code %d: polygon must have at least 3 points", codes.Invalid)
+func parseGeometryArgument(name string, arg values.Object, units *units) (geom interface{}, err error) {
+	_, pointOk := arg.Get("lat")
+	if pointOk && arg.Len() == 2 {
+		lat, latOk := arg.Get("lat")
+		lon, lonOk := arg.Get("lon")
+
+		if !latOk || !lonOk {
+			return nil, fmt.Errorf("code %d: invalid point specification - must have lat, lon fields", codes.Invalid)
+		}
+
+		geom = point{
+			lat: lat.Float(),
+			lon: lon.Float(),
 		}
 	}
 
-	if oks == 0 {
-		err = fmt.Errorf("code %d: region is neither a box, a circle or a polygon", codes.Invalid)
-	}
-	if oks > 1 {
-		err = fmt.Errorf("code %d: region must be either a box, a circle or a polygon", codes.Invalid)
+	_, boxOk := arg.Get("minLat")
+	if boxOk && arg.Len() == 4 {
+		minLat, minLatOk := arg.Get("minLat")
+		minLon, minLonOk := arg.Get("minLon")
+		maxLat, maxLatOk := arg.Get("maxLat")
+		maxLon, maxLonOk := arg.Get("maxLon")
+
+		if !minLatOk || !minLonOk || !maxLatOk || !maxLonOk {
+			return nil, fmt.Errorf("code %d: invalid box specification - must have minLat, minLon, maxLat, maxLon fields", codes.Invalid)
+		}
+
+		// fix user mistakes
+		if minLat.Float() > maxLat.Float() {
+			minLat, maxLat = maxLat, minLat
+		}
+		if minLon.Float() > maxLon.Float() {
+			minLon, maxLon = maxLon, minLon
+		}
+
+		geom = box{
+			minLat: minLat.Float(),
+			minLon: minLon.Float(),
+			maxLat: maxLat.Float(),
+			maxLon: maxLon.Float(),
+		}
 	}
 
-	return box, boxOk, circle, circleOk, polygon, polygonOk, err
+	_, circleOk := arg.Get("radius")
+	if circleOk && arg.Len() == 3 {
+		centerLat, centerLatOk := arg.Get("lat")
+		centerLon, centerLonOk := arg.Get("lon")
+		radius, radiusOk := arg.Get("radius")
+
+		if !centerLatOk || !centerLonOk || !radiusOk {
+			return nil, fmt.Errorf("code %d: invalid circle specification - must have lat, lon, radius fields", codes.Invalid)
+		}
+
+		geom = circle{
+			point: point{
+				lat: centerLat.Float(),
+				lon: centerLon.Float(),
+			},
+			radius: units.distanceToRad(radius.Float()),
+		}
+	}
+
+	points, polygonOk := arg.Get("points")
+	if polygonOk && arg.Len() == 1 {
+		array := points.Array()
+		if array.Len() < 3 {
+			err = fmt.Errorf("code %d: polygon must have at least 3 points", codes.Invalid)
+		}
+
+		s2points := make([]s2.Point, array.Len())
+		for i := 0; i < array.Len(); i++ {
+			p := array.Get(i).Object()
+			lat, latOk := p.Get("lat")
+			lon, lonOk := p.Get("lon")
+
+			if !latOk || !lonOk {
+				return nil, fmt.Errorf("code %d: invalid polygon point specification - must have lat, lon fields", codes.Invalid)
+			}
+
+			s2points[i] = s2.PointFromLatLng(s2.LatLngFromDegrees(lat.Float(), lon.Float()))
+		}
+
+		geom = polygon{
+			points: s2points,
+		}
+	}
+
+	ls, lsOk := arg.Get("linestring")
+	if lsOk && arg.Len() == 1 {
+		if ls.IsNull() {
+			return nil, fmt.Errorf("code %d: empty linestring", codes.Invalid)
+		}
+		lsArray := strings.Split(ls.Str(), ",")
+		lsLength := len(lsArray)
+		latlngs := make([]s2.LatLng, lsLength)
+		for i, pair := range lsArray {
+			fields := strings.Fields(pair)
+			if len(fields) == 0 {
+				return nil, fmt.Errorf("code %d: invalid linestring - empty part", codes.Invalid)
+			}
+			lon, lonErr := strconv.ParseFloat(fields[0], 64)
+			lat, latErr := strconv.ParseFloat(fields[1], 64)
+			if latErr != nil || lonErr != nil {
+				return nil, fmt.Errorf("code %d: invalid linestring - %v, %v", codes.Invalid, lonErr, latErr)
+			}
+
+			latlngs[i] = s2.LatLngFromDegrees(lat, lon)
+		}
+		geom = polyline{
+			latlngs: latlngs,
+		}
+	}
+
+	if geom == nil {
+		err = fmt.Errorf("code %d: unsupported geometry specified for '%s'", codes.Invalid, name)
+	}
+
+	return geom, err
 }
 
-func isObjectArgumentOk(v values.Object, vOk bool) bool {
-	return vOk && v.Len() > 0
-}
-
-func isArrayArgumentOk(v values.Array, vOk bool) bool {
-	return vOk && v.Len() > 0
+// Return units object
+func parseUnitsArgument(arg values.Object) (*units, error) {
+	var u *units
+	du, ok := arg.Get("distance")
+	if ok && arg.Len() == 1 {
+		if du.IsNull() {
+			return nil, fmt.Errorf("code %d: invalid units parameter: distance field is null", codes.Invalid)
+		}
+		r, ok := earthRadiuses[du.Str()]
+		if ok {
+			u = &units{
+				distance:    du.Str(),
+				earthRadius: r,
+			}
+		} else {
+			return nil, fmt.Errorf("code %d: invalid units parameter: unsupported distance unit '%s'", codes.Invalid, du.Str())
+		}
+	} else {
+		return nil, fmt.Errorf("code %d: invalid units parameter: missing field: distance", codes.Invalid)
+	}
+	return u, nil
 }
 
 //
@@ -371,25 +456,26 @@ func getSpecGrid(region s2.Region, level int) grid {
 	return result
 }
 
-func getRectRegion(minLat, minLon, maxLat, maxLon float64) s2.Region {
-	min := s2.LatLngFromDegrees(minLat, minLon)
-	max := s2.LatLngFromDegrees(maxLat, maxLon)
+func getS2Point(p point) s2.Point {
+	return s2.PointFromLatLng(s2.LatLngFromDegrees(p.lat, p.lon))
+}
+
+func getS2RectRegion(b box) s2.Rect {
+	min := s2.LatLngFromDegrees(b.minLat, b.minLon)
+	max := s2.LatLngFromDegrees(b.maxLat, b.maxLon)
 	return s2.Rect{
 		Lat: r1.Interval{Lo: min.Lat.Radians(), Hi: max.Lat.Radians()},
 		Lng: s1.Interval{Lo: min.Lng.Radians(), Hi: max.Lng.Radians()},
 	}
 }
 
-// The Earth's mean radius in kilometers (according to NASA).
-const earthRadiusKm = 6371.01
-
-func getCapRegion(lat, lon, radius float64) s2.Region {
-	center := s2.PointFromLatLng(s2.LatLngFromDegrees(lat, lon))
-	return s2.CapFromCenterAngle(center, s1.Angle(radius/earthRadiusKm))
+func getS2CapRegion(c circle) s2.Cap {
+	center := s2.PointFromLatLng(s2.LatLngFromDegrees(c.lat, c.lon))
+	return s2.CapFromCenterAngle(center, s1.Angle(c.radius))
 }
 
-func getLoopRegion(points []s2.Point) s2.Region {
-	loop := s2.LoopFromPoints(points)
+func getS2LoopRegion(p polygon) *s2.Loop {
+	loop := s2.LoopFromPoints(p.points)
 	if loop.Area() >= 2*math.Pi { // points are not CCW but CW
 		loop.Invert()
 	}
@@ -460,4 +546,13 @@ func getLevel(token string) (int, error) {
 		return cellID.Level(), nil
 	}
 	return -1, fmt.Errorf("code %d: invalid token specified", codes.Invalid)
+}
+
+func getLatLng(token string) (*s2.LatLng, error) {
+	cellID := s2.CellIDFromToken(token)
+	if cellID.IsValid() {
+		ll := cellID.LatLng()
+		return &ll, nil
+	}
+	return nil, fmt.Errorf("code %d: invalid token specified", codes.Invalid)
 }

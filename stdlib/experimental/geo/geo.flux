@@ -2,13 +2,62 @@
 package geo
 
 import "experimental"
+import "influxdata/influxdb/v1"
+
+// Units
+option units = {
+  distance: "km"
+}
 
 //
-// None of the builtin functions are intended to be used by end users.
+// Builtin GIS functions
 //
 
-// Check whether lat/lon is in specified region.
-builtin containsLatLon
+// Returns boolean whether the region contains specified geometry.
+builtin stContains
+
+// Returns distance from given region to specified geometry.
+builtin stDistance
+
+// Returns length of a curve.
+builtin stLength
+
+//
+// Flux GIS ST functions
+//
+
+ST_Contains = (region, geometry, units=units) =>
+  stContains(region: region, geometry: geometry, units: units)
+
+ST_Distance = (region, geometry, units=units) =>
+  stDistance(region: region, geometry: geometry, units: units)
+
+ST_DWithin = (region, geometry, distance, units=units) =>
+  stDistance(region: region, geometry: geometry, units: units) <= distance
+
+ST_Intersects = (region, geometry, units=units) =>
+  stDistance(region: region, geometry: geometry, units: units) <= 0.0
+
+ST_Length = (geometry, units=units) =>
+  stLength(geometry: geometry, units: units)
+
+// Non-standard
+ST_LineString = (tables=<-) =>
+  tables
+    |> reduce(fn: (r, accumulator) => ({
+        __linestring: accumulator.__linestring + (if accumulator.__count > 0 then ", " else "") + string(v: r.lon) + " " + string(v: r.lat),
+        __count: accumulator.__count + 1
+      }), identity: {
+        __linestring: "",
+        __count: 0
+      }
+    )
+    |> drop(columns: ["__count"])
+    |> rename(columns: {__linestring: "st_linestring"})
+
+//
+// None of the following builtin functions are intended to be used by end users.
+//
 
 // Calculates grid (set of cell ID tokens) for given region and according to options.
 builtin getGrid
@@ -19,11 +68,14 @@ builtin getLevel
 // Returns cell ID token for given cell or lat/lon point at specified level.
 builtin s2CellIDToken
 
+// Returns lat/lon coordinates of given cell ID token.
+builtin s2CellLatLon
+
 //
-// Flux
+// Flux functions
 //
 
-// Gets level of cell ID tag `s2cellID` from the first record from the first table from the stream.
+// Gets level of cell ID tag `s2cellID` from the first record from the first table in the stream.
 _detectLevel = (tables=<-) => {
   _r0 =
     tables
@@ -41,21 +93,17 @@ _detectLevel = (tables=<-) => {
 // Convenience functions
 //
 
-// Collects values to row-wise sets.
-toRows = (tables=<-, correlationKey=["_time"]) =>
+// Pivots values to row-wise sets.
+toRows = (tables=<-) =>
   tables
-    |> pivot(
-      rowKey: correlationKey,
-      columnKey: ["_field"],
-      valueColumn: "_value"
-    )
+    |> v1.fieldsAsCols()
 
 // Shapes data to meet the requirements of the geo package.
 // Renames fields containing latitude and longitude values to lat and lon.
 // Pivots values to row-wise sets.
 // Generates an s2_cell_id tag for each reach using lat and lon values.
 // Adds the s2_cell_id column to the group key.
-shapeData = (tables=<-, latField, lonField, level, correlationKey=["_time"]) =>
+shapeData = (tables=<-, latField, lonField, level) =>
   tables
     |> map(fn: (r) => ({ r with
         _field:
@@ -64,7 +112,7 @@ shapeData = (tables=<-, latField, lonField, level, correlationKey=["_time"]) =>
           else r._field
       })
     )
-    |> toRows(correlationKey: correlationKey)
+    |> toRows()
     |> map(fn: (r) => ({ r with
         s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)
       })
@@ -81,14 +129,14 @@ shapeData = (tables=<-, latField, lonField, level, correlationKey=["_time"]) =>
 // Filters records by a box, a circle or a polygon area using S2 cell ID tag.
 // It is a coarse filter, as the grid always overlays the region, the result will likely contain records
 // with lat/lon outside the specified region.
-gridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1) => {
+gridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, units=units) => {
   _s2cellIDLevel =
     if s2cellIDLevel == -1 then
       tables
         |> _detectLevel()
     else
       s2cellIDLevel
-  _grid = getGrid(region: region, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _s2cellIDLevel)
+  _grid = getGrid(region: region, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _s2cellIDLevel, units: units)
   return
     tables
       |> filter(fn: (r) =>
@@ -104,13 +152,13 @@ gridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel
 strictFilter = (tables=<-, region) =>
   tables
     |> filter(fn: (r) =>
-      containsLatLon(region: region, lat: r.lat, lon: r.lon)
+      ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon})
     )
 
-// Two-phase filtering by speficied region.
+// Two-phase filtering by specified region.
 // Checks to see if data is already pivoted and contains a lat column.
-// Returns rows of fields correlated by `correlationKey`.
-filterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, correlationKey=["_time"], strict=true) => {
+// Returns pivoted data.
+filterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, strict=true) => {
   _columns =
     tables
       |> columns(column: "_value")
@@ -123,7 +171,7 @@ filterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel
     else
       tables
         |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)
-        |> toRows(correlationKey)
+        |> toRows()
   _result =
     if strict then
       _rows

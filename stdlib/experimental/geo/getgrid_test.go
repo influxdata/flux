@@ -25,32 +25,32 @@ func TestGetGrid_NewQuery(t *testing.T) {
 		},
 		{
 			Name:    "invalid args - invalid box",
-			Raw:     `import "experimental/geo" geo.getGrid(region: { minLat: 40.5, minLon: -74.5 })`,
+			Raw:     `import "experimental/geo" geo.getGrid(region: { minLat: 40.5, minLon: -74.5 }, units: {distance: "km"})`,
 			WantErr: true, // box must have minLat, minLon, maxLat, maxLon fields
 		},
 		{
 			Name:    "invalid args - invalid circle",
-			Raw:     `import "experimental/geo" geo.getGrid(region: { radius: 16.0 })`,
+			Raw:     `import "experimental/geo" geo.getGrid(region: { radius: 16.0 }, units: {distance: "km"})`,
 			WantErr: true, // circle must have lat, lon, radius fields
 		},
 		{
 			Name:    "invalid args - invalid polygon",
-			Raw:     `import "experimental/geo" geo.getGrid(region: { points: [{ lat: 40.5, lon: -74.5 }] })`,
+			Raw:     `import "experimental/geo" geo.getGrid(region: { points: [{ lat: 40.5, lon: -74.5 }] }, units: {distance: "km"})`,
 			WantErr: true, // circle must have at least 3 points
 		},
 		{
 			Name:    "invalid args - unknown region",
-			Raw:     `import "experimental/geo" geo.getGrid(region: { lat: 40.5, lon: -74.5 })`,
+			Raw:     `import "experimental/geo" geo.getGrid(region: { lat: 40.5, lon: -74.5 }, units: {distance: "km"})`,
 			WantErr: true, // cannot infer region type
 		},
 		{
 			Name:    "invalid args - multitype region",
-			Raw:     `import "experimental/geo" geo.getGrid(region: { minLat: 40.5, minLon: -74.5, maxLat: 41.5, maxLon: -73.5, lat: 41.0, lon: -74.0, radius: 15.0 })`,
+			Raw:     `import "experimental/geo" geo.getGrid(region: { minLat: 40.5, minLon: -74.5, maxLat: 41.5, maxLon: -73.5, lat: 41.0, lon: -74.0, radius: 15.0 }, units: {distance: "km"})`,
 			WantErr: true, // infers multiple region types
 		},
 		{
 			Name:    "invalid args - minSize > maxSize",
-			Raw:     `import "experimental/geo" geo.getGrid(region: { minLat: 40.5, minLon: -74.5, maxLat: 41.5, maxLon: -73.5 }, minSize: 11, maxSize: 9)`,
+			Raw:     `import "experimental/geo" geo.getGrid(region: { minLat: 40.5, minLon: -74.5, maxLat: 41.5, maxLon: -73.5 }, minSize: 11, maxSize: 9, units: {distance: "km"})`,
 			WantErr: true, // minSize > maxSize (11 > 9)
 		},
 	}
@@ -79,6 +79,9 @@ func TestGetGrid_Process(t *testing.T) {
 		lat float64
 		lon float64
 	}
+	var defaultUnits = map[string]string{
+		"distance": "km",
+	}
 	testCases := []struct {
 		name     string
 		box      *box
@@ -88,6 +91,7 @@ func TestGetGrid_Process(t *testing.T) {
 		maxsize  int
 		level    int
 		maxLevel int
+		units    *map[string]string
 		want     values.Value
 	}{
 		{
@@ -164,6 +168,9 @@ func TestGetGrid_Process(t *testing.T) {
 		tc := tc
 		getGrid := geo.Functions["getGrid"]
 		var owv values.Object
+		if tc.units == nil {
+			tc.units = &defaultUnits
+		}
 		if tc.box != nil {
 			owv = values.NewObjectWithValues(map[string]values.Value{
 				"region": values.NewObjectWithValues(map[string]values.Value{
@@ -176,6 +183,7 @@ func TestGetGrid_Process(t *testing.T) {
 				"maxSize":  values.NewInt(int64(tc.maxsize)),
 				"level":    values.NewInt(int64(tc.level)),
 				"maxLevel": values.NewInt(int64(tc.maxLevel)),
+				"units":    unitsToValue(*tc.units),
 			})
 		} else if tc.circle != nil {
 			owv = values.NewObjectWithValues(map[string]values.Value{
@@ -188,6 +196,7 @@ func TestGetGrid_Process(t *testing.T) {
 				"maxSize":  values.NewInt(int64(tc.maxsize)),
 				"level":    values.NewInt(int64(tc.level)),
 				"maxLevel": values.NewInt(int64(tc.maxLevel)),
+				"units":    unitsToValue(*tc.units),
 			})
 		} else if tc.polygon != nil {
 			array := values.NewArray(semantic.NewArrayType(pointT))
@@ -205,6 +214,7 @@ func TestGetGrid_Process(t *testing.T) {
 				"maxSize":  values.NewInt(int64(tc.maxsize)),
 				"level":    values.NewInt(int64(tc.level)),
 				"maxLevel": values.NewInt(int64(tc.maxLevel)),
+				"units":    unitsToValue(*tc.units),
 			})
 		}
 		result, err := getGrid.Call(context.Background(), owv)
@@ -228,5 +238,11 @@ func gridToValue(level int, set []string) values.Value {
 	return values.NewObjectWithValues(map[string]values.Value{
 		"level": values.NewInt(int64(level)),
 		"set":   array,
+	})
+}
+
+func unitsToValue(units map[string]string) values.Value {
+	return values.NewObjectWithValues(map[string]values.Value{
+		"distance": values.NewString(units["distance"]),
 	})
 }

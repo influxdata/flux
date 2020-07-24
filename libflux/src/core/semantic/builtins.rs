@@ -55,10 +55,13 @@ pub fn builtins() -> Builtins<'static> {
                      "from" => "forall [t0] where t0: Row (token: string, project: string, instance: string, table: string) -> [t0]",
             },
             "experimental/geo" => semantic_map! {
-                     "containsLatLon" => "forall [t0] where t0: Row (region: t0, lat: float, lon: float) -> bool",
-                     "getGrid" => "forall [t0] where t0: Row (region: t0, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int) -> {level: int | set: [string]}",
+                     "getGrid" => "forall [t0] where t0: Row (region: t0, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int, units: {distance: string}) -> {level: int | set: [string]}",
                      "getLevel" => "forall [] (token: string) -> int",
                      "s2CellIDToken" => "forall [] (?token: string, ?point: {lat: float | lon: float}, level: int) -> string",
+                     "s2CellLatLon" => "forall [] (token: string) -> {lat: float | lon: float}",
+                     "stContains" => "forall [t0, t1] where t0: Row, t1: Row (region: t0, geometry: t1, units: {distance: string}) -> bool",
+                     "stDistance" => "forall [t0, t1] where t0: Row, t1: Row (region: t0, geometry: t1, units: {distance: string}) -> float",
+                     "stLength" => "forall [t0] where t0: Row (geometry: t0, units: {distance: string}) -> float",
             },
             "experimental/json" => semantic_map! {
                 "parse" => "forall [t0] (data: bytes) -> t0",
