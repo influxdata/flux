@@ -75,11 +75,7 @@ func (m *BigQueryRowReader) GetNextRow() ([]values.Value, error) {
 			row[i] = values.NewFloat(f)
 		case *big.Rat:
 			f, _ := value.Float64()
-			//if value.IsInt() {
-			//	row[i] = values.NewInt(int64(f))
-			//} else {
 			row[i] = values.NewFloat(f)
-			//}
 		case nil:
 			row[i] = values.NewNull(flux.SemanticType(m.columnTypes[i]))
 		default:
@@ -103,7 +99,7 @@ func (m *BigQueryRowReader) InitColumnTypes(types []*sql.ColumnType) {
 			fluxTypes[i] = flux.TFloat
 		case "BOOLEAN":
 			fluxTypes[i] = flux.TBool
-		case "TIMESTAMP": // "DATE", "TIME" and "DATETIME" will be represented as string
+		case "TIMESTAMP": // "DATE", "TIME" and "DATETIME" will be represented as string because TZ is unknown
 			fluxTypes[i] = flux.TTime
 		default:
 			fluxTypes[i] = flux.TString
