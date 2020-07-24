@@ -508,6 +508,7 @@ pub fn base_from_monotype(m: &MonoType) -> BaseNode {
         MonoType::Basic(t) => t.base.clone(),
         MonoType::Tvar(t) => t.base.clone(),
         MonoType::Array(t) => t.base.clone(),
+        MonoType::Record(t) => t.base.clone(),
         _ => BaseNode::default(),
     }
 }

@@ -1555,7 +1555,7 @@ fn test_parse_record_only_properties() {
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
-        RecordType {
+        MonoType::Record(RecordType {
             base: BaseNode {
                 location: loc.get(1, 1, 1, 16),
                 ..BaseNode::default()
@@ -1615,7 +1615,7 @@ fn test_parse_record_only_properties() {
                     })
                 }
             ])
-        },
+        },)
     )
 }
 
@@ -1655,14 +1655,14 @@ fn test_parse_record_blank() {
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
-        RecordType {
+        MonoType::Record(RecordType {
             base: BaseNode {
                 location: loc.get(1, 1, 1, 3),
                 ..BaseNode::default()
             },
             tvar: None,
             properties: None,
-        },
+        },)
     )
 }
 
@@ -1764,7 +1764,7 @@ fn test_parse_record_tvar_properties() {
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
-        RecordType {
+        MonoType::Record(RecordType {
             base: BaseNode {
                 location: loc.get(1, 1, 1, 23),
                 ..BaseNode::default()
@@ -1830,7 +1830,7 @@ fn test_parse_record_tvar_properties() {
                     })
                 }
             ])
-        },
+        },)
     )
 }
 

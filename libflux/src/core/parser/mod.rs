@@ -626,7 +626,7 @@ impl Parser {
     // Suffix1 = ":" MonoType { "," Property }
     // Suffix2 = "with" [Properties]
     #[cfg(test)]
-    fn parse_record(&mut self) -> RecordType {
+    fn parse_record(&mut self) -> MonoType {
         let start = self.open(TOK_LBRACE, TOK_RBRACE);
         let mut properties: Option<Vec<PropertyType>> = None;
         let mut id: Option<Identifier> = None;
@@ -661,11 +661,11 @@ impl Parser {
 
         let end = self.close(TOK_RBRACE);
 
-        RecordType {
+        MonoType::Record(RecordType {
             base: self.base_node_from_tokens(&start, &end),
             tvar: id,
             properties,
-        }
+        })
     }
     #[cfg(test)]
     fn parse_properties(&mut self) -> Option<Vec<PropertyType>> {
