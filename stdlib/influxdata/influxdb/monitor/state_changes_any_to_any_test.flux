@@ -42,7 +42,7 @@ outData = "
 #group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false
 #default,got,,,,,,,,,,,,,,,
 ,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle
-,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732
+,,1,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,1527018840000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001
 ,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05
 "
 

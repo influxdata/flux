@@ -9733,6 +9733,2362 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
+					Column: 101,
+					Line:   51,
+				},
+				File:   "bare_mean_eval_test.flux",
+				Source: "package planner_test\n\nimport \"testing\"\nimport \"planner\"\n\noption now = () => (2030-01-01T00:00:00Z)\noption planner.disablePhysicalRules = [\"PushDownBareAggregateRule\"]\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,3.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,4.00\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,5.00\n\"\n\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load1,2.5\n,,1,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load3,3.5\n,,2,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load5,4.5\n\"\n\nbare_mean_fn = (tables=<-) => tables\n    |> range(start: 2018-05-01T00:00:00Z)\n    |> mean()\n\ntest bare_mean_evaluate = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_mean_fn})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "bare_mean_eval_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "bare_mean_eval_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "bare_mean_eval_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "bare_mean_eval_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "bare_mean_eval_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "bare_mean_eval_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.OptionStatement{
+			Assignment: &ast.MemberAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 68,
+							Line:   7,
+						},
+						File:   "bare_mean_eval_test.flux",
+						Source: "planner.disablePhysicalRules = [\"PushDownBareAggregateRule\"]",
+						Start: ast.Position{
+							Column: 8,
+							Line:   7,
+						},
+					},
+				},
+				Init: &ast.ArrayExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 68,
+								Line:   7,
+							},
+							File:   "bare_mean_eval_test.flux",
+							Source: "[\"PushDownBareAggregateRule\"]",
+							Start: ast.Position{
+								Column: 39,
+								Line:   7,
+							},
+						},
+					},
+					Elements: []ast.Expression{&ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 67,
+									Line:   7,
+								},
+								File:   "bare_mean_eval_test.flux",
+								Source: "\"PushDownBareAggregateRule\"",
+								Start: ast.Position{
+									Column: 40,
+									Line:   7,
+								},
+							},
+						},
+						Value: "PushDownBareAggregateRule",
+					}},
+				},
+				Member: &ast.MemberExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 36,
+								Line:   7,
+							},
+							File:   "bare_mean_eval_test.flux",
+							Source: "planner.disablePhysicalRules",
+							Start: ast.Position{
+								Column: 8,
+								Line:   7,
+							},
+						},
+					},
+					Object: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   7,
+								},
+								File:   "bare_mean_eval_test.flux",
+								Source: "planner",
+								Start: ast.Position{
+									Column: 8,
+									Line:   7,
+								},
+							},
+						},
+						Name: "planner",
+					},
+					Property: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   7,
+								},
+								File:   "bare_mean_eval_test.flux",
+								Source: "disablePhysicalRules",
+								Start: ast.Position{
+									Column: 16,
+									Line:   7,
+								},
+							},
+						},
+						Name: "disablePhysicalRules",
+					},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 68,
+						Line:   7,
+					},
+					File:   "bare_mean_eval_test.flux",
+					Source: "option planner.disablePhysicalRules = [\"PushDownBareAggregateRule\"]",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   34,
+					},
+					File:   "bare_mean_eval_test.flux",
+					Source: "input = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,3.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,4.00\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,5.00\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   9,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   9,
+						},
+						File:   "bare_mean_eval_test.flux",
+						Source: "input",
+						Start: ast.Position{
+							Column: 1,
+							Line:   9,
+						},
+					},
+				},
+				Name: "input",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   34,
+						},
+						File:   "bare_mean_eval_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,3.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,4.00\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,5.00\n\"",
+						Start: ast.Position{
+							Column: 9,
+							Line:   9,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,3.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,4.00\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,5.00\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   44,
+					},
+					File:   "bare_mean_eval_test.flux",
+					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load1,2.5\n,,1,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load3,3.5\n,,2,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load5,4.5\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   36,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   36,
+						},
+						File:   "bare_mean_eval_test.flux",
+						Source: "output",
+						Start: ast.Position{
+							Column: 1,
+							Line:   36,
+						},
+					},
+				},
+				Name: "output",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   44,
+						},
+						File:   "bare_mean_eval_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load1,2.5\n,,1,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load3,3.5\n,,2,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load5,4.5\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   36,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load1,2.5\n,,1,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load3,3.5\n,,2,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load5,4.5\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   48,
+					},
+					File:   "bare_mean_eval_test.flux",
+					Source: "bare_mean_fn = (tables=<-) => tables\n    |> range(start: 2018-05-01T00:00:00Z)\n    |> mean()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   46,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 13,
+							Line:   46,
+						},
+						File:   "bare_mean_eval_test.flux",
+						Source: "bare_mean_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   46,
+						},
+					},
+				},
+				Name: "bare_mean_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   48,
+						},
+						File:   "bare_mean_eval_test.flux",
+						Source: "(tables=<-) => tables\n    |> range(start: 2018-05-01T00:00:00Z)\n    |> mean()",
+						Start: ast.Position{
+							Column: 16,
+							Line:   46,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 37,
+										Line:   46,
+									},
+									File:   "bare_mean_eval_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 31,
+										Line:   46,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   47,
+								},
+								File:   "bare_mean_eval_test.flux",
+								Source: "tables\n    |> range(start: 2018-05-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 31,
+									Line:   46,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 41,
+											Line:   47,
+										},
+										File:   "bare_mean_eval_test.flux",
+										Source: "start: 2018-05-01T00:00:00Z",
+										Start: ast.Position{
+											Column: 14,
+											Line:   47,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   47,
+											},
+											File:   "bare_mean_eval_test.flux",
+											Source: "start: 2018-05-01T00:00:00Z",
+											Start: ast.Position{
+												Column: 14,
+												Line:   47,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 19,
+													Line:   47,
+												},
+												File:   "bare_mean_eval_test.flux",
+												Source: "start",
+												Start: ast.Position{
+													Column: 14,
+													Line:   47,
+												},
+											},
+										},
+										Name: "start",
+									},
+									Value: &ast.DateTimeLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   47,
+												},
+												File:   "bare_mean_eval_test.flux",
+												Source: "2018-05-01T00:00:00Z",
+												Start: ast.Position{
+													Column: 21,
+													Line:   47,
+												},
+											},
+										},
+										Value: parser.MustParseTime("2018-05-01T00:00:00Z"),
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   47,
+									},
+									File:   "bare_mean_eval_test.flux",
+									Source: "range(start: 2018-05-01T00:00:00Z)",
+									Start: ast.Position{
+										Column: 8,
+										Line:   47,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   47,
+										},
+										File:   "bare_mean_eval_test.flux",
+										Source: "range",
+										Start: ast.Position{
+											Column: 8,
+											Line:   47,
+										},
+									},
+								},
+								Name: "range",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   48,
+							},
+							File:   "bare_mean_eval_test.flux",
+							Source: "tables\n    |> range(start: 2018-05-01T00:00:00Z)\n    |> mean()",
+							Start: ast.Position{
+								Column: 31,
+								Line:   46,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   48,
+								},
+								File:   "bare_mean_eval_test.flux",
+								Source: "mean()",
+								Start: ast.Position{
+									Column: 8,
+									Line:   48,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   48,
+									},
+									File:   "bare_mean_eval_test.flux",
+									Source: "mean",
+									Start: ast.Position{
+										Column: 8,
+										Line:   48,
+									},
+								},
+							},
+							Name: "mean",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   46,
+							},
+							File:   "bare_mean_eval_test.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 17,
+								Line:   46,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 23,
+									Line:   46,
+								},
+								File:   "bare_mean_eval_test.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 17,
+									Line:   46,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   46,
+							},
+							File:   "bare_mean_eval_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 24,
+								Line:   46,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 101,
+							Line:   51,
+						},
+						File:   "bare_mean_eval_test.flux",
+						Source: "bare_mean_evaluate = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_mean_fn})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   50,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   50,
+							},
+							File:   "bare_mean_eval_test.flux",
+							Source: "bare_mean_evaluate",
+							Start: ast.Position{
+								Column: 6,
+								Line:   50,
+							},
+						},
+					},
+					Name: "bare_mean_evaluate",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 101,
+								Line:   51,
+							},
+							File:   "bare_mean_eval_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_mean_fn})",
+							Start: ast.Position{
+								Column: 27,
+								Line:   50,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 101,
+									Line:   51,
+								},
+								File:   "bare_mean_eval_test.flux",
+								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_mean_fn})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   51,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 100,
+										Line:   51,
+									},
+									File:   "bare_mean_eval_test.flux",
+									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_mean_fn}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   51,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   51,
+										},
+										File:   "bare_mean_eval_test.flux",
+										Source: "input: testing.loadStorage(csv: input)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   51,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   51,
+											},
+											File:   "bare_mean_eval_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   51,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   51,
+												},
+												File:   "bare_mean_eval_test.flux",
+												Source: "csv: input",
+												Start: ast.Position{
+													Column: 34,
+													Line:   51,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   51,
+													},
+													File:   "bare_mean_eval_test.flux",
+													Source: "csv: input",
+													Start: ast.Position{
+														Column: 34,
+														Line:   51,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   51,
+														},
+														File:   "bare_mean_eval_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   51,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 44,
+															Line:   51,
+														},
+														File:   "bare_mean_eval_test.flux",
+														Source: "input",
+														Start: ast.Position{
+															Column: 39,
+															Line:   51,
+														},
+													},
+												},
+												Name: "input",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   51,
+											},
+											File:   "bare_mean_eval_test.flux",
+											Source: "testing.loadStorage(csv: input)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   51,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   51,
+												},
+												File:   "bare_mean_eval_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   51,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   51,
+													},
+													File:   "bare_mean_eval_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   51,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   51,
+													},
+													File:   "bare_mean_eval_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   51,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   51,
+										},
+										File:   "bare_mean_eval_test.flux",
+										Source: "want: testing.loadMem(csv: output)",
+										Start: ast.Position{
+											Column: 47,
+											Line:   51,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   51,
+											},
+											File:   "bare_mean_eval_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 47,
+												Line:   51,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 80,
+													Line:   51,
+												},
+												File:   "bare_mean_eval_test.flux",
+												Source: "csv: output",
+												Start: ast.Position{
+													Column: 69,
+													Line:   51,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 80,
+														Line:   51,
+													},
+													File:   "bare_mean_eval_test.flux",
+													Source: "csv: output",
+													Start: ast.Position{
+														Column: 69,
+														Line:   51,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 72,
+															Line:   51,
+														},
+														File:   "bare_mean_eval_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 69,
+															Line:   51,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 80,
+															Line:   51,
+														},
+														File:   "bare_mean_eval_test.flux",
+														Source: "output",
+														Start: ast.Position{
+															Column: 74,
+															Line:   51,
+														},
+													},
+												},
+												Name: "output",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 81,
+												Line:   51,
+											},
+											File:   "bare_mean_eval_test.flux",
+											Source: "testing.loadMem(csv: output)",
+											Start: ast.Position{
+												Column: 53,
+												Line:   51,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   51,
+												},
+												File:   "bare_mean_eval_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 53,
+													Line:   51,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 60,
+														Line:   51,
+													},
+													File:   "bare_mean_eval_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 53,
+														Line:   51,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 68,
+														Line:   51,
+													},
+													File:   "bare_mean_eval_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 61,
+														Line:   51,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 99,
+											Line:   51,
+										},
+										File:   "bare_mean_eval_test.flux",
+										Source: "fn: bare_mean_fn",
+										Start: ast.Position{
+											Column: 83,
+											Line:   51,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 85,
+												Line:   51,
+											},
+											File:   "bare_mean_eval_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 83,
+												Line:   51,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 99,
+												Line:   51,
+											},
+											File:   "bare_mean_eval_test.flux",
+											Source: "bare_mean_fn",
+											Start: ast.Position{
+												Column: 87,
+												Line:   51,
+											},
+										},
+									},
+									Name: "bare_mean_fn",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 101,
+						Line:   51,
+					},
+					File:   "bare_mean_eval_test.flux",
+					Source: "test bare_mean_evaluate = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_mean_fn})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   50,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "bare_mean_eval_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "bare_mean_eval_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "bare_mean_eval_test.flux",
+					Source: "import \"planner\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "bare_mean_eval_test.flux",
+						Source: "\"planner\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "planner",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "bare_mean_eval_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 21,
+						Line:   1,
+					},
+					File:   "bare_mean_eval_test.flux",
+					Source: "package planner_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   1,
+						},
+						File:   "bare_mean_eval_test.flux",
+						Source: "planner_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "planner_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 101,
+					Line:   49,
+				},
+				File:   "bare_mean_push_test.flux",
+				Source: "package planner_test\n\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,3.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,4.00\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,5.00\n\"\n\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load1,2.5\n,,1,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load3,3.5\n,,2,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load5,4.5\n\"\n\nbare_mean_fn = (tables=<-) => tables\n    |> range(start: 2018-05-01T00:00:00Z)\n    |> mean()\n\ntest bare_mean_pushdown = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_mean_fn})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   5,
+						},
+						File:   "bare_mean_push_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   5,
+							},
+							File:   "bare_mean_push_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   5,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   5,
+							},
+							File:   "bare_mean_push_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   5,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   5,
+								},
+								File:   "bare_mean_push_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   5,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   5,
+									},
+									File:   "bare_mean_push_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   5,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   5,
+					},
+					File:   "bare_mean_push_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   32,
+					},
+					File:   "bare_mean_push_test.flux",
+					Source: "input = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,3.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,4.00\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,5.00\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   7,
+						},
+						File:   "bare_mean_push_test.flux",
+						Source: "input",
+						Start: ast.Position{
+							Column: 1,
+							Line:   7,
+						},
+					},
+				},
+				Name: "input",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   32,
+						},
+						File:   "bare_mean_push_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,3.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,4.00\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,5.00\n\"",
+						Start: ast.Position{
+							Column: 9,
+							Line:   7,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,2.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,3.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,4.00\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,3.00\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,4.00\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,5.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.00\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,5.00\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   42,
+					},
+					File:   "bare_mean_push_test.flux",
+					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load1,2.5\n,,1,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load3,3.5\n,,2,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load5,4.5\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   34,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   34,
+						},
+						File:   "bare_mean_push_test.flux",
+						Source: "output",
+						Start: ast.Position{
+							Column: 1,
+							Line:   34,
+						},
+					},
+				},
+				Name: "output",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   42,
+						},
+						File:   "bare_mean_push_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load1,2.5\n,,1,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load3,3.5\n,,2,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load5,4.5\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   34,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load1,2.5\n,,1,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load3,3.5\n,,2,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load5,4.5\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   46,
+					},
+					File:   "bare_mean_push_test.flux",
+					Source: "bare_mean_fn = (tables=<-) => tables\n    |> range(start: 2018-05-01T00:00:00Z)\n    |> mean()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   44,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 13,
+							Line:   44,
+						},
+						File:   "bare_mean_push_test.flux",
+						Source: "bare_mean_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   44,
+						},
+					},
+				},
+				Name: "bare_mean_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   46,
+						},
+						File:   "bare_mean_push_test.flux",
+						Source: "(tables=<-) => tables\n    |> range(start: 2018-05-01T00:00:00Z)\n    |> mean()",
+						Start: ast.Position{
+							Column: 16,
+							Line:   44,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 37,
+										Line:   44,
+									},
+									File:   "bare_mean_push_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 31,
+										Line:   44,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   45,
+								},
+								File:   "bare_mean_push_test.flux",
+								Source: "tables\n    |> range(start: 2018-05-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 31,
+									Line:   44,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 41,
+											Line:   45,
+										},
+										File:   "bare_mean_push_test.flux",
+										Source: "start: 2018-05-01T00:00:00Z",
+										Start: ast.Position{
+											Column: 14,
+											Line:   45,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   45,
+											},
+											File:   "bare_mean_push_test.flux",
+											Source: "start: 2018-05-01T00:00:00Z",
+											Start: ast.Position{
+												Column: 14,
+												Line:   45,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 19,
+													Line:   45,
+												},
+												File:   "bare_mean_push_test.flux",
+												Source: "start",
+												Start: ast.Position{
+													Column: 14,
+													Line:   45,
+												},
+											},
+										},
+										Name: "start",
+									},
+									Value: &ast.DateTimeLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   45,
+												},
+												File:   "bare_mean_push_test.flux",
+												Source: "2018-05-01T00:00:00Z",
+												Start: ast.Position{
+													Column: 21,
+													Line:   45,
+												},
+											},
+										},
+										Value: parser.MustParseTime("2018-05-01T00:00:00Z"),
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   45,
+									},
+									File:   "bare_mean_push_test.flux",
+									Source: "range(start: 2018-05-01T00:00:00Z)",
+									Start: ast.Position{
+										Column: 8,
+										Line:   45,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   45,
+										},
+										File:   "bare_mean_push_test.flux",
+										Source: "range",
+										Start: ast.Position{
+											Column: 8,
+											Line:   45,
+										},
+									},
+								},
+								Name: "range",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   46,
+							},
+							File:   "bare_mean_push_test.flux",
+							Source: "tables\n    |> range(start: 2018-05-01T00:00:00Z)\n    |> mean()",
+							Start: ast.Position{
+								Column: 31,
+								Line:   44,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   46,
+								},
+								File:   "bare_mean_push_test.flux",
+								Source: "mean()",
+								Start: ast.Position{
+									Column: 8,
+									Line:   46,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   46,
+									},
+									File:   "bare_mean_push_test.flux",
+									Source: "mean",
+									Start: ast.Position{
+										Column: 8,
+										Line:   46,
+									},
+								},
+							},
+							Name: "mean",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   44,
+							},
+							File:   "bare_mean_push_test.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 17,
+								Line:   44,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 23,
+									Line:   44,
+								},
+								File:   "bare_mean_push_test.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 17,
+									Line:   44,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   44,
+							},
+							File:   "bare_mean_push_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 24,
+								Line:   44,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 101,
+							Line:   49,
+						},
+						File:   "bare_mean_push_test.flux",
+						Source: "bare_mean_pushdown = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_mean_fn})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   48,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   48,
+							},
+							File:   "bare_mean_push_test.flux",
+							Source: "bare_mean_pushdown",
+							Start: ast.Position{
+								Column: 6,
+								Line:   48,
+							},
+						},
+					},
+					Name: "bare_mean_pushdown",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 101,
+								Line:   49,
+							},
+							File:   "bare_mean_push_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_mean_fn})",
+							Start: ast.Position{
+								Column: 27,
+								Line:   48,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 101,
+									Line:   49,
+								},
+								File:   "bare_mean_push_test.flux",
+								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_mean_fn})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   49,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 100,
+										Line:   49,
+									},
+									File:   "bare_mean_push_test.flux",
+									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_mean_fn}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   49,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   49,
+										},
+										File:   "bare_mean_push_test.flux",
+										Source: "input: testing.loadStorage(csv: input)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   49,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   49,
+											},
+											File:   "bare_mean_push_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   49,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   49,
+												},
+												File:   "bare_mean_push_test.flux",
+												Source: "csv: input",
+												Start: ast.Position{
+													Column: 34,
+													Line:   49,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   49,
+													},
+													File:   "bare_mean_push_test.flux",
+													Source: "csv: input",
+													Start: ast.Position{
+														Column: 34,
+														Line:   49,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   49,
+														},
+														File:   "bare_mean_push_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   49,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 44,
+															Line:   49,
+														},
+														File:   "bare_mean_push_test.flux",
+														Source: "input",
+														Start: ast.Position{
+															Column: 39,
+															Line:   49,
+														},
+													},
+												},
+												Name: "input",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   49,
+											},
+											File:   "bare_mean_push_test.flux",
+											Source: "testing.loadStorage(csv: input)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   49,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   49,
+												},
+												File:   "bare_mean_push_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   49,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   49,
+													},
+													File:   "bare_mean_push_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   49,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   49,
+													},
+													File:   "bare_mean_push_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   49,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   49,
+										},
+										File:   "bare_mean_push_test.flux",
+										Source: "want: testing.loadMem(csv: output)",
+										Start: ast.Position{
+											Column: 47,
+											Line:   49,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   49,
+											},
+											File:   "bare_mean_push_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 47,
+												Line:   49,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 80,
+													Line:   49,
+												},
+												File:   "bare_mean_push_test.flux",
+												Source: "csv: output",
+												Start: ast.Position{
+													Column: 69,
+													Line:   49,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 80,
+														Line:   49,
+													},
+													File:   "bare_mean_push_test.flux",
+													Source: "csv: output",
+													Start: ast.Position{
+														Column: 69,
+														Line:   49,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 72,
+															Line:   49,
+														},
+														File:   "bare_mean_push_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 69,
+															Line:   49,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 80,
+															Line:   49,
+														},
+														File:   "bare_mean_push_test.flux",
+														Source: "output",
+														Start: ast.Position{
+															Column: 74,
+															Line:   49,
+														},
+													},
+												},
+												Name: "output",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 81,
+												Line:   49,
+											},
+											File:   "bare_mean_push_test.flux",
+											Source: "testing.loadMem(csv: output)",
+											Start: ast.Position{
+												Column: 53,
+												Line:   49,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   49,
+												},
+												File:   "bare_mean_push_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 53,
+													Line:   49,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 60,
+														Line:   49,
+													},
+													File:   "bare_mean_push_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 53,
+														Line:   49,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 68,
+														Line:   49,
+													},
+													File:   "bare_mean_push_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 61,
+														Line:   49,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 99,
+											Line:   49,
+										},
+										File:   "bare_mean_push_test.flux",
+										Source: "fn: bare_mean_fn",
+										Start: ast.Position{
+											Column: 83,
+											Line:   49,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 85,
+												Line:   49,
+											},
+											File:   "bare_mean_push_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 83,
+												Line:   49,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 99,
+												Line:   49,
+											},
+											File:   "bare_mean_push_test.flux",
+											Source: "bare_mean_fn",
+											Start: ast.Position{
+												Column: 87,
+												Line:   49,
+											},
+										},
+									},
+									Name: "bare_mean_fn",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 101,
+						Line:   49,
+					},
+					File:   "bare_mean_push_test.flux",
+					Source: "test bare_mean_pushdown = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_mean_fn})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   48,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "bare_mean_push_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "bare_mean_push_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "bare_mean_push_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 21,
+						Line:   1,
+					},
+					File:   "bare_mean_push_test.flux",
+					Source: "package planner_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   1,
+						},
+						File:   "bare_mean_push_test.flux",
+						Source: "planner_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "planner_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
 					Column: 100,
 					Line:   51,
 				},
@@ -28647,6 +31003,2649 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   1,
 						},
 						File:   "window_max_push_test.flux",
+						Source: "planner_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "planner_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 103,
+					Line:   58,
+				},
+				File:   "window_mean_eval_test.flux",
+				Source: "package planner_test\n\nimport \"testing\"\nimport \"planner\"\n\noption now = () => (2030-01-01T00:00:00Z)\noption planner.disablePhysicalRules = [\"PushDownWindowAggregateRule\"]\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,4.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,5.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,6.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,7.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,8.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.55\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.65\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.75\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.85\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.95\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,2.05\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,2.25\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,2.35\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,2.50\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,2.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.50\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,2.75\n\"\n\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load1,4.0\n,,1,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load1,6.0\n,,2,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load1,7.5\n,,3,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.6\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load3,1.8\n,,5,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load3,2.0\n,,6,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load5,2.3\n,,7,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load5,3.0\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load5,2.75\n\"\n\nwindow_mean_fn = (tables=<-) => tables\n    |> range(start: 2018-05-21T00:00:00Z)\n    |> window(every: 20s)\n    |> mean()\n\ntest window_mean_evaluate = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_mean_fn})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "window_mean_eval_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "window_mean_eval_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "window_mean_eval_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "window_mean_eval_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "window_mean_eval_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "window_mean_eval_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.OptionStatement{
+			Assignment: &ast.MemberAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 70,
+							Line:   7,
+						},
+						File:   "window_mean_eval_test.flux",
+						Source: "planner.disablePhysicalRules = [\"PushDownWindowAggregateRule\"]",
+						Start: ast.Position{
+							Column: 8,
+							Line:   7,
+						},
+					},
+				},
+				Init: &ast.ArrayExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 70,
+								Line:   7,
+							},
+							File:   "window_mean_eval_test.flux",
+							Source: "[\"PushDownWindowAggregateRule\"]",
+							Start: ast.Position{
+								Column: 39,
+								Line:   7,
+							},
+						},
+					},
+					Elements: []ast.Expression{&ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 69,
+									Line:   7,
+								},
+								File:   "window_mean_eval_test.flux",
+								Source: "\"PushDownWindowAggregateRule\"",
+								Start: ast.Position{
+									Column: 40,
+									Line:   7,
+								},
+							},
+						},
+						Value: "PushDownWindowAggregateRule",
+					}},
+				},
+				Member: &ast.MemberExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 36,
+								Line:   7,
+							},
+							File:   "window_mean_eval_test.flux",
+							Source: "planner.disablePhysicalRules",
+							Start: ast.Position{
+								Column: 8,
+								Line:   7,
+							},
+						},
+					},
+					Object: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   7,
+								},
+								File:   "window_mean_eval_test.flux",
+								Source: "planner",
+								Start: ast.Position{
+									Column: 8,
+									Line:   7,
+								},
+							},
+						},
+						Name: "planner",
+					},
+					Property: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   7,
+								},
+								File:   "window_mean_eval_test.flux",
+								Source: "disablePhysicalRules",
+								Start: ast.Position{
+									Column: 16,
+									Line:   7,
+								},
+							},
+						},
+						Name: "disablePhysicalRules",
+					},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 70,
+						Line:   7,
+					},
+					File:   "window_mean_eval_test.flux",
+					Source: "option planner.disablePhysicalRules = [\"PushDownWindowAggregateRule\"]",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   34,
+					},
+					File:   "window_mean_eval_test.flux",
+					Source: "input = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,4.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,5.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,6.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,7.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,8.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.55\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.65\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.75\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.85\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.95\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,2.05\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,2.25\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,2.35\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,2.50\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,2.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.50\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,2.75\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   9,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   9,
+						},
+						File:   "window_mean_eval_test.flux",
+						Source: "input",
+						Start: ast.Position{
+							Column: 1,
+							Line:   9,
+						},
+					},
+				},
+				Name: "input",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   34,
+						},
+						File:   "window_mean_eval_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,4.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,5.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,6.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,7.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,8.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.55\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.65\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.75\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.85\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.95\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,2.05\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,2.25\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,2.35\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,2.50\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,2.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.50\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,2.75\n\"",
+						Start: ast.Position{
+							Column: 9,
+							Line:   9,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,4.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,5.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,6.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,7.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,8.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.55\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.65\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.75\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.85\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.95\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,2.05\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,2.25\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,2.35\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,2.50\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,2.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.50\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,2.75\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   50,
+					},
+					File:   "window_mean_eval_test.flux",
+					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load1,4.0\n,,1,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load1,6.0\n,,2,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load1,7.5\n,,3,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.6\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load3,1.8\n,,5,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load3,2.0\n,,6,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load5,2.3\n,,7,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load5,3.0\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load5,2.75\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   36,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   36,
+						},
+						File:   "window_mean_eval_test.flux",
+						Source: "output",
+						Start: ast.Position{
+							Column: 1,
+							Line:   36,
+						},
+					},
+				},
+				Name: "output",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   50,
+						},
+						File:   "window_mean_eval_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load1,4.0\n,,1,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load1,6.0\n,,2,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load1,7.5\n,,3,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.6\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load3,1.8\n,,5,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load3,2.0\n,,6,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load5,2.3\n,,7,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load5,3.0\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load5,2.75\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   36,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load1,4.0\n,,1,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load1,6.0\n,,2,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load1,7.5\n,,3,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.6\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load3,1.8\n,,5,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load3,2.0\n,,6,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load5,2.3\n,,7,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load5,3.0\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load5,2.75\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   55,
+					},
+					File:   "window_mean_eval_test.flux",
+					Source: "window_mean_fn = (tables=<-) => tables\n    |> range(start: 2018-05-21T00:00:00Z)\n    |> window(every: 20s)\n    |> mean()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   52,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 15,
+							Line:   52,
+						},
+						File:   "window_mean_eval_test.flux",
+						Source: "window_mean_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   52,
+						},
+					},
+				},
+				Name: "window_mean_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   55,
+						},
+						File:   "window_mean_eval_test.flux",
+						Source: "(tables=<-) => tables\n    |> range(start: 2018-05-21T00:00:00Z)\n    |> window(every: 20s)\n    |> mean()",
+						Start: ast.Position{
+							Column: 18,
+							Line:   52,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 39,
+											Line:   52,
+										},
+										File:   "window_mean_eval_test.flux",
+										Source: "tables",
+										Start: ast.Position{
+											Column: 33,
+											Line:   52,
+										},
+									},
+								},
+								Name: "tables",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   53,
+									},
+									File:   "window_mean_eval_test.flux",
+									Source: "tables\n    |> range(start: 2018-05-21T00:00:00Z)",
+									Start: ast.Position{
+										Column: 33,
+										Line:   52,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   53,
+											},
+											File:   "window_mean_eval_test.flux",
+											Source: "start: 2018-05-21T00:00:00Z",
+											Start: ast.Position{
+												Column: 14,
+												Line:   53,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   53,
+												},
+												File:   "window_mean_eval_test.flux",
+												Source: "start: 2018-05-21T00:00:00Z",
+												Start: ast.Position{
+													Column: 14,
+													Line:   53,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 19,
+														Line:   53,
+													},
+													File:   "window_mean_eval_test.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 14,
+														Line:   53,
+													},
+												},
+											},
+											Name: "start",
+										},
+										Value: &ast.DateTimeLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   53,
+													},
+													File:   "window_mean_eval_test.flux",
+													Source: "2018-05-21T00:00:00Z",
+													Start: ast.Position{
+														Column: 21,
+														Line:   53,
+													},
+												},
+											},
+											Value: parser.MustParseTime("2018-05-21T00:00:00Z"),
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   53,
+										},
+										File:   "window_mean_eval_test.flux",
+										Source: "range(start: 2018-05-21T00:00:00Z)",
+										Start: ast.Position{
+											Column: 8,
+											Line:   53,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   53,
+											},
+											File:   "window_mean_eval_test.flux",
+											Source: "range",
+											Start: ast.Position{
+												Column: 8,
+												Line:   53,
+											},
+										},
+									},
+									Name: "range",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   54,
+								},
+								File:   "window_mean_eval_test.flux",
+								Source: "tables\n    |> range(start: 2018-05-21T00:00:00Z)\n    |> window(every: 20s)",
+								Start: ast.Position{
+									Column: 33,
+									Line:   52,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   54,
+										},
+										File:   "window_mean_eval_test.flux",
+										Source: "every: 20s",
+										Start: ast.Position{
+											Column: 15,
+											Line:   54,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   54,
+											},
+											File:   "window_mean_eval_test.flux",
+											Source: "every: 20s",
+											Start: ast.Position{
+												Column: 15,
+												Line:   54,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 20,
+													Line:   54,
+												},
+												File:   "window_mean_eval_test.flux",
+												Source: "every",
+												Start: ast.Position{
+													Column: 15,
+													Line:   54,
+												},
+											},
+										},
+										Name: "every",
+									},
+									Value: &ast.DurationLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   54,
+												},
+												File:   "window_mean_eval_test.flux",
+												Source: "20s",
+												Start: ast.Position{
+													Column: 22,
+													Line:   54,
+												},
+											},
+										},
+										Values: []ast.Duration{ast.Duration{
+											Magnitude: int64(20),
+											Unit:      "s",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   54,
+									},
+									File:   "window_mean_eval_test.flux",
+									Source: "window(every: 20s)",
+									Start: ast.Position{
+										Column: 8,
+										Line:   54,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   54,
+										},
+										File:   "window_mean_eval_test.flux",
+										Source: "window",
+										Start: ast.Position{
+											Column: 8,
+											Line:   54,
+										},
+									},
+								},
+								Name: "window",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   55,
+							},
+							File:   "window_mean_eval_test.flux",
+							Source: "tables\n    |> range(start: 2018-05-21T00:00:00Z)\n    |> window(every: 20s)\n    |> mean()",
+							Start: ast.Position{
+								Column: 33,
+								Line:   52,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   55,
+								},
+								File:   "window_mean_eval_test.flux",
+								Source: "mean()",
+								Start: ast.Position{
+									Column: 8,
+									Line:   55,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   55,
+									},
+									File:   "window_mean_eval_test.flux",
+									Source: "mean",
+									Start: ast.Position{
+										Column: 8,
+										Line:   55,
+									},
+								},
+							},
+							Name: "mean",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 28,
+								Line:   52,
+							},
+							File:   "window_mean_eval_test.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 19,
+								Line:   52,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   52,
+								},
+								File:   "window_mean_eval_test.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 19,
+									Line:   52,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 28,
+								Line:   52,
+							},
+							File:   "window_mean_eval_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 26,
+								Line:   52,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 103,
+							Line:   58,
+						},
+						File:   "window_mean_eval_test.flux",
+						Source: "window_mean_evaluate = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_mean_fn})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   57,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   57,
+							},
+							File:   "window_mean_eval_test.flux",
+							Source: "window_mean_evaluate",
+							Start: ast.Position{
+								Column: 6,
+								Line:   57,
+							},
+						},
+					},
+					Name: "window_mean_evaluate",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 103,
+								Line:   58,
+							},
+							File:   "window_mean_eval_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_mean_fn})",
+							Start: ast.Position{
+								Column: 29,
+								Line:   57,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 103,
+									Line:   58,
+								},
+								File:   "window_mean_eval_test.flux",
+								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_mean_fn})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   58,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 102,
+										Line:   58,
+									},
+									File:   "window_mean_eval_test.flux",
+									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_mean_fn}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   58,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   58,
+										},
+										File:   "window_mean_eval_test.flux",
+										Source: "input: testing.loadStorage(csv: input)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   58,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   58,
+											},
+											File:   "window_mean_eval_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   58,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   58,
+												},
+												File:   "window_mean_eval_test.flux",
+												Source: "csv: input",
+												Start: ast.Position{
+													Column: 34,
+													Line:   58,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   58,
+													},
+													File:   "window_mean_eval_test.flux",
+													Source: "csv: input",
+													Start: ast.Position{
+														Column: 34,
+														Line:   58,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   58,
+														},
+														File:   "window_mean_eval_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   58,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 44,
+															Line:   58,
+														},
+														File:   "window_mean_eval_test.flux",
+														Source: "input",
+														Start: ast.Position{
+															Column: 39,
+															Line:   58,
+														},
+													},
+												},
+												Name: "input",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   58,
+											},
+											File:   "window_mean_eval_test.flux",
+											Source: "testing.loadStorage(csv: input)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   58,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   58,
+												},
+												File:   "window_mean_eval_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   58,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   58,
+													},
+													File:   "window_mean_eval_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   58,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   58,
+													},
+													File:   "window_mean_eval_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   58,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   58,
+										},
+										File:   "window_mean_eval_test.flux",
+										Source: "want: testing.loadMem(csv: output)",
+										Start: ast.Position{
+											Column: 47,
+											Line:   58,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   58,
+											},
+											File:   "window_mean_eval_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 47,
+												Line:   58,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 80,
+													Line:   58,
+												},
+												File:   "window_mean_eval_test.flux",
+												Source: "csv: output",
+												Start: ast.Position{
+													Column: 69,
+													Line:   58,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 80,
+														Line:   58,
+													},
+													File:   "window_mean_eval_test.flux",
+													Source: "csv: output",
+													Start: ast.Position{
+														Column: 69,
+														Line:   58,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 72,
+															Line:   58,
+														},
+														File:   "window_mean_eval_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 69,
+															Line:   58,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 80,
+															Line:   58,
+														},
+														File:   "window_mean_eval_test.flux",
+														Source: "output",
+														Start: ast.Position{
+															Column: 74,
+															Line:   58,
+														},
+													},
+												},
+												Name: "output",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 81,
+												Line:   58,
+											},
+											File:   "window_mean_eval_test.flux",
+											Source: "testing.loadMem(csv: output)",
+											Start: ast.Position{
+												Column: 53,
+												Line:   58,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   58,
+												},
+												File:   "window_mean_eval_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 53,
+													Line:   58,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 60,
+														Line:   58,
+													},
+													File:   "window_mean_eval_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 53,
+														Line:   58,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 68,
+														Line:   58,
+													},
+													File:   "window_mean_eval_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 61,
+														Line:   58,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 101,
+											Line:   58,
+										},
+										File:   "window_mean_eval_test.flux",
+										Source: "fn: window_mean_fn",
+										Start: ast.Position{
+											Column: 83,
+											Line:   58,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 85,
+												Line:   58,
+											},
+											File:   "window_mean_eval_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 83,
+												Line:   58,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 101,
+												Line:   58,
+											},
+											File:   "window_mean_eval_test.flux",
+											Source: "window_mean_fn",
+											Start: ast.Position{
+												Column: 87,
+												Line:   58,
+											},
+										},
+									},
+									Name: "window_mean_fn",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 103,
+						Line:   58,
+					},
+					File:   "window_mean_eval_test.flux",
+					Source: "test window_mean_evaluate = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_mean_fn})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   57,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "window_mean_eval_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "window_mean_eval_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "window_mean_eval_test.flux",
+					Source: "import \"planner\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "window_mean_eval_test.flux",
+						Source: "\"planner\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "planner",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "window_mean_eval_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 21,
+						Line:   1,
+					},
+					File:   "window_mean_eval_test.flux",
+					Source: "package planner_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   1,
+						},
+						File:   "window_mean_eval_test.flux",
+						Source: "planner_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "planner_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 103,
+					Line:   57,
+				},
+				File:   "window_mean_push_test.flux",
+				Source: "package planner_test\n\nimport \"testing\"\nimport \"planner\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,4.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,5.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,6.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,7.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,8.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.55\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.65\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.75\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.85\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.95\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,2.05\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,2.25\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,2.35\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,2.50\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,2.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.50\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,2.75\n\"\n\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load1,4.0\n,,1,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load1,6.0\n,,2,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load1,7.5\n,,3,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.6\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load3,1.8\n,,5,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load3,2.0\n,,6,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load5,2.3\n,,7,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load5,3.0\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load5,2.75\n\"\n\nwindow_mean_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T00:00:00Z)\n    |> window(every: 20s)\n    |> mean()\n\ntest window_mean_evaluate = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_mean_fn})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "window_mean_push_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "window_mean_push_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "window_mean_push_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "window_mean_push_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "window_mean_push_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "window_mean_push_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   33,
+					},
+					File:   "window_mean_push_test.flux",
+					Source: "input = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,4.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,5.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,6.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,7.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,8.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.55\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.65\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.75\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.85\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.95\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,2.05\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,2.25\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,2.35\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,2.50\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,2.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.50\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,2.75\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   8,
+						},
+						File:   "window_mean_push_test.flux",
+						Source: "input",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "input",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   33,
+						},
+						File:   "window_mean_push_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,4.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,5.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,6.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,7.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,8.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.55\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.65\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.75\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.85\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.95\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,2.05\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,2.25\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,2.35\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,2.50\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,2.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.50\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,2.75\n\"",
+						Start: ast.Position{
+							Column: 9,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,3.00\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,4.00\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,5.00\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,6.00\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,7.00\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,8.00\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.55\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.65\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.75\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.85\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.95\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,2.05\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,2.25\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,2.35\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,2.50\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,2.00\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.50\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,2.75\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   49,
+					},
+					File:   "window_mean_push_test.flux",
+					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load1,4.0\n,,1,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load1,6.0\n,,2,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load1,7.5\n,,3,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.6\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load3,1.8\n,,5,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load3,2.0\n,,6,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load5,2.3\n,,7,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load5,3.0\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load5,2.75\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   35,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   35,
+						},
+						File:   "window_mean_push_test.flux",
+						Source: "output",
+						Start: ast.Position{
+							Column: 1,
+							Line:   35,
+						},
+					},
+				},
+				Name: "output",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   49,
+						},
+						File:   "window_mean_push_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load1,4.0\n,,1,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load1,6.0\n,,2,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load1,7.5\n,,3,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.6\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load3,1.8\n,,5,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load3,2.0\n,,6,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load5,2.3\n,,7,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load5,3.0\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load5,2.75\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   35,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load1,4.0\n,,1,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load1,6.0\n,,2,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load1,7.5\n,,3,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.6\n,,4,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load3,1.8\n,,5,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load3,2.0\n,,6,2018-05-22T19:53:20Z,2018-05-22T19:53:40Z,system,host.local,load5,2.3\n,,7,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load5,3.0\n,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load5,2.75\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   54,
+					},
+					File:   "window_mean_push_test.flux",
+					Source: "window_mean_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T00:00:00Z)\n    |> window(every: 20s)\n    |> mean()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   51,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 15,
+							Line:   51,
+						},
+						File:   "window_mean_push_test.flux",
+						Source: "window_mean_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   51,
+						},
+					},
+				},
+				Name: "window_mean_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   54,
+						},
+						File:   "window_mean_push_test.flux",
+						Source: "(tables=<-) => tables\n    |> range(start: 2018-05-22T00:00:00Z)\n    |> window(every: 20s)\n    |> mean()",
+						Start: ast.Position{
+							Column: 18,
+							Line:   51,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 39,
+											Line:   51,
+										},
+										File:   "window_mean_push_test.flux",
+										Source: "tables",
+										Start: ast.Position{
+											Column: 33,
+											Line:   51,
+										},
+									},
+								},
+								Name: "tables",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   52,
+									},
+									File:   "window_mean_push_test.flux",
+									Source: "tables\n    |> range(start: 2018-05-22T00:00:00Z)",
+									Start: ast.Position{
+										Column: 33,
+										Line:   51,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   52,
+											},
+											File:   "window_mean_push_test.flux",
+											Source: "start: 2018-05-22T00:00:00Z",
+											Start: ast.Position{
+												Column: 14,
+												Line:   52,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   52,
+												},
+												File:   "window_mean_push_test.flux",
+												Source: "start: 2018-05-22T00:00:00Z",
+												Start: ast.Position{
+													Column: 14,
+													Line:   52,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 19,
+														Line:   52,
+													},
+													File:   "window_mean_push_test.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 14,
+														Line:   52,
+													},
+												},
+											},
+											Name: "start",
+										},
+										Value: &ast.DateTimeLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   52,
+													},
+													File:   "window_mean_push_test.flux",
+													Source: "2018-05-22T00:00:00Z",
+													Start: ast.Position{
+														Column: 21,
+														Line:   52,
+													},
+												},
+											},
+											Value: parser.MustParseTime("2018-05-22T00:00:00Z"),
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   52,
+										},
+										File:   "window_mean_push_test.flux",
+										Source: "range(start: 2018-05-22T00:00:00Z)",
+										Start: ast.Position{
+											Column: 8,
+											Line:   52,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   52,
+											},
+											File:   "window_mean_push_test.flux",
+											Source: "range",
+											Start: ast.Position{
+												Column: 8,
+												Line:   52,
+											},
+										},
+									},
+									Name: "range",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   53,
+								},
+								File:   "window_mean_push_test.flux",
+								Source: "tables\n    |> range(start: 2018-05-22T00:00:00Z)\n    |> window(every: 20s)",
+								Start: ast.Position{
+									Column: 33,
+									Line:   51,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   53,
+										},
+										File:   "window_mean_push_test.flux",
+										Source: "every: 20s",
+										Start: ast.Position{
+											Column: 15,
+											Line:   53,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   53,
+											},
+											File:   "window_mean_push_test.flux",
+											Source: "every: 20s",
+											Start: ast.Position{
+												Column: 15,
+												Line:   53,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 20,
+													Line:   53,
+												},
+												File:   "window_mean_push_test.flux",
+												Source: "every",
+												Start: ast.Position{
+													Column: 15,
+													Line:   53,
+												},
+											},
+										},
+										Name: "every",
+									},
+									Value: &ast.DurationLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   53,
+												},
+												File:   "window_mean_push_test.flux",
+												Source: "20s",
+												Start: ast.Position{
+													Column: 22,
+													Line:   53,
+												},
+											},
+										},
+										Values: []ast.Duration{ast.Duration{
+											Magnitude: int64(20),
+											Unit:      "s",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   53,
+									},
+									File:   "window_mean_push_test.flux",
+									Source: "window(every: 20s)",
+									Start: ast.Position{
+										Column: 8,
+										Line:   53,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   53,
+										},
+										File:   "window_mean_push_test.flux",
+										Source: "window",
+										Start: ast.Position{
+											Column: 8,
+											Line:   53,
+										},
+									},
+								},
+								Name: "window",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   54,
+							},
+							File:   "window_mean_push_test.flux",
+							Source: "tables\n    |> range(start: 2018-05-22T00:00:00Z)\n    |> window(every: 20s)\n    |> mean()",
+							Start: ast.Position{
+								Column: 33,
+								Line:   51,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   54,
+								},
+								File:   "window_mean_push_test.flux",
+								Source: "mean()",
+								Start: ast.Position{
+									Column: 8,
+									Line:   54,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   54,
+									},
+									File:   "window_mean_push_test.flux",
+									Source: "mean",
+									Start: ast.Position{
+										Column: 8,
+										Line:   54,
+									},
+								},
+							},
+							Name: "mean",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 28,
+								Line:   51,
+							},
+							File:   "window_mean_push_test.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 19,
+								Line:   51,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   51,
+								},
+								File:   "window_mean_push_test.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 19,
+									Line:   51,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 28,
+								Line:   51,
+							},
+							File:   "window_mean_push_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 26,
+								Line:   51,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 103,
+							Line:   57,
+						},
+						File:   "window_mean_push_test.flux",
+						Source: "window_mean_evaluate = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_mean_fn})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   56,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   56,
+							},
+							File:   "window_mean_push_test.flux",
+							Source: "window_mean_evaluate",
+							Start: ast.Position{
+								Column: 6,
+								Line:   56,
+							},
+						},
+					},
+					Name: "window_mean_evaluate",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 103,
+								Line:   57,
+							},
+							File:   "window_mean_push_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_mean_fn})",
+							Start: ast.Position{
+								Column: 29,
+								Line:   56,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 103,
+									Line:   57,
+								},
+								File:   "window_mean_push_test.flux",
+								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_mean_fn})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   57,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 102,
+										Line:   57,
+									},
+									File:   "window_mean_push_test.flux",
+									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_mean_fn}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   57,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   57,
+										},
+										File:   "window_mean_push_test.flux",
+										Source: "input: testing.loadStorage(csv: input)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   57,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   57,
+											},
+											File:   "window_mean_push_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   57,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   57,
+												},
+												File:   "window_mean_push_test.flux",
+												Source: "csv: input",
+												Start: ast.Position{
+													Column: 34,
+													Line:   57,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   57,
+													},
+													File:   "window_mean_push_test.flux",
+													Source: "csv: input",
+													Start: ast.Position{
+														Column: 34,
+														Line:   57,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   57,
+														},
+														File:   "window_mean_push_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   57,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 44,
+															Line:   57,
+														},
+														File:   "window_mean_push_test.flux",
+														Source: "input",
+														Start: ast.Position{
+															Column: 39,
+															Line:   57,
+														},
+													},
+												},
+												Name: "input",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   57,
+											},
+											File:   "window_mean_push_test.flux",
+											Source: "testing.loadStorage(csv: input)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   57,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   57,
+												},
+												File:   "window_mean_push_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   57,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   57,
+													},
+													File:   "window_mean_push_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   57,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   57,
+													},
+													File:   "window_mean_push_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   57,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   57,
+										},
+										File:   "window_mean_push_test.flux",
+										Source: "want: testing.loadMem(csv: output)",
+										Start: ast.Position{
+											Column: 47,
+											Line:   57,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   57,
+											},
+											File:   "window_mean_push_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 47,
+												Line:   57,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 80,
+													Line:   57,
+												},
+												File:   "window_mean_push_test.flux",
+												Source: "csv: output",
+												Start: ast.Position{
+													Column: 69,
+													Line:   57,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 80,
+														Line:   57,
+													},
+													File:   "window_mean_push_test.flux",
+													Source: "csv: output",
+													Start: ast.Position{
+														Column: 69,
+														Line:   57,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 72,
+															Line:   57,
+														},
+														File:   "window_mean_push_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 69,
+															Line:   57,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 80,
+															Line:   57,
+														},
+														File:   "window_mean_push_test.flux",
+														Source: "output",
+														Start: ast.Position{
+															Column: 74,
+															Line:   57,
+														},
+													},
+												},
+												Name: "output",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 81,
+												Line:   57,
+											},
+											File:   "window_mean_push_test.flux",
+											Source: "testing.loadMem(csv: output)",
+											Start: ast.Position{
+												Column: 53,
+												Line:   57,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   57,
+												},
+												File:   "window_mean_push_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 53,
+													Line:   57,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 60,
+														Line:   57,
+													},
+													File:   "window_mean_push_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 53,
+														Line:   57,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 68,
+														Line:   57,
+													},
+													File:   "window_mean_push_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 61,
+														Line:   57,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 101,
+											Line:   57,
+										},
+										File:   "window_mean_push_test.flux",
+										Source: "fn: window_mean_fn",
+										Start: ast.Position{
+											Column: 83,
+											Line:   57,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 85,
+												Line:   57,
+											},
+											File:   "window_mean_push_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 83,
+												Line:   57,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 101,
+												Line:   57,
+											},
+											File:   "window_mean_push_test.flux",
+											Source: "window_mean_fn",
+											Start: ast.Position{
+												Column: 87,
+												Line:   57,
+											},
+										},
+									},
+									Name: "window_mean_fn",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 103,
+						Line:   57,
+					},
+					File:   "window_mean_push_test.flux",
+					Source: "test window_mean_evaluate = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_mean_fn})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   56,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "window_mean_push_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "window_mean_push_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "window_mean_push_test.flux",
+					Source: "import \"planner\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "window_mean_push_test.flux",
+						Source: "\"planner\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "planner",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "window_mean_push_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 21,
+						Line:   1,
+					},
+					File:   "window_mean_push_test.flux",
+					Source: "package planner_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   1,
+						},
+						File:   "window_mean_push_test.flux",
 						Source: "planner_test",
 						Start: ast.Position{
 							Column: 9,
