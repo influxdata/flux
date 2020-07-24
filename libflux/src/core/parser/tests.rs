@@ -1550,55 +1550,30 @@ fn test_parse_type_expression_array_string() {
 
 #[test]
 fn test_parse_type_expression_function() {
-    let mut p = Parser::new(r#"(A : int => uint)"#);
+    let mut p = Parser::new(r#"() => uint"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
         TypeExpression {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 16),
+                location: loc.get(1, 1, 1, 11),
                 ..BaseNode::default()
             },
             monotype: MonoType::Function(Box::new(FunctionType {
                 base: BaseNode {
-                    location: loc.get(1, 1, 1, 16),
+                    location: loc.get(1, 1, 1, 11),
                     ..BaseNode::default()
                 },
-                parameters : Some(vec![ParameterType {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 8),
-                        ..BaseNode::default()
-                    },
-                    identifier : Identifier {
-                        base: BaseNode {
-                            location: loc.get(1, 2, 1, 8),
-                            ..BaseNode::default()
-                        },
-                        name: "A".to_string(),
-                    },
-                    parameter: MonoType::Basic(NamedType {
-                        base: BaseNode {
-                            location: loc.get(1, 5, 1, 8),
-                            ..BaseNode::default()
-                        },
-                        name: Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 2, 1, 8),
-                                ..BaseNode::default()
-                            },
-                            name: "int".to_string(),
-                        }
-                    }),
-                }]),
+                parameters : None,
                 monotype: MonoType::Basic(NamedType {
                     base: BaseNode {
-                        location: loc.get(1, 2, 1, 8),
+                        location: loc.get(1, 7, 1, 11),
                         ..BaseNode::default()
                     },
                     name: Identifier {
                         base: BaseNode {
-                            location: loc.get(1, 2, 1, 8),
+                            location: loc.get(1, 7, 1, 11),
                             ..BaseNode::default()
                         },
                         name: "uint".to_string(),
