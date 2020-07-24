@@ -149,17 +149,18 @@ func NewSqliteRowReader(r *sql.Rows) (execute.RowReader, error) {
 	return reader, nil
 }
 
+var fluxToSQLite = map[flux.ColType]string{
+	flux.TFloat:  "FLOAT",
+	flux.TInt:    "INT",
+	flux.TUInt:   "INT",
+	flux.TString: "TEXT",
+	flux.TTime:   "DATETIME",
+}
+
 // SqliteTranslateColumn translates flux colTypes into their corresponding SQLite column type
 func SqliteColumnTranslateFunc() translationFunc {
-	c := map[string]string{
-		flux.TFloat.String():  "FLOAT",
-		flux.TInt.String():    "INT",
-		flux.TUInt.String():   "INT",
-		flux.TString.String(): "TEXT",
-		flux.TTime.String():   "DATETIME",
-	}
 	return func(f flux.ColType, colName string) (string, error) {
-		s, found := c[f.String()]
+		s, found := fluxToSQLite[f]
 		if !found {
 			return "", errors.Newf(codes.Internal, "SQLite does not support column type %s", f.String())
 		}
