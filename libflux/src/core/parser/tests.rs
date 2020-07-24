@@ -1547,7 +1547,6 @@ fn test_parse_type_expression_array_string() {
         }
     )
 }
-
 #[test]
 fn test_parse_record_only_properties() {
     let mut p = Parser::new(r#"{a:int, b:uint}"#);
@@ -1618,7 +1617,6 @@ fn test_parse_record_only_properties() {
         },
     )
 }
-
 #[test]
 fn test_parse_type_expression_function_no_params() {
     let mut p = Parser::new(r#"() => uint"#);
@@ -1655,7 +1653,6 @@ fn test_parse_type_expression_function_no_params() {
         },
     )
 }
-
 #[test]
 fn test_parse_type_expression_function_with_params() {
     let mut p = Parser::new(r#"(A: int, B: string) => uint"#);
