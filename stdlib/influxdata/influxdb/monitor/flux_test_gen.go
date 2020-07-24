@@ -9322,7 +9322,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   59,
 				},
 				File:   "state_changes_any_to_any_test.flux",
-				Source: "package monitor_test\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => 2018-05-22T19:54:40Z\n\noption monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])\n\n// Note this input data is identical to the output data of the check test case, post pivot.\ninData = \"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"\n\n\noutData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"\n\nt_state_changes_any_to_any = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])\n\ntest monitor_state_changes_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
+				Source: "package monitor_test\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => 2018-05-22T19:54:40Z\n\noption monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])\n\n// Note this input data is identical to the output data of the check test case, post pivot.\ninData = \"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,2,000000000000000a,cpu threshold check,warn,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"\n\n\noutData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,1527018840000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"\n\nt_state_changes_any_to_any = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])\n\ntest monitor_state_changes_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -9805,7 +9805,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   47,
 					},
 					File:   "state_changes_any_to_any_test.flux",
-					Source: "outData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"",
+					Source: "outData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,1527018840000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   40,
@@ -9839,14 +9839,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   47,
 						},
 						File:   "state_changes_any_to_any_test.flux",
-						Source: "\"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"",
+						Source: "\"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,1527018840000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"",
 						Start: ast.Position{
 							Column: 11,
 							Line:   40,
 						},
 					},
 				},
-				Value: "\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n",
+				Value: "\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,1527018840000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -16171,6 +16171,1837 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
+					Column: 124,
+					Line:   150,
+				},
+				File:   "state_changes_custom_any_to_any_test.flux",
+				Source: "package monitor_test\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\nimport \"experimental\"\n\noption monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])\n\n// These statuses were produce by custom check query\ninData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,id\n,,0,2020-04-01T13:20:01.055501743Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055589553Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055681722Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055731206Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055757119Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055841776Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055893004Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.05593662Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:25:01.120735321Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:25:01.120827394Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119696459Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119812609Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119843339Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119944446Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119986133Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.12003354Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120075771Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120119872Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120162813Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120177679Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.12024583Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120285437Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120315321Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120341734Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120620071Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120707032Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,id\n,,2,2020-04-01T13:20:01.055501743Z,1585747099000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055589553Z,1585747116000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055681722Z,1585747134000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055731206Z,1585747151000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055757119Z,1585747168000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055841776Z,1585747185000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055893004Z,1585746980000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.05593662Z,1585746997000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:25:01.120735321Z,1585747203000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:25:01.120827394Z,1585747219000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119696459Z,1585747271000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119812609Z,1585747288000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119843339Z,1585747304000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119944446Z,1585747322000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119986133Z,1585747339000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.12003354Z,1585747356000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120075771Z,1585747374000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120119872Z,1585747390000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120162813Z,1585747407000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120177679Z,1585747424000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.12024583Z,1585747442000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120285437Z,1585747459000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120315321Z,1585747476000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120341734Z,1585747493000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120620071Z,1585747237000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120707032Z,1585747254000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,id\n,,4,2020-04-01T13:20:01.055501743Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055589553Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055681722Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055731206Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055757119Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055841776Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055893004Z,40.672562,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.05593662Z,40.672562,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:25:01.120735321Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:25:01.120827394Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119696459Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119812609Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119843339Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119944446Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119986133Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.12003354Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120075771Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120119872Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120162813Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120177679Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.12024583Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120285437Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120315321Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120341734Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120620071Z,40.70075,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120707032Z,40.70075,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055501743Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055589553Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055681722Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055731206Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055757119Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055841776Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055893004Z,-73.760456,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.05593662Z,-73.760456,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:25:01.120735321Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:25:01.120827394Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119696459Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119812609Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119843339Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119944446Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119986133Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.12003354Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120075771Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120119872Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120162813Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120177679Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.12024583Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120285437Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120315321Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120341734Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120620071Z,-73.804858,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120707032Z,-73.804858,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n\"\n\noutData = \"\n#group,false,false,true,true,true,false,true,false,false,true,true,false,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,string,string,double,double,string\n#default,_result,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,id,lat,lon,_level\n,,0,000000000000000a,LLIR,statuses,GO506_20_8813 is out,mta,1585747237000000000,2020-04-01T13:25:01.120620071Z,custom,GO506_20_8813,40.70075,-73.804858,warn\n\"\n\nt_state_changes_custom_any_to_any = (table=<-) => table\n    |> range(start: 2018-05-22T19:54:40Z)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])\n\ntest monitor_state_changes_custom_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_custom_any_to_any})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.MemberAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 80,
+							Line:   8,
+						},
+						File:   "state_changes_custom_any_to_any_test.flux",
+						Source: "monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+						Start: ast.Position{
+							Column: 8,
+							Line:   8,
+						},
+					},
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 80,
+								Line:   8,
+							},
+							File:   "state_changes_custom_any_to_any_test.flux",
+							Source: "(tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+							Start: ast.Position{
+								Column: 22,
+								Line:   8,
+							},
+						},
+					},
+					Body: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 43,
+										Line:   8,
+									},
+									File:   "state_changes_custom_any_to_any_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 37,
+										Line:   8,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 80,
+									Line:   8,
+								},
+								File:   "state_changes_custom_any_to_any_test.flux",
+								Source: "tables |> drop(columns:[\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 37,
+									Line:   8,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 79,
+											Line:   8,
+										},
+										File:   "state_changes_custom_any_to_any_test.flux",
+										Source: "columns:[\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 52,
+											Line:   8,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 79,
+												Line:   8,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "columns:[\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 52,
+												Line:   8,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 59,
+													Line:   8,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 52,
+													Line:   8,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   8,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "[\"_start\", \"_stop\"]",
+												Start: ast.Position{
+													Column: 60,
+													Line:   8,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   8,
+													},
+													File:   "state_changes_custom_any_to_any_test.flux",
+													Source: "\"_start\"",
+													Start: ast.Position{
+														Column: 61,
+														Line:   8,
+													},
+												},
+											},
+											Value: "_start",
+										}, &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 78,
+														Line:   8,
+													},
+													File:   "state_changes_custom_any_to_any_test.flux",
+													Source: "\"_stop\"",
+													Start: ast.Position{
+														Column: 71,
+														Line:   8,
+													},
+												},
+											},
+											Value: "_stop",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 80,
+										Line:   8,
+									},
+									File:   "state_changes_custom_any_to_any_test.flux",
+									Source: "drop(columns:[\"_start\", \"_stop\"])",
+									Start: ast.Position{
+										Column: 47,
+										Line:   8,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 51,
+											Line:   8,
+										},
+										File:   "state_changes_custom_any_to_any_test.flux",
+										Source: "drop",
+										Start: ast.Position{
+											Column: 47,
+											Line:   8,
+										},
+									},
+								},
+								Name: "drop",
+							},
+						},
+					},
+					Params: []*ast.Property{&ast.Property{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   8,
+								},
+								File:   "state_changes_custom_any_to_any_test.flux",
+								Source: "tables=<-",
+								Start: ast.Position{
+									Column: 23,
+									Line:   8,
+								},
+							},
+						},
+						Key: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   8,
+									},
+									File:   "state_changes_custom_any_to_any_test.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 23,
+										Line:   8,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   8,
+								},
+								File:   "state_changes_custom_any_to_any_test.flux",
+								Source: "<-",
+								Start: ast.Position{
+									Column: 30,
+									Line:   8,
+								},
+							},
+						}},
+					}},
+				},
+				Member: &ast.MemberExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   8,
+							},
+							File:   "state_changes_custom_any_to_any_test.flux",
+							Source: "monitor.log",
+							Start: ast.Position{
+								Column: 8,
+								Line:   8,
+							},
+						},
+					},
+					Object: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   8,
+								},
+								File:   "state_changes_custom_any_to_any_test.flux",
+								Source: "monitor",
+								Start: ast.Position{
+									Column: 8,
+									Line:   8,
+								},
+							},
+						},
+						Name: "monitor",
+					},
+					Property: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 19,
+									Line:   8,
+								},
+								File:   "state_changes_custom_any_to_any_test.flux",
+								Source: "log",
+								Start: ast.Position{
+									Column: 16,
+									Line:   8,
+								},
+							},
+						},
+						Name: "log",
+					},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 80,
+						Line:   8,
+					},
+					File:   "state_changes_custom_any_to_any_test.flux",
+					Source: "option monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   130,
+					},
+					File:   "state_changes_custom_any_to_any_test.flux",
+					Source: "inData = \"\n#group,false,false,false,false,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,id\n,,0,2020-04-01T13:20:01.055501743Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055589553Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055681722Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055731206Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055757119Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055841776Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055893004Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.05593662Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:25:01.120735321Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:25:01.120827394Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119696459Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119812609Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119843339Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119944446Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119986133Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.12003354Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120075771Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120119872Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120162813Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120177679Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.12024583Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120285437Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120315321Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120341734Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120620071Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120707032Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,id\n,,2,2020-04-01T13:20:01.055501743Z,1585747099000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055589553Z,1585747116000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055681722Z,1585747134000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055731206Z,1585747151000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055757119Z,1585747168000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055841776Z,1585747185000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055893004Z,1585746980000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.05593662Z,1585746997000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:25:01.120735321Z,1585747203000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:25:01.120827394Z,1585747219000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119696459Z,1585747271000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119812609Z,1585747288000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119843339Z,1585747304000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119944446Z,1585747322000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119986133Z,1585747339000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.12003354Z,1585747356000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120075771Z,1585747374000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120119872Z,1585747390000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120162813Z,1585747407000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120177679Z,1585747424000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.12024583Z,1585747442000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120285437Z,1585747459000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120315321Z,1585747476000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120341734Z,1585747493000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120620071Z,1585747237000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120707032Z,1585747254000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,id\n,,4,2020-04-01T13:20:01.055501743Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055589553Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055681722Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055731206Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055757119Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055841776Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055893004Z,40.672562,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.05593662Z,40.672562,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:25:01.120735321Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:25:01.120827394Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119696459Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119812609Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119843339Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119944446Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119986133Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.12003354Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120075771Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120119872Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120162813Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120177679Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.12024583Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120285437Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120315321Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120341734Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120620071Z,40.70075,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120707032Z,40.70075,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055501743Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055589553Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055681722Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055731206Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055757119Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055841776Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055893004Z,-73.760456,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.05593662Z,-73.760456,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:25:01.120735321Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:25:01.120827394Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119696459Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119812609Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119843339Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119944446Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119986133Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.12003354Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120075771Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120119872Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120162813Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120177679Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.12024583Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120285437Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120315321Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120341734Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120620071Z,-73.804858,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120707032Z,-73.804858,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   11,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   11,
+						},
+						File:   "state_changes_custom_any_to_any_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   11,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   130,
+						},
+						File:   "state_changes_custom_any_to_any_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,id\n,,0,2020-04-01T13:20:01.055501743Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055589553Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055681722Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055731206Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055757119Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055841776Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055893004Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.05593662Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:25:01.120735321Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:25:01.120827394Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119696459Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119812609Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119843339Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119944446Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119986133Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.12003354Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120075771Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120119872Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120162813Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120177679Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.12024583Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120285437Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120315321Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120341734Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120620071Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120707032Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,id\n,,2,2020-04-01T13:20:01.055501743Z,1585747099000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055589553Z,1585747116000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055681722Z,1585747134000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055731206Z,1585747151000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055757119Z,1585747168000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055841776Z,1585747185000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055893004Z,1585746980000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.05593662Z,1585746997000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:25:01.120735321Z,1585747203000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:25:01.120827394Z,1585747219000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119696459Z,1585747271000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119812609Z,1585747288000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119843339Z,1585747304000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119944446Z,1585747322000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119986133Z,1585747339000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.12003354Z,1585747356000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120075771Z,1585747374000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120119872Z,1585747390000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120162813Z,1585747407000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120177679Z,1585747424000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.12024583Z,1585747442000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120285437Z,1585747459000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120315321Z,1585747476000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120341734Z,1585747493000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120620071Z,1585747237000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120707032Z,1585747254000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,id\n,,4,2020-04-01T13:20:01.055501743Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055589553Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055681722Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055731206Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055757119Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055841776Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055893004Z,40.672562,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.05593662Z,40.672562,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:25:01.120735321Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:25:01.120827394Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119696459Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119812609Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119843339Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119944446Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119986133Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.12003354Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120075771Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120119872Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120162813Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120177679Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.12024583Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120285437Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120315321Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120341734Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120620071Z,40.70075,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120707032Z,40.70075,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055501743Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055589553Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055681722Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055731206Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055757119Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055841776Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055893004Z,-73.760456,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.05593662Z,-73.760456,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:25:01.120735321Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:25:01.120827394Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119696459Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119812609Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119843339Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119944446Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119986133Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.12003354Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120075771Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120119872Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120162813Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120177679Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.12024583Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120285437Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120315321Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120341734Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120620071Z,-73.804858,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120707032Z,-73.804858,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   11,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,id\n,,0,2020-04-01T13:20:01.055501743Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055589553Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055681722Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055731206Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055757119Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055841776Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.055893004Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:20:01.05593662Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:25:01.120735321Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,0,2020-04-01T13:25:01.120827394Z,GO506_20_8813 is in,000000000000000a,LLIR,_message,ok,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119696459Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119812609Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119843339Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119944446Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.119986133Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.12003354Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120075771Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120119872Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120162813Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120177679Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.12024583Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120285437Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120315321Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120341734Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120620071Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n,,1,2020-04-01T13:25:01.120707032Z,GO506_20_8813 is out,000000000000000a,LLIR,_message,warn,statuses,mta,custom,GO506_20_8813\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,id\n,,2,2020-04-01T13:20:01.055501743Z,1585747099000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055589553Z,1585747116000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055681722Z,1585747134000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055731206Z,1585747151000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055757119Z,1585747168000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055841776Z,1585747185000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.055893004Z,1585746980000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:20:01.05593662Z,1585746997000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:25:01.120735321Z,1585747203000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,2,2020-04-01T13:25:01.120827394Z,1585747219000000000,000000000000000a,LLIR,_source_timestamp,ok,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119696459Z,1585747271000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119812609Z,1585747288000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119843339Z,1585747304000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119944446Z,1585747322000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.119986133Z,1585747339000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.12003354Z,1585747356000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120075771Z,1585747374000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120119872Z,1585747390000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120162813Z,1585747407000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120177679Z,1585747424000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.12024583Z,1585747442000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120285437Z,1585747459000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120315321Z,1585747476000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120341734Z,1585747493000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120620071Z,1585747237000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n,,3,2020-04-01T13:25:01.120707032Z,1585747254000000000,000000000000000a,LLIR,_source_timestamp,warn,statuses,mta,custom,GO506_20_8813\n\n#group,false,false,false,false,true,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,\n,result,table,_time,_value,_check_id,_check_name,_field,_level,_measurement,_source_measurement,_type,id\n,,4,2020-04-01T13:20:01.055501743Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055589553Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055681722Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055731206Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055757119Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055841776Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.055893004Z,40.672562,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:20:01.05593662Z,40.672562,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:25:01.120735321Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,4,2020-04-01T13:25:01.120827394Z,40.676922,000000000000000a,LLIR,lat,ok,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119696459Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119812609Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119843339Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119944446Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.119986133Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.12003354Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120075771Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120119872Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120162813Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120177679Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.12024583Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120285437Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120315321Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120341734Z,40.699608,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120620071Z,40.70075,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,5,2020-04-01T13:25:01.120707032Z,40.70075,000000000000000a,LLIR,lat,warn,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055501743Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055589553Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055681722Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055731206Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055757119Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055841776Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.055893004Z,-73.760456,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:20:01.05593662Z,-73.760456,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:25:01.120735321Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,6,2020-04-01T13:25:01.120827394Z,-73.76787,000000000000000a,LLIR,lon,ok,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119696459Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119812609Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119843339Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119944446Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.119986133Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.12003354Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120075771Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120119872Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120162813Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120177679Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.12024583Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120285437Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120315321Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120341734Z,-73.80853,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120620071Z,-73.804858,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n,,7,2020-04-01T13:25:01.120707032Z,-73.804858,000000000000000a,LLIR,lon,warn,statuses,mta,custom,GO506_20_8813\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   138,
+					},
+					File:   "state_changes_custom_any_to_any_test.flux",
+					Source: "outData = \"\n#group,false,false,true,true,true,false,true,false,false,true,true,false,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,string,string,double,double,string\n#default,_result,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,id,lat,lon,_level\n,,0,000000000000000a,LLIR,statuses,GO506_20_8813 is out,mta,1585747237000000000,2020-04-01T13:25:01.120620071Z,custom,GO506_20_8813,40.70075,-73.804858,warn\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   132,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   132,
+						},
+						File:   "state_changes_custom_any_to_any_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   132,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   138,
+						},
+						File:   "state_changes_custom_any_to_any_test.flux",
+						Source: "\"\n#group,false,false,true,true,true,false,true,false,false,true,true,false,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,string,string,double,double,string\n#default,_result,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,id,lat,lon,_level\n,,0,000000000000000a,LLIR,statuses,GO506_20_8813 is out,mta,1585747237000000000,2020-04-01T13:25:01.120620071Z,custom,GO506_20_8813,40.70075,-73.804858,warn\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   132,
+						},
+					},
+				},
+				Value: "\n#group,false,false,true,true,true,false,true,false,false,true,true,false,false,true\n#datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,string,string,double,double,string\n#default,_result,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,id,lat,lon,_level\n,,0,000000000000000a,LLIR,statuses,GO506_20_8813 is out,mta,1585747237000000000,2020-04-01T13:25:01.120620071Z,custom,GO506_20_8813,40.70075,-73.804858,warn\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 41,
+						Line:   147,
+					},
+					File:   "state_changes_custom_any_to_any_test.flux",
+					Source: "t_state_changes_custom_any_to_any = (table=<-) => table\n    |> range(start: 2018-05-22T19:54:40Z)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   140,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 34,
+							Line:   140,
+						},
+						File:   "state_changes_custom_any_to_any_test.flux",
+						Source: "t_state_changes_custom_any_to_any",
+						Start: ast.Position{
+							Column: 1,
+							Line:   140,
+						},
+					},
+				},
+				Name: "t_state_changes_custom_any_to_any",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 41,
+							Line:   147,
+						},
+						File:   "state_changes_custom_any_to_any_test.flux",
+						Source: "(table=<-) => table\n    |> range(start: 2018-05-22T19:54:40Z)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+						Start: ast.Position{
+							Column: 37,
+							Line:   140,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 56,
+												Line:   140,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "table",
+											Start: ast.Position{
+												Column: 51,
+												Line:   140,
+											},
+										},
+									},
+									Name: "table",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   141,
+										},
+										File:   "state_changes_custom_any_to_any_test.flux",
+										Source: "table\n    |> range(start: 2018-05-22T19:54:40Z)",
+										Start: ast.Position{
+											Column: 51,
+											Line:   140,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   141,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "start: 2018-05-22T19:54:40Z",
+												Start: ast.Position{
+													Column: 14,
+													Line:   141,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   141,
+													},
+													File:   "state_changes_custom_any_to_any_test.flux",
+													Source: "start: 2018-05-22T19:54:40Z",
+													Start: ast.Position{
+														Column: 14,
+														Line:   141,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 19,
+															Line:   141,
+														},
+														File:   "state_changes_custom_any_to_any_test.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 14,
+															Line:   141,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Value: &ast.DateTimeLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   141,
+														},
+														File:   "state_changes_custom_any_to_any_test.flux",
+														Source: "2018-05-22T19:54:40Z",
+														Start: ast.Position{
+															Column: 21,
+															Line:   141,
+														},
+													},
+												},
+												Value: parser.MustParseTime("2018-05-22T19:54:40Z"),
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   141,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "range(start: 2018-05-22T19:54:40Z)",
+											Start: ast.Position{
+												Column: 8,
+												Line:   141,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 13,
+													Line:   141,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "range",
+												Start: ast.Position{
+													Column: 8,
+													Line:   141,
+												},
+											},
+										},
+										Name: "range",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   142,
+									},
+									File:   "state_changes_custom_any_to_any_test.flux",
+									Source: "table\n    |> range(start: 2018-05-22T19:54:40Z)\n    |> v1.fieldsAsCols()",
+									Start: ast.Position{
+										Column: 51,
+										Line:   140,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   142,
+										},
+										File:   "state_changes_custom_any_to_any_test.flux",
+										Source: "v1.fieldsAsCols()",
+										Start: ast.Position{
+											Column: 8,
+											Line:   142,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   142,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "v1.fieldsAsCols",
+											Start: ast.Position{
+												Column: 8,
+												Line:   142,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 10,
+													Line:   142,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "v1",
+												Start: ast.Position{
+													Column: 8,
+													Line:   142,
+												},
+											},
+										},
+										Name: "v1",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   142,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "fieldsAsCols",
+												Start: ast.Position{
+													Column: 11,
+													Line:   142,
+												},
+											},
+										},
+										Name: "fieldsAsCols",
+									},
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   146,
+								},
+								File:   "state_changes_custom_any_to_any_test.flux",
+								Source: "table\n    |> range(start: 2018-05-22T19:54:40Z)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )",
+								Start: ast.Position{
+									Column: 51,
+									Line:   140,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   145,
+										},
+										File:   "state_changes_custom_any_to_any_test.flux",
+										Source: "fromLevel: \"any\",\n        toLevel: \"any\"",
+										Start: ast.Position{
+											Column: 9,
+											Line:   144,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   144,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "fromLevel: \"any\"",
+											Start: ast.Position{
+												Column: 9,
+												Line:   144,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   144,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "fromLevel",
+												Start: ast.Position{
+													Column: 9,
+													Line:   144,
+												},
+											},
+										},
+										Name: "fromLevel",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   144,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "\"any\"",
+												Start: ast.Position{
+													Column: 20,
+													Line:   144,
+												},
+											},
+										},
+										Value: "any",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 23,
+												Line:   145,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "toLevel: \"any\"",
+											Start: ast.Position{
+												Column: 9,
+												Line:   145,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   145,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "toLevel",
+												Start: ast.Position{
+													Column: 9,
+													Line:   145,
+												},
+											},
+										},
+										Name: "toLevel",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   145,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "\"any\"",
+												Start: ast.Position{
+													Column: 18,
+													Line:   145,
+												},
+											},
+										},
+										Value: "any",
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 6,
+										Line:   146,
+									},
+									File:   "state_changes_custom_any_to_any_test.flux",
+									Source: "monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )",
+									Start: ast.Position{
+										Column: 8,
+										Line:   143,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   143,
+										},
+										File:   "state_changes_custom_any_to_any_test.flux",
+										Source: "monitor.stateChanges",
+										Start: ast.Position{
+											Column: 8,
+											Line:   143,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   143,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "monitor",
+											Start: ast.Position{
+												Column: 8,
+												Line:   143,
+											},
+										},
+									},
+									Name: "monitor",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 28,
+												Line:   143,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "stateChanges",
+											Start: ast.Position{
+												Column: 16,
+												Line:   143,
+											},
+										},
+									},
+									Name: "stateChanges",
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 41,
+								Line:   147,
+							},
+							File:   "state_changes_custom_any_to_any_test.flux",
+							Source: "table\n    |> range(start: 2018-05-22T19:54:40Z)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
+							Start: ast.Position{
+								Column: 51,
+								Line:   140,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   147,
+									},
+									File:   "state_changes_custom_any_to_any_test.flux",
+									Source: "columns: [\"_start\",\"_stop\"]",
+									Start: ast.Position{
+										Column: 13,
+										Line:   147,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   147,
+										},
+										File:   "state_changes_custom_any_to_any_test.flux",
+										Source: "columns: [\"_start\",\"_stop\"]",
+										Start: ast.Position{
+											Column: 13,
+											Line:   147,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   147,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 13,
+												Line:   147,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 40,
+												Line:   147,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "[\"_start\",\"_stop\"]",
+											Start: ast.Position{
+												Column: 22,
+												Line:   147,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   147,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "\"_start\"",
+												Start: ast.Position{
+													Column: 23,
+													Line:   147,
+												},
+											},
+										},
+										Value: "_start",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   147,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "\"_stop\"",
+												Start: ast.Position{
+													Column: 32,
+													Line:   147,
+												},
+											},
+										},
+										Value: "_stop",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 41,
+									Line:   147,
+								},
+								File:   "state_changes_custom_any_to_any_test.flux",
+								Source: "drop(columns: [\"_start\",\"_stop\"])",
+								Start: ast.Position{
+									Column: 8,
+									Line:   147,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   147,
+									},
+									File:   "state_changes_custom_any_to_any_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 8,
+										Line:   147,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 46,
+								Line:   140,
+							},
+							File:   "state_changes_custom_any_to_any_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 38,
+								Line:   140,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 43,
+									Line:   140,
+								},
+								File:   "state_changes_custom_any_to_any_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 38,
+									Line:   140,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 46,
+								Line:   140,
+							},
+							File:   "state_changes_custom_any_to_any_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 44,
+								Line:   140,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 124,
+							Line:   150,
+						},
+						File:   "state_changes_custom_any_to_any_test.flux",
+						Source: "monitor_state_changes_custom_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_custom_any_to_any})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   149,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 45,
+								Line:   149,
+							},
+							File:   "state_changes_custom_any_to_any_test.flux",
+							Source: "monitor_state_changes_custom_any_to_any",
+							Start: ast.Position{
+								Column: 6,
+								Line:   149,
+							},
+						},
+					},
+					Name: "monitor_state_changes_custom_any_to_any",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 124,
+								Line:   150,
+							},
+							File:   "state_changes_custom_any_to_any_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_custom_any_to_any})",
+							Start: ast.Position{
+								Column: 48,
+								Line:   149,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 124,
+									Line:   150,
+								},
+								File:   "state_changes_custom_any_to_any_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_custom_any_to_any})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   150,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 123,
+										Line:   150,
+									},
+									File:   "state_changes_custom_any_to_any_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_custom_any_to_any}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   150,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   150,
+										},
+										File:   "state_changes_custom_any_to_any_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   150,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   150,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   150,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   150,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 34,
+													Line:   150,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   150,
+													},
+													File:   "state_changes_custom_any_to_any_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 34,
+														Line:   150,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   150,
+														},
+														File:   "state_changes_custom_any_to_any_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   150,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 45,
+															Line:   150,
+														},
+														File:   "state_changes_custom_any_to_any_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 39,
+															Line:   150,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 46,
+												Line:   150,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   150,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   150,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   150,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   150,
+													},
+													File:   "state_changes_custom_any_to_any_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   150,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   150,
+													},
+													File:   "state_changes_custom_any_to_any_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   150,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 83,
+											Line:   150,
+										},
+										File:   "state_changes_custom_any_to_any_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 48,
+											Line:   150,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 52,
+												Line:   150,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 48,
+												Line:   150,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 82,
+													Line:   150,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 70,
+													Line:   150,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 82,
+														Line:   150,
+													},
+													File:   "state_changes_custom_any_to_any_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 70,
+														Line:   150,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 73,
+															Line:   150,
+														},
+														File:   "state_changes_custom_any_to_any_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 70,
+															Line:   150,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 82,
+															Line:   150,
+														},
+														File:   "state_changes_custom_any_to_any_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 75,
+															Line:   150,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 83,
+												Line:   150,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 54,
+												Line:   150,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 69,
+													Line:   150,
+												},
+												File:   "state_changes_custom_any_to_any_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 54,
+													Line:   150,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 61,
+														Line:   150,
+													},
+													File:   "state_changes_custom_any_to_any_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 54,
+														Line:   150,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   150,
+													},
+													File:   "state_changes_custom_any_to_any_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 62,
+														Line:   150,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 122,
+											Line:   150,
+										},
+										File:   "state_changes_custom_any_to_any_test.flux",
+										Source: "fn: t_state_changes_custom_any_to_any",
+										Start: ast.Position{
+											Column: 85,
+											Line:   150,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 87,
+												Line:   150,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 85,
+												Line:   150,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 122,
+												Line:   150,
+											},
+											File:   "state_changes_custom_any_to_any_test.flux",
+											Source: "t_state_changes_custom_any_to_any",
+											Start: ast.Position{
+												Column: 89,
+												Line:   150,
+											},
+										},
+									},
+									Name: "t_state_changes_custom_any_to_any",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 124,
+						Line:   150,
+					},
+					File:   "state_changes_custom_any_to_any_test.flux",
+					Source: "test monitor_state_changes_custom_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_custom_any_to_any})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   149,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 37,
+						Line:   3,
+					},
+					File:   "state_changes_custom_any_to_any_test.flux",
+					Source: "import \"influxdata/influxdb/monitor\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 37,
+							Line:   3,
+						},
+						File:   "state_changes_custom_any_to_any_test.flux",
+						Source: "\"influxdata/influxdb/monitor\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/monitor",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 32,
+						Line:   4,
+					},
+					File:   "state_changes_custom_any_to_any_test.flux",
+					Source: "import \"influxdata/influxdb/v1\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 32,
+							Line:   4,
+						},
+						File:   "state_changes_custom_any_to_any_test.flux",
+						Source: "\"influxdata/influxdb/v1\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/v1",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   5,
+					},
+					File:   "state_changes_custom_any_to_any_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   5,
+						},
+						File:   "state_changes_custom_any_to_any_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   6,
+					},
+					File:   "state_changes_custom_any_to_any_test.flux",
+					Source: "import \"experimental\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   6,
+						},
+						File:   "state_changes_custom_any_to_any_test.flux",
+						Source: "\"experimental\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				Value: "experimental",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "state_changes_custom_any_to_any_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 21,
+						Line:   1,
+					},
+					File:   "state_changes_custom_any_to_any_test.flux",
+					Source: "package monitor_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   1,
+						},
+						File:   "state_changes_custom_any_to_any_test.flux",
+						Source: "monitor_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "monitor_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
 					Column: 118,
 					Line:   69,
 				},
@@ -18111,10 +19942,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 117,
-					Line:   57,
+					Line:   58,
 				},
 				File:   "state_changes_invalid_any_to_any_test.flux",
-				Source: "package monitor_test\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => 2018-05-22T19:54:40Z\n\noption monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])\n\n// Note this input data is identical to the output data of the check test case, post pivot.\ninData = \"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"\n\noutData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n\"\n\nt_state_changes_any_to_any = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])\n\ntest monitor_state_changes_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
+				Source: "package monitor_test\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => 2018-05-22T19:54:40Z\n\noption monitor.log = (tables=<-) => tables |> drop(columns:[\"_start\", \"_stop\"])\n\n// Note this input data is identical to the output data of the check test case, post pivot.\ninData = \"\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,double\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,90.62382797849732\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,usage_idle,7.05\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_message,whoa!\n\n#datatype,string,long,string,string,string,string,string,dateTime:RFC3339,string,string,string,string,string,string,long\n#group,false,false,true,true,true,true,true,false,true,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_source_measurement,_time,_type,aaa,bbb,cpu,host,_field,_value\n,,0,000000000000000a,cpu threshold check,crit,statuses,cpu,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018840000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000\n,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000\n\"\n\noutData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,1527018840000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001\n,,2,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"\n\nt_state_changes_any_to_any = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])\n\ntest monitor_state_changes_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -18594,10 +20425,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   45,
+						Line:   46,
 					},
 					File:   "state_changes_invalid_any_to_any_test.flux",
-					Source: "outData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n\"",
+					Source: "outData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,1527018840000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001\n,,2,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   39,
@@ -18628,17 +20459,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   45,
+							Line:   46,
 						},
 						File:   "state_changes_invalid_any_to_any_test.flux",
-						Source: "\"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n\"",
+						Source: "\"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,1527018840000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001\n,,2,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"",
 						Start: ast.Position{
 							Column: 11,
 							Line:   39,
 						},
 					},
 				},
-				Value: "\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n",
+				Value: "\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,1,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,1527018840000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001\n,,2,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -18646,13 +20477,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 41,
-						Line:   54,
+						Line:   55,
 					},
 					File:   "state_changes_invalid_any_to_any_test.flux",
 					Source: "t_state_changes_any_to_any = (table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
 					Start: ast.Position{
 						Column: 1,
-						Line:   47,
+						Line:   48,
 					},
 				},
 			},
@@ -18662,13 +20493,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 27,
-							Line:   47,
+							Line:   48,
 						},
 						File:   "state_changes_invalid_any_to_any_test.flux",
 						Source: "t_state_changes_any_to_any",
 						Start: ast.Position{
 							Column: 1,
-							Line:   47,
+							Line:   48,
 						},
 					},
 				},
@@ -18680,13 +20511,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 41,
-							Line:   54,
+							Line:   55,
 						},
 						File:   "state_changes_invalid_any_to_any_test.flux",
 						Source: "(table=<-) => table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
 						Start: ast.Position{
 							Column: 30,
-							Line:   47,
+							Line:   48,
 						},
 					},
 				},
@@ -18700,13 +20531,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 49,
-												Line:   47,
+												Line:   48,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "table",
 											Start: ast.Position{
 												Column: 44,
-												Line:   47,
+												Line:   48,
 											},
 										},
 									},
@@ -18717,13 +20548,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   48,
+											Line:   49,
 										},
 										File:   "state_changes_invalid_any_to_any_test.flux",
 										Source: "table\n    |> range(start: -1m)",
 										Start: ast.Position{
 											Column: 44,
-											Line:   47,
+											Line:   48,
 										},
 									},
 								},
@@ -18734,13 +20565,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   48,
+													Line:   49,
 												},
 												File:   "state_changes_invalid_any_to_any_test.flux",
 												Source: "start: -1m",
 												Start: ast.Position{
 													Column: 14,
-													Line:   48,
+													Line:   49,
 												},
 											},
 										},
@@ -18750,13 +20581,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 24,
-														Line:   48,
+														Line:   49,
 													},
 													File:   "state_changes_invalid_any_to_any_test.flux",
 													Source: "start: -1m",
 													Start: ast.Position{
 														Column: 14,
-														Line:   48,
+														Line:   49,
 													},
 												},
 											},
@@ -18766,13 +20597,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 19,
-															Line:   48,
+															Line:   49,
 														},
 														File:   "state_changes_invalid_any_to_any_test.flux",
 														Source: "start",
 														Start: ast.Position{
 															Column: 14,
-															Line:   48,
+															Line:   49,
 														},
 													},
 												},
@@ -18785,13 +20616,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 24,
-																Line:   48,
+																Line:   49,
 															},
 															File:   "state_changes_invalid_any_to_any_test.flux",
 															Source: "1m",
 															Start: ast.Position{
 																Column: 22,
-																Line:   48,
+																Line:   49,
 															},
 														},
 													},
@@ -18805,13 +20636,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
-															Line:   48,
+															Line:   49,
 														},
 														File:   "state_changes_invalid_any_to_any_test.flux",
 														Source: "-1m",
 														Start: ast.Position{
 															Column: 21,
-															Line:   48,
+															Line:   49,
 														},
 													},
 												},
@@ -18825,13 +20656,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   48,
+												Line:   49,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "range(start: -1m)",
 											Start: ast.Position{
 												Column: 8,
-												Line:   48,
+												Line:   49,
 											},
 										},
 									},
@@ -18841,13 +20672,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 13,
-													Line:   48,
+													Line:   49,
 												},
 												File:   "state_changes_invalid_any_to_any_test.flux",
 												Source: "range",
 												Start: ast.Position{
 													Column: 8,
-													Line:   48,
+													Line:   49,
 												},
 											},
 										},
@@ -18860,13 +20691,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   49,
+										Line:   50,
 									},
 									File:   "state_changes_invalid_any_to_any_test.flux",
 									Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()",
 									Start: ast.Position{
 										Column: 44,
-										Line:   47,
+										Line:   48,
 									},
 								},
 							},
@@ -18877,13 +20708,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   49,
+											Line:   50,
 										},
 										File:   "state_changes_invalid_any_to_any_test.flux",
 										Source: "v1.fieldsAsCols()",
 										Start: ast.Position{
 											Column: 8,
-											Line:   49,
+											Line:   50,
 										},
 									},
 								},
@@ -18893,13 +20724,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   49,
+												Line:   50,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "v1.fieldsAsCols",
 											Start: ast.Position{
 												Column: 8,
-												Line:   49,
+												Line:   50,
 											},
 										},
 									},
@@ -18909,13 +20740,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 10,
-													Line:   49,
+													Line:   50,
 												},
 												File:   "state_changes_invalid_any_to_any_test.flux",
 												Source: "v1",
 												Start: ast.Position{
 													Column: 8,
-													Line:   49,
+													Line:   50,
 												},
 											},
 										},
@@ -18927,13 +20758,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
-													Line:   49,
+													Line:   50,
 												},
 												File:   "state_changes_invalid_any_to_any_test.flux",
 												Source: "fieldsAsCols",
 												Start: ast.Position{
 													Column: 11,
-													Line:   49,
+													Line:   50,
 												},
 											},
 										},
@@ -18947,13 +20778,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   53,
+									Line:   54,
 								},
 								File:   "state_changes_invalid_any_to_any_test.flux",
 								Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )",
 								Start: ast.Position{
 									Column: 44,
-									Line:   47,
+									Line:   48,
 								},
 							},
 						},
@@ -18964,13 +20795,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   52,
+											Line:   53,
 										},
 										File:   "state_changes_invalid_any_to_any_test.flux",
 										Source: "fromLevel: \"any\",\n        toLevel: \"any\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   51,
+											Line:   52,
 										},
 									},
 								},
@@ -18980,13 +20811,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   51,
+												Line:   52,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "fromLevel: \"any\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   51,
+												Line:   52,
 											},
 										},
 									},
@@ -18996,13 +20827,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   51,
+													Line:   52,
 												},
 												File:   "state_changes_invalid_any_to_any_test.flux",
 												Source: "fromLevel",
 												Start: ast.Position{
 													Column: 9,
-													Line:   51,
+													Line:   52,
 												},
 											},
 										},
@@ -19014,13 +20845,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   51,
+													Line:   52,
 												},
 												File:   "state_changes_invalid_any_to_any_test.flux",
 												Source: "\"any\"",
 												Start: ast.Position{
 													Column: 20,
-													Line:   51,
+													Line:   52,
 												},
 											},
 										},
@@ -19032,13 +20863,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   52,
+												Line:   53,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "toLevel: \"any\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   52,
+												Line:   53,
 											},
 										},
 									},
@@ -19048,13 +20879,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
-													Line:   52,
+													Line:   53,
 												},
 												File:   "state_changes_invalid_any_to_any_test.flux",
 												Source: "toLevel",
 												Start: ast.Position{
 													Column: 9,
-													Line:   52,
+													Line:   53,
 												},
 											},
 										},
@@ -19066,13 +20897,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
-													Line:   52,
+													Line:   53,
 												},
 												File:   "state_changes_invalid_any_to_any_test.flux",
 												Source: "\"any\"",
 												Start: ast.Position{
 													Column: 18,
-													Line:   52,
+													Line:   53,
 												},
 											},
 										},
@@ -19086,13 +20917,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   53,
+										Line:   54,
 									},
 									File:   "state_changes_invalid_any_to_any_test.flux",
 									Source: "monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )",
 									Start: ast.Position{
 										Column: 8,
-										Line:   50,
+										Line:   51,
 									},
 								},
 							},
@@ -19102,13 +20933,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   50,
+											Line:   51,
 										},
 										File:   "state_changes_invalid_any_to_any_test.flux",
 										Source: "monitor.stateChanges",
 										Start: ast.Position{
 											Column: 8,
-											Line:   50,
+											Line:   51,
 										},
 									},
 								},
@@ -19118,13 +20949,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   50,
+												Line:   51,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "monitor",
 											Start: ast.Position{
 												Column: 8,
-												Line:   50,
+												Line:   51,
 											},
 										},
 									},
@@ -19136,13 +20967,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 28,
-												Line:   50,
+												Line:   51,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "stateChanges",
 											Start: ast.Position{
 												Column: 16,
-												Line:   50,
+												Line:   51,
 											},
 										},
 									},
@@ -19156,13 +20987,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 41,
-								Line:   54,
+								Line:   55,
 							},
 							File:   "state_changes_invalid_any_to_any_test.flux",
 							Source: "table\n    |> range(start: -1m)\n    |> v1.fieldsAsCols()\n    |> monitor.stateChanges(\n        fromLevel: \"any\",\n        toLevel: \"any\",\n    )\n    |> drop(columns: [\"_start\",\"_stop\"])",
 							Start: ast.Position{
 								Column: 44,
-								Line:   47,
+								Line:   48,
 							},
 						},
 					},
@@ -19173,13 +21004,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   54,
+										Line:   55,
 									},
 									File:   "state_changes_invalid_any_to_any_test.flux",
 									Source: "columns: [\"_start\",\"_stop\"]",
 									Start: ast.Position{
 										Column: 13,
-										Line:   54,
+										Line:   55,
 									},
 								},
 							},
@@ -19189,13 +21020,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 40,
-											Line:   54,
+											Line:   55,
 										},
 										File:   "state_changes_invalid_any_to_any_test.flux",
 										Source: "columns: [\"_start\",\"_stop\"]",
 										Start: ast.Position{
 											Column: 13,
-											Line:   54,
+											Line:   55,
 										},
 									},
 								},
@@ -19205,13 +21036,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   54,
+												Line:   55,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
-												Line:   54,
+												Line:   55,
 											},
 										},
 									},
@@ -19223,13 +21054,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 40,
-												Line:   54,
+												Line:   55,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "[\"_start\",\"_stop\"]",
 											Start: ast.Position{
 												Column: 22,
-												Line:   54,
+												Line:   55,
 											},
 										},
 									},
@@ -19239,13 +21070,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
-													Line:   54,
+													Line:   55,
 												},
 												File:   "state_changes_invalid_any_to_any_test.flux",
 												Source: "\"_start\"",
 												Start: ast.Position{
 													Column: 23,
-													Line:   54,
+													Line:   55,
 												},
 											},
 										},
@@ -19256,13 +21087,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 39,
-													Line:   54,
+													Line:   55,
 												},
 												File:   "state_changes_invalid_any_to_any_test.flux",
 												Source: "\"_stop\"",
 												Start: ast.Position{
 													Column: 32,
-													Line:   54,
+													Line:   55,
 												},
 											},
 										},
@@ -19277,13 +21108,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 41,
-									Line:   54,
+									Line:   55,
 								},
 								File:   "state_changes_invalid_any_to_any_test.flux",
 								Source: "drop(columns: [\"_start\",\"_stop\"])",
 								Start: ast.Position{
 									Column: 8,
-									Line:   54,
+									Line:   55,
 								},
 							},
 						},
@@ -19293,13 +21124,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   54,
+										Line:   55,
 									},
 									File:   "state_changes_invalid_any_to_any_test.flux",
 									Source: "drop",
 									Start: ast.Position{
 										Column: 8,
-										Line:   54,
+										Line:   55,
 									},
 								},
 							},
@@ -19313,13 +21144,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 39,
-								Line:   47,
+								Line:   48,
 							},
 							File:   "state_changes_invalid_any_to_any_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 31,
-								Line:   47,
+								Line:   48,
 							},
 						},
 					},
@@ -19329,13 +21160,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 36,
-									Line:   47,
+									Line:   48,
 								},
 								File:   "state_changes_invalid_any_to_any_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 31,
-									Line:   47,
+									Line:   48,
 								},
 							},
 						},
@@ -19346,13 +21177,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 39,
-								Line:   47,
+								Line:   48,
 							},
 							File:   "state_changes_invalid_any_to_any_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 37,
-								Line:   47,
+								Line:   48,
 							},
 						},
 					}},
@@ -19365,13 +21196,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 117,
-							Line:   57,
+							Line:   58,
 						},
 						File:   "state_changes_invalid_any_to_any_test.flux",
 						Source: "monitor_state_changes_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   56,
+							Line:   57,
 						},
 					},
 				},
@@ -19381,13 +21212,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 38,
-								Line:   56,
+								Line:   57,
 							},
 							File:   "state_changes_invalid_any_to_any_test.flux",
 							Source: "monitor_state_changes_any_to_any",
 							Start: ast.Position{
 								Column: 6,
-								Line:   56,
+								Line:   57,
 							},
 						},
 					},
@@ -19399,13 +21230,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 117,
-								Line:   57,
+								Line:   58,
 							},
 							File:   "state_changes_invalid_any_to_any_test.flux",
 							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
 							Start: ast.Position{
 								Column: 41,
-								Line:   56,
+								Line:   57,
 							},
 						},
 					},
@@ -19415,13 +21246,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 117,
-									Line:   57,
+									Line:   58,
 								},
 								File:   "state_changes_invalid_any_to_any_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
 								Start: ast.Position{
 									Column: 5,
-									Line:   57,
+									Line:   58,
 								},
 							},
 						},
@@ -19431,13 +21262,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 116,
-										Line:   57,
+										Line:   58,
 									},
 									File:   "state_changes_invalid_any_to_any_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any}",
 									Start: ast.Position{
 										Column: 6,
-										Line:   57,
+										Line:   58,
 									},
 								},
 							},
@@ -19447,13 +21278,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   57,
+											Line:   58,
 										},
 										File:   "state_changes_invalid_any_to_any_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 7,
-											Line:   57,
+											Line:   58,
 										},
 									},
 								},
@@ -19463,13 +21294,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
-												Line:   57,
+												Line:   58,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 7,
-												Line:   57,
+												Line:   58,
 											},
 										},
 									},
@@ -19482,13 +21313,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   57,
+													Line:   58,
 												},
 												File:   "state_changes_invalid_any_to_any_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 34,
-													Line:   57,
+													Line:   58,
 												},
 											},
 										},
@@ -19498,13 +21329,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
-														Line:   57,
+														Line:   58,
 													},
 													File:   "state_changes_invalid_any_to_any_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 34,
-														Line:   57,
+														Line:   58,
 													},
 												},
 											},
@@ -19514,13 +21345,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
-															Line:   57,
+															Line:   58,
 														},
 														File:   "state_changes_invalid_any_to_any_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 34,
-															Line:   57,
+															Line:   58,
 														},
 													},
 												},
@@ -19532,13 +21363,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 45,
-															Line:   57,
+															Line:   58,
 														},
 														File:   "state_changes_invalid_any_to_any_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 39,
-															Line:   57,
+															Line:   58,
 														},
 													},
 												},
@@ -19552,13 +21383,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 46,
-												Line:   57,
+												Line:   58,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 14,
-												Line:   57,
+												Line:   58,
 											},
 										},
 									},
@@ -19568,13 +21399,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   57,
+													Line:   58,
 												},
 												File:   "state_changes_invalid_any_to_any_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 14,
-													Line:   57,
+													Line:   58,
 												},
 											},
 										},
@@ -19584,13 +21415,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   57,
+														Line:   58,
 													},
 													File:   "state_changes_invalid_any_to_any_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 14,
-														Line:   57,
+														Line:   58,
 													},
 												},
 											},
@@ -19602,13 +21433,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
-														Line:   57,
+														Line:   58,
 													},
 													File:   "state_changes_invalid_any_to_any_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 22,
-														Line:   57,
+														Line:   58,
 													},
 												},
 											},
@@ -19622,13 +21453,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 83,
-											Line:   57,
+											Line:   58,
 										},
 										File:   "state_changes_invalid_any_to_any_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 48,
-											Line:   57,
+											Line:   58,
 										},
 									},
 								},
@@ -19638,13 +21469,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 52,
-												Line:   57,
+												Line:   58,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 48,
-												Line:   57,
+												Line:   58,
 											},
 										},
 									},
@@ -19657,13 +21488,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 82,
-													Line:   57,
+													Line:   58,
 												},
 												File:   "state_changes_invalid_any_to_any_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 70,
-													Line:   57,
+													Line:   58,
 												},
 											},
 										},
@@ -19673,13 +21504,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 82,
-														Line:   57,
+														Line:   58,
 													},
 													File:   "state_changes_invalid_any_to_any_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 70,
-														Line:   57,
+														Line:   58,
 													},
 												},
 											},
@@ -19689,13 +21520,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 73,
-															Line:   57,
+															Line:   58,
 														},
 														File:   "state_changes_invalid_any_to_any_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 70,
-															Line:   57,
+															Line:   58,
 														},
 													},
 												},
@@ -19707,13 +21538,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 82,
-															Line:   57,
+															Line:   58,
 														},
 														File:   "state_changes_invalid_any_to_any_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 75,
-															Line:   57,
+															Line:   58,
 														},
 													},
 												},
@@ -19727,13 +21558,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 83,
-												Line:   57,
+												Line:   58,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 54,
-												Line:   57,
+												Line:   58,
 											},
 										},
 									},
@@ -19743,13 +21574,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   57,
+													Line:   58,
 												},
 												File:   "state_changes_invalid_any_to_any_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 54,
-													Line:   57,
+													Line:   58,
 												},
 											},
 										},
@@ -19759,13 +21590,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 61,
-														Line:   57,
+														Line:   58,
 													},
 													File:   "state_changes_invalid_any_to_any_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 54,
-														Line:   57,
+														Line:   58,
 													},
 												},
 											},
@@ -19777,13 +21608,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 69,
-														Line:   57,
+														Line:   58,
 													},
 													File:   "state_changes_invalid_any_to_any_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 62,
-														Line:   57,
+														Line:   58,
 													},
 												},
 											},
@@ -19797,13 +21628,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 115,
-											Line:   57,
+											Line:   58,
 										},
 										File:   "state_changes_invalid_any_to_any_test.flux",
 										Source: "fn: t_state_changes_any_to_any",
 										Start: ast.Position{
 											Column: 85,
-											Line:   57,
+											Line:   58,
 										},
 									},
 								},
@@ -19813,13 +21644,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 87,
-												Line:   57,
+												Line:   58,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 85,
-												Line:   57,
+												Line:   58,
 											},
 										},
 									},
@@ -19831,13 +21662,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 115,
-												Line:   57,
+												Line:   58,
 											},
 											File:   "state_changes_invalid_any_to_any_test.flux",
 											Source: "t_state_changes_any_to_any",
 											Start: ast.Position{
 												Column: 89,
-												Line:   57,
+												Line:   58,
 											},
 										},
 									},
@@ -19855,13 +21686,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 117,
-						Line:   57,
+						Line:   58,
 					},
 					File:   "state_changes_invalid_any_to_any_test.flux",
 					Source: "test monitor_state_changes_any_to_any = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   56,
+						Line:   57,
 					},
 				},
 			},

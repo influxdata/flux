@@ -12,6 +12,10 @@ import (
 // This will sort the tables within the table iterators and produce
 // a diff of the full output.
 func Diff(want, got flux.TableIterator, opts ...DiffOption) string {
+	if want == nil {
+		want = Iterator{}
+	}
+
 	var wantS string
 	if wantT, err := Sort(want); err != nil {
 		wantS = fmt.Sprintf("table error: %s\n", err)
@@ -24,6 +28,10 @@ func Diff(want, got flux.TableIterator, opts ...DiffOption) string {
 			_, _ = fmt.Fprintf(&sb, "table error: %s\n", err)
 		}
 		wantS = sb.String()
+	}
+
+	if got == nil {
+		got = Iterator{}
 	}
 
 	var gotS string

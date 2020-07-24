@@ -41,7 +41,7 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
         |> duplicate(column: "_level", as: "____temp_level____")
         |> drop(columns: ["_level"])
         |> rename(columns: {"____temp_level____": "_level"})
-        |> sort(columns: ["_time"], desc: false)
+        |> sort(columns: ["_source_timestamp"], desc: false)
         |> difference(columns: ["level_value"])
         |> filter(fn: (r) => r.level_value == 1)
         |> drop(columns: ["level_value"])
@@ -51,6 +51,9 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 // stateChangesOnly takes a stream of tables that contains a _level column and
 // returns a stream of tables where each record in a table represents a state change
 // of the _level column.
+// Statuses are sorted by source timestamp, because default sort order of statuses may differ
+// (`_time` column holds the time when check was executed) and that could result in detecting
+// status changes at the wrong time or even false changes.
 stateChangesOnly = (tables=<-) => {
     return tables
         |> map(fn: (r) => ({r with level_value: if r._level == levelCrit then 4
@@ -61,7 +64,7 @@ stateChangesOnly = (tables=<-) => {
         |> duplicate(column: "_level", as: "____temp_level____")
         |> drop(columns: ["_level"])
         |> rename(columns: {"____temp_level____": "_level"})
-        |> sort(columns: ["_time"], desc: false)
+        |> sort(columns: ["_source_timestamp"], desc: false)
         |> difference(columns: ["level_value"])
         |> filter(fn: (r) => r.level_value != 0)
         |> drop(columns: ["level_value"])
