@@ -646,25 +646,27 @@ impl Parser {
             TOK_IDENT => {
                 start = None;
                 id = Some(self.parse_identifier());
-            },
+            }
             TOK_QUESTION_MARK => {
                 start = Some(self.expect(TOK_QUESTION_MARK));
                 id = Some(self.parse_identifier());
-            },
+            }
             TOK_PIPE_RECEIVE => {
                 start = Some(self.expect(TOK_PIPE_RECEIVE));
                 if self.peek().tok == TOK_IDENT {
                     id = Some(self.parse_identifier());
+                } else {
+                    id = None;
                 }
-                else { id = None; }
-            },
-            _ => id = None
+            }
+            _ => id = None,
         }
         self.expect(TOK_COLON);
         let mt = self.parse_monotype();
         if start == None && id != None {
             ParameterType {
-                base: self.base_node_from_others(&(id.as_ref().unwrap().base), &base_from_monotype(&mt)),
+                base: self
+                    .base_node_from_others(&(id.as_ref().unwrap().base), &base_from_monotype(&mt)),
                 identifier: id,
                 parameter: mt,
             }
