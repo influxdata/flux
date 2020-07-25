@@ -554,7 +554,7 @@ pub struct ParameterType {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub identifier: Identifier,
+    pub identifier: Option<Identifier>,
     pub parameter: MonoType,
 }
 

@@ -1676,13 +1676,13 @@ fn test_parse_type_expression_function_with_params() {
                             location: loc.get(1, 2, 1, 8),
                             ..BaseNode::default()
                         },
-                        identifier: Identifier {
+                        identifier: Some(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 2, 1, 3),
                                 ..BaseNode::default()
                             },
                             name: "A".to_string(),
-                        },
+                        }),
                         parameter: MonoType::Basic(NamedType {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 8),
@@ -1702,13 +1702,13 @@ fn test_parse_type_expression_function_with_params() {
                             location: loc.get(1, 10, 1, 19),
                             ..BaseNode::default()
                         },
-                        identifier: Identifier {
+                        identifier: Some(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 10, 1, 11),
                                 ..BaseNode::default()
                             },
                             name: "B".to_string(),
-                        },
+                        }),
                         parameter: MonoType::Basic(NamedType {
                             base: BaseNode {
                                 location: loc.get(1, 13, 1, 19),
