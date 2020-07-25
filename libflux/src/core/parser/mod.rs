@@ -93,6 +93,7 @@ fn format_token(t: TOK) -> &'static str {
         TOK_COMMA => "COMMA",
         TOK_DOT => "DOT",
         TOK_COLON => "COLON",
+        TOK_QUESTION_MARK => "QUESTION_MARK",
         TOK_PIPE_FORWARD => "PIPE_FORWARD",
         TOK_PIPE_RECEIVE => "PIPE_RECEIVE",
         TOK_EXISTS => "EXISTS",
@@ -555,6 +556,7 @@ impl Parser {
                 }
             }
             TOK_LBRACK => self.parse_array(),
+            TOK_LPAREN => self.parse_function(),
             _ => MonoType::Invalid,
         }
     }
@@ -589,6 +591,92 @@ impl Parser {
             base: self.base_node_from_tokens(&start, &end),
             monotype: mt,
         }));
+    }
+
+    #[cfg(test)]
+    // "(" [Parameters] ")" "=>" MonoType
+    fn parse_function(&mut self) -> MonoType {
+        let _lparen = self.expect(TOK_LPAREN);
+
+        let mut params = Vec::<ParameterType>::new();
+        if self.peek().tok == TOK_PIPE_RECEIVE
+            || self.peek().tok == TOK_QUESTION_MARK
+            || self.peek().tok == TOK_IDENT
+        {
+            params = self.parse_parameters();
+        }
+        let _rparen = self.expect(TOK_RPAREN);
+        self.expect(TOK_ARROW);
+        let mt = self.parse_monotype();
+        if params.len() == 0 {
+            return MonoType::Function(Box::new(FunctionType {
+                base: self.base_node_from_other_end(&_lparen, &base_from_monotype(&mt)),
+                parameters: None,
+                monotype: mt,
+            }));
+        }
+        return MonoType::Function(Box::new(FunctionType {
+            base: self.base_node_from_other_end(&_lparen, &base_from_monotype(&mt)),
+            parameters: Some(params),
+            monotype: mt,
+        }));
+    }
+
+    #[cfg(test)]
+    // Parameters = Parameter { "," Parameter } .
+    fn parse_parameters(&mut self) -> Vec<ParameterType> {
+        let mut params = Vec::<ParameterType>::new();
+        let parameter = self.parse_parameter_type();
+        params.push(parameter);
+        while self.peek().tok == TOK_COMMA {
+            self.consume();
+            let parameter = self.parse_parameter_type();
+            params.push(parameter);
+        }
+        return params;
+    }
+
+    #[cfg(test)]
+    // [ "<-" | "?" ] identifier ":" MonoType __OLD
+    // (identifier | "?" identifier | "<-" identifier | "<-") ":" MonoType __NEW
+    fn parse_parameter_type(&mut self) -> ParameterType {
+        let id;
+        let mut start = None;
+        match self.peek().tok {
+            TOK_IDENT => {
+                start = None;
+                id = Some(self.parse_identifier());
+            }
+            TOK_QUESTION_MARK => {
+                start = Some(self.expect(TOK_QUESTION_MARK));
+                id = Some(self.parse_identifier());
+            }
+            TOK_PIPE_RECEIVE => {
+                start = Some(self.expect(TOK_PIPE_RECEIVE));
+                if self.peek().tok == TOK_IDENT {
+                    id = Some(self.parse_identifier());
+                } else {
+                    id = None;
+                }
+            }
+            _ => id = None,
+        }
+        self.expect(TOK_COLON);
+        let mt = self.parse_monotype();
+        if start == None && id != None {
+            ParameterType {
+                base: self
+                    .base_node_from_others(&(id.as_ref().unwrap().base), &base_from_monotype(&mt)),
+                identifier: id,
+                parameter: mt,
+            }
+        } else {
+            ParameterType {
+                base: self.base_node_from_other_end(&(start.unwrap()), &base_from_monotype(&mt)),
+                identifier: id,
+                parameter: mt,
+            }
+        }
     }
 
     #[cfg(test)]

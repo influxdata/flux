@@ -500,6 +500,7 @@ pub enum MonoType {
     Basic(NamedType),
     Array(Box<ArrayType>),
     Record(RecordType),
+    Function(Box<FunctionType>),
     Invalid,
 }
 
@@ -509,6 +510,7 @@ pub fn base_from_monotype(m: &MonoType) -> BaseNode {
         MonoType::Tvar(t) => t.base.clone(),
         MonoType::Array(t) => t.base.clone(),
         MonoType::Record(t) => t.base.clone(),
+        MonoType::Function(t) => t.base.clone(),
         _ => BaseNode::default(),
     }
 }
@@ -527,7 +529,6 @@ pub struct TvarType {
     #[serde(flatten)]
     pub base: BaseNode,
 }
-
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ArrayType {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
@@ -535,6 +536,26 @@ pub struct ArrayType {
     #[serde(flatten)]
     pub base: BaseNode,
     pub monotype: MonoType,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct FunctionType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub parameters: Option<Vec<ParameterType>>,
+    pub monotype: MonoType,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct ParameterType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub identifier: Option<Identifier>,
+    pub parameter: MonoType,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
