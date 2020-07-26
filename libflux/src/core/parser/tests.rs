@@ -1744,7 +1744,8 @@ fn test_parse_type_expression_function_with_params() {
                                 },
                                 name: "int".to_string(),
                             }
-                        })
+                        }),
+                        _type: None
                     },
                     ParameterType {
                         base: BaseNode {
@@ -1770,7 +1771,8 @@ fn test_parse_type_expression_function_with_params() {
                                 },
                                 name: "string".to_string(),
                             }
-                        })
+                        }),
+                        _type: None
                     }
                 ]),
                 monotype: MonoType::Basic(NamedType {

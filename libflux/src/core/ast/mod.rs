@@ -556,6 +556,29 @@ pub struct ParameterType {
     pub base: BaseNode,
     pub identifier: Option<Identifier>,
     pub parameter: MonoType,
+    pub _type: Option<PType>,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub enum PType {
+    Pipe(PipeReceiveSymbol),
+    Optional(QuestionMarkSymbol),
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct PipeReceiveSymbol {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct QuestionMarkSymbol {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]

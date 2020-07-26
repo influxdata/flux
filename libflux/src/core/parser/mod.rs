@@ -637,19 +637,23 @@ impl Parser {
     }
 
     #[cfg(test)]
-    // [ "<-" | "?" ] identifier ":" MonoType __OLD
-    // (identifier | "?" identifier | "<-" identifier | "<-") ":" MonoType __NEW
+    // (identifier | "?" identifier | "<-" identifier | "<-") ":" MonoType
     fn parse_parameter_type(&mut self) -> ParameterType {
         let id;
         let mut start = None;
+        let mut _type = None;
         match self.peek().tok {
             TOK_IDENT => {
                 start = None;
                 id = Some(self.parse_identifier());
+                _type = None;
             }
             TOK_QUESTION_MARK => {
                 start = Some(self.expect(TOK_QUESTION_MARK));
                 id = Some(self.parse_identifier());
+                _type = Some(PType::Optional(QuestionMarkSymbol {
+                    base: self.base_node_from_token(&(start.as_ref().unwrap())),
+                }))
             }
             TOK_PIPE_RECEIVE => {
                 start = Some(self.expect(TOK_PIPE_RECEIVE));
@@ -658,6 +662,9 @@ impl Parser {
                 } else {
                     id = None;
                 }
+                _type = Some(PType::Pipe(PipeReceiveSymbol {
+                    base: self.base_node_from_token(&(start.as_ref().unwrap())),
+                }))
             }
             _ => id = None,
         }
@@ -669,12 +676,14 @@ impl Parser {
                     .base_node_from_others(&(id.as_ref().unwrap().base), &base_from_monotype(&mt)),
                 identifier: id,
                 parameter: mt,
+                _type,
             }
         } else {
             ParameterType {
                 base: self.base_node_from_other_end(&(start.unwrap()), &base_from_monotype(&mt)),
                 identifier: id,
                 parameter: mt,
+                _type,
             }
         }
     }
