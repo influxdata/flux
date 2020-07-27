@@ -334,7 +334,7 @@ from(bucket:"mta")
     ...
     |> geo.toRows()
     |> map(fn: (r) => ({
-      r with st_contains: ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon})
+      r with st_contains: ST_Contains(region: box, geometry: {lat: r.lat, lon: r.lon})
     }))
 ```
 
@@ -347,7 +347,7 @@ from(bucket:"mta")
     |> geo.asTracks()
     |> geo.ST_LineString()
     |> map(fn: (r) => ({
-      r with st_contains: ST_Contains(region: region, geometry: {linestring: r.st_linestring})
+      r with st_contains: ST_Contains(region: box, geometry: {linestring: r.st_linestring})
     }))
 ```
 
@@ -368,7 +368,7 @@ from(bucket:"mta")
     ...
     |> geo.toRows()
     |> map(fn: (r) => ({
-      r with st_distance: ST_Distance(region: region, geometry: {lat: r.lat, lon: r.lon})
+      r with st_distance: ST_Distance(region: box, geometry: {lat: r.lat, lon: r.lon})
     }))
 ```
 
@@ -389,7 +389,7 @@ from(bucket:"mta")
     ...
     |> geo.toRows()
     |> map(fn: (r) => ({
-      r with st_within: ST_DWithin(region: region, geometry: {lat: r.lat, lon: r.lon}, distance: 15.0)
+      r with st_within: ST_DWithin(region: box, geometry: {lat: r.lat, lon: r.lon}, distance: 15.0)
     }))
 ```
 
@@ -415,7 +415,7 @@ from(bucket:"mta")
     |> geo.asTracks()
     |> geo.ST_LineString()
     |> map(fn: (r) => ({
-      r with st_intersects: ST_Intersects(region: region, geometry: {linestring: r.st_linestring})
+      r with st_intersects: ST_Intersects(region: box, geometry: {linestring: r.st_linestring})
     }))
 ```
 
