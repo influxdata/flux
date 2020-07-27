@@ -51,7 +51,7 @@ That can be achieved by calling `v1.fieldsAsCols()` or `toRows()` before these f
 - `ST_DWithin`
 - `ST_Intersects`
 - `ST_Length`
-- `ST_LineString` (proprietary)
+- `ST_LineString`
 
 **The package uses the following types:**
 - `region` - depending on shape, it has the following named float values:
@@ -445,11 +445,9 @@ from(bucket:"mta")
 
 ### Function `ST_LineString`
 
-_This is a proprietary function._
-
-Returns string representing path.
+Constructs a linestring from a series of points.
 Input data should be grouped in such way that they represent a meaningful path before calling this function.
-Output is a reduced table with `st_linestring` column holding the result.
+Output is a table with `st_linestring` column holding the result.
 
 Example:
 ```js
