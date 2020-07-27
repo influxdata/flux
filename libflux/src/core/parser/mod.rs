@@ -640,53 +640,54 @@ impl Parser {
     // (identifier | "?" identifier | "<-" identifier | "<-") ":" MonoType
     fn parse_parameter_type(&mut self) -> ParameterType {
         let id;
-        let mut start = None;
-        let mut _type = None;
+        let mut symbol = None;
         match self.peek().tok {
             TOK_IDENT => {
-                start = None;
+                // Required
+                symbol = None;
                 id = Some(self.parse_identifier());
-                _type = None;
             }
             TOK_QUESTION_MARK => {
-                start = Some(self.expect(TOK_QUESTION_MARK));
+                // Optional
+                symbol = Some(self.expect(TOK_QUESTION_MARK));
                 id = Some(self.parse_identifier());
-                _type = Some(PType::Optional(QuestionMarkSymbol {
-                    base: self.base_node_from_token(&(start.as_ref().unwrap())),
-                }))
             }
             TOK_PIPE_RECEIVE => {
-                start = Some(self.expect(TOK_PIPE_RECEIVE));
+                symbol = Some(self.expect(TOK_PIPE_RECEIVE));
                 if self.peek().tok == TOK_IDENT {
                     id = Some(self.parse_identifier());
                 } else {
                     id = None;
                 }
-                _type = Some(PType::Pipe(PipeReceiveSymbol {
-                    base: self.base_node_from_token(&(start.as_ref().unwrap())),
-                }))
             }
             _ => id = None,
         }
         self.expect(TOK_COLON);
         let mt = self.parse_monotype();
-        if start == None && id != None {
-            ParameterType {
-                base: self
-                    .base_node_from_others(&(id.as_ref().unwrap().base), &base_from_monotype(&mt)),
-                identifier: id,
-                parameter: mt,
-                _type,
+        // starts with ? | <-
+        if symbol != None {
+            match symbol.as_ref().unwrap().tok {
+                TOK_QUESTION_MARK => ParameterType::Optional{
+                    base: self.base_node_from_others(&self.base_node_from_token(&symbol.unwrap()), &base_from_monotype(&mt)),
+                    name: id.unwrap(),
+                    ty: mt,
+                },
+                TOK_PIPE_RECEIVE => ParameterType::Pipe{
+                    base: self.base_node_from_others(&self.base_node_from_token(&symbol.unwrap()), &base_from_monotype(&mt)),
+                    name: id,
+                    ty: mt,
+                }
             }
-        } else {
-            ParameterType {
-                base: self.base_node_from_other_end(&(start.unwrap()), &base_from_monotype(&mt)),
-                identifier: id,
-                parameter: mt,
-                _type,
+        }
+        else {
+            ParameterType::Required{
+                base: self.base_node_from_others(&(id.as_ref().unwrap()).base, &base_from_monotype(&mt)),
+                name: id.unwrap(),
+                ty: mt,
             }
         }
     }
+
 
     #[cfg(test)]
     fn parse_constraints(&mut self) -> Vec<TypeConstraint> {
