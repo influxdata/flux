@@ -142,7 +142,7 @@ func mssqlAzureAuthToken(method string, cfg *AzureConfig) (*adal.ServicePrincipa
 		if c, err := settings.GetUsernamePassword(); err == nil {
 			return c.ServicePrincipalToken()
 		}
-		return mssqlAzureMSIToken(settings.GetMSI())
+		return settings.GetMSI().ServicePrincipalToken()
 	}
 	switch method {
 	case mssqlAzureAuthConfig:
@@ -163,7 +163,7 @@ func mssqlAzureAuthToken(method string, cfg *AzureConfig) (*adal.ServicePrincipa
 	case mssqlAzureAuthMsi:
 		mc := auth.NewMSIConfig()
 		mc.Resource = mssqlAzureResource
-		return mssqlAzureMSIToken(mc)
+		return mc.ServicePrincipalToken()
 	case mssqlAzureAuthEnv:
 		settings, err := auth.GetSettingsFromEnvironment()
 		if err != nil {
@@ -187,28 +187,4 @@ func mssqlAzureAuthToken(method string, cfg *AzureConfig) (*adal.ServicePrincipa
 
 	}
 	return nil, errors.Newf(codes.Invalid, "unsupportedauthentication")
-}
-
-// Gets MSI token.
-// This is extracted from auth.MSIConfig.Authorizer()
-// Pending PR #520 to Azure/go-autorest to get rid off this.
-func mssqlAzureMSIToken(mc auth.MSIConfig) (*adal.ServicePrincipalToken, error) {
-	msiEndpoint, err := adal.GetMSIEndpoint()
-	if err != nil {
-		return nil, err
-	}
-
-	var spToken *adal.ServicePrincipalToken
-	if mc.ClientID == "" {
-		spToken, err = adal.NewServicePrincipalTokenFromMSI(msiEndpoint, mc.Resource)
-		if err != nil {
-			return nil, errors.Newf(codes.Internal, "failed to get oauth token from MSI: %v", err)
-		}
-	} else {
-		spToken, err = adal.NewServicePrincipalTokenFromMSIWithUserAssignedID(msiEndpoint, mc.Resource, mc.ClientID)
-		if err != nil {
-			return nil, errors.Newf(codes.Internal, "failed to get oauth token from MSI for user assigned identity: %v", err)
-		}
-	}
-	return spToken, nil
 }
