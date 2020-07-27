@@ -2,6 +2,7 @@ package universe
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -11,6 +12,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/lang/execdeps"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -137,7 +139,8 @@ func tableFind(ctx context.Context, to *flux.TableObject, fn *execute.TablePredi
 		}
 	}
 
-	deps.Metadata.AddAll(q.Statistics().Metadata)
+	deps.Metadata.Add("flux/query-plan",
+		fmt.Sprintf("%v", plan.Formatted(p.(*lang.Program).PlanSpec, plan.WithDetails())))
 
 	if !found {
 		return nil, nil

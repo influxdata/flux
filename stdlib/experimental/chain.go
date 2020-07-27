@@ -2,6 +2,7 @@ package experimental
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -9,6 +10,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/lang/execdeps"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 )
@@ -66,7 +68,8 @@ func chainCall(ctx context.Context, args values.Object) (values.Value, error) {
 		}
 	}
 
-	deps.Metadata.AddAll(query.Statistics().Metadata)
+	deps.Metadata.Add("flux/query-plan",
+		fmt.Sprintf("%v", plan.Formatted(program.(*lang.Program).PlanSpec, plan.WithDetails())))
 
 	return second, nil
 }
