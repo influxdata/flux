@@ -186,5 +186,5 @@ func mssqlAzureAuthToken(method string, cfg *AzureConfig) (*adal.ServicePrincipa
 		return nil, errors.Newf(codes.Invalid, "only client credentials and certificate authentication is supported with authentication file")
 
 	}
-	return nil, errors.Newf(codes.Invalid, "unsupportedauthentication")
+	return nil, errors.Newf(codes.Invalid, "unsupported authentication")
 }
