@@ -1,6 +1,7 @@
 package flux
 
 import (
+	"github.com/influxdata/flux/metadata"
 	"time"
 )
 
@@ -26,35 +27,6 @@ type Query interface {
 	// Statistics reports the statistics for the query.
 	// The statistics are not complete until Done is called.
 	Statistics() Statistics
-}
-
-type Metadata map[string][]interface{}
-
-func (md Metadata) Add(key string, value interface{}) {
-	md[key] = append(md[key], value)
-}
-
-func (md Metadata) AddAll(other Metadata) {
-	for key, values := range other {
-		md[key] = append(md[key], values...)
-	}
-}
-
-// Range will iterate over the Metadata. It will invoke the function for each
-// key/value pair. If there are multiple values for a single key, then this will
-// be called with the same key once for each value.
-func (md Metadata) Range(fn func(key string, value interface{}) bool) {
-	for key, values := range md {
-		for _, value := range values {
-			if ok := fn(key, value); !ok {
-				return
-			}
-		}
-	}
-}
-
-func (md Metadata) Del(key string) {
-	delete(md, key)
 }
 
 // Statistics is a collection of statistics about the processing of a query.
@@ -84,7 +56,7 @@ type Statistics struct {
 	RuntimeErrors []string `json:"runtime_errors"`
 
 	// Metadata contains metadata key/value pairs that have been attached during execution.
-	Metadata Metadata `json:"metadata"`
+	Metadata metadata.Metadata `json:"metadata"`
 }
 
 // Add returns the sum of s and other.
@@ -92,7 +64,7 @@ func (s Statistics) Add(other Statistics) Statistics {
 	errs := make([]string, len(s.RuntimeErrors), len(s.RuntimeErrors)+len(other.RuntimeErrors))
 	copy(errs, s.RuntimeErrors)
 	errs = append(errs, other.RuntimeErrors...)
-	md := make(Metadata)
+	md := make(metadata.Metadata)
 	md.AddAll(s.Metadata)
 	md.AddAll(other.Metadata)
 	return Statistics{

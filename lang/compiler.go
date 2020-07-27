@@ -16,6 +16,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -292,9 +293,17 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 		span:    s,
 		cancel:  cancel,
 		stats: flux.Statistics{
-			Metadata: make(flux.Metadata),
+			Metadata: make(metadata.Metadata),
 		},
 	}
+
+	if execdeps.HaveExecutionDependencies(ctx) {
+		deps := execdeps.GetExecutionDependencies(ctx)
+		q.stats.Metadata.AddAll(deps.Metadata)
+	}
+
+	q.stats.Metadata.Add("flux/query-plan",
+		fmt.Sprintf("%v", plan.Formatted(p.PlanSpec, plan.WithDetails())))
 
 	e := execute.NewExecutor(p.Logger)
 	resultMap, md, err := e.Execute(cctx, p.PlanSpec, q.alloc)
@@ -328,7 +337,7 @@ func (p *Program) processResults(ctx context.Context, q *query, resultMap map[st
 	}
 }
 
-func (p *Program) readMetadata(q *query, metaCh <-chan flux.Metadata) {
+func (p *Program) readMetadata(q *query, metaCh <-chan metadata.Metadata) {
 	defer q.wg.Done()
 	for md := range metaCh {
 		q.stats.Metadata.AddAll(md)
@@ -369,10 +378,6 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 		return nil, nil, astErr
 	}
 
-	// The program must inject execution dependencies to make it available to
-	// function calls during the evaluation phase (see `tableFind`).
-	deps := execdeps.NewExecutionDependencies(alloc, &p.Now, p.Logger)
-	ctx = deps.Inject(ctx)
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
 
 	sideEffects, scope, err := p.Runtime.Eval(cctx, ast, flux.SetNowOption(p.Now))
@@ -400,10 +405,18 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 }
 
 func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+	// The program must inject execution dependencies to make it available to
+	// function calls during the evaluation phase (see `tableFind`).
+	deps := execdeps.NewExecutionDependencies(alloc, &p.Now, p.Logger)
+	ctx = deps.Inject(ctx)
+
+	// Evaluation.
 	sp, scope, err := p.getSpec(ctx, alloc)
 	if err != nil {
 		return nil, err
 	}
+
+	// Planing.
 	s, cctx := opentracing.StartSpanFromContext(ctx, "plan")
 	if p.opts.verbose {
 		log.Println("Query Spec: ", flux.Formatted(sp, flux.FmtJSON))
@@ -417,8 +430,8 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	}
 	p.PlanSpec = ps
 	s.Finish()
-	deps := execdeps.NewExecutionDependencies(alloc, &p.Now, p.Logger)
-	ctx = deps.Inject(ctx)
+
+	// Execution.
 	s, cctx = opentracing.StartSpanFromContext(ctx, "start-program")
 	defer s.Finish()
 	return p.Program.Start(cctx, alloc)

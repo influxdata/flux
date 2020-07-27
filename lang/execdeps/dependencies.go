@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/metadata"
 	"go.uber.org/zap"
 )
 
@@ -21,6 +22,10 @@ type ExecutionDependencies struct {
 
 	// Allowed to be nil
 	Logger *zap.Logger
+
+	// Metadata is passed up from any invocations of execution up to the parent
+	// execution, and out through the statistics.
+	Metadata metadata.Metadata
 }
 
 func (d ExecutionDependencies) Inject(ctx context.Context) context.Context {
@@ -50,6 +55,7 @@ func NewExecutionDependencies(allocator *memory.Allocator, now *time.Time, logge
 		Allocator: allocator,
 		Now:       now,
 		Logger:    logger,
+		Metadata:  make(metadata.Metadata),
 	}
 }
 
