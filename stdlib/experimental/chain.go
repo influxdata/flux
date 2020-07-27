@@ -66,5 +66,7 @@ func chainCall(ctx context.Context, args values.Object) (values.Value, error) {
 		}
 	}
 
+	deps.Metadata.AddAll(query.Statistics().Metadata)
+
 	return second, nil
 }

@@ -1,6 +1,8 @@
 package universe
 
 import (
+	"fmt"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
@@ -10,6 +12,10 @@ type DualImplProcedureSpec struct {
 	plan.ProcedureSpec
 	plan.DefaultCost
 	UseDeprecated bool
+}
+
+func (s *DualImplProcedureSpec) PlanDetails() string {
+	return fmt.Sprintf("DualImplProcedureSpec, UseDeprecated = %v", s.UseDeprecated)
 }
 
 func (s *DualImplProcedureSpec) Kind() plan.ProcedureKind {

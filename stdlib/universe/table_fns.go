@@ -136,6 +136,9 @@ func tableFind(ctx context.Context, to *flux.TableObject, fn *execute.TablePredi
 			return nil, err
 		}
 	}
+
+	deps.Metadata.AddAll(q.Statistics().Metadata)
+
 	if !found {
 		return nil, nil
 	}
