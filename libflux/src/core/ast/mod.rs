@@ -565,6 +565,7 @@ pub enum ParameterType {
         name: Option<Identifier>,
         ty: MonoType,
     },
+    Invalid,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]

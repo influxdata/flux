@@ -640,51 +640,57 @@ impl Parser {
     // (identifier | "?" identifier | "<-" identifier | "<-") ":" MonoType
     fn parse_parameter_type(&mut self) -> ParameterType {
         let id;
-        let mut symbol = None;
+        let symbol;
         match self.peek().tok {
             TOK_IDENT => {
                 // Required
-                symbol = None;
-                id = Some(self.parse_identifier());
-            }
-            TOK_QUESTION_MARK => {
-                // Optional
-                symbol = Some(self.expect(TOK_QUESTION_MARK));
-                id = Some(self.parse_identifier());
-            }
-            TOK_PIPE_RECEIVE => {
-                symbol = Some(self.expect(TOK_PIPE_RECEIVE));
-                if self.peek().tok == TOK_IDENT {
-                    id = Some(self.parse_identifier());
-                } else {
-                    id = None;
-                }
-            }
-            _ => id = None,
-        }
-        self.expect(TOK_COLON);
-        let mt = self.parse_monotype();
-        // starts with ? | <-
-        if symbol != None {
-            match symbol.as_ref().unwrap().tok {
-                TOK_QUESTION_MARK => ParameterType::Optional{
-                    base: self.base_node_from_others(&self.base_node_from_token(&symbol.unwrap()), &base_from_monotype(&mt)),
-                    name: id.unwrap(),
-                    ty: mt,
-                },
-                TOK_PIPE_RECEIVE => ParameterType::Pipe{
-                    base: self.base_node_from_others(&self.base_node_from_token(&symbol.unwrap()), &base_from_monotype(&mt)),
+                id = self.parse_identifier();
+                self.expect(TOK_COLON);
+                let mt = self.parse_monotype();
+                ParameterType::Required{
+                    base: self.base_node_from_others(&id.base, &base_from_monotype(&mt)),
                     name: id,
                     ty: mt,
                 }
             }
-        }
-        else {
-            ParameterType::Required{
-                base: self.base_node_from_others(&(id.as_ref().unwrap()).base, &base_from_monotype(&mt)),
-                name: id.unwrap(),
-                ty: mt,
+            TOK_QUESTION_MARK => {
+                // Optional
+                symbol = self.expect(TOK_QUESTION_MARK);
+                id = self.parse_identifier();
+                self.expect(TOK_COLON);
+                let mt = self.parse_monotype();
+                let _base = self.base_node_from_token(&symbol);
+                ParameterType::Optional{
+                    base: self.base_node_from_others(&_base, &base_from_monotype(&mt)),
+                    name: id,
+                    ty: mt,
+                }
             }
+            TOK_PIPE_RECEIVE => {
+                symbol = self.expect(TOK_PIPE_RECEIVE);
+                if self.peek().tok == TOK_IDENT {
+                    id = self.parse_identifier();
+                    self.expect(TOK_COLON);
+                    let mt = self.parse_monotype();
+                    let _base = self.base_node_from_token(&symbol);
+                    ParameterType::Pipe{
+                        base: self.base_node_from_others(&_base, &base_from_monotype(&mt)),
+                        name: Some(id),
+                        ty: mt,
+                    }
+                } else {
+                    self.expect(TOK_COLON);
+                    let mt = self.parse_monotype();
+                    let _base = self.base_node_from_token(&symbol);
+                    ParameterType::Pipe{
+                        base: self.base_node_from_others(&_base, &base_from_monotype(&mt)),
+                        name: None,
+                        ty: mt,
+                    }
+                }
+
+            }
+            _ => ParameterType::Invalid
         }
     }
 
