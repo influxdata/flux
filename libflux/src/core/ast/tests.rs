@@ -423,20 +423,19 @@ fn test_json_return_statement() {
 }
 
 #[test]
-fn test_json_nametype_array(){
+fn test_json_nametype_array() {
     let n = MonoType::Array(Box::new(ArrayType {
         base: BaseNode::default(),
-        monotype: MonoType::Array(Box::new(ArrayType{
+        monotype: MonoType::Array(Box::new(ArrayType {
             base: BaseNode::default(),
-            monotype: MonoType::Basic(NamedType{
+            monotype: MonoType::Basic(NamedType {
                 base: BaseNode::default(),
-                name: Identifier{
+                name: Identifier {
                     base: BaseNode::default(),
                     name: "A".to_string(),
-                }
-            })
-        })
-        )
+                },
+            }),
+        })),
     }));
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
@@ -446,7 +445,6 @@ fn test_json_nametype_array(){
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
 }
-
 /*
 {
     name: "option statement",
