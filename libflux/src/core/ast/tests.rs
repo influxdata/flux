@@ -410,6 +410,16 @@ fn test_json_namedtype() {
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
 }
+fn test_json_tvartype() {
+    let n = MonoType::Tvar(TvarType {
+        base: BaseNode::default(),
+    });
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(serialized, r#"{"Tvar":{}}"#);
+    let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
+    assert_eq!(deserialized, n)
+}
+
 /*
 {
     name: "return statement",
