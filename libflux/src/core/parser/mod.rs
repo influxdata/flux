@@ -608,13 +608,6 @@ impl Parser {
         let _rparen = self.expect(TOK_RPAREN);
         self.expect(TOK_ARROW);
         let mt = self.parse_monotype();
-        if params.len() == 0 {
-            return MonoType::Function(Box::new(FunctionType {
-                base: self.base_node_from_other_end(&_lparen, &base_from_monotype(&mt)),
-                parameters: params,
-                monotype: mt,
-            }));
-        }
         return MonoType::Function(Box::new(FunctionType {
             base: self.base_node_from_other_end(&_lparen, &base_from_monotype(&mt)),
             parameters: params,
