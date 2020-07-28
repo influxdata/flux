@@ -611,13 +611,13 @@ impl Parser {
         if params.len() == 0 {
             return MonoType::Function(Box::new(FunctionType {
                 base: self.base_node_from_other_end(&_lparen, &base_from_monotype(&mt)),
-                parameters: None,
+                parameters: params,
                 monotype: mt,
             }));
         }
         return MonoType::Function(Box::new(FunctionType {
             base: self.base_node_from_other_end(&_lparen, &base_from_monotype(&mt)),
-            parameters: Some(params),
+            parameters: params,
             monotype: mt,
         }));
     }

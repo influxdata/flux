@@ -544,7 +544,7 @@ pub struct FunctionType {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub parameters: Option<Vec<ParameterType>>,
+    pub parameters: Vec<ParameterType>,
     pub monotype: MonoType,
 }
 

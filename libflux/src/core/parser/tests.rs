@@ -1683,7 +1683,7 @@ fn test_parse_type_expression_function_with_no_params() {
                     location: loc.get(1, 1, 1, 10),
                     ..BaseNode::default()
                 },
-                parameters: None,
+                parameters: vec![],
                 monotype: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 7, 1, 10),
@@ -1720,7 +1720,7 @@ fn test_parse_type_expression_function_with_params() {
                     location: loc.get(1, 1, 1, 25),
                     ..BaseNode::default()
                 },
-                parameters: Some(vec![
+                parameters: vec![
                     ParameterType::Required {
                         base: BaseNode {
                             location: loc.get(1, 2, 1, 8),
@@ -1773,7 +1773,7 @@ fn test_parse_type_expression_function_with_params() {
                             },
                         }),
                     }
-                ]),
+                ],
                 monotype: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 22, 1, 25),
@@ -1793,7 +1793,6 @@ fn test_parse_type_expression_function_with_params() {
     )
 }
 
-// optional parameters like (.., ?n: ..) -> ..
 #[test]
 fn test_parse_type_expression_function_optional_params() {
     let mut p = Parser::new(r#"(?A: int) => int"#);
@@ -1811,7 +1810,7 @@ fn test_parse_type_expression_function_optional_params() {
                     location: loc.get(1, 1, 1, 17),
                     ..BaseNode::default()
                 },
-                parameters: Some(vec![ParameterType::Optional {
+                parameters: vec![ParameterType::Optional {
                     base: BaseNode {
                         location: loc.get(1, 2, 1, 9),
                         ..BaseNode::default()
@@ -1836,7 +1835,7 @@ fn test_parse_type_expression_function_optional_params() {
                             name: "int".to_string(),
                         },
                     }),
-                }]),
+                }],
                 monotype: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 14, 1, 17),
@@ -1873,7 +1872,7 @@ fn test_parse_type_expression_function_named_params() {
                     location: loc.get(1, 1, 1, 18),
                     ..BaseNode::default()
                 },
-                parameters: Some(vec![ParameterType::Pipe {
+                parameters: vec![ParameterType::Pipe {
                     base: BaseNode {
                         location: loc.get(1, 2, 1, 10),
                         ..BaseNode::default()
@@ -1898,7 +1897,7 @@ fn test_parse_type_expression_function_named_params() {
                             name: "int".to_string(),
                         },
                     }),
-                }]),
+                }],
                 monotype: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 15, 1, 18),
@@ -1935,7 +1934,7 @@ fn test_parse_type_expression_function_unnamed_params() {
                     location: loc.get(1, 1, 1, 18),
                     ..BaseNode::default()
                 },
-                parameters: Some(vec![ParameterType::Pipe {
+                parameters: vec![ParameterType::Pipe {
                     base: BaseNode {
                         location: loc.get(1, 2, 1, 10),
                         ..BaseNode::default()
@@ -1954,7 +1953,7 @@ fn test_parse_type_expression_function_unnamed_params() {
                             name: "int".to_string(),
                         },
                     }),
-                }]),
+                }],
                 monotype: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 15, 1, 18),
