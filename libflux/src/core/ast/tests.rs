@@ -436,6 +436,61 @@ fn test_json_return_statement() {
     let deserialized: Statement = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
 }
+
+#[test]
+fn test_json_array() {
+    let n = MonoType::Array(Box::new(ArrayType {
+        base: BaseNode::default(),
+        monotype: MonoType::Array(Box::new(ArrayType {
+            base: BaseNode::default(),
+            monotype: MonoType::Basic(NamedType {
+                base: BaseNode::default(),
+                name: Identifier {
+                    base: BaseNode::default(),
+                    name: "A".to_string(),
+                },
+            }),
+        })),
+    }));
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(
+        serialized,
+        r#"{"type":"ArrayType","monotype":{"type":"ArrayType","monotype":{"type":"NamedType","name":{"name":"A"}}}}"#
+    );
+    let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
+    assert_eq!(deserialized, n)
+}
+#[test]
+fn test_json_record() {
+    let n = MonoType::Record(RecordType {
+        base: BaseNode::default(),
+        tvar: Some(Identifier {
+            base: BaseNode::default(),
+            name: "A".to_string(),
+        }),
+        properties: Some(vec![PropertyType {
+            base: BaseNode::default(),
+            identifier: Identifier {
+                base: BaseNode::default(),
+                name: "A".to_string(),
+            },
+            monotype: MonoType::Basic(NamedType {
+                base: BaseNode::default(),
+                name: Identifier {
+                    base: BaseNode::default(),
+                    name: "int".to_string(),
+                },
+            }),
+        }]),
+    });
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(
+        serialized,
+        r#"{"type":"RecordType","tvar":{"name":"A"},"properties":[{"identifier":{"name":"A"},"monotype":{"type":"NamedType","name":{"name":"int"}}}]}"#
+    );
+    let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
+    assert_eq!(deserialized, n)
+}
 /*
 {
     name: "option statement",

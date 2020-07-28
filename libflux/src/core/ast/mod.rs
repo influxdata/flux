@@ -500,7 +500,9 @@ pub enum MonoType {
     Tvar(TvarType),
     #[serde(rename = "NamedType")]
     Basic(NamedType),
+    #[serde(rename = "ArrayType")]
     Array(Box<ArrayType>),
+    #[serde(rename = "RecordType")]
     Record(RecordType),
     Function(Box<FunctionType>),
     Invalid,
