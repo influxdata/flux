@@ -395,6 +395,21 @@ fn test_json_expression_statement() {
     let deserialized: Statement = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
 }
+
+#[test]
+fn test_json_namedtype() {
+    let n = MonoType::Basic(NamedType {
+        base: BaseNode::default(),
+        name: Identifier {
+            base: BaseNode::default(),
+            name: "int".to_string(),
+        },
+    });
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(serialized, r#"{"type":"NamedType","name":{"name":"int"}}"#);
+    let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
+    assert_eq!(deserialized, n)
+}
 /*
 {
     name: "return statement",
