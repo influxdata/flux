@@ -93,6 +93,7 @@ fn format_token(t: TOK) -> &'static str {
         TOK_COMMA => "COMMA",
         TOK_DOT => "DOT",
         TOK_COLON => "COLON",
+        TOK_QUESTION_MARK => "QUESTION_MARK",
         TOK_PIPE_FORWARD => "PIPE_FORWARD",
         TOK_PIPE_RECEIVE => "PIPE_RECEIVE",
         TOK_EXISTS => "EXISTS",
@@ -555,6 +556,7 @@ impl Parser {
                 }
             }
             TOK_LBRACK => self.parse_array(),
+            TOK_LPAREN => self.parse_function(),
             _ => MonoType::Invalid,
         }
     }
@@ -589,6 +591,97 @@ impl Parser {
             base: self.base_node_from_tokens(&start, &end),
             monotype: mt,
         }));
+    }
+
+    #[cfg(test)]
+    // "(" [Parameters] ")" "=>" MonoType
+    fn parse_function(&mut self) -> MonoType {
+        let _lparen = self.expect(TOK_LPAREN);
+
+        let mut params = Vec::<ParameterType>::new();
+        if self.peek().tok == TOK_PIPE_RECEIVE
+            || self.peek().tok == TOK_QUESTION_MARK
+            || self.peek().tok == TOK_IDENT
+        {
+            params = self.parse_parameters();
+        }
+        let _rparen = self.expect(TOK_RPAREN);
+        self.expect(TOK_ARROW);
+        let mt = self.parse_monotype();
+        return MonoType::Function(Box::new(FunctionType {
+            base: self.base_node_from_other_end(&_lparen, &base_from_monotype(&mt)),
+            parameters: params,
+            monotype: mt,
+        }));
+    }
+
+    #[cfg(test)]
+    // Parameters = Parameter { "," Parameter } .
+    fn parse_parameters(&mut self) -> Vec<ParameterType> {
+        let mut params = Vec::<ParameterType>::new();
+        let parameter = self.parse_parameter_type();
+        params.push(parameter);
+        while self.peek().tok == TOK_COMMA {
+            self.consume();
+            let parameter = self.parse_parameter_type();
+            params.push(parameter);
+        }
+        return params;
+    }
+
+    #[cfg(test)]
+    // (identifier | "?" identifier | "<-" identifier | "<-") ":" MonoType
+    fn parse_parameter_type(&mut self) -> ParameterType {
+        match self.peek().tok {
+            TOK_IDENT => {
+                // Required
+                let id = self.parse_identifier();
+                self.expect(TOK_COLON);
+                let mt = self.parse_monotype();
+                ParameterType::Required {
+                    base: self.base_node_from_others(&id.base, &base_from_monotype(&mt)),
+                    name: id,
+                    ty: mt,
+                }
+            }
+            TOK_QUESTION_MARK => {
+                // Optional
+                let symbol = self.expect(TOK_QUESTION_MARK);
+                let id = self.parse_identifier();
+                self.expect(TOK_COLON);
+                let mt = self.parse_monotype();
+                let _base = self.base_node_from_token(&symbol);
+                ParameterType::Optional {
+                    base: self.base_node_from_others(&_base, &base_from_monotype(&mt)),
+                    name: id,
+                    ty: mt,
+                }
+            }
+            TOK_PIPE_RECEIVE => {
+                let symbol = self.expect(TOK_PIPE_RECEIVE);
+                if self.peek().tok == TOK_IDENT {
+                    let id = self.parse_identifier();
+                    self.expect(TOK_COLON);
+                    let mt = self.parse_monotype();
+                    let _base = self.base_node_from_token(&symbol);
+                    ParameterType::Pipe {
+                        base: self.base_node_from_others(&_base, &base_from_monotype(&mt)),
+                        name: Some(id),
+                        ty: mt,
+                    }
+                } else {
+                    self.expect(TOK_COLON);
+                    let mt = self.parse_monotype();
+                    let _base = self.base_node_from_token(&symbol);
+                    ParameterType::Pipe {
+                        base: self.base_node_from_others(&_base, &base_from_monotype(&mt)),
+                        name: None,
+                        ty: mt,
+                    }
+                }
+            }
+            _ => ParameterType::Invalid,
+        }
     }
 
     #[cfg(test)]

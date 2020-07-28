@@ -129,6 +129,7 @@
         "," => { tok = COMMA; fbreak; };
         "." => { tok = DOT; fbreak; };
         '"' => { tok = QUOTE; fbreak; };
+        '?' => { tok = QUESTION_MARK; fbreak; };
 
         whitespace;
 
