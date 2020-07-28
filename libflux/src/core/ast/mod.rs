@@ -498,6 +498,7 @@ pub struct BuiltinStmt {
 #[serde(tag = "type")]
 pub enum MonoType {
     Tvar(TvarType),
+    #[serde(rename = "NamedType")]
     Basic(NamedType),
     #[serde(rename = "ArrayType")]
     Array(Box<ArrayType>),
