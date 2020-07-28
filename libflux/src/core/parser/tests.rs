@@ -1812,32 +1812,31 @@ fn test_parse_type_expression_function_optional_params() {
                     location: loc.get(1, 1, 1, 17),
                     ..BaseNode::default()
                 },
-                parameters: Some(vec![
-                    ParameterType::Optional {
+                parameters: Some(vec![ParameterType::Optional {
+                    base: BaseNode {
+                        location: loc.get(1, 2, 1, 9),
+                        ..BaseNode::default()
+                    },
+                    name: Identifier {
                         base: BaseNode {
-                            location: loc.get(1, 2, 1, 9),
+                            location: loc.get(1, 3, 1, 4),
+                            ..BaseNode::default()
+                        },
+                        name: "A".to_string(),
+                    },
+                    ty: MonoType::Basic(NamedType {
+                        base: BaseNode {
+                            location: loc.get(1, 6, 1, 9),
                             ..BaseNode::default()
                         },
                         name: Identifier {
                             base: BaseNode {
-                                location: loc.get(1, 3, 1, 4),
-                                ..BaseNode::default()
-                            },
-                            name: "A".to_string(),
-                        },
-                        ty: MonoType::Basic(NamedType {
-                            base: BaseNode {
-                                location: loc.get(1, 6, 1, 9),
-                                ..BaseNode::default()
-                            },
-                            name: Identifier {
-                                base: BaseNode {
                                 location: loc.get(1, 6, 1, 9),
                                 ..BaseNode::default()
                             },
                             name: "int".to_string(),
-                            },
-                        }),
+                        },
+                    }),
                 }]),
                 monotype: MonoType::Basic(NamedType {
                     base: BaseNode {
@@ -1875,33 +1874,32 @@ fn test_parse_type_expression_function_named_params() {
                     location: loc.get(1, 1, 1, 18),
                     ..BaseNode::default()
                 },
-                parameters: Some(vec![
-                    ParameterType::Pipe {
+                parameters: Some(vec![ParameterType::Pipe {
+                    base: BaseNode {
+                        location: loc.get(1, 2, 1, 10),
+                        ..BaseNode::default()
+                    },
+                    name: Some(Identifier {
                         base: BaseNode {
-                            location: loc.get(1, 2, 1, 10),
+                            location: loc.get(1, 4, 1, 5),
                             ..BaseNode::default()
                         },
-                        name: Some(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 4, 1, 5),
-                                ..BaseNode::default()
-                            },
-                            name: "A".to_string(),
-                        }),
-                        ty: MonoType::Basic(NamedType {
+                        name: "A".to_string(),
+                    }),
+                    ty: MonoType::Basic(NamedType {
+                        base: BaseNode {
+                            location: loc.get(1, 7, 1, 10),
+                            ..BaseNode::default()
+                        },
+                        name: Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 7, 1, 10),
                                 ..BaseNode::default()
                             },
-                            name: Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 7, 1, 10),
-                                    ..BaseNode::default()
-                                },
-                                name: "int".to_string(),
-                            },
-                        }),
-                    }]),
+                            name: "int".to_string(),
+                        },
+                    }),
+                }]),
                 monotype: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 15, 1, 18),
@@ -1923,7 +1921,7 @@ fn test_parse_type_expression_function_named_params() {
 
 #[test]
 fn test_parse_type_expression_function_unnamed_params() {
-    let mut p = Parser::new(r#"(<-: int) => int"#);
+    let mut p = Parser::new(r#"(<- : int) => int"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -1938,27 +1936,26 @@ fn test_parse_type_expression_function_unnamed_params() {
                     location: loc.get(1, 1, 1, 18),
                     ..BaseNode::default()
                 },
-                parameters: Some(vec![
-                    ParameterType::Pipe {
+                parameters: Some(vec![ParameterType::Pipe {
+                    base: BaseNode {
+                        location: loc.get(1, 2, 1, 10),
+                        ..BaseNode::default()
+                    },
+                    name: None,
+                    ty: MonoType::Basic(NamedType {
                         base: BaseNode {
-                            location: loc.get(1, 2, 1, 10),
+                            location: loc.get(1, 7, 1, 10),
                             ..BaseNode::default()
                         },
-                        name: None,
-                        ty: MonoType::Basic(NamedType {
+                        name: Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 7, 1, 10),
                                 ..BaseNode::default()
                             },
-                            name: Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 7, 1, 10),
-                                    ..BaseNode::default()
-                                },
-                                name: "int".to_string(),
-                            },
-                        }),
-                    }]),
+                            name: "int".to_string(),
+                        },
+                    }),
+                }]),
                 monotype: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 15, 1, 18),

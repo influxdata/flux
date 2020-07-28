@@ -639,15 +639,13 @@ impl Parser {
     #[cfg(test)]
     // (identifier | "?" identifier | "<-" identifier | "<-") ":" MonoType
     fn parse_parameter_type(&mut self) -> ParameterType {
-        let id;
-        let symbol;
         match self.peek().tok {
             TOK_IDENT => {
                 // Required
-                id = self.parse_identifier();
+                let id = self.parse_identifier();
                 self.expect(TOK_COLON);
                 let mt = self.parse_monotype();
-                ParameterType::Required{
+                ParameterType::Required {
                     base: self.base_node_from_others(&id.base, &base_from_monotype(&mt)),
                     name: id,
                     ty: mt,
@@ -655,25 +653,25 @@ impl Parser {
             }
             TOK_QUESTION_MARK => {
                 // Optional
-                symbol = self.expect(TOK_QUESTION_MARK);
-                id = self.parse_identifier();
+                let symbol = self.expect(TOK_QUESTION_MARK);
+                let id = self.parse_identifier();
                 self.expect(TOK_COLON);
                 let mt = self.parse_monotype();
                 let _base = self.base_node_from_token(&symbol);
-                ParameterType::Optional{
+                ParameterType::Optional {
                     base: self.base_node_from_others(&_base, &base_from_monotype(&mt)),
                     name: id,
                     ty: mt,
                 }
             }
             TOK_PIPE_RECEIVE => {
-                symbol = self.expect(TOK_PIPE_RECEIVE);
+                let symbol = self.expect(TOK_PIPE_RECEIVE);
                 if self.peek().tok == TOK_IDENT {
-                    id = self.parse_identifier();
+                    let id = self.parse_identifier();
                     self.expect(TOK_COLON);
                     let mt = self.parse_monotype();
                     let _base = self.base_node_from_token(&symbol);
-                    ParameterType::Pipe{
+                    ParameterType::Pipe {
                         base: self.base_node_from_others(&_base, &base_from_monotype(&mt)),
                         name: Some(id),
                         ty: mt,
@@ -682,18 +680,16 @@ impl Parser {
                     self.expect(TOK_COLON);
                     let mt = self.parse_monotype();
                     let _base = self.base_node_from_token(&symbol);
-                    ParameterType::Pipe{
+                    ParameterType::Pipe {
                         base: self.base_node_from_others(&_base, &base_from_monotype(&mt)),
                         name: None,
                         ty: mt,
                     }
                 }
-
             }
-            _ => ParameterType::Invalid
+            _ => ParameterType::Invalid,
         }
     }
-
 
     #[cfg(test)]
     fn parse_constraints(&mut self) -> Vec<TypeConstraint> {
