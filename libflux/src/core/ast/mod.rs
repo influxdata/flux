@@ -596,6 +596,7 @@ pub struct RecordType {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tvar: Option<Identifier>,
     pub properties: Option<Vec<PropertyType>>,
 }

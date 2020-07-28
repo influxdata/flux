@@ -491,6 +491,46 @@ fn test_json_record() {
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
 }
+#[test]
+fn test_json_record_no_tvar_no_properties() {
+    let n = MonoType::Record(RecordType {
+        base: BaseNode::default(),
+        tvar: None,
+        properties: None,
+    });
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(serialized, r#"{"type":"RecordType","properties":null}"#);
+    let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
+    assert_eq!(deserialized, n)
+}
+#[test]
+fn test_json_record_no_tvar() {
+    let n = MonoType::Record(RecordType {
+        base: BaseNode::default(),
+        tvar: None,
+        properties: Some(vec![PropertyType {
+            base: BaseNode::default(),
+            identifier: Identifier {
+                base: BaseNode::default(),
+                name: "A".to_string(),
+            },
+            monotype: MonoType::Basic(NamedType {
+                base: BaseNode::default(),
+                name: Identifier {
+                    base: BaseNode::default(),
+                    name: "int".to_string(),
+                },
+            }),
+        }]),
+    });
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(
+        serialized,
+        r#"{"type":"RecordType","properties":[{"identifier":{"name":"A"},"monotype":{"type":"NamedType","name":{"name":"int"}}}]}"#
+    );
+    let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
+    assert_eq!(deserialized, n)
+}
 /*
 {
     name: "option statement",
