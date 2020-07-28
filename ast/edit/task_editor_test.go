@@ -5,9 +5,11 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/asttest"
 	"github.com/influxdata/flux/ast/edit"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/parser"
 )
 
@@ -31,72 +33,157 @@ func TestGetOptionProperty(t *testing.T) {
 	}
 }
 
-func TestGetOption(t *testing.T) {
-	testCases := []struct {
-		testName string
-		optionID string
-		file     *ast.File
-		want     ast.Expression
-	}{
-		{
-			testName: "test getOption",
-			optionID: "task",
-			file: &ast.File{
-				Name: "foo.flux",
-				Body: []ast.Statement{
-					&ast.OptionStatement{
-						Assignment: &ast.VariableAssignment{
-							ID:   &ast.Identifier{Name: "bar"},
-							Init: nil,
-						},
-					},
-					&ast.OptionStatement{
-						Assignment: &ast.VariableAssignment{
-							ID:   &ast.Identifier{Name: "task"},
-							Init: &ast.BooleanLiteral{Value: false},
-						},
+type optionsCase struct {
+	testName string
+	optionID string
+	file     *ast.File
+	want     ast.Expression
+	all      []ast.Expression
+	err      error
+}
+
+var optionsCases = []optionsCase{
+	{
+		testName: "test getOption",
+		optionID: "task",
+		file: &ast.File{
+			Name: "foo.flux",
+			Body: []ast.Statement{
+				&ast.OptionStatement{
+					Assignment: &ast.VariableAssignment{
+						ID:   &ast.Identifier{Name: "bar"},
+						Init: nil,
 					},
 				},
-			},
-			want: &ast.BooleanLiteral{
-				Value: false,
+				&ast.OptionStatement{
+					Assignment: &ast.VariableAssignment{
+						ID:   &ast.Identifier{Name: "task"},
+						Init: &ast.BooleanLiteral{Value: false},
+					},
+				},
 			},
 		},
-		{
-			testName: "test getOption with numbers in task name",
-			optionID: "numbers222",
-			file: &ast.File{
-				Name: "foo.flux",
-				Body: []ast.Statement{
-					&ast.ExpressionStatement{Expression: nil},
-					&ast.OptionStatement{
-						Assignment: &ast.VariableAssignment{
-							ID: &ast.Identifier{Name: "numbers222"},
-							Init: &ast.BinaryExpression{
-								Operator: 0,
-								Left:     &ast.StringLiteral{Value: "a"},
-								Right:    &ast.StringLiteral{Value: "b"},
-							},
+		want: &ast.BooleanLiteral{Value: false},
+		all: []ast.Expression{
+			nil,
+			&ast.BooleanLiteral{Value: false},
+		},
+	},
+	{
+		testName: "test getOption with numbers in task name",
+		optionID: "numbers222",
+		file: &ast.File{
+			Name: "foo.flux",
+			Body: []ast.Statement{
+				&ast.ExpressionStatement{Expression: nil},
+				&ast.OptionStatement{
+					Assignment: &ast.VariableAssignment{
+						ID: &ast.Identifier{Name: "numbers222"},
+						Init: &ast.BinaryExpression{
+							Operator: 0,
+							Left:     &ast.StringLiteral{Value: "a"},
+							Right:    &ast.StringLiteral{Value: "b"},
 						},
 					},
 				},
 			},
-			want: &ast.BinaryExpression{
+		},
+		want: &ast.BinaryExpression{
+			Operator: 0,
+			Left:     &ast.StringLiteral{Value: "a"},
+			Right:    &ast.StringLiteral{Value: "b"},
+		},
+		all: []ast.Expression{
+			&ast.BinaryExpression{
 				Operator: 0,
 				Left:     &ast.StringLiteral{Value: "a"},
 				Right:    &ast.StringLiteral{Value: "b"},
 			},
 		},
-	}
-	for _, tc := range testCases {
+	},
+	{
+		testName: "test getOption with numbers in task name",
+		optionID: "numbers222",
+		file: &ast.File{
+			Name: "foo.flux",
+			Body: []ast.Statement{
+				&ast.ExpressionStatement{Expression: nil},
+				&ast.OptionStatement{
+					Assignment: &ast.VariableAssignment{
+						ID: &ast.Identifier{Name: "numbers222"},
+						Init: &ast.BinaryExpression{
+							Operator: 0,
+							Left:     &ast.StringLiteral{Value: "a"},
+							Right:    &ast.StringLiteral{Value: "b"},
+						},
+					},
+				},
+				&ast.OptionStatement{
+					Assignment: &ast.VariableAssignment{
+						ID:   &ast.Identifier{Name: "anothertest"},
+						Init: &ast.IntegerLiteral{Value: 10000},
+					},
+				},
+			},
+		},
+		want: &ast.BinaryExpression{
+			Operator: 0,
+			Left:     &ast.StringLiteral{Value: "a"},
+			Right:    &ast.StringLiteral{Value: "b"},
+		},
+		all: []ast.Expression{
+			&ast.BinaryExpression{
+				Operator: 0,
+				Left:     &ast.StringLiteral{Value: "a"},
+				Right:    &ast.StringLiteral{Value: "b"},
+			},
+			&ast.IntegerLiteral{Value: 10000},
+		},
+	},
+	{
+		testName: "test getAllOptions with no options",
+		file: &ast.File{
+			Name: "foo.flux",
+			Body: []ast.Statement{
+				&ast.ExpressionStatement{Expression: nil},
+				&ast.VariableAssignment{
+					ID:   nil,
+					Init: nil,
+				},
+			},
+		},
+		err: &flux.Error{
+			Code: codes.Internal,
+			Msg:  "Option not found",
+		},
+		all: nil,
+	},
+}
+
+func TestGetOption(t *testing.T) {
+	for _, tc := range optionsCases {
 		t.Run(tc.testName, func(t *testing.T) {
 			got, err := edit.GetOption(tc.file, tc.optionID)
-			if err != nil {
-				t.Errorf("unexpected error %s", err)
+			if err != nil || tc.err != nil {
+				if !cmp.Equal(got, tc.want, asttest.IgnoreBaseNodeOptions...) {
+					t.Errorf("Unexpected value -want/+got:\n%s", cmp.Diff(tc.want, got, asttest.IgnoreBaseNodeOptions...))
+				}
 			}
 
 			if !cmp.Equal(got, tc.want, asttest.IgnoreBaseNodeOptions...) {
 				t.Errorf("Unexpected value -want/+got:\n%s", cmp.Diff(tc.want, got, asttest.IgnoreBaseNodeOptions...))
+			}
+		})
+	}
+}
+
+func TestGetAllOptions(t *testing.T) {
+	for _, tc := range optionsCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			got := edit.GetAllOptions(tc.file)
+
+			if !cmp.Equal(got, tc.all, asttest.IgnoreBaseNodeOptions...) {
+				t.Errorf("Unexpected value -want/+got:\n%s", cmp.Diff(tc.all, got, asttest.IgnoreBaseNodeOptions...))
 			}
 		})
 	}
@@ -262,59 +349,98 @@ func TestSetDeleteOption(t *testing.T) {
 	}
 }
 
+type propCase struct {
+	testName string
+	key      string
+	want     ast.Expression
+	all      []ast.Expression
+	obj      *ast.ObjectExpression
+	err      error
+}
+
+var propCases = []propCase{
+	{
+		testName: "test getProperty with boolean",
+		key:      "b",
+		want:     &ast.BooleanLiteral{Value: true},
+		all: []ast.Expression{
+			&ast.StringLiteral{Value: "hello"},
+			&ast.BooleanLiteral{Value: true},
+		},
+		obj: &ast.ObjectExpression{
+			With: nil,
+			Properties: []*ast.Property{
+				{
+					Key:   &ast.StringLiteral{Value: "a"},
+					Value: &ast.StringLiteral{Value: "hello"},
+				},
+				{
+					Key:   &ast.StringLiteral{Value: "b"},
+					Value: &ast.BooleanLiteral{Value: true},
+				},
+			},
+		},
+	},
+	{
+		testName: "test getProperty with integer",
+		key:      "foo",
+		want:     &ast.StringLiteral{Value: "hello"},
+		all: []ast.Expression{
+			&ast.StringLiteral{Value: "hello"},
+			&ast.IntegerLiteral{Value: 100},
+		},
+		obj: &ast.ObjectExpression{
+			With: nil,
+			Properties: []*ast.Property{
+				{
+					Key:   &ast.StringLiteral{Value: "foo"},
+					Value: &ast.StringLiteral{Value: "hello"},
+				},
+				{
+					Key:   &ast.StringLiteral{Value: "bar"},
+					Value: &ast.IntegerLiteral{Value: 100},
+				},
+			},
+		},
+	},
+	{
+		testName: "test getAllProperties with no props",
+		obj: &ast.ObjectExpression{
+			With:       nil,
+			Properties: []*ast.Property{},
+		},
+		err: &flux.Error{
+			Code: codes.Internal,
+			Msg:  "Property not found",
+		},
+		all: nil,
+	},
+}
+
 func TestGetProperty(t *testing.T) {
-	testCases := []struct {
-		testName string
-		key      string
-		want     ast.Expression
-		obj      *ast.ObjectExpression
-	}{
-		{
-			testName: "test getProperty with boolean",
-			key:      "b",
-			want:     &ast.BooleanLiteral{Value: true},
-			obj: &ast.ObjectExpression{
-				With: nil,
-				Properties: []*ast.Property{
-					{
-						Key:   &ast.StringLiteral{Value: "a"},
-						Value: &ast.StringLiteral{Value: "hello"},
-					},
-					{
-						Key:   &ast.StringLiteral{Value: "b"},
-						Value: &ast.BooleanLiteral{Value: true},
-					},
-				},
-			},
-		},
-		{
-			testName: "test getProperty with integer",
-			key:      "foo",
-			want:     &ast.StringLiteral{Value: "hello"},
-			obj: &ast.ObjectExpression{
-				With: nil,
-				Properties: []*ast.Property{
-					{
-						Key:   &ast.StringLiteral{Value: "foo"},
-						Value: &ast.StringLiteral{Value: "hello"},
-					},
-					{
-						Key:   &ast.StringLiteral{Value: "bar"},
-						Value: &ast.IntegerLiteral{Value: 100},
-					},
-				},
-			},
-		},
-	}
-	for _, tc := range testCases {
+	for _, tc := range propCases {
 		t.Run(tc.testName, func(t *testing.T) {
 			got, err := edit.GetProperty(tc.obj, tc.key)
-			if err != nil {
-				t.Errorf("unexpected error %s", err)
+			if err != nil || tc.err != nil {
+				if !cmp.Equal(got, tc.want, asttest.IgnoreBaseNodeOptions...) {
+					t.Errorf("Unexpected value -want/+got:\n%s", cmp.Diff(tc.want, got, asttest.IgnoreBaseNodeOptions...))
+				}
 			}
 
 			if !cmp.Equal(got, tc.want, asttest.IgnoreBaseNodeOptions...) {
 				t.Errorf("Unexpected value -want/+got:\n%s", cmp.Diff(tc.want, got, asttest.IgnoreBaseNodeOptions...))
+			}
+		})
+	}
+}
+
+func TestGetAllProperties(t *testing.T) {
+	for _, tc := range propCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			got := edit.GetAllProperties(tc.obj)
+
+			if !cmp.Equal(got, tc.all, asttest.IgnoreBaseNodeOptions...) {
+				t.Errorf("Unexpected value -want/+got:\n%s", cmp.Diff(tc.all, got, asttest.IgnoreBaseNodeOptions...))
 			}
 		})
 	}

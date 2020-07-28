@@ -27,6 +27,22 @@ func GetOption(file *ast.File, name string) (ast.Expression, error) {
 	}
 }
 
+// GetAllOptions returns all options within a file
+func GetAllOptions(file *ast.File) []ast.Expression {
+	var exps []ast.Expression
+	for _, st := range file.Body {
+		if val, ok := st.(*ast.OptionStatement); ok {
+			assign := val.Assignment
+			if va, ok := assign.(*ast.VariableAssignment); ok {
+				if ok && va != nil {
+					exps = append(exps, va.Init)
+				}
+			}
+		}
+	}
+	return exps
+}
+
 // SetOption replaces an existing option's init with the provided init or adds
 // the option if it doesn't exist. The file AST is mutated in place.
 func SetOption(file *ast.File, name string, expr ast.Expression) {
@@ -78,6 +94,17 @@ func GetProperty(obj *ast.ObjectExpression, key string) (ast.Expression, error) 
 		Code: codes.Internal,
 		Msg:  "Property not found",
 	}
+}
+
+// GetAllProperties returns all properties for a given option
+func GetAllProperties(obj *ast.ObjectExpression) []ast.Expression {
+	var exps []ast.Expression
+	for _, prop := range obj.Properties {
+		if prop.Value != nil {
+			exps = append(exps, prop.Value)
+		}
+	}
+	return exps
 }
 
 // SetProperty replaces an existing property definition with the provided object expression or adds
