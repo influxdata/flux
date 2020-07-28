@@ -22,10 +22,15 @@ var sourceHashes = map[string]string{
 	"libflux/src/core/ast/flatbuffers/ast_generated.rs":                             "a7384fd931c1ba8e951bbe0748fa296dc83ea4625a84746702f4c41a2b03c11c",
 	"libflux/src/core/ast/flatbuffers/mod.rs":                                       "1f09831f45eee630101b0318e496fedd5730ce6020c3e22c18acac831259c4f3",
 	"libflux/src/core/ast/flatbuffers/tests.rs":                                     "131f266613fd39cfcbc72c41691b68f58a14ee3a994d45f011da70c263f16f26",
+<<<<<<< HEAD
 	"libflux/src/core/ast/mod.rs":                                                   "d9d3b7a43942d3e9fbdb4866d30d4f5ed92767c1ce471f2cbfe96959ebce130f",
 	"libflux/src/core/ast/tests.rs":                                                 "c48be4a150643298be2806fc7c3be5d770e6d7d73b80193f0ea45249b4c7aeb9",
 	"libflux/src/core/ast/mod.rs":                                                   "e3e7d18f8074bccb0dfc1acbfdd2cc93891ab76c895e6fd951919307f79a6d36",
 	"libflux/src/core/ast/tests.rs":                                                 "524e07ece164e54f57904cdde18bb8c01033e91faeba64202f477153110ef350",
+=======
+	"libflux/src/core/ast/mod.rs":                                                   "60d5ef988edde569d09bc35dcf7c21a6318474d09977719d83c71ed31c09ed15",
+	"libflux/src/core/ast/tests.rs":                                                 "36e1c8131e3f162440cea84a37ffeaf9ebe00a30e833d35abfb03247c01b2bf8",
+>>>>>>> feat(libflux/ast/tests.rs): add test_json_tvartype to tests.rs.
 	"libflux/src/core/ast/walk/mod.rs":                                              "855701066e8d11a620855d2db986ce3df27555a91e2fcaf7a0cd3b12aa4cc4f0",
 	"libflux/src/core/ast/walk/tests.rs":                                            "f7b2d7dd5643bb795a86c04b6979b136b0de46b52b213caff094aed6d204a05d",
 	"libflux/src/core/build.rs":                                                     "7e8c3626b9034dc4a31c2b748b2a174260949d852455299d071a0fd128c18a5a",
