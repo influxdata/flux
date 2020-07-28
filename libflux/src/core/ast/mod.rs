@@ -533,6 +533,7 @@ pub struct TvarType {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
+    pub name: Identifier,
 }
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ArrayType {

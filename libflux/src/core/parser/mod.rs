@@ -572,10 +572,11 @@ impl Parser {
 
     #[cfg(test)]
     fn parse_tvar(&mut self) -> MonoType {
-        let t = self.expect(TOK_IDENT);
-        if t.lit.to_uppercase() == (t.lit) {
+        let t = self.parse_identifier();
+        if t.name.to_uppercase() == (t.name) {
             MonoType::Tvar(TvarType {
-                base: self.base_node_from_token(&t),
+                base: t.base.clone(),
+                name: t,
             })
         } else {
             MonoType::Invalid

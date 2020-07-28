@@ -1200,6 +1200,13 @@ fn test_parse_type_expression_tvar() {
                     location: loc.get(1, 1, 1, 2),
                     ..BaseNode::default()
                 },
+                name: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 2),
+                        ..BaseNode::default()
+                    },
+                    name: "A".to_string(),
+                }
             }),
             constraint: None,
         },
