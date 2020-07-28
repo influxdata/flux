@@ -500,7 +500,9 @@ pub enum MonoType {
     Tvar(TvarType),
     #[serde(rename = "NamedType")]
     Basic(NamedType),
+    #[serde(rename = "ArrayType")]
     Array(Box<ArrayType>),
+    #[serde(rename = "RecordType")]
     Record(RecordType),
     Function(Box<FunctionType>),
     Invalid,
@@ -594,6 +596,7 @@ pub struct RecordType {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tvar: Option<Identifier>,
     pub properties: Option<Vec<PropertyType>>,
 }
