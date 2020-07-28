@@ -183,7 +183,7 @@ func (s *streamTable) Do(f func(flux.ColReader) error) error {
 	if err := f(s.first); err != nil {
 		s.first.Release()
 		s.first = nil
-		return nil
+		return err
 	}
 	s.first.Release()
 	s.first = nil

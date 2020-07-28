@@ -53,6 +53,8 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 			if err := substituteTypes(subst, argT, mtyp); err != nil {
 				return nil, err
 			}
+		} else if !arg.Optional() {
+			return nil, errors.Newf(codes.Invalid, "missing required argument %q", string(name))
 		}
 	}
 
