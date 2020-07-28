@@ -440,7 +440,7 @@ fn test_json_nametype_array() {
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"Array":{"monotype":{"Array":{"monotype":{"Basic":{"name":{"name":"A"}}}}}}}"#
+        r#"{"type":"ArrayType","monotype":{"type":"ArrayType","monotype":{"type":"Basic","name":{"name":"A"}}}}"#
     );
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
