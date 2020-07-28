@@ -495,8 +495,10 @@ pub struct BuiltinStmt {
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
 pub enum MonoType {
     Tvar(TvarType),
+    #[serde(rename = "NamedType")]
     Basic(NamedType),
     Array(Box<ArrayType>),
     Record(RecordType),
