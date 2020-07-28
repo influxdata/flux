@@ -403,13 +403,10 @@ fn test_json_namedtype() {
         name: Identifier {
             base: BaseNode::default(),
             name: "int".to_string(),
-        }
+        },
     });
     let serialized = serde_json::to_string(&n).unwrap();
-    assert_eq!(
-        serialized,
-        r#"{"Basic":{"name":{"name":"int"}}}"#
-    );
+    assert_eq!(serialized, r#"{"Basic":{"name":{"name":"int"}}}"#);
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
 }

@@ -23,7 +23,7 @@ var sourceHashes = map[string]string{
 	"libflux/src/core/ast/flatbuffers/mod.rs":                                       "1f09831f45eee630101b0318e496fedd5730ce6020c3e22c18acac831259c4f3",
 	"libflux/src/core/ast/flatbuffers/tests.rs":                                     "131f266613fd39cfcbc72c41691b68f58a14ee3a994d45f011da70c263f16f26",
 	"libflux/src/core/ast/mod.rs":                                                   "29f6b43b1ec58f0ab8b565a2473bdc07e6a44d25157ea97212a8e8b5c88102b0",
-	"libflux/src/core/ast/tests.rs":                                                 "09c3aff9267fec8b92feb6d707550c0de97f70b8f72057444ab0203a997bc911",
+	"libflux/src/core/ast/tests.rs":                                                 "33329166a207bd9381f6260565f67f4878cab285f34b5067b1a8c0a6b232f70d",
 	"libflux/src/core/ast/walk/mod.rs":                                              "855701066e8d11a620855d2db986ce3df27555a91e2fcaf7a0cd3b12aa4cc4f0",
 	"libflux/src/core/ast/walk/tests.rs":                                            "f7b2d7dd5643bb795a86c04b6979b136b0de46b52b213caff094aed6d204a05d",
 	"libflux/src/core/build.rs":                                                     "7e8c3626b9034dc4a31c2b748b2a174260949d852455299d071a0fd128c18a5a",
