@@ -1683,6 +1683,7 @@ fn test_parse_type_expression_function_with_no_params() {
                     location: loc.get(1, 1, 1, 10),
                     ..BaseNode::default()
                 },
+
                 parameters: vec![],
                 monotype: MonoType::Basic(NamedType {
                     base: BaseNode {
@@ -1793,6 +1794,7 @@ fn test_parse_type_expression_function_with_params() {
     )
 }
 
+// optional parameters like (.., ?n: ..) -> ..
 #[test]
 fn test_parse_type_expression_function_optional_params() {
     let mut p = Parser::new(r#"(?A: int) => int"#);
