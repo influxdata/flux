@@ -6,6 +6,38 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
+type MonoType = byte
+
+const (
+	MonoTypeNONE         MonoType = 0
+	MonoTypeNamedType    MonoType = 1
+	MonoTypeArrayType    MonoType = 2
+	MonoTypeRecordType   MonoType = 3
+	MonoTypeFunctionType MonoType = 4
+)
+
+var EnumNamesMonoType = map[MonoType]string{
+	MonoTypeNONE:         "NONE",
+	MonoTypeNamedType:    "NamedType",
+	MonoTypeArrayType:    "ArrayType",
+	MonoTypeRecordType:   "RecordType",
+	MonoTypeFunctionType: "FunctionType",
+}
+
+type ParameterKind = int8
+
+const (
+	ParameterKindRequired ParameterKind = 0
+	ParameterKindOptional ParameterKind = 1
+	ParameterKindPipe     ParameterKind = 2
+)
+
+var EnumNamesParameterKind = map[ParameterKind]string{
+	ParameterKindRequired: "Required",
+	ParameterKindOptional: "Optional",
+	ParameterKindPipe:     "Pipe",
+}
+
 type Statement = byte
 
 const (
@@ -220,6 +252,684 @@ var EnumNamesPropertyKey = map[PropertyKey]string{
 	PropertyKeyNONE:          "NONE",
 	PropertyKeyIdentifier:    "Identifier",
 	PropertyKeyStringLiteral: "StringLiteral",
+}
+
+type NamedType struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsNamedType(buf []byte, offset flatbuffers.UOffsetT) *NamedType {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &NamedType{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *NamedType) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *NamedType) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *NamedType) BaseNode(obj *BaseNode) *BaseNode {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(BaseNode)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *NamedType) Id(obj *Identifier) *Identifier {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(Identifier)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func NamedTypeStart(builder *flatbuffers.Builder) {
+	builder.StartObject(2)
+}
+func NamedTypeAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
+}
+func NamedTypeAddId(builder *flatbuffers.Builder, id flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(id), 0)
+}
+func NamedTypeEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type ArrayType struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsArrayType(buf []byte, offset flatbuffers.UOffsetT) *ArrayType {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &ArrayType{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *ArrayType) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *ArrayType) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *ArrayType) BaseNode(obj *BaseNode) *BaseNode {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(BaseNode)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *ArrayType) ElementTypeType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *ArrayType) MutateElementTypeType(n byte) bool {
+	return rcv._tab.MutateByteSlot(6, n)
+}
+
+func (rcv *ArrayType) ElementType(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func ArrayTypeStart(builder *flatbuffers.Builder) {
+	builder.StartObject(3)
+}
+func ArrayTypeAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
+}
+func ArrayTypeAddElementTypeType(builder *flatbuffers.Builder, elementTypeType byte) {
+	builder.PrependByteSlot(1, elementTypeType, 0)
+}
+func ArrayTypeAddElementType(builder *flatbuffers.Builder, elementType flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(elementType), 0)
+}
+func ArrayTypeEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type PropertyType struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsPropertyType(buf []byte, offset flatbuffers.UOffsetT) *PropertyType {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &PropertyType{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *PropertyType) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *PropertyType) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *PropertyType) BaseNode(obj *BaseNode) *BaseNode {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(BaseNode)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *PropertyType) Id(obj *Identifier) *Identifier {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(Identifier)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *PropertyType) TyType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *PropertyType) MutateTyType(n byte) bool {
+	return rcv._tab.MutateByteSlot(8, n)
+}
+
+func (rcv *PropertyType) Ty(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func PropertyTypeStart(builder *flatbuffers.Builder) {
+	builder.StartObject(4)
+}
+func PropertyTypeAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
+}
+func PropertyTypeAddId(builder *flatbuffers.Builder, id flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(id), 0)
+}
+func PropertyTypeAddTyType(builder *flatbuffers.Builder, tyType byte) {
+	builder.PrependByteSlot(2, tyType, 0)
+}
+func PropertyTypeAddTy(builder *flatbuffers.Builder, ty flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(ty), 0)
+}
+func PropertyTypeEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type RecordType struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsRecordType(buf []byte, offset flatbuffers.UOffsetT) *RecordType {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &RecordType{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *RecordType) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *RecordType) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *RecordType) BaseNode(obj *BaseNode) *BaseNode {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(BaseNode)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *RecordType) Properties(obj *PropertyType, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
+	}
+	return false
+}
+
+func (rcv *RecordType) PropertiesLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *RecordType) Tvar(obj *Identifier) *Identifier {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(Identifier)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func RecordTypeStart(builder *flatbuffers.Builder) {
+	builder.StartObject(3)
+}
+func RecordTypeAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
+}
+func RecordTypeAddProperties(builder *flatbuffers.Builder, properties flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(properties), 0)
+}
+func RecordTypeStartPropertiesVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func RecordTypeAddTvar(builder *flatbuffers.Builder, tvar flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(tvar), 0)
+}
+func RecordTypeEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type ParameterType struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsParameterType(buf []byte, offset flatbuffers.UOffsetT) *ParameterType {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &ParameterType{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *ParameterType) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *ParameterType) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *ParameterType) BaseNode(obj *BaseNode) *BaseNode {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(BaseNode)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *ParameterType) Name(obj *Identifier) *Identifier {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(Identifier)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *ParameterType) TyType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *ParameterType) MutateTyType(n byte) bool {
+	return rcv._tab.MutateByteSlot(8, n)
+}
+
+func (rcv *ParameterType) Ty(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func (rcv *ParameterType) Kind() ParameterKind {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	if o != 0 {
+		return rcv._tab.GetInt8(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *ParameterType) MutateKind(n ParameterKind) bool {
+	return rcv._tab.MutateInt8Slot(12, n)
+}
+
+func ParameterTypeStart(builder *flatbuffers.Builder) {
+	builder.StartObject(5)
+}
+func ParameterTypeAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
+}
+func ParameterTypeAddName(builder *flatbuffers.Builder, name flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(name), 0)
+}
+func ParameterTypeAddTyType(builder *flatbuffers.Builder, tyType byte) {
+	builder.PrependByteSlot(2, tyType, 0)
+}
+func ParameterTypeAddTy(builder *flatbuffers.Builder, ty flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(ty), 0)
+}
+func ParameterTypeAddKind(builder *flatbuffers.Builder, kind int8) {
+	builder.PrependInt8Slot(4, kind, 0)
+}
+func ParameterTypeEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type FunctionType struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsFunctionType(buf []byte, offset flatbuffers.UOffsetT) *FunctionType {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &FunctionType{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *FunctionType) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *FunctionType) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *FunctionType) BaseNode(obj *BaseNode) *BaseNode {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(BaseNode)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *FunctionType) Parameters(obj *ParameterType, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
+	}
+	return false
+}
+
+func (rcv *FunctionType) ParametersLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func (rcv *FunctionType) RetnType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *FunctionType) MutateRetnType(n byte) bool {
+	return rcv._tab.MutateByteSlot(8, n)
+}
+
+func (rcv *FunctionType) Retn(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func FunctionTypeStart(builder *flatbuffers.Builder) {
+	builder.StartObject(4)
+}
+func FunctionTypeAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
+}
+func FunctionTypeAddParameters(builder *flatbuffers.Builder, parameters flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(parameters), 0)
+}
+func FunctionTypeStartParametersVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func FunctionTypeAddRetnType(builder *flatbuffers.Builder, retnType byte) {
+	builder.PrependByteSlot(2, retnType, 0)
+}
+func FunctionTypeAddRetn(builder *flatbuffers.Builder, retn flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(retn), 0)
+}
+func FunctionTypeEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type TypeConstraint struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsTypeConstraint(buf []byte, offset flatbuffers.UOffsetT) *TypeConstraint {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &TypeConstraint{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *TypeConstraint) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *TypeConstraint) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *TypeConstraint) BaseNode(obj *BaseNode) *BaseNode {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(BaseNode)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *TypeConstraint) Tvar(obj *Identifier) *Identifier {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(Identifier)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *TypeConstraint) Kinds(obj *Identifier, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
+	}
+	return false
+}
+
+func (rcv *TypeConstraint) KindsLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func TypeConstraintStart(builder *flatbuffers.Builder) {
+	builder.StartObject(3)
+}
+func TypeConstraintAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
+}
+func TypeConstraintAddTvar(builder *flatbuffers.Builder, tvar flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(tvar), 0)
+}
+func TypeConstraintAddKinds(builder *flatbuffers.Builder, kinds flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(kinds), 0)
+}
+func TypeConstraintStartKindsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func TypeConstraintEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type TypeExpression struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsTypeExpression(buf []byte, offset flatbuffers.UOffsetT) *TypeExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &TypeExpression{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *TypeExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *TypeExpression) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *TypeExpression) BaseNode(obj *BaseNode) *BaseNode {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(BaseNode)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *TypeExpression) TyType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *TypeExpression) MutateTyType(n byte) bool {
+	return rcv._tab.MutateByteSlot(6, n)
+}
+
+func (rcv *TypeExpression) Ty(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func (rcv *TypeExpression) Constraints(obj *TypeConstraint, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
+	}
+	return false
+}
+
+func (rcv *TypeExpression) ConstraintsLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func TypeExpressionStart(builder *flatbuffers.Builder) {
+	builder.StartObject(4)
+}
+func TypeExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
+}
+func TypeExpressionAddTyType(builder *flatbuffers.Builder, tyType byte) {
+	builder.PrependByteSlot(1, tyType, 0)
+}
+func TypeExpressionAddTy(builder *flatbuffers.Builder, ty flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(ty), 0)
+}
+func TypeExpressionAddConstraints(builder *flatbuffers.Builder, constraints flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(constraints), 0)
+}
+func TypeExpressionStartConstraintsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func TypeExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
 }
 
 type Position struct {
