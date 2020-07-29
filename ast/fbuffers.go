@@ -30,6 +30,9 @@ func (l SourceLocation) FromBuf(buf *fbast.SourceLocation) *SourceLocation {
 }
 
 func (b *BaseNode) FromBuf(buf *fbast.BaseNode) {
+	if buf == nil {
+		return
+	}
 	b.Loc = SourceLocation{}.FromBuf(buf.Loc(nil))
 	if !b.Loc.IsValid() {
 		b.Loc = nil
@@ -39,6 +42,125 @@ func (b *BaseNode) FromBuf(buf *fbast.BaseNode) {
 		for i := 0; i < buf.ErrorsLength(); i++ {
 			b.Errors[i] = Error{string(buf.Errors(i))}
 		}
+	}
+}
+
+func (t TypeExpression) FromBuf(buf *fbast.TypeExpression) *TypeExpression {
+	t.BaseNode.FromBuf(buf.BaseNode(nil))
+	t.Ty = DecodeMonoType(newFBTable(buf.Ty, &t.BaseNode), buf.TyType())
+	for i := 0; i < buf.ConstraintsLength(); i++ {
+		if c := new(fbast.TypeConstraint); !buf.Constraints(c, i) {
+			t.BaseNode.Errors = append(t.BaseNode.Errors, Error{
+				fmt.Sprintf("Encountered error in deserializing TypeExpression.Constraints[%d]", i),
+			})
+		} else {
+			t.Constraints = append(t.Constraints, TypeConstraint{}.FromBuf(c))
+		}
+	}
+	return &t
+}
+
+func (c TypeConstraint) FromBuf(buf *fbast.TypeConstraint) *TypeConstraint {
+	c.BaseNode.FromBuf(buf.BaseNode(nil))
+	c.Tvar = Identifier{}.FromBuf(buf.Tvar(nil))
+	for i := 0; i < buf.KindsLength(); i++ {
+		if id := new(fbast.Identifier); !buf.Kinds(id, i) {
+			c.BaseNode.Errors = append(c.BaseNode.Errors, Error{
+				fmt.Sprintf("Encountered error in deserializing TypeConstraint.Kinds[%d]", i),
+			})
+		} else {
+			c.Kinds = append(c.Kinds, Identifier{}.FromBuf(id))
+		}
+	}
+	return &c
+}
+
+func (t NamedType) FromBuf(buf *fbast.NamedType) *NamedType {
+	t.BaseNode.FromBuf(buf.BaseNode(nil))
+	t.ID = Identifier{}.FromBuf(buf.Id(nil))
+	return &t
+}
+
+func (t ArrayType) FromBuf(buf *fbast.ArrayType) *ArrayType {
+	t.BaseNode.FromBuf(buf.BaseNode(nil))
+	t.ElementType = DecodeMonoType(newFBTable(buf.ElementType, &t.BaseNode), buf.ElementTypeType())
+	return &t
+}
+
+func (t RecordType) FromBuf(buf *fbast.RecordType) *RecordType {
+	t.BaseNode.FromBuf(buf.BaseNode(nil))
+	t.Tvar = Identifier{}.FromBuf(buf.Tvar(nil))
+	for i := 0; i < buf.PropertiesLength(); i++ {
+		if p := new(fbast.PropertyType); !buf.Properties(p, i) {
+			t.BaseNode.Errors = append(t.BaseNode.Errors, Error{
+				fmt.Sprintf("Encountered error in deserializing RecordType.Properties[%d]", i),
+			})
+		} else {
+			t.Properties = append(t.Properties, PropertyType{}.FromBuf(p))
+		}
+	}
+	return &t
+}
+
+func (p PropertyType) FromBuf(buf *fbast.PropertyType) *PropertyType {
+	p.BaseNode.FromBuf(buf.BaseNode(nil))
+	p.Name = Identifier{}.FromBuf(buf.Id(nil))
+	p.Ty = DecodeMonoType(newFBTable(buf.Ty, &p.BaseNode), buf.TyType())
+	return &p
+}
+
+func (t FunctionType) FromBuf(buf *fbast.FunctionType) *FunctionType {
+	t.BaseNode.FromBuf(buf.BaseNode(nil))
+	t.Return = DecodeMonoType(newFBTable(buf.Retn, &t.BaseNode), buf.RetnType())
+	for i := 0; i < buf.ParametersLength(); i++ {
+		if p := new(fbast.ParameterType); !buf.Parameters(p, i) {
+			t.BaseNode.Errors = append(t.BaseNode.Errors, Error{
+				fmt.Sprintf("Encountered error in deserializing FunctionType.Parameters[%d]", i),
+			})
+		} else {
+			t.Parameters = append(t.Parameters, ParameterType{}.FromBuf(p))
+		}
+	}
+	return &t
+}
+
+func (p ParameterType) FromBuf(buf *fbast.ParameterType) *ParameterType {
+	p.BaseNode.FromBuf(buf.BaseNode(nil))
+	p.Name = Identifier{}.FromBuf(buf.Name(nil))
+	p.Ty = DecodeMonoType(newFBTable(buf.Ty, &p.BaseNode), buf.TyType())
+	p.Kind = paramKindMap[buf.Kind()]
+	return &p
+}
+
+func newFBTable(f unionTableWriterFn, base *BaseNode) *flatbuffers.Table {
+	t := new(flatbuffers.Table)
+	if !f(t) {
+		base.Errors = append(base.Errors, Error{fmt.Sprint("serialization error")})
+	}
+	return t
+}
+
+func DecodeMonoType(t *flatbuffers.Table, ty byte) MonoType {
+	switch ty {
+	case fbast.MonoTypeNamedType:
+		b := new(fbast.NamedType)
+		b.Init(t.Bytes, t.Pos)
+		return NamedType{}.FromBuf(b)
+	case fbast.MonoTypeArrayType:
+		b := new(fbast.ArrayType)
+		b.Init(t.Bytes, t.Pos)
+		return ArrayType{}.FromBuf(b)
+	case fbast.MonoTypeRecordType:
+		b := new(fbast.RecordType)
+		b.Init(t.Bytes, t.Pos)
+		return RecordType{}.FromBuf(b)
+	case fbast.MonoTypeFunctionType:
+		b := new(fbast.FunctionType)
+		b.Init(t.Bytes, t.Pos)
+		return FunctionType{}.FromBuf(b)
+	default:
+		// TODO: Use bad monotype to store errors.
+		return nil
 	}
 }
 
@@ -668,4 +790,10 @@ var opMap = map[fbast.Operator]OperatorKind{
 var logOpMap = map[fbast.LogicalOperator]LogicalOperatorKind{
 	fbast.LogicalOperatorAndOperator: AndOperator,
 	fbast.LogicalOperatorOrOperator:  OrOperator,
+}
+
+var paramKindMap = map[fbast.ParameterKind]ParameterKind{
+	fbast.ParameterKindRequired: Required,
+	fbast.ParameterKindOptional: Optional,
+	fbast.ParameterKindPipe:     Pipe,
 }
