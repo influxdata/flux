@@ -505,6 +505,7 @@ pub enum MonoType {
     Array(Box<ArrayType>),
     #[serde(rename = "RecordType")]
     Record(RecordType),
+    #[serde(rename = "FunctionType")]
     Function(Box<FunctionType>),
     Invalid,
 }
@@ -555,18 +556,31 @@ pub struct FunctionType {
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
 pub enum ParameterType {
+    #[serde(rename = "Required")]
     Required {
+        #[serde(skip_serializing_if = "BaseNode::is_empty")]
+        #[serde(default)]
+        #[serde(flatten)]
         base: BaseNode,
         name: Identifier,
         ty: MonoType,
     },
+    #[serde(rename = "Optional")]
     Optional {
+        #[serde(skip_serializing_if = "BaseNode::is_empty")]
+        #[serde(default)]
+        #[serde(flatten)]
         base: BaseNode,
         name: Identifier,
         ty: MonoType,
     },
+    #[serde(rename = "Pipe")]
     Pipe {
+        #[serde(skip_serializing_if = "BaseNode::is_empty")]
+        #[serde(default)]
+        #[serde(flatten)]
         base: BaseNode,
         name: Option<Identifier>,
         ty: MonoType,
