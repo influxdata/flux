@@ -678,7 +678,7 @@ fn test_json_functiontype_unnamed_pipe() {
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"type":"FunctionType","parameters":[{"type":"Pipe","name":null,"ty":{"type":"NamedType","name":{"name":"int"}}}],"monotype":{"type":"NamedType","name":{"name":"int"}}}"#
+        r#"{"type":"FunctionType","parameters":[{"type":"Pipe","ty":{"type":"NamedType","name":{"name":"int"}}}],"monotype":{"type":"NamedType","name":{"name":"int"}}}"#
     );
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)

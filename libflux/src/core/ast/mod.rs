@@ -582,6 +582,7 @@ pub enum ParameterType {
         #[serde(default)]
         #[serde(flatten)]
         base: BaseNode,
+        #[serde(skip_serializing_if = "Option::is_none")]
         name: Option<Identifier>,
         ty: MonoType,
     },
