@@ -19,7 +19,7 @@ var sourceHashes = map[string]string{
 	"libflux/src/core/Cargo.toml":                                                   "4f3093731281c0ef02151230f1bd83eb1a1f9b1a1cff0fc88ebe6b5b1fe2b6d7",
 	"libflux/src/core/ast/check/mod.rs":                                             "59de9596b266fd254785a81c1e1dbbd2ed18a2b66bafc9a4c9e51dba72cb8422",
 	"libflux/src/core/ast/check/tests.rs":                                           "9ca9abb71c9c2aa20b75b3aa1220304c5c04f5a59d8adc74c604659d940866ea",
-	"libflux/src/core/ast/flatbuffers/ast_generated.rs":                             "a7384fd931c1ba8e951bbe0748fa296dc83ea4625a84746702f4c41a2b03c11c",
+	"libflux/src/core/ast/flatbuffers/ast_generated.rs":                             "5c4422f2ec849d519101ab35727220d09af72b87ff82f0653786b1d7969a7b7b",
 	"libflux/src/core/ast/flatbuffers/mod.rs":                                       "1f09831f45eee630101b0318e496fedd5730ce6020c3e22c18acac831259c4f3",
 	"libflux/src/core/ast/flatbuffers/tests.rs":                                     "131f266613fd39cfcbc72c41691b68f58a14ee3a994d45f011da70c263f16f26",
 	"libflux/src/core/ast/mod.rs":                                                   "7dc4725ae999f8af7eb7c9c22a9c4f27ea289f2999c05af9951185dc155c5e9d",
