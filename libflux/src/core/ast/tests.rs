@@ -546,7 +546,6 @@ fn test_json_record_no_tvar() {
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
 }
-
 #[test]
 fn test_json_functiontype() {
     let n = MonoType::Function(Box::new(FunctionType {
@@ -577,7 +576,6 @@ fn test_json_functiontype() {
     assert_eq!(
         serialized,
         r#"{"type":"FunctionType","parameters":[{"type":"Optional","name":{"name":"A"},"ty":{"type":"NamedType","name":{"name":"int"}}}],"monotype":{"type":"NamedType","name":{"name":"int"}}}"#
-
     );
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
