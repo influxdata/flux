@@ -536,10 +536,18 @@ impl Parser {
     #[cfg(test)]
     fn parse_type_expression(&mut self) -> TypeExpression {
         let monotype = self.parse_monotype(); // monotype
+        let t = self.peek();
+        let mut base = monotype.base().clone();
+        let mut constraints = Vec::new();
+        if t.tok == TOK_IDENT && t.lit == "where" {
+            self.consume();
+            constraints = self.parse_constraints();
+            base = self.base_node_from_others(&base, &constraints[constraints.len() - 1].base);
+        }
         TypeExpression {
-            monotype: monotype.clone(),
-            base: base_from_monotype(&monotype),
-            constraint: None,
+            base,
+            monotype,
+            constraints,
         }
     }
 

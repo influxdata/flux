@@ -1184,6 +1184,124 @@ fn builtin() {
 }
 
 #[test]
+fn test_parse_type_expression() {
+    let mut p = Parser::new(r#"(a:T, b:T) => T where T: Addable + Divisible"#);
+    let parsed = p.parse_type_expression();
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        TypeExpression {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 45),
+                ..BaseNode::default()
+            },
+            monotype: MonoType::Function(Box::new(FunctionType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 16),
+                    ..BaseNode::default()
+                },
+                parameters: vec![
+                    ParameterType::Required {
+                        base: BaseNode {
+                            location: loc.get(1, 2, 1, 5),
+                            ..BaseNode::default()
+                        },
+                        name: Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 2, 1, 3),
+                                ..BaseNode::default()
+                            },
+                            name: "a".to_string(),
+                        },
+                        monotype: MonoType::Tvar(TvarType {
+                            base: BaseNode {
+                                location: loc.get(1, 4, 1, 5),
+                                ..BaseNode::default()
+                            },
+                            name: Identifier {
+                                base: BaseNode {
+                                    location: loc.get(1, 4, 1, 5),
+                                    ..BaseNode::default()
+                                },
+                                name: "T".to_string(),
+                            },
+                        }),
+                    },
+                    ParameterType::Required {
+                        base: BaseNode {
+                            location: loc.get(1, 7, 1, 10),
+                            ..BaseNode::default()
+                        },
+                        name: Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 7, 1, 8),
+                                ..BaseNode::default()
+                            },
+                            name: "b".to_string(),
+                        },
+                        monotype: MonoType::Tvar(TvarType {
+                            base: BaseNode {
+                                location: loc.get(1, 9, 1, 10),
+                                ..BaseNode::default()
+                            },
+                            name: Identifier {
+                                base: BaseNode {
+                                    location: loc.get(1, 9, 1, 10),
+                                    ..BaseNode::default()
+                                },
+                                name: "T".to_string(),
+                            },
+                        }),
+                    },
+                ],
+                monotype: MonoType::Tvar(TvarType {
+                    base: BaseNode {
+                        location: loc.get(1, 15, 1, 16),
+                        ..BaseNode::default()
+                    },
+                    name: Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 15, 1, 16),
+                            ..BaseNode::default()
+                        },
+                        name: "T".to_string(),
+                    },
+                }),
+            })),
+            constraints: vec![TypeConstraint {
+                base: BaseNode {
+                    location: loc.get(1, 23, 1, 45),
+                    ..BaseNode::default()
+                },
+                tvar: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 23, 1, 24),
+                        ..BaseNode::default()
+                    },
+                    name: "T".to_string(),
+                },
+                kinds: vec![
+                    Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 26, 1, 33),
+                            ..BaseNode::default()
+                        },
+                        name: "Addable".to_string(),
+                    },
+                    Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 36, 1, 45),
+                            ..BaseNode::default()
+                        },
+                        name: "Divisible".to_string(),
+                    },
+                ],
+            }],
+        },
+    )
+}
+
+#[test]
 fn test_parse_type_expression_tvar() {
     let mut p = Parser::new(r#"A"#);
     let parsed = p.parse_type_expression();
