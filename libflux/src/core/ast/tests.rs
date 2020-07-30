@@ -453,6 +453,77 @@ fn test_json_return_statement() {
 }
 
 #[test]
+fn test_json_type_expression() {
+    let n = TypeExpression {
+        base: BaseNode::default(),
+        monotype: MonoType::Function(Box::new(FunctionType {
+            base: BaseNode::default(),
+            parameters: vec![
+                ParameterType::Required {
+                    base: BaseNode::default(),
+                    name: Identifier {
+                        base: BaseNode::default(),
+                        name: "a".to_string(),
+                    },
+                    monotype: MonoType::Tvar(TvarType {
+                        base: BaseNode::default(),
+                        name: Identifier {
+                            base: BaseNode::default(),
+                            name: "T".to_string(),
+                        },
+                    }),
+                },
+                ParameterType::Required {
+                    base: BaseNode::default(),
+                    name: Identifier {
+                        base: BaseNode::default(),
+                        name: "b".to_string(),
+                    },
+                    monotype: MonoType::Tvar(TvarType {
+                        base: BaseNode::default(),
+                        name: Identifier {
+                            base: BaseNode::default(),
+                            name: "T".to_string(),
+                        },
+                    }),
+                },
+            ],
+            monotype: MonoType::Tvar(TvarType {
+                base: BaseNode::default(),
+                name: Identifier {
+                    base: BaseNode::default(),
+                    name: "T".to_string(),
+                },
+            }),
+        })),
+        constraints: vec![TypeConstraint {
+            base: BaseNode::default(),
+            tvar: Identifier {
+                base: BaseNode::default(),
+                name: "T".to_string(),
+            },
+            kinds: vec![
+                Identifier {
+                    base: BaseNode::default(),
+                    name: "Addable".to_string(),
+                },
+                Identifier {
+                    base: BaseNode::default(),
+                    name: "Divisible".to_string(),
+                },
+            ],
+        }],
+    };
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(
+        serialized,
+        r#"{"monotype":{"type":"FunctionType","parameters":[{"type":"Required","name":{"name":"a"},"monotype":{"type":"TvarType","name":{"name":"T"}}},{"type":"Required","name":{"name":"b"},"monotype":{"type":"TvarType","name":{"name":"T"}}}],"monotype":{"type":"TvarType","name":{"name":"T"}}},"constraints":[{"tvar":{"name":"T"},"kinds":[{"name":"Addable"},{"name":"Divisible"}]}]}"#
+    );
+    let deserialized: TypeExpression = serde_json::from_str(serialized.as_str()).unwrap();
+    assert_eq!(deserialized, n)
+}
+
+#[test]
 fn test_json_array() {
     let n = MonoType::Array(Box::new(ArrayType {
         base: BaseNode::default(),
