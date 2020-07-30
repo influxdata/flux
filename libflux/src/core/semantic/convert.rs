@@ -159,7 +159,7 @@ fn convert_monotype(
                 "duration" => MonoType::Duration,
                 "time" => MonoType::Time,
                 "regexp" => MonoType::Regexp,
-                "btyes" => MonoType::Bytes,
+                "bytes" => MonoType::Bytes,
                 _ => Err("Bad parameter type.".to_string()),
             }
         },
