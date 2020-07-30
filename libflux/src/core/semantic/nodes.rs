@@ -477,6 +477,10 @@ impl BuiltinStmt {
     }
 }
 
+fn convert_type_expression(t: ast::TypeExpression, f: &mut Fresher) -> PolyType {
+
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct TestStmt {
     pub loc: ast::SourceLocation,
