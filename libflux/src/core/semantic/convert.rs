@@ -149,6 +149,20 @@ fn convert_monotype(
     let converted;
     match ty {
         ast::MonoType::Tvar(tvar) => true,
+        ast::MonoType::Basic(basic) => {
+            match basic.name.name {
+                "bool" => MonoType::Bool,
+                "int" => MonoType::Int,
+                "uint" => MonoType::Unit,
+                "float" => MonoType::Float,
+                "string" => MonoType::String,
+                "duration" => MonoType::Duration,
+                "time" => MonoType::Time,
+                "regexp" => MonoType::Regexp,
+                "btyes" => MonoType::Bytes,
+                _ => Err("Bad parameter type.".to_string()),
+            }
+        },
         ast::MonoType::Array(arr) => {MonoType::Arr(Box::new(Array(convert_monotype(arr.monotype, tvars, f)?)))}
         ast::MonoType::Function(func) => {
             let mut req = MonoTypeMap::new();
@@ -187,19 +201,7 @@ fn convert_monotype(
                 retn: func.monotype,
             })))
         }
-        // AST record looks like this:
-        /*
-            pub struct RecordType {
-            pub base: BaseNode,
-            pub tvar: Option<Identifier>,
-            pub properties: Option<Vec<PropertyType>>,
-         */
-
-        // Semantic Record looks like this:
-
-        ast::MonoType::Record(rec) => {
-
-        },
+        ast::MonoType::Record(rec) => true,
     }
 }
 
