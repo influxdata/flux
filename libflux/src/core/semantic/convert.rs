@@ -141,31 +141,65 @@ fn convert_builtin_statement(stmt: ast::BuiltinStmt, fresher: &mut Fresher) -> R
 }
 
 pub type MonoTypeMap = SemanticMap<String, MonoType>;
-fn convert_monotype(ty: ast::MonoType, tvars: &mut HashMap<String, u64>, f: &mut Fresher) -> Result<MonoType> {
+fn convert_monotype(
+    ty: ast::MonoType,
+    tvars: &mut HashMap<String, u64>,
+    f: &mut Fresher,
+) -> Result<MonoType> {
     let converted;
     match ty {
-        ast::MonoType::Tvar() => true,
-        ast::MonoType::Array(arr) => MonoType::Arr(Box::new(Array(convert_monotype(arr.monotype, tvars, f)?))),            // how do we add array fields,
-        ast::MonoType::Function(func) =>{
-            let mut req = MonoTypeMap::new(); // has to be not new but something else
+        ast::MonoType::Tvar(tvar) => true,
+        ast::MonoType::Array(arr) => {MonoType::Arr(Box::new(Array(convert_monotype(arr.monotype, tvars, f)?)))}
+        ast::MonoType::Function(func) => {
+            let mut req = MonoTypeMap::new();
             let mut opt = MonoTypeMap::new();
-            // let pipe = MonoTypeMap::new();
+            let mut pipe;
+            let mut dirty = false;
             for param in func.parameters {
                 match param {
-                    ast::ParameterType::Required { name, ty, .. } => req.insert(name, convert_monotype(param, tvars, f)?),
-                    ast::ParameterType::Optional { name, ty, .. } => opt.insert(name, convert_monotype(param, tvars, f)?),
-                    ast::ParameterType::Pipe(p) => pipe = convert_monotype(param, tvars, f),
+                    ast::ParameterType::Required { name, ty, .. } => {
+                        req.insert(name.name, convert_monotype(ty, tvars, f)?);
+                    }
+                    ast::ParameterType::Optional { name, ty, .. } => {
+                        opt.insert(name.name, convert_monotype(ty, tvars, f)?);
+                    }
+                    ast::ParameterType::Pipe { name, ty, .. } => {
+                        if dirty == false {
+                            pipe = types::Property {
+                                k: match name {
+                                    Some(N) =>{N},
+                                    None => String::from("<-"),
+                                },
+                                v: convert_monotype(ty, tvars, f)?,
+                            };
+                            dirty = true;
+                        } else {
+                            Err("Bad parameter type.".to_string())
+                        }
+                    }
                     _ => Err("Bad parameter type.".to_string()),
                 }
             }
+            Ok(MonoType::Fun(Box::new(Function {
+                req,
+                opt,
+                pipe,
+                retn: func.monotype,
+            })))
+        }
+        // AST record looks like this:
+        /*
+            pub struct RecordType {
+            pub base: BaseNode,
+            pub tvar: Option<Identifier>,
+            pub properties: Option<Vec<PropertyType>>,
+         */
 
-            MonoType::Func(Box::new(Function{
-                    req,
-                    opt,
-                    pipe: Option<Property>,
-                    retn: func.monotype}))
-    },
-        ast::MonoType::Record() => true,
+        // Semantic Record looks like this:
+
+        ast::MonoType::Record(rec) => {
+
+        },
     }
 }
 
