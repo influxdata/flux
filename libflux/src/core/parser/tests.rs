@@ -1208,7 +1208,7 @@ fn test_parse_type_expression_tvar() {
                     name: "A".to_string(),
                 }
             }),
-            constraint: None,
+            constraints: vec![],
         },
     )
 }
@@ -1238,7 +1238,7 @@ fn test_parse_type_expression_int() {
                     name: "int".to_string(),
                 }
             }),
-            constraint: None,
+            constraints: vec![],
         },
     )
 }
@@ -1268,7 +1268,7 @@ fn test_parse_type_expression_uint() {
                     },
                 }
             }),
-            constraint: None,
+            constraints: vec![],
         },
     )
 }
@@ -1298,7 +1298,7 @@ fn test_parse_type_expression_float() {
                     },
                 }
             }),
-            constraint: None,
+            constraints: vec![],
         },
     )
 }
@@ -1328,7 +1328,7 @@ fn test_parse_type_expression_string() {
                     },
                 }
             }),
-            constraint: None,
+            constraints: vec![],
         },
     )
 }
@@ -1358,7 +1358,7 @@ fn test_parse_type_expression_bool() {
                     },
                 }
             }),
-            constraint: None
+            constraints: vec![],
         },
     )
 }
@@ -1388,7 +1388,7 @@ fn test_parse_type_expression_time() {
                     },
                 }
             }),
-            constraint: None
+            constraints: vec![],
         },
     )
 }
@@ -1418,7 +1418,7 @@ fn test_parse_type_expression_duration() {
                     },
                 }
             }),
-            constraint: None
+            constraints: vec![],
         },
     )
 }
@@ -1448,7 +1448,7 @@ fn test_parse_type_expression_bytes() {
                     },
                 }
             }),
-            constraint: None
+            constraints: vec![],
         },
     )
 }
@@ -1478,7 +1478,7 @@ fn test_parse_type_expression_regexp() {
                     },
                 }
             }),
-            constraint: None,
+            constraints: vec![],
         },
     )
 }
@@ -1500,7 +1500,7 @@ fn test_parse_type_expression_array_int() {
                     location: loc.get(1, 1, 1, 6),
                     ..BaseNode::default()
                 },
-                monotype: MonoType::Basic(NamedType {
+                element: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 2, 1, 5),
                         ..BaseNode::default()
@@ -1514,7 +1514,7 @@ fn test_parse_type_expression_array_int() {
                     }
                 })
             })),
-            constraint: None,
+            constraints: vec![],
         },
     )
 }
@@ -1536,7 +1536,7 @@ fn test_parse_type_expression_array_string() {
                     location: loc.get(1, 1, 1, 9),
                     ..BaseNode::default()
                 },
-                monotype: MonoType::Basic(NamedType {
+                element: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 2, 1, 8),
                         ..BaseNode::default()
@@ -1550,7 +1550,7 @@ fn test_parse_type_expression_array_string() {
                     }
                 })
             })),
-            constraint: None
+            constraints: vec![],
         }
     )
 }
@@ -1568,13 +1568,13 @@ fn test_parse_record_only_properties() {
                 ..BaseNode::default()
             },
             tvar: None,
-            properties: Some(vec![
+            properties: vec![
                 PropertyType {
                     base: BaseNode {
                         location: loc.get(1, 2, 1, 7),
                         ..BaseNode::default()
                     },
-                    identifier: Identifier {
+                    name: Identifier {
                         name: "a".to_string(),
                         base: BaseNode {
                             location: loc.get(1, 2, 1, 3),
@@ -1600,7 +1600,7 @@ fn test_parse_record_only_properties() {
                         location: loc.get(1, 9, 1, 15),
                         ..BaseNode::default()
                     },
-                    identifier: Identifier {
+                    name: Identifier {
                         name: "b".to_string(),
                         base: BaseNode {
                             location: loc.get(1, 9, 1, 10),
@@ -1621,7 +1621,7 @@ fn test_parse_record_only_properties() {
                         }
                     })
                 }
-            ])
+            ]
         },)
     )
 }
@@ -1668,7 +1668,7 @@ fn test_parse_record_blank() {
                 ..BaseNode::default()
             },
             tvar: None,
-            properties: None,
+            properties: vec![],
         },)
     )
 }
@@ -1706,7 +1706,7 @@ fn test_parse_type_expression_function_with_no_params() {
                     }
                 }),
             })),
-            constraint: None
+            constraints: vec![],
         },
     )
 }
@@ -1741,7 +1741,7 @@ fn test_parse_type_expression_function_with_params() {
                             },
                             name: "A".to_string(),
                         },
-                        ty: MonoType::Basic(NamedType {
+                        monotype: MonoType::Basic(NamedType {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 8),
                                 ..BaseNode::default()
@@ -1767,7 +1767,7 @@ fn test_parse_type_expression_function_with_params() {
                             },
                             name: "B".to_string(),
                         },
-                        ty: MonoType::Basic(NamedType {
+                        monotype: MonoType::Basic(NamedType {
                             base: BaseNode {
                                 location: loc.get(1, 13, 1, 17),
                                 ..BaseNode::default()
@@ -1796,7 +1796,7 @@ fn test_parse_type_expression_function_with_params() {
                     }
                 }),
             })),
-            constraint: None
+            constraints: vec![],
         },
     )
 }
@@ -1831,7 +1831,7 @@ fn test_parse_type_expression_function_optional_params() {
                         },
                         name: "A".to_string(),
                     },
-                    ty: MonoType::Basic(NamedType {
+                    monotype: MonoType::Basic(NamedType {
                         base: BaseNode {
                             location: loc.get(1, 6, 1, 9),
                             ..BaseNode::default()
@@ -1859,7 +1859,7 @@ fn test_parse_type_expression_function_optional_params() {
                     }
                 }),
             })),
-            constraint: None
+            constraints: vec![],
         },
     )
 }
@@ -1893,7 +1893,7 @@ fn test_parse_type_expression_function_named_params() {
                         },
                         name: "A".to_string(),
                     }),
-                    ty: MonoType::Basic(NamedType {
+                    monotype: MonoType::Basic(NamedType {
                         base: BaseNode {
                             location: loc.get(1, 7, 1, 10),
                             ..BaseNode::default()
@@ -1921,7 +1921,7 @@ fn test_parse_type_expression_function_named_params() {
                     }
                 }),
             })),
-            constraint: None
+            constraints: vec![],
         },
     )
 }
@@ -1949,7 +1949,7 @@ fn test_parse_type_expression_function_unnamed_params() {
                         ..BaseNode::default()
                     },
                     name: None,
-                    ty: MonoType::Basic(NamedType {
+                    monotype: MonoType::Basic(NamedType {
                         base: BaseNode {
                             location: loc.get(1, 7, 1, 10),
                             ..BaseNode::default()
@@ -1977,7 +1977,7 @@ fn test_parse_type_expression_function_unnamed_params() {
                     }
                 }),
             })),
-            constraint: None
+            constraints: vec![],
         },
     )
 }
@@ -2092,13 +2092,13 @@ fn test_parse_record_tvar_properties() {
                 },
                 name: "A".to_string(),
             }),
-            properties: Some(vec![
+            properties: vec![
                 PropertyType {
                     base: BaseNode {
                         location: loc.get(1, 9, 1, 14),
                         ..BaseNode::default()
                     },
-                    identifier: Identifier {
+                    name: Identifier {
                         name: "a".to_string(),
                         base: BaseNode {
                             location: loc.get(1, 9, 1, 10),
@@ -2124,7 +2124,7 @@ fn test_parse_record_tvar_properties() {
                         location: loc.get(1, 16, 1, 22),
                         ..BaseNode::default()
                     },
-                    identifier: Identifier {
+                    name: Identifier {
                         name: "b".to_string(),
                         base: BaseNode {
                             location: loc.get(1, 16, 1, 17),
@@ -2145,7 +2145,7 @@ fn test_parse_record_tvar_properties() {
                         }
                     })
                 }
-            ])
+            ]
         },)
     )
 }

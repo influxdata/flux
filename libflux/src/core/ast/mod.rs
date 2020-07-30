@@ -507,19 +507,20 @@ pub enum MonoType {
     Record(RecordType),
     #[serde(rename = "FunctionType")]
     Function(Box<FunctionType>),
-    Invalid,
 }
 
-pub fn base_from_monotype(m: &MonoType) -> BaseNode {
-    match m {
-        MonoType::Basic(t) => t.base.clone(),
-        MonoType::Tvar(t) => t.base.clone(),
-        MonoType::Array(t) => t.base.clone(),
-        MonoType::Record(t) => t.base.clone(),
-        MonoType::Function(t) => t.base.clone(),
-        _ => BaseNode::default(),
+impl MonoType {
+    pub fn base(&self) -> &BaseNode {
+        match self {
+            MonoType::Basic(t) => &t.base,
+            MonoType::Tvar(t) => &t.base,
+            MonoType::Array(t) => &t.base,
+            MonoType::Record(t) => &t.base,
+            MonoType::Function(t) => &t.base,
+        }
     }
 }
+
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct NamedType {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
@@ -528,6 +529,7 @@ pub struct NamedType {
     pub base: BaseNode,
     pub name: Identifier,
 }
+
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TvarType {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
@@ -536,13 +538,14 @@ pub struct TvarType {
     pub base: BaseNode,
     pub name: Identifier,
 }
+
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct ArrayType {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub monotype: MonoType,
+    pub element: MonoType,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -558,25 +561,22 @@ pub struct FunctionType {
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum ParameterType {
-    #[serde(rename = "Required")]
     Required {
         #[serde(skip_serializing_if = "BaseNode::is_empty")]
         #[serde(default)]
         #[serde(flatten)]
         base: BaseNode,
         name: Identifier,
-        ty: MonoType,
+        monotype: MonoType,
     },
-    #[serde(rename = "Optional")]
     Optional {
         #[serde(skip_serializing_if = "BaseNode::is_empty")]
         #[serde(default)]
         #[serde(flatten)]
         base: BaseNode,
         name: Identifier,
-        ty: MonoType,
+        monotype: MonoType,
     },
-    #[serde(rename = "Pipe")]
     Pipe {
         #[serde(skip_serializing_if = "BaseNode::is_empty")]
         #[serde(default)]
@@ -584,9 +584,8 @@ pub enum ParameterType {
         base: BaseNode,
         #[serde(skip_serializing_if = "Option::is_none")]
         name: Option<Identifier>,
-        ty: MonoType,
+        monotype: MonoType,
     },
-    Invalid,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -596,8 +595,10 @@ pub struct TypeExpression {
     #[serde(flatten)]
     pub base: BaseNode,
     pub monotype: MonoType,
-    pub constraint: Option<TypeConstraint>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub constraints: Vec<TypeConstraint>,
 }
+
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypeConstraint {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
@@ -607,6 +608,7 @@ pub struct TypeConstraint {
     pub tvar: Identifier,
     pub kinds: Vec<Identifier>,
 }
+
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct RecordType {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
@@ -615,17 +617,19 @@ pub struct RecordType {
     pub base: BaseNode,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tvar: Option<Identifier>,
-    pub properties: Option<Vec<PropertyType>>,
+    pub properties: Vec<PropertyType>,
 }
+
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct PropertyType {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub identifier: Identifier,
+    pub name: Identifier,
     pub monotype: MonoType,
 }
+
 // TestStmt declares a Flux test case
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TestStmt {

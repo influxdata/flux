@@ -456,9 +456,9 @@ fn test_json_return_statement() {
 fn test_json_array() {
     let n = MonoType::Array(Box::new(ArrayType {
         base: BaseNode::default(),
-        monotype: MonoType::Array(Box::new(ArrayType {
+        element: MonoType::Array(Box::new(ArrayType {
             base: BaseNode::default(),
-            monotype: MonoType::Basic(NamedType {
+            element: MonoType::Basic(NamedType {
                 base: BaseNode::default(),
                 name: Identifier {
                     base: BaseNode::default(),
@@ -470,7 +470,7 @@ fn test_json_array() {
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"type":"ArrayType","monotype":{"type":"ArrayType","monotype":{"type":"NamedType","name":{"name":"A"}}}}"#
+        r#"{"type":"ArrayType","element":{"type":"ArrayType","element":{"type":"NamedType","name":{"name":"A"}}}}"#
     );
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
@@ -483,9 +483,9 @@ fn test_json_record() {
             base: BaseNode::default(),
             name: "A".to_string(),
         }),
-        properties: Some(vec![PropertyType {
+        properties: vec![PropertyType {
             base: BaseNode::default(),
-            identifier: Identifier {
+            name: Identifier {
                 base: BaseNode::default(),
                 name: "A".to_string(),
             },
@@ -496,12 +496,12 @@ fn test_json_record() {
                     name: "int".to_string(),
                 },
             }),
-        }]),
+        }],
     });
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"type":"RecordType","tvar":{"name":"A"},"properties":[{"identifier":{"name":"A"},"monotype":{"type":"NamedType","name":{"name":"int"}}}]}"#
+        r#"{"type":"RecordType","tvar":{"name":"A"},"properties":[{"name":{"name":"A"},"monotype":{"type":"NamedType","name":{"name":"int"}}}]}"#
     );
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
@@ -511,10 +511,10 @@ fn test_json_record_no_tvar_no_properties() {
     let n = MonoType::Record(RecordType {
         base: BaseNode::default(),
         tvar: None,
-        properties: None,
+        properties: vec![],
     });
     let serialized = serde_json::to_string(&n).unwrap();
-    assert_eq!(serialized, r#"{"type":"RecordType","properties":null}"#);
+    assert_eq!(serialized, r#"{"type":"RecordType","properties":[]}"#);
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
 }
@@ -523,9 +523,9 @@ fn test_json_record_no_tvar() {
     let n = MonoType::Record(RecordType {
         base: BaseNode::default(),
         tvar: None,
-        properties: Some(vec![PropertyType {
+        properties: vec![PropertyType {
             base: BaseNode::default(),
-            identifier: Identifier {
+            name: Identifier {
                 base: BaseNode::default(),
                 name: "A".to_string(),
             },
@@ -536,12 +536,34 @@ fn test_json_record_no_tvar() {
                     name: "int".to_string(),
                 },
             }),
-        }]),
+        }],
     });
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"type":"RecordType","properties":[{"identifier":{"name":"A"},"monotype":{"type":"NamedType","name":{"name":"int"}}}]}"#
+        r#"{"type":"RecordType","properties":[{"name":{"name":"A"},"monotype":{"type":"NamedType","name":{"name":"int"}}}]}"#
+    );
+    let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
+    assert_eq!(deserialized, n)
+}
+
+#[test]
+fn test_json_functiontype_no_params() {
+    let n = MonoType::Function(Box::new(FunctionType {
+        base: BaseNode::default(),
+        parameters: vec![],
+        monotype: MonoType::Basic(NamedType {
+            base: BaseNode::default(),
+            name: Identifier {
+                base: BaseNode::default(),
+                name: "int".to_string(),
+            },
+        }),
+    }));
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(
+        serialized,
+        r#"{"type":"FunctionType","parameters":[],"monotype":{"type":"NamedType","name":{"name":"int"}}}"#
     );
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
@@ -557,7 +579,7 @@ fn test_json_functiontype_required() {
                 base: BaseNode::default(),
                 name: "B".to_string(),
             },
-            ty: MonoType::Basic(NamedType {
+            monotype: MonoType::Basic(NamedType {
                 base: BaseNode::default(),
                 name: Identifier {
                     base: BaseNode::default(),
@@ -576,7 +598,7 @@ fn test_json_functiontype_required() {
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"type":"FunctionType","parameters":[{"type":"Required","name":{"name":"B"},"ty":{"type":"NamedType","name":{"name":"string"}}}],"monotype":{"type":"NamedType","name":{"name":"uint"}}}"#
+        r#"{"type":"FunctionType","parameters":[{"type":"Required","name":{"name":"B"},"monotype":{"type":"NamedType","name":{"name":"string"}}}],"monotype":{"type":"NamedType","name":{"name":"uint"}}}"#
     );
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
@@ -592,7 +614,7 @@ fn test_json_functiontype_optional() {
                 base: BaseNode::default(),
                 name: "A".to_string(),
             },
-            ty: MonoType::Basic(NamedType {
+            monotype: MonoType::Basic(NamedType {
                 base: BaseNode::default(),
                 name: Identifier {
                     base: BaseNode::default(),
@@ -611,7 +633,7 @@ fn test_json_functiontype_optional() {
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"type":"FunctionType","parameters":[{"type":"Optional","name":{"name":"A"},"ty":{"type":"NamedType","name":{"name":"int"}}}],"monotype":{"type":"NamedType","name":{"name":"int"}}}"#
+        r#"{"type":"FunctionType","parameters":[{"type":"Optional","name":{"name":"A"},"monotype":{"type":"NamedType","name":{"name":"int"}}}],"monotype":{"type":"NamedType","name":{"name":"int"}}}"#
     );
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
@@ -627,7 +649,7 @@ fn test_json_functiontype_named_pipe() {
                 base: BaseNode::default(),
                 name: "A".to_string(),
             }),
-            ty: MonoType::Basic(NamedType {
+            monotype: MonoType::Basic(NamedType {
                 base: BaseNode::default(),
                 name: Identifier {
                     base: BaseNode::default(),
@@ -646,7 +668,7 @@ fn test_json_functiontype_named_pipe() {
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"type":"FunctionType","parameters":[{"type":"Pipe","name":{"name":"A"},"ty":{"type":"NamedType","name":{"name":"int"}}}],"monotype":{"type":"NamedType","name":{"name":"int"}}}"#
+        r#"{"type":"FunctionType","parameters":[{"type":"Pipe","name":{"name":"A"},"monotype":{"type":"NamedType","name":{"name":"int"}}}],"monotype":{"type":"NamedType","name":{"name":"int"}}}"#
     );
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
@@ -659,7 +681,7 @@ fn test_json_functiontype_unnamed_pipe() {
         parameters: vec![ParameterType::Pipe {
             base: BaseNode::default(),
             name: None,
-            ty: MonoType::Basic(NamedType {
+            monotype: MonoType::Basic(NamedType {
                 base: BaseNode::default(),
                 name: Identifier {
                     base: BaseNode::default(),
@@ -678,7 +700,7 @@ fn test_json_functiontype_unnamed_pipe() {
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"type":"FunctionType","parameters":[{"type":"Pipe","ty":{"type":"NamedType","name":{"name":"int"}}}],"monotype":{"type":"NamedType","name":{"name":"int"}}}"#
+        r#"{"type":"FunctionType","parameters":[{"type":"Pipe","monotype":{"type":"NamedType","name":{"name":"int"}}}],"monotype":{"type":"NamedType","name":{"name":"int"}}}"#
     );
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)

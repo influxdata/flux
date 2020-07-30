@@ -548,16 +548,16 @@ impl Parser {
         // Tvar | Basic | Array | Record | Function
         let t = self.peek();
         match t.tok {
-            TOK_IDENT => {
+            TOK_LBRACK => self.parse_array(),
+            TOK_LBRACE => self.parse_record(),
+            TOK_LPAREN => self.parse_function(),
+            _ => {
                 if t.lit.len() == 1 {
                     self.parse_tvar()
                 } else {
                     self.parse_basic()
                 }
             }
-            TOK_LBRACK => self.parse_array(),
-            TOK_LPAREN => self.parse_function(),
-            _ => MonoType::Invalid,
         }
     }
 
@@ -572,15 +572,11 @@ impl Parser {
 
     #[cfg(test)]
     fn parse_tvar(&mut self) -> MonoType {
-        let t = self.parse_identifier();
-        if t.name.to_uppercase() == (t.name) {
-            MonoType::Tvar(TvarType {
-                base: t.base.clone(),
-                name: t,
-            })
-        } else {
-            MonoType::Invalid
-        }
+        let id = self.parse_identifier();
+        MonoType::Tvar(TvarType {
+            base: id.base.clone(),
+            name: id,
+        })
     }
 
     #[cfg(test)]
@@ -590,7 +586,7 @@ impl Parser {
         let end = self.expect(TOK_RBRACK);
         return MonoType::Array(Box::new(ArrayType {
             base: self.base_node_from_tokens(&start, &end),
-            monotype: mt,
+            element: mt,
         }));
     }
 
@@ -610,7 +606,7 @@ impl Parser {
         self.expect(TOK_ARROW);
         let mt = self.parse_monotype();
         return MonoType::Function(Box::new(FunctionType {
-            base: self.base_node_from_other_end(&_lparen, &base_from_monotype(&mt)),
+            base: self.base_node_from_other_end(&_lparen, mt.base()),
             parameters: params,
             monotype: mt,
         }));
@@ -634,17 +630,6 @@ impl Parser {
     // (identifier | "?" identifier | "<-" identifier | "<-") ":" MonoType
     fn parse_parameter_type(&mut self) -> ParameterType {
         match self.peek().tok {
-            TOK_IDENT => {
-                // Required
-                let id = self.parse_identifier();
-                self.expect(TOK_COLON);
-                let mt = self.parse_monotype();
-                ParameterType::Required {
-                    base: self.base_node_from_others(&id.base, &base_from_monotype(&mt)),
-                    name: id,
-                    ty: mt,
-                }
-            }
             TOK_QUESTION_MARK => {
                 // Optional
                 let symbol = self.expect(TOK_QUESTION_MARK);
@@ -653,9 +638,9 @@ impl Parser {
                 let mt = self.parse_monotype();
                 let _base = self.base_node_from_token(&symbol);
                 ParameterType::Optional {
-                    base: self.base_node_from_others(&_base, &base_from_monotype(&mt)),
+                    base: self.base_node_from_others(&_base, mt.base()),
                     name: id,
-                    ty: mt,
+                    monotype: mt,
                 }
             }
             TOK_PIPE_RECEIVE => {
@@ -666,22 +651,32 @@ impl Parser {
                     let mt = self.parse_monotype();
                     let _base = self.base_node_from_token(&symbol);
                     ParameterType::Pipe {
-                        base: self.base_node_from_others(&_base, &base_from_monotype(&mt)),
+                        base: self.base_node_from_others(&_base, mt.base()),
                         name: Some(id),
-                        ty: mt,
+                        monotype: mt,
                     }
                 } else {
                     self.expect(TOK_COLON);
                     let mt = self.parse_monotype();
                     let _base = self.base_node_from_token(&symbol);
                     ParameterType::Pipe {
-                        base: self.base_node_from_others(&_base, &base_from_monotype(&mt)),
+                        base: self.base_node_from_others(&_base, mt.base()),
                         name: None,
-                        ty: mt,
+                        monotype: mt,
                     }
                 }
             }
-            _ => ParameterType::Invalid,
+            _ => {
+                // Required
+                let id = self.parse_identifier();
+                self.expect(TOK_COLON);
+                let mt = self.parse_monotype();
+                ParameterType::Required {
+                    base: self.base_node_from_others(&id.base, mt.base()),
+                    name: id,
+                    monotype: mt,
+                }
+            }
         }
     }
 
@@ -722,7 +717,7 @@ impl Parser {
     #[cfg(test)]
     fn parse_record(&mut self) -> MonoType {
         let start = self.open(TOK_LBRACE, TOK_RBRACE);
-        let mut properties: Option<Vec<PropertyType>> = None;
+        let mut properties = Vec::new();
         let mut id: Option<Identifier> = None;
 
         let t = self.peek();
@@ -732,20 +727,18 @@ impl Parser {
             // suffix one needs attention
             let t2 = self.peek();
             if t2.tok == TOK_COLON {
-                let mut ps = Vec::<PropertyType>::new();
                 self.expect(TOK_COLON); // consume the :
                 let mt = self.parse_monotype();
                 let property = PropertyType {
-                    base: self.base_node_from_others(&_id.base, &base_from_monotype(&mt)),
-                    identifier: _id,
+                    base: self.base_node_from_others(&_id.base, mt.base()),
+                    name: _id,
                     monotype: mt,
                 };
-                ps.push(property);
+                properties.push(property);
                 while self.peek().tok == TOK_COMMA {
                     self.consume(); // ,
-                    ps.push(self.parse_property());
+                    properties.push(self.parse_property());
                 }
-                properties = Some(ps);
             } else if t2.lit == "with" {
                 self.expect(TOK_IDENT); // consume the with
                 properties = self.parse_properties();
@@ -762,7 +755,7 @@ impl Parser {
         })
     }
     #[cfg(test)]
-    fn parse_properties(&mut self) -> Option<Vec<PropertyType>> {
+    fn parse_properties(&mut self) -> Vec<PropertyType> {
         let mut properties = Vec::<PropertyType>::new();
         properties.push(self.parse_property());
         // check for more properties
@@ -770,7 +763,7 @@ impl Parser {
             self.consume();
             properties.push(self.parse_property());
         }
-        return Some(properties);
+        properties
     }
     #[cfg(test)]
     fn parse_property(&mut self) -> PropertyType {
@@ -778,8 +771,8 @@ impl Parser {
         self.expect(TOK_COLON); // :
         let monotype = self.parse_monotype();
         PropertyType {
-            base: self.base_node_from_others(&identifier.base, &base_from_monotype(&monotype)),
-            identifier,
+            base: self.base_node_from_others(&identifier.base, monotype.base()),
+            name: identifier,
             monotype,
         }
     }
