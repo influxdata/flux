@@ -2,9 +2,11 @@ use crate::ast;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes::*;
 use crate::semantic::types::MonoType;
+use std::collections::BTreeMap;
 use std::result;
 
 pub type SemanticError = String;
+pub type SemanticMap<K, V> = BTreeMap<K, V>;
 pub type Result<T> = result::Result<T, SemanticError>;
 
 /// convert_with converts an AST package node to its semantic representation using
@@ -136,6 +138,35 @@ fn convert_builtin_statement(stmt: ast::BuiltinStmt, fresher: &mut Fresher) -> R
         loc: stmt.base.location,
         id: convert_identifier(stmt.id, fresher)?,
     })
+}
+
+pub type MonoTypeMap = SemanticMap<String, MonoType>;
+fn convert_monotype(ty: ast::MonoType, tvars: &mut HashMap<String, u64>, f: &mut Fresher) -> Result<MonoType> {
+    let converted;
+    match ty {
+        ast::MonoType::Tvar() => true,
+        ast::MonoType::Array(arr) => MonoType::Arr(Box::new(Array(convert_monotype(arr.monotype, tvars, f)?))),            // how do we add array fields,
+        ast::MonoType::Function(func) =>{
+            let mut req = MonoTypeMap::new(); // has to be not new but something else
+            let mut opt = MonoTypeMap::new();
+            // let pipe = MonoTypeMap::new();
+            for param in func.parameters {
+                match param {
+                    ast::ParameterType::Required { name, ty, .. } => req.insert(name, convert_monotype(param, tvars, f)?),
+                    ast::ParameterType::Optional { name, ty, .. } => opt.insert(name, convert_monotype(param, tvars, f)?),
+                    ast::ParameterType::Pipe(p) => pipe = convert_monotype(param, tvars, f),
+                    _ => Err("Bad parameter type.".to_string()),
+                }
+            }
+
+            MonoType::Func(Box::new(Function{
+                    req,
+                    opt,
+                    pipe: Option<Property>,
+                    retn: func.monotype}))
+    },
+        ast::MonoType::Record() => true,
+    }
 }
 
 fn convert_test_statement(stmt: ast::TestStmt, fresher: &mut Fresher) -> Result<TestStmt> {
