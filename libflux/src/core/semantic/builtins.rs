@@ -872,6 +872,14 @@ pub fn builtins() -> Builtins<'static> {
                 "null" => r#"forall [t0] t0"#,
                 "none" => r#"forall [t0] t0"#,
             },
+            "contrib/jsternberg/influxdb" => semantic_map! {
+                "_mask" => r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        columns: [string]
+                    ) -> [t1]
+                "#,
+            },
         },
     }
 }
