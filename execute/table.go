@@ -626,6 +626,8 @@ func (b *ColListTableBuilder) Cols() []flux.ColMeta {
 	return b.colMeta
 }
 
+// AddCol adds a column to the builder and returns the column index and error.
+// errors if column already exists
 func (b *ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 	if ColIdx(c.Label, b.Cols()) >= 0 {
 		return -1, fmt.Errorf("table builder already has column with label %s", c.Label)

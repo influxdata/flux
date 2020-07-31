@@ -29,8 +29,7 @@ To build flux, first install the `pkg-config` utility, and ensure the GNU `pkg-c
 # On Debian/Ubuntu
 $ sudo apt-get install -y clang pkg-config
 # On Mac OS X with Homebrew
-$ brew install pkg-config
-# Install the pkg-config wrapper utility
+$ brew install pkg-config llvm flatbuffers
 $ go get github.com/influxdata/pkg-config
 # Ensure the GOBIN directory is on your PATH
 $ export PATH=${GOPATH}/bin:${PATH}

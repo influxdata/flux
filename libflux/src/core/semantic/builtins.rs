@@ -54,6 +54,21 @@ pub fn builtins() -> Builtins<'static> {
             "experimental/bigtable" => semantic_map! {
                      "from" => "forall [t0] where t0: Row (token: string, project: string, instance: string, table: string) -> [t0]",
             },
+            "experimental/cloudwatch" => semantic_map! {
+                     "from" => r#"
+                        forall [t0] where t0: Row (
+                            region: string,
+                            access_key: string,
+                            secret_key: string,
+                            period: duration,
+                            delay: duration,
+                            ?role_arn: string,
+                            ?profile: string,
+                            ?token: string,
+                            ?namespace: string,
+                            ?endpoing_url: string
+                        ) -> [t0]"#,
+            },
             "experimental/geo" => semantic_map! {
                      "containsLatLon" => "forall [t0] where t0: Row (region: t0, lat: float, lon: float) -> bool",
                      "getGrid" => "forall [t0] where t0: Row (region: t0, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int) -> {level: int | set: [string]}",

@@ -86,7 +86,7 @@ func (t *TableBuffer) Validate() error {
 	sz := t.Values[0].Len()
 	for i := 1; i < len(t.Values); i++ {
 		if t.Values[i].Len() != sz {
-			return errors.New(codes.Internal, "column size mismatch")
+			return errors.Newf(codes.Internal, "column size mismatch, got %d expected %d", t.Values[i].Len(), sz)
 		}
 	}
 	return nil

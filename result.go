@@ -178,6 +178,7 @@ type ColReader interface {
 	Release()
 }
 
+// https://docs.influxdata.com/flux/v0.65/guides/group-data/#group-keys
 type GroupKey interface {
 	Cols() []ColMeta
 	Values() []values.Value
