@@ -416,7 +416,7 @@ func (p *parser) parseExpressionList() []ast.Expression {
 		switch _, tok, _ := p.peek(); tok {
 		case token.IDENT, token.INT, token.FLOAT, token.STRING, token.DIV,
 			token.TIME, token.DURATION, token.PIPE_RECEIVE,
-			token.LPAREN, token.LBRACK, token.LBRACE,
+			token.LPAREN, token.LBRACK, token.LBRACE, token.QUOTE,
 			token.ADD, token.SUB, token.NOT, token.EXISTS:
 			exprs = append(exprs, p.parseExpression())
 		default:
