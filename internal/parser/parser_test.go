@@ -57,6 +57,84 @@ func testParser(runFn func(name string, fn func(t testing.TB))) {
 		nerrs int
 	}{
 		{
+			name: "string interpolation in object",
+			raw:  `a = {"z": "16", "y": "acu:${r.access_controller_id}"}`,
+			want: &ast.File{
+				Metadata: "parser-type=go",
+				BaseNode: base("1:1", "1:54"),
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:54"),
+						ID:       &ast.Identifier{BaseNode: base("1:1", "1:2"), Name: "a"},
+						Init: &ast.ObjectExpression{
+							BaseNode: base("1:5", "1:54"),
+							Properties: []*ast.Property{
+								{
+									BaseNode: base("1:6", "1:15"),
+									Key:      &ast.StringLiteral{BaseNode: base("1:6", "1:9"), Value: "z"},
+									Value:    &ast.StringLiteral{BaseNode: base("1:11", "1:15"), Value: "16"},
+								},
+								{
+									BaseNode: base("1:17", "1:53"),
+									Key:      &ast.StringLiteral{BaseNode: base("1:17", "1:20"), Value: "y"},
+									Value: &ast.StringExpression{
+										BaseNode: base("1:22", "1:53"),
+										Parts: []ast.StringExpressionPart{
+											&ast.TextPart{BaseNode: base("1:23", "1:27"), Value: "acu:"},
+											&ast.InterpolatedPart{
+												BaseNode: base("1:27", "1:52"),
+												Expression: &ast.MemberExpression{
+													BaseNode: base("1:29", "1:51"),
+													Object:   &ast.Identifier{BaseNode: base("1:29", "1:30"), Name: "r"},
+													Property: &ast.Identifier{BaseNode: base("1:31", "1:51"), Name: "access_controller_id"},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "string interpolation in array",
+			raw:  `a = ["influx", "test", "InfluxOfflineTimeAlert", "acu:${r.access_controller_id}"]`,
+			want: &ast.File{
+				BaseNode: base("1:1", "1:82"),
+				Metadata: "parser-type=go",
+				Body: []ast.Statement{
+					&ast.VariableAssignment{
+						BaseNode: base("1:1", "1:82"),
+						ID:       &ast.Identifier{BaseNode: base("1:1", "1:2"), Name: "a"},
+						Init: &ast.ArrayExpression{
+							BaseNode: base("1:5", "1:82"),
+							Elements: []ast.Expression{
+								&ast.StringLiteral{BaseNode: base("1:6", "1:14"), Value: "influx"},
+								&ast.StringLiteral{BaseNode: base("1:16", "1:22"), Value: "test"},
+								&ast.StringLiteral{BaseNode: base("1:24", "1:48"), Value: "InfluxOfflineTimeAlert"},
+								&ast.StringExpression{
+									BaseNode: base("1:50", "1:81"),
+									Parts: []ast.StringExpressionPart{
+										&ast.TextPart{BaseNode: base("1:51", "1:55"), Value: "acu:"},
+										&ast.InterpolatedPart{
+											BaseNode: base("1:55", "1:80"),
+											Expression: &ast.MemberExpression{
+												BaseNode: base("1:57", "1:79"),
+												Object:   &ast.Identifier{BaseNode: base("1:57", "1:58"), Name: "r"},
+												Property: &ast.Identifier{BaseNode: base("1:59", "1:79"), Name: "access_controller_id"},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "string interpolation",
 			raw:  `"a + b = ${a + b}"`,
 			want: &ast.File{
