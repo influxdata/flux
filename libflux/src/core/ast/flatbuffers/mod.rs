@@ -1,6 +1,9 @@
 #[allow(non_snake_case, unused, clippy::all)]
 mod ast_generated;
 
+#[cfg(test)]
+mod monotype;
+
 use std::cell::RefCell;
 use std::rc::Rc;
 

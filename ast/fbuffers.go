@@ -47,7 +47,7 @@ func (b *BaseNode) FromBuf(buf *fbast.BaseNode) {
 
 func (t TypeExpression) FromBuf(buf *fbast.TypeExpression) *TypeExpression {
 	t.BaseNode.FromBuf(buf.BaseNode(nil))
-	t.Ty = DecodeMonoType(newFBTable(buf.Ty, &t.BaseNode), buf.TyType())
+	t.Ty = DecodeMonoType(newFBTable(buf.Monotype, &t.BaseNode), buf.MonotypeType())
 	for i := 0; i < buf.ConstraintsLength(); i++ {
 		if c := new(fbast.TypeConstraint); !buf.Constraints(c, i) {
 			t.BaseNode.Errors = append(t.BaseNode.Errors, Error{
@@ -81,9 +81,15 @@ func (t NamedType) FromBuf(buf *fbast.NamedType) *NamedType {
 	return &t
 }
 
+func (t TvarType) FromBuf(buf *fbast.TvarType) *TvarType {
+	t.BaseNode.FromBuf(buf.BaseNode(nil))
+	t.ID = Identifier{}.FromBuf(buf.Id(nil))
+	return &t
+}
+
 func (t ArrayType) FromBuf(buf *fbast.ArrayType) *ArrayType {
 	t.BaseNode.FromBuf(buf.BaseNode(nil))
-	t.ElementType = DecodeMonoType(newFBTable(buf.ElementType, &t.BaseNode), buf.ElementTypeType())
+	t.ElementType = DecodeMonoType(newFBTable(buf.Element, &t.BaseNode), buf.ElementType())
 	return &t
 }
 
@@ -105,13 +111,13 @@ func (t RecordType) FromBuf(buf *fbast.RecordType) *RecordType {
 func (p PropertyType) FromBuf(buf *fbast.PropertyType) *PropertyType {
 	p.BaseNode.FromBuf(buf.BaseNode(nil))
 	p.Name = Identifier{}.FromBuf(buf.Id(nil))
-	p.Ty = DecodeMonoType(newFBTable(buf.Ty, &p.BaseNode), buf.TyType())
+	p.Ty = DecodeMonoType(newFBTable(buf.Monotype, &p.BaseNode), buf.MonotypeType())
 	return &p
 }
 
 func (t FunctionType) FromBuf(buf *fbast.FunctionType) *FunctionType {
 	t.BaseNode.FromBuf(buf.BaseNode(nil))
-	t.Return = DecodeMonoType(newFBTable(buf.Retn, &t.BaseNode), buf.RetnType())
+	t.Return = DecodeMonoType(newFBTable(buf.Monotype, &t.BaseNode), buf.MonotypeType())
 	for i := 0; i < buf.ParametersLength(); i++ {
 		if p := new(fbast.ParameterType); !buf.Parameters(p, i) {
 			t.BaseNode.Errors = append(t.BaseNode.Errors, Error{
@@ -126,8 +132,8 @@ func (t FunctionType) FromBuf(buf *fbast.FunctionType) *FunctionType {
 
 func (p ParameterType) FromBuf(buf *fbast.ParameterType) *ParameterType {
 	p.BaseNode.FromBuf(buf.BaseNode(nil))
-	p.Name = Identifier{}.FromBuf(buf.Name(nil))
-	p.Ty = DecodeMonoType(newFBTable(buf.Ty, &p.BaseNode), buf.TyType())
+	p.Name = Identifier{}.FromBuf(buf.Id(nil))
+	p.Ty = DecodeMonoType(newFBTable(buf.Monotype, &p.BaseNode), buf.MonotypeType())
 	p.Kind = paramKindMap[buf.Kind()]
 	return &p
 }
@@ -146,6 +152,10 @@ func DecodeMonoType(t *flatbuffers.Table, ty byte) MonoType {
 		b := new(fbast.NamedType)
 		b.Init(t.Bytes, t.Pos)
 		return NamedType{}.FromBuf(b)
+	case fbast.MonoTypeTvarType:
+		b := new(fbast.TvarType)
+		b.Init(t.Bytes, t.Pos)
+		return TvarType{}.FromBuf(b)
 	case fbast.MonoTypeArrayType:
 		b := new(fbast.ArrayType)
 		b.Init(t.Bytes, t.Pos)

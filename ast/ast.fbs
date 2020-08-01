@@ -2,6 +2,7 @@ namespace fbast;
 
 union MonoType {
   NamedType,
+  TvarType,
   ArrayType,
   RecordType,
   FunctionType,
@@ -12,15 +13,20 @@ table NamedType {
   id:Identifier;
 }
 
+table TvarType {
+  base_node:BaseNode;
+  id:Identifier;
+}
+
 table ArrayType {
   base_node:BaseNode;
-  element_type:MonoType;
+  element:MonoType;
 }
 
 table PropertyType {
   base_node:BaseNode;
   id:Identifier;
-  ty:MonoType;
+  monotype:MonoType;
 }
 
 table RecordType {
@@ -37,15 +43,15 @@ enum ParameterKind : byte {
 
 table ParameterType {
   base_node:BaseNode;
-  name:Identifier;
-  ty:MonoType;
+  id:Identifier;
+  monotype:MonoType;
   kind:ParameterKind;
 }
 
 table FunctionType {
   base_node:BaseNode;
   parameters:[ParameterType];
-  retn:MonoType;
+  monotype:MonoType;
 }
 
 table TypeConstraint {
@@ -56,7 +62,7 @@ table TypeConstraint {
 
 table TypeExpression {
   base_node:BaseNode;
-  ty:MonoType;
+  monotype:MonoType;
   constraints:[TypeConstraint];
 }
 

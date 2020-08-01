@@ -157,6 +157,31 @@ func TestDecodeMonoType(t *testing.T) {
 			t.Errorf("unexpected AST -want/+got:\n%s", cmp.Diff(want, got, CompareOptions...))
 		}
 	})
+	t.Run("tvar", func(t *testing.T) {
+		b := flatbuffers.NewBuilder(1024)
+
+		name := b.CreateString("T")
+
+		fbast.IdentifierStart(b)
+		fbast.IdentifierAddName(b, name)
+		id := fbast.IdentifierEnd(b)
+
+		fbast.TvarTypeStart(b)
+		fbast.TvarTypeAddId(b, id)
+		tv := fbast.TvarTypeEnd(b)
+
+		b.Finish(tv)
+		fbt := fbast.GetRootAsTvarType(b.FinishedBytes(), 0)
+		tbl := fbt.Table()
+
+		want := &ast.TvarType{
+			ID: &ast.Identifier{Name: "T"},
+		}
+
+		if got := ast.DecodeMonoType(&tbl, fbast.MonoTypeTvarType); !cmp.Equal(want, got, CompareOptions...) {
+			t.Errorf("unexpected AST -want/+got:\n%s", cmp.Diff(want, got, CompareOptions...))
+		}
+	})
 	t.Run("array", func(t *testing.T) {
 		b := flatbuffers.NewBuilder(1024)
 
@@ -171,8 +196,8 @@ func TestDecodeMonoType(t *testing.T) {
 		el := fbast.NamedTypeEnd(b)
 
 		fbast.ArrayTypeStart(b)
-		fbast.ArrayTypeAddElementTypeType(b, fbast.MonoTypeNamedType)
-		fbast.ArrayTypeAddElementType(b, el)
+		fbast.ArrayTypeAddElementType(b, fbast.MonoTypeNamedType)
+		fbast.ArrayTypeAddElement(b, el)
 		ty := fbast.ArrayTypeEnd(b)
 
 		b.Finish(ty)
@@ -226,8 +251,8 @@ func TestDecodeMonoType(t *testing.T) {
 
 		fbast.PropertyTypeStart(b)
 		fbast.PropertyTypeAddId(b, label)
-		fbast.PropertyTypeAddTy(b, basic)
-		fbast.PropertyTypeAddTyType(b, fbast.MonoTypeNamedType)
+		fbast.PropertyTypeAddMonotype(b, basic)
+		fbast.PropertyTypeAddMonotypeType(b, fbast.MonoTypeNamedType)
 		p := fbast.PropertyTypeEnd(b)
 
 		fbast.RecordTypeStartPropertiesVector(b, 1)
@@ -278,8 +303,8 @@ func TestDecodeMonoType(t *testing.T) {
 
 		fbast.PropertyTypeStart(b)
 		fbast.PropertyTypeAddId(b, label)
-		fbast.PropertyTypeAddTy(b, basic)
-		fbast.PropertyTypeAddTyType(b, fbast.MonoTypeNamedType)
+		fbast.PropertyTypeAddMonotype(b, basic)
+		fbast.PropertyTypeAddMonotypeType(b, fbast.MonoTypeNamedType)
 		p := fbast.PropertyTypeEnd(b)
 
 		fbast.RecordTypeStartPropertiesVector(b, 1)
@@ -337,8 +362,8 @@ func TestDecodeMonoType(t *testing.T) {
 		retn := fbast.NamedTypeEnd(b)
 
 		fbast.FunctionTypeStart(b)
-		fbast.FunctionTypeAddRetn(b, retn)
-		fbast.FunctionTypeAddRetnType(b, fbast.MonoTypeNamedType)
+		fbast.FunctionTypeAddMonotype(b, retn)
+		fbast.FunctionTypeAddMonotypeType(b, fbast.MonoTypeNamedType)
 		f := fbast.FunctionTypeEnd(b)
 
 		b.Finish(f)
@@ -370,8 +395,8 @@ func TestDecodeMonoType(t *testing.T) {
 
 		fbast.ParameterTypeStart(b)
 		fbast.ParameterTypeAddKind(b, fbast.ParameterKindPipe)
-		fbast.ParameterTypeAddTy(b, ty)
-		fbast.ParameterTypeAddTyType(b, fbast.MonoTypeNamedType)
+		fbast.ParameterTypeAddMonotype(b, ty)
+		fbast.ParameterTypeAddMonotypeType(b, fbast.MonoTypeNamedType)
 		pipe := fbast.ParameterTypeEnd(b)
 
 		fbast.FunctionTypeStartParametersVector(b, 1)
@@ -380,8 +405,8 @@ func TestDecodeMonoType(t *testing.T) {
 
 		fbast.FunctionTypeStart(b)
 		fbast.FunctionTypeAddParameters(b, params)
-		fbast.FunctionTypeAddRetn(b, ty)
-		fbast.FunctionTypeAddRetnType(b, fbast.MonoTypeNamedType)
+		fbast.FunctionTypeAddMonotype(b, ty)
+		fbast.FunctionTypeAddMonotypeType(b, fbast.MonoTypeNamedType)
 		f := fbast.FunctionTypeEnd(b)
 
 		b.Finish(f)
@@ -429,9 +454,9 @@ func TestDecodeMonoType(t *testing.T) {
 
 		fbast.ParameterTypeStart(b)
 		fbast.ParameterTypeAddKind(b, fbast.ParameterKindPipe)
-		fbast.ParameterTypeAddName(b, pipeParam)
-		fbast.ParameterTypeAddTy(b, ty)
-		fbast.ParameterTypeAddTyType(b, fbast.MonoTypeNamedType)
+		fbast.ParameterTypeAddId(b, pipeParam)
+		fbast.ParameterTypeAddMonotype(b, ty)
+		fbast.ParameterTypeAddMonotypeType(b, fbast.MonoTypeNamedType)
 		pipe := fbast.ParameterTypeEnd(b)
 
 		name = b.CreateString("a")
@@ -442,9 +467,9 @@ func TestDecodeMonoType(t *testing.T) {
 
 		fbast.ParameterTypeStart(b)
 		fbast.ParameterTypeAddKind(b, fbast.ParameterKindRequired)
-		fbast.ParameterTypeAddName(b, requiredParam)
-		fbast.ParameterTypeAddTy(b, ty)
-		fbast.ParameterTypeAddTyType(b, fbast.MonoTypeNamedType)
+		fbast.ParameterTypeAddId(b, requiredParam)
+		fbast.ParameterTypeAddMonotype(b, ty)
+		fbast.ParameterTypeAddMonotypeType(b, fbast.MonoTypeNamedType)
 		req := fbast.ParameterTypeEnd(b)
 
 		name = b.CreateString("b")
@@ -455,9 +480,9 @@ func TestDecodeMonoType(t *testing.T) {
 
 		fbast.ParameterTypeStart(b)
 		fbast.ParameterTypeAddKind(b, fbast.ParameterKindOptional)
-		fbast.ParameterTypeAddName(b, optionalParam)
-		fbast.ParameterTypeAddTy(b, ty)
-		fbast.ParameterTypeAddTyType(b, fbast.MonoTypeNamedType)
+		fbast.ParameterTypeAddId(b, optionalParam)
+		fbast.ParameterTypeAddMonotype(b, ty)
+		fbast.ParameterTypeAddMonotypeType(b, fbast.MonoTypeNamedType)
 		opt := fbast.ParameterTypeEnd(b)
 
 		fbast.FunctionTypeStartParametersVector(b, 3)
@@ -468,8 +493,8 @@ func TestDecodeMonoType(t *testing.T) {
 
 		fbast.FunctionTypeStart(b)
 		fbast.FunctionTypeAddParameters(b, params)
-		fbast.FunctionTypeAddRetn(b, ty)
-		fbast.FunctionTypeAddRetnType(b, fbast.MonoTypeNamedType)
+		fbast.FunctionTypeAddMonotype(b, ty)
+		fbast.FunctionTypeAddMonotypeType(b, fbast.MonoTypeNamedType)
 		f := fbast.FunctionTypeEnd(b)
 
 		b.Finish(f)
@@ -530,9 +555,9 @@ func TestDecodeMonoType(t *testing.T) {
 		fbast.IdentifierAddName(b, name)
 		id := fbast.IdentifierEnd(b)
 
-		fbast.NamedTypeStart(b)
-		fbast.NamedTypeAddId(b, id)
-		tvar := fbast.NamedTypeEnd(b)
+		fbast.TvarTypeStart(b)
+		fbast.TvarTypeAddId(b, id)
+		tvar := fbast.TvarTypeEnd(b)
 
 		name = b.CreateString("x")
 
@@ -542,9 +567,9 @@ func TestDecodeMonoType(t *testing.T) {
 
 		fbast.ParameterTypeStart(b)
 		fbast.ParameterTypeAddKind(b, fbast.ParameterKindRequired)
-		fbast.ParameterTypeAddName(b, x)
-		fbast.ParameterTypeAddTy(b, tvar)
-		fbast.ParameterTypeAddTyType(b, fbast.MonoTypeNamedType)
+		fbast.ParameterTypeAddId(b, x)
+		fbast.ParameterTypeAddMonotype(b, tvar)
+		fbast.ParameterTypeAddMonotypeType(b, fbast.MonoTypeTvarType)
 		x = fbast.ParameterTypeEnd(b)
 
 		name = b.CreateString("y")
@@ -555,9 +580,9 @@ func TestDecodeMonoType(t *testing.T) {
 
 		fbast.ParameterTypeStart(b)
 		fbast.ParameterTypeAddKind(b, fbast.ParameterKindRequired)
-		fbast.ParameterTypeAddName(b, y)
-		fbast.ParameterTypeAddTy(b, tvar)
-		fbast.ParameterTypeAddTyType(b, fbast.MonoTypeNamedType)
+		fbast.ParameterTypeAddId(b, y)
+		fbast.ParameterTypeAddMonotype(b, tvar)
+		fbast.ParameterTypeAddMonotypeType(b, fbast.MonoTypeTvarType)
 		y = fbast.ParameterTypeEnd(b)
 
 		fbast.FunctionTypeStartParametersVector(b, 2)
@@ -567,8 +592,8 @@ func TestDecodeMonoType(t *testing.T) {
 
 		fbast.FunctionTypeStart(b)
 		fbast.FunctionTypeAddParameters(b, params)
-		fbast.FunctionTypeAddRetn(b, tvar)
-		fbast.FunctionTypeAddRetnType(b, fbast.MonoTypeNamedType)
+		fbast.FunctionTypeAddMonotype(b, tvar)
+		fbast.FunctionTypeAddMonotypeType(b, fbast.MonoTypeTvarType)
 		f := fbast.FunctionTypeEnd(b)
 
 		name = b.CreateString("Addable")
@@ -599,8 +624,8 @@ func TestDecodeMonoType(t *testing.T) {
 
 		fbast.TypeExpressionStart(b)
 		fbast.TypeExpressionAddConstraints(b, constraints)
-		fbast.TypeExpressionAddTy(b, f)
-		fbast.TypeExpressionAddTyType(b, fbast.MonoTypeFunctionType)
+		fbast.TypeExpressionAddMonotype(b, f)
+		fbast.TypeExpressionAddMonotypeType(b, fbast.MonoTypeFunctionType)
 		texpr := fbast.TypeExpressionEnd(b)
 
 		b.Finish(texpr)
@@ -613,7 +638,7 @@ func TestDecodeMonoType(t *testing.T) {
 						Name: &ast.Identifier{
 							Name: "x",
 						},
-						Ty: &ast.NamedType{
+						Ty: &ast.TvarType{
 							ID: &ast.Identifier{
 								Name: "T",
 							},
@@ -624,7 +649,7 @@ func TestDecodeMonoType(t *testing.T) {
 						Name: &ast.Identifier{
 							Name: "y",
 						},
-						Ty: &ast.NamedType{
+						Ty: &ast.TvarType{
 							ID: &ast.Identifier{
 								Name: "T",
 							},
@@ -632,7 +657,7 @@ func TestDecodeMonoType(t *testing.T) {
 						Kind: ast.Required,
 					},
 				},
-				Return: &ast.NamedType{
+				Return: &ast.TvarType{
 					ID: &ast.Identifier{
 						Name: "T",
 					},
