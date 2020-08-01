@@ -880,6 +880,14 @@ pub fn builtins() -> Builtins<'static> {
                     ) -> [t1]
                 "#,
             },
+            "contrib/jsternberg/rows" => semantic_map! {
+                "map" => r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        fn: (r: t0) -> t1
+                    ) -> [t1]
+                "#,
+            },
         },
     }
 }
