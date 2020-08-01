@@ -151,18 +151,8 @@ fn convert_monotype(
 ) -> Result<MonoType> {
     match ty {
         ast::MonoType::Tvar(tv) => {
-            if tvars.contains_key(&tv.name.name) {
-                match tvars.get(&tv.name.name) {
-                    Some(&value) => Ok(MonoType::Var(value)),
-                    None => Ok(MonoType::Var(types::Tvar(0))),
-                }
-            } else {
-                tvars.insert(tv.name.name.to_string(), f.fresh());
-                match tvars.get(&tv.name.name) {
-                    Some(&value) => Ok(MonoType::Var(value)),
-                    None => Ok(MonoType::Var(types::Tvar(0))),
-                }
-            }
+            let tvar = tvars.entry(tv.name.name).or_insert(f.fresh());
+            Ok(MonoType::Var(*tvar))
         }
         ast::MonoType::Basic(basic) => match basic.name.name.as_str() {
             "bool" => Ok(MonoType::Bool),
