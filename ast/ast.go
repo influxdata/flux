@@ -181,6 +181,7 @@ type MonoType interface {
 }
 
 func (NamedType) monotype()    {}
+func (TvarType) monotype()     {}
 func (ArrayType) monotype()    {}
 func (RecordType) monotype()   {}
 func (FunctionType) monotype() {}
@@ -192,6 +193,15 @@ type NamedType struct {
 
 func (NamedType) Type() string {
 	return "NamedType"
+}
+
+type TvarType struct {
+	BaseNode
+	ID *Identifier
+}
+
+func (TvarType) Type() string {
+	return "TvarType"
 }
 
 type ArrayType struct {

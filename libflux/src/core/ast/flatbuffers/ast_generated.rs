@@ -21,13 +21,14 @@ pub mod fbast {
     pub enum MonoType {
         NONE = 0,
         NamedType = 1,
-        ArrayType = 2,
-        RecordType = 3,
-        FunctionType = 4,
+        TvarType = 2,
+        ArrayType = 3,
+        RecordType = 4,
+        FunctionType = 5,
     }
 
     const ENUM_MIN_MONO_TYPE: u8 = 0;
-    const ENUM_MAX_MONO_TYPE: u8 = 4;
+    const ENUM_MAX_MONO_TYPE: u8 = 5;
 
     impl<'a> flatbuffers::Follow<'a> for MonoType {
         type Inner = Self;
@@ -61,18 +62,20 @@ pub mod fbast {
     }
 
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_MONO_TYPE: [MonoType; 5] = [
+    const ENUM_VALUES_MONO_TYPE: [MonoType; 6] = [
         MonoType::NONE,
         MonoType::NamedType,
+        MonoType::TvarType,
         MonoType::ArrayType,
         MonoType::RecordType,
         MonoType::FunctionType,
     ];
 
     #[allow(non_camel_case_types)]
-    const ENUM_NAMES_MONO_TYPE: [&'static str; 5] = [
+    const ENUM_NAMES_MONO_TYPE: [&'static str; 6] = [
         "NONE",
         "NamedType",
+        "TvarType",
         "ArrayType",
         "RecordType",
         "FunctionType",
@@ -931,6 +934,104 @@ pub mod fbast {
         }
     }
 
+    pub enum TvarTypeOffset {}
+    #[derive(Copy, Clone, Debug, PartialEq)]
+
+    pub struct TvarType<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for TvarType<'a> {
+        type Inner = TvarType<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf: buf, loc: loc },
+            }
+        }
+    }
+
+    impl<'a> TvarType<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            TvarType { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args TvarTypeArgs<'args>,
+        ) -> flatbuffers::WIPOffset<TvarType<'bldr>> {
+            let mut builder = TvarTypeBuilder::new(_fbb);
+            if let Some(x) = args.id {
+                builder.add_id(x);
+            }
+            if let Some(x) = args.base_node {
+                builder.add_base_node(x);
+            }
+            builder.finish()
+        }
+
+        pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
+        pub const VT_ID: flatbuffers::VOffsetT = 6;
+
+        #[inline]
+        pub fn base_node(&self) -> Option<BaseNode<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<BaseNode<'a>>>(TvarType::VT_BASE_NODE, None)
+        }
+        #[inline]
+        pub fn id(&self) -> Option<Identifier<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(TvarType::VT_ID, None)
+        }
+    }
+
+    pub struct TvarTypeArgs<'a> {
+        pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a>>>,
+        pub id: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
+    }
+    impl<'a> Default for TvarTypeArgs<'a> {
+        #[inline]
+        fn default() -> Self {
+            TvarTypeArgs {
+                base_node: None,
+                id: None,
+            }
+        }
+    }
+    pub struct TvarTypeBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> TvarTypeBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_base_node(&mut self, base_node: flatbuffers::WIPOffset<BaseNode<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<BaseNode>>(
+                    TvarType::VT_BASE_NODE,
+                    base_node,
+                );
+        }
+        #[inline]
+        pub fn add_id(&mut self, id: flatbuffers::WIPOffset<Identifier<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<Identifier>>(TvarType::VT_ID, id);
+        }
+        #[inline]
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> TvarTypeBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            TvarTypeBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<TvarType<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
     pub enum ArrayTypeOffset {}
     #[derive(Copy, Clone, Debug, PartialEq)]
 
@@ -959,19 +1060,19 @@ pub mod fbast {
             args: &'args ArrayTypeArgs<'args>,
         ) -> flatbuffers::WIPOffset<ArrayType<'bldr>> {
             let mut builder = ArrayTypeBuilder::new(_fbb);
-            if let Some(x) = args.element_type {
-                builder.add_element_type(x);
+            if let Some(x) = args.element {
+                builder.add_element(x);
             }
             if let Some(x) = args.base_node {
                 builder.add_base_node(x);
             }
-            builder.add_element_type_type(args.element_type_type);
+            builder.add_element_type(args.element_type);
             builder.finish()
         }
 
         pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
-        pub const VT_ELEMENT_TYPE_TYPE: flatbuffers::VOffsetT = 6;
-        pub const VT_ELEMENT_TYPE: flatbuffers::VOffsetT = 8;
+        pub const VT_ELEMENT_TYPE: flatbuffers::VOffsetT = 6;
+        pub const VT_ELEMENT: flatbuffers::VOffsetT = 8;
 
         #[inline]
         pub fn base_node(&self) -> Option<BaseNode<'a>> {
@@ -979,24 +1080,24 @@ pub mod fbast {
                 .get::<flatbuffers::ForwardsUOffset<BaseNode<'a>>>(ArrayType::VT_BASE_NODE, None)
         }
         #[inline]
-        pub fn element_type_type(&self) -> MonoType {
+        pub fn element_type(&self) -> MonoType {
             self._tab
-                .get::<MonoType>(ArrayType::VT_ELEMENT_TYPE_TYPE, Some(MonoType::NONE))
+                .get::<MonoType>(ArrayType::VT_ELEMENT_TYPE, Some(MonoType::NONE))
                 .unwrap()
         }
         #[inline]
-        pub fn element_type(&self) -> Option<flatbuffers::Table<'a>> {
+        pub fn element(&self) -> Option<flatbuffers::Table<'a>> {
             self._tab
                 .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
-                    ArrayType::VT_ELEMENT_TYPE,
+                    ArrayType::VT_ELEMENT,
                     None,
                 )
         }
         #[inline]
         #[allow(non_snake_case)]
-        pub fn element_type_as_named_type(&self) -> Option<NamedType<'a>> {
-            if self.element_type_type() == MonoType::NamedType {
-                self.element_type().map(|u| NamedType::init_from_table(u))
+        pub fn element_as_named_type(&self) -> Option<NamedType<'a>> {
+            if self.element_type() == MonoType::NamedType {
+                self.element().map(|u| NamedType::init_from_table(u))
             } else {
                 None
             }
@@ -1004,9 +1105,9 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn element_type_as_array_type(&self) -> Option<ArrayType<'a>> {
-            if self.element_type_type() == MonoType::ArrayType {
-                self.element_type().map(|u| ArrayType::init_from_table(u))
+        pub fn element_as_tvar_type(&self) -> Option<TvarType<'a>> {
+            if self.element_type() == MonoType::TvarType {
+                self.element().map(|u| TvarType::init_from_table(u))
             } else {
                 None
             }
@@ -1014,9 +1115,9 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn element_type_as_record_type(&self) -> Option<RecordType<'a>> {
-            if self.element_type_type() == MonoType::RecordType {
-                self.element_type().map(|u| RecordType::init_from_table(u))
+        pub fn element_as_array_type(&self) -> Option<ArrayType<'a>> {
+            if self.element_type() == MonoType::ArrayType {
+                self.element().map(|u| ArrayType::init_from_table(u))
             } else {
                 None
             }
@@ -1024,10 +1125,19 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn element_type_as_function_type(&self) -> Option<FunctionType<'a>> {
-            if self.element_type_type() == MonoType::FunctionType {
-                self.element_type()
-                    .map(|u| FunctionType::init_from_table(u))
+        pub fn element_as_record_type(&self) -> Option<RecordType<'a>> {
+            if self.element_type() == MonoType::RecordType {
+                self.element().map(|u| RecordType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn element_as_function_type(&self) -> Option<FunctionType<'a>> {
+            if self.element_type() == MonoType::FunctionType {
+                self.element().map(|u| FunctionType::init_from_table(u))
             } else {
                 None
             }
@@ -1036,16 +1146,16 @@ pub mod fbast {
 
     pub struct ArrayTypeArgs<'a> {
         pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a>>>,
-        pub element_type_type: MonoType,
-        pub element_type: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+        pub element_type: MonoType,
+        pub element: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
     }
     impl<'a> Default for ArrayTypeArgs<'a> {
         #[inline]
         fn default() -> Self {
             ArrayTypeArgs {
                 base_node: None,
-                element_type_type: MonoType::NONE,
-                element_type: None,
+                element_type: MonoType::NONE,
+                element: None,
             }
         }
     }
@@ -1063,22 +1173,20 @@ pub mod fbast {
                 );
         }
         #[inline]
-        pub fn add_element_type_type(&mut self, element_type_type: MonoType) {
+        pub fn add_element_type(&mut self, element_type: MonoType) {
             self.fbb_.push_slot::<MonoType>(
-                ArrayType::VT_ELEMENT_TYPE_TYPE,
-                element_type_type,
+                ArrayType::VT_ELEMENT_TYPE,
+                element_type,
                 MonoType::NONE,
             );
         }
         #[inline]
-        pub fn add_element_type(
+        pub fn add_element(
             &mut self,
-            element_type: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>,
+            element: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>,
         ) {
-            self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(
-                ArrayType::VT_ELEMENT_TYPE,
-                element_type,
-            );
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(ArrayType::VT_ELEMENT, element);
         }
         #[inline]
         pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> ArrayTypeBuilder<'a, 'b> {
@@ -1123,8 +1231,8 @@ pub mod fbast {
             args: &'args PropertyTypeArgs<'args>,
         ) -> flatbuffers::WIPOffset<PropertyType<'bldr>> {
             let mut builder = PropertyTypeBuilder::new(_fbb);
-            if let Some(x) = args.ty {
-                builder.add_ty(x);
+            if let Some(x) = args.monotype {
+                builder.add_monotype(x);
             }
             if let Some(x) = args.id {
                 builder.add_id(x);
@@ -1132,14 +1240,14 @@ pub mod fbast {
             if let Some(x) = args.base_node {
                 builder.add_base_node(x);
             }
-            builder.add_ty_type(args.ty_type);
+            builder.add_monotype_type(args.monotype_type);
             builder.finish()
         }
 
         pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
         pub const VT_ID: flatbuffers::VOffsetT = 6;
-        pub const VT_TY_TYPE: flatbuffers::VOffsetT = 8;
-        pub const VT_TY: flatbuffers::VOffsetT = 10;
+        pub const VT_MONOTYPE_TYPE: flatbuffers::VOffsetT = 8;
+        pub const VT_MONOTYPE: flatbuffers::VOffsetT = 10;
 
         #[inline]
         pub fn base_node(&self) -> Option<BaseNode<'a>> {
@@ -1152,24 +1260,24 @@ pub mod fbast {
                 .get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(PropertyType::VT_ID, None)
         }
         #[inline]
-        pub fn ty_type(&self) -> MonoType {
+        pub fn monotype_type(&self) -> MonoType {
             self._tab
-                .get::<MonoType>(PropertyType::VT_TY_TYPE, Some(MonoType::NONE))
+                .get::<MonoType>(PropertyType::VT_MONOTYPE_TYPE, Some(MonoType::NONE))
                 .unwrap()
         }
         #[inline]
-        pub fn ty(&self) -> Option<flatbuffers::Table<'a>> {
+        pub fn monotype(&self) -> Option<flatbuffers::Table<'a>> {
             self._tab
                 .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
-                    PropertyType::VT_TY,
+                    PropertyType::VT_MONOTYPE,
                     None,
                 )
         }
         #[inline]
         #[allow(non_snake_case)]
-        pub fn ty_as_named_type(&self) -> Option<NamedType<'a>> {
-            if self.ty_type() == MonoType::NamedType {
-                self.ty().map(|u| NamedType::init_from_table(u))
+        pub fn monotype_as_named_type(&self) -> Option<NamedType<'a>> {
+            if self.monotype_type() == MonoType::NamedType {
+                self.monotype().map(|u| NamedType::init_from_table(u))
             } else {
                 None
             }
@@ -1177,9 +1285,9 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn ty_as_array_type(&self) -> Option<ArrayType<'a>> {
-            if self.ty_type() == MonoType::ArrayType {
-                self.ty().map(|u| ArrayType::init_from_table(u))
+        pub fn monotype_as_tvar_type(&self) -> Option<TvarType<'a>> {
+            if self.monotype_type() == MonoType::TvarType {
+                self.monotype().map(|u| TvarType::init_from_table(u))
             } else {
                 None
             }
@@ -1187,9 +1295,9 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn ty_as_record_type(&self) -> Option<RecordType<'a>> {
-            if self.ty_type() == MonoType::RecordType {
-                self.ty().map(|u| RecordType::init_from_table(u))
+        pub fn monotype_as_array_type(&self) -> Option<ArrayType<'a>> {
+            if self.monotype_type() == MonoType::ArrayType {
+                self.monotype().map(|u| ArrayType::init_from_table(u))
             } else {
                 None
             }
@@ -1197,9 +1305,19 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn ty_as_function_type(&self) -> Option<FunctionType<'a>> {
-            if self.ty_type() == MonoType::FunctionType {
-                self.ty().map(|u| FunctionType::init_from_table(u))
+        pub fn monotype_as_record_type(&self) -> Option<RecordType<'a>> {
+            if self.monotype_type() == MonoType::RecordType {
+                self.monotype().map(|u| RecordType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn monotype_as_function_type(&self) -> Option<FunctionType<'a>> {
+            if self.monotype_type() == MonoType::FunctionType {
+                self.monotype().map(|u| FunctionType::init_from_table(u))
             } else {
                 None
             }
@@ -1209,8 +1327,8 @@ pub mod fbast {
     pub struct PropertyTypeArgs<'a> {
         pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a>>>,
         pub id: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
-        pub ty_type: MonoType,
-        pub ty: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+        pub monotype_type: MonoType,
+        pub monotype: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
     }
     impl<'a> Default for PropertyTypeArgs<'a> {
         #[inline]
@@ -1218,8 +1336,8 @@ pub mod fbast {
             PropertyTypeArgs {
                 base_node: None,
                 id: None,
-                ty_type: MonoType::NONE,
-                ty: None,
+                monotype_type: MonoType::NONE,
+                monotype: None,
             }
         }
     }
@@ -1242,14 +1360,20 @@ pub mod fbast {
                 .push_slot_always::<flatbuffers::WIPOffset<Identifier>>(PropertyType::VT_ID, id);
         }
         #[inline]
-        pub fn add_ty_type(&mut self, ty_type: MonoType) {
-            self.fbb_
-                .push_slot::<MonoType>(PropertyType::VT_TY_TYPE, ty_type, MonoType::NONE);
+        pub fn add_monotype_type(&mut self, monotype_type: MonoType) {
+            self.fbb_.push_slot::<MonoType>(
+                PropertyType::VT_MONOTYPE_TYPE,
+                monotype_type,
+                MonoType::NONE,
+            );
         }
         #[inline]
-        pub fn add_ty(&mut self, ty: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+        pub fn add_monotype(
+            &mut self,
+            monotype: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>,
+        ) {
             self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(PropertyType::VT_TY, ty);
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(PropertyType::VT_MONOTYPE, monotype);
         }
         #[inline]
         pub fn new(
@@ -1425,24 +1549,24 @@ pub mod fbast {
             args: &'args ParameterTypeArgs<'args>,
         ) -> flatbuffers::WIPOffset<ParameterType<'bldr>> {
             let mut builder = ParameterTypeBuilder::new(_fbb);
-            if let Some(x) = args.ty {
-                builder.add_ty(x);
+            if let Some(x) = args.monotype {
+                builder.add_monotype(x);
             }
-            if let Some(x) = args.name {
-                builder.add_name(x);
+            if let Some(x) = args.id {
+                builder.add_id(x);
             }
             if let Some(x) = args.base_node {
                 builder.add_base_node(x);
             }
             builder.add_kind(args.kind);
-            builder.add_ty_type(args.ty_type);
+            builder.add_monotype_type(args.monotype_type);
             builder.finish()
         }
 
         pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
-        pub const VT_NAME: flatbuffers::VOffsetT = 6;
-        pub const VT_TY_TYPE: flatbuffers::VOffsetT = 8;
-        pub const VT_TY: flatbuffers::VOffsetT = 10;
+        pub const VT_ID: flatbuffers::VOffsetT = 6;
+        pub const VT_MONOTYPE_TYPE: flatbuffers::VOffsetT = 8;
+        pub const VT_MONOTYPE: flatbuffers::VOffsetT = 10;
         pub const VT_KIND: flatbuffers::VOffsetT = 12;
 
         #[inline]
@@ -1453,21 +1577,21 @@ pub mod fbast {
             )
         }
         #[inline]
-        pub fn name(&self) -> Option<Identifier<'a>> {
+        pub fn id(&self) -> Option<Identifier<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(ParameterType::VT_NAME, None)
+                .get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(ParameterType::VT_ID, None)
         }
         #[inline]
-        pub fn ty_type(&self) -> MonoType {
+        pub fn monotype_type(&self) -> MonoType {
             self._tab
-                .get::<MonoType>(ParameterType::VT_TY_TYPE, Some(MonoType::NONE))
+                .get::<MonoType>(ParameterType::VT_MONOTYPE_TYPE, Some(MonoType::NONE))
                 .unwrap()
         }
         #[inline]
-        pub fn ty(&self) -> Option<flatbuffers::Table<'a>> {
+        pub fn monotype(&self) -> Option<flatbuffers::Table<'a>> {
             self._tab
                 .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
-                    ParameterType::VT_TY,
+                    ParameterType::VT_MONOTYPE,
                     None,
                 )
         }
@@ -1479,9 +1603,9 @@ pub mod fbast {
         }
         #[inline]
         #[allow(non_snake_case)]
-        pub fn ty_as_named_type(&self) -> Option<NamedType<'a>> {
-            if self.ty_type() == MonoType::NamedType {
-                self.ty().map(|u| NamedType::init_from_table(u))
+        pub fn monotype_as_named_type(&self) -> Option<NamedType<'a>> {
+            if self.monotype_type() == MonoType::NamedType {
+                self.monotype().map(|u| NamedType::init_from_table(u))
             } else {
                 None
             }
@@ -1489,9 +1613,9 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn ty_as_array_type(&self) -> Option<ArrayType<'a>> {
-            if self.ty_type() == MonoType::ArrayType {
-                self.ty().map(|u| ArrayType::init_from_table(u))
+        pub fn monotype_as_tvar_type(&self) -> Option<TvarType<'a>> {
+            if self.monotype_type() == MonoType::TvarType {
+                self.monotype().map(|u| TvarType::init_from_table(u))
             } else {
                 None
             }
@@ -1499,9 +1623,9 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn ty_as_record_type(&self) -> Option<RecordType<'a>> {
-            if self.ty_type() == MonoType::RecordType {
-                self.ty().map(|u| RecordType::init_from_table(u))
+        pub fn monotype_as_array_type(&self) -> Option<ArrayType<'a>> {
+            if self.monotype_type() == MonoType::ArrayType {
+                self.monotype().map(|u| ArrayType::init_from_table(u))
             } else {
                 None
             }
@@ -1509,9 +1633,19 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn ty_as_function_type(&self) -> Option<FunctionType<'a>> {
-            if self.ty_type() == MonoType::FunctionType {
-                self.ty().map(|u| FunctionType::init_from_table(u))
+        pub fn monotype_as_record_type(&self) -> Option<RecordType<'a>> {
+            if self.monotype_type() == MonoType::RecordType {
+                self.monotype().map(|u| RecordType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn monotype_as_function_type(&self) -> Option<FunctionType<'a>> {
+            if self.monotype_type() == MonoType::FunctionType {
+                self.monotype().map(|u| FunctionType::init_from_table(u))
             } else {
                 None
             }
@@ -1520,9 +1654,9 @@ pub mod fbast {
 
     pub struct ParameterTypeArgs<'a> {
         pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a>>>,
-        pub name: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
-        pub ty_type: MonoType,
-        pub ty: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+        pub id: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
+        pub monotype_type: MonoType,
+        pub monotype: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
         pub kind: ParameterKind,
     }
     impl<'a> Default for ParameterTypeArgs<'a> {
@@ -1530,9 +1664,9 @@ pub mod fbast {
         fn default() -> Self {
             ParameterTypeArgs {
                 base_node: None,
-                name: None,
-                ty_type: MonoType::NONE,
-                ty: None,
+                id: None,
+                monotype_type: MonoType::NONE,
+                monotype: None,
                 kind: ParameterKind::Required,
             }
         }
@@ -1551,22 +1685,27 @@ pub mod fbast {
                 );
         }
         #[inline]
-        pub fn add_name(&mut self, name: flatbuffers::WIPOffset<Identifier<'b>>) {
+        pub fn add_id(&mut self, id: flatbuffers::WIPOffset<Identifier<'b>>) {
             self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<Identifier>>(
-                    ParameterType::VT_NAME,
-                    name,
-                );
+                .push_slot_always::<flatbuffers::WIPOffset<Identifier>>(ParameterType::VT_ID, id);
         }
         #[inline]
-        pub fn add_ty_type(&mut self, ty_type: MonoType) {
-            self.fbb_
-                .push_slot::<MonoType>(ParameterType::VT_TY_TYPE, ty_type, MonoType::NONE);
+        pub fn add_monotype_type(&mut self, monotype_type: MonoType) {
+            self.fbb_.push_slot::<MonoType>(
+                ParameterType::VT_MONOTYPE_TYPE,
+                monotype_type,
+                MonoType::NONE,
+            );
         }
         #[inline]
-        pub fn add_ty(&mut self, ty: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
-            self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(ParameterType::VT_TY, ty);
+        pub fn add_monotype(
+            &mut self,
+            monotype: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>,
+        ) {
+            self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(
+                ParameterType::VT_MONOTYPE,
+                monotype,
+            );
         }
         #[inline]
         pub fn add_kind(&mut self, kind: ParameterKind) {
@@ -1621,8 +1760,8 @@ pub mod fbast {
             args: &'args FunctionTypeArgs<'args>,
         ) -> flatbuffers::WIPOffset<FunctionType<'bldr>> {
             let mut builder = FunctionTypeBuilder::new(_fbb);
-            if let Some(x) = args.retn {
-                builder.add_retn(x);
+            if let Some(x) = args.monotype {
+                builder.add_monotype(x);
             }
             if let Some(x) = args.parameters {
                 builder.add_parameters(x);
@@ -1630,14 +1769,14 @@ pub mod fbast {
             if let Some(x) = args.base_node {
                 builder.add_base_node(x);
             }
-            builder.add_retn_type(args.retn_type);
+            builder.add_monotype_type(args.monotype_type);
             builder.finish()
         }
 
         pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
         pub const VT_PARAMETERS: flatbuffers::VOffsetT = 6;
-        pub const VT_RETN_TYPE: flatbuffers::VOffsetT = 8;
-        pub const VT_RETN: flatbuffers::VOffsetT = 10;
+        pub const VT_MONOTYPE_TYPE: flatbuffers::VOffsetT = 8;
+        pub const VT_MONOTYPE: flatbuffers::VOffsetT = 10;
 
         #[inline]
         pub fn base_node(&self) -> Option<BaseNode<'a>> {
@@ -1654,24 +1793,24 @@ pub mod fbast {
             >>(FunctionType::VT_PARAMETERS, None)
         }
         #[inline]
-        pub fn retn_type(&self) -> MonoType {
+        pub fn monotype_type(&self) -> MonoType {
             self._tab
-                .get::<MonoType>(FunctionType::VT_RETN_TYPE, Some(MonoType::NONE))
+                .get::<MonoType>(FunctionType::VT_MONOTYPE_TYPE, Some(MonoType::NONE))
                 .unwrap()
         }
         #[inline]
-        pub fn retn(&self) -> Option<flatbuffers::Table<'a>> {
+        pub fn monotype(&self) -> Option<flatbuffers::Table<'a>> {
             self._tab
                 .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
-                    FunctionType::VT_RETN,
+                    FunctionType::VT_MONOTYPE,
                     None,
                 )
         }
         #[inline]
         #[allow(non_snake_case)]
-        pub fn retn_as_named_type(&self) -> Option<NamedType<'a>> {
-            if self.retn_type() == MonoType::NamedType {
-                self.retn().map(|u| NamedType::init_from_table(u))
+        pub fn monotype_as_named_type(&self) -> Option<NamedType<'a>> {
+            if self.monotype_type() == MonoType::NamedType {
+                self.monotype().map(|u| NamedType::init_from_table(u))
             } else {
                 None
             }
@@ -1679,9 +1818,9 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn retn_as_array_type(&self) -> Option<ArrayType<'a>> {
-            if self.retn_type() == MonoType::ArrayType {
-                self.retn().map(|u| ArrayType::init_from_table(u))
+        pub fn monotype_as_tvar_type(&self) -> Option<TvarType<'a>> {
+            if self.monotype_type() == MonoType::TvarType {
+                self.monotype().map(|u| TvarType::init_from_table(u))
             } else {
                 None
             }
@@ -1689,9 +1828,9 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn retn_as_record_type(&self) -> Option<RecordType<'a>> {
-            if self.retn_type() == MonoType::RecordType {
-                self.retn().map(|u| RecordType::init_from_table(u))
+        pub fn monotype_as_array_type(&self) -> Option<ArrayType<'a>> {
+            if self.monotype_type() == MonoType::ArrayType {
+                self.monotype().map(|u| ArrayType::init_from_table(u))
             } else {
                 None
             }
@@ -1699,9 +1838,19 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn retn_as_function_type(&self) -> Option<FunctionType<'a>> {
-            if self.retn_type() == MonoType::FunctionType {
-                self.retn().map(|u| FunctionType::init_from_table(u))
+        pub fn monotype_as_record_type(&self) -> Option<RecordType<'a>> {
+            if self.monotype_type() == MonoType::RecordType {
+                self.monotype().map(|u| RecordType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn monotype_as_function_type(&self) -> Option<FunctionType<'a>> {
+            if self.monotype_type() == MonoType::FunctionType {
+                self.monotype().map(|u| FunctionType::init_from_table(u))
             } else {
                 None
             }
@@ -1715,8 +1864,8 @@ pub mod fbast {
                 flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<ParameterType<'a>>>,
             >,
         >,
-        pub retn_type: MonoType,
-        pub retn: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+        pub monotype_type: MonoType,
+        pub monotype: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
     }
     impl<'a> Default for FunctionTypeArgs<'a> {
         #[inline]
@@ -1724,8 +1873,8 @@ pub mod fbast {
             FunctionTypeArgs {
                 base_node: None,
                 parameters: None,
-                retn_type: MonoType::NONE,
-                retn: None,
+                monotype_type: MonoType::NONE,
+                monotype: None,
             }
         }
     }
@@ -1755,14 +1904,20 @@ pub mod fbast {
             );
         }
         #[inline]
-        pub fn add_retn_type(&mut self, retn_type: MonoType) {
-            self.fbb_
-                .push_slot::<MonoType>(FunctionType::VT_RETN_TYPE, retn_type, MonoType::NONE);
+        pub fn add_monotype_type(&mut self, monotype_type: MonoType) {
+            self.fbb_.push_slot::<MonoType>(
+                FunctionType::VT_MONOTYPE_TYPE,
+                monotype_type,
+                MonoType::NONE,
+            );
         }
         #[inline]
-        pub fn add_retn(&mut self, retn: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+        pub fn add_monotype(
+            &mut self,
+            monotype: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>,
+        ) {
             self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(FunctionType::VT_RETN, retn);
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(FunctionType::VT_MONOTYPE, monotype);
         }
         #[inline]
         pub fn new(
@@ -1945,19 +2100,19 @@ pub mod fbast {
             if let Some(x) = args.constraints {
                 builder.add_constraints(x);
             }
-            if let Some(x) = args.ty {
-                builder.add_ty(x);
+            if let Some(x) = args.monotype {
+                builder.add_monotype(x);
             }
             if let Some(x) = args.base_node {
                 builder.add_base_node(x);
             }
-            builder.add_ty_type(args.ty_type);
+            builder.add_monotype_type(args.monotype_type);
             builder.finish()
         }
 
         pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
-        pub const VT_TY_TYPE: flatbuffers::VOffsetT = 6;
-        pub const VT_TY: flatbuffers::VOffsetT = 8;
+        pub const VT_MONOTYPE_TYPE: flatbuffers::VOffsetT = 6;
+        pub const VT_MONOTYPE: flatbuffers::VOffsetT = 8;
         pub const VT_CONSTRAINTS: flatbuffers::VOffsetT = 10;
 
         #[inline]
@@ -1968,16 +2123,16 @@ pub mod fbast {
             )
         }
         #[inline]
-        pub fn ty_type(&self) -> MonoType {
+        pub fn monotype_type(&self) -> MonoType {
             self._tab
-                .get::<MonoType>(TypeExpression::VT_TY_TYPE, Some(MonoType::NONE))
+                .get::<MonoType>(TypeExpression::VT_MONOTYPE_TYPE, Some(MonoType::NONE))
                 .unwrap()
         }
         #[inline]
-        pub fn ty(&self) -> Option<flatbuffers::Table<'a>> {
+        pub fn monotype(&self) -> Option<flatbuffers::Table<'a>> {
             self._tab
                 .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
-                    TypeExpression::VT_TY,
+                    TypeExpression::VT_MONOTYPE,
                     None,
                 )
         }
@@ -1992,9 +2147,9 @@ pub mod fbast {
         }
         #[inline]
         #[allow(non_snake_case)]
-        pub fn ty_as_named_type(&self) -> Option<NamedType<'a>> {
-            if self.ty_type() == MonoType::NamedType {
-                self.ty().map(|u| NamedType::init_from_table(u))
+        pub fn monotype_as_named_type(&self) -> Option<NamedType<'a>> {
+            if self.monotype_type() == MonoType::NamedType {
+                self.monotype().map(|u| NamedType::init_from_table(u))
             } else {
                 None
             }
@@ -2002,9 +2157,9 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn ty_as_array_type(&self) -> Option<ArrayType<'a>> {
-            if self.ty_type() == MonoType::ArrayType {
-                self.ty().map(|u| ArrayType::init_from_table(u))
+        pub fn monotype_as_tvar_type(&self) -> Option<TvarType<'a>> {
+            if self.monotype_type() == MonoType::TvarType {
+                self.monotype().map(|u| TvarType::init_from_table(u))
             } else {
                 None
             }
@@ -2012,9 +2167,9 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn ty_as_record_type(&self) -> Option<RecordType<'a>> {
-            if self.ty_type() == MonoType::RecordType {
-                self.ty().map(|u| RecordType::init_from_table(u))
+        pub fn monotype_as_array_type(&self) -> Option<ArrayType<'a>> {
+            if self.monotype_type() == MonoType::ArrayType {
+                self.monotype().map(|u| ArrayType::init_from_table(u))
             } else {
                 None
             }
@@ -2022,9 +2177,19 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn ty_as_function_type(&self) -> Option<FunctionType<'a>> {
-            if self.ty_type() == MonoType::FunctionType {
-                self.ty().map(|u| FunctionType::init_from_table(u))
+        pub fn monotype_as_record_type(&self) -> Option<RecordType<'a>> {
+            if self.monotype_type() == MonoType::RecordType {
+                self.monotype().map(|u| RecordType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn monotype_as_function_type(&self) -> Option<FunctionType<'a>> {
+            if self.monotype_type() == MonoType::FunctionType {
+                self.monotype().map(|u| FunctionType::init_from_table(u))
             } else {
                 None
             }
@@ -2033,8 +2198,8 @@ pub mod fbast {
 
     pub struct TypeExpressionArgs<'a> {
         pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a>>>,
-        pub ty_type: MonoType,
-        pub ty: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+        pub monotype_type: MonoType,
+        pub monotype: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
         pub constraints: Option<
             flatbuffers::WIPOffset<
                 flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<TypeConstraint<'a>>>,
@@ -2046,8 +2211,8 @@ pub mod fbast {
         fn default() -> Self {
             TypeExpressionArgs {
                 base_node: None,
-                ty_type: MonoType::NONE,
-                ty: None,
+                monotype_type: MonoType::NONE,
+                monotype: None,
                 constraints: None,
             }
         }
@@ -2066,14 +2231,22 @@ pub mod fbast {
                 );
         }
         #[inline]
-        pub fn add_ty_type(&mut self, ty_type: MonoType) {
-            self.fbb_
-                .push_slot::<MonoType>(TypeExpression::VT_TY_TYPE, ty_type, MonoType::NONE);
+        pub fn add_monotype_type(&mut self, monotype_type: MonoType) {
+            self.fbb_.push_slot::<MonoType>(
+                TypeExpression::VT_MONOTYPE_TYPE,
+                monotype_type,
+                MonoType::NONE,
+            );
         }
         #[inline]
-        pub fn add_ty(&mut self, ty: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
-            self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(TypeExpression::VT_TY, ty);
+        pub fn add_monotype(
+            &mut self,
+            monotype: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>,
+        ) {
+            self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(
+                TypeExpression::VT_MONOTYPE,
+                monotype,
+            );
         }
         #[inline]
         pub fn add_constraints(
