@@ -2850,4 +2850,47 @@ mod tests {
         let got = test_convert(pkg);
         assert_eq!(want, got);
     }
+
+    #[test]
+    fn test_convert_monotype() {
+        let b = ast::BaseNode::default();
+        let pkg = ast::Package {
+            base: b.clone(),
+            path: "path".to_string(),
+            package: "main".to_string(),
+            files: vec![ast::File {
+                base: b.clone(),
+                name: "foo.flux".to_string(),
+                metadata: String::new(),
+                package: None,
+                imports: Vec::new(),
+                body: vec![ast::Statement::Builtin(Box::new(ast::BuiltinStmt {
+                    base: b.clone(),
+                    id: ast::Identifier {
+                        base: b.clone(),
+                        name: "from".to_string(),
+                    },
+                }))],
+                eof: None,
+            }],
+        };
+        let want = Package {
+            loc: b.location.clone(),
+            package: "main".to_string(),
+            files: vec![File {
+                loc: b.location.clone(),
+                package: None,
+                imports: Vec::new(),
+                body: vec![Statement::Builtin(BuiltinStmt {
+                    loc: b.location.clone(),
+                    id: Identifier {
+                        loc: b.location.clone(),
+                        name: "from".to_string(),
+                    },
+                })],
+            }],
+        };
+        let got = test_convert(pkg).unwrap();
+        assert_eq!(want, got);
+    }
 }
