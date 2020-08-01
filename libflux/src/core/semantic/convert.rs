@@ -151,14 +151,13 @@ fn convert_monotype(
 ) -> Result<MonoType> {
     match ty {
         ast::MonoType::Tvar(tv) => {
-            if tvars.contains_key(&tv.name.name.clone()) {
+            if tvars.contains_key(&tv.name.name) {
                 match tvars.get(&tv.name.name) {
                     Some(&value) => Ok(MonoType::Var(value)),
                     None => Ok(MonoType::Var(types::Tvar(0))),
                 }
             } else {
-                let t = f.fresh();
-                tvars.insert(tv.name.name.to_string(), t.clone());
+                tvars.insert(tv.name.name.to_string(), f.fresh());
                 match tvars.get(&tv.name.name) {
                     Some(&value) => Ok(MonoType::Var(value)),
                     None => Ok(MonoType::Var(types::Tvar(0))),
@@ -196,7 +195,7 @@ fn convert_monotype(
                         opt.insert(name.name, convert_monotype(monotype, tvars, f)?);
                     }
                     ast::ParameterType::Pipe { name, monotype, .. } => {
-                        if dirty == false {
+                        if !dirty {
                             _pipe = Some(types::Property {
                                 k: match name {
                                     Some(n) => n.name,
