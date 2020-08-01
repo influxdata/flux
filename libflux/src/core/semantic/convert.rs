@@ -1,8 +1,10 @@
 use crate::ast;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes::*;
+use crate::semantic::types;
 use crate::semantic::types::MonoType;
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::result;
 
 pub type SemanticError = String;
@@ -141,65 +143,104 @@ fn convert_builtin_statement(stmt: ast::BuiltinStmt, fresher: &mut Fresher) -> R
 }
 
 pub type MonoTypeMap = SemanticMap<String, MonoType>;
+#[allow(unused)]
 fn convert_monotype(
     ty: ast::MonoType,
-    tvars: &mut HashMap<String, u64>,
+    tvars: &mut HashMap<String, types::Tvar>,
     f: &mut Fresher,
 ) -> Result<MonoType> {
-    let converted;
     match ty {
-        ast::MonoType::Tvar(tvar) => true,
-        ast::MonoType::Array(arr) => {MonoType::Arr(Box::new(Array(convert_monotype(arr.monotype, tvars, f)?)))}
+        ast::MonoType::Tvar(tv) => {
+            if tvars.contains_key(&tv.name.name.clone()) {
+                match tvars.get(&tv.name.name) {
+                    Some(&value) => Ok(MonoType::Var(value)),
+                    None => Ok(MonoType::Var(types::Tvar(0))),
+                }
+            } else {
+                let t = f.fresh();
+                tvars.insert(tv.name.name.to_string(), t.clone());
+                match tvars.get(&tv.name.name) {
+                    Some(&value) => Ok(MonoType::Var(value)),
+                    None => Ok(MonoType::Var(types::Tvar(0))),
+                }
+            }
+        }
+        ast::MonoType::Basic(basic) => match basic.name.name.as_str() {
+            "bool" => Ok(MonoType::Bool),
+            "int" => Ok(MonoType::Int),
+            "uint" => Ok(MonoType::Uint),
+            "float" => Ok(MonoType::Float),
+            "string" => Ok(MonoType::String),
+            "duration" => Ok(MonoType::Duration),
+            "time" => Ok(MonoType::Time),
+            "regexp" => Ok(MonoType::Regexp),
+            "bytes" => Ok(MonoType::Bytes),
+            _ => Err("Bad parameter type.".to_string()),
+        },
+        ast::MonoType::Array(arr) => Ok(MonoType::Arr(Box::new(types::Array(convert_monotype(
+            arr.element,
+            tvars,
+            f,
+        )?)))),
         ast::MonoType::Function(func) => {
             let mut req = MonoTypeMap::new();
             let mut opt = MonoTypeMap::new();
-            let mut pipe;
+            let mut _pipe = None;
             let mut dirty = false;
             for param in func.parameters {
                 match param {
-                    ast::ParameterType::Required { name, ty, .. } => {
-                        req.insert(name.name, convert_monotype(ty, tvars, f)?);
+                    ast::ParameterType::Required { name, monotype, .. } => {
+                        req.insert(name.name, convert_monotype(monotype, tvars, f)?);
                     }
-                    ast::ParameterType::Optional { name, ty, .. } => {
-                        opt.insert(name.name, convert_monotype(ty, tvars, f)?);
+                    ast::ParameterType::Optional { name, monotype, .. } => {
+                        opt.insert(name.name, convert_monotype(monotype, tvars, f)?);
                     }
-                    ast::ParameterType::Pipe { name, ty, .. } => {
+                    ast::ParameterType::Pipe { name, monotype, .. } => {
                         if dirty == false {
-                            pipe = types::Property {
+                            _pipe = Some(types::Property {
                                 k: match name {
-                                    Some(N) =>{N},
+                                    Some(n) => n.name,
                                     None => String::from("<-"),
                                 },
-                                v: convert_monotype(ty, tvars, f)?,
-                            };
+                                v: convert_monotype(monotype, tvars, f)?,
+                            });
                             dirty = true;
                         } else {
-                            Err("Bad parameter type.".to_string())
+                            return Err("Bad parameter type.".to_string());
                         }
                     }
-                    _ => Err("Bad parameter type.".to_string()),
                 }
             }
-            Ok(MonoType::Fun(Box::new(Function {
+            Ok(MonoType::Fun(Box::new(types::Function {
                 req,
                 opt,
-                pipe,
-                retn: func.monotype,
+                pipe: _pipe,
+                retn: convert_monotype(func.monotype, tvars, f)?,
             })))
         }
-        // AST record looks like this:
-        /*
-            pub struct RecordType {
-            pub base: BaseNode,
-            pub tvar: Option<Identifier>,
-            pub properties: Option<Vec<PropertyType>>,
-         */
-
-        // Semantic Record looks like this:
-
         ast::MonoType::Record(rec) => {
-            // record will go here
-        },
+            let mut r = match rec.tvar {
+                None => MonoType::Row(Box::new(types::Row::Empty)),
+                Some(id) => {
+                    let tv = ast::MonoType::Tvar(ast::TvarType {
+                        base: id.clone().base,
+                        name: id,
+                    });
+                    convert_monotype(tv, tvars, f)?
+                }
+            };
+            for prop in rec.properties {
+                let property = types::Property {
+                    k: prop.name.name,
+                    v: convert_monotype(prop.monotype, tvars, f)?,
+                };
+                r = MonoType::Row(Box::new(types::Row::Extension {
+                    head: property,
+                    tail: r,
+                }))
+            }
+            Ok(r)
+        }
     }
 }
 

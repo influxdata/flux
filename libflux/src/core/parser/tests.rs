@@ -1176,7 +1176,7 @@ fn builtin() {
                         ..BaseNode::default()
                     },
                     name: "from".to_string()
-                }
+                },
             }))],
             eof: None,
         },
