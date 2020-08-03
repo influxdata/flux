@@ -2852,45 +2852,54 @@ mod tests {
     }
 
     #[test]
-    fn test_convert_monotype() {
+    fn test_convert_monotype_int() {
         let b = ast::BaseNode::default();
-        let pkg = ast::Package {
+        let monotype = ast::MonoType::Basic(ast::NamedType {
             base: b.clone(),
-            path: "path".to_string(),
-            package: "main".to_string(),
-            files: vec![ast::File {
+            name: ast::Identifier {
                 base: b.clone(),
-                name: "foo.flux".to_string(),
-                metadata: String::new(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![ast::Statement::Builtin(Box::new(ast::BuiltinStmt {
+                name: "int".to_string(),
+            },
+        });
+        let mut m = HashMap::<String, types::Tvar>::new();
+        let got = convert_monotype(monotype, &mut m, &mut fresh::Fresher::default()).unwrap();
+        let want = MonoType::Int;
+        assert_eq!(want, got);
+    }
+
+    #[test]
+    fn test_convert_monotype_record() {
+        let b = ast::BaseNode::default();
+        let monotype = ast::MonoType::Record(ast::RecordType {
+            base: b.clone(),
+            tvar: Some(ast::Identifier {
+                base: b.clone(),
+                name: "A".to_string(),
+            }),
+            properties: vec![ast::PropertyType {
+                base: b.clone(),
+                name: ast::Identifier {
                     base: b.clone(),
-                    id: ast::Identifier {
+                    name: "B".to_string(),
+                },
+                monotype: ast::MonoType::Basic(ast::NamedType {
+                    base: b.clone(),
+                    name: ast::Identifier {
                         base: b.clone(),
-                        name: "from".to_string(),
+                        name: "int".to_string(),
                     },
-                }))],
-                eof: None,
+                }),
             }],
-        };
-        let want = Package {
-            loc: b.location.clone(),
-            package: "main".to_string(),
-            files: vec![File {
-                loc: b.location.clone(),
-                package: None,
-                imports: Vec::new(),
-                body: vec![Statement::Builtin(BuiltinStmt {
-                    loc: b.location.clone(),
-                    id: Identifier {
-                        loc: b.location.clone(),
-                        name: "from".to_string(),
-                    },
-                })],
-            }],
-        };
-        let got = test_convert(pkg).unwrap();
+        });
+        let mut m = HashMap::<String, types::Tvar>::new();
+        let got = convert_monotype(monotype, &mut m, &mut fresh::Fresher::default()).unwrap();
+        let want = MonoType::Row(Box::new(types::Row::Extension {
+            head: types::Property {
+                k: "B".to_string(),
+                v: MonoType::Int,
+            },
+            tail: MonoType::Var(Tvar(0)),
+        }));
         assert_eq!(want, got);
     }
 }
