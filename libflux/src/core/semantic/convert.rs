@@ -151,7 +151,7 @@ fn convert_monotype(
 ) -> Result<MonoType> {
     match ty {
         ast::MonoType::Tvar(tv) => {
-            let tvar = tvars.entry(tv.name.name).or_insert(f.fresh());
+            let tvar = tvars.entry(tv.name.name).or_insert_with(|| f.fresh());
             Ok(MonoType::Var(*tvar))
         }
         ast::MonoType::Basic(basic) => match basic.name.name.as_str() {
