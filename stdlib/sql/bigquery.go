@@ -157,7 +157,6 @@ func NewBigQueryRowReader(r *sql.Rows) (execute.RowReader, error) {
 var fluxToBigQuery = map[flux.ColType]string{
 	flux.TFloat:  "FLOAT64",
 	flux.TInt:    "INT64",
-	flux.TUInt:   "INT64",
 	flux.TString: "STRING",
 	flux.TBool:   "BOOL",
 	flux.TTime:   "TIMESTAMP",
