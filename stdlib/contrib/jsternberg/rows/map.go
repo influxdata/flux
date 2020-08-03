@@ -206,6 +206,10 @@ type mapTable struct {
 	mem  memory.Allocator
 }
 
+func (t *mapTable) Cols() []flux.ColMeta {
+	return t.cols
+}
+
 func (t *mapTable) Do(f func(cr flux.ColReader) error) error {
 	return t.Table.Do(func(cr flux.ColReader) error {
 		buffer := &arrow.TableBuffer{
@@ -263,14 +267,14 @@ func (t *mapTable) mapValues(w *arrow.TableBuffer, cr flux.ColReader, fn *execut
 		}
 	}
 
-	arrs := make([]array.Interface, len(w.Cols()))
-	for i, c := range w.Cols() {
+	w.Values = make([]array.Interface, len(cols))
+	for i, c := range cols {
 		if builders[i] == nil {
 			idx := execute.ColIdx(c.Label, cr.Cols())
-			arrs[i] = table.Values(cr, idx)
-			arrs[i].Retain()
+			w.Values[i] = table.Values(cr, idx)
+			w.Values[i].Retain()
 		} else {
-			arrs[i] = builders[i].NewArray()
+			w.Values[i] = builders[i].NewArray()
 		}
 	}
 	return nil
