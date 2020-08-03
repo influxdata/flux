@@ -2,12 +2,12 @@ package geo
 
 import (
 	"context"
-	"fmt"
 	"math"
 
 	"github.com/golang/geo/s1"
 	"github.com/golang/geo/s2"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
@@ -58,7 +58,7 @@ func generateSTContainsFunc() values.Function {
 			case polygon:
 				region = getS2LoopRegion(v)
 			default:
-				return nil, fmt.Errorf("code %d: unsupported region type: %T", codes.Invalid, geom1)
+				return nil, errors.Newf(codes.Invalid,"unsupported region type: %T", geom1)
 			}
 
 			var retVal bool
@@ -73,7 +73,7 @@ func generateSTContainsFunc() values.Function {
 					}
 				}
 			default:
-				return nil, fmt.Errorf("code %d: unsupported geometry type: %T", codes.Invalid, geom2)
+				return nil, errors.Newf(codes.Invalid,"unsupported geometry type: %T", geom2)
 			}
 
 			return values.NewBool(retVal), nil
@@ -154,7 +154,7 @@ func generateSTDistanceFunc() values.Function {
 					distance = minDistanceToShapeIndex(index, toIndex)
 				}
 			default:
-				return nil, fmt.Errorf("code %d: unsupported geometry type: %T", codes.Invalid, geom2)
+				return nil, errors.Newf(codes.Invalid,"unsupported geometry type: %T", geom2)
 			}
 
 			return values.NewFloat(units.distanceToUser(distance.Radians())), nil
@@ -197,7 +197,7 @@ func generateSTLengthFunc() values.Function {
 					length += v.latlngs[i].Distance(v.latlngs[i+1])
 				}
 			default:
-				return nil, fmt.Errorf("code %d: unsupported geometry type: %T", codes.Invalid, geom)
+				return nil, errors.Newf(codes.Invalid,"unsupported geometry type: %T", geom)
 			}
 
 			return values.NewFloat(units.distanceToUser(length.Radians())), nil

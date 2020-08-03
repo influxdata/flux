@@ -2,7 +2,6 @@ package geo
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	"github.com/golang/geo/s1"
 	"github.com/golang/geo/s2"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
@@ -101,7 +101,7 @@ func generateGetGridFunc() values.Function {
 			if !maxLevelOk {
 				maxLevel = -1
 			} else if maxLevel > MaxLevel {
-				return nil, fmt.Errorf("code %d: invalid maxLevel (%d, must be < %d)", codes.Invalid, maxLevel, MaxLevel)
+				return nil, errors.Newf(codes.Invalid, "invalid maxLevel (%d, must be < %d)", maxLevel, MaxLevel)
 			}
 
 			minSize, minSizeOk, err := a.GetInt("minSize")
@@ -121,7 +121,7 @@ func generateGetGridFunc() values.Function {
 			}
 
 			if minSize > 0 && maxSize > 0 && minSize > maxSize {
-				return nil, fmt.Errorf("code %d: minSize > maxSize (%d > %d)", codes.Invalid, minSize, maxSize)
+				return nil, errors.Newf(codes.Invalid,"minSize > maxSize (%d > %d)", minSize, maxSize)
 			}
 
 			var region s2.Region
@@ -133,7 +133,7 @@ func generateGetGridFunc() values.Function {
 			case polygon:
 				region = getS2LoopRegion(v)
 			default:
-				return nil, fmt.Errorf("code %d: unsupported point type: %T", codes.Invalid, geom)
+				return nil, errors.Newf(codes.Invalid, "unsupported region type: %T", geom)
 			}
 
 			grid, err := getGrid(region, int(level), int(maxLevel), int(minSize), int(maxSize))
@@ -195,12 +195,12 @@ func generateS2CellIDTokenFunc() values.Function {
 			}
 
 			if !tokenOk && !pointOk {
-				return nil, fmt.Errorf("code %d: either token or point parameter must be specified", codes.Invalid)
+				return nil, errors.Newf(codes.Invalid,"either token or point parameter must be specified")
 			}
 
 			if tokenOk && pointOk {
 				if (len(token) == 0 && point.Len() == 0) || (len(token) > 0 && point.Len() > 0) {
-					return nil, fmt.Errorf("code %d: either token or point parameter must be specified and must not be empty", codes.Invalid)
+					return nil, errors.Newf(codes.Invalid,"either token or point parameter must be specified and must not be empty")
 				}
 			}
 
@@ -209,7 +209,7 @@ func generateS2CellIDTokenFunc() values.Function {
 				return nil, err
 			}
 			if level < 1 || level > MaxLevel {
-				return nil, fmt.Errorf("code %d: level value must be [1, 30]", codes.Invalid)
+				return nil, errors.Newf(codes.Invalid,"level value must be [1, 30]")
 			}
 
 			var parentToken string
@@ -219,7 +219,7 @@ func generateS2CellIDTokenFunc() values.Function {
 				lat, latOk := point.Get("lat")
 				lon, lonOk := point.Get("lon")
 				if !latOk || !lonOk {
-					return nil, fmt.Errorf("code %d: invalid point specification - must have lat, lon fields", codes.Invalid)
+					return nil, errors.Newf(codes.Invalid,"invalid point specification - must have lat, lon fields")
 				}
 				parentToken, err = getParentFromLatLon(lat.Float(), lon.Float(), int(level))
 			}
@@ -276,7 +276,7 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 		lon, lonOk := arg.Get("lon")
 
 		if !latOk || !lonOk {
-			return nil, fmt.Errorf("code %d: invalid point specification - must have lat, lon fields", codes.Invalid)
+			return nil, errors.Newf(codes.Invalid,"invalid point specification - must have lat, lon fields")
 		}
 
 		geom = point{
@@ -293,7 +293,7 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 		maxLon, maxLonOk := arg.Get("maxLon")
 
 		if !minLatOk || !minLonOk || !maxLatOk || !maxLonOk {
-			return nil, fmt.Errorf("code %d: invalid box specification - must have minLat, minLon, maxLat, maxLon fields", codes.Invalid)
+			return nil, errors.Newf(codes.Invalid,"invalid box specification - must have minLat, minLon, maxLat, maxLon fields")
 		}
 
 		// fix user mistakes
@@ -319,7 +319,7 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 		radius, radiusOk := arg.Get("radius")
 
 		if !centerLatOk || !centerLonOk || !radiusOk {
-			return nil, fmt.Errorf("code %d: invalid circle specification - must have lat, lon, radius fields", codes.Invalid)
+			return nil, errors.Newf(codes.Invalid,"invalid circle specification - must have lat, lon, radius fields")
 		}
 
 		geom = circle{
@@ -335,7 +335,7 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 	if polygonOk && arg.Len() == 1 {
 		array := points.Array()
 		if array.Len() < 3 {
-			err = fmt.Errorf("code %d: polygon must have at least 3 points", codes.Invalid)
+			err = errors.Newf(codes.Invalid,"polygon must have at least 3 points")
 		}
 
 		s2points := make([]s2.Point, array.Len())
@@ -345,7 +345,7 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 			lon, lonOk := p.Get("lon")
 
 			if !latOk || !lonOk {
-				return nil, fmt.Errorf("code %d: invalid polygon point specification - must have lat, lon fields", codes.Invalid)
+				return nil, errors.Newf(codes.Invalid,"invalid polygon point specification - must have lat, lon fields")
 			}
 
 			s2points[i] = s2.PointFromLatLng(s2.LatLngFromDegrees(lat.Float(), lon.Float()))
@@ -359,7 +359,7 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 	ls, lsOk := arg.Get("linestring")
 	if lsOk && arg.Len() == 1 {
 		if ls.IsNull() {
-			return nil, fmt.Errorf("code %d: empty linestring", codes.Invalid)
+			return nil, errors.Newf(codes.Invalid,"empty linestring")
 		}
 		lsArray := strings.Split(ls.Str(), ",")
 		lsLength := len(lsArray)
@@ -367,12 +367,12 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 		for i, pair := range lsArray {
 			fields := strings.Fields(pair)
 			if len(fields) == 0 {
-				return nil, fmt.Errorf("code %d: invalid linestring - empty part", codes.Invalid)
+				return nil, errors.Newf(codes.Invalid,"invalid linestring - empty part")
 			}
 			lon, lonErr := strconv.ParseFloat(fields[0], 64)
 			lat, latErr := strconv.ParseFloat(fields[1], 64)
 			if latErr != nil || lonErr != nil {
-				return nil, fmt.Errorf("code %d: invalid linestring - %v, %v", codes.Invalid, lonErr, latErr)
+				return nil, errors.Newf(codes.Invalid,"invalid linestring - %v, %v", lonErr, latErr)
 			}
 
 			latlngs[i] = s2.LatLngFromDegrees(lat, lon)
@@ -383,7 +383,7 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 	}
 
 	if geom == nil {
-		err = fmt.Errorf("code %d: unsupported geometry specified for '%s'", codes.Invalid, name)
+		err = errors.Newf(codes.Invalid,"unsupported geometry specified for '%s'", name)
 	}
 
 	return geom, err
@@ -395,7 +395,7 @@ func parseUnitsArgument(arg values.Object) (*units, error) {
 	du, ok := arg.Get("distance")
 	if ok && arg.Len() == 1 {
 		if du.IsNull() {
-			return nil, fmt.Errorf("code %d: invalid units parameter: distance field is null", codes.Invalid)
+			return nil, errors.Newf(codes.Invalid,"invalid units parameter: distance field is null")
 		}
 		r, ok := earthRadiuses[du.Str()]
 		if ok {
@@ -404,10 +404,10 @@ func parseUnitsArgument(arg values.Object) (*units, error) {
 				earthRadius: r,
 			}
 		} else {
-			return nil, fmt.Errorf("code %d: invalid units parameter: unsupported distance unit '%s'", codes.Invalid, du.Str())
+			return nil, errors.Newf(codes.Invalid,"invalid units parameter: unsupported distance unit '%s'", du.Str())
 		}
 	} else {
-		return nil, fmt.Errorf("code %d: invalid units parameter: missing field: distance", codes.Invalid)
+		return nil, errors.Newf(codes.Invalid,"invalid units parameter: missing field: distance")
 	}
 	return u, nil
 }
@@ -518,7 +518,7 @@ func getGrid(region s2.Region, reqLevel, maxLevel, minSize, maxSize int) (*grid,
 			}
 		}
 	} else {
-		return nil, fmt.Errorf("code %d: either minSize or maxSize must be specified", codes.Invalid)
+		return nil, errors.Newf(codes.Invalid, "either minSize or maxSize must be specified")
 	}
 
 	return result, nil
@@ -529,7 +529,7 @@ func getParentFromToken(token string, level int) (string, error) {
 	if cellID.IsValid() && level <= cellID.Level() {
 		return cellID.Parent(level).ToToken(), nil
 	}
-	return "", fmt.Errorf("code %d: invalid token specified or requested level greater then current level", codes.Invalid)
+	return "", errors.Newf(codes.Invalid,"invalid token specified or requested level greater then current level")
 }
 
 func getParentFromLatLon(lat, lon float64, level int) (string, error) {
@@ -537,7 +537,7 @@ func getParentFromLatLon(lat, lon float64, level int) (string, error) {
 	if cellID.IsValid() {
 		return cellID.Parent(level).ToToken(), nil
 	}
-	return "", fmt.Errorf("code %d: invalid coordinates", codes.Invalid)
+	return "", errors.Newf(codes.Invalid,"invalid coordinates")
 }
 
 func getLevel(token string) (int, error) {
@@ -545,7 +545,7 @@ func getLevel(token string) (int, error) {
 	if cellID.IsValid() {
 		return cellID.Level(), nil
 	}
-	return -1, fmt.Errorf("code %d: invalid token specified", codes.Invalid)
+	return -1, errors.Newf(codes.Invalid, "invalid token specified")
 }
 
 func getLatLng(token string) (*s2.LatLng, error) {
@@ -554,5 +554,5 @@ func getLatLng(token string) (*s2.LatLng, error) {
 		ll := cellID.LatLng()
 		return &ll, nil
 	}
-	return nil, fmt.Errorf("code %d: invalid token specified", codes.Invalid)
+	return nil, errors.Newf(codes.Invalid,"invalid token specified")
 }
