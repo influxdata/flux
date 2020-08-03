@@ -163,7 +163,7 @@ outData = "
 t_asTracks = (table=<-) =>
   table
     |> range(start: 2019-11-01T00:00:00Z)
-    |> geo.toRows(correlationKey: ["id", "_time"])
+    |> geo.toRows()
     |> geo.asTracks()
     |> drop(columns: ["_start", "_stop"])
 test _asTracks = () =>
