@@ -272,6 +272,8 @@ func getTranslationFunc(driverName string) (func() translationFunc, error) {
 		return MssqlColumnTranslateFunc, nil
 	case "awsathena": // read-only support for AWS Athena (see awsathena.go)
 		return nil, errors.Newf(codes.Invalid, "writing is not supported for %s", driverName)
+	case "bigquery":
+		return BigQueryColumnTranslateFunc, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "invalid driverName: %s", driverName)
 	}

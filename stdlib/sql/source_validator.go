@@ -4,6 +4,7 @@ import (
 	neturl "net/url"
 	"strings"
 
+	"github.com/bonitoo-io/go-sql-bigquery"
 	"github.com/go-sql-driver/mysql"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/url"
@@ -89,6 +90,17 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 		u, err = neturl.Parse(dataSourceName)
 		if err != nil {
 			return errors.Newf(codes.Invalid, "invalid data source url: %v", err)
+		}
+	case "bigquery":
+		// an example is: bigquery://projectid/location?dataset=datasetid
+		cfg, err := bigquery.ConfigFromConnString(dataSourceName)
+		if err != nil {
+			return errors.Newf(codes.Invalid, "invalid data source dsn: %v", err)
+		}
+		u = &neturl.URL{
+			Scheme: "bigquery",
+			Host:   cfg.ProjectID,
+			Path:   cfg.Location,
 		}
 	default:
 		return errors.Newf(codes.Invalid, "sql driver %s not supported", driverName)
