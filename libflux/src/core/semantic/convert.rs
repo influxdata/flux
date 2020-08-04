@@ -3,7 +3,6 @@ use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes::*;
 use crate::semantic::types;
 use crate::semantic::types::MonoType;
-use crate::semantic::types::Kind;
 use crate::semantic::types::MonoTypeMap;
 use crate::semantic::types::SemanticMap;
 use std::collections::HashMap;
@@ -236,7 +235,10 @@ fn convert_monotype(
 }
 
 #[allow(unused)]
-fn convert_polytype( type_expression: ast::TypeExpression, f: &mut Fresher) -> Result<types::PolyType> {
+fn convert_polytype(
+    type_expression: ast::TypeExpression,
+    f: &mut Fresher,
+) -> Result<types::PolyType> {
     // pub vars: Vec<Tvar>,
     // pub cons: TvarKinds,
     // pub expr: MonoType,
@@ -254,17 +256,32 @@ fn convert_polytype( type_expression: ast::TypeExpression, f: &mut Fresher) -> R
     let mut expr = convert_monotype(type_expression.monotype, &mut tvars, f)?;
     let mut vars = Vec::<types::Tvar>::new();
     let mut cons = SemanticMap::<types::Tvar, Vec<types::Kind>>::new();
+
     for c in type_expression.constraints {
-
-        let tvar = tvars.entry(c.tvar.name.clone()).or_insert_with(|| f.fresh());
-        vars.push(*tvar);
-
+        if tvars.contains_key(c.tvar.name.as_str()) {
+            vars.push(*tvars.get(&c.tvar.name).unwrap());
+        };
+        for v in &vars {
+            let mut kinds = Vec::<types::Kind>::new();
+            for k in &c.kinds {
+                match k.name.as_str() {
+                    "Addable" => kinds.push(types::Kind::Addable),
+                    "Subtractable" => kinds.push(types::Kind::Subtractable),
+                    "Divisible" => kinds.push(types::Kind::Divisible),
+                    "Numeric" => kinds.push(types::Kind::Numeric),
+                    "Comparable" => kinds.push(types::Kind::Comparable),
+                    "Equatable" => kinds.push(types::Kind::Equatable),
+                    "Nullable" => kinds.push(types::Kind::Nullable),
+                    "Negatable" => kinds.push(types::Kind::Negatable),
+                    "Timeable" => kinds.push(types::Kind::Timeable),
+                    _ => {}
+                }
+            }
+            cons.insert(*v, kinds);
+        }
     }
-    Ok(types::PolyType{
-        expr,
-        cons,
-        vars,
-    })
+
+    Ok(types::PolyType { expr, cons, vars })
 }
 
 fn convert_test_statement(stmt: ast::TestStmt, fresher: &mut Fresher) -> Result<TestStmt> {
