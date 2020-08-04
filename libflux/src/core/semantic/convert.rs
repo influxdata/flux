@@ -259,7 +259,10 @@ fn convert_polytype(
 
     for c in type_expression.constraints {
         if tvars.contains_key(c.tvar.name.as_str()) {
-            vars.push(*tvars.get(&c.tvar.name).unwrap());
+            vars.push(match tvars.get(&c.tvar.name) {
+                Some(v) => *v,
+                None => {types::Tvar(0)} // never reached.
+            });
         };
         for v in &vars {
             let mut kinds = Vec::<types::Kind>::new();
