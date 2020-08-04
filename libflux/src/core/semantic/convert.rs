@@ -2934,7 +2934,7 @@ mod tests {
         opt.insert(String::from("A"), MonoType::Int);
         let want = MonoType::Fun(Box::new(types::Function {
             req: MonoTypeMap::new(),
-            opt: opt,
+            opt,
             pipe: None,
             retn: MonoType::Int,
         }));
