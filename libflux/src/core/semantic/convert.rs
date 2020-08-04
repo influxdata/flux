@@ -162,7 +162,7 @@ fn convert_monotype(
             "time" => Ok(MonoType::Time),
             "regexp" => Ok(MonoType::Regexp),
             "bytes" => Ok(MonoType::Bytes),
-            _ => Err("Bad parameter type.".to_string()),
+            _ => Err("invalid named type {}".to_string()),
         },
         ast::MonoType::Array(arr) => Ok(MonoType::Arr(Box::new(types::Array(convert_monotype(
             arr.element,
@@ -193,7 +193,9 @@ fn convert_monotype(
                             });
                             dirty = true;
                         } else {
-                            return Err("Bad parameter type.".to_string());
+                            return Err(
+                                "function types can have at most one pipe parameter".to_string()
+                            );
                         }
                     }
                 }
