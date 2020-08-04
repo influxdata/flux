@@ -3,7 +3,9 @@ use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes::*;
 use crate::semantic::types;
 use crate::semantic::types::MonoType;
+use crate::semantic::types::Kind;
 use crate::semantic::types::MonoTypeMap;
+use crate::semantic::types::SemanticMap;
 use std::collections::HashMap;
 use std::result;
 
@@ -231,6 +233,38 @@ fn convert_monotype(
             Ok(r)
         }
     }
+}
+
+#[allow(unused)]
+fn convert_polytype( type_expression: ast::TypeExpression, f: &mut Fresher) -> Result<types::PolyType> {
+    // pub vars: Vec<Tvar>,
+    // pub cons: TvarKinds,
+    // pub expr: MonoType,
+    // ==
+    // pub base: BaseNode,
+    // pub monotype: MonoType,
+    // #[serde(skip_serializing_if = "Vec::is_empty")]
+    // pub constraints: Vec<TypeConstraint>,
+    // (a: T, b: T) => T where T: Addable + Divisible
+    //     |---------------|       |--------------------|
+    //     expr                       cons
+    //                         |  |-----|   |-------|
+    //                       var1  kind1      kind2
+    let mut tvars = HashMap::<String, types::Tvar>::new();
+    let mut expr = convert_monotype(type_expression.monotype, &mut tvars, f)?;
+    let mut vars = Vec::<types::Tvar>::new();
+    let mut cons = SemanticMap::<types::Tvar, Vec<types::Kind>>::new();
+    for c in type_expression.constraints {
+
+        let tvar = tvars.entry(c.tvar.name.clone()).or_insert_with(|| f.fresh());
+        vars.push(*tvar);
+
+    }
+    Ok(types::PolyType{
+        expr,
+        cons,
+        vars,
+    })
 }
 
 fn convert_test_statement(stmt: ast::TestStmt, fresher: &mut Fresher) -> Result<TestStmt> {
