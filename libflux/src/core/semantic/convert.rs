@@ -3,12 +3,11 @@ use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes::*;
 use crate::semantic::types;
 use crate::semantic::types::MonoType;
-use std::collections::BTreeMap;
+use crate::semantic::types::MonoTypeMap;
 use std::collections::HashMap;
 use std::result;
 
 pub type SemanticError = String;
-pub type SemanticMap<K, V> = BTreeMap<K, V>;
 pub type Result<T> = result::Result<T, SemanticError>;
 
 /// convert_with converts an AST package node to its semantic representation using
@@ -142,7 +141,6 @@ fn convert_builtin_statement(stmt: ast::BuiltinStmt, fresher: &mut Fresher) -> R
     })
 }
 
-pub type MonoTypeMap = SemanticMap<String, MonoType>;
 #[allow(unused)]
 fn convert_monotype(
     ty: ast::MonoType,
@@ -2899,6 +2897,46 @@ mod tests {
                 v: MonoType::Int,
             },
             tail: MonoType::Var(Tvar(0)),
+        }));
+        assert_eq!(want, got);
+    }
+    #[test]
+
+    fn test_convert_monotype_function() {
+        let b = ast::BaseNode::default();
+        let monotype_ex = ast::MonoType::Function(Box::new(ast::FunctionType {
+            base: b.clone(),
+            parameters: vec![ast::ParameterType::Optional {
+                base: b.clone(),
+                name: ast::Identifier {
+                    base: b.clone(),
+                    name: "A".to_string(),
+                },
+                monotype: ast::MonoType::Basic(ast::NamedType {
+                    base: b.clone(),
+                    name: ast::Identifier {
+                        base: b.clone(),
+                        name: "int".to_string(),
+                    },
+                }),
+            }],
+            monotype: ast::MonoType::Basic(ast::NamedType {
+                base: b.clone(),
+                name: ast::Identifier {
+                    base: b.clone(),
+                    name: "int".to_string(),
+                },
+            }),
+        }));
+        let mut m = HashMap::<String, types::Tvar>::new();
+        let got = convert_monotype(monotype_ex, &mut m, &mut fresh::Fresher::default()).unwrap();
+        let mut opt = MonoTypeMap::new();
+        opt.insert(String::from("A"), MonoType::Int);
+        let want = MonoType::Fun(Box::new(types::Function {
+            req: MonoTypeMap::new(),
+            opt: opt,
+            pipe: None,
+            retn: MonoType::Int,
         }));
         assert_eq!(want, got);
     }
