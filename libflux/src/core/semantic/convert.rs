@@ -1,7 +1,10 @@
 use crate::ast;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes::*;
+use crate::semantic::types;
 use crate::semantic::types::MonoType;
+use crate::semantic::types::MonoTypeMap;
+use std::collections::HashMap;
 use std::result;
 
 pub type SemanticError = String;
@@ -136,6 +139,98 @@ fn convert_builtin_statement(stmt: ast::BuiltinStmt, fresher: &mut Fresher) -> R
         loc: stmt.base.location,
         id: convert_identifier(stmt.id, fresher)?,
     })
+}
+
+#[allow(unused)]
+fn convert_monotype(
+    ty: ast::MonoType,
+    tvars: &mut HashMap<String, types::Tvar>,
+    f: &mut Fresher,
+) -> Result<MonoType> {
+    match ty {
+        ast::MonoType::Tvar(tv) => {
+            let tvar = tvars.entry(tv.name.name).or_insert_with(|| f.fresh());
+            Ok(MonoType::Var(*tvar))
+        }
+        ast::MonoType::Basic(basic) => match basic.name.name.as_str() {
+            "bool" => Ok(MonoType::Bool),
+            "int" => Ok(MonoType::Int),
+            "uint" => Ok(MonoType::Uint),
+            "float" => Ok(MonoType::Float),
+            "string" => Ok(MonoType::String),
+            "duration" => Ok(MonoType::Duration),
+            "time" => Ok(MonoType::Time),
+            "regexp" => Ok(MonoType::Regexp),
+            "bytes" => Ok(MonoType::Bytes),
+            _ => Err("invalid named type {}".to_string()),
+        },
+        ast::MonoType::Array(arr) => Ok(MonoType::Arr(Box::new(types::Array(convert_monotype(
+            arr.element,
+            tvars,
+            f,
+        )?)))),
+        ast::MonoType::Function(func) => {
+            let mut req = MonoTypeMap::new();
+            let mut opt = MonoTypeMap::new();
+            let mut _pipe = None;
+            let mut dirty = false;
+            for param in func.parameters {
+                match param {
+                    ast::ParameterType::Required { name, monotype, .. } => {
+                        req.insert(name.name, convert_monotype(monotype, tvars, f)?);
+                    }
+                    ast::ParameterType::Optional { name, monotype, .. } => {
+                        opt.insert(name.name, convert_monotype(monotype, tvars, f)?);
+                    }
+                    ast::ParameterType::Pipe { name, monotype, .. } => {
+                        if !dirty {
+                            _pipe = Some(types::Property {
+                                k: match name {
+                                    Some(n) => n.name,
+                                    None => String::from("<-"),
+                                },
+                                v: convert_monotype(monotype, tvars, f)?,
+                            });
+                            dirty = true;
+                        } else {
+                            return Err(
+                                "function types can have at most one pipe parameter".to_string()
+                            );
+                        }
+                    }
+                }
+            }
+            Ok(MonoType::Fun(Box::new(types::Function {
+                req,
+                opt,
+                pipe: _pipe,
+                retn: convert_monotype(func.monotype, tvars, f)?,
+            })))
+        }
+        ast::MonoType::Record(rec) => {
+            let mut r = match rec.tvar {
+                None => MonoType::Row(Box::new(types::Row::Empty)),
+                Some(id) => {
+                    let tv = ast::MonoType::Tvar(ast::TvarType {
+                        base: id.clone().base,
+                        name: id,
+                    });
+                    convert_monotype(tv, tvars, f)?
+                }
+            };
+            for prop in rec.properties {
+                let property = types::Property {
+                    k: prop.name.name,
+                    v: convert_monotype(prop.monotype, tvars, f)?,
+                };
+                r = MonoType::Row(Box::new(types::Row::Extension {
+                    head: property,
+                    tail: r,
+                }))
+            }
+            Ok(r)
+        }
+    }
 }
 
 fn convert_test_statement(stmt: ast::TestStmt, fresher: &mut Fresher) -> Result<TestStmt> {
@@ -2753,6 +2848,98 @@ mod tests {
         let want: Result<Package> =
             Err("BadExpression is not supported in semantic analysis".to_string());
         let got = test_convert(pkg);
+        assert_eq!(want, got);
+    }
+
+    #[test]
+    fn test_convert_monotype_int() {
+        let b = ast::BaseNode::default();
+        let monotype = ast::MonoType::Basic(ast::NamedType {
+            base: b.clone(),
+            name: ast::Identifier {
+                base: b.clone(),
+                name: "int".to_string(),
+            },
+        });
+        let mut m = HashMap::<String, types::Tvar>::new();
+        let got = convert_monotype(monotype, &mut m, &mut fresh::Fresher::default()).unwrap();
+        let want = MonoType::Int;
+        assert_eq!(want, got);
+    }
+
+    #[test]
+    fn test_convert_monotype_record() {
+        let b = ast::BaseNode::default();
+        let monotype = ast::MonoType::Record(ast::RecordType {
+            base: b.clone(),
+            tvar: Some(ast::Identifier {
+                base: b.clone(),
+                name: "A".to_string(),
+            }),
+            properties: vec![ast::PropertyType {
+                base: b.clone(),
+                name: ast::Identifier {
+                    base: b.clone(),
+                    name: "B".to_string(),
+                },
+                monotype: ast::MonoType::Basic(ast::NamedType {
+                    base: b.clone(),
+                    name: ast::Identifier {
+                        base: b.clone(),
+                        name: "int".to_string(),
+                    },
+                }),
+            }],
+        });
+        let mut m = HashMap::<String, types::Tvar>::new();
+        let got = convert_monotype(monotype, &mut m, &mut fresh::Fresher::default()).unwrap();
+        let want = MonoType::Row(Box::new(types::Row::Extension {
+            head: types::Property {
+                k: "B".to_string(),
+                v: MonoType::Int,
+            },
+            tail: MonoType::Var(Tvar(0)),
+        }));
+        assert_eq!(want, got);
+    }
+    #[test]
+
+    fn test_convert_monotype_function() {
+        let b = ast::BaseNode::default();
+        let monotype_ex = ast::MonoType::Function(Box::new(ast::FunctionType {
+            base: b.clone(),
+            parameters: vec![ast::ParameterType::Optional {
+                base: b.clone(),
+                name: ast::Identifier {
+                    base: b.clone(),
+                    name: "A".to_string(),
+                },
+                monotype: ast::MonoType::Basic(ast::NamedType {
+                    base: b.clone(),
+                    name: ast::Identifier {
+                        base: b.clone(),
+                        name: "int".to_string(),
+                    },
+                }),
+            }],
+            monotype: ast::MonoType::Basic(ast::NamedType {
+                base: b.clone(),
+                name: ast::Identifier {
+                    base: b.clone(),
+                    name: "int".to_string(),
+                },
+            }),
+        }));
+        let mut m = HashMap::<String, types::Tvar>::new();
+        let got = convert_monotype(monotype_ex, &mut m, &mut fresh::Fresher::default()).unwrap();
+        let mut opt = MonoTypeMap::new();
+        opt.insert(String::from("A"), MonoType::Int);
+        let want = MonoType::Fun(Box::new(types::Function {
+            req: MonoTypeMap::new(),
+            opt,
+            pipe: None,
+            retn: MonoType::Int,
+        }));
         assert_eq!(want, got);
     }
 }
