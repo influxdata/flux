@@ -3031,7 +3031,7 @@ mod tests {
                     },
                 }),
             })),
-            constraints: vec![TypeConstraint {
+            constraints: vec![ast::TypeConstraint {
                 base: b.clone(),
                 tvar: Identifier {
                     base: b.clone(),
@@ -3039,18 +3039,20 @@ mod tests {
                 },
                 kinds: vec![
                     Identifier {
-                        b.clone(),
+                        base: b.clone(),
                         name: "Addable".to_string(),
                     },
                 ]
             }],
         };
         let got = convert_polytype(type_exp, &mut fresh::Fresher::default()).unwrap();
-        vars = Vec<types::Tvar>>::new();
-        vars.push('A');
+        let vars = Vec::<types::Tvar>::new();
+        vars.push(types::Tvar(0));
         let mut cons = types::TvarKinds::new();
-        cons.insert(String::from("A"), types::Kinds::Addable);
-        let want = PolyType {
+        let mut kind_vector = Vec::<types::Kind>::new();
+        kind_vector.push(types::Kind::Addable);
+        cons.insert(String::from("A"), kind_vector);
+        let want = types::PolyType {
             vars,
             cons,
             expr: MonoType::Int,
