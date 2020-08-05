@@ -258,12 +258,17 @@ fn convert_polytype(
     let mut cons = SemanticMap::<types::Tvar, Vec<types::Kind>>::new();
 
     for c in type_expression.constraints {
-        if tvars.contains_key(c.tvar.name.as_str()) {
-            vars.push(match tvars.get(&c.tvar.name) {
-                Some(v) => *v,
-                None => {types::Tvar(0)} // never reached.
-            });
-        };
+        match tvars.remove(&c.tvar.name) {
+            None => {
+                return Err(format!(
+                    "type variable {} constrained but not used",
+                    &c.tvar.name
+                ));
+            }
+            Some(tv) => {
+                vars.push(tv);
+            }
+        }
         for v in &vars {
             let mut kinds = Vec::<types::Kind>::new();
             for k in &c.kinds {
