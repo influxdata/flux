@@ -3033,12 +3033,12 @@ mod tests {
             })),
             constraints: vec![ast::TypeConstraint {
                 base: b.clone(),
-                tvar: Identifier {
+                tvar: ast::Identifier {
                     base: b.clone(),
                     name: "A".to_string(),
                 },
                 kinds: vec![
-                    Identifier {
+                    ast::Identifier {
                         base: b.clone(),
                         name: "Addable".to_string(),
                     },
@@ -3051,7 +3051,7 @@ mod tests {
         let mut cons = types::TvarKinds::new();
         let mut kind_vector = Vec::<types::Kind>::new();
         kind_vector.push(types::Kind::Addable);
-        cons.insert(String::from("A"), kind_vector);
+        cons.insert(Tvar(A), kind_vector);
         let want = types::PolyType {
             vars,
             cons,
