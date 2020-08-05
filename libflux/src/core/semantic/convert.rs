@@ -3003,31 +3003,47 @@ mod tests {
 
     #[test]
     fn test_convert_polytype() {
-        // (A: int) => uint where A: Addable
+        // (A: T, B: S) => T where T: Addable, S: Divisible
         let b = ast::BaseNode::default();
         let type_exp = ast::TypeExpression {
             base: b.clone(),
             monotype: ast::MonoType::Function(Box::new(ast::FunctionType {
                 base: b.clone(),
-                parameters: vec![ast::ParameterType::Required {
-                    base: b.clone(),
-                    name: ast::Identifier {
-                        base: b.clone(),
-                        name: "A".to_string(),
-                    },
-                    monotype: ast::MonoType::Basic(ast::NamedType {
+                parameters: vec![
+                    ast::ParameterType::Required {
                         base: b.clone(),
                         name: ast::Identifier {
-                        base: b.clone(),
-                        name: "int".to_string(),
+                            base: b.clone(),
+                            name: "A".to_string(),
                         },
-                    }),
-                }],
-                monotype: ast::MonoType::Basic(ast::NamedType {
+                        monotype: ast::MonoType::Tvar(ast::TvarType {
+                            base: b.clone(),
+                            name: ast::Identifier {
+                                base: b.clone(),
+                                name: "T".to_string(),
+                            },
+                        }),
+                    },
+                    ast::ParameterType::Required {
+                        base: b.clone(),
+                        name: ast::Identifier {
+                            base: b.clone(),
+                            name: "B".to_string(),
+                        },
+                        monotype: ast::MonoType::Tvar(ast::TvarType {
+                            base: b.clone(),
+                            name: ast::Identifier {
+                                base: b.clone(),
+                                name: "S".to_string(),
+                            },
+                        }),
+                    },
+                ],
+                monotype: ast::MonoType::Tvar(ast::TvarType {
                     base: b.clone(),
                     name: ast::Identifier {
                         base: b.clone(),
-                        name: "uint".to_string(),
+                        name: "T".to_string(),
                     },
                 }),
             })),
@@ -3035,28 +3051,50 @@ mod tests {
                 base: b.clone(),
                 tvar: ast::Identifier {
                     base: b.clone(),
-                    name: "A".to_string(),
+                    name: "T".to_string(),
                 },
-                kinds: vec![
-                    ast::Identifier {
-                        base: b.clone(),
-                        name: "Addable".to_string(),
-                    },
-                ]
+                kinds: vec![ast::Identifier {
+                    base: b.clone(),
+                    name: "Addable".to_string(),
+                }],
+                },
+                ast::TypeConstraint {
+                base: b.clone(),
+                tvar: ast::Identifier {
+                    base: b.clone(),
+                    name: "S".to_string(),
+                },
+                kinds: vec![ast::Identifier {
+                    base: b.clone(),
+                    name: "Divisible".to_string(),
+                }]
             }],
         };
         let got = convert_polytype(type_exp, &mut fresh::Fresher::default()).unwrap();
-        let vars = Vec::<types::Tvar>::new();
+        let mut vars = Vec::<types::Tvar>::new();
         vars.push(types::Tvar(0));
+        vars.push(types::Tvar(1));
         let mut cons = types::TvarKinds::new();
-        let mut kind_vector = Vec::<types::Kind>::new();
-        kind_vector.push(types::Kind::Addable);
-        cons.insert(Tvar(A), kind_vector);
-        let want = types::PolyType {
-            vars,
-            cons,
-            expr: MonoType::Int,
-        };
+        let mut kind_vector_1 = Vec::<types::Kind>::new();
+        kind_vector_1.push(types::Kind::Addable);
+        cons.insert(types::Tvar(0), kind_vector_1);
+
+        let mut kind_vector_2 = Vec::<types::Kind>::new();
+        kind_vector_2.push(types::Kind::Divisible);
+        cons.insert(types::Tvar(1), kind_vector_2);
+
+        let mut req = MonoTypeMap::new();
+        req.insert("A".to_string(), MonoType::Var(Tvar(0)));
+        req.insert("B".to_string(), MonoType::Var(Tvar(1)));
+        let expr = MonoType::Fun(Box::new({
+            types::Function {
+                req,
+                opt: MonoTypeMap::new(),
+                pipe: None,
+                retn: MonoType::Var(Tvar(0)),
+            }
+        }));
+        let want = types::PolyType { vars, cons, expr };
         assert_eq!(want, got);
     }
 }
