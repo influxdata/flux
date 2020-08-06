@@ -239,19 +239,6 @@ fn convert_polytype(
     type_expression: ast::TypeExpression,
     f: &mut Fresher,
 ) -> Result<types::PolyType> {
-    // pub vars: Vec<Tvar>,
-    // pub cons: TvarKinds,
-    // pub expr: MonoType,
-    // ==
-    // pub base: BaseNode,
-    // pub monotype: MonoType,
-    // #[serde(skip_serializing_if = "Vec::is_empty")]
-    // pub constraints: Vec<TypeConstraint>,
-    // (a: T, b: T) => T where T: Addable + Divisible
-    //     |---------------|       |--------------------|
-    //     expr                       cons
-    //                         |  |-----|   |-------|
-    //                       var1  kind1      kind2
     let mut tvars = HashMap::<String, types::Tvar>::new();
     let mut expr = convert_monotype(type_expression.monotype, &mut tvars, f)?;
     let mut vars = Vec::<types::Tvar>::new();
@@ -267,28 +254,25 @@ fn convert_polytype(
             }
             Some(tv) => {
                 vars.push(tv);
-            }
-        }
-        for v in &vars {
-            let mut kinds = Vec::<types::Kind>::new();
-            for k in &c.kinds {
-                match k.name.as_str() {
-                    "Addable" => kinds.push(types::Kind::Addable),
-                    "Subtractable" => kinds.push(types::Kind::Subtractable),
-                    "Divisible" => kinds.push(types::Kind::Divisible),
-                    "Numeric" => kinds.push(types::Kind::Numeric),
-                    "Comparable" => kinds.push(types::Kind::Comparable),
-                    "Equatable" => kinds.push(types::Kind::Equatable),
-                    "Nullable" => kinds.push(types::Kind::Nullable),
-                    "Negatable" => kinds.push(types::Kind::Negatable),
-                    "Timeable" => kinds.push(types::Kind::Timeable),
-                    _ => {}
+                let mut kinds = Vec::<types::Kind>::new();
+                for k in &c.kinds {
+                    match k.name.as_str() {
+                        "Addable" => kinds.push(types::Kind::Addable),
+                        "Subtractable" => kinds.push(types::Kind::Subtractable),
+                        "Divisible" => kinds.push(types::Kind::Divisible),
+                        "Numeric" => kinds.push(types::Kind::Numeric),
+                        "Comparable" => kinds.push(types::Kind::Comparable),
+                        "Equatable" => kinds.push(types::Kind::Equatable),
+                        "Nullable" => kinds.push(types::Kind::Nullable),
+                        "Negatable" => kinds.push(types::Kind::Negatable),
+                        "Timeable" => kinds.push(types::Kind::Timeable),
+                        _ => {}
+                    }
                 }
+                cons.insert(tv, kinds);
             }
-            cons.insert(*v, kinds);
         }
     }
-
     Ok(types::PolyType { expr, cons, vars })
 }
 
@@ -3047,28 +3031,30 @@ mod tests {
                     },
                 }),
             })),
-            constraints: vec![ast::TypeConstraint {
-                base: b.clone(),
-                tvar: ast::Identifier {
+            constraints: vec![
+                ast::TypeConstraint {
                     base: b.clone(),
-                    name: "T".to_string(),
-                },
-                kinds: vec![ast::Identifier {
-                    base: b.clone(),
-                    name: "Addable".to_string(),
-                }],
+                    tvar: ast::Identifier {
+                        base: b.clone(),
+                        name: "T".to_string(),
+                    },
+                    kinds: vec![ast::Identifier {
+                        base: b.clone(),
+                        name: "Addable".to_string(),
+                    }],
                 },
                 ast::TypeConstraint {
-                base: b.clone(),
-                tvar: ast::Identifier {
                     base: b.clone(),
-                    name: "S".to_string(),
+                    tvar: ast::Identifier {
+                        base: b.clone(),
+                        name: "S".to_string(),
+                    },
+                    kinds: vec![ast::Identifier {
+                        base: b.clone(),
+                        name: "Divisible".to_string(),
+                    }],
                 },
-                kinds: vec![ast::Identifier {
-                    base: b.clone(),
-                    name: "Divisible".to_string(),
-                }]
-            }],
+            ],
         };
         let got = convert_polytype(type_exp, &mut fresh::Fresher::default()).unwrap();
         let mut vars = Vec::<types::Tvar>::new();
