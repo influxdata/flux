@@ -297,11 +297,11 @@ func TestMssqlTranslation(t *testing.T) {
 
 func TestBigQueryTranslation(t *testing.T) {
 	bigqueryTypeTranslations := map[string]flux.ColType{
-		"FLOAT64":       flux.TFloat,
-		"INT64":         flux.TInt,
-		"STRING":        flux.TString,
-		"TIMESTAMP":     flux.TTime,
-		"BOOL":          flux.TBool,
+		"FLOAT64":   flux.TFloat,
+		"INT64":     flux.TInt,
+		"STRING":    flux.TString,
+		"TIMESTAMP": flux.TTime,
+		"BOOL":      flux.TBool,
 	}
 
 	columnLabel := "apples"
