@@ -528,12 +528,15 @@ impl Parser {
     fn parse_builtin_statement(&mut self) -> Statement {
         let t = self.expect(TOK_BUILTIN);
         let id = self.parse_identifier();
+        self.expect(TOK_COLON);
+        let typ_expr = self.parse_type_expression();
         Statement::Builtin(Box::new(BuiltinStmt {
             base: self.base_node_from_other_end(&t, &id.base),
             id,
+            typ_expr,
         }))
     }
-    #[cfg(test)]
+
     fn parse_type_expression(&mut self) -> TypeExpression {
         let monotype = self.parse_monotype(); // monotype
         let t = self.peek();
@@ -551,7 +554,7 @@ impl Parser {
         }
     }
 
-    #[cfg(test)]
+
     fn parse_monotype(&mut self) -> MonoType {
         // Tvar | Basic | Array | Record | Function
         let t = self.peek();
@@ -569,7 +572,7 @@ impl Parser {
         }
     }
 
-    #[cfg(test)]
+
     fn parse_basic(&mut self) -> MonoType {
         let t = self.peek();
         MonoType::Basic(NamedType {
@@ -578,7 +581,7 @@ impl Parser {
         })
     }
 
-    #[cfg(test)]
+
     fn parse_tvar(&mut self) -> MonoType {
         let id = self.parse_identifier();
         MonoType::Tvar(TvarType {
@@ -587,7 +590,7 @@ impl Parser {
         })
     }
 
-    #[cfg(test)]
+
     fn parse_array(&mut self) -> MonoType {
         let start = self.expect(TOK_LBRACK);
         let mt = self.parse_monotype();
@@ -598,7 +601,7 @@ impl Parser {
         }));
     }
 
-    #[cfg(test)]
+
     // "(" [Parameters] ")" "=>" MonoType
     fn parse_function(&mut self) -> MonoType {
         let _lparen = self.expect(TOK_LPAREN);
@@ -620,7 +623,7 @@ impl Parser {
         }));
     }
 
-    #[cfg(test)]
+
     // Parameters = Parameter { "," Parameter } .
     fn parse_parameters(&mut self) -> Vec<ParameterType> {
         let mut params = Vec::<ParameterType>::new();
@@ -634,7 +637,7 @@ impl Parser {
         return params;
     }
 
-    #[cfg(test)]
+
     // (identifier | "?" identifier | "<-" identifier | "<-") ":" MonoType
     fn parse_parameter_type(&mut self) -> ParameterType {
         match self.peek().tok {
@@ -688,7 +691,7 @@ impl Parser {
         }
     }
 
-    #[cfg(test)]
+
     fn parse_constraints(&mut self) -> Vec<TypeConstraint> {
         let mut constraints = Vec::<TypeConstraint>::new();
         constraints.push(self.parse_constraint());
@@ -699,7 +702,7 @@ impl Parser {
         return constraints;
     }
 
-    #[cfg(test)]
+
     fn parse_constraint(&mut self) -> TypeConstraint {
         let mut id = Vec::<Identifier>::new();
         let _tvar = self.parse_identifier();
@@ -722,7 +725,7 @@ impl Parser {
     // Record = "{" [ Identifier (Suffix1 | Suffix2) ] "}"
     // Suffix1 = ":" MonoType { "," Property }
     // Suffix2 = "with" [Properties]
-    #[cfg(test)]
+
     fn parse_record(&mut self) -> MonoType {
         let start = self.open(TOK_LBRACE, TOK_RBRACE);
         let mut properties = Vec::new();
@@ -762,7 +765,7 @@ impl Parser {
             properties,
         })
     }
-    #[cfg(test)]
+
     fn parse_properties(&mut self) -> Vec<PropertyType> {
         let mut properties = Vec::<PropertyType>::new();
         properties.push(self.parse_property());
@@ -773,7 +776,7 @@ impl Parser {
         }
         properties
     }
-    #[cfg(test)]
+
     fn parse_property(&mut self) -> PropertyType {
         let identifier = self.parse_identifier(); // identifier
         self.expect(TOK_COLON); // :

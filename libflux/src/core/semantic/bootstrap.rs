@@ -390,7 +390,7 @@ mod tests {
         let b = r#"
             import "a"
 
-            builtin x
+            builtin x : int
 
             y = a.f(x: x)
         "#;

@@ -237,6 +237,65 @@ impl Formatter {
     fn format_builtin(&mut self, n: &ast::BuiltinStmt) {
         self.write_string("builtin ");
         self.format_identifier(&n.id);
+        self.write_string(" : ");
+        self.format_type_expression(&n.typ_expr);
+    }
+
+    fn format_type_expression(&mut self, n: &ast::TypeExpression){
+        self.format_monotype(&n.monotype);
+        if n.constraints.len() > 0 {
+            self.write_string(" where ");
+            self.format_constraints(&n.constraints);
+        }
+    }
+
+    fn format_monotype(&mut self, n: &ast::MonoType) {
+        match n {
+            ast::MonoType::Tvar(tv) => {self.format_tvar(tv)}
+            ast::MonoType::Basic(nt) => {self.format_basic(&nt)}
+            ast::MonoType::Array(arr) => {self.format_array(&*arr)}
+            // ast::MonoType::Record(rec) => {self.format_record(&rec)}
+            _ => {}
+        }
+    }
+
+    fn format_array(&mut self, n: &ast::ArrayType) {
+        self.write_string("[");
+        self.format_monotype(&n.element);
+        self.write_string("]");
+    }
+
+    fn format_basic(&mut self, n: &ast::NamedType){
+        self.format_identifier(&n.name);
+    }
+
+
+    fn format_constraints(&mut self, n: &Vec<ast::TypeConstraint>){
+        self.format_constraint(&n[0]);
+        for c in &n[1..] {
+            self.write_string(", ");
+            self.format_constraint(c);
+        }
+    }
+
+    // Constraint  = Tvar ":" Kinds .
+    fn format_constraint(&mut self, n: &ast::TypeConstraint) {
+        self.format_identifier(&n.tvar);
+        self.write_string(" : ");
+        self.format_kinds(&n.kinds);
+    }
+
+    // Kinds  = identifier { "+" identifier } .
+    fn format_kinds(&mut self, n: &Vec<ast::Identifier>) {
+        self.format_identifier(&n[0]);
+        for k in &n[1..] {
+            self.write_string(" + ");
+            self.format_identifier(&k);
+        }
+    }
+
+    fn format_tvar(&mut self, n: &ast::TvarType) {
+        self.format_identifier(&n.name);
     }
 
     fn format_property(&mut self, n: &ast::Property) {

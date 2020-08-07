@@ -570,9 +570,9 @@ j
 
 #[test]
 fn builtin() {
-    assert_unchanged("builtin foo");
+    assert_unchanged("builtin foo : [int]");
     assert_unchanged(
-        "builtin foo
+        "builtin foo : int
 
 x = 1",
     );
