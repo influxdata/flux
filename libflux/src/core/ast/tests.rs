@@ -15,7 +15,7 @@ import "my_other_pkg"
 import "yet_another_pkg"
 option now = () => (2030-01-01T00:00:00Z)
 option foo.bar = "baz"
-builtin foo
+builtin foo : int
 
 # // bad stmt
 
@@ -881,11 +881,22 @@ fn test_json_builtin_statement() {
             base: BaseNode::default(),
             name: "task".to_string(),
         },
+        typ_expr: TypeExpression {
+            base: BaseNode::default(),
+            monotype: MonoType::Basic(NamedType {
+                base: BaseNode::default(),
+                name: Identifier {
+                    base: BaseNode::default(),
+                    name: "int".to_string(),
+                },
+            }),
+            constraints: vec![],
+        }
     }));
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"type":"BuiltinStatement","id":{"name":"task"}}"#
+        r#"{"type":"BuiltinStatement","id":{"name":"task"},"typ_expr":{"monotype":{"type":"NamedType","name":{"name":"int"}},"constraints":[]}}"#
     );
     let deserialized: Statement = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
