@@ -571,6 +571,9 @@ j
 #[test]
 fn builtin() {
     assert_unchanged("builtin foo : [int]");
+    assert_unchanged("builtin foo : A");
+    assert_unchanged("builtin foo : (A: int, B: int) => int");
+    assert_unchanged("builtin foo : {A: int, B: int} where A: Addable, B: Divisible");
     assert_unchanged(
         "builtin foo : int
 
