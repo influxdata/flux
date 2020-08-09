@@ -1021,6 +1021,115 @@ func (l *DateTimeLiteral) MarshalJSON() ([]byte, error) {
 	return json.Marshal(raw)
 }
 
+// new types for builtin package
+func (nt *NamedType) MarshalJSON() ([]byte, error) {
+	type Alias NamedType
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  nt.Type(),
+		Alias: (*Alias)(nt),
+	}
+	return json.Marshal(raw)
+}
+
+func (tv *TvarType) MarshalJSON() ([]byte, error) {
+	type Alias TvarType
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  tv.Type(),
+		Alias: (*Alias)(tv),
+	}
+	return json.Marshal(raw)
+}
+
+func (arr *ArrayType) MarshalJSON() ([]byte, error) {
+	type Alias ArrayType
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  arr.Type(),
+		Alias: (*Alias)(arr),
+	}
+	return json.Marshal(raw)
+}
+
+func (rec *RecordType) MarshalJSON() ([]byte, error) {
+	type Alias RecordType
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  rec.Type(),
+		Alias: (*Alias)(rec),
+	}
+	return json.Marshal(raw)
+}
+
+func (fun *FunctionType) MarshalJSON() ([]byte, error) {
+	type Alias FunctionType
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  fun.Type(),
+		Alias: (*Alias)(fun),
+	}
+	return json.Marshal(raw)
+}
+
+func (prop *PropertyType) MarshalJSON() ([]byte, error) {
+	type Alias PropertyType
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  prop.Type(),
+		Alias: (*Alias)(prop),
+	}
+	return json.Marshal(raw)
+}
+
+func (param *ParameterType) MarshalJSON() ([]byte, error) {
+	type Alias ParameterType
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  param.Type(),
+		Alias: (*Alias)(param),
+	}
+	return json.Marshal(raw)
+}
+
+func (typ_con *TypeConstraint) MarshalJSON() ([]byte, error) {
+	type Alias TypeConstraint
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  typ_con.Type(),
+		Alias: (*Alias)(typ_con),
+	}
+	return json.Marshal(raw)
+}
+
+func (typ_expr *TypeExpression) MarshalJSON() ([]byte, error) {
+	type Alias TypeExpression
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  typ_expr.Type(),
+		Alias: (*Alias)(typ_expr),
+	}
+	return json.Marshal(raw)
+}
+
 func checkNullMsg(msg json.RawMessage) bool {
 	switch len(msg) {
 	case 0:
@@ -1121,6 +1230,24 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 
 	var node Node
 	switch typ.Type {
+	case "TypeExpression":
+		node = new(TypeExpression)
+	case "TypeConstraint":
+		node = new(TypeConstraint)
+	case "ParameterType":
+		node = new(ParameterType)
+	case "PropertyType":
+		node = new(PropertyType)
+	case "FunctionType":
+		node = new(FunctionType)
+	case "RecordType":
+		node = new(RecordType)
+	case "ArrayType":
+		node = new(ArrayType)
+	case "TvarType":
+		node = new(TvarType)
+	case "NamedType":
+		node = new(NamedType)
 	case "Package":
 		node = new(Package)
 	case "File":
