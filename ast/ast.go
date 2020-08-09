@@ -194,7 +194,10 @@ func (c *TypeConstraint) Copy() Node {
 	nc.BaseNode = c.BaseNode.Copy()
 
 	nc.Tvar = c.Tvar.Copy().(*Identifier)
-	nc.Kinds = c.Kinds.Copy().([]*Identifier)
+	//nc.Kinds = c.Kinds.Copy().([]*Identifier)
+	for k := range c.Kinds {
+		_ = append(nc.Kinds, c.Kinds[k])
+	}
 	return nc
 }
 
@@ -211,7 +214,10 @@ func (c *TypeExpression) Copy() Node {
 	nc.BaseNode = c.BaseNode.Copy()
 
 	nc.Ty = c.Ty.Copy().(MonoType)
-	nc.Constraints = c.Constraints.Copy().([]*TypeConstraint)
+	//nc.Constraints = c.Constraints.Copy().([]*TypeConstraint)
+	for cnstr := range c.Constraints {
+		_ = append(nc.Constraints, c.Constraints[cnstr])
+	}
 	return nc
 }
 
@@ -305,7 +311,10 @@ func (c *RecordType) Copy() Node {
 	*nc = *c
 	nc.BaseNode = c.BaseNode.Copy()
 
-	nc.Properties = c.Properties.Copy().([]*PropertyType)
+	//nc.Properties = c.Properties.Copy().([]*PropertyType)
+	for p := range c.Properties {
+		_ = append(nc.Properties, c.Properties[p])
+	}
 	nc.Tvar = c.Tvar.Copy().(*Identifier)
 	return nc
 }
@@ -351,7 +360,10 @@ func (c *FunctionType) Copy() Node {
 	*nc = *c
 	nc.BaseNode = c.BaseNode.Copy()
 
-	nc.Parameters = c.Parameters.Copy().([]*ParameterType)
+	//nc.Parameters = c.Parameters.Copy().([]*ParameterType)
+	for param := range c.Parameters {
+		_ = append(nc.Parameters, c.Parameters[param])
+	}
 	nc.Return = c.Return.Copy().(MonoType)
 	return nc
 }
@@ -381,7 +393,7 @@ func (c *ParameterType) Copy() Node {
 
 	nc.Name = c.Name.Copy().(*Identifier)
 	nc.Ty = c.Ty.Copy().(MonoType)
-	nc.Kind = c.Kind.Copy().(ParameterKind)
+	nc.Kind = c.Kind
 	return nc
 }
 
