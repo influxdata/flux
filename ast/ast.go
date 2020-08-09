@@ -4,6 +4,7 @@ package ast
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strconv"
 	"time"
@@ -204,7 +205,6 @@ func (c *TypeConstraint) Copy() Node {
 func (TypeExpression) Type() string {
 	return "TypeExpression"
 }
-
 func (c *TypeExpression) Copy() Node {
 	if c == nil {
 		return c
@@ -213,7 +213,8 @@ func (c *TypeExpression) Copy() Node {
 	*nc = *c
 	nc.BaseNode = c.BaseNode.Copy()
 
-	nc.Ty = c.Ty.Copy().(MonoType)
+	//nc.Ty = c.Ty.Copy().(MonoType)
+	nc.Ty = reflect.New(reflect.ValueOf(c.Ty).Elem().Type()).Interface().(MonoType)
 	//nc.Constraints = c.Constraints.Copy().([]*TypeConstraint)
 	for cnstr := range c.Constraints {
 		_ = append(nc.Constraints, c.Constraints[cnstr])
@@ -267,7 +268,6 @@ func (c *TvarType) Copy() Node {
 	nc.ID = c.ID.Copy().(*Identifier)
 	return nc
 }
-
 func (TvarType) Type() string {
 	return "TvarType"
 }
@@ -280,7 +280,6 @@ type ArrayType struct {
 func (ArrayType) Type() string {
 	return "ArrayType"
 }
-
 func (c *ArrayType) Copy() Node {
 	if c == nil {
 		return c
@@ -289,7 +288,9 @@ func (c *ArrayType) Copy() Node {
 	*nc = *c
 	nc.BaseNode = c.BaseNode.Copy()
 
-	nc.ElementType = c.ElementType.Copy().(*ArrayType)
+	//nc.ElementType = c.ElementType.Copy().(*ArrayType)
+	nc.ElementType = reflect.New(reflect.ValueOf(c.ElementType).Elem().Type()).Interface().(*ArrayType)
+
 	return nc
 }
 
@@ -302,7 +303,6 @@ type RecordType struct {
 func (RecordType) Type() string {
 	return "RecordType"
 }
-
 func (c *RecordType) Copy() Node {
 	if c == nil {
 		return c
@@ -328,7 +328,6 @@ type PropertyType struct {
 func (PropertyType) Type() string {
 	return "PropertyType"
 }
-
 func (c *PropertyType) Copy() Node {
 	if c == nil {
 		return c
@@ -338,7 +337,8 @@ func (c *PropertyType) Copy() Node {
 	nc.BaseNode = c.BaseNode.Copy()
 
 	nc.Name = c.Name.Copy().(*Identifier)
-	nc.Ty = c.Ty.Copy().(MonoType)
+	//nc.Ty = c.Ty.Copy().(MonoType)
+	nc.Ty = reflect.New(reflect.ValueOf(c.Ty).Elem().Type()).Interface().(MonoType)
 	return nc
 }
 
@@ -351,7 +351,6 @@ type FunctionType struct {
 func (FunctionType) Type() string {
 	return "FunctionType"
 }
-
 func (c *FunctionType) Copy() Node {
 	if c == nil {
 		return c
@@ -364,7 +363,9 @@ func (c *FunctionType) Copy() Node {
 	for param := range c.Parameters {
 		_ = append(nc.Parameters, c.Parameters[param])
 	}
-	nc.Return = c.Return.Copy().(MonoType)
+	//nc.Return = c.Return.Copy().(MonoType)
+	nc.Return = reflect.New(reflect.ValueOf(c.Return).Elem().Type()).Interface().(MonoType)
+
 	return nc
 }
 
@@ -392,11 +393,11 @@ func (c *ParameterType) Copy() Node {
 	nc.BaseNode = c.BaseNode.Copy()
 
 	nc.Name = c.Name.Copy().(*Identifier)
-	nc.Ty = c.Ty.Copy().(MonoType)
+	//nc.Ty = c.Ty.Copy().(MonoType)
+	nc.Ty = reflect.New(reflect.ValueOf(c.Ty).Elem().Type()).Interface().(MonoType)
 	nc.Kind = c.Kind
 	return nc
 }
-
 func (ParameterType) Type() string {
 	return "ParameterType"
 }
