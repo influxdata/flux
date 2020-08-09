@@ -1025,7 +1025,7 @@ func (l *DateTimeLiteral) MarshalJSON() ([]byte, error) {
 func (nt *NamedType) MarshalJSON() ([]byte, error) {
 	type Alias NamedType
 	raw := struct {
-		Type string `json:"type"`
+		Type string `json:"ty"`
 		*Alias
 	}{
 		Type:  nt.Type(),
@@ -1222,12 +1222,12 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 	type typeRawMessage struct {
 		Type string `json:"type"`
 	}
-
+	println(string(msg))
 	typ := typeRawMessage{}
 	if err := json.Unmarshal(msg, &typ); err != nil {
 		return nil, err
 	}
-
+	println(typ.Type)
 	var node Node
 	switch typ.Type {
 	case "TypeExpression":

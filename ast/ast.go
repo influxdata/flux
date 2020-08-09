@@ -173,14 +173,14 @@ func (e Error) Error() string {
 
 type TypeExpression struct {
 	BaseNode
-	Ty          MonoType
-	Constraints []*TypeConstraint
+	Ty          MonoType          `json:"ty"`
+	Constraints []*TypeConstraint `json:"constraints"`
 }
 
 type TypeConstraint struct {
 	BaseNode
-	Tvar  *Identifier
-	Kinds []*Identifier
+	Tvar  *Identifier   `json:"tvar"`
+	Kinds []*Identifier `json:"kinds"`
 }
 
 func (TypeConstraint) Type() string {
@@ -234,27 +234,27 @@ func (FunctionType) monotype() {}
 
 type NamedType struct {
 	BaseNode
-	ID *Identifier
+	ID *Identifier `json:"id"`
 }
 
 func (NamedType) Type() string {
 	return "NamedType"
 }
-func (c *NamedType) Copy() Node {
-	if c == nil {
-		return c
+func (nt *NamedType) Copy() Node {
+	if nt == nil {
+		return nt
 	}
 	nc := new(NamedType)
-	*nc = *c
-	nc.BaseNode = c.BaseNode.Copy()
+	*nc = *nt
+	nc.BaseNode = nt.BaseNode.Copy()
 
-	nc.ID = c.ID.Copy().(*Identifier)
+	nc.ID = nt.ID.Copy().(*Identifier)
 	return nc
 }
 
 type TvarType struct {
 	BaseNode
-	ID *Identifier
+	ID *Identifier `json:"id"`
 }
 
 func (c *TvarType) Copy() Node {
@@ -274,7 +274,7 @@ func (TvarType) Type() string {
 
 type ArrayType struct {
 	BaseNode
-	ElementType MonoType
+	ElementType MonoType `json:"elementType"`
 }
 
 func (ArrayType) Type() string {
@@ -296,8 +296,8 @@ func (c *ArrayType) Copy() Node {
 
 type RecordType struct {
 	BaseNode
-	Properties []*PropertyType
-	Tvar       *Identifier
+	Properties []*PropertyType `json:"properties"`
+	Tvar       *Identifier     `json:"tvar"`
 }
 
 func (RecordType) Type() string {
@@ -321,8 +321,8 @@ func (c *RecordType) Copy() Node {
 
 type PropertyType struct {
 	BaseNode
-	Name *Identifier
-	Ty   MonoType
+	Name *Identifier `json:"id"`
+	Ty   MonoType    `json:"ty"`
 }
 
 func (PropertyType) Type() string {
@@ -344,8 +344,8 @@ func (c *PropertyType) Copy() Node {
 
 type FunctionType struct {
 	BaseNode
-	Parameters []*ParameterType
-	Return     MonoType
+	Parameters []*ParameterType `json:"parameters"`
+	Return     MonoType         `json:"return"`
 }
 
 func (FunctionType) Type() string {
@@ -379,9 +379,9 @@ const (
 
 type ParameterType struct {
 	BaseNode
-	Name *Identifier
-	Ty   MonoType
-	Kind ParameterKind
+	Name *Identifier   `json:"name"`
+	Ty   MonoType      `json:"ty"`
+	Kind ParameterKind `json:"kind"`
 }
 
 func (c *ParameterType) Copy() Node {
@@ -657,7 +657,7 @@ type BuiltinStatement struct {
 	BaseNode
 	ID *Identifier `json:"id"`
 	// TODO(nathanielc): Add type expression here
-	// Type TypeExpression
+	Ty TypeExpression `json:"ty"`
 }
 
 // Type is the abstract type
