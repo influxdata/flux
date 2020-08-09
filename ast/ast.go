@@ -205,7 +205,6 @@ func (c *TypeConstraint) Copy() Node {
 func (TypeExpression) Type() string {
 	return "TypeExpression"
 }
-
 func (c *TypeExpression) Copy() Node {
 	if c == nil {
 		return c
@@ -269,7 +268,6 @@ func (c *TvarType) Copy() Node {
 	nc.ID = c.ID.Copy().(*Identifier)
 	return nc
 }
-
 func (TvarType) Type() string {
 	return "TvarType"
 }
@@ -282,7 +280,6 @@ type ArrayType struct {
 func (ArrayType) Type() string {
 	return "ArrayType"
 }
-
 func (c *ArrayType) Copy() Node {
 	if c == nil {
 		return c
@@ -306,7 +303,6 @@ type RecordType struct {
 func (RecordType) Type() string {
 	return "RecordType"
 }
-
 func (c *RecordType) Copy() Node {
 	if c == nil {
 		return c
@@ -332,7 +328,6 @@ type PropertyType struct {
 func (PropertyType) Type() string {
 	return "PropertyType"
 }
-
 func (c *PropertyType) Copy() Node {
 	if c == nil {
 		return c
@@ -356,7 +351,6 @@ type FunctionType struct {
 func (FunctionType) Type() string {
 	return "FunctionType"
 }
-
 func (c *FunctionType) Copy() Node {
 	if c == nil {
 		return c
@@ -404,7 +398,6 @@ func (c *ParameterType) Copy() Node {
 	nc.Kind = c.Kind
 	return nc
 }
-
 func (ParameterType) Type() string {
 	return "ParameterType"
 }
