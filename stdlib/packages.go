@@ -14,6 +14,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/date"
 	_ "github.com/influxdata/flux/stdlib/experimental"
 	_ "github.com/influxdata/flux/stdlib/experimental/aggregate"
+	_ "github.com/influxdata/flux/stdlib/experimental/array"
 	_ "github.com/influxdata/flux/stdlib/experimental/bigtable"
 	_ "github.com/influxdata/flux/stdlib/experimental/csv"
 	_ "github.com/influxdata/flux/stdlib/experimental/geo"

@@ -51,6 +51,9 @@ pub fn builtins() -> Builtins<'static> {
                  "nanosecond" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "truncate" => "forall [t0] where t0 : Timeable (t: t0, unit: duration) -> time",
             },
+            "experimental/array" => semantic_map! {
+                "from" => "forall [t0] where t0: Row (rows: [t0]) -> [t0]",
+            },
             "experimental/bigtable" => semantic_map! {
                      "from" => "forall [t0] where t0: Row (token: string, project: string, instance: string, table: string) -> [t0]",
             },
@@ -110,6 +113,7 @@ pub fn builtins() -> Builtins<'static> {
                  // https://github.com/influxdata/flux/issues/1660
                  "to" => "forall [t0] where t0: Row (<-tables: [t0], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) -> [t0]",
                  "join" => "forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (left: [t0], right: [t1], fn: (left: t0, right: t1) -> t2) -> [t2]",
+                 "table" => "forall [t0] where t0: Row (rows: [t0]) -> [t0]",
             },
             "generate" => semantic_map! {
                 "from" => "forall [t0] where t0: Timeable (start: t0, stop: t0, count: int, fn: (n: int) -> int) -> [{ _start: time | _stop: time | _time: time | _value:int }]",
