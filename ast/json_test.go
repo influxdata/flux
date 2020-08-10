@@ -189,6 +189,133 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"NamedType","id":{"type":"Identifier","name":"int"}}`,
 		},
 		{
+			name: "TvarType",
+			node: &ast.TvarType{
+				BaseNode: ast.BaseNode{},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{},
+					Name:     "A",
+				},
+			},
+			want: `{"type":"TvarType","id":{"type":"Identifier","name":"A"}}`,
+		},
+		{
+			name: "ArrayType",
+			node: &ast.ArrayType{
+				BaseNode: ast.BaseNode{},
+				ElementType: &ast.RecordType{
+					BaseNode: ast.BaseNode{},
+					Properties: []*ast.PropertyType{
+						{
+							BaseNode: ast.BaseNode{},
+							Name: &ast.Identifier{
+								BaseNode: ast.BaseNode{},
+								Name:     "A",
+							},
+							Ty: &ast.NamedType{
+								BaseNode: ast.BaseNode{},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{},
+									Name:     "int",
+								},
+							},
+						},
+					},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{},
+						Name:     "A",
+					},
+				},
+			},
+			want: `{"type":"ArrayType","elementType":{"type":"RecordType","properties":[{"type":"PropertyType","id":{"type":"Identifier","name":"A"},"ty":{"type":"NamedType","id":{"type":"Identifier","name":"int"}}}],"tvar":{"type":"Identifier","name":"A"}}}`,
+		},
+		{
+			name: "RecordType",
+			node: &ast.RecordType{
+				BaseNode: ast.BaseNode{},
+				Properties: []*ast.PropertyType{
+					{
+						BaseNode: ast.BaseNode{},
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "A",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{},
+								Name:     "int",
+							},
+						},
+					},
+				},
+				Tvar: &ast.Identifier{
+					BaseNode: ast.BaseNode{},
+					Name:     "A",
+				},
+			},
+			want: `{"type":"RecordType","properties":[{"type":"PropertyType","id":{"type":"Identifier","name":"A"},"ty":{"type":"NamedType","id":{"type":"Identifier","name":"int"}}}],"tvar":{"type":"Identifier","name":"A"}}`,
+		},
+		{
+			name: "FunctionType",
+			node: &ast.FunctionType{
+				BaseNode: ast.BaseNode{},
+				Parameters: []*ast.ParameterType{
+					{
+						BaseNode: ast.BaseNode{},
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "A",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{},
+								Name:     "int",
+							},
+						},
+						Kind: 0},
+					{
+						BaseNode: ast.BaseNode{},
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "B",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{},
+								Name:     "uint",
+							},
+						},
+						Kind: 1},
+					{
+						BaseNode: ast.BaseNode{},
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "C",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{},
+								Name:     "string",
+							},
+						},
+						Kind: 2},
+				},
+				Return: &ast.TvarType{
+					BaseNode: ast.BaseNode{},
+					ID: &ast.Identifier{
+						BaseNode: ast.BaseNode{},
+						Name:     "A",
+					},
+				},
+			},
+			want: `{"type":"FunctionType","parameters":[{"type":"ParameterType","name":{"type":"Identifier","name":"A"},"ty":{"type":"NamedType","id":{"type":"Identifier","name":"int"}},"kind":0},{"type":"ParameterType","name":{"type":"Identifier","name":"B"},"ty":{"type":"NamedType","id":{"type":"Identifier","name":"uint"}},"kind":1},{"type":"ParameterType","name":{"type":"Identifier","name":"C"},"ty":{"type":"NamedType","id":{"type":"Identifier","name":"string"}},"kind":2}],"return":{"type":"TvarType","id":{"type":"Identifier","name":"A"}}}`,
+		},
+
+		{
 			name: "TypeExpression",
 			node: &ast.TypeExpression{
 				BaseNode: ast.BaseNode{},
