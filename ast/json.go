@@ -853,7 +853,6 @@ func (i *Identifier) MarshalJSON() ([]byte, error) {
 	return json.Marshal(raw)
 }
 func (i *Identifier) UnmarshalJSON(data []byte) error {
-	println("DEBUG : ", "UnmarshalJSON Identifier called")
 	type Alias Identifier
 	raw := struct {
 		*Alias
@@ -865,6 +864,7 @@ func (i *Identifier) UnmarshalJSON(data []byte) error {
 	if raw.Alias != nil {
 		*i = *(*Identifier)(raw.Alias)
 	}
+	i.Name = raw.Name
 	return nil
 }
 func (p *PipeLiteral) MarshalJSON() ([]byte, error) {
@@ -1038,7 +1038,6 @@ func (l *DateTimeLiteral) MarshalJSON() ([]byte, error) {
 
 // new types for builtin package
 func (nt NamedType) MarshalJSON() ([]byte, error) {
-	println("DEBUG : ", "MarshalJSON NamedType called")
 	type Alias NamedType
 	raw := struct {
 		Type string `json:"type"`
@@ -1048,7 +1047,6 @@ func (nt NamedType) MarshalJSON() ([]byte, error) {
 		Alias: (Alias)(nt),
 	}
 	ret, err := json.Marshal(raw)
-	println(string(ret))
 	return ret, err
 }
 
@@ -1064,6 +1062,7 @@ func (nt *NamedType) UnmarshalJSON(data []byte) error {
 	if raw.Alias != nil {
 		*nt = *(*NamedType)(raw.Alias)
 	}
+	nt.ID = raw.ID
 	return nil
 }
 
@@ -1150,6 +1149,20 @@ func (typ_con TypeConstraint) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
+func (typ_expr *TypeConstraint) UnmarshalJSON(data []byte) error {
+	type Alias TypeConstraint
+	raw := struct {
+		*Alias
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*typ_expr = *(*TypeConstraint)(raw.Alias)
+	}
+
+	return nil
+}
 
 func (typ_expr TypeExpression) MarshalJSON() ([]byte, error) {
 	type Alias TypeExpression
@@ -1167,8 +1180,7 @@ func (typ_expr *TypeExpression) UnmarshalJSON(data []byte) error {
 	type Alias TypeExpression
 	raw := struct {
 		*Alias
-		Ty          json.RawMessage   `json:"ty"`
-		Constraints []*TypeConstraint `json:"constraints"`
+		Ty json.RawMessage `json:"ty"`
 	}{}
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
@@ -1184,6 +1196,16 @@ func (typ_expr *TypeExpression) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func checkNullMsg(msg json.RawMessage) bool {
+	switch len(msg) {
+	case 0:
+		return true
+	case 4:
+		return string(msg) == "null"
+	default:
+		return false
+	}
+}
 func unmarshalMonotype(msg json.RawMessage) (MonoType, error) {
 	if checkNullMsg(msg) {
 		return nil, nil
@@ -1197,17 +1219,6 @@ func unmarshalMonotype(msg json.RawMessage) (MonoType, error) {
 		return nil, fmt.Errorf("node %q is not a monotype", n.Type())
 	}
 	return s, nil
-}
-
-func checkNullMsg(msg json.RawMessage) bool {
-	switch len(msg) {
-	case 0:
-		return true
-	case 4:
-		return string(msg) == "null"
-	default:
-		return false
-	}
 }
 func unmarshalStatement(msg json.RawMessage) (Statement, error) {
 	if checkNullMsg(msg) {
