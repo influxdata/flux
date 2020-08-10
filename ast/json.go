@@ -1022,110 +1022,111 @@ func (l *DateTimeLiteral) MarshalJSON() ([]byte, error) {
 }
 
 // new types for builtin package
-func (nt *NamedType) MarshalJSON() ([]byte, error) {
+func (nt NamedType) MarshalJSON() ([]byte, error) {
+	println("DEBUG : ", "MarshalJSON NamedType called")
 	type Alias NamedType
 	raw := struct {
-		Type string `json:"ty"`
-		*Alias
+		Type string `json:"type"`
+		Alias
 	}{
 		Type:  nt.Type(),
-		Alias: (*Alias)(nt),
+		Alias: (Alias)(nt),
 	}
 	return json.Marshal(raw)
 }
 
-func (tv *TvarType) MarshalJSON() ([]byte, error) {
+func (tv TvarType) MarshalJSON() ([]byte, error) {
 	type Alias TvarType
 	raw := struct {
 		Type string `json:"type"`
-		*Alias
+		Alias
 	}{
 		Type:  tv.Type(),
-		Alias: (*Alias)(tv),
+		Alias: (Alias)(tv),
 	}
 	return json.Marshal(raw)
 }
 
-func (arr *ArrayType) MarshalJSON() ([]byte, error) {
+func (arr ArrayType) MarshalJSON() ([]byte, error) {
 	type Alias ArrayType
 	raw := struct {
 		Type string `json:"type"`
-		*Alias
+		Alias
 	}{
 		Type:  arr.Type(),
-		Alias: (*Alias)(arr),
+		Alias: (Alias)(arr),
 	}
 	return json.Marshal(raw)
 }
 
-func (rec *RecordType) MarshalJSON() ([]byte, error) {
+func (rec RecordType) MarshalJSON() ([]byte, error) {
 	type Alias RecordType
 	raw := struct {
 		Type string `json:"type"`
-		*Alias
+		Alias
 	}{
 		Type:  rec.Type(),
-		Alias: (*Alias)(rec),
+		Alias: (Alias)(rec),
 	}
 	return json.Marshal(raw)
 }
 
-func (fun *FunctionType) MarshalJSON() ([]byte, error) {
+func (fun FunctionType) MarshalJSON() ([]byte, error) {
 	type Alias FunctionType
 	raw := struct {
 		Type string `json:"type"`
-		*Alias
+		Alias
 	}{
 		Type:  fun.Type(),
-		Alias: (*Alias)(fun),
+		Alias: (Alias)(fun),
 	}
 	return json.Marshal(raw)
 }
 
-func (prop *PropertyType) MarshalJSON() ([]byte, error) {
+func (prop PropertyType) MarshalJSON() ([]byte, error) {
 	type Alias PropertyType
 	raw := struct {
 		Type string `json:"type"`
-		*Alias
+		Alias
 	}{
 		Type:  prop.Type(),
-		Alias: (*Alias)(prop),
+		Alias: (Alias)(prop),
 	}
 	return json.Marshal(raw)
 }
 
-func (param *ParameterType) MarshalJSON() ([]byte, error) {
+func (param ParameterType) MarshalJSON() ([]byte, error) {
 	type Alias ParameterType
 	raw := struct {
 		Type string `json:"type"`
-		*Alias
+		Alias
 	}{
 		Type:  param.Type(),
-		Alias: (*Alias)(param),
+		Alias: (Alias)(param),
 	}
 	return json.Marshal(raw)
 }
 
-func (typ_con *TypeConstraint) MarshalJSON() ([]byte, error) {
+func (typ_con TypeConstraint) MarshalJSON() ([]byte, error) {
 	type Alias TypeConstraint
 	raw := struct {
 		Type string `json:"type"`
-		*Alias
+		Alias
 	}{
 		Type:  typ_con.Type(),
-		Alias: (*Alias)(typ_con),
+		Alias: (Alias)(typ_con),
 	}
 	return json.Marshal(raw)
 }
 
-func (typ_expr *TypeExpression) MarshalJSON() ([]byte, error) {
+func (typ_expr TypeExpression) MarshalJSON() ([]byte, error) {
 	type Alias TypeExpression
 	raw := struct {
 		Type string `json:"type"`
-		*Alias
+		Alias
 	}{
 		Type:  typ_expr.Type(),
-		Alias: (*Alias)(typ_expr),
+		Alias: (Alias)(typ_expr),
 	}
 	return json.Marshal(raw)
 }
