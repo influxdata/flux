@@ -75,10 +75,10 @@ func (c TypeConstraint) FromBuf(buf *fbast.TypeConstraint) *TypeConstraint {
 	return &c
 }
 
-func (t NamedType) FromBuf(buf *fbast.NamedType) *NamedType {
-	t.BaseNode.FromBuf(buf.BaseNode(nil))
-	t.ID = Identifier{}.FromBuf(buf.Id(nil))
-	return &t
+func (nt NamedType) FromBuf(buf *fbast.NamedType) *NamedType {
+	nt.BaseNode.FromBuf(buf.BaseNode(nil))
+	nt.ID = Identifier{}.FromBuf(buf.Id(nil))
+	return &nt
 }
 
 func (t TvarType) FromBuf(buf *fbast.TvarType) *TvarType {
