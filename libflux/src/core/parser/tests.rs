@@ -1,6 +1,9 @@
 use super::*;
 use crate::ast;
 
+use crate::ast::Expression::{Array, Member};
+use crate::ast::Statement::Variable;
+use crate::ast::StringExprPart::{Interpolated, Text};
 use chrono;
 use pretty_assertions::assert_eq;
 
@@ -111,6 +114,126 @@ fn string_interpolation_simple() {
             })),],
             eof: None,
         },
+    )
+}
+
+#[test]
+fn string_interpolation_array() {
+    let mut p = Parser::new(r#"a = ["influx", "test", "InfluxOfflineTimeAlert", "acu:${r.a}"]"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 63),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Variable(Box::new(VariableAssgn {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 63),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 2),
+                        ..BaseNode::default()
+                    },
+                    name: "a".to_string(),
+                },
+                init: Array(Box::new(ArrayExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 5, 1, 63),
+                        ..BaseNode::default()
+                    },
+                    lbrack: None,
+                    elements: vec![
+                        ArrayItem {
+                            expression: Expression::StringLit(StringLit {
+                                base: BaseNode {
+                                    location: loc.get(1, 6, 1, 14),
+                                    ..BaseNode::default()
+                                },
+                                value: "influx".to_string(),
+                            }),
+                            comma: None,
+                        },
+                        ArrayItem {
+                            expression: Expression::StringLit(StringLit {
+                                base: BaseNode {
+                                    location: loc.get(1, 16, 1, 22),
+                                    ..BaseNode::default()
+                                },
+                                value: "test".to_string(),
+                            }),
+                            comma: None,
+                        },
+                        ArrayItem {
+                            expression: Expression::StringLit(StringLit {
+                                base: BaseNode {
+                                    location: loc.get(1, 24, 1, 48),
+                                    ..BaseNode::default()
+                                },
+                                value: "InfluxOfflineTimeAlert".to_string(),
+                            }),
+                            comma: None,
+                        },
+                        ArrayItem {
+                            expression: Expression::StringExpr(Box::new(StringExpr {
+                                base: BaseNode {
+                                    location: loc.get(1, 50, 1, 62),
+                                    ..BaseNode::default()
+                                },
+                                parts: vec![
+                                    Text(TextPart {
+                                        base: BaseNode {
+                                            location: loc.get(1, 51, 1, 55),
+                                            ..BaseNode::default()
+                                        },
+                                        value: "acu:".to_string(),
+                                    }),
+                                    Interpolated(InterpolatedPart {
+                                        base: BaseNode {
+                                            location: loc.get(1, 55, 1, 61),
+                                            ..BaseNode::default()
+                                        },
+                                        expression: Member(Box::new(MemberExpr {
+                                            base: BaseNode {
+                                                location: loc.get(1, 57, 1, 60),
+                                                ..BaseNode::default()
+                                            },
+                                            object: Expression::Identifier(Identifier {
+                                                base: BaseNode {
+                                                    location: loc.get(1, 57, 1, 58),
+                                                    ..BaseNode::default()
+                                                },
+                                                name: "r".to_string(),
+                                            }),
+                                            lbrack: None,
+                                            property: PropertyKey::Identifier(Identifier {
+                                                base: BaseNode {
+                                                    location: loc.get(1, 59, 1, 60),
+                                                    ..BaseNode::default()
+                                                },
+                                                name: "a".to_string(),
+                                            }),
+                                            rbrack: None,
+                                        })),
+                                    }),
+                                ],
+                            }),),
+                            comma: None,
+                        },
+                    ],
+                    rbrack: None,
+                },)),
+            }),),],
+            eof: None,
+        }
     )
 }
 

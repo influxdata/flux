@@ -917,7 +917,7 @@ impl Parser {
             match self.peek().tok {
                 TOK_IDENT | TOK_INT | TOK_FLOAT | TOK_STRING | TOK_TIME | TOK_DURATION
                 | TOK_PIPE_RECEIVE | TOK_LPAREN | TOK_LBRACK | TOK_LBRACE | TOK_ADD | TOK_SUB
-                | TOK_DIV | TOK_NOT | TOK_EXISTS => {
+                | TOK_DIV | TOK_NOT | TOK_EXISTS | TOK_QUOTE => {
                     let mut comments = None;
                     let expr = self.parse_expression();
                     if self.peek().tok == TOK_COMMA {
