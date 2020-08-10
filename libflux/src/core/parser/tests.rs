@@ -1151,7 +1151,7 @@ fn qualified_option() {
 
 #[test]
 fn builtin() {
-    let mut p = Parser::new(r#"builtin from"#);
+    let mut p = Parser::new(r#"builtin from : int"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -1177,6 +1177,26 @@ fn builtin() {
                     },
                     name: "from".to_string()
                 },
+                typ_expr: TypeExpression{
+                    base:  BaseNode {
+                        location: loc.get(1, 16, 1, 19),
+                        ..BaseNode::default()
+                    },
+                    monotype: MonoType::Basic(NamedType{
+                        base: BaseNode {
+                            location: loc.get(1, 16, 1, 19),
+                            ..BaseNode::default()
+                        },
+                        name: Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 16, 1, 19),
+                                ..BaseNode::default()
+                            },
+                            name: "int".to_string()
+                        },
+                    }),
+                    constraints: vec![]
+                }
             }))],
             eof: None,
         },

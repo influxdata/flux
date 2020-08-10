@@ -492,6 +492,7 @@ pub struct BuiltinStmt {
     #[serde(flatten)]
     pub base: BaseNode,
     pub id: Identifier,
+    pub typ_expr: TypeExpression
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -595,7 +596,6 @@ pub struct TypeExpression {
     #[serde(flatten)]
     pub base: BaseNode,
     pub monotype: MonoType,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub constraints: Vec<TypeConstraint>,
 }
 

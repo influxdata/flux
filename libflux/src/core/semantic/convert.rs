@@ -139,6 +139,7 @@ fn convert_builtin_statement(stmt: ast::BuiltinStmt, fresher: &mut Fresher) -> R
     Ok(BuiltinStmt {
         loc: stmt.base.location,
         id: convert_identifier(stmt.id, fresher)?,
+        typ_expr: convert_polytype(stmt.typ_expr, fresher)?
     })
 }
 
@@ -163,7 +164,7 @@ fn convert_monotype(
             "time" => Ok(MonoType::Time),
             "regexp" => Ok(MonoType::Regexp),
             "bytes" => Ok(MonoType::Bytes),
-            _ => Err("invalid named type {}".to_string()),
+            _ => Err(format!("invalid named type {}", basic.name.name.as_str()).to_string()),
         },
         ast::MonoType::Array(arr) => Ok(MonoType::Arr(Box::new(types::Array(convert_monotype(
             arr.element,

@@ -19,7 +19,7 @@ import other "my_other_pkg"
 import "yet_another_pkg"
 option now = () => (2030-01-01T00:00:00Z)
 option foo.bar = "baz"
-builtin foo
+builtin foo : int
 
 test aggregate_window_empty = () => ({
     input: testing.loadStorage(csv: inData),
