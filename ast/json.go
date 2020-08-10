@@ -181,7 +181,6 @@ func (s *ReturnStatement) UnmarshalJSON(data []byte) error {
 	s.Argument = e
 	return nil
 }
-
 func (s *OptionStatement) MarshalJSON() ([]byte, error) {
 	type Alias OptionStatement
 	raw := struct {
@@ -1049,7 +1048,6 @@ func (nt NamedType) MarshalJSON() ([]byte, error) {
 	ret, err := json.Marshal(raw)
 	return ret, err
 }
-
 func (nt *NamedType) UnmarshalJSON(data []byte) error {
 	type Alias NamedType
 	raw := struct {
@@ -1251,7 +1249,6 @@ func (typ_expr TypeExpression) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
-
 func (typ_expr *TypeExpression) UnmarshalJSON(data []byte) error {
 	type Alias TypeExpression
 	raw := struct {
