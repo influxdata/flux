@@ -8,6 +8,7 @@ import (
 	date "github.com/influxdata/flux/stdlib/date"
 	experimental "github.com/influxdata/flux/stdlib/experimental"
 	aggregate "github.com/influxdata/flux/stdlib/experimental/aggregate"
+	array "github.com/influxdata/flux/stdlib/experimental/array"
 	geo "github.com/influxdata/flux/stdlib/experimental/geo"
 	json "github.com/influxdata/flux/stdlib/experimental/json"
 	http "github.com/influxdata/flux/stdlib/http"
@@ -34,6 +35,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, date.FluxTestPackages...)
 	pkgs = append(pkgs, experimental.FluxTestPackages...)
 	pkgs = append(pkgs, aggregate.FluxTestPackages...)
+	pkgs = append(pkgs, array.FluxTestPackages...)
 	pkgs = append(pkgs, geo.FluxTestPackages...)
 	pkgs = append(pkgs, json.FluxTestPackages...)
 	pkgs = append(pkgs, http.FluxTestPackages...)
