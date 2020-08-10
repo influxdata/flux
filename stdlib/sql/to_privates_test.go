@@ -9,9 +9,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 )
 
-// represents unsupported type
-var unsupportedType flux.ColType = 666
-
 // additional and seperate tests that can be run without needing functions to be Exported in sql, just to be testable
 func TestCorrectBatchSize(t *testing.T) {
 	// given the combination of row width and supplied batchSize argument from user, verify that it is modified as required
@@ -78,13 +75,6 @@ func TestTranslationDriverReturn(t *testing.T) {
 
 	// verify that valid returns expected happiness for Mssql
 	_, err = getTranslationFunc("sqlserver")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
-
-	// verify that valid returns expected happiness for BigQuery
-	_, err = getTranslationFunc("bigquery")
 	if !cmp.Equal(nil, err) {
 		t.Log(cmp.Diff(nil, err))
 		t.Fail()
@@ -159,17 +149,6 @@ func TestPostgresTranslation(t *testing.T) {
 			t.Fail()
 		}
 	}
-
-	// test no match
-	_, err = sqlT()(unsupportedType, columnLabel)
-	if cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
-	if !cmp.Equal("PostgreSQL does not support column type unknown", err.Error()) {
-		t.Log(cmp.Diff("PostgreSQL does not support column type unknown", err.Error()))
-		t.Fail()
-	}
 }
 
 func TestMysqlTranslation(t *testing.T) {
@@ -199,17 +178,6 @@ func TestMysqlTranslation(t *testing.T) {
 			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
 			t.Fail()
 		}
-	}
-
-	// test no match
-	_, err = sqlT()(unsupportedType, columnLabel)
-	if cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
-	if !cmp.Equal("MySQL does not support column type unknown", err.Error()) {
-		t.Log(cmp.Diff("MySQL does not support column type unknown", err.Error()))
-		t.Fail()
 	}
 }
 
@@ -241,17 +209,6 @@ func TestSnowflakeTranslation(t *testing.T) {
 			t.Fail()
 		}
 	}
-
-	// test no match
-	_, err = sqlT()(unsupportedType, columnLabel)
-	if cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
-	if !cmp.Equal("Snowflake does not support column type unknown", err.Error()) {
-		t.Log(cmp.Diff("Snowflake does not support column type unknown", err.Error()))
-		t.Fail()
-	}
 }
 
 func TestMssqlTranslation(t *testing.T) {
@@ -281,57 +238,5 @@ func TestMssqlTranslation(t *testing.T) {
 			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
 			t.Fail()
 		}
-	}
-
-	// test no match
-	_, err = sqlT()(unsupportedType, columnLabel)
-	if cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
-	if !cmp.Equal("SQLServer does not support column type unknown", err.Error()) {
-		t.Log(cmp.Diff("SQLServer does not support column type unknown", err.Error()))
-		t.Fail()
-	}
-}
-
-func TestBigQueryTranslation(t *testing.T) {
-	bigqueryTypeTranslations := map[string]flux.ColType{
-		"FLOAT64":   flux.TFloat,
-		"INT64":     flux.TInt,
-		"STRING":    flux.TString,
-		"TIMESTAMP": flux.TTime,
-		"BOOL":      flux.TBool,
-	}
-
-	columnLabel := "apples"
-	// verify that valid returns expected happiness for bigquery
-	sqlT, err := getTranslationFunc("bigquery")
-	if !cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
-
-	for dbTypeString, fluxType := range bigqueryTypeTranslations {
-		v, err := sqlT()(fluxType, columnLabel)
-		if !cmp.Equal(nil, err) {
-			t.Log(cmp.Diff(nil, err))
-			t.Fail()
-		}
-		if !cmp.Equal(columnLabel+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
-			t.Fail()
-		}
-	}
-
-	// test no match
-	_, err = sqlT()(unsupportedType, columnLabel)
-	if cmp.Equal(nil, err) {
-		t.Log(cmp.Diff(nil, err))
-		t.Fail()
-	}
-	if !cmp.Equal("BigQuery does not support column type unknown", err.Error()) {
-		t.Log(cmp.Diff("BigQuery does not support column type unknown", err.Error()))
-		t.Fail()
 	}
 }
