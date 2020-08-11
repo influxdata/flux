@@ -183,6 +183,7 @@ limitFloat = (value) =>
 
 t_stDistanceLinestring = (table=<-) =>
   table
+    |> range(start: 2020-04-01T00:00:00Z)
     |> v1.fieldsAsCols()
     |> geo.asTracks(groupBy: ["id","trip_id"]) // optional but it helps to see the train closing in
     |> geo.ST_LineString()

@@ -49,6 +49,7 @@ limitFloat = (value) =>
 
 t_stDistanceInMiles = (table=<-) =>
   table
+    |> range(start: 2020-04-01T00:00:00Z)
     |> v1.fieldsAsCols()
     |> map(fn: (r) => ({
       r with _st_distance: limitFloat(value: geo.ST_Distance(region: refPoint, geometry: {lat: r.lat, lon: r.lon}))
