@@ -54,34 +54,6 @@ func TestFrom_NewQuery(t *testing.T) {
 			},
 		},
 		{
-			Name: "from with int",
-			Raw: ` import "generate"
-					generate.from(start: 0, stop: 1, count: 10, fn: (n) => n)`,
-
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID: "fromGenerator0",
-						Spec: &generate.FromGeneratorOpSpec{
-							Start: flux.Time{
-								IsRelative: false,
-								Absolute:   time.Unix(0, 0),
-							},
-							Stop: flux.Time{
-								IsRelative: false,
-								Absolute:   time.Unix(1, 0),
-							},
-							Count: 10,
-							Fn: interpreter.ResolvedFunction{
-								Fn:    executetest.FunctionExpression(t, `(n) => n`),
-								Scope: scope,
-							},
-						},
-					},
-				},
-			},
-		},
-		{
 			Name: "from with time",
 			Raw: ` import "generate"
 					generate.from(start: 2030-01-01T00:00:00Z, stop: 2030-01-01T00:00:01Z, count: 10, fn: (n) => n)`,
