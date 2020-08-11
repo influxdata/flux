@@ -24,7 +24,6 @@ import (
 // * TIMESTAMP does not TZ info stored, but:
 //   - it is "strongly discouraged" to store data in local time zone: https://blogs.sap.com/2018/03/28/trouble-with-time/
 //   - more on timestamps in HDB: https://help.sap.com/viewer/f1b440ded6144a54ada97ff95dac7adf/2.4/en-US/a394f75dcbe64b42b7a887231af8f15f.html
-//   - the driver does is not capable of converting date- or time-formatted strings to time.Time when inserting to DATE or TIME columns
 //   Therefore TIMESTAMP is mapped to TTime and vice-versa here.
 // * the hdb driver is rather strict, eg. does not convert date- or time-formatted string values to time.Time,
 //   or float64 to Decimal on its own and just throws "unsupported conversion" error
