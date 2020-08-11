@@ -616,7 +616,7 @@ func TestHdbParsing(t *testing.T) {
 		},
 		{
 			name:       "timestamp",
-			columnName: "timestamp",
+			columnName: "_timestamp",
 			data:       mockRowsToSQLRows(sqlmock.NewRows([]string{"column"}).AddRow(createTestTimes()[0].(time.Time)).AddRow(createTestTimes()[1].(time.Time)).AddRow(createTestTimes()[2].(time.Time)).AddRow(createTestTimes()[3].(time.Time)).AddRow(createTestTimes()[4].(time.Time))),
 			want: [][]values.Value{
 				{values.NewTime(values.ConvertTime(createTestTimes()[0].(time.Time)))},
