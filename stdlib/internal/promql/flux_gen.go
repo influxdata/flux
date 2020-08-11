@@ -66,6 +66,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "changes",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -99,6 +107,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "promqlDayOfMonth",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -134,6 +150,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "promqlDayOfWeek",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -167,6 +191,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "promqlDaysInMonth",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -202,6 +234,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "emptyTable",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -235,6 +275,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "extrapolatedRate",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -270,6 +318,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "holtWinters",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -303,6 +359,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "promqlHour",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -338,6 +402,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "instantRate",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -371,6 +443,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "labelReplace",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -406,6 +486,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "linearRegression",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -439,6 +527,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "promqlMinute",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -474,6 +570,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "promqlMonth",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -507,6 +611,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "promHistogramQuantile",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -542,6 +654,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "resets",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -576,6 +696,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "timestamp",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -609,6 +737,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "promqlYear",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{

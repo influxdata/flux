@@ -66,6 +66,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "fail",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -100,6 +108,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "yield",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -133,6 +149,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "makeRecord",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}},
 		Imports:  nil,

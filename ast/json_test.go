@@ -151,11 +151,254 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"OptionStatement","assignment":{"type":"VariableAssignment","id":{"type":"Identifier","name":"task"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"name"},"value":{"type":"StringLiteral","value":"foo"}},{"type":"Property","key":{"type":"Identifier","name":"every"},"value":{"type":"DurationLiteral","values":[{"magnitude":1,"unit":"h"}]}}]}}}`,
 		},
 		{
-			name: "builtin statement",
+			name: "builtin statement with constraints",
 			node: &ast.BuiltinStatement{
 				ID: &ast.Identifier{Name: "task"},
+				Ty: ast.TypeExpression{
+					BaseNode: ast.BaseNode{},
+					Ty: &ast.NamedType{
+						BaseNode: ast.BaseNode{},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "int",
+						},
+					},
+					Constraints: []*ast.TypeConstraint{{
+						Tvar: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "A",
+						},
+						Kinds: []*ast.Identifier{{
+							BaseNode: ast.BaseNode{},
+							Name:     "Addable",
+						}},
+					}},
+				},
 			},
-			want: `{"type":"BuiltinStatement","id":{"type":"Identifier","name":"task"}}`,
+			want: `{"type":"BuiltinStatement","id":{"type":"Identifier","name":"task"},"ty":{"type":"TypeExpression","ty":{"type":"NamedType","id":{"type":"Identifier","name":"int"}},"constraints":[{"type":"TypeConstraint","tvar":{"type":"Identifier","name":"A"},"kinds":[{"type":"Identifier","name":"Addable"}]}]}}`,
+		},
+		{
+			name: "builtin statement no constraints",
+			node: &ast.BuiltinStatement{
+				ID: &ast.Identifier{Name: "task"},
+				Ty: ast.TypeExpression{
+					BaseNode: ast.BaseNode{},
+					Ty: &ast.NamedType{
+						BaseNode: ast.BaseNode{},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "int",
+						},
+					},
+					Constraints: []*ast.TypeConstraint{},
+				},
+			},
+			want: `{"type":"BuiltinStatement","id":{"type":"Identifier","name":"task"},"ty":{"type":"TypeExpression","ty":{"type":"NamedType","id":{"type":"Identifier","name":"int"}},"constraints":[]}}`,
+		},
+		{
+			name: "NamedType",
+			node: &ast.NamedType{
+				BaseNode: ast.BaseNode{},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{},
+					Name:     "int",
+				},
+			},
+			want: `{"type":"NamedType","id":{"type":"Identifier","name":"int"}}`,
+		},
+		{
+			name: "TvarType",
+			node: &ast.TvarType{
+				BaseNode: ast.BaseNode{},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{},
+					Name:     "A",
+				},
+			},
+			want: `{"type":"TvarType","id":{"type":"Identifier","name":"A"}}`,
+		},
+		{
+			name: "ArrayType",
+			node: &ast.ArrayType{
+				BaseNode: ast.BaseNode{},
+				ElementType: &ast.RecordType{
+					BaseNode: ast.BaseNode{},
+					Properties: []*ast.PropertyType{
+						{
+							BaseNode: ast.BaseNode{},
+							Name: &ast.Identifier{
+								BaseNode: ast.BaseNode{},
+								Name:     "A",
+							},
+							Ty: &ast.NamedType{
+								BaseNode: ast.BaseNode{},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{},
+									Name:     "int",
+								},
+							},
+						},
+					},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{},
+						Name:     "A",
+					},
+				},
+			},
+			want: `{"type":"ArrayType","elementType":{"type":"RecordType","properties":[{"type":"PropertyType","id":{"type":"Identifier","name":"A"},"ty":{"type":"NamedType","id":{"type":"Identifier","name":"int"}}}],"tvar":{"type":"Identifier","name":"A"}}}`,
+		},
+		{
+			name: "RecordType",
+			node: &ast.RecordType{
+				BaseNode: ast.BaseNode{},
+				Properties: []*ast.PropertyType{
+					{
+						BaseNode: ast.BaseNode{},
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "A",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{},
+								Name:     "int",
+							},
+						},
+					},
+				},
+				Tvar: &ast.Identifier{
+					BaseNode: ast.BaseNode{},
+					Name:     "A",
+				},
+			},
+			want: `{"type":"RecordType","properties":[{"type":"PropertyType","id":{"type":"Identifier","name":"A"},"ty":{"type":"NamedType","id":{"type":"Identifier","name":"int"}}}],"tvar":{"type":"Identifier","name":"A"}}`,
+		},
+		{
+			name: "FunctionType",
+			node: &ast.FunctionType{
+				BaseNode: ast.BaseNode{},
+				Parameters: []*ast.ParameterType{
+					{
+						BaseNode: ast.BaseNode{},
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "A",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{},
+								Name:     "int",
+							},
+						},
+						Kind: 0},
+					{
+						BaseNode: ast.BaseNode{},
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "B",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{},
+								Name:     "uint",
+							},
+						},
+						Kind: 1},
+					{
+						BaseNode: ast.BaseNode{},
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "C",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{},
+								Name:     "string",
+							},
+						},
+						Kind: 2},
+				},
+				Return: &ast.TvarType{
+					BaseNode: ast.BaseNode{},
+					ID: &ast.Identifier{
+						BaseNode: ast.BaseNode{},
+						Name:     "A",
+					},
+				},
+			},
+			want: `{"type":"FunctionType","parameters":[{"type":"ParameterType","name":{"type":"Identifier","name":"A"},"ty":{"type":"NamedType","id":{"type":"Identifier","name":"int"}},"kind":0},{"type":"ParameterType","name":{"type":"Identifier","name":"B"},"ty":{"type":"NamedType","id":{"type":"Identifier","name":"uint"}},"kind":1},{"type":"ParameterType","name":{"type":"Identifier","name":"C"},"ty":{"type":"NamedType","id":{"type":"Identifier","name":"string"}},"kind":2}],"return":{"type":"TvarType","id":{"type":"Identifier","name":"A"}}}`,
+		},
+		{
+			name: "TypeExpression Test",
+			node: &ast.TypeExpression{
+				BaseNode: ast.BaseNode{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{},
+					Parameters: []*ast.ParameterType{
+						{
+							BaseNode: ast.BaseNode{},
+							Name: &ast.Identifier{
+								BaseNode: ast.BaseNode{},
+								Name:     "a",
+							},
+							Ty: &ast.TvarType{
+								BaseNode: ast.BaseNode{},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{},
+									Name:     "T",
+								},
+							},
+							Kind: 0,
+						},
+						{
+							BaseNode: ast.BaseNode{},
+							Name: &ast.Identifier{
+								BaseNode: ast.BaseNode{},
+								Name:     "b",
+							},
+							Ty: &ast.TvarType{
+								BaseNode: ast.BaseNode{},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{},
+									Name:     "T",
+								},
+							},
+							Kind: 0,
+						},
+					},
+					Return: &ast.TvarType{
+						BaseNode: ast.BaseNode{},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "T",
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{
+					{
+						BaseNode: ast.BaseNode{},
+						Tvar: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "T",
+						},
+						Kinds: []*ast.Identifier{
+							{
+								BaseNode: ast.BaseNode{},
+								Name:     "Addable",
+							},
+							{
+								BaseNode: ast.BaseNode{},
+								Name:     "Divisible",
+							},
+						},
+					},
+				},
+			},
+			want: `{"type":"TypeExpression","ty":{"type":"FunctionType","parameters":[{"type":"ParameterType","name":{"type":"Identifier","name":"a"},"ty":{"type":"TvarType","id":{"type":"Identifier","name":"T"}},"kind":0},{"type":"ParameterType","name":{"type":"Identifier","name":"b"},"ty":{"type":"TvarType","id":{"type":"Identifier","name":"T"}},"kind":0}],"return":{"type":"TvarType","id":{"type":"Identifier","name":"T"}}},"constraints":[{"type":"TypeConstraint","tvar":{"type":"Identifier","name":"T"},"kinds":[{"type":"Identifier","name":"Addable"},{"type":"Identifier","name":"Divisible"}]}]}`,
 		},
 		{
 			name: "test statement",

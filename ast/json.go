@@ -181,7 +181,6 @@ func (s *ReturnStatement) UnmarshalJSON(data []byte) error {
 	s.Argument = e
 	return nil
 }
-
 func (s *OptionStatement) MarshalJSON() ([]byte, error) {
 	type Alias OptionStatement
 	raw := struct {
@@ -852,6 +851,21 @@ func (i *Identifier) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
+func (i *Identifier) UnmarshalJSON(data []byte) error {
+	type Alias Identifier
+	raw := struct {
+		*Alias
+		Name string `json:"name"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*i = *(*Identifier)(raw.Alias)
+	}
+	i.Name = raw.Name
+	return nil
+}
 func (p *PipeLiteral) MarshalJSON() ([]byte, error) {
 	type Alias PipeLiteral
 	raw := struct {
@@ -1021,6 +1035,240 @@ func (l *DateTimeLiteral) MarshalJSON() ([]byte, error) {
 	return json.Marshal(raw)
 }
 
+// new types for builtin package
+func (nt NamedType) MarshalJSON() ([]byte, error) {
+	type Alias NamedType
+	raw := struct {
+		Type string `json:"type"`
+		Alias
+	}{
+		Type:  nt.Type(),
+		Alias: (Alias)(nt),
+	}
+	ret, err := json.Marshal(raw)
+	return ret, err
+}
+func (nt *NamedType) UnmarshalJSON(data []byte) error {
+	type Alias NamedType
+	raw := struct {
+		*Alias
+		ID *Identifier `json:"id"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*nt = *(*NamedType)(raw.Alias)
+	}
+	nt.ID = raw.ID
+	return nil
+}
+
+func (tv TvarType) MarshalJSON() ([]byte, error) {
+	type Alias TvarType
+	raw := struct {
+		Type string `json:"type"`
+		Alias
+	}{
+		Type:  tv.Type(),
+		Alias: (Alias)(tv),
+	}
+	return json.Marshal(raw)
+}
+
+func (arr ArrayType) MarshalJSON() ([]byte, error) {
+	type Alias ArrayType
+	raw := struct {
+		Type string `json:"type"`
+		Alias
+	}{
+		Type:  arr.Type(),
+		Alias: (Alias)(arr),
+	}
+	return json.Marshal(raw)
+}
+func (nt *ArrayType) UnmarshalJSON(data []byte) error {
+	type Alias ArrayType
+	raw := struct {
+		*Alias
+		ElementType json.RawMessage `json:"elementType"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*nt = *(*ArrayType)(raw.Alias)
+	}
+	et, err := unmarshalMonotype(raw.ElementType)
+	if err != nil {
+		return err
+	}
+	nt.ElementType = et
+	return nil
+}
+
+func (rec RecordType) MarshalJSON() ([]byte, error) {
+	type Alias RecordType
+	raw := struct {
+		Type string `json:"type"`
+		Alias
+	}{
+		Type:  rec.Type(),
+		Alias: (Alias)(rec),
+	}
+	return json.Marshal(raw)
+}
+
+func (fun FunctionType) MarshalJSON() ([]byte, error) {
+	type Alias FunctionType
+	raw := struct {
+		Type string `json:"type"`
+		Alias
+	}{
+		Type:  fun.Type(),
+		Alias: (Alias)(fun),
+	}
+	return json.Marshal(raw)
+}
+func (param *FunctionType) UnmarshalJSON(data []byte) error {
+	type Alias FunctionType
+	raw := struct {
+		*Alias
+		Return json.RawMessage `json:"return"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*param = *(*FunctionType)(raw.Alias)
+	}
+	ty, err := unmarshalMonotype(raw.Return)
+	if err != nil {
+		return err
+	}
+	param.Return = ty
+	return nil
+}
+
+func (prop PropertyType) MarshalJSON() ([]byte, error) {
+	type Alias PropertyType
+	raw := struct {
+		Type string `json:"type"`
+		Alias
+	}{
+		Type:  prop.Type(),
+		Alias: (Alias)(prop),
+	}
+	return json.Marshal(raw)
+}
+func (nt *PropertyType) UnmarshalJSON(data []byte) error {
+	type Alias PropertyType
+	raw := struct {
+		*Alias
+		Ty json.RawMessage `json:"ty"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*nt = *(*PropertyType)(raw.Alias)
+	}
+	ty, err := unmarshalMonotype(raw.Ty)
+	if err != nil {
+		return err
+	}
+	nt.Ty = ty
+	return nil
+}
+
+func (param ParameterType) MarshalJSON() ([]byte, error) {
+	type Alias ParameterType
+	raw := struct {
+		Type string `json:"type"`
+		Alias
+	}{
+		Type:  param.Type(),
+		Alias: (Alias)(param),
+	}
+	return json.Marshal(raw)
+}
+func (param *ParameterType) UnmarshalJSON(data []byte) error {
+	type Alias ParameterType
+	raw := struct {
+		*Alias
+		Ty json.RawMessage `json:"ty"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*param = *(*ParameterType)(raw.Alias)
+	}
+	ty, err := unmarshalMonotype(raw.Ty)
+	if err != nil {
+		return err
+	}
+	param.Ty = ty
+	return nil
+}
+
+func (typ_con TypeConstraint) MarshalJSON() ([]byte, error) {
+	type Alias TypeConstraint
+	raw := struct {
+		Type string `json:"type"`
+		Alias
+	}{
+		Type:  typ_con.Type(),
+		Alias: (Alias)(typ_con),
+	}
+	return json.Marshal(raw)
+}
+func (typ_expr *TypeConstraint) UnmarshalJSON(data []byte) error {
+	type Alias TypeConstraint
+	raw := struct {
+		*Alias
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*typ_expr = *(*TypeConstraint)(raw.Alias)
+	}
+
+	return nil
+}
+
+func (typ_expr TypeExpression) MarshalJSON() ([]byte, error) {
+	type Alias TypeExpression
+	raw := struct {
+		Type string `json:"type"`
+		Alias
+	}{
+		Type:  typ_expr.Type(),
+		Alias: (Alias)(typ_expr),
+	}
+	return json.Marshal(raw)
+}
+func (typ_expr *TypeExpression) UnmarshalJSON(data []byte) error {
+	type Alias TypeExpression
+	raw := struct {
+		*Alias
+		Ty json.RawMessage `json:"ty"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*typ_expr = *(*TypeExpression)(raw.Alias)
+	}
+	t, err := unmarshalMonotype(raw.Ty)
+	if err != nil {
+		return err
+	}
+	typ_expr.Ty = t
+	return nil
+}
+
 func checkNullMsg(msg json.RawMessage) bool {
 	switch len(msg) {
 	case 0:
@@ -1030,6 +1278,20 @@ func checkNullMsg(msg json.RawMessage) bool {
 	default:
 		return false
 	}
+}
+func unmarshalMonotype(msg json.RawMessage) (MonoType, error) {
+	if checkNullMsg(msg) {
+		return nil, nil
+	}
+	n, err := unmarshalNode(msg)
+	if err != nil {
+		return nil, err
+	}
+	s, ok := n.(MonoType)
+	if !ok {
+		return nil, fmt.Errorf("node %q is not a monotype", n.Type())
+	}
+	return s, nil
 }
 func unmarshalStatement(msg json.RawMessage) (Statement, error) {
 	if checkNullMsg(msg) {
@@ -1113,14 +1375,30 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 	type typeRawMessage struct {
 		Type string `json:"type"`
 	}
-
 	typ := typeRawMessage{}
 	if err := json.Unmarshal(msg, &typ); err != nil {
 		return nil, err
 	}
-
 	var node Node
 	switch typ.Type {
+	case "TypeExpression":
+		node = new(TypeExpression)
+	case "TypeConstraint":
+		node = new(TypeConstraint)
+	case "ParameterType":
+		node = new(ParameterType)
+	case "PropertyType":
+		node = new(PropertyType)
+	case "FunctionType":
+		node = new(FunctionType)
+	case "RecordType":
+		node = new(RecordType)
+	case "ArrayType":
+		node = new(ArrayType)
+	case "TvarType":
+		node = new(TvarType)
+	case "NamedType":
+		node = new(NamedType)
 	case "Package":
 		node = new(Package)
 	case "File":

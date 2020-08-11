@@ -66,6 +66,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "compile",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -99,6 +107,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "quoteMeta",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -134,6 +150,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "findString",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -167,6 +191,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "findStringIndex",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -202,6 +234,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "matchRegexpString",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -235,6 +275,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "replaceAllString",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -270,6 +318,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "splitRegexp",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -303,6 +359,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "getString",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}},
 		Imports:  nil,

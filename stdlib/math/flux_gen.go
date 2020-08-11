@@ -66,6 +66,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "pi",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -99,6 +107,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "e",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -134,6 +150,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "phi",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -167,6 +191,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "sqrt2",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -202,6 +234,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "sqrte",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -235,6 +275,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "sqrtpi",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -270,6 +318,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "sqrtphi",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -303,6 +359,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "ln2",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -338,6 +402,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "log2e",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -371,6 +443,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "ln10",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -406,6 +486,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "log10e",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -439,6 +527,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "maxfloat",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -474,6 +570,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "smallestNonzeroFloat",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -507,6 +611,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "maxint",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -542,6 +654,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "minint",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -575,6 +695,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "maxuint",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -610,6 +738,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "abs",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -643,6 +779,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "acos",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -678,6 +822,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "acosh",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -711,6 +863,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "asin",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -746,6 +906,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "asinh",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -779,6 +947,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "atan",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -814,6 +990,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "atan2",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -847,6 +1031,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "atanh",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -882,6 +1074,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "cbrt",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -915,6 +1115,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "ceil",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -950,6 +1158,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "copysign",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -983,6 +1199,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "cos",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1018,6 +1242,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "cosh",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1051,6 +1283,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "dim",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1086,6 +1326,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "erf",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1119,6 +1367,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "erfc",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1154,6 +1410,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "erfcinv",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1187,6 +1451,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "erfinv",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1222,6 +1494,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "exp",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1255,6 +1535,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "exp2",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1290,6 +1578,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "expm1",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1323,6 +1619,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "float64bits",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1358,6 +1662,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "float64frombits",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1391,6 +1703,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "floor",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1426,6 +1746,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "frexp",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1459,6 +1787,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "gamma",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1494,6 +1830,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "hypot",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1527,6 +1871,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "ilogb",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1562,6 +1914,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "mInf",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1595,6 +1955,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "isInf",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1630,6 +1998,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "isNaN",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1663,6 +2039,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "j0",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1698,6 +2082,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "j1",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1731,6 +2123,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "jn",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1766,6 +2166,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "ldexp",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1799,6 +2207,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "lgamma",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1834,6 +2250,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "log",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1867,6 +2291,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "log10",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1902,6 +2334,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "log1p",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1935,6 +2375,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "log2",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1970,6 +2418,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "logb",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -2003,6 +2459,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "mMax",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -2038,6 +2502,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "mMin",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -2071,6 +2543,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "mod",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -2106,6 +2586,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "modf",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -2139,6 +2627,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "NaN",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -2174,6 +2670,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "nextafter",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -2207,6 +2711,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "pow",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -2242,6 +2754,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "pow10",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -2275,6 +2795,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "remainder",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -2310,6 +2838,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "round",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -2343,6 +2879,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "roundtoeven",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -2378,6 +2922,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "signbit",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -2411,6 +2963,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "sin",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -2446,6 +3006,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "sincos",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -2479,6 +3047,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "sinh",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -2514,6 +3090,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "sqrt",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -2547,6 +3131,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "tan",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -2582,6 +3174,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "tanh",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -2615,6 +3215,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "trunc",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -2650,6 +3258,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "y0",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -2684,6 +3300,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "y1",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -2717,6 +3341,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "yn",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}},
 		Imports:  nil,

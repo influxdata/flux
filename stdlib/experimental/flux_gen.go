@@ -66,6 +66,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "addDuration",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -99,6 +107,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "subDuration",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -134,6 +150,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "group",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -167,6 +191,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "objectKeys",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -202,6 +234,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "set",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -235,6 +275,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "to",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -270,6 +318,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "join",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -303,6 +359,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "chain",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{

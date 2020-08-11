@@ -66,6 +66,14 @@ var pkgAST = &ast.Package{
 				},
 				Name: "json",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -99,6 +107,14 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "databases",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc:    nil,
+				},
+				Constraints: nil,
+				Ty:          nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
