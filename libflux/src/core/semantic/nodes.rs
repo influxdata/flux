@@ -453,7 +453,7 @@ impl OptionStmt {
 pub struct BuiltinStmt {
     pub loc: ast::SourceLocation,
     pub id: Identifier,
-    pub typ_expr: PolyType
+    pub typ_expr: PolyType,
 }
 
 impl BuiltinStmt {

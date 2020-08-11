@@ -492,7 +492,7 @@ pub struct BuiltinStmt {
     #[serde(flatten)]
     pub base: BaseNode,
     pub id: Identifier,
-    pub typ_expr: TypeExpression
+    pub typ_expr: TypeExpression,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]

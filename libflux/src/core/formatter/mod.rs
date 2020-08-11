@@ -241,7 +241,7 @@ impl Formatter {
         self.format_type_expression(&n.typ_expr);
     }
 
-    fn format_type_expression(&mut self, n: &ast::TypeExpression){
+    fn format_type_expression(&mut self, n: &ast::TypeExpression) {
         self.format_monotype(&n.monotype);
         if n.constraints.len() > 0 {
             self.write_string(" where ");
@@ -251,14 +251,14 @@ impl Formatter {
 
     fn format_monotype(&mut self, n: &ast::MonoType) {
         match n {
-            ast::MonoType::Tvar(tv) => {self.format_tvar(tv)}
-            ast::MonoType::Basic(nt) => {self.format_basic(&nt)}
-            ast::MonoType::Array(arr) => {self.format_array(&*arr)}
-            ast::MonoType::Record(rec) => {self.format_record(&rec)}
-            ast::MonoType::Function(fun) => {self.format_function(&*fun)}
+            ast::MonoType::Tvar(tv) => self.format_tvar(tv),
+            ast::MonoType::Basic(nt) => self.format_basic(&nt),
+            ast::MonoType::Array(arr) => self.format_array(&*arr),
+            ast::MonoType::Record(rec) => self.format_record(&rec),
+            ast::MonoType::Function(fun) => self.format_function(&*fun),
         }
     }
-    fn format_function(&mut self, n: &ast::FunctionType){
+    fn format_function(&mut self, n: &ast::FunctionType) {
         self.write_string("(");
         if &n.parameters.len() > &0 {
             self.format_parameters(&n.parameters)
@@ -267,7 +267,7 @@ impl Formatter {
         self.write_string(" => ");
         self.format_monotype(&n.monotype)
     }
-    fn format_parameters(&mut self, n: &Vec<ast::ParameterType>){
+    fn format_parameters(&mut self, n: &Vec<ast::ParameterType>) {
         self.format_parameter(&n[0]);
         for p in &n[1..] {
             self.write_string(", ");
@@ -276,18 +276,30 @@ impl Formatter {
     }
     fn format_parameter(&mut self, n: &ast::ParameterType) {
         match &n {
-            ast::ParameterType::Required{base: _, name, monotype} => {
+            ast::ParameterType::Required {
+                base: _,
+                name,
+                monotype,
+            } => {
                 self.format_identifier(&name);
                 self.write_string(": ");
                 self.format_monotype(&monotype);
             }
-            ast::ParameterType::Optional{base: _, name, monotype} => {
+            ast::ParameterType::Optional {
+                base: _,
+                name,
+                monotype,
+            } => {
                 self.write_string("?");
                 self.format_identifier(&name);
                 self.write_string(": ");
                 self.format_monotype(&monotype);
             }
-            ast::ParameterType::Pipe{base: _, name, monotype} => {
+            ast::ParameterType::Pipe {
+                base: _,
+                name,
+                monotype,
+            } => {
                 self.write_string("<-");
                 match name {
                     Some(n) => self.format_identifier(n),
@@ -305,8 +317,8 @@ impl Formatter {
                 self.format_identifier(tv);
                 self.write_string(" with ");
                 self.format_properties(&n.properties);
-            },
-            None=> {
+            }
+            None => {
                 if &n.properties.len() > &0 {
                     self.format_properties(&n.properties);
                 }
@@ -331,10 +343,10 @@ impl Formatter {
         self.format_monotype(&n.element);
         self.write_string("]");
     }
-    fn format_basic(&mut self, n: &ast::NamedType){
+    fn format_basic(&mut self, n: &ast::NamedType) {
         self.format_identifier(&n.name);
     }
-    fn format_constraints(&mut self, n: &Vec<ast::TypeConstraint>){
+    fn format_constraints(&mut self, n: &Vec<ast::TypeConstraint>) {
         self.format_constraint(&n[0]);
         for c in &n[1..] {
             self.write_string(", ");

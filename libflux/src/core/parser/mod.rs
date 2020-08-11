@@ -554,7 +554,6 @@ impl Parser {
         }
     }
 
-
     fn parse_monotype(&mut self) -> MonoType {
         // Tvar | Basic | Array | Record | Function
         let t = self.peek();
@@ -572,7 +571,6 @@ impl Parser {
         }
     }
 
-
     fn parse_basic(&mut self) -> MonoType {
         let t = self.peek();
         MonoType::Basic(NamedType {
@@ -581,7 +579,6 @@ impl Parser {
         })
     }
 
-
     fn parse_tvar(&mut self) -> MonoType {
         let id = self.parse_identifier();
         MonoType::Tvar(TvarType {
@@ -589,7 +586,6 @@ impl Parser {
             name: id,
         })
     }
-
 
     fn parse_array(&mut self) -> MonoType {
         let start = self.expect(TOK_LBRACK);
@@ -600,7 +596,6 @@ impl Parser {
             element: mt,
         }));
     }
-
 
     // "(" [Parameters] ")" "=>" MonoType
     fn parse_function(&mut self) -> MonoType {
@@ -623,7 +618,6 @@ impl Parser {
         }));
     }
 
-
     // Parameters = Parameter { "," Parameter } .
     fn parse_parameters(&mut self) -> Vec<ParameterType> {
         let mut params = Vec::<ParameterType>::new();
@@ -636,7 +630,6 @@ impl Parser {
         }
         return params;
     }
-
 
     // (identifier | "?" identifier | "<-" identifier | "<-") ":" MonoType
     fn parse_parameter_type(&mut self) -> ParameterType {
@@ -691,7 +684,6 @@ impl Parser {
         }
     }
 
-
     fn parse_constraints(&mut self) -> Vec<TypeConstraint> {
         let mut constraints = Vec::<TypeConstraint>::new();
         constraints.push(self.parse_constraint());
@@ -701,7 +693,6 @@ impl Parser {
         }
         return constraints;
     }
-
 
     fn parse_constraint(&mut self) -> TypeConstraint {
         let mut id = Vec::<Identifier>::new();

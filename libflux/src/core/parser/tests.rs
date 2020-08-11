@@ -1177,12 +1177,12 @@ fn builtin() {
                     },
                     name: "from".to_string()
                 },
-                typ_expr: TypeExpression{
-                    base:  BaseNode {
+                typ_expr: TypeExpression {
+                    base: BaseNode {
                         location: loc.get(1, 16, 1, 19),
                         ..BaseNode::default()
                     },
-                    monotype: MonoType::Basic(NamedType{
+                    monotype: MonoType::Basic(NamedType {
                         base: BaseNode {
                             location: loc.get(1, 16, 1, 19),
                             ..BaseNode::default()

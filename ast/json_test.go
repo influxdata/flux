@@ -151,7 +151,7 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"OptionStatement","assignment":{"type":"VariableAssignment","id":{"type":"Identifier","name":"task"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"name"},"value":{"type":"StringLiteral","value":"foo"}},{"type":"Property","key":{"type":"Identifier","name":"every"},"value":{"type":"DurationLiteral","values":[{"magnitude":1,"unit":"h"}]}}]}}}`,
 		},
 		{
-			name: "builtin statement",
+			name: "builtin statement with constraints",
 			node: &ast.BuiltinStatement{
 				ID: &ast.Identifier{Name: "task"},
 				Ty: ast.TypeExpression{
@@ -176,6 +176,24 @@ func TestJSONMarshal(t *testing.T) {
 				},
 			},
 			want: `{"type":"BuiltinStatement","id":{"type":"Identifier","name":"task"},"ty":{"type":"TypeExpression","ty":{"type":"NamedType","id":{"type":"Identifier","name":"int"}},"constraints":[{"type":"TypeConstraint","tvar":{"type":"Identifier","name":"A"},"kinds":[{"type":"Identifier","name":"Addable"}]}]}}`,
+		},
+		{
+			name: "builtin statement no constraints",
+			node: &ast.BuiltinStatement{
+				ID: &ast.Identifier{Name: "task"},
+				Ty: ast.TypeExpression{
+					BaseNode: ast.BaseNode{},
+					Ty: &ast.NamedType{
+						BaseNode: ast.BaseNode{},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "int",
+						},
+					},
+					Constraints: []*ast.TypeConstraint{},
+				},
+			},
+			want: `{"type":"BuiltinStatement","id":{"name":"task"},"typ_expr":{"monotype":{"type":"NamedType","name":{"name":"int"}},"constraints":[]}}`,
 		},
 		{
 			name: "NamedType",
@@ -315,14 +333,49 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"FunctionType","parameters":[{"type":"ParameterType","name":{"type":"Identifier","name":"A"},"ty":{"type":"NamedType","id":{"type":"Identifier","name":"int"}},"kind":0},{"type":"ParameterType","name":{"type":"Identifier","name":"B"},"ty":{"type":"NamedType","id":{"type":"Identifier","name":"uint"}},"kind":1},{"type":"ParameterType","name":{"type":"Identifier","name":"C"},"ty":{"type":"NamedType","id":{"type":"Identifier","name":"string"}},"kind":2}],"return":{"type":"TvarType","id":{"type":"Identifier","name":"A"}}}`,
 		},
 		{
-			name: "TypeExpression",
+			name: "TypeExpression Test",
 			node: &ast.TypeExpression{
 				BaseNode: ast.BaseNode{},
-				Ty: &ast.NamedType{
+				Ty: &ast.FunctionType{
 					BaseNode: ast.BaseNode{},
-					ID: &ast.Identifier{
+					Parameters: []*ast.ParameterType{
+						{
+							BaseNode: ast.BaseNode{},
+							Name: &ast.Identifier{
+								BaseNode: ast.BaseNode{},
+								Name:     "a",
+							},
+							Ty: &ast.TvarType{
+								BaseNode: ast.BaseNode{},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{},
+									Name:     "T",
+								},
+							},
+							Kind: 0,
+						},
+						{
+							BaseNode: ast.BaseNode{},
+							Name: &ast.Identifier{
+								BaseNode: ast.BaseNode{},
+								Name:     "b",
+							},
+							Ty: &ast.TvarType{
+								BaseNode: ast.BaseNode{},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{},
+									Name:     "T",
+								},
+							},
+							Kind: 0,
+						},
+					},
+					Return: &ast.TvarType{
 						BaseNode: ast.BaseNode{},
-						Name:     "A",
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "T",
+						},
 					},
 				},
 				Constraints: []*ast.TypeConstraint{
@@ -330,7 +383,7 @@ func TestJSONMarshal(t *testing.T) {
 						BaseNode: ast.BaseNode{},
 						Tvar: &ast.Identifier{
 							BaseNode: ast.BaseNode{},
-							Name:     "A",
+							Name:     "T",
 						},
 						Kinds: []*ast.Identifier{
 							{
@@ -345,7 +398,7 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"TypeExpression","ty":{"type":"NamedType","id":{"type":"Identifier","name":"A"}},"constraints":[{"type":"TypeConstraint","tvar":{"type":"Identifier","name":"A"},"kinds":[{"type":"Identifier","name":"Addable"},{"type":"Identifier","name":"Divisible"}]}]}`,
+			want: `{"monotype":{"type":"FunctionType","parameters":[{"type":"Required","name":{"name":"a"},"monotype":{"type":"TvarType","name":{"name":"T"}}},{"type":"Required","name":{"name":"b"},"monotype":{"type":"TvarType","name":{"name":"T"}}}],"monotype":{"type":"TvarType","name":{"name":"T"}}},"constraints":[{"tvar":{"name":"T"},"kinds":[{"name":"Addable"},{"name":"Divisible"}]}]}`,
 		},
 		{
 			name: "test statement",

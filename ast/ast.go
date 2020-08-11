@@ -4,7 +4,6 @@ package ast
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"regexp"
 	"strconv"
 	"time"
@@ -213,17 +212,16 @@ func (c *TypeExpression) Copy() Node {
 	*nc = *c
 	nc.BaseNode = c.BaseNode.Copy()
 
-	//nc.Ty = c.Ty.Copy().(MonoType)
-	nc.Ty = reflect.New(reflect.ValueOf(c.Ty).Elem().Type()).Interface().(MonoType)
-	//nc.Constraints = c.Constraints.Copy().([]*TypeConstraint)
+	nc.Ty = c.Ty.Copy().(MonoType)
 	for cnstr := range c.Constraints {
-		_ = append(nc.Constraints, c.Constraints[cnstr])
+		nc.Constraints = append(nc.Constraints, c.Constraints[cnstr])
 	}
 	return nc
 }
 
 type MonoType interface {
 	monotype()
+	Node
 }
 
 func (NamedType) monotype()    {}
@@ -288,9 +286,7 @@ func (c *ArrayType) Copy() Node {
 	*nc = *c
 	nc.BaseNode = c.BaseNode.Copy()
 
-	//nc.ElementType = c.ElementType.Copy().(*ArrayType)
-	nc.ElementType = reflect.New(reflect.ValueOf(c.ElementType).Elem().Type()).Interface().(*ArrayType)
-
+	nc.ElementType = c.ElementType.Copy().(*ArrayType)
 	return nc
 }
 
@@ -311,9 +307,8 @@ func (c *RecordType) Copy() Node {
 	*nc = *c
 	nc.BaseNode = c.BaseNode.Copy()
 
-	//nc.Properties = c.Properties.Copy().([]*PropertyType)
 	for p := range c.Properties {
-		_ = append(nc.Properties, c.Properties[p])
+		nc.Properties = append(nc.Properties, c.Properties[p])
 	}
 	nc.Tvar = c.Tvar.Copy().(*Identifier)
 	return nc
@@ -337,8 +332,7 @@ func (c *PropertyType) Copy() Node {
 	nc.BaseNode = c.BaseNode.Copy()
 
 	nc.Name = c.Name.Copy().(*Identifier)
-	//nc.Ty = c.Ty.Copy().(MonoType)
-	nc.Ty = reflect.New(reflect.ValueOf(c.Ty).Elem().Type()).Interface().(MonoType)
+	nc.Ty = c.Ty.Copy().(MonoType)
 	return nc
 }
 
@@ -359,12 +353,10 @@ func (c *FunctionType) Copy() Node {
 	*nc = *c
 	nc.BaseNode = c.BaseNode.Copy()
 
-	//nc.Parameters = c.Parameters.Copy().([]*ParameterType)
 	for param := range c.Parameters {
 		_ = append(nc.Parameters, c.Parameters[param])
 	}
-	//nc.Return = c.Return.Copy().(MonoType)
-	nc.Return = reflect.New(reflect.ValueOf(c.Return).Elem().Type()).Interface().(MonoType)
+	nc.Return = c.Return.Copy().(MonoType)
 
 	return nc
 }
@@ -393,8 +385,7 @@ func (c *ParameterType) Copy() Node {
 	nc.BaseNode = c.BaseNode.Copy()
 
 	nc.Name = c.Name.Copy().(*Identifier)
-	//nc.Ty = c.Ty.Copy().(MonoType)
-	nc.Ty = reflect.New(reflect.ValueOf(c.Ty).Elem().Type()).Interface().(MonoType)
+	nc.Ty = c.Ty.Copy().(MonoType)
 	nc.Kind = c.Kind
 	return nc
 }

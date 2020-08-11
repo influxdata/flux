@@ -891,7 +891,7 @@ fn test_json_builtin_statement() {
                 },
             }),
             constraints: vec![],
-        }
+        },
     }));
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
