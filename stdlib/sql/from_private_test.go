@@ -82,6 +82,14 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			},
 			ErrMsg: "",
 		}, {
+			Name: "ok hdb",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "hdb",
+				DataSourceName: "hdb://user:password@localhost:39013",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
 			Name: "invalid driver",
 			Spec: &FromSQLProcedureSpec{
 				DriverName:     "voltdb",

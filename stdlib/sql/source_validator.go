@@ -102,6 +102,12 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 			Host:   cfg.ProjectID,
 			Path:   cfg.Location,
 		}
+	case "hdb": // SAP HANA
+		// an example is: hdb://user:password@host:port
+		u, err = neturl.Parse(dataSourceName)
+		if err != nil {
+			return errors.Newf(codes.Invalid, "invalid data source url: %v", err)
+		}
 	default:
 		return errors.Newf(codes.Invalid, "sql driver %s not supported", driverName)
 	}
