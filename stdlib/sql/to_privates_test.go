@@ -335,3 +335,33 @@ func TestBigQueryTranslation(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestHdbTranslation(t *testing.T) {
+	hdbTypeTranslations := map[string]flux.ColType{
+		"DOUBLE":         flux.TFloat,
+		"BIGINT":         flux.TInt,
+		"NVARCHAR(5000)": flux.TString,
+		"TIMESTAMP":      flux.TTime,
+		"BOOLEAN":        flux.TBool,
+	}
+
+	columnLabel := "apples"
+	// verify that valid returns expected happiness for hdb
+	sqlT, err := getTranslationFunc("hdb")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
+
+	for dbTypeString, fluxType := range hdbTypeTranslations {
+		v, err := sqlT()(fluxType, columnLabel)
+		if !cmp.Equal(nil, err) {
+			t.Log(cmp.Diff(nil, err))
+			t.Fail()
+		}
+		if !cmp.Equal(columnLabel+" "+dbTypeString, v) {
+			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
+			t.Fail()
+		}
+	}
+}
