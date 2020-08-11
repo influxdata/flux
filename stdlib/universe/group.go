@@ -15,6 +15,7 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/stdlib/experimental"
 	"github.com/influxdata/flux/values"
 )
 
@@ -391,4 +392,25 @@ func (r MergeGroupRule) Rewrite(ctx context.Context, lastGroup plan.Node) (plan.
 	}
 
 	return merged, true, nil
+}
+
+// `OrderFilterGroup` orders to have 'filter |> group' from 'group |> filter'
+type OrderFilterGroup struct{}
+
+func (r OrderFilterGroup) Name() string {
+	return "OrderFilterGroup"
+}
+
+// returns the pattern that matches `group |> filter`
+func (r OrderFilterGroup) Pattern() plan.Pattern {
+	return plan.Pat(FilterKind, plan.OneOf([]plan.ProcedureKind{GroupKind, experimental.ExperimentalGroupKind}, plan.Any()))
+}
+
+func (r OrderFilterGroup) Rewrite(ctx context.Context, Filter plan.Node) (plan.Node, bool, error) {
+	Group := Filter.Predecessors()[0]
+	Group, err := plan.SwapPlanNodes(Filter, Group)
+	if err != nil {
+		return nil, false, err
+	}
+	return Group, true, nil
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/gen"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
@@ -962,6 +963,153 @@ func TestMergeGroupRule(t *testing.T) {
 					plan.CreateLogicalNode("from", from),
 					plan.CreateLogicalNode("merged_group0_group1", groupBy),
 					plan.CreateLogicalNode("filter", filter),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			plantest.LogicalRuleTestHelper(t, &tc)
+		})
+	}
+}
+
+func TestOrderFilterGroup(t *testing.T) {
+	var (
+		from    = &influxdb.FromProcedureSpec{}
+		filter0 = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				KeepEmptyTables: false,
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._field == "usage_idle"`),
+				},
+			}
+		}
+		filter1 = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				KeepEmptyTables: true,
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu"`),
+				},
+			}
+		}
+		groupBy = &universe.GroupProcedureSpec{
+			GroupMode: flux.GroupModeBy,
+			GroupKeys: []string{"foo", "bar", "buz"},
+		}
+		groupExcept = &universe.GroupProcedureSpec{
+			GroupMode: flux.GroupModeExcept,
+			GroupKeys: []string{"foo", "bar", "buz"},
+		}
+		groupNotByNorExcept = &universe.GroupProcedureSpec{
+			GroupMode: flux.GroupModeNone,
+			GroupKeys: []string{},
+		}
+	)
+
+	tests := []plantest.RuleTestCase{
+		{
+			Name:  "filter |> group",
+			Rules: []plan.Rule{&universe.OrderFilterGroup{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreateLogicalNode("from", from),
+					plan.CreatePhysicalNode("filter", filter0()),
+					plan.CreateLogicalNode("group", groupBy),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+			NoChange: true,
+		},
+		{
+			Name:  "double group",
+			Rules: []plan.Rule{&universe.OrderFilterGroup{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("group0", groupExcept),
+					plan.CreateLogicalNode("group1", groupBy),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+			NoChange: true,
+		},
+		{
+			Name:  "triple group",
+			Rules: []plan.Rule{&universe.OrderFilterGroup{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("group0", groupNotByNorExcept),
+					plan.CreateLogicalNode("group1", groupBy),
+					plan.CreateLogicalNode("group2", groupExcept),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+				},
+			},
+			NoChange: true,
+		},
+		{
+			Name:  "group |> filter",
+			Rules: []plan.Rule{&universe.OrderFilterGroup{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("group", groupBy),
+					plan.CreatePhysicalNode("filter", filter0()),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreateLogicalNode("from", from),
+					plan.CreatePhysicalNode("filter_copy", filter0()),
+					plan.CreateLogicalNode("group", groupBy),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+		},
+		{
+			Name:  "group |> filter1",
+			Rules: []plan.Rule{&universe.OrderFilterGroup{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("group", groupBy),
+					plan.CreatePhysicalNode("filter", filter1()),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreateLogicalNode("from", from),
+					plan.CreatePhysicalNode("filter_copy", filter1()),
+					plan.CreateLogicalNode("group", groupBy),
 				},
 				Edges: [][2]int{
 					{0, 1},

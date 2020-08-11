@@ -443,6 +443,8 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/moving_average_test.flux":                                      "4f2c2dfbc95f1ad129e4ccd5ce4206c9c7a2ef8e97b3711af9c7b2d009a324c0",
 	"stdlib/universe/multiple_range_test.flux":                                      "df7812e90110a287028383f3ba46acb378e2b26a6c2245bb8dd1939649eeba0e",
 	"stdlib/universe/null_as_value_test.flux":                                       "e3faa6576333182af5a9c5b0b422a1e1f77554c27c8b07a30191c385485cfa65",
+	"stdlib/universe/order_filter_group_flag_off_test.flux":                         "2c0bd6492c20330f09a1b33d2ce49ddbd6faa9fade2fa39a6a0c8a7914b35fb6",
+	"stdlib/universe/order_filter_group_flag_on_test.flux":                          "715986294ef94e27705869dfd8da6d3cbbc568459ccfc7683071cc972a295b3a",
 	"stdlib/universe/parse_regex_test.flux":                                         "d8a850fc1857582f2ae4a115e97473e337900253686f18e742036ac2f38f2c8c",
 	"stdlib/universe/pivot_col_order_test.flux":                                     "8116e23d0b88b2fd95f2e62c1e4b3310d6256def315411357c8fdb4aac76e680",
 	"stdlib/universe/pivot_fields_test.flux":                                        "a7620f03c11aac090fe4b19c663de607f50714ee5fe3888177284aec0771eaef",
