@@ -90,6 +90,21 @@ func TestTranslationDriverReturn(t *testing.T) {
 		t.Fail()
 	}
 
+	// verify that valid returns expected error for AWS Athena (yes, error)
+	expectedErr := errors.Newf(codes.Invalid, "writing is not supported for awsathena")
+	_, err = getTranslationFunc("awsathena")
+	if !cmp.Equal(expectedErr, err) {
+		t.Log(cmp.Diff(expectedErr, err))
+		t.Fail()
+	}
+
+	// verify that valid returns expected happiness for SAP HANA
+	_, err = getTranslationFunc("hdb")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
+
 }
 
 func TestSqliteTranslation(t *testing.T) {
@@ -363,5 +378,17 @@ func TestHdbTranslation(t *testing.T) {
 			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
 			t.Fail()
 		}
+	}
+
+	// test no match
+	var _unsupportedType flux.ColType = 666
+	_, err = sqlT()(_unsupportedType, columnLabel)
+	if cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
+	if !cmp.Equal("SAP HANA does not support column type unknown", err.Error()) {
+		t.Log(cmp.Diff("SAP HANA does not support column type unknown", err.Error()))
+		t.Fail()
 	}
 }
