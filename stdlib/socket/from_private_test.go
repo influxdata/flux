@@ -34,11 +34,13 @@ func TestFromSocketUrlValidation(t *testing.T) {
 		}, {
 			Name: "no such host",
 			Spec: &FromSocketProcedureSpec{
-				URL:     "unix://notfound:12345/abc",
+				// Using 'invalid.' for DNS name as its guaranteed not to exist
+				// https://tools.ietf.org/html/rfc6761#section-6.4
+				URL:     "unix://notfound.invalid.:12345/abc",
 				Decoder: "csv",
 			},
 			V:      url.PrivateIPValidator{},
-			ErrMsg: "no such host",
+			ErrMsg: "url did not pass validation",
 		},
 	}
 	testCases.Run(t, createFromSocketSource)
