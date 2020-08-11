@@ -19,6 +19,40 @@ func TestKeyValues_Process(t *testing.T) {
 		wantErr error
 	}{
 		{
+			name: "out of order columns",
+			spec: &universe.KeyValuesProcedureSpec{KeyColumns: []string{"tc", "tb", "ta"}},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "ta", Type: flux.TString},
+						{Label: "tb", Type: flux.TString},
+						{Label: "tc", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0, "b", "b", "c"},
+						{execute.Time(2), 2.0, "c", "b", "c"},
+						{execute.Time(3), 2.0, "b", "b", "c"},
+						{execute.Time(4), 2.0, "d", "b", "c"},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_key", Type: flux.TString},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{string("tc"), string("c")},
+					{string("tb"), string("b")},
+					{string("ta"), string("b")},
+					{string("ta"), string("c")},
+					{string("ta"), string("d")},
+				},
+			}},
+		},
+		{
 			name: "no group key",
 			spec: &universe.KeyValuesProcedureSpec{KeyColumns: []string{"tag1"}},
 			data: []flux.Table{
