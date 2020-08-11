@@ -3133,17 +3133,14 @@ fn constrained_generics_timeable() {
             "a" => "forall [t0] where t0: Timeable (t: t0) -> t0",
             "b" => "forall [] time",
             "c" => "forall [] duration",
-            "x" => "forall [] int",
         ],
         src: r#"
             d = a(t: b)
             e = a(t: c)
-            f = a(t: x)
         "#,
         exp: map![
             "d" => "forall [] time",
             "e" => "forall [] duration",
-            "f" => "forall [] int"
         ],
     }
 
