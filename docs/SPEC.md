@@ -533,21 +533,24 @@ The generated values may be of any other type but must all be the same type.
 
 #### Polymorphism
 
-Flux types can be polymorphic, meaning that a type may take on many different types.
-Flux supports let-polymorphism and structural polymorphism.
+Flux functions can be polymorphic, meaning they can be applied to arguments of different types.
+Flux supports parametric, record, and ad hoc polymorphism.
 
-Let-polymorphism is the concept that each time an identifier is referenced is may take on a different type.
-For example:
+##### Parametric Polymorphism
 
-    add = (a,b) => a + b
-    add(a:1,b:2) // 3
-    add(a:1.5,b:2.0) // 3.5
+Parametric polymorphism is the notion that a function can be applied uniformly to arguments of any type.
+The identity function is one such example.
 
-The identifiers `a` and `b` in the body of the `add` function are used as both `int` and `float` types.
-This is let-polymorphism, each different use of an identifier may have a different type.
+    f = (x) => x
+    f(x: 1)
+    f(x: 1.1)
+    f(x: "1")
+    f(x: true)
+    f(x: f)
 
-Structural polymorphism is the concept that structures (records in Flux) can be used by the same function even if the structures themselves are different.
-For example:
+##### Record Polymorphism
+
+Record polymorphism is the notion that a function can be applied to different types of records.
 
     john = {name:"John", lastName:"Smith"}
     jane = {name:"Jane", age:44}
@@ -565,9 +568,81 @@ For example:
 
     name(person:device) // Type error, "device" does not have a property name.
 
-This is structural polymorphism, records of differing types can be used as the same type so long as they both contain the necessary properties. The necessary properties are determined by the use of the record.
+Records of differing types can be passed to the same function so long as they contain the necessary properties.
+The necessary properties are determined by the use of the record.
 
-This form of polymorphism means that these checks are performed during type inference and not during runtime. Type errors are found and reported before runtime.
+##### Ad hoc Polymorphism
+
+Ad hoc polymorphism is the notion that a function can be applied to arguments of different types, with different behavior depending on the type.
+
+    add = (a, b) => a + b
+
+    // Integer addition
+    add(a: 1, b: 1)
+
+    // String concatenation
+    add(a: "str", b: "ing")
+
+    // Addition not defined for boolean data types
+    add(a: true, b: false)
+
+#### Type constraints
+
+Type constraints are a type system concept used to implement static ad hoc polymorphism.
+For example, `add = (a, b) => a + b` is a function that is defined only for `Addable` types.
+If one were to pass a record to `add` like so:
+
+    add(a: {}, b: {})
+
+the result would be a compile-time type error because records are not addable.
+Like types, constraints are never explicitly declared but rather inferred from the context.
+
+##### Addable Constraint
+
+Addable types are those the binary arithmetic operator `+` accepts.
+Int, Uint, Float, and String types are Addable.
+
+##### Subtractable Constraint
+
+Subtractable types are those the binary arithmetic operator `-` accepts.
+Int, Uint, and Float types are Subtractable.
+
+##### Divisible Constraint
+
+Divisible types are those the binary arithmetic operator `\` accepts.
+Int, Uint, and Float types are Divisible.
+
+##### Numeric Constraint
+
+Int, Uint, and Float types are Numeric.
+
+##### Comparable Constraint
+
+Comparable types are those the binary comparison operators `<`, `<=`, `>`, or `>=` accept.
+Int, Uint, Float, String, Duration, and Time types are Comparable.
+
+##### Equatable Constraint
+
+Equatable types are those that can be compared for equality using the `==` or `!=` operators.
+Bool, Int, Uint, Float, String, Duration, Time, Bytes, Array, and Record types are Equatable.
+
+##### Nullable Constraint
+
+Nullable types are those that can be null.
+Bool, Int, Uint, Float, String, Duration, and Time types are Nullable.
+
+##### Record Constraint
+
+Records are the only types that fall under this constraint.
+
+##### Negatable Constraint
+
+Negatable types ore those the unary arithmetic operator `-` accepts.
+Int, Uint, Float, and Duration types are Negatable.
+
+##### Timeable Constraint
+
+Duration and Time types are Timeable.
 
 ### Blocks
 
