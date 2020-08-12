@@ -586,16 +586,16 @@ Ad hoc polymorphism is the notion that a function can be applied to arguments of
     // Addition not defined for boolean data types
     add(a: true, b: false)
 
-#### Kind Constraints
+#### Type constraints
 
-Kind constraints are a type system concept that allow for constraining polymorphic types.
+Type constraints are a type system concept used to implement static ad hoc polymorphism.
 For example, `add = (a, b) => a + b` is a function that is defined only for `Addable` types.
 If one were to pass a record to `add` like so:
 
     add(a: {}, b: {})
 
 the result would be a compile-time type error because records are not addable.
-Just like types, kind constraints are never explicitly declared but rather inferred from the context.
+Like types, constraints are never explicitly declared but rather inferred from the context.
 
 ##### Addable Constraint
 
@@ -631,9 +631,9 @@ Bool, Int, Uint, Float, String, Duration, Time, Bytes, Array, and Record types a
 Nullable types are those that can be null.
 Bool, Int, Uint, Float, String, Duration, and Time types are Nullable.
 
-##### Row Constraint
+##### Record Constraint
 
-Records are the only types of kind Row.
+Records are the only types that fall under this constraint.
 
 ##### Negatable Constraint
 
