@@ -533,21 +533,24 @@ The generated values may be of any other type but must all be the same type.
 
 #### Polymorphism
 
-Flux types can be polymorphic, meaning that a type may take on many different types.
-Flux supports let-polymorphism and structural polymorphism.
+Flux functions can be polymorphic, meaning they can be applied to arguments of different types.
+Flux supports parametric, record, and ad hoc polymorphism.
 
-Let-polymorphism is the concept that each time an identifier is referenced is may take on a different type.
-For example:
+##### Parametric Polymorphism
 
-    add = (a,b) => a + b
-    add(a:1,b:2) // 3
-    add(a:1.5,b:2.0) // 3.5
+Parametric polymorphism is the notion that a function can be applied uniformly to arguments of any type.
+The identity function is one such example.
 
-The identifiers `a` and `b` in the body of the `add` function are used as both `int` and `float` types.
-This is let-polymorphism, each different use of an identifier may have a different type.
+    f = (x) => x
+    f(x: 1)
+    f(x: 1.1)
+    f(x: "1")
+    f(x: true)
+    f(x: f)
 
-Structural polymorphism is the concept that structures (records in Flux) can be used by the same function even if the structures themselves are different.
-For example:
+##### Record Polymorphism
+
+Record polymorphism is the notion that a function can be applied to different types of records.
 
     john = {name:"John", lastName:"Smith"}
     jane = {name:"Jane", age:44}
@@ -565,9 +568,23 @@ For example:
 
     name(person:device) // Type error, "device" does not have a property name.
 
-This is structural polymorphism, records of differing types can be used as the same type so long as they both contain the necessary properties. The necessary properties are determined by the use of the record.
+Records of differing types can be passed to the same function so long as they contain the necessary properties.
+The necessary properties are determined by the use of the record.
 
-This form of polymorphism means that these checks are performed during type inference and not during runtime. Type errors are found and reported before runtime.
+##### Ad hoc Polymorphism
+
+Ad hoc polymorphism is the notion that a function can be applied to arguments of different types, with different behavior depending on the type.
+
+    add = (a, b) => a + b
+
+    // Integer addition
+    add(a: 1, b: 1)
+
+    // String concatenation
+    add(a: "str", b: "ing")
+
+    // Addition not defined for boolean data types
+    add(a: true, b: false)
 
 #### Kind Constraints
 
