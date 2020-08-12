@@ -201,7 +201,7 @@ pub fn builtins() -> Builtins<'static> {
                 "#,
             },
             "internal/gen" => semantic_map! {
-                "tables" => "(n: int, ?nulls: float, ?tags: [{name: string | cardinality: int}]) => [{A with _time: time , _value: float}]",
+                "tables" => "(n: int, ?nulls: float, ?tags: [{name: string , cardinality: int}]) => [{A with _time: time , _value: float}]",
             },
             "internal/debug" => semantic_map! {
                 "pass" => "(<-tables: [A]) => [A] where A: Row",
