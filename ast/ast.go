@@ -646,8 +646,8 @@ func (s *OptionStatement) Copy() Node {
 // BuiltinStatement declares a builtin identifier and its type
 type BuiltinStatement struct {
 	BaseNode
-	ID *Identifier    `json:"id"`
-	Ty TypeExpression `json:"ty"`
+	ID *Identifier `json:"id"`
+	//Ty TypeExpression `json:"ty"`
 }
 
 // Type is the abstract type

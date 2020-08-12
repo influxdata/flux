@@ -151,49 +151,11 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"OptionStatement","assignment":{"type":"VariableAssignment","id":{"type":"Identifier","name":"task"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"name"},"value":{"type":"StringLiteral","value":"foo"}},{"type":"Property","key":{"type":"Identifier","name":"every"},"value":{"type":"DurationLiteral","values":[{"magnitude":1,"unit":"h"}]}}]}}}`,
 		},
 		{
-			name: "builtin statement with constraints",
+			name: "builtin statement",
 			node: &ast.BuiltinStatement{
 				ID: &ast.Identifier{Name: "task"},
-				Ty: ast.TypeExpression{
-					BaseNode: ast.BaseNode{},
-					Ty: &ast.NamedType{
-						BaseNode: ast.BaseNode{},
-						ID: &ast.Identifier{
-							BaseNode: ast.BaseNode{},
-							Name:     "int",
-						},
-					},
-					Constraints: []*ast.TypeConstraint{{
-						Tvar: &ast.Identifier{
-							BaseNode: ast.BaseNode{},
-							Name:     "A",
-						},
-						Kinds: []*ast.Identifier{{
-							BaseNode: ast.BaseNode{},
-							Name:     "Addable",
-						}},
-					}},
-				},
 			},
-			want: `{"type":"BuiltinStatement","id":{"type":"Identifier","name":"task"},"ty":{"type":"TypeExpression","ty":{"type":"NamedType","id":{"type":"Identifier","name":"int"}},"constraints":[{"type":"TypeConstraint","tvar":{"type":"Identifier","name":"A"},"kinds":[{"type":"Identifier","name":"Addable"}]}]}}`,
-		},
-		{
-			name: "builtin statement no constraints",
-			node: &ast.BuiltinStatement{
-				ID: &ast.Identifier{Name: "task"},
-				Ty: ast.TypeExpression{
-					BaseNode: ast.BaseNode{},
-					Ty: &ast.NamedType{
-						BaseNode: ast.BaseNode{},
-						ID: &ast.Identifier{
-							BaseNode: ast.BaseNode{},
-							Name:     "int",
-						},
-					},
-					Constraints: []*ast.TypeConstraint{},
-				},
-			},
-			want: `{"type":"BuiltinStatement","id":{"type":"Identifier","name":"task"},"ty":{"type":"TypeExpression","ty":{"type":"NamedType","id":{"type":"Identifier","name":"int"}},"constraints":[]}}`,
+			want: `{"type":"BuiltinStatement","id":{"name":"task"}}`,
 		},
 		{
 			name: "NamedType",
