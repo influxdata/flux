@@ -1000,6 +1000,13 @@ func TestOrderFilterGroup(t *testing.T) {
 				},
 			}
 		}
+		filter2 = func() *universe.FilterProcedureSpec {
+			return &universe.FilterProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu"`),
+				},
+			}
+		}
 		groupBy = &universe.GroupProcedureSpec{
 			GroupMode: flux.GroupModeBy,
 			GroupKeys: []string{"foo", "bar", "buz"},
@@ -1012,12 +1019,17 @@ func TestOrderFilterGroup(t *testing.T) {
 			GroupMode: flux.GroupModeNone,
 			GroupKeys: []string{},
 		}
+		sum = &universe.SumProcedureSpec{
+			AggregateConfig: execute.AggregateConfig{
+				Columns: []string{"_value"},
+			},
+		}
 	)
 
 	tests := []plantest.RuleTestCase{
 		{
 			Name:  "filter |> group",
-			Rules: []plan.Rule{&universe.OrderFilterGroup{}},
+			Rules: []plan.Rule{&universe.GroupFilterTransposeRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
@@ -1033,7 +1045,7 @@ func TestOrderFilterGroup(t *testing.T) {
 		},
 		{
 			Name:  "double group",
-			Rules: []plan.Rule{&universe.OrderFilterGroup{}},
+			Rules: []plan.Rule{&universe.GroupFilterTransposeRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
@@ -1049,7 +1061,7 @@ func TestOrderFilterGroup(t *testing.T) {
 		},
 		{
 			Name:  "triple group",
-			Rules: []plan.Rule{&universe.OrderFilterGroup{}},
+			Rules: []plan.Rule{&universe.GroupFilterTransposeRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
@@ -1067,7 +1079,7 @@ func TestOrderFilterGroup(t *testing.T) {
 		},
 		{
 			Name:  "group |> filter",
-			Rules: []plan.Rule{&universe.OrderFilterGroup{}},
+			Rules: []plan.Rule{&universe.GroupFilterTransposeRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
@@ -1093,7 +1105,7 @@ func TestOrderFilterGroup(t *testing.T) {
 		},
 		{
 			Name:  "group |> filter1",
-			Rules: []plan.Rule{&universe.OrderFilterGroup{}},
+			Rules: []plan.Rule{&universe.GroupFilterTransposeRule{}},
 			Before: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreateLogicalNode("from", from),
@@ -1114,6 +1126,62 @@ func TestOrderFilterGroup(t *testing.T) {
 				Edges: [][2]int{
 					{0, 1},
 					{1, 2},
+				},
+			},
+		},
+		{
+			Name:  "group |> filter2",
+			Rules: []plan.Rule{&universe.GroupFilterTransposeRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("group", groupBy),
+					plan.CreatePhysicalNode("filter", filter2()),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreateLogicalNode("from", from),
+					plan.CreatePhysicalNode("filter_copy", filter2()),
+					plan.CreateLogicalNode("group", groupBy),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+				},
+			},
+		},
+		{
+			Name:  "group |> filter2 |> sum",
+			Rules: []plan.Rule{&universe.GroupFilterTransposeRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreateLogicalNode("from", from),
+					plan.CreateLogicalNode("group", groupBy),
+					plan.CreatePhysicalNode("filter", filter2()),
+					plan.CreatePhysicalNode("sum", sum),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
+				},
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreateLogicalNode("from", from),
+					plan.CreatePhysicalNode("filter_copy", filter2()),
+					plan.CreateLogicalNode("group", groupBy),
+					plan.CreatePhysicalNode("sum", sum),
+				},
+				Edges: [][2]int{
+					{0, 1},
+					{1, 2},
+					{2, 3},
 				},
 			},
 		},

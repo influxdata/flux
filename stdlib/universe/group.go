@@ -394,19 +394,19 @@ func (r MergeGroupRule) Rewrite(ctx context.Context, lastGroup plan.Node) (plan.
 	return merged, true, nil
 }
 
-// `OrderFilterGroup` orders to have 'filter |> group' from 'group |> filter'
-type OrderFilterGroup struct{}
+// `GroupFilterTransposeRule` orders to have 'filter |> group' from 'group |> filter'
+type GroupFilterTransposeRule struct{}
 
-func (r OrderFilterGroup) Name() string {
-	return "OrderFilterGroup"
+func (r GroupFilterTransposeRule) Name() string {
+	return "GroupFilterTransposeRule"
 }
 
 // returns the pattern that matches `group |> filter`
-func (r OrderFilterGroup) Pattern() plan.Pattern {
+func (r GroupFilterTransposeRule) Pattern() plan.Pattern {
 	return plan.Pat(FilterKind, plan.OneOf([]plan.ProcedureKind{GroupKind, experimental.ExperimentalGroupKind}, plan.Any()))
 }
 
-func (r OrderFilterGroup) Rewrite(ctx context.Context, Filter plan.Node) (plan.Node, bool, error) {
+func (r GroupFilterTransposeRule) Rewrite(ctx context.Context, Filter plan.Node) (plan.Node, bool, error) {
 	Group := Filter.Predecessors()[0]
 	Group, err := plan.SwapPlanNodes(Filter, Group)
 	if err != nil {

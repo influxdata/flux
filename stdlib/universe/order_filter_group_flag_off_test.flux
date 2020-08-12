@@ -4,7 +4,7 @@ import "testing"
 import "planner"
 
 option now = () => (2030-01-01T00:00:00Z)
-option planner.disableLogicalRules = ["OrderFilterGroup"]
+option planner.disableLogicalRules = ["GroupFilterTransposeRule"]
 
 input = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
