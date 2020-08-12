@@ -35,8 +35,8 @@ func NewMonoType(tbl flatbuffers.Table, t fbsemantic.MonoType) (MonoType, error)
 		tbler = new(fbsemantic.Var)
 	case fbsemantic.MonoTypeArr:
 		tbler = new(fbsemantic.Arr)
-	case fbsemantic.MonoTypeRow:
-		tbler = new(fbsemantic.Row)
+	case fbsemantic.MonoTypeRecord:
+		tbler = new(fbsemantic.Record)
 	case fbsemantic.MonoTypeFun:
 		tbler = new(fbsemantic.Fun)
 	default:
@@ -74,7 +74,7 @@ func (mt MonoType) Nature() Nature {
 		}
 	case fbsemantic.MonoTypeArr:
 		return Array
-	case fbsemantic.MonoTypeRow:
+	case fbsemantic.MonoTypeRecord:
 		return Object
 	case fbsemantic.MonoTypeFun:
 		return Function
@@ -94,7 +94,7 @@ const (
 	Basic   = Kind(fbsemantic.MonoTypeBasic)
 	Var     = Kind(fbsemantic.MonoTypeVar)
 	Arr     = Kind(fbsemantic.MonoTypeArr)
-	Row     = Kind(fbsemantic.MonoTypeRow)
+	Record  = Kind(fbsemantic.MonoTypeRecord)
 	Fun     = Kind(fbsemantic.MonoTypeFun)
 )
 
@@ -269,51 +269,51 @@ func (mt MonoType) ElemType() (MonoType, error) {
 	return NewMonoType(tbl, arr.TType())
 }
 
-func getRow(tbl fbTabler) (*fbsemantic.Row, error) {
-	row, ok := tbl.(*fbsemantic.Row)
+func getRecord(tbl fbTabler) (*fbsemantic.Record, error) {
+	record, ok := tbl.(*fbsemantic.Record)
 	if !ok {
-		return nil, errors.New(codes.Internal, "MonoType is not a row")
+		return nil, errors.New(codes.Internal, "MonoType is not a record")
 	}
-	return row, nil
+	return record, nil
 
 }
 
-// NumProperties returns the number of properties if this monotype is a row, and an error otherwise.
+// NumProperties returns the number of properties if this monotype is a record, and an error otherwise.
 func (mt MonoType) NumProperties() (int, error) {
-	row, err := getRow(mt.tbl)
+	record, err := getRecord(mt.tbl)
 	if err != nil {
 		return 0, err
 	}
-	return row.PropsLength(), nil
+	return record.PropsLength(), nil
 }
 
-// RowProperty returns a property given its ordinal position if this monotype is a row, and an error otherwise.
-func (mt MonoType) RowProperty(i int) (*RowProperty, error) {
-	row, err := getRow(mt.tbl)
+// RecordProperty returns a property given its ordinal position if this monotype is a record, and an error otherwise.
+func (mt MonoType) RecordProperty(i int) (*RecordProperty, error) {
+	record, err := getRecord(mt.tbl)
 	if err != nil {
 		return nil, err
 	}
-	if i < 0 || i >= row.PropsLength() {
-		return nil, errors.Newf(codes.Internal, "request for out-of-bounds property: %v of %v", i, row.PropsLength())
+	if i < 0 || i >= record.PropsLength() {
+		return nil, errors.Newf(codes.Internal, "request for out-of-bounds property: %v of %v", i, record.PropsLength())
 	}
 	p := new(fbsemantic.Prop)
-	if !row.Props(p, i) {
+	if !record.Props(p, i) {
 		return nil, errors.New(codes.Internal, "missing property")
 	}
-	return &RowProperty{fb: p}, nil
+	return &RecordProperty{fb: p}, nil
 }
 
-// SortedProperties returns the properties for a Row monotype, sorted by
+// SortedProperties returns the properties for a Record monotype, sorted by
 // key.  It's possible that there are duplicate keys with different types,
 // in this case, this function preserves their order.
-func (mt MonoType) SortedProperties() ([]*RowProperty, error) {
+func (mt MonoType) SortedProperties() ([]*RecordProperty, error) {
 	nps, err := mt.NumProperties()
 	if err != nil {
 		return nil, err
 	}
-	ps := make([]*RowProperty, nps)
+	ps := make([]*RecordProperty, nps)
 	for i := 0; i < nps; i++ {
-		ps[i], err = mt.RowProperty(i)
+		ps[i], err = mt.RecordProperty(i)
 		if err != nil {
 			return nil, err
 		}
@@ -327,14 +327,14 @@ func (mt MonoType) SortedProperties() ([]*RowProperty, error) {
 	return ps, nil
 }
 
-// Extends returns the extending type variable if this monotype is a row, and an error otherwise.
-// If the type is a row but does not extend anything a false is returned.
+// Extends returns the extending type variable if this monotype is a record, and an error otherwise.
+// If the type is a record but does not extend anything a false is returned.
 func (mt MonoType) Extends() (MonoType, bool, error) {
-	row, err := getRow(mt.tbl)
+	record, err := getRecord(mt.tbl)
 	if err != nil {
 		return MonoType{}, false, err
 	}
-	v := row.Extends(nil)
+	v := record.Extends(nil)
 	if v == nil {
 		return MonoType{}, false, nil
 	}
@@ -366,18 +366,18 @@ func (a *Argument) TypeOf() (MonoType, error) {
 	return argTy, nil
 }
 
-// Property represents a property of a row.
-type RowProperty struct {
+// Property represents a property of a record.
+type RecordProperty struct {
 	fb *fbsemantic.Prop
 }
 
 // Name returns the name of the property.
-func (p *RowProperty) Name() string {
+func (p *RecordProperty) Name() string {
 	return string(p.fb.K())
 }
 
 // TypeOf returns the type of the property.
-func (p *RowProperty) TypeOf() (MonoType, error) {
+func (p *RecordProperty) TypeOf() (MonoType, error) {
 	var tbl flatbuffers.Table
 	if !p.fb.V(&tbl) {
 		return MonoType{}, nil
@@ -417,7 +417,7 @@ func (mt MonoType) getCanonicalMapping(counter *uint64, tvm map[uint64]uint64) e
 		if err := et.getCanonicalMapping(counter, tvm); err != nil {
 			return err
 		}
-	case Row:
+	case Record:
 		props, err := mt.SortedProperties()
 		if err != nil {
 			return err
@@ -496,7 +496,7 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 			return "<" + err.Error() + ">"
 		}
 		return "[" + et.string(m) + "]"
-	case Row:
+	case Record:
 		var sb strings.Builder
 		sb.WriteString("{")
 		sprops, err := mt.SortedProperties()
@@ -645,8 +645,8 @@ func ExtendObjectType(properties []PropertyType, extends *uint64) MonoType {
 	builder.Finish(offset)
 
 	buf := builder.FinishedBytes()
-	row := fbsemantic.GetRootAsRow(buf, 0)
-	mt, err := NewMonoType(row.Table(), fbsemantic.MonoTypeRow)
+	record := fbsemantic.GetRootAsRecord(buf, 0)
+	mt, err := NewMonoType(record.Table(), fbsemantic.MonoTypeRecord)
 	if err != nil {
 		panic(err)
 	}
@@ -684,20 +684,20 @@ func copyMonoType(builder *flatbuffers.Builder, t MonoType) flatbuffers.UOffsetT
 
 		elem := monoTypeFromFunc(arr.T, arr.TType())
 		return buildArrayType(builder, elem)
-	case fbsemantic.MonoTypeRow:
-		var row fbsemantic.Row
-		row.Init(table.Bytes, table.Pos)
+	case fbsemantic.MonoTypeRecord:
+		var record fbsemantic.Record
+		record.Init(table.Bytes, table.Pos)
 
-		properties := make([]PropertyType, row.PropsLength())
+		properties := make([]PropertyType, record.PropsLength())
 		for i := 0; i < len(properties); i++ {
 			var prop fbsemantic.Prop
-			row.Props(&prop, i)
+			record.Props(&prop, i)
 			properties[i] = PropertyType{
 				Key:   prop.K(),
 				Value: monoTypeFromFunc(prop.V, prop.VType()),
 			}
 		}
-		extends := row.Extends(nil)
+		extends := record.Extends(nil)
 		var tv uint64
 		if extends != nil {
 			tv = extends.I()
@@ -794,7 +794,7 @@ func buildFunctionType(builder *flatbuffers.Builder, retn MonoType, args []Argum
 	return fbsemantic.FunEnd(builder)
 }
 
-// buildObjectType will construct a row type in the builder
+// buildObjectType will construct a record type in the builder
 // and return the offset for the type.
 func buildObjectType(builder *flatbuffers.Builder, properties []PropertyType, extends *uint64) flatbuffers.UOffsetT {
 	propOffsets := make([]flatbuffers.UOffsetT, len(properties))
@@ -817,17 +817,17 @@ func buildObjectType(builder *flatbuffers.Builder, properties []PropertyType, ex
 		extendsOffset = fbsemantic.VarEnd(builder)
 	}
 
-	fbsemantic.RowStartPropsVector(builder, len(propOffsets))
+	fbsemantic.RecordStartPropsVector(builder, len(propOffsets))
 	for i := len(propOffsets) - 1; i >= 0; i-- {
 		builder.PrependUOffsetT(propOffsets[i])
 	}
 	props := builder.EndVector(len(propOffsets))
-	fbsemantic.RowStart(builder)
-	fbsemantic.RowAddProps(builder, props)
+	fbsemantic.RecordStart(builder)
+	fbsemantic.RecordAddProps(builder, props)
 	if extends != nil {
-		fbsemantic.RowAddExtends(builder, extendsOffset)
+		fbsemantic.RecordAddExtends(builder, extendsOffset)
 	}
-	return fbsemantic.RowEnd(builder)
+	return fbsemantic.RecordEnd(builder)
 }
 
 func updateTVarMap(counter *uint64, m map[uint64]uint64, tv uint64) {

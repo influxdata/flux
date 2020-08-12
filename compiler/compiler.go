@@ -134,9 +134,9 @@ func substituteTypes(subst map[uint64]semantic.MonoType, inType, in semantic.Mon
 			return err
 		}
 		return substituteTypes(subst, lt, rt)
-	case semantic.Row:
-		// We need to compare the row type that was inferred
-		// and the reality. It is ok for row properties to exist
+	case semantic.Record:
+		// We need to compare the Record type that was inferred
+		// and the reality. It is ok for Record properties to exist
 		// in the real type that aren't in the inferred type and
 		// it is ok for inferred types to be missing from the actual
 		// input type in the case of null values.
@@ -150,7 +150,7 @@ func substituteTypes(subst map[uint64]semantic.MonoType, inType, in semantic.Mon
 
 		names := make([]string, 0, nproperties)
 		for i := 0; i < nproperties; i++ {
-			lprop, err := inType.RowProperty(i)
+			lprop, err := inType.RecordProperty(i)
 			if err != nil {
 				return err
 			}
@@ -198,7 +198,7 @@ func substituteTypes(subst map[uint64]semantic.MonoType, inType, in semantic.Mon
 
 			properties := make([]semantic.PropertyType, 0, nproperties)
 			for i := 0; i < nproperties; i++ {
-				prop, err := in.RowProperty(i)
+				prop, err := in.RecordProperty(i)
 				if err != nil {
 					return err
 				}
@@ -233,13 +233,13 @@ func substituteTypes(subst map[uint64]semantic.MonoType, inType, in semantic.Mon
 	}
 }
 
-func findProperty(name string, t semantic.MonoType) (*semantic.RowProperty, bool, error) {
+func findProperty(name string, t semantic.MonoType) (*semantic.RecordProperty, bool, error) {
 	n, err := t.NumProperties()
 	if err != nil {
 		return nil, false, err
 	}
 	for i := 0; i < n; i++ {
-		p, err := t.RowProperty(i)
+		p, err := t.RecordProperty(i)
 		if err != nil {
 			return nil, false, err
 		}
@@ -275,13 +275,13 @@ func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t se
 			return t
 		}
 		return semantic.NewArrayType(apply(sub, props, element))
-	case semantic.Row:
+	case semantic.Record:
 		n, err := t.NumProperties()
 		if err != nil {
 			return t
 		}
 		for i := 0; i < n; i++ {
-			pr, err := t.RowProperty(i)
+			pr, err := t.RecordProperty(i)
 			if err != nil {
 				return t
 			}
@@ -303,7 +303,7 @@ func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t se
 		}
 		r = apply(sub, nil, r)
 		switch r.Kind() {
-		case semantic.Row:
+		case semantic.Record:
 			return apply(sub, props, r)
 		case semantic.Var:
 			tv, err := r.VarNum()

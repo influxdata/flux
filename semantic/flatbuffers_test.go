@@ -834,7 +834,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 import "testing"
                 test t = () => ({input: testing.loadStorage(csv: ""), want: testing.loadMem(csv: ""), fn: (table=<-) => table})`,
 			types: map[string]string{
-				"t": "forall [t0, t1, t2] where t1: Row, t2: Row () -> {fn: (<-table: t0) -> t0 | input: [t1] | want: [t2]}",
+				"t": "forall [t0, t1, t2] where t1: Record, t2: Record () -> {fn: (<-table: t0) -> t0 | input: [t1] | want: [t2]}",
 			},
 		},
 		{

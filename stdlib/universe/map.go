@@ -208,12 +208,12 @@ func (t *mapTransformation) groupOn(key flux.GroupKey, m semantic.MonoType) (map
 		}
 
 		for i := 0; i < n; i++ {
-			row, err := m.RowProperty(i)
+			Record, err := m.RecordProperty(i)
 			if err != nil {
 				return nil, err
 			}
 
-			if row.Name() == c.Label {
+			if Record.Name() == c.Label {
 				on[c.Label] = true
 				break
 			}
@@ -250,7 +250,7 @@ func (t *mapTransformation) createSchema(fn *execute.RowMapPreparedFn, b execute
 	// Scan properties in reverse order to ensure we only
 	// add visible properties to the list.
 	for i := numProps - 1; i >= 0; i-- {
-		prop, err := returnType.RowProperty(i)
+		prop, err := returnType.RecordProperty(i)
 		if err != nil {
 			return err
 		}
@@ -269,11 +269,11 @@ func (t *mapTransformation) createSchema(fn *execute.RowMapPreparedFn, b execute
 
 	keys := make([]string, 0, n)
 	for i := 0; i < n; i++ {
-		row, err := m.Type().RowProperty(i)
+		Record, err := m.Type().RecordProperty(i)
 		if err != nil {
 			return err
 		}
-		keys = append(keys, row.Name())
+		keys = append(keys, Record.Name())
 	}
 	sort.Strings(keys)
 

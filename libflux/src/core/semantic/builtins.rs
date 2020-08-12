@@ -47,7 +47,7 @@ pub fn builtins() -> Builtins<'static> {
             "csv" => semantic_map! {
                 // This is a "provide exactly one argument" function
                 // https://github.com/influxdata/flux/issues/2249
-                "from" => "(?csv: string, ?file: string) => [A] where A: Row",
+                "from" => "(?csv: string, ?file: string) => [A] where A: Record",
             },
             "date" => semantic_map! {
                  "second" => "(t: T) => int where T: Timeable",
@@ -66,19 +66,19 @@ pub fn builtins() -> Builtins<'static> {
                  "truncate" => "(t: T, unit: duration) => time where T : Timeable",
             },
             "experimental/array" => semantic_map! {
-                "from" => "(rows: [A]) => [A] where A: Row ",
+                "from" => "(rows: [A]) => [A] where A: Record ",
             },
             "experimental/bigtable" => semantic_map! {
-                     "from" => "(token: string, project: string, instance: string, table: string) => [T] where T: Row",
+                     "from" => "(token: string, project: string, instance: string, table: string) => [T] where T: Record",
             },
             "experimental/geo" => semantic_map! {
-                     "getGrid" => "(region: T, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int, units: {distance: string}) => {level: int , set: [string]} where T: Row",
+                     "getGrid" => "(region: T, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int, units: {distance: string}) => {level: int , set: [string]} where T: Record",
                      "getLevel" => "(token: string) => int",
                      "s2CellIDToken" => "(?token: string, ?point: {lat: float , lon: float}, level: int) => string",
                      "s2CellLatLon" => "(token: string) => {lat: float , lon: float}",
-                     "stContains" => "(region: A, geometry: B, units: {distance: string}) => bool where A: Row, B: Row",
-                     "stDistance" => "(region: A, geometry: B, units: {distance: string}) => float where A: Row, B: Row",
-                     "stLength" => "(geometry: A, units: {distance: string}) => float where A: Row",
+                     "stContains" => "(region: A, geometry: B, units: {distance: string}) => bool where A: Record, B: Record",
+                     "stDistance" => "(region: A, geometry: B, units: {distance: string}) => float where A: Record, B: Record",
+                     "stLength" => "(geometry: A, units: {distance: string}) => float where A: Record",
             },
             "experimental/json" => semantic_map! {
                 "parse" => "(data: bytes) => A",
@@ -90,7 +90,7 @@ pub fn builtins() -> Builtins<'static> {
                         url: string,
                         ?headers: A,
                         ?timeout: duration
-                    ) => {statusCode: int , body: bytes , headers: B} where A: Row, B: Row "#,
+                    ) => {statusCode: int , body: bytes , headers: B} where A: Record, B: Record "#,
             },
             "experimental/mqtt" => semantic_map! {
                 "to" => r#"(
@@ -107,31 +107,31 @@ pub fn builtins() -> Builtins<'static> {
                         ?timeColumn: string,
                         ?tagColumns: [string],
                         ?valueColumns: [string]
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
             },
             "experimental/prometheus" => semantic_map! {
-                "scrape" => "(url: string) => [A] where A: Row",
+                "scrape" => "(url: string) => [A] where A: Record",
             },
             "experimental" => semantic_map! {
                  "addDuration" => "(d: duration, to: time) => time",
-                 "chain" => "(first: [A], second: [B]) => [B] where A: Row, B: Row",
+                 "chain" => "(first: [A], second: [B]) => [B] where A: Record, B: Record",
                  "subDuration" => "(d: duration, from: time) => time",
-                 "group" => "(<-tables: [A], mode: string, columns: [string]) => [A] where A: Row",
-                 "objectKeys" => "(o: A) => [string] where A: Row",
-                 "set" => "(<-tables: [A], o: B) => [C] where A: Row, B: Row, C: Row",
+                 "group" => "(<-tables: [A], mode: string, columns: [string]) => [A] where A: Record",
+                 "objectKeys" => "(o: A) => [string] where A: Record",
+                 "set" => "(<-tables: [A], o: B) => [C] where A: Record, B: Record, C: Record",
                  // must specify exactly one of bucket, bucketID
                  // must specify exactly one of org, orgID
                  // if host is specified, token must be too.
                  // https://github.com/influxdata/flux/issues/1660
-                 "to" => "(<-tables: [A], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) => [A] where A: Row",
-                 "join" => "(left: [A], right: [B], fn: (left: A, right: B) => C) => [C] where A: Row, B: Row, C: Row ",
-                 "table" => "(rows: [A]) => [A] where A: Row ",
+                 "to" => "(<-tables: [A], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) => [A] where A: Record",
+                 "join" => "(left: [A], right: [B], fn: (left: A, right: B) => C) => [C] where A: Record, B: Record, C: Record ",
+                 "table" => "(rows: [A]) => [A] where A: Record ",
             },
             "generate" => semantic_map! {
                 "from" => "(start: A, stop: A, count: int, fn: (n: int) => int) => [{ _start: time , _stop: time , _time: time , _value:int }] where A: Timeable",
             },
             "http" => semantic_map! {
-                "post" => "(url: string, ?headers: A, ?data: bytes) => int where A: Row",
+                "post" => "(url: string, ?headers: A, ?data: bytes) => int where A: Record",
                 "basicAuth" => "(u: string, p: string) => string",
                 "pathEscape" => "(inputString: string) => string",
             },
@@ -141,7 +141,7 @@ pub fn builtins() -> Builtins<'static> {
             "influxdata/influxdb/v1" => semantic_map! {
                 // exactly one of json and file must be specified
                 // https://github.com/influxdata/flux/issues/2250
-                "json" => "(?json: string, ?file: string) => [A] where A: Row",
+                "json" => "(?json: string, ?file: string) => [A] where A: Record",
                 "databases" => r#"
                     (
                         ?org: string,
@@ -184,7 +184,7 @@ pub fn builtins() -> Builtins<'static> {
                         ?measurementColumn: string,
                         ?tagColumns: [string],
                         ?fieldFn: (r: A) => B
-                    ) => [A] where A: Row, B: Row "#,
+                    ) => [A] where A: Record, B: Record "#,
                 "buckets" => r#"
                     (
                         ?org: string,
@@ -204,7 +204,7 @@ pub fn builtins() -> Builtins<'static> {
                 "tables" => "(n: int, ?nulls: float, ?tags: [{name: string , cardinality: int}]) => [{A with _time: time , _value: float}]",
             },
             "internal/debug" => semantic_map! {
-                "pass" => "(<-tables: [A]) => [A] where A: Row",
+                "pass" => "(<-tables: [A]) => [A] where A: Record",
             },
             "internal/promql" => semantic_map! {
                 "changes" => "(<-tables: [{A with _value: float}]) => [{B with _value: float}]",
@@ -220,7 +220,7 @@ pub fn builtins() -> Builtins<'static> {
                 "linearRegression" => "(<-tables: [{A with _time: time , _stop: time , _value: float}], ?predict: bool, ?fromNow: float) => [{B with _value: float}]",
                 "promqlMinute" => "(timestamp: float) => float",
                 "promqlMonth" => "(timestamp: float) => float",
-                "promHistogramQuantile" => "(<-tables: [A], ?quantile: float, ?countColumn: string, ?upperBoundColumn: string, ?valueColumn: string) => [B] where A: Row, B: Row",
+                "promHistogramQuantile" => "(<-tables: [A], ?quantile: float, ?countColumn: string, ?upperBoundColumn: string, ?valueColumn: string) => [B] where A: Record, B: Record",
                 "resets" => "(<-tables: [{A with _value: float}]) => [{B with _value: float}]",
                 "timestamp" => "(<-tables: [{A with _value: float}]) => [{A with _value: float}]",
                 "promqlYear" => "(timestamp: float) => float",
@@ -228,7 +228,7 @@ pub fn builtins() -> Builtins<'static> {
             "internal/testutil" => semantic_map! {
                 "fail" => "() => bool",
                 "yield" => r#"(<-v: A) => A "#,
-                "makeRecord" => "(o: A) => B where A: Row, B: Row",
+                "makeRecord" => "(o: A) => B where A: Record, B: Record",
             },
             "json" => semantic_map! {
                 "encode" => "(v: A) => bytes",
@@ -244,7 +244,7 @@ pub fn builtins() -> Builtins<'static> {
                         ?timeColumn: string,
                         ?tagColumns: [string],
                         ?valueColumns: [string]
-                    ) => [A] where A: Row "#,
+                    ) => [A] where A: Record "#,
             },
             "math" => semantic_map! {
                 "pi" => "float",
@@ -408,11 +408,11 @@ pub fn builtins() -> Builtins<'static> {
                         <-tables: [A],
                         n: int,
                         ?columns: [string]
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "columns" => r#"(
                         <-tables: [A],
                         ?column: string
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "contains" => r#"(
                         value: A,
                         set: [A]
@@ -420,53 +420,53 @@ pub fn builtins() -> Builtins<'static> {
                 "count" => r#"(
                         <-tables: [A],
                         ?column: string
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "covariance" => r#"(
                         <-tables: [A],
                         ?pearsonr: bool,
                         ?valueDst: string,
                         columns: [string]
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "cumulativeSum" => r#"(
                         <-tables: [A],
                         ?columns: [string]
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "derivative" => r#"(
                         <-tables: [A],
                         ?unit: duration,
                         ?nonNegative: bool,
                         ?columns: [string],
                         ?timeColumn: string
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "difference" => r#"
                    (
                         <-tables: [T],
                         ?nonNegative: bool,
                         ?columns: [string],
                         ?keepFirst: bool
-                    ) => [R] where T: Row, R: Row
+                    ) => [R] where T: Record, R: Record
                 "#,
                 "distinct" => r#"(
                         <-tables: [A],
                         ?column: string
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "drop" => r#"(
                         <-tables: [A],
                         ?fn: (column: string) => bool,
                         ?columns: [string]
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "duplicate" => r#"(
                         <-tables: [A],
                         column: string,
                         as: string
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "duration" => "(v: A) => duration",
                 "elapsed" => r#"(
                         <-tables: [A],
                         ?unit: duration,
                         ?timeColumn: string,
                         ?columnName: string
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "exponentialMovingAverage" => r#"(
                         <-tables: [{ B with _value: A}],
                         n: int
@@ -477,40 +477,40 @@ pub fn builtins() -> Builtins<'static> {
                         ?column: string,
                         ?value: B,
                         ?usePrevious: bool
-                    ) => [C] where A: Row, C: Row "#,
+                    ) => [C] where A: Record, C: Record "#,
                 "filter" => r#"(
                         <-tables: [A],
                         fn: (r: A) => bool,
                         ?onEmpty: string
-                    ) => [A] where A: Row "#,
+                    ) => [A] where A: Record "#,
                 "first" => r#"(
                         <-tables: [A],
                         ?column: string
-                    ) => [A] where A: Row "#,
+                    ) => [A] where A: Record "#,
                 "float" => "(v: A) => float",
                 "getColumn" => r#"(
                         <-table: [A],
                         column: string
-                    ) => [B] where A: Row "#,
+                    ) => [B] where A: Record "#,
                 "getRecord" => r#"(
                         <-table: [A],
                         idx: int
-                    ) => A where A: Row "#,
+                    ) => A where A: Record "#,
                 "findColumn" => r#"(
                         <-tables: [A],
                         fn: (key: B) => bool,
                         column: string
-                    ) => [C] where A: Row, B: Row "#,
+                    ) => [C] where A: Record, B: Record "#,
                 "findRecord" => r#"(
                         <-tables: [A],
                         fn: (key: B) => bool,
                         idx: int
-                    ) => A where A: Row, B: Row "#,
+                    ) => A where A: Record, B: Record "#,
                 "group" => r#"(
                         <-tables: [A],
                         ?mode: string,
                         ?columns: [string]
-                    ) => [A] where A: Row "#,
+                    ) => [A] where A: Record "#,
                 "histogram" => r#"(
                         <-tables: [A],
                         ?column: string,
@@ -518,7 +518,7 @@ pub fn builtins() -> Builtins<'static> {
                         ?countColumn: string,
                         bins: [float],
                         ?normalize: bool
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "histogramQuantile" => r#"(
                         <-tables: [A],
                         ?quantile: float,
@@ -526,7 +526,7 @@ pub fn builtins() -> Builtins<'static> {
                         ?upperBoundColumn: string,
                         ?valueColumn: string,
                         ?minValue: float
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "holtWinters" => r#"(
                         <-tables: [A],
                         n: int,
@@ -535,13 +535,13 @@ pub fn builtins() -> Builtins<'static> {
                         ?column: string,
                         ?timeColumn: string,
                         ?seasonality: int
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "hourSelection" => r#"(
                         <-tables: [A],
                         start: int,
                         stop: int,
                         ?timeColumn: string
-                    ) => [A] where A: Row "#,
+                    ) => [A] where A: Record "#,
                 "inf" => "duration",
                 "int" => "(v: A) => int",
                 "integral" => r#"(
@@ -549,12 +549,12 @@ pub fn builtins() -> Builtins<'static> {
                         ?unit: duration,
                         ?timeColumn: string,
                         ?column: string
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "join" => r#"(
                         <-tables: A,
                         ?method: string,
                         ?on: [string]
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 // This function would almost have input/output types that match, but:
                 // input column may start as int, uint or float, and always ends up as float.
                 // https://github.com/influxdata/flux/issues/2252
@@ -562,23 +562,23 @@ pub fn builtins() -> Builtins<'static> {
                         <-tables: [A],
                         n: int,
                         ?column: string
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 // either column list or predicate must be provided
                 // https://github.com/influxdata/flux/issues/2248
                 "keep" => r#"(
                         <-tables: [A],
                         ?columns: [string],
                         ?fn: (column: string) => bool
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "keyValues" => r#"(
                         <-tables: [A],
                         ?keyColumns: [string]
-                    ) => [{C with _key: string , _value: B}] where A: Row, C: Row "#,
+                    ) => [{C with _key: string , _value: B}] where A: Record, C: Record "#,
                 "keys" => r#"(
                         <-tables: [A],
                         ?column: string
-                    ) => [B] where A: Row, B: Row "#,
-                "last" => "(<-tables: [A], ?column: string) => [A] where A: Row",
+                    ) => [B] where A: Record, B: Record "#,
+                "last" => "(<-tables: [A], ?column: string) => [A] where A: Record",
                 "length" => "(arr: [A]) => int",
                 "limit"  => "(<-tables: [A], n: int, ?offset: int) => [A]",
                 "linearBins" => r#"(
@@ -596,30 +596,30 @@ pub fn builtins() -> Builtins<'static> {
                 // Note: mergeKey parameter could be removed from map once the transpiler is updated:
                 // https://github.com/influxdata/flux/issues/816
                 "map" => "(<-tables: [A], fn: (r: A) => B, ?mergeKey: bool) => [B]",
-                "max" => "(<-tables: [A], ?column: string) => [A] where A: Row",
+                "max" => "(<-tables: [A], ?column: string) => [A] where A: Record",
                 "mean" => r#"(
                         <-tables: [A],
                         ?column: string
-                    ) => [B] where A: Row, B: Row "#,
-                "min" => "(<-tables: [A], ?column: string) => [A] where A: Row",
+                    ) => [B] where A: Record, B: Record "#,
+                "min" => "(<-tables: [A], ?column: string) => [A] where A: Record",
                 "mode" => r#"(
                         <-tables: [A],
                         ?column: string
-                    ) => [{C with _value: B}] where A: Row, C: Row "#,
+                    ) => [{C with _value: B}] where A: Record, C: Record "#,
                 "movingAverage" => "(<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric",
                 "pivot" => r#"(
                         <-tables: [A],
                         rowKey: [string],
                         columnKey: [string],
                         valueColumn: string
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "quantile" => r#"(
                         <-tables: [A],
                         ?column: string,
                         q: float,
                         ?compression: float,
                         ?method: string
-                    ) => [A] where A: Row "#,
+                    ) => [A] where A: Record "#,
                 // start and stop should be able to constrained to time or duration with a kind constraint:
                 //   https://github.com/influxdata/flux/issues/2243
                 // Also, we should remove the column arguments so we can reuse A in the return type:
@@ -631,42 +631,42 @@ pub fn builtins() -> Builtins<'static> {
                         ?timeColumn: string,
                         ?startColumn: string,
                         ?stopColumn: string
-                    ) => [D] where A: Row, D: Row "#,
+                    ) => [D] where A: Record, D: Record "#,
                 // This function could be updated to get better type inference:
                 //   https://github.com/influxdata/flux/issues/2254
                 "reduce" => r#"(
                         <-tables: [A],
                         fn: (r: A, accumulator: B) => B,
                         identity: B
-                    ) => [C] where A: Row, B: Row, C: Row "#,
+                    ) => [C] where A: Record, B: Record, C: Record "#,
                 "relativeStrengthIndex" => r#"(
                         <-tables: [A],
                         n: int,
                         ?columns: [string]
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 // Either fn or columns should be specified
                 // https://github.com/influxdata/flux/issues/2251
                 "rename" => r#"(
                         <-tables: [A],
                         ?fn: (column: string) => string,
                         ?columns: B
-                    ) => [C] where A: Row, B: Row, C: Row "#,
+                    ) => [C] where A: Record, B: Record, C: Record "#,
                 "sample" => r#"(
                         <-tables: [A],
                         n: int,
                         ?pos: int,
                         ?column: string
-                    ) => [A] where A: Row "#,
+                    ) => [A] where A: Record "#,
                 "set" => r#"(
                         <-tables: [A],
                         key: string,
                         value: string
-                    ) => [A] where A: Row "#,
+                    ) => [A] where A: Record "#,
                 // This is an aggregate function, and may clobber value columns
                 "skew" => r#"(
                         <-tables: [A],
                         ?column: string
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "sleep" => r#"
                     (
                         <-v: A,
@@ -677,11 +677,11 @@ pub fn builtins() -> Builtins<'static> {
                         <-tables: [A],
                         ?columns: [string],
                         ?desc: bool
-                    ) => [A] where A: Row "#,
+                    ) => [A] where A: Record "#,
                 "spread" => r#"(
                         <-tables: [A],
                         ?column: string
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "stateTracking" => r#"(
                         <-tables: [A],
                         fn: (r: A) => bool,
@@ -689,21 +689,21 @@ pub fn builtins() -> Builtins<'static> {
                         ?durationColumn: string,
                         ?durationUnit: duration,
                         ?timeColumn: string
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "stddev" => r#"(
                         <-tables: [A],
                         ?column: string,
                         ?mode: string
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "string" => "(v: A) => string",
                 "sum" => r#"(
                         <-tables: [A],
                         ?column: string
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "tableFind" => r#"(
                         <-tables: [A],
                         fn: (key: B) => bool
-                    ) => [A] where A: Row, B: Row "#,
+                    ) => [A] where A: Record, B: Record "#,
                 "tail" => r#"(
                         <-tables: [A],
                         n: int,
@@ -720,16 +720,16 @@ pub fn builtins() -> Builtins<'static> {
                 "tripleExponentialDerivative" => r#"(
                         <-tables: [{B with _value: A}],
                         n: int
-                    ) => [{B with _value: float}] where A: Numeric, B: Row "#,
+                    ) => [{B with _value: float}] where A: Numeric, B: Record "#,
                 "true" => "bool",
                 "uint" => "(v: A) => uint",
                 "union" => r#"(
                         tables: [[A]]
-                    ) => [A] where A: Row "#,
+                    ) => [A] where A: Record "#,
                 "unique" => r#"(
                         <-tables: [A],
                         ?column: string
-                    ) => [A] where A: Row "#,
+                    ) => [A] where A: Record "#,
                 // This would produce an output the same as the input,
                 // except that startColumn and stopColumn will be added if they don't
                 // already exist.
@@ -743,11 +743,11 @@ pub fn builtins() -> Builtins<'static> {
                         ?startColumn: string,
                         ?stopColumn: string,
                         ?createEmpty: bool
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
                 "yield" => r#"(
                         <-tables: [A],
                         ?name: string
-                    ) => [A] where A: Row "#,
+                    ) => [A] where A: Record "#,
             },
             "contrib/jsternberg/math" => semantic_map! {
                 "minIndex" => r#"(
@@ -764,7 +764,7 @@ pub fn builtins() -> Builtins<'static> {
                 "table" => r#"(
                         <-tables: [A],
                         columns: C
-                    ) => [B] where A: Row, B: Row, C: Row "#,
+                    ) => [B] where A: Record, B: Record, C: Record "#,
                 "null" => r#"A"#,
                 "none" => r#"A"#,
             },
@@ -772,13 +772,13 @@ pub fn builtins() -> Builtins<'static> {
                 "_mask" => r#"(
                         <-tables: [A],
                         columns: [string]
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
             },
             "contrib/jsternberg/rows" => semantic_map! {
                 "map" => r#"(
                         <-tables: [A],
                         fn: (r: A) => B
-                    ) => [B] where A: Row, B: Row "#,
+                    ) => [B] where A: Record, B: Record "#,
             },
         },
     }

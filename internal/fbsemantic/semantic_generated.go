@@ -9,21 +9,21 @@ import (
 type MonoType = byte
 
 const (
-	MonoTypeNONE  MonoType = 0
-	MonoTypeBasic MonoType = 1
-	MonoTypeVar   MonoType = 2
-	MonoTypeArr   MonoType = 3
-	MonoTypeRow   MonoType = 4
-	MonoTypeFun   MonoType = 5
+	MonoTypeNONE   MonoType = 0
+	MonoTypeBasic  MonoType = 1
+	MonoTypeVar    MonoType = 2
+	MonoTypeArr    MonoType = 3
+	MonoTypeRecord MonoType = 4
+	MonoTypeFun    MonoType = 5
 )
 
 var EnumNamesMonoType = map[MonoType]string{
-	MonoTypeNONE:  "NONE",
-	MonoTypeBasic: "Basic",
-	MonoTypeVar:   "Var",
-	MonoTypeArr:   "Arr",
-	MonoTypeRow:   "Row",
-	MonoTypeFun:   "Fun",
+	MonoTypeNONE:   "NONE",
+	MonoTypeBasic:  "Basic",
+	MonoTypeVar:    "Var",
+	MonoTypeArr:    "Arr",
+	MonoTypeRecord: "Record",
+	MonoTypeFun:    "Fun",
 }
 
 type Type = byte
@@ -62,7 +62,7 @@ const (
 	KindComparable   Kind = 4
 	KindEquatable    Kind = 5
 	KindNullable     Kind = 6
-	KindRow          Kind = 7
+	KindRecord       Kind = 7
 	KindNegatable    Kind = 8
 	KindTimeable     Kind = 9
 )
@@ -75,7 +75,7 @@ var EnumNamesKind = map[Kind]string{
 	KindComparable:   "Comparable",
 	KindEquatable:    "Equatable",
 	KindNullable:     "Nullable",
-	KindRow:          "Row",
+	KindRecord:       "Record",
 	KindNegatable:    "Negatable",
 	KindTimeable:     "Timeable",
 }
@@ -571,27 +571,27 @@ func ArrEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 
-type Row struct {
+type Record struct {
 	_tab flatbuffers.Table
 }
 
-func GetRootAsRow(buf []byte, offset flatbuffers.UOffsetT) *Row {
+func GetRootAsRecord(buf []byte, offset flatbuffers.UOffsetT) *Record {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
-	x := &Row{}
+	x := &Record{}
 	x.Init(buf, n+offset)
 	return x
 }
 
-func (rcv *Row) Init(buf []byte, i flatbuffers.UOffsetT) {
+func (rcv *Record) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
 }
 
-func (rcv *Row) Table() flatbuffers.Table {
+func (rcv *Record) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *Row) Props(obj *Prop, j int) bool {
+func (rcv *Record) Props(obj *Prop, j int) bool {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		x := rcv._tab.Vector(o)
@@ -603,7 +603,7 @@ func (rcv *Row) Props(obj *Prop, j int) bool {
 	return false
 }
 
-func (rcv *Row) PropsLength() int {
+func (rcv *Record) PropsLength() int {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
@@ -611,7 +611,7 @@ func (rcv *Row) PropsLength() int {
 	return 0
 }
 
-func (rcv *Row) Extends(obj *Var) *Var {
+func (rcv *Record) Extends(obj *Var) *Var {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
@@ -624,19 +624,19 @@ func (rcv *Row) Extends(obj *Var) *Var {
 	return nil
 }
 
-func RowStart(builder *flatbuffers.Builder) {
+func RecordStart(builder *flatbuffers.Builder) {
 	builder.StartObject(2)
 }
-func RowAddProps(builder *flatbuffers.Builder, props flatbuffers.UOffsetT) {
+func RecordAddProps(builder *flatbuffers.Builder, props flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(props), 0)
 }
-func RowStartPropsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+func RecordStartPropsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func RowAddExtends(builder *flatbuffers.Builder, extends flatbuffers.UOffsetT) {
+func RecordAddExtends(builder *flatbuffers.Builder, extends flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(extends), 0)
 }
-func RowEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+func RecordEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 

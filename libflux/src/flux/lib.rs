@@ -605,7 +605,7 @@ mod tests {
     use core::semantic::env::Environment;
     use core::semantic::fresh::Fresher;
     use core::semantic::nodes::infer_file;
-    use core::semantic::types::{MonoType, Property, Row, Tvar, TvarMap};
+    use core::semantic::types::{MonoType, Property, Record, Tvar, TvarMap};
     use core::{ast, semantic};
 
     pub struct MonoTypeNormalizer {
@@ -634,8 +634,8 @@ mod tests {
                 MonoType::Arr(arr) => {
                     self.normalize(&mut arr.as_mut().0);
                 }
-                MonoType::Row(r) => {
-                    if let Row::Extension { head, tail } = r.as_mut() {
+                MonoType::Record(r) => {
+                    if let Record::Extension { head, tail } = r.as_mut() {
                         self.normalize(&mut head.v);
                         self.normalize(tail);
                     }
@@ -659,27 +659,27 @@ mod tests {
 
     #[test]
     fn monotype_normalizer() {
-        let mut ty = MonoType::Row(Box::new(Row::Extension {
+        let mut ty = MonoType::Record(Box::new(Record::Extension {
             head: Property {
                 k: "a".to_string(),
                 v: MonoType::Var(Tvar(4949)),
             },
-            tail: MonoType::Row(Box::new(Row::Extension {
+            tail: MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: "b".to_string(),
                     v: MonoType::Var(Tvar(4949)),
                 },
-                tail: MonoType::Row(Box::new(Row::Extension {
+                tail: MonoType::Record(Box::new(Record::Extension {
                     head: Property {
                         k: "e".to_string(),
                         v: MonoType::Var(Tvar(4957)),
                     },
-                    tail: MonoType::Row(Box::new(Row::Extension {
+                    tail: MonoType::Record(Box::new(Record::Extension {
                         head: Property {
                             k: "f".to_string(),
                             v: MonoType::Var(Tvar(4957)),
                         },
-                        tail: MonoType::Row(Box::new(Row::Extension {
+                        tail: MonoType::Record(Box::new(Record::Extension {
                             head: Property {
                                 k: "g".to_string(),
                                 v: MonoType::Var(Tvar(4957)),
@@ -718,14 +718,14 @@ vstr = v.str + "hello"
         assert_eq!(
             serde_json::to_string_pretty(&t).unwrap(),
             r#"{
-  "Row": {
+  "Record": {
     "type": "Extension",
     "head": {
       "k": "int",
       "v": "Int"
     },
     "tail": {
-      "Row": {
+      "Record": {
         "type": "Extension",
         "head": {
           "k": "sweet",
@@ -734,7 +734,7 @@ vstr = v.str + "hello"
           }
         },
         "tail": {
-          "Row": {
+          "Record": {
             "type": "Extension",
             "head": {
               "k": "str",
@@ -782,14 +782,14 @@ p = o.ethan
         assert_eq!(
             serde_json::to_string_pretty(&t).unwrap(),
             r#"{
-  "Row": {
+  "Record": {
     "type": "Extension",
     "head": {
       "k": "int",
       "v": "Int"
     },
     "tail": {
-      "Row": {
+      "Record": {
         "type": "Extension",
         "head": {
           "k": "ethan",

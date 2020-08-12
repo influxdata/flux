@@ -1,7 +1,7 @@
 use std::{iter::Peekable, slice::Iter, str::Chars};
 
 use crate::semantic::types::{
-    Array, Function, Kind, MonoType, MonoTypeMap, PolyType, Property, Row, Tvar, TvarKinds,
+    Array, Function, Kind, MonoType, MonoTypeMap, PolyType, Property, Record, Tvar, TvarKinds,
 };
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -400,7 +400,7 @@ impl Parser<'_> {
             "Comparable" => Ok(Kind::Comparable),
             "Nullable" => Ok(Kind::Nullable),
             "Equatable" => Ok(Kind::Equatable),
-            "Row" => Ok(Kind::Row),
+            "Record" => Ok(Kind::Record),
             "Timeable" => Ok(Kind::Timeable),
             _ => Err("Constraints must have a valid Kind"),
         }
@@ -649,7 +649,7 @@ impl Parser<'_> {
 
     fn parse_record(&mut self, token: &Token) -> Result<MonoType, &'static str> {
         match token.token_type {
-            TokenType::RIGHTCURLYBRAC => Ok(MonoType::Row(Box::new(Row::Empty))),
+            TokenType::RIGHTCURLYBRAC => Ok(MonoType::Record(Box::new(Record::Empty))),
             TokenType::WITH => {
                 let tok = self.next();
                 self.parse_record(&tok)
@@ -662,7 +662,7 @@ impl Parser<'_> {
                     }?;
                     let prop = self.parse_property(name)?;
                     let tok = self.next();
-                    Ok(MonoType::Row(Box::new(Row::Extension {
+                    Ok(MonoType::Record(Box::new(Record::Extension {
                         head: prop,
                         tail: self.parse_record(&tok)?,
                     })))
@@ -944,13 +944,15 @@ mod tests {
         let output = PolyType {
             vars: vec![Tvar(0)],
             cons: TvarKinds::new(),
-            expr: MonoType::Arr(Box::new(Array(MonoType::Row(Box::new(Row::Extension {
-                head: Property {
-                    k: "foo".to_string(),
-                    v: MonoType::Int,
+            expr: MonoType::Arr(Box::new(Array(MonoType::Record(Box::new(
+                Record::Extension {
+                    head: Property {
+                        k: "foo".to_string(),
+                        v: MonoType::Int,
+                    },
+                    tail: MonoType::Var(Tvar(0)),
                 },
-                tail: MonoType::Var(Tvar(0)),
-            }))))),
+            ))))),
         };
         assert_eq!(Ok(output), parse(parse_text));
     }
@@ -1146,12 +1148,12 @@ mod tests {
             Ok(PolyType {
                 vars: vec![Tvar(0)],
                 cons: TvarKinds::new(),
-                expr: MonoType::Row(Box::new(Row::Extension {
+                expr: MonoType::Record(Box::new(Record::Extension {
                     head: Property {
                         k: "a".to_string(),
                         v: MonoType::Int
                     },
-                    tail: MonoType::Row(Box::new(Row::Extension {
+                    tail: MonoType::Record(Box::new(Record::Extension {
                         head: Property {
                             k: "b".to_string(),
                             v: MonoType::Float,
@@ -1180,22 +1182,22 @@ mod tests {
         let output = PolyType {
             vars: vec![Tvar(1), Tvar(2)],
             cons: bounds,
-            expr: MonoType::Row(Box::new(Row::Extension {
+            expr: MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: "test".to_string(),
                     v: MonoType::Var(Tvar(1)),
                 },
-                tail: MonoType::Row(Box::new(Row::Extension {
+                tail: MonoType::Record(Box::new(Record::Extension {
                     head: Property {
                         k: "testAgain".to_string(),
                         v: MonoType::Bool,
                     },
-                    tail: MonoType::Row(Box::new(Row::Extension {
+                    tail: MonoType::Record(Box::new(Record::Extension {
                         head: Property {
                             k: "testLast".to_string(),
                             v: MonoType::Arr(Box::new(Array(MonoType::Uint))),
                         },
-                        tail: MonoType::Row(Box::new(Row::Empty)),
+                        tail: MonoType::Record(Box::new(Record::Empty)),
                     })),
                 })),
             })),
@@ -1214,7 +1216,7 @@ mod tests {
         let output = PolyType {
             vars: vec![Tvar(0)],
             cons: bounds,
-            expr: MonoType::Row(Box::new(Row::Empty)),
+            expr: MonoType::Record(Box::new(Record::Empty)),
         };
 
         assert_eq!(Ok(output), parse(text));
@@ -1230,22 +1232,22 @@ mod tests {
         let output = PolyType {
             vars: vec![Tvar(0)],
             cons: bounds,
-            expr: MonoType::Row(Box::new(Row::Extension {
+            expr: MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: 'a'.to_string(),
                     v: MonoType::Int,
                 },
-                tail: MonoType::Row(Box::new(Row::Extension {
+                tail: MonoType::Record(Box::new(Record::Extension {
                     head: Property {
                         k: 'b'.to_string(),
                         v: MonoType::String,
                     },
-                    tail: MonoType::Row(Box::new(Row::Extension {
+                    tail: MonoType::Record(Box::new(Record::Extension {
                         head: Property {
                             k: 'c'.to_string(),
                             v: MonoType::Bool,
                         },
-                        tail: MonoType::Row(Box::new(Row::Empty)),
+                        tail: MonoType::Record(Box::new(Record::Empty)),
                     })),
                 })),
             })),
@@ -1258,17 +1260,17 @@ mod tests {
         let output = PolyType {
             vars: vec![],
             cons: TvarKinds::new(),
-            expr: MonoType::Row(Box::new(Row::Extension {
+            expr: MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: "_label".to_string(),
                     v: MonoType::Int,
                 },
-                tail: MonoType::Row(Box::new(Row::Extension {
+                tail: MonoType::Record(Box::new(Record::Extension {
                     head: Property {
                         k: "lab_el".to_string(),
                         v: MonoType::String,
                     },
-                    tail: MonoType::Row(Box::new(Row::Empty)),
+                    tail: MonoType::Record(Box::new(Record::Empty)),
                 })),
             })),
         };

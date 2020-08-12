@@ -135,7 +135,7 @@ func (t *mapTransformation) createSchema(in flux.Table, fn *execute.RowMapPrepar
 	cols := make([]flux.ColMeta, 0, nproperties+len(key.Cols()))
 
 	for i := 0; i < nproperties; i++ {
-		prop, err := mt.RowProperty(i)
+		prop, err := mt.RecordProperty(i)
 		if err != nil {
 			return nil, err
 		}
