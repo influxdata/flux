@@ -412,8 +412,8 @@ pub fn build_type<'a>(
             let offset = build_arr(builder, *arr);
             (offset.as_union_value(), fb::MonoType::Arr)
         }
-        MonoType::Record(Record) => {
-            let offset = build_row(builder, *Record);
+        MonoType::Record(record) => {
+            let offset = build_record(builder, *record);
             (offset.as_union_value(), fb::MonoType::Record)
         }
         MonoType::Fun(fun) => {
@@ -444,13 +444,13 @@ fn build_arr<'a>(
     )
 }
 
-fn build_row<'a>(
+fn build_record<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    mut Record: Record,
+    mut record: Record,
 ) -> flatbuffers::WIPOffset<fb::Record<'a>> {
     let mut props = Vec::new();
     let extends = loop {
-        match Record {
+        match record {
             Record::Empty => {
                 break None;
             }
@@ -459,7 +459,7 @@ fn build_row<'a>(
                 tail: MonoType::Record(o),
             } => {
                 props.push(head);
-                Record = *o;
+                record = *o;
             }
             Record::Extension {
                 head,

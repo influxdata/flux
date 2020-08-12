@@ -76,14 +76,14 @@ func TypeEnvMap(env *fbsemantic.TypeEnvironment) map[envKey]*fbsemantic.Prop {
 			))
 		}
 
-		// initialize table before use in Record
-		Record := new(fbsemantic.Record)
-		Record.Init(table.Bytes, table.Pos)
-		propLen := Record.PropsLength()
+		// initialize table before use in record
+		record := new(fbsemantic.Record)
+		record.Init(table.Bytes, table.Pos)
+		propLen := record.PropsLength()
 
 		for j := 0; j < propLen; j++ {
 			newProp := new(fbsemantic.Prop)
-			_ = Record.Props(newProp, j) // this call assigns value to newProp
+			_ = record.Props(newProp, j) // this call assigns value to newProp
 			propKey := string(newProp.K())
 			key := envKey{
 				Package: assignId,

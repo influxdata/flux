@@ -944,13 +944,15 @@ mod tests {
         let output = PolyType {
             vars: vec![Tvar(0)],
             cons: TvarKinds::new(),
-            expr: MonoType::Arr(Box::new(Array(MonoType::Record(Box::new(Record::Extension {
-                head: Property {
-                    k: "foo".to_string(),
-                    v: MonoType::Int,
+            expr: MonoType::Arr(Box::new(Array(MonoType::Record(Box::new(
+                Record::Extension {
+                    head: Property {
+                        k: "foo".to_string(),
+                        v: MonoType::Int,
+                    },
+                    tail: MonoType::Var(Tvar(0)),
                 },
-                tail: MonoType::Var(Tvar(0)),
-            }))))),
+            ))))),
         };
         assert_eq!(Ok(output), parse(parse_text));
     }

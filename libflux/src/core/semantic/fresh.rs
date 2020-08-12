@@ -1,5 +1,6 @@
 use crate::semantic::types::{
-    Array, Function, MonoType, MonoTypeVecMap, PolyType, Property, Record, SemanticMap, Tvar, TvarMap,
+    Array, Function, MonoType, MonoTypeVecMap, PolyType, Property, Record, SemanticMap, Tvar,
+    TvarMap,
 };
 use std::collections::BTreeMap;
 use std::hash::Hash;
