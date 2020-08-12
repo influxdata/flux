@@ -146,6 +146,20 @@ func TestCompileAndEval(t *testing.T) {
 			want: values.NewBool(true),
 		},
 		{
+			name: "call with pipe argument",
+			fn: `(n) => {
+				f = (v=<-) => v + n
+				return 5 |> f()
+			}`,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("n"), Value: semantic.BasicInt},
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"n": values.NewInt(6),
+			}),
+			want: values.NewInt(11),
+		},
+		{
 			name: "conditional",
 			fn:   `(t, c, a) => if t then c else a`,
 			inType: semantic.NewObjectType([]semantic.PropertyType{

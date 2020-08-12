@@ -65,6 +65,9 @@ pub fn builtins() -> Builtins<'static> {
                  "nanosecond" => "(t: T) => int where T: Timeable",
                  "truncate" => "(t: T, unit: duration) => time where T : Timeable",
             },
+            "experimental/array" => semantic_map! {
+                "from" => "forall [t0] where t0: Row (rows: [t0]) -> [t0]",
+            },
             "experimental/bigtable" => semantic_map! {
                      "from" => "(token: string, project: string, instance: string, table: string) => [T] where T: Row",
             },
@@ -120,7 +123,7 @@ pub fn builtins() -> Builtins<'static> {
                  // must specify exactly one of org, orgID
                  // if host is specified, token must be too.
                  // https://github.com/influxdata/flux/issues/1660
-                 "to" => "(<-tables: [A], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) => [A] where A: Row",
+                 "to" => "(<-tables: [t0], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) => [A] where A: Row",
                  "join" => "(left: [A], right: [B], fn: (left: A, right: B) => C) => [C] where A: Row, B: Row, C: Row ",
                  "table" => "(rows: [A]) => [A] where A: Row ",
             },
@@ -198,7 +201,7 @@ pub fn builtins() -> Builtins<'static> {
                 "#,
             },
             "internal/gen" => semantic_map! {
-                "tables" => "(n: int, tags: [{name: string , cardinality: int}]) => [{A with _time: time , _value: float}]",
+                "tables" => "(n: int, ?nulls: float, ?tags: [{name: string | cardinality: int}]) => [{A with _time: time , _value: float}]",
             },
             "internal/debug" => semantic_map! {
                 "pass" => "(<-tables: [A]) => [A] where A: Row",

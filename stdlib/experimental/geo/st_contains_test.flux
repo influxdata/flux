@@ -226,6 +226,7 @@ bt = {points: [{lat: 40.671659, lon: -73.936631}, {lat: 40.706543, lon: -73.7491
 
 t_stContains = (table=<-) =>
   table
+    |> range(start: 2020-04-01T00:00:00Z)
     |> v1.fieldsAsCols()
     |> geo.asTracks(groupBy: ["id","trip_id"]) // optional but it helps to see the train crossing defined region
     |> map(fn: (r) => ({

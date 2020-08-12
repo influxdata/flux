@@ -74,14 +74,6 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			},
 			ErrMsg: "",
 		}, {
-			Name: "ok bigquery",
-			Spec: &FromSQLProcedureSpec{
-				DriverName:     "bigquery",
-				DataSourceName: "bigquery://project1/?dataset=dataset1",
-				Query:          "",
-			},
-			ErrMsg: "",
-		}, {
 			Name: "invalid driver",
 			Spec: &FromSQLProcedureSpec{
 				DriverName:     "voltdb",
@@ -116,14 +108,6 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			V:      url.PrivateIPValidator{},
 			ErrMsg: "it connects to a private IP",
 		}, {
-			Name: "invalid bigquery",
-			Spec: &FromSQLProcedureSpec{
-				DriverName:     "bigquery",
-				DataSourceName: "biqquery://project1/?dataset=dataset1",
-				Query:          "",
-			},
-			ErrMsg: "invalid prefix",
-		}, {
 			Name: "invalid sqlmock",
 			Spec: &FromSQLProcedureSpec{
 				DriverName:     "sqlmock",
@@ -135,12 +119,14 @@ func TestFromSqlUrlValidation(t *testing.T) {
 		}, {
 			Name: "no such host",
 			Spec: &FromSQLProcedureSpec{
-				DriverName:     "sqlmock",
-				DataSourceName: "sqlmock://test:password@notfound/pqgotest?sslmode=verify-full",
+				DriverName: "sqlmock",
+				// Using 'invalid.' for DNS name as its guaranteed not to exist
+				// https://tools.ietf.org/html/rfc6761#section-6.4
+				DataSourceName: "sqlmock://test:password@notfound.invalid./pqgotest?sslmode=verify-full",
 				Query:          "",
 			},
 			V:      url.PrivateIPValidator{},
-			ErrMsg: "no such host",
+			ErrMsg: "data source did not pass url validation",
 		},
 	}
 	testCases.Run(t, createFromSQLSource)

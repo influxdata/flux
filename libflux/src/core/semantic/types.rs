@@ -390,8 +390,7 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
-                | Kind::Negatable
-                | Kind::Timeable => Ok(Substitution::empty()),
+                | Kind::Negatable => Ok(Substitution::empty()),
                 _ => Err(Error::CannotConstrain {
                     act: self,
                     exp: with,
