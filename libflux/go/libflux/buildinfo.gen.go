@@ -477,6 +477,8 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/string_max_test.flux":                                          "78c162ba2901856e0091f7990018b4d6e31b9fd34f7152002fcca1c2c155abf7",
 	"stdlib/universe/string_sort_test.flux":                                         "3ee25884c1b5b02dd36d153929714dedfced7176d7e2f54ebcdfb5797bd8bbde",
 	"stdlib/universe/sum_test.flux":                                                 "dbc5ae649610f6ffdbe8f9ea3f2b31fc1a2bf1e95bad579a07f39a838c8c5980",
+	"stdlib/universe/table_fns_findcolumn_map_test.flux":                            "d9d6ba97b5c902fdfec07f1feb3c95fd83b0c70a7141c769bfc3863134c1c319",
+	"stdlib/universe/table_fns_findrecord_map_test.flux":                            "4a0f36e698250e6d7467059b98064001c5f8e90678fea263fbbb6f1a98a6f41c",
 	"stdlib/universe/table_fns_test.flux":                                           "9b7c90f0e8df57ceda8a36c08f24d28d18507c9bd99016b27537f978012d49d2",
 	"stdlib/universe/tail_offset_test.flux":                                         "37e4ac52a8d6c7bb300e5ddd4901486fc466a9ac10579ae3fe465b2d1cafdeb9",
 	"stdlib/universe/tail_test.flux":                                                "42b7af0693a4a51ba59c4d4e35444a55526006098ae546b998c594b39f87c768",
