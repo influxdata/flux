@@ -572,6 +572,17 @@ type functionValue struct {
 	scope  Scope
 }
 
+// functionValue implements the values.Resolver interface.
+var _ values.Resolver = (*functionValue)(nil)
+
+func (f *functionValue) Resolve() (semantic.Node, error) {
+	return values.ResolveFunction(f.scope, f.fn)
+}
+
+func (f functionValue) Scope() values.Scope {
+	return f.scope
+}
+
 type functionParam struct {
 	Key     string
 	Default Evaluator

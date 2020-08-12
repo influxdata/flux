@@ -642,7 +642,7 @@ func TestResolver(t *testing.T) {
 				t.Fatalf("could not lookup function definition")
 			}
 
-			resolver, ok := fn.Function().(interpreter.Resolver)
+			resolver, ok := fn.Function().(values.Resolver)
 			if !ok {
 				t.Fatalf("function is not resolvable")
 			}
