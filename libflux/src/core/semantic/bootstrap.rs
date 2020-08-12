@@ -7,6 +7,7 @@ use crate::ast;
 use crate::parser;
 use crate::semantic::builtins::builtins;
 use crate::semantic::convert::convert_file;
+use crate::semantic::convert::convert_polytype;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
@@ -14,7 +15,6 @@ use crate::semantic::infer;
 use crate::semantic::infer::Constraints;
 use crate::semantic::nodes;
 use crate::semantic::nodes::infer_file;
-use crate::semantic::parser::parse;
 use crate::semantic::sub::Substitutable;
 use crate::semantic::types;
 use crate::semantic::types::{
@@ -122,7 +122,8 @@ fn builtin_types() -> Result<(PolyTypeMapMap, Fresher), Error> {
     let mut ty = PolyTypeMapMap::new();
     for (path, values) in builtins().iter() {
         for (name, expr) in values {
-            let expr = parse(expr)?;
+            let mut p = parser::Parser::new(expr);
+            let expr = convert_polytype(p.parse_type_expression(), &mut Fresher::default())?;
 
             let tvar = expr.max_tvar();
             if tvar > tv {

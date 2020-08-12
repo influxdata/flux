@@ -163,7 +163,7 @@ fn convert_monotype(
             "time" => Ok(MonoType::Time),
             "regexp" => Ok(MonoType::Regexp),
             "bytes" => Ok(MonoType::Bytes),
-            _ => Err("invalid named type {}".to_string()),
+            _ => Err(format!("invalid named type {}", basic.name.name)),
         },
         ast::MonoType::Array(arr) => Ok(MonoType::Arr(Box::new(types::Array(convert_monotype(
             arr.element,
@@ -235,7 +235,7 @@ fn convert_monotype(
 }
 
 #[allow(unused)]
-fn convert_polytype(
+pub fn convert_polytype(
     type_expression: ast::TypeExpression,
     f: &mut Fresher,
 ) -> Result<types::PolyType> {
@@ -244,18 +244,12 @@ fn convert_polytype(
     let mut vars = Vec::<types::Tvar>::new();
     let mut cons = SemanticMap::<types::Tvar, Vec<types::Kind>>::new();
 
-    for c in type_expression.constraints {
-        match tvars.remove(&c.tvar.name) {
-            None => {
-                return Err(format!(
-                    "type variable {} constrained but not used",
-                    &c.tvar.name
-                ));
-            }
-            Some(tv) => {
-                vars.push(tv);
-                let mut kinds = Vec::<types::Kind>::new();
-                for k in &c.kinds {
+    for (name, tvar) in tvars {
+        vars.push(tvar);
+        let mut kinds = Vec::<types::Kind>::new();
+        for con in &type_expression.constraints {
+            if con.tvar.name == name {
+                for k in &con.kinds {
                     match k.name.as_str() {
                         "Addable" => kinds.push(types::Kind::Addable),
                         "Subtractable" => kinds.push(types::Kind::Subtractable),
@@ -266,10 +260,13 @@ fn convert_polytype(
                         "Nullable" => kinds.push(types::Kind::Nullable),
                         "Negatable" => kinds.push(types::Kind::Negatable),
                         "Timeable" => kinds.push(types::Kind::Timeable),
-                        _ => {}
+                        "Row" => kinds.push(types::Kind::Row),
+                        _ => {
+                            return Err(format!("Constraint not found {} ", &k.name.as_str()));
+                        }
                     }
                 }
-                cons.insert(tv, kinds);
+                cons.insert(tvar, kinds.clone());
             }
         }
     }
@@ -3068,6 +3065,88 @@ mod tests {
         let mut kind_vector_2 = Vec::<types::Kind>::new();
         kind_vector_2.push(types::Kind::Divisible);
         cons.insert(types::Tvar(1), kind_vector_2);
+
+        let mut req = MonoTypeMap::new();
+        req.insert("A".to_string(), MonoType::Var(Tvar(0)));
+        req.insert("B".to_string(), MonoType::Var(Tvar(1)));
+        let expr = MonoType::Fun(Box::new({
+            types::Function {
+                req,
+                opt: MonoTypeMap::new(),
+                pipe: None,
+                retn: MonoType::Var(Tvar(0)),
+            }
+        }));
+        let want = types::PolyType { vars, cons, expr };
+        assert_eq!(want, got);
+    }
+
+    #[test]
+    fn test_convert_polytype_2() {
+        // (A: T, B: S) => T where T: Addable
+        let b = ast::BaseNode::default();
+        let type_exp = ast::TypeExpression {
+            base: b.clone(),
+            monotype: ast::MonoType::Function(Box::new(ast::FunctionType {
+                base: b.clone(),
+                parameters: vec![
+                    ast::ParameterType::Required {
+                        base: b.clone(),
+                        name: ast::Identifier {
+                            base: b.clone(),
+                            name: "A".to_string(),
+                        },
+                        monotype: ast::MonoType::Tvar(ast::TvarType {
+                            base: b.clone(),
+                            name: ast::Identifier {
+                                base: b.clone(),
+                                name: "T".to_string(),
+                            },
+                        }),
+                    },
+                    ast::ParameterType::Required {
+                        base: b.clone(),
+                        name: ast::Identifier {
+                            base: b.clone(),
+                            name: "B".to_string(),
+                        },
+                        monotype: ast::MonoType::Tvar(ast::TvarType {
+                            base: b.clone(),
+                            name: ast::Identifier {
+                                base: b.clone(),
+                                name: "S".to_string(),
+                            },
+                        }),
+                    },
+                ],
+                monotype: ast::MonoType::Tvar(ast::TvarType {
+                    base: b.clone(),
+                    name: ast::Identifier {
+                        base: b.clone(),
+                        name: "T".to_string(),
+                    },
+                }),
+            })),
+            constraints: vec![ast::TypeConstraint {
+                base: b.clone(),
+                tvar: ast::Identifier {
+                    base: b.clone(),
+                    name: "T".to_string(),
+                },
+                kinds: vec![ast::Identifier {
+                    base: b.clone(),
+                    name: "Addable".to_string(),
+                }],
+            }],
+        };
+        let got = convert_polytype(type_exp, &mut fresh::Fresher::default()).unwrap();
+        let mut vars = Vec::<types::Tvar>::new();
+        vars.push(types::Tvar(0));
+        vars.push(types::Tvar(1));
+        let mut cons = types::TvarKinds::new();
+        let mut kind_vector_1 = Vec::<types::Kind>::new();
+        kind_vector_1.push(types::Kind::Addable);
+        cons.insert(types::Tvar(0), kind_vector_1);
 
         let mut req = MonoTypeMap::new();
         req.insert("A".to_string(), MonoType::Var(Tvar(0)));

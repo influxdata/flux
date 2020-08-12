@@ -1,8 +1,9 @@
-use crate::semantic::fresh::{Fresh, Fresher};
+use crate::ast::get_err_type_expression;
+use crate::parser;
+use crate::semantic::convert::convert_polytype;
+use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
-use crate::semantic::parser::parse;
-use crate::semantic::types::{PolyTypeMap, SemanticMap, SemanticMapIter, TvarMap};
-
+use crate::semantic::types::{PolyTypeMap, SemanticMap, SemanticMapIter};
 type BuiltinsMapValue<'a> = SemanticMap<&'a str, &'a str>;
 type BuiltinsMap<'a> = SemanticMap<&'a str, SemanticMap<&'a str, &'a str>>;
 
@@ -19,8 +20,21 @@ impl<'a> Builtins<'a> {
         let mut h = PolyTypeMap::new();
         if let Some(values) = self.pkgs.get(pkgpath) {
             for (name, expr) in values {
-                let pty = parse(expr).unwrap().fresh(f, &mut TvarMap::new());
-                h.insert((*name).to_string(), pty);
+                // let pty = parser::Parse(expr).unwrap().fresh(f, &mut TvarMap::new());
+                let mut p = parser::Parser::new(expr);
+
+                let typ_expr = p.parse_type_expression();
+                let err = get_err_type_expression(typ_expr.clone());
+
+                if err != "" {
+                    let msg = format!("TypeExpression parsing failed for {}. {:?}", name, err);
+                    panic!(msg)
+                }
+                let pty = convert_polytype(typ_expr, f);
+
+                if let Ok(p) = pty {
+                    h.insert((*name).to_string(), p);
+                }
             }
         }
         h
@@ -33,55 +47,54 @@ pub fn builtins() -> Builtins<'static> {
             "csv" => semantic_map! {
                 // This is a "provide exactly one argument" function
                 // https://github.com/influxdata/flux/issues/2249
-                "from" => "forall [t0] where t0: Row (?csv: string, ?file: string) -> [t0]",
+                "from" => "(?csv: string, ?file: string) => [A] where A: Row",
             },
             "date" => semantic_map! {
-                 "second" => "forall [t0] where t0 : Timeable (t: t0) -> int",
-                 "minute" => "forall [t0] where t0 : Timeable (t: t0) -> int",
-                 "hour" => "forall [t0] where t0 : Timeable (t: t0) -> int",
-                 "weekDay" => "forall [t0] where t0 : Timeable (t: t0) -> int",
-                 "monthDay" => "forall [t0] where t0 : Timeable (t: t0) -> int",
-                 "yearDay" => "forall [t0] where t0 : Timeable (t: t0) -> int",
-                 "month" => "forall [t0] where t0 : Timeable (t: t0) -> int",
-                 "year" => "forall [t0] where t0 : Timeable (t: t0) -> int",
-                 "week" => "forall [t0] where t0 : Timeable (t: t0) -> int",
-                 "quarter" => "forall [t0] where t0 : Timeable (t: t0) -> int",
-                 "millisecond" => "forall [t0] where t0 : Timeable (t: t0) -> int",
-                 "microsecond" => "forall [t0] where t0 : Timeable (t: t0) -> int",
-                 "nanosecond" => "forall [t0] where t0 : Timeable (t: t0) -> int",
-                 "truncate" => "forall [t0] where t0 : Timeable (t: t0, unit: duration) -> time",
+                 "second" => "(t: T) => int where T: Timeable",
+                 "minute" => "(t: T) => int where T: Timeable",
+                 "hour" => "(t: T) => int where T: Timeable",
+                 "weekDay" => "(t: T) => int where T: Timeable",
+                 "monthDay" => "(t: T) => int where T: Timeable",
+                 "yearDay" => "(t: T) => int where T: Timeable",
+                 "month" => "(t: T) => int where T: Timeable",
+                 "year" => "(t: T) => int where T: Timeable",
+                 "week" => "(t: T) => int where T: Timeable",
+                 "quarter" => "(t: T) => int where T: Timeable",
+                 "millisecond" => "(t: T) => int where T: Timeable",
+                 "microsecond" => "(t: T) => int where T: Timeable",
+                 "nanosecond" => "(t: T) => int where T: Timeable",
+                 "truncate" => "(t: T, unit: duration) => time where T : Timeable",
             },
             "experimental/array" => semantic_map! {
-                "from" => "forall [t0] where t0: Row (rows: [t0]) -> [t0]",
+                "from" => "(rows: [A]) => [A] where A: Row ",
             },
             "experimental/bigtable" => semantic_map! {
-                     "from" => "forall [t0] where t0: Row (token: string, project: string, instance: string, table: string) -> [t0]",
+                     "from" => "(token: string, project: string, instance: string, table: string) => [T] where T: Row",
             },
             "experimental/geo" => semantic_map! {
-                     "getGrid" => "forall [t0] where t0: Row (region: t0, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int, units: {distance: string}) -> {level: int | set: [string]}",
-                     "getLevel" => "forall [] (token: string) -> int",
-                     "s2CellIDToken" => "forall [] (?token: string, ?point: {lat: float | lon: float}, level: int) -> string",
-                     "s2CellLatLon" => "forall [] (token: string) -> {lat: float | lon: float}",
-                     "stContains" => "forall [t0, t1] where t0: Row, t1: Row (region: t0, geometry: t1, units: {distance: string}) -> bool",
-                     "stDistance" => "forall [t0, t1] where t0: Row, t1: Row (region: t0, geometry: t1, units: {distance: string}) -> float",
-                     "stLength" => "forall [t0] where t0: Row (geometry: t0, units: {distance: string}) -> float",
+                     "getGrid" => "(region: T, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int, units: {distance: string}) => {level: int , set: [string]} where T: Row",
+                     "getLevel" => "(token: string) => int",
+                     "s2CellIDToken" => "(?token: string, ?point: {lat: float , lon: float}, level: int) => string",
+                     "s2CellLatLon" => "(token: string) => {lat: float , lon: float}",
+                     "stContains" => "(region: A, geometry: B, units: {distance: string}) => bool where A: Row, B: Row",
+                     "stDistance" => "(region: A, geometry: B, units: {distance: string}) => float where A: Row, B: Row",
+                     "stLength" => "(geometry: A, units: {distance: string}) => float where A: Row",
             },
             "experimental/json" => semantic_map! {
-                "parse" => "forall [t0] (data: bytes) -> t0",
+                "parse" => "(data: bytes) => A",
             },
+            // parse(data: 12)
+            // A parse(int data)
             "experimental/http" => semantic_map! {
-                "get" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
+                "get" => r#"(
                         url: string,
-                        ?headers: t0,
+                        ?headers: A,
                         ?timeout: duration
-                    ) -> {statusCode: int | body: bytes | headers: t1}
-                "#,
+                    ) => {statusCode: int , body: bytes , headers: B} where A: Row, B: Row "#,
             },
             "experimental/mqtt" => semantic_map! {
-                "to" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                "to" => r#"(
+                        <-tables: [A],
                         broker: string,
                         ?topic: string,
                         ?message: string,
@@ -94,54 +107,53 @@ pub fn builtins() -> Builtins<'static> {
                         ?timeColumn: string,
                         ?tagColumns: [string],
                         ?valueColumns: [string]
-                    ) -> [t1]
-                "#,
+                    ) => [B] where A: Row, B: Row "#,
             },
             "experimental/prometheus" => semantic_map! {
-                "scrape" => "forall [t0] where t0: Row (url: string) -> [t0]",
+                "scrape" => "(url: string) => [A] where A: Row",
             },
             "experimental" => semantic_map! {
-                 "addDuration" => "forall [] (d: duration, to: time) -> time",
-                 "chain" => "forall [t0, t1] where t0: Row, t1: Row (first: [t0], second: [t1]) -> [t1]",
-                 "subDuration" => "forall [] (d: duration, from: time) -> time",
-                 "group" => "forall [t0] where t0: Row (<-tables: [t0], mode: string, columns: [string]) -> [t0]",
-                 "objectKeys" => "forall [t0] where t0: Row (o: t0) -> [string]",
-                 "set" => "forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (<-tables: [t0], o: t1) -> [t2]",
+                 "addDuration" => "(d: duration, to: time) => time",
+                 "chain" => "(first: [A], second: [B]) => [B] where A: Row, B: Row",
+                 "subDuration" => "(d: duration, from: time) => time",
+                 "group" => "(<-tables: [A], mode: string, columns: [string]) => [A] where A: Row",
+                 "objectKeys" => "(o: A) => [string] where A: Row",
+                 "set" => "(<-tables: [A], o: B) => [C] where A: Row, B: Row, C: Row",
                  // must specify exactly one of bucket, bucketID
                  // must specify exactly one of org, orgID
                  // if host is specified, token must be too.
                  // https://github.com/influxdata/flux/issues/1660
-                 "to" => "forall [t0] where t0: Row (<-tables: [t0], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) -> [t0]",
-                 "join" => "forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (left: [t0], right: [t1], fn: (left: t0, right: t1) -> t2) -> [t2]",
-                 "table" => "forall [t0] where t0: Row (rows: [t0]) -> [t0]",
+                 "to" => "(<-tables: [A], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) => [A] where A: Row",
+                 "join" => "(left: [A], right: [B], fn: (left: A, right: B) => C) => [C] where A: Row, B: Row, C: Row ",
+                 "table" => "(rows: [A]) => [A] where A: Row ",
             },
             "generate" => semantic_map! {
-                "from" => "forall [t0] where t0: Timeable (start: t0, stop: t0, count: int, fn: (n: int) -> int) -> [{ _start: time | _stop: time | _time: time | _value:int }]",
+                "from" => "(start: A, stop: A, count: int, fn: (n: int) => int) => [{ _start: time , _stop: time , _time: time , _value:int }] where A: Timeable",
             },
             "http" => semantic_map! {
-                "post" => "forall [t0] where t0: Row (url: string, ?headers: t0, ?data: bytes) -> int",
-                "basicAuth" => "forall [] (u: string, p: string) -> string",
-                "pathEscape" => "forall [] (inputString: string) -> string",
+                "post" => "(url: string, ?headers: A, ?data: bytes) => int where A: Row",
+                "basicAuth" => "(u: string, p: string) => string",
+                "pathEscape" => "(inputString: string) => string",
             },
             "influxdata/influxdb/secrets" => semantic_map! {
-                "get" => "forall [] (key: string) -> string",
+                "get" => "(key: string) => string",
             },
             "influxdata/influxdb/v1" => semantic_map! {
                 // exactly one of json and file must be specified
                 // https://github.com/influxdata/flux/issues/2250
-                "json" => "forall [t0] where t0: Row (?json: string, ?file: string) -> [t0]",
+                "json" => "(?json: string, ?file: string) => [A] where A: Row",
                 "databases" => r#"
-                    forall [] (
+                    (
                         ?org: string,
                         ?orgID: string,
                         ?host: string,
                         ?token: string
-                    ) -> [{
-                        organizationID: string |
-                        databaseName: string |
-                        retentionPolicy: string |
-                        retentionPeriod: int |
-                        default: bool |
+                    ) => [{
+                        organizationID: string ,
+                        databaseName: string ,
+                        retentionPolicy: string ,
+                        retentionPeriod: int ,
+                        default: bool ,
                         bucketID: string
                     }]
                 "#,
@@ -149,20 +161,19 @@ pub fn builtins() -> Builtins<'static> {
             "influxdata/influxdb" => semantic_map! {
                 // This is a one-or-the-other parameters function
                 // https://github.com/influxdata/flux/issues/1659
-                "from" => r#"forall [t0, t1] (
+                "from" => r#"(
                     ?bucket: string,
                     ?bucketID: string,
                     ?org: string,
                     ?orgID: string,
                     ?host: string,
                     ?token: string
-                ) -> [{_measurement: string | _field: string | _time: time | _value: t0 | t1}]"#,
+                ) => [{B with _measurement: string , _field: string , _time: time , _value: A}] "#,
                 // exactly one of (bucket, bucketID) must be specified
                 // exactly one of (org, orgID) must be specified
                 // https://github.com/influxdata/flux/issues/1660
-                "to" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                "to" => r#"(
+                        <-tables: [A],
                         ?bucket: string,
                         ?bucketID: string,
                         ?org: string,
@@ -172,63 +183,59 @@ pub fn builtins() -> Builtins<'static> {
                         ?timeColumn: string,
                         ?measurementColumn: string,
                         ?tagColumns: [string],
-                        ?fieldFn: (r: t0) -> t1
-                    ) -> [t0]
-                "#,
+                        ?fieldFn: (r: A) => B
+                    ) => [A] where A: Row, B: Row "#,
                 "buckets" => r#"
-                    forall [] (
+                    (
                         ?org: string,
                         ?orgID: string,
                         ?host: string,
                         ?token: string
-                    ) -> [{
-                        name: string |
-                        id: string |
-                        organizationID: string |
-                        retentionPolicy: string |
+                    ) => [{
+                        name: string ,
+                        id: string ,
+                        organizationID: string ,
+                        retentionPolicy: string ,
                         retentionPeriod: int
                     }]
                 "#,
             },
             "internal/gen" => semantic_map! {
-                "tables" => "forall [t0] (n: int, ?nulls: float, ?tags: [{name: string | cardinality: int}]) -> [{_time: time | _value: float | t0}]",
+                "tables" => "(n: int, ?nulls: float, ?tags: [{name: string , cardinality: int}]) => [{A with _time: time , _value: float}]",
             },
             "internal/debug" => semantic_map! {
-                "pass" => "forall [t0] where t0: Row (<-tables: [t0]) -> [t0]",
+                "pass" => "(<-tables: [A]) => [A] where A: Row",
             },
             "internal/promql" => semantic_map! {
-                "changes" => "forall [t0, t1] (<-tables: [{_value: float | t0}]) -> [{_value: float | t1}]",
-                "promqlDayOfMonth" => "forall [] (timestamp: float) -> float",
-                "promqlDayOfWeek" => "forall [] (timestamp: float) -> float",
-                "promqlDaysInMonth" => "forall [] (timestamp: float) -> float",
-                "emptyTable" => "forall [] () -> [{_start: time | _stop: time | _time: time | _value: float}]",
-                "extrapolatedRate" => "forall [t0, t1] (<-tables: [{_start: time | _stop: time | _time: time | _value: float | t0}], ?isCounter: bool, ?isRate: bool) -> [{_value: float | t1}]",
-                "holtWinters" => "forall [t0, t1] (<-tables: [{_time: time | _value: float | t0}], ?smoothingFactor: float, ?trendFactor: float) -> [{_value: float | t1}]",
-                "promqlHour" => "forall [] (timestamp: float) -> float",
-                "instantRate" => "forall [t0, t1] (<-tables: [{_time: time | _value: float | t0}], ?isRate: bool) -> [{_value: float | t1}]",
-                "labelReplace" => "forall [t0, t1] (<-tables: [{_value: float | t0}], source: string, destination: string, regex: string, replacement: string) -> [{_value: float | t1}]",
-                "linearRegression" => "forall [t0, t1] (<-tables: [{_time: time | _stop: time | _value: float | t0}], ?predict: bool, ?fromNow: float) -> [{_value: float | t1}]",
-                "promqlMinute" => "forall [] (timestamp: float) -> float",
-                "promqlMonth" => "forall [] (timestamp: float) -> float",
-                "promHistogramQuantile" => "forall [t0, t1] where t0: Row, t1: Row (<-tables: [t0], ?quantile: float, ?countColumn: string, ?upperBoundColumn: string, ?valueColumn: string) -> [t1]",
-                "resets" => "forall [t0, t1] (<-tables: [{_value: float | t0}]) -> [{_value: float | t1}]",
-                "timestamp" => "forall [t0] (<-tables: [{_value: float | t0}]) -> [{_value: float | t0}]",
-                "promqlYear" => "forall [] (timestamp: float) -> float",
+                "changes" => "(<-tables: [{A with _value: float}]) => [{B with _value: float}]",
+                "promqlDayOfMonth" => "(timestamp: float) => float",
+                "promqlDayOfWeek" => "(timestamp: float) => float",
+                "promqlDaysInMonth" => "(timestamp: float) => float",
+                "emptyTable" => "() => [{_start: time , _stop: time , _time: time , _value: float}]",
+                "extrapolatedRate" => "(<-tables: [{A with _start: time , _stop: time , _time: time , _value: float}], ?isCounter: bool, ?isRate: bool) => [{B with _value: float}]",
+                "holtWinters" => "(<-tables: [{A with _time: time , _value: float}], ?smoothingFactor: float, ?trendFactor: float) => [{B with _value: float}]",
+                "promqlHour" => "(timestamp: float) => float",
+                "instantRate" => "(<-tables: [{A with _time: time , _value: float}], ?isRate: bool) => [{B with _value: float}]",
+                "labelReplace" => "(<-tables: [{A with _value: float}], source: string, destination: string, regex: string, replacement: string) => [{B with _value: float}]",
+                "linearRegression" => "(<-tables: [{A with _time: time , _stop: time , _value: float}], ?predict: bool, ?fromNow: float) => [{B with _value: float}]",
+                "promqlMinute" => "(timestamp: float) => float",
+                "promqlMonth" => "(timestamp: float) => float",
+                "promHistogramQuantile" => "(<-tables: [A], ?quantile: float, ?countColumn: string, ?upperBoundColumn: string, ?valueColumn: string) => [B] where A: Row, B: Row",
+                "resets" => "(<-tables: [{A with _value: float}]) => [{B with _value: float}]",
+                "timestamp" => "(<-tables: [{A with _value: float}]) => [{A with _value: float}]",
+                "promqlYear" => "(timestamp: float) => float",
             },
             "internal/testutil" => semantic_map! {
-                "fail" => "forall [] () -> bool",
-                "yield" => r#"
-                    forall [t0] (<-v: t0) -> t0
-                "#,
-                "makeRecord" => "forall [t0, t1] where t0: Row, t1: Row (o: t0) -> t1",
+                "fail" => "() => bool",
+                "yield" => r#"(<-v: A) => A "#,
+                "makeRecord" => "(o: A) => B where A: Row, B: Row",
             },
             "json" => semantic_map! {
-                "encode" => "forall [t0] (v: t0) -> bytes",
+                "encode" => "(v: A) => bytes",
             },
             "kafka" => semantic_map! {
-                "to" => r#"
-                    forall [t0] where t0: Row (
-                        <-tables: [t0],
+                "to" => r#"(
+                        <-tables: [A],
                         brokers: [string],
                         topic: string,
                         ?balancer: string,
@@ -237,605 +244,498 @@ pub fn builtins() -> Builtins<'static> {
                         ?timeColumn: string,
                         ?tagColumns: [string],
                         ?valueColumns: [string]
-                    ) -> [t0]"#,
+                    ) => [A] where A: Row "#,
             },
             "math" => semantic_map! {
-                "pi" => "forall [] float",
-                "e" => "forall [] float",
-                "phi" => "forall [] float",
-                "sqrt2" => "forall [] float",
-                "sqrte" => "forall [] float",
-                "sqrtpi" => "forall [] float",
-                "sqrtphi" => "forall [] float",
-                "log2e" => "forall [] float",
-                "ln2" => "forall [] float",
-                "ln10" => "forall [] float",
-                "log10e" => "forall [] float",
+                "pi" => "float",
+                "e" => "float",
+                "phi" => "float",
+                "sqrt2" => "float",
+                "sqrte" => "float",
+                "sqrtpi" => "float",
+                "sqrtphi" => "float",
+                "log2e" => "float",
+                "ln2" => "float",
+                "ln10" => "float",
+                "log10e" => "float",
 
-                "maxfloat" => "forall [] float",
-                "smallestNonzeroFloat" => "forall [] float",
-                "maxint" => "forall [] int",
-                "minint" => "forall [] int",
-                "maxuint" => "forall [] uint",
+                "maxfloat" => "float",
+                "smallestNonzeroFloat" => "float",
+                "maxint" => "int",
+                "minint" => "int",
+                "maxuint" => "uint",
 
-                "abs" => "forall [] (x: float) -> float",
-                "acos" => "forall [] (x: float) -> float",
-                "acosh" => "forall [] (x: float) -> float",
-                "asin" => "forall [] (x: float) -> float",
-                "asinh" => "forall [] (x: float) -> float",
-                "atan" => "forall [] (x: float) -> float",
-                "atan2" => "forall [] (x: float, y: float) -> float",
-                "atanh" => "forall [] (x: float) -> float",
-                "cbrt" => "forall [] (x: float) -> float",
-                "ceil" => "forall [] (x: float) -> float",
-                "copysign" => "forall [] (x: float, y: float) -> float",
-                "cos" => "forall [] (x: float) -> float",
-                "cosh" => "forall [] (x: float) -> float",
-                "dim" => "forall [] (x: float, y: float) -> float",
-                "erf" => "forall [] (x: float) -> float",
-                "erfc" => "forall [] (x: float) -> float",
-                "erfcinv" => "forall [] (x: float) -> float",
-                "erfinv" => "forall [] (x: float) -> float",
-                "exp" => "forall [] (x: float) -> float",
-                "exp2" => "forall [] (x: float) -> float",
-                "expm1" => "forall [] (x: float) -> float",
-                "floor" => "forall [] (x: float) -> float",
-                "gamma" => "forall [] (x: float) -> float",
-                "hypot" => "forall [] (x: float, y: float) -> float",
-                "j0" => "forall [] (x: float) -> float",
-                "j1" => "forall [] (x: float) -> float",
-                "log" => "forall [] (x: float) -> float",
-                "log10" => "forall [] (x: float) -> float",
-                "log1p" => "forall [] (x: float) -> float",
-                "log2" => "forall [] (x: float) -> float",
-                "logb" => "forall [] (x: float) -> float",
-                "mMax" => "forall [] (x: float, y: float) -> float",
-                "mMin" => "forall [] (x: float, y: float) -> float",
-                "mod" => "forall [] (x: float, y: float) -> float",
-                "nextafter" => "forall [] (x: float, y: float) -> float",
-                "pow" => "forall [] (x: float, y: float) -> float",
-                "remainder" => "forall [] (x: float, y: float) -> float",
-                "round" => "forall [] (x: float) -> float",
-                "roundtoeven" => "forall [] (x: float) -> float",
-                "sin" => "forall [] (x: float) -> float",
-                "sinh" => "forall [] (x: float) -> float",
-                "sqrt" => "forall [] (x: float) -> float",
-                "tan" => "forall [] (x: float) -> float",
-                "tanh" => "forall [] (x: float) -> float",
-                "trunc" => "forall [] (x: float) -> float",
-                "y0" => "forall [] (x: float) -> float",
-                "y1" => "forall [] (x: float) -> float",
+                "abs" => "(x: float) => float",
+                "acos" => "(x: float) => float",
+                "acosh" => "(x: float) => float",
+                "asin" => "(x: float) => float",
+                "asinh" => "(x: float) => float",
+                "atan" => "(x: float) => float",
+                "atan2" => "(x: float, y: float) => float",
+                "atanh" => "(x: float) => float",
+                "cbrt" => "(x: float) => float",
+                "ceil" => "(x: float) => float",
+                "copysign" => "(x: float, y: float) => float",
+                "cos" => "(x: float) => float",
+                "cosh" => "(x: float) => float",
+                "dim" => "(x: float, y: float) => float",
+                "erf" => "(x: float) => float",
+                "erfc" => "(x: float) => float",
+                "erfcinv" => "(x: float) => float",
+                "erfinv" => "(x: float) => float",
+                "exp" => "(x: float) => float",
+                "exp2" => "(x: float) => float",
+                "expm1" => "(x: float) => float",
+                "floor" => "(x: float) => float",
+                "gamma" => "(x: float) => float",
+                "hypot" => "(x: float, y: float) => float",
+                "j0" => "(x: float) => float",
+                "j1" => "(x: float) => float",
+                "log" => "(x: float) => float",
+                "log10" => "(x: float) => float",
+                "log1p" => "(x: float) => float",
+                "log2" => "(x: float) => float",
+                "logb" => "(x: float) => float",
+                "mMax" => "(x: float, y: float) => float",
+                "mMin" => "(x: float, y: float) => float",
+                "mod" => "(x: float, y: float) => float",
+                "nextafter" => "(x: float, y: float) => float",
+                "pow" => "(x: float, y: float) => float",
+                "remainder" => "(x: float, y: float) => float",
+                "round" => "(x: float) => float",
+                "roundtoeven" => "(x: float) => float",
+                "sin" => "(x: float) => float",
+                "sinh" => "(x: float) => float",
+                "sqrt" => "(x: float) => float",
+                "tan" => "(x: float) => float",
+                "tanh" => "(x: float) => float",
+                "trunc" => "(x: float) => float",
+                "y0" => "(x: float) => float",
+                "y1" => "(x: float) => float",
 
-                "float64bits" => "forall [] (f: float) -> uint",
-                "float64frombits" => "forall [] (b: uint) -> float",
-                "ilogb" => "forall [] (x: float) -> int",
-                "frexp" => "forall [] (f: float) -> {frac: float | exp: int}",
-                "lgamma" => "forall [] (x: float) -> {lgamma: float | sign: int}",
-                "modf" => r#"forall [] (f: float) -> {"int": float | frac: float}"#,
-                "sincos" => "forall [] (x: float) -> {sin: float | cos: float}",
-                "isInf" => "forall [] (f: float, sign: int) -> bool",
-                "isNaN" => "forall [] (f: float) -> bool",
-                "signbit" => "forall [] (x: float) -> bool",
-                "NaN" => "forall [] () -> float",
-                "mInf" => "forall [] (sign: int) -> float",
-                "jn" => "forall [] (n: int, x: float) -> float",
-                "yn" => "forall [] (n: int, x: float) -> float",
-                "ldexp" => "forall [] (frac: float, exp: int) -> float",
-                "pow10" => "forall [] (n: int) -> float",
+                "float64bits" => "(f: float) => uint",
+                "float64frombits" => "(b: uint) => float",
+                "ilogb" => "(x: float) => int",
+                "frexp" => "(f: float) => {frac: float , exp: int}",
+                "lgamma" => "(x: float) => {lgamma: float , sign: int}",
+                "modf" => r#"(f: float) => {int: float , frac: float} "#,
+                "sincos" => "(x: float) => {sin: float , cos: float}",
+                "isInf" => "(f: float, sign: int) => bool",
+                "isNaN" => "(f: float) => bool",
+                "signbit" => "(x: float) => bool",
+                "NaN" => "() => float",
+                "mInf" => "(sign: int) => float",
+                "jn" => "(n: int, x: float) => float",
+                "yn" => "(n: int, x: float) => float",
+                "ldexp" => "(frac: float, exp: int) => float",
+                "pow10" => "(n: int) => float",
             },
             "pagerduty" => semantic_map! {
-                "dedupKey" => "forall [t0] (<-tables: [t0]) -> [{_pagerdutyDedupKey: string | t0}]",
+                "dedupKey" => "(<-tables: [A]) => [{A with _pagerdutyDedupKey: string }]",
             },
             "regexp" => semantic_map! {
-                "compile" => "forall [] (v: string) -> regexp",
-                "quoteMeta" => "forall [] (v: string) -> string",
-                "findString" => "forall [] (r: regexp, v: string) -> string",
-                "findStringIndex" => "forall [] (r: regexp, v: string) -> [int]",
-                "matchRegexpString" => "forall [] (r: regexp, v: string) -> bool",
-                "replaceAllString" => "forall [] (r: regexp, v: string, t: string) -> string",
-                "splitRegexp" => "forall [] (r: regexp, v: string, i: int) -> [string]",
-                "getString" => "forall [] (r: regexp) -> string",
+                "compile" => "(v: string) => regexp",
+                "quoteMeta" => "(v: string) => string",
+                "findString" => "(r: regexp, v: string) => string",
+                "findStringIndex" => "(r: regexp, v: string) => [int]",
+                "matchRegexpString" => "(r: regexp, v: string) => bool",
+                "replaceAllString" => "(r: regexp, v: string, t: string) => string",
+                "splitRegexp" => "(r: regexp, v: string, i: int) => [string]",
+                "getString" => "(r: regexp) => string",
             },
             "runtime" => semantic_map! {
-                "version" => "forall [] () -> string",
+                "version" => "() => string",
             },
             "slack" => semantic_map! {
-                "validateColorString" => "forall [] (color: string) -> string",
+                "validateColorString" => "(color: string) => string",
             },
             "socket" => semantic_map! {
-                "from" => "forall [t0] (url: string, ?decoder: string) -> [t0]",
+                "from" => "(url: string, ?decoder: string) => [A]",
             },
             "sql" => semantic_map! {
-                "from" => "forall [t0] (driverName: string, dataSourceName: string, query: string) -> [t0]",
-                "to" => "forall [t0] (<-tables: [t0], driverName: string, dataSourceName: string, table: string, ?batchSize: int) -> [t0]",
+                "from" => "(driverName: string, dataSourceName: string, query: string) => [A]",
+                "to" => "(<-tables: [A], driverName: string, dataSourceName: string, table: string, ?batchSize: int) => [A]",
             },
             "strings" => semantic_map! {
-                "title" => "forall [] (v: string) -> string",
-                "toUpper" => "forall [] (v: string) -> string",
-                "toLower" => "forall [] (v: string) -> string",
-                "trim" => "forall [] (v: string, cutset: string) -> string",
-                "trimPrefix" => "forall [] (v: string, prefix: string) -> string",
-                "trimSpace" => "forall [] (v: string) -> string",
-                "trimSuffix" => "forall [] (v: string, suffix: string) -> string",
-                "trimRight" => "forall [] (v: string, cutset: string) -> string",
-                "trimLeft" => "forall [] (v: string, cutset: string) -> string",
-                "toTitle" => "forall [] (v: string) -> string",
-                "hasPrefix" => "forall [] (v: string, prefix: string) -> bool",
-                "hasSuffix" => "forall [] (v: string, suffix: string) -> bool",
-                "containsStr" => "forall [] (v: string, substr: string) -> bool",
-                "containsAny" => "forall [] (v: string, chars: string) -> bool",
-                "equalFold" => "forall [] (v: string, t: string) -> bool",
-                "compare" => "forall [] (v: string, t: string) -> int",
-                "countStr" => "forall [] (v: string, substr: string) -> int",
-                "index" => "forall [] (v: string, substr: string) -> int",
-                "indexAny" => "forall [] (v: string, chars: string) -> int",
-                "lastIndex" => "forall [] (v: string, substr: string) -> int",
-                "lastIndexAny" => "forall [] (v: string, chars: string) -> int",
-                "isDigit" => "forall [] (v: string) -> bool",
-                "isLetter" => "forall [] (v: string) -> bool",
-                "isLower" => "forall [] (v: string) -> bool",
-                "isUpper" => "forall [] (v: string) -> bool",
-                "repeat" => "forall [] (v: string, i: int) -> string",
-                "replace" => "forall [] (v: string, t: string, u: string, i: int) -> string",
-                "replaceAll" => "forall [] (v: string, t: string, u: string) -> string",
-                "split" => "forall [] (v: string, t: string) -> [string]",
-                "splitAfter" => "forall [] (v: string, t: string) -> [string]",
-                "splitN" => "forall [] (v: string, t: string, n: int) -> [string]",
-                "splitAfterN" => "forall [] (v: string, t: string, i: int) -> [string]",
-                "joinStr" => "forall [] (arr: [string], v: string) -> string",
-                "strlen" => "forall [] (v: string) -> int",
-                "substring" => "forall [] (v: string, start: int, end: int) -> string",
+                "title" => "(v: string) => string",
+                "toUpper" => "(v: string) => string",
+                "toLower" => "(v: string) => string",
+                "trim" => "(v: string, cutset: string) => string",
+                "trimPrefix" => "(v: string, prefix: string) => string",
+                "trimSpace" => "(v: string) => string",
+                "trimSuffix" => "(v: string, suffix: string) => string",
+                "trimRight" => "(v: string, cutset: string) => string",
+                "trimLeft" => "(v: string, cutset: string) => string",
+                "toTitle" => "(v: string) => string",
+                "hasPrefix" => "(v: string, prefix: string) => bool",
+                "hasSuffix" => "(v: string, suffix: string) => bool",
+                "containsStr" => "(v: string, substr: string) => bool",
+                "containsAny" => "(v: string, chars: string) => bool",
+                "equalFold" => "(v: string, t: string) => bool",
+                "compare" => "(v: string, t: string) => int",
+                "countStr" => "(v: string, substr: string) => int",
+                "index" => "(v: string, substr: string) => int",
+                "indexAny" => "(v: string, chars: string) => int",
+                "lastIndex" => "(v: string, substr: string) => int",
+                "lastIndexAny" => "(v: string, chars: string) => int",
+                "isDigit" => "(v: string) => bool",
+                "isLetter" => "(v: string) => bool",
+                "isLower" => "(v: string) => bool",
+                "isUpper" => "(v: string) => bool",
+                "repeat" => "(v: string, i: int) => string",
+                "replace" => "(v: string, t: string, u: string, i: int) => string",
+                "replaceAll" => "(v: string, t: string, u: string) => string",
+                "split" => "(v: string, t: string) => [string]",
+                "splitAfter" => "(v: string, t: string) => [string]",
+                "splitN" => "(v: string, t: string, n: int) => [string]",
+                "splitAfterN" => "(v: string, t: string, i: int) => [string]",
+                "joinStr" => "(arr: [string], v: string) => string",
+                "strlen" => "(v: string) => int",
+                "substring" => "(v: string, start: int, end: int) => string",
             },
             "system" => semantic_map! {
-                "time" => "forall [] () -> time",
+                "time" => "() => time",
             },
             "testing" => semantic_map! {
-                "assertEquals" => "forall [t0] (name: string, <-got: [t0], want: [t0]) -> [t0]",
-                "assertEmpty" => "forall [t0] (<-tables: [t0]) -> [t0]",
-                "diff" => "forall [t0] (<-got: [t0], want: [t0], ?verbose: bool, ?epsilon: float) -> [{_diff: string | t0}]",
+                "assertEquals" => "(name: string, <-got: [A], want: [A]) => [A]",
+                "assertEmpty" => "(<-tables: [A]) => [A]",
+                "diff" => "(<-got: [A], want: [A], ?verbose: bool, ?epsilon: float) => [{A with _diff: string}]",
             },
             "universe" => semantic_map! {
-                "bool" => "forall [t0] (v: t0) -> bool",
-                "bytes" => "forall [t0] (v: t0) -> bytes",
-                "chandeMomentumOscillator" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                "bool" => "(v: A) => bool",
+                "bytes" => "(v: A) => bytes",
+                "chandeMomentumOscillator" => r#"(
+                        <-tables: [A],
                         n: int,
                         ?columns: [string]
-                    ) -> [t1]
-                "#,
-                "columns" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "columns" => r#"(
+                        <-tables: [A],
                         ?column: string
-                    ) -> [t1]
-                "#,
-                "contains" => r#"
-                    forall [t0] where t0: Nullable (
-                        value: t0,
-                        set: [t0]
-                    ) -> bool
-                "#,
-                "count" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "contains" => r#"(
+                        value: A,
+                        set: [A]
+                    ) => bool where A: Nullable "#,
+                "count" => r#"(
+                        <-tables: [A],
                         ?column: string
-                    ) -> [t1]
-                "#,
-                "covariance" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "covariance" => r#"(
+                        <-tables: [A],
                         ?pearsonr: bool,
                         ?valueDst: string,
                         columns: [string]
-                    ) -> [t1]
-                "#,
-                "cumulativeSum" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "cumulativeSum" => r#"(
+                        <-tables: [A],
                         ?columns: [string]
-                    ) -> [t1]
-                "#,
-                "derivative" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "derivative" => r#"(
+                        <-tables: [A],
                         ?unit: duration,
                         ?nonNegative: bool,
                         ?columns: [string],
                         ?timeColumn: string
-                    ) -> [t1]
-                "#,
+                    ) => [B] where A: Row, B: Row "#,
                 "difference" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                   (
+                        <-tables: [T],
                         ?nonNegative: bool,
                         ?columns: [string],
                         ?keepFirst: bool
-                    ) -> [t1]
+                    ) => [R] where T: Row, R: Row
                 "#,
-                "distinct" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                "distinct" => r#"(
+                        <-tables: [A],
                         ?column: string
-                    ) -> [t1]
-                "#,
-                "drop" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
-                        ?fn: (column: string) -> bool,
+                    ) => [B] where A: Row, B: Row "#,
+                "drop" => r#"(
+                        <-tables: [A],
+                        ?fn: (column: string) => bool,
                         ?columns: [string]
-                    ) -> [t1]
-                "#,
-                "duplicate" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "duplicate" => r#"(
+                        <-tables: [A],
                         column: string,
                         as: string
-                    ) -> [t1]
-                "#,
-                "duration" => "forall [t0] (v: t0) -> duration",
-                "elapsed" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "duration" => "(v: A) => duration",
+                "elapsed" => r#"(
+                        <-tables: [A],
                         ?unit: duration,
                         ?timeColumn: string,
                         ?columnName: string
-                    ) -> [t1]
-                "#,
-                "exponentialMovingAverage" => r#"
-                    forall [t0, t1] where t0: Numeric (
-                        <-tables: [{ _value: t0 | t1 }],
+                    ) => [B] where A: Row, B: Row "#,
+                "exponentialMovingAverage" => r#"(
+                        <-tables: [{ B with _value: A}],
                         n: int
-                    ) -> [{ _value: t0 | t1}]
-                "#,
-                "false" => "forall [] bool",
-                "fill" => r#"
-                    forall [t0, t1, t2] where t0: Row, t2: Row (
-                        <-tables: [t0],
+                    ) => [{ B with _value: A }] where A: Numeric "#,
+                "false" => "bool",
+                "fill" => r#"(
+                        <-tables: [A],
                         ?column: string,
-                        ?value: t1,
+                        ?value: B,
                         ?usePrevious: bool
-                    ) -> [t2]
-                "#,
-                "filter" => r#"
-                    forall [t0] where t0: Row (
-                        <-tables: [t0],
-                        fn: (r: t0) -> bool,
+                    ) => [C] where A: Row, C: Row "#,
+                "filter" => r#"(
+                        <-tables: [A],
+                        fn: (r: A) => bool,
                         ?onEmpty: string
-                    ) -> [t0]
-                "#,
-                "first" => r#"
-                    forall [t0] where t0: Row (
-                        <-tables: [t0],
+                    ) => [A] where A: Row "#,
+                "first" => r#"(
+                        <-tables: [A],
                         ?column: string
-                    ) -> [t0]
-                "#,
-                "float" => "forall [t0] (v: t0) -> float",
-                "getColumn" => r#"
-                    forall [t0, t1] where t0: Row (
-                        <-table: [t0],
+                    ) => [A] where A: Row "#,
+                "float" => "(v: A) => float",
+                "getColumn" => r#"(
+                        <-table: [A],
                         column: string
-                    ) -> [t1]
-                "#,
-                "getRecord" => r#"
-                    forall [t0] where t0: Row (
-                        <-table: [t0],
+                    ) => [B] where A: Row "#,
+                "getRecord" => r#"(
+                        <-table: [A],
                         idx: int
-                    ) -> t0
-                "#,
-                "findColumn" => r#"
-                    forall [t0, t1, t2] where t0: Row, t1: Row (
-                        <-tables: [t0],
-                        fn: (key: t1) -> bool,
+                    ) => A where A: Row "#,
+                "findColumn" => r#"(
+                        <-tables: [A],
+                        fn: (key: B) => bool,
                         column: string
-                    ) -> [t2]
-                "#,
-                "findRecord" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
-                        fn: (key: t1) -> bool,
+                    ) => [C] where A: Row, B: Row "#,
+                "findRecord" => r#"(
+                        <-tables: [A],
+                        fn: (key: B) => bool,
                         idx: int
-                    ) -> t0
-                "#,
-                "group" => r#"
-                    forall [t0] where t0: Row (
-                        <-tables: [t0],
+                    ) => A where A: Row, B: Row "#,
+                "group" => r#"(
+                        <-tables: [A],
                         ?mode: string,
                         ?columns: [string]
-                    ) -> [t0]
-                "#,
-                "histogram" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [A] where A: Row "#,
+                "histogram" => r#"(
+                        <-tables: [A],
                         ?column: string,
                         ?upperBoundColumn: string,
                         ?countColumn: string,
                         bins: [float],
                         ?normalize: bool
-                    ) -> [t1]
-                "#,
-                "histogramQuantile" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "histogramQuantile" => r#"(
+                        <-tables: [A],
                         ?quantile: float,
                         ?countColumn: string,
                         ?upperBoundColumn: string,
                         ?valueColumn: string,
                         ?minValue: float
-                    ) -> [t1]
-                "#,
-                "holtWinters" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "holtWinters" => r#"(
+                        <-tables: [A],
                         n: int,
                         interval: duration,
                         ?withFit: bool,
                         ?column: string,
                         ?timeColumn: string,
                         ?seasonality: int
-                    ) -> [t1]
-                "#,
-                "hourSelection" => r#"
-                    forall [t0] where t0: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "hourSelection" => r#"(
+                        <-tables: [A],
                         start: int,
                         stop: int,
                         ?timeColumn: string
-                    ) -> [t0]
-                "#,
-                "inf" => "forall [] duration",
-                "int" => "forall [t0] (v: t0) -> int",
-                "integral" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [A] where A: Row "#,
+                "inf" => "duration",
+                "int" => "(v: A) => int",
+                "integral" => r#"(
+                        <-tables: [A],
                         ?unit: duration,
                         ?timeColumn: string,
                         ?column: string
-                    ) -> [t1]
-                "#,
-                "join" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: t0,
+                    ) => [B] where A: Row, B: Row "#,
+                "join" => r#"(
+                        <-tables: A,
                         ?method: string,
                         ?on: [string]
-                    ) -> [t1]
-                "#,
+                    ) => [B] where A: Row, B: Row "#,
                 // This function would almost have input/output types that match, but:
                 // input column may start as int, uint or float, and always ends up as float.
                 // https://github.com/influxdata/flux/issues/2252
-                "kaufmansAMA" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                "kaufmansAMA" => r#"(
+                        <-tables: [A],
                         n: int,
                         ?column: string
-                    ) -> [t1]
-                "#,
+                    ) => [B] where A: Row, B: Row "#,
                 // either column list or predicate must be provided
                 // https://github.com/influxdata/flux/issues/2248
-                "keep" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                "keep" => r#"(
+                        <-tables: [A],
                         ?columns: [string],
-                        ?fn: (column: string) -> bool
-                    ) -> [t1]
-                "#,
-                "keyValues" => r#"
-                    forall [t0, t1, t2] where t0: Row, t2: Row (
-                        <-tables: [t0],
+                        ?fn: (column: string) => bool
+                    ) => [B] where A: Row, B: Row "#,
+                "keyValues" => r#"(
+                        <-tables: [A],
                         ?keyColumns: [string]
-                    ) -> [{_key: string | _value: t1 | t2}]
-                "#,
-                "keys" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [{C with _key: string , _value: B}] where A: Row, C: Row "#,
+                "keys" => r#"(
+                        <-tables: [A],
                         ?column: string
-                    ) -> [t1]
-                "#,
-                "last" => "forall [t0] where t0: Row (<-tables: [t0], ?column: string) -> [t0]",
-                "length" => "forall [t0] (arr: [t0]) -> int",
-                "limit"  => "forall [t0] (<-tables: [t0], n: int, ?offset: int) -> [t0]",
-                "linearBins" => r#"
-                    forall [] (
+                    ) => [B] where A: Row, B: Row "#,
+                "last" => "(<-tables: [A], ?column: string) => [A] where A: Row",
+                "length" => "(arr: [A]) => int",
+                "limit"  => "(<-tables: [A], n: int, ?offset: int) => [A]",
+                "linearBins" => r#"(
                         start: float,
                         width: float,
                         count: int,
                         ?infinity: bool
-                    ) -> [float]
-                "#,
-                "logarithmicBins" => r#"
-                    forall [] (
+                    ) => [float] "#,
+                "logarithmicBins" => r#"(
                         start: float,
                         factor: float,
                         count: int,
                         ?infinity: bool
-                    ) -> [float]
-                "#,
+                    ) => [float] "#,
                 // Note: mergeKey parameter could be removed from map once the transpiler is updated:
                 // https://github.com/influxdata/flux/issues/816
-                "map" => "forall [t0, t1] (<-tables: [t0], fn: (r: t0) -> t1, ?mergeKey: bool) -> [t1]",
-                "max" => "forall [t0] where t0: Row (<-tables: [t0], ?column: string) -> [t0]",
-                "mean" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                "map" => "(<-tables: [A], fn: (r: A) => B, ?mergeKey: bool) => [B]",
+                "max" => "(<-tables: [A], ?column: string) => [A] where A: Row",
+                "mean" => r#"(
+                        <-tables: [A],
                         ?column: string
-                    ) -> [t1]
-                "#,
-                "min" => "forall [t0] where t0: Row (<-tables: [t0], ?column: string) -> [t0]",
-                "mode" => r#"
-                    forall [t0, t1, t2] where t0: Row, t2: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "min" => "(<-tables: [A], ?column: string) => [A] where A: Row",
+                "mode" => r#"(
+                        <-tables: [A],
                         ?column: string
-                    ) -> [{_value: t1 | t2}]
-                "#,
-                "movingAverage" => "forall [t0, t1] where t0: Numeric (<-tables: [{_value: t0 | t1}], n: int) -> [{_value: float | t1}]",
-                "pivot" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [{C with _value: B}] where A: Row, C: Row "#,
+                "movingAverage" => "(<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric",
+                "pivot" => r#"(
+                        <-tables: [A],
                         rowKey: [string],
                         columnKey: [string],
                         valueColumn: string
-                    ) -> [t1]
-                "#,
-                "quantile" => r#"
-                    forall [t0] where t0: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "quantile" => r#"(
+                        <-tables: [A],
                         ?column: string,
                         q: float,
                         ?compression: float,
                         ?method: string
-                    ) -> [t0]
-                "#,
+                    ) => [A] where A: Row "#,
                 // start and stop should be able to constrained to time or duration with a kind constraint:
                 //   https://github.com/influxdata/flux/issues/2243
-                // Also, we should remove the column arguments so we can reuse t0 in the return type:
+                // Also, we should remove the column arguments so we can reuse A in the return type:
                 //   https://github.com/influxdata/flux/issues/2253
-                "range" => r#"
-                    forall [t0, t1, t2, t3] where t0: Row, t3: Row (
-                        <-tables: [t0],
-                        start: t1,
-                        ?stop: t2,
+                "range" => r#"(
+                        <-tables: [A],
+                        start: B,
+                        ?stop: C,
                         ?timeColumn: string,
                         ?startColumn: string,
                         ?stopColumn: string
-                    ) -> [t3]
-                "#,
+                    ) => [D] where A: Row, D: Row "#,
                 // This function could be updated to get better type inference:
                 //   https://github.com/influxdata/flux/issues/2254
-                "reduce" => r#"
-                    forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (
-                        <-tables: [t0],
-                        fn: (r: t0, accumulator: t1) -> t1,
-                        identity: t1
-                    ) -> [t2]
-                "#,
-                "relativeStrengthIndex" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                "reduce" => r#"(
+                        <-tables: [A],
+                        fn: (r: A, accumulator: B) => B,
+                        identity: B
+                    ) => [C] where A: Row, B: Row, C: Row "#,
+                "relativeStrengthIndex" => r#"(
+                        <-tables: [A],
                         n: int,
                         ?columns: [string]
-                    ) -> [t1]
-                "#,
+                    ) => [B] where A: Row, B: Row "#,
                 // Either fn or columns should be specified
                 // https://github.com/influxdata/flux/issues/2251
-                "rename" => r#"
-                    forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (
-                        <-tables: [t0],
-                        ?fn: (column: string) -> string,
-                        ?columns: t1
-                    ) -> [t2]
-                "#,
-                "sample" => r#"
-                    forall [t0] where t0: Row (
-                        <-tables: [t0],
+                "rename" => r#"(
+                        <-tables: [A],
+                        ?fn: (column: string) => string,
+                        ?columns: B
+                    ) => [C] where A: Row, B: Row, C: Row "#,
+                "sample" => r#"(
+                        <-tables: [A],
                         n: int,
                         ?pos: int,
                         ?column: string
-                    ) -> [t0]
-                "#,
-                "set" => r#"
-                    forall [t0] where t0: Row (
-                        <-tables: [t0],
+                    ) => [A] where A: Row "#,
+                "set" => r#"(
+                        <-tables: [A],
                         key: string,
                         value: string
-                    ) -> [t0]
-                "#,
+                    ) => [A] where A: Row "#,
                 // This is an aggregate function, and may clobber value columns
-                "skew" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                "skew" => r#"(
+                        <-tables: [A],
                         ?column: string
-                    ) -> [t1]
-                "#,
+                    ) => [B] where A: Row, B: Row "#,
                 "sleep" => r#"
-                    forall [t0] (
-                        <-v: t0,
-                        "duration": duration
-                    ) -> t0
+                    (
+                        <-v: A,
+                        duration: duration
+                    ) => A
                 "#,
-                "sort" => r#"
-                    forall [t0] where t0: Row (
-                        <-tables: [t0],
+                "sort" => r#"(
+                        <-tables: [A],
                         ?columns: [string],
                         ?desc: bool
-                    ) -> [t0]
-                "#,
-                "spread" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [A] where A: Row "#,
+                "spread" => r#"(
+                        <-tables: [A],
                         ?column: string
-                    ) -> [t1]
-                "#,
-                "stateTracking" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
-                        fn: (r: t0) -> bool,
+                    ) => [B] where A: Row, B: Row "#,
+                "stateTracking" => r#"(
+                        <-tables: [A],
+                        fn: (r: A) => bool,
                         ?countColumn: string,
                         ?durationColumn: string,
                         ?durationUnit: duration,
                         ?timeColumn: string
-                    ) -> [t1]
-                "#,
-                "stddev" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "stddev" => r#"(
+                        <-tables: [A],
                         ?column: string,
                         ?mode: string
-                    ) -> [t1]
-                "#,
-                "string" => "forall [t0] (v: t0) -> string",
-                "sum" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "string" => "(v: A) => string",
+                "sum" => r#"(
+                        <-tables: [A],
                         ?column: string
-                    ) -> [t1]
-                "#,
-                "tableFind" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
-                        fn: (key: t1) -> bool
-                    ) -> [t0]
-                "#,
-                "tail" => r#"
-                    forall [t0] (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "tableFind" => r#"(
+                        <-tables: [A],
+                        fn: (key: B) => bool
+                    ) => [A] where A: Row, B: Row "#,
+                "tail" => r#"(
+                        <-tables: [A],
                         n: int,
                         ?offset: int
-                    ) -> [t0]
-                "#,
-                "time" => "forall [t0] (v: t0) -> time",
+                    ) => [A] "#,
+                "time" => "(v: A) => time",
                 "timeShift" => r#"
-                    forall [t0] (
-                        <-tables: [t0],
-                        "duration": duration,
+                    (
+                        <-tables: [A],
+                        duration: duration,
                         ?columns: [string]
-                    ) -> [t0]
+                    ) => [A]
                 "#,
-                "tripleExponentialDerivative" => r#"
-                    forall [t0, t1] where t0: Numeric, t1: Row (
-                        <-tables: [{_value: t0 | t1}],
+                "tripleExponentialDerivative" => r#"(
+                        <-tables: [{B with _value: A}],
                         n: int
-                    ) -> [{_value: float | t1}]
-                "#,
-                "true" => "forall [] bool",
-                "uint" => "forall [t0] (v: t0) -> uint",
-                "union" => r#"
-                    forall [t0] where t0: Row (
-                        tables: [[t0]]
-                    ) -> [t0]
-                "#,
-                "unique" => r#"
-                    forall [t0] where t0: Row (
-                        <-tables: [t0],
+                    ) => [{B with _value: float}] where A: Numeric, B: Row "#,
+                "true" => "bool",
+                "uint" => "(v: A) => uint",
+                "union" => r#"(
+                        tables: [[A]]
+                    ) => [A] where A: Row "#,
+                "unique" => r#"(
+                        <-tables: [A],
                         ?column: string
-                    ) -> [t0]
-                "#,
+                    ) => [A] where A: Row "#,
                 // This would produce an output the same as the input,
                 // except that startColumn and stopColumn will be added if they don't
                 // already exist.
                 // https://github.com/influxdata/flux/issues/2255
-                "window" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                "window" => r#"(
+                        <-tables: [A],
                         ?every: duration,
                         ?period: duration,
                         ?offset: duration,
@@ -843,57 +743,42 @@ pub fn builtins() -> Builtins<'static> {
                         ?startColumn: string,
                         ?stopColumn: string,
                         ?createEmpty: bool
-                    ) -> [t1]
-                "#,
-                "yield" => r#"
-                    forall [t0] where t0: Row (
-                        <-tables: [t0],
+                    ) => [B] where A: Row, B: Row "#,
+                "yield" => r#"(
+                        <-tables: [A],
                         ?name: string
-                    ) -> [t0]
-                "#,
+                    ) => [A] where A: Row "#,
             },
             "contrib/jsternberg/math" => semantic_map! {
-                "minIndex" => r#"
-                    forall [t0] where t0: Numeric (
-                        values: [t0]
-                    ) -> int
-                "#,
-                "maxIndex" => r#"
-                    forall [t0] where t0: Numeric (
-                        values: [t0]
-                    ) -> int
-                "#,
-                "sum" => r#"
-                    forall [t0] where t0: Numeric (
-                        values: [t0]
-                    ) -> t0
-                "#,
+                "minIndex" => r#"(
+                        values: [A]
+                    ) => int where A: Numeric "#,
+                "maxIndex" => r#"(
+                        values: [A]
+                    ) => int where A: Numeric "#,
+                "sum" => r#"(
+                        values: [A]
+                    ) => A where A: Numeric "#,
             },
             "contrib/jsternberg/aggregate" => semantic_map! {
-                "table" => r#"
-                    forall [t0, t1, t2] where t0: Row, t1: Row, t2: Row (
-                        <-tables: [t0],
-                        columns: t2
-                    ) -> [t1]
-                "#,
-                "null" => r#"forall [t0] t0"#,
-                "none" => r#"forall [t0] t0"#,
+                "table" => r#"(
+                        <-tables: [A],
+                        columns: C
+                    ) => [B] where A: Row, B: Row, C: Row "#,
+                "null" => r#"A"#,
+                "none" => r#"A"#,
             },
             "contrib/jsternberg/influxdb" => semantic_map! {
-                "_mask" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                "_mask" => r#"(
+                        <-tables: [A],
                         columns: [string]
-                    ) -> [t1]
-                "#,
+                    ) => [B] where A: Row, B: Row "#,
             },
             "contrib/jsternberg/rows" => semantic_map! {
-                "map" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
-                        fn: (r: t0) -> t1
-                    ) -> [t1]
-                "#,
+                "map" => r#"(
+                        <-tables: [A],
+                        fn: (r: A) => B
+                    ) => [B] where A: Row, B: Row "#,
             },
         },
     }
@@ -901,14 +786,30 @@ pub fn builtins() -> Builtins<'static> {
 
 #[cfg(test)]
 mod test {
+    use crate::ast::get_err_type_expression;
+    use crate::parser;
     use crate::semantic::builtins::builtins;
-    use crate::semantic::parser as type_parser;
-
+    use crate::semantic::convert::convert_polytype;
+    use crate::semantic::fresh::Fresher;
     #[test]
     fn parse_builtin_types() {
         for (path, values) in builtins().iter() {
             for (name, expr) in values {
-                match type_parser::parse(expr) {
+                let mut p = parser::Parser::new(expr);
+
+                let typ_expr = p.parse_type_expression();
+                let err = get_err_type_expression(typ_expr.clone());
+
+                if err != "" {
+                    let msg = format!(
+                        "TypeExpression parsing failed for {}.{}. {:?}",
+                        path, name, err
+                    );
+                    panic!(msg)
+                }
+                let expr = convert_polytype(typ_expr, &mut Fresher::default());
+
+                match expr {
                     Ok(_) => {}
                     Err(s) => {
                         let msg = format!("{}.{} type failed to parse: {}", path, name, s);

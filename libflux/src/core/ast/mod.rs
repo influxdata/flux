@@ -598,6 +598,184 @@ pub struct TypeExpression {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub constraints: Vec<TypeConstraint>,
 }
+fn get_err_basenode(b: BaseNode) -> String {
+    if !b.errors.is_empty() {
+        return b.errors[0].clone();
+    }
+    "".to_string()
+}
+pub fn get_err_type_expression(ty: TypeExpression) -> String {
+    if !ty.base.errors.is_empty() {
+        return ty.base.errors[0].clone();
+    }
+    let mt_errs = get_err_monotype(ty.monotype);
+    if mt_errs != "" {
+        return mt_errs;
+    }
+    get_err_constraints(ty.constraints)
+}
+fn get_err_monotype(mt: MonoType) -> String {
+    match mt {
+        MonoType::Basic(t) => {
+            let e = get_err_basenode(t.base);
+            if e != "" {
+                return e;
+            }
+            get_err_identifier(t.name)
+        }
+        MonoType::Tvar(t) => {
+            let e = get_err_basenode(t.base);
+            if e != "" {
+                return e;
+            }
+            get_err_identifier(t.name)
+        }
+        MonoType::Array(t) => {
+            let e = get_err_basenode((*t).base);
+            if e != "" {
+                return e;
+            }
+            get_err_monotype((*t).element)
+        }
+        MonoType::Record(t) => {
+            let e = get_err_basenode(t.base);
+            if e != "" {
+                return e;
+            }
+            if let Some(tv) = t.tvar {
+                let e = get_err_identifier(tv);
+                if e != "" {
+                    return e;
+                }
+            }
+
+            get_err_properties(t.properties)
+        }
+        MonoType::Function(t) => {
+            let e = get_err_basenode((*t).base);
+            if e != "" {
+                return e;
+            }
+            let e = get_err_parameters((*t).parameters);
+            if e != "" {
+                return e;
+            }
+            get_err_monotype((*t).monotype)
+        }
+    }
+}
+fn get_err_parameters(prs: Vec<ParameterType>) -> String {
+    for pr in prs {
+        get_err_parameter(pr);
+    }
+    "".to_string()
+}
+fn get_err_parameter(pr: ParameterType) -> String {
+    match pr {
+        ParameterType::Required {
+            base,
+            name,
+            monotype,
+        } => {
+            let e = get_err_basenode(base);
+            if e != "" {
+                return e;
+            }
+            let e = get_err_identifier(name);
+            if e != "" {
+                return e;
+            }
+            get_err_monotype(monotype)
+        }
+        ParameterType::Pipe {
+            base,
+            name,
+            monotype,
+        } => {
+            let e = get_err_basenode(base);
+            if e != "" {
+                return e;
+            }
+            if let Some(i) = name {
+                let e = get_err_identifier(i);
+                if e != "" {
+                    return e;
+                }
+            }
+            get_err_monotype(monotype)
+        }
+        ParameterType::Optional {
+            base,
+            name,
+            monotype,
+        } => {
+            let e = get_err_basenode(base);
+            if e != "" {
+                return e;
+            }
+            let e = get_err_identifier(name);
+            if e != "" {
+                return e;
+            }
+            get_err_monotype(monotype)
+        }
+    }
+}
+fn get_err_properties(ps: Vec<PropertyType>) -> String {
+    for p in ps {
+        let e = get_err_property(p);
+        if e != "" {
+            return e;
+        }
+    }
+    "".to_string()
+}
+fn get_err_property(p: PropertyType) -> String {
+    let e = get_err_basenode(p.base);
+    if e != "" {
+        return e;
+    }
+    let e = get_err_identifier(p.name);
+    if e != "" {
+        return e;
+    }
+    get_err_monotype(p.monotype)
+}
+fn get_err_identifier(i: Identifier) -> String {
+    if !i.base.errors.is_empty() {
+        return i.base.errors[0].clone();
+    }
+    "".to_string()
+}
+fn get_err_constraints(tc: Vec<TypeConstraint>) -> String {
+    for c in tc {
+        let e = get_err_constraint(c);
+        if e != "" {
+            return e;
+        }
+    }
+    "".to_string()
+}
+fn get_err_constraint(c: TypeConstraint) -> String {
+    let e = get_err_basenode(c.base);
+    if e != "" {
+        return e;
+    }
+    let e = get_err_identifier(c.tvar);
+    if e != "" {
+        return e;
+    }
+    get_err_kinds(c.kinds)
+}
+fn get_err_kinds(ks: Vec<Identifier>) -> String {
+    for k in ks {
+        let e = get_err_identifier(k);
+        if e != "" {
+            return e;
+        }
+    }
+    "".to_string()
+}
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypeConstraint {
