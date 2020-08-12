@@ -108,7 +108,6 @@ where
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum Expression {
-    #[serde(rename = "Identifier")]
     Identifier(Identifier),
     #[serde(rename = "ArrayExpression")]
     Array(Box<ArrayExpr>),
@@ -1309,7 +1308,6 @@ pub struct Property {
 
 // Identifier represents a name that identifies a unique Node
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
 pub struct Identifier {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]

@@ -66,14 +66,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "pass",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}},
 		Imports:  nil,
 		Metadata: "parser-type=rust",

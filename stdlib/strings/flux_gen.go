@@ -66,14 +66,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "title",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -107,14 +99,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "toUpper",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -150,14 +134,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "toLower",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -191,14 +167,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "trim",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -234,14 +202,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "trimPrefix",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -275,14 +235,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "trimSpace",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -318,14 +270,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "trimSuffix",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -359,14 +303,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "trimRight",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -402,14 +338,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "trimLeft",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -443,14 +371,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "toTitle",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -486,14 +406,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "hasPrefix",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -527,14 +439,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "hasSuffix",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -570,14 +474,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "containsStr",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -611,14 +507,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "containsAny",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -654,14 +542,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "equalFold",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -695,14 +575,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "compare",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -738,14 +610,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "countStr",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -779,14 +643,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "index",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -822,14 +678,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "indexAny",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -863,14 +711,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "lastIndex",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -906,14 +746,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "lastIndexAny",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -947,14 +779,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "isDigit",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -990,14 +814,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "isLetter",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1031,14 +847,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "isLower",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1074,14 +882,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "isUpper",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1115,14 +915,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "repeat",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1158,14 +950,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "replace",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1199,14 +983,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "replaceAll",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1242,14 +1018,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "split",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1283,14 +1051,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "splitAfter",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1326,14 +1086,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "splitN",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1367,14 +1119,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "splitAfterN",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -1410,14 +1154,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "joinStr",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1452,14 +1188,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "strlen",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -1493,14 +1221,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "substring",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}},
 		Imports:  nil,

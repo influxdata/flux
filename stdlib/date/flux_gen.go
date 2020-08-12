@@ -66,14 +66,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "second",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -107,14 +99,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "minute",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -150,14 +134,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "hour",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -191,14 +167,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "weekDay",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -234,14 +202,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "monthDay",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -275,14 +235,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "yearDay",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -318,14 +270,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "month",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -359,14 +303,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "year",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -402,14 +338,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "week",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -443,14 +371,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "quarter",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -486,14 +406,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "millisecond",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -527,14 +439,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "microsecond",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -570,14 +474,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "nanosecond",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -611,14 +507,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "truncate",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{

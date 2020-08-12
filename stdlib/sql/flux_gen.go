@@ -66,14 +66,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "from",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -107,14 +99,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "to",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}},
 		Imports:  nil,

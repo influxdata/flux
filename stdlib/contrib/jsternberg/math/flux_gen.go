@@ -66,14 +66,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "minIndex",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -405,14 +397,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "maxIndex",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -743,14 +727,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "sum",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}},
 		Imports:  nil,

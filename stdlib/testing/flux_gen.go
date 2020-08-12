@@ -66,14 +66,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "assertEquals",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -108,14 +100,6 @@ var pkgAST = &ast.Package{
 				},
 				Name: "assertEmpty",
 			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
-			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -149,14 +133,6 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "diff",
-			},
-			Ty: ast.TypeExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc:    nil,
-				},
-				Constraints: nil,
-				Ty:          nil,
 			},
 		}, &ast.OptionStatement{
 			Assignment: &ast.VariableAssignment{
