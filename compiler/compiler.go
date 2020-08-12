@@ -593,6 +593,22 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 		if err != nil {
 			return nil, err
 		}
+		if n.Pipe != nil {
+			pipeArg, err := n.Callee.TypeOf().PipeArgument()
+			if err != nil {
+				return nil, err
+
+			}
+			if pipeArg == nil {
+				// This should be caught during type inference
+				return nil, errors.Newf(codes.Internal, "callee lacks a pipe argument, but one was provided")
+			}
+			pipe, err := compile(n.Pipe, subst, scope)
+			if err != nil {
+				return nil, err
+			}
+			args.(*objEvaluator).properties[string(pipeArg.Name())] = pipe
+		}
 		callee, err := compile(n.Callee, subst, scope)
 		if err != nil {
 			return nil, err

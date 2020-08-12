@@ -194,6 +194,27 @@ func (mt MonoType) Argument(i int) (*Argument, error) {
 	return newArgument(a)
 }
 
+// PipeArgument will return the pipe argument if this monotype
+// is a function and it has a pipe argument. If this monotype
+// is a function with no pipe argument, nil will be returned.
+// If this monotype is not a function, an error will be returned.
+func (mt MonoType) PipeArgument() (*Argument, error) {
+	nargs, err := mt.NumArguments()
+	if err != nil {
+		return nil, err
+	}
+	for i := 0; i < nargs; i++ {
+		arg, err := mt.Argument(i)
+		if err != nil {
+			return nil, err
+		}
+		if arg.Pipe() {
+			return arg, nil
+		}
+	}
+	return nil, nil
+}
+
 // SortedArguments returns a slice of function arguments,
 // sorted by argument name, if this monotype is a function.
 func (mt MonoType) SortedArguments() ([]*Argument, error) {
