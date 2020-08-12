@@ -1,5 +1,5 @@
 use crate::semantic::types::{
-    Array, Function, MonoType, MonoTypeVecMap, PolyType, Property, Row, SemanticMap, Tvar, TvarMap,
+    Array, Function, MonoType, MonoTypeVecMap, PolyType, Property, Record, SemanticMap, Tvar, TvarMap,
 };
 use std::collections::BTreeMap;
 use std::hash::Hash;
@@ -89,7 +89,7 @@ impl Fresh for MonoType {
         match self {
             MonoType::Var(tvr) => MonoType::Var(tvr.fresh(f, sub)),
             MonoType::Arr(arr) => MonoType::Arr(arr.fresh(f, sub)),
-            MonoType::Row(obj) => MonoType::Row(obj.fresh(f, sub)),
+            MonoType::Record(obj) => MonoType::Record(obj.fresh(f, sub)),
             MonoType::Fun(fun) => MonoType::Fun(fun.fresh(f, sub)),
             _ => self,
         }
@@ -108,24 +108,24 @@ impl Fresh for Array {
     }
 }
 
-impl Fresh for Row {
+impl Fresh for Record {
     fn fresh(mut self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         let mut props = MonoTypeVecMap::new();
         let mut extends = false;
         let mut tv = Tvar(0);
         loop {
             match self {
-                Row::Empty => {
+                Record::Empty => {
                     break;
                 }
-                Row::Extension {
+                Record::Extension {
                     head,
-                    tail: MonoType::Row(b),
+                    tail: MonoType::Record(b),
                 } => {
                     props.entry(head.k).or_insert_with(Vec::new).push(head.v);
                     self = *b;
                 }
-                Row::Extension {
+                Record::Extension {
                     head,
                     tail: MonoType::Var(t),
                 } => {
@@ -144,26 +144,26 @@ impl Fresh for Row {
         let mut r: MonoType = if extends {
             MonoType::Var(tv.fresh(f, sub))
         } else {
-            MonoType::Row(Box::new(Row::Empty))
+            MonoType::Record(Box::new(Record::Empty))
         };
         // Freshen record properties in deterministic order
         props = props.fresh(f, sub);
         // Construct new record from the fresh properties
         for (label, types) in props {
             for ty in types {
-                let extension = Row::Extension {
+                let extension = Record::Extension {
                     head: Property {
                         k: label.clone(),
                         v: ty,
                     },
                     tail: r,
                 };
-                r = MonoType::Row(Box::new(extension));
+                r = MonoType::Record(Box::new(extension));
             }
         }
         match r {
-            MonoType::Row(b) => *b,
-            _ => Row::Empty,
+            MonoType::Record(b) => *b,
+            _ => Record::Empty,
         }
     }
 }

@@ -16,7 +16,7 @@ use crate::semantic::types::{
     PolyType,
     PolyTypeMap,
     Property,
-    Row,
+    Record,
     Tvar,
     TvarKinds,
 };
@@ -86,7 +86,7 @@ impl From<fb::Kind> for Kind {
             fb::Kind::Comparable => Kind::Comparable,
             fb::Kind::Equatable => Kind::Equatable,
             fb::Kind::Nullable => Kind::Nullable,
-            fb::Kind::Row => Kind::Row,
+            fb::Kind::Record => Kind::Record,
             fb::Kind::Negatable => Kind::Negatable,
             fb::Kind::Timeable => Kind::Timeable,
         }
@@ -103,7 +103,7 @@ impl From<Kind> for fb::Kind {
             Kind::Comparable => fb::Kind::Comparable,
             Kind::Equatable => fb::Kind::Equatable,
             Kind::Nullable => fb::Kind::Nullable,
-            Kind::Row => fb::Kind::Row,
+            Kind::Record => fb::Kind::Record,
             Kind::Negatable => fb::Kind::Negatable,
             Kind::Timeable => fb::Kind::Timeable,
         }
@@ -128,7 +128,7 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
             let opt: Option<Function> = fb::Fun::init_from_table(table).into();
             Some(MonoType::Fun(Box::new(opt?)))
         }
-        fb::MonoType::Row => fb::Row::init_from_table(table).into(),
+        fb::MonoType::Record => fb::Record::init_from_table(table).into(),
         fb::MonoType::NONE => None,
     }
 }
@@ -161,16 +161,16 @@ impl From<fb::Arr<'_>> for Option<Array> {
     }
 }
 
-impl From<fb::Row<'_>> for Option<MonoType> {
-    fn from(t: fb::Row) -> Option<MonoType> {
+impl From<fb::Record<'_>> for Option<MonoType> {
+    fn from(t: fb::Record) -> Option<MonoType> {
         let mut r = match t.extends() {
-            None => MonoType::Row(Box::new(Row::Empty)),
+            None => MonoType::Record(Box::new(Record::Empty)),
             Some(tv) => MonoType::Var(tv.into()),
         };
         let p = t.props()?;
         for value in p.iter().rev() {
             let prop: Option<Property> = value.into();
-            r = MonoType::Row(Box::new(Row::Extension {
+            r = MonoType::Record(Box::new(Record::Extension {
                 head: prop?,
                 tail: r,
             }));
@@ -412,9 +412,9 @@ pub fn build_type<'a>(
             let offset = build_arr(builder, *arr);
             (offset.as_union_value(), fb::MonoType::Arr)
         }
-        MonoType::Row(row) => {
-            let offset = build_row(builder, *row);
-            (offset.as_union_value(), fb::MonoType::Row)
+        MonoType::Record(Record) => {
+            let offset = build_row(builder, *Record);
+            (offset.as_union_value(), fb::MonoType::Record)
         }
         MonoType::Fun(fun) => {
             let offset = build_fun(builder, *fun);
@@ -446,29 +446,29 @@ fn build_arr<'a>(
 
 fn build_row<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    mut row: Row,
-) -> flatbuffers::WIPOffset<fb::Row<'a>> {
+    mut Record: Record,
+) -> flatbuffers::WIPOffset<fb::Record<'a>> {
     let mut props = Vec::new();
     let extends = loop {
-        match row {
-            Row::Empty => {
+        match Record {
+            Record::Empty => {
                 break None;
             }
-            Row::Extension {
+            Record::Extension {
                 head,
-                tail: MonoType::Row(o),
+                tail: MonoType::Record(o),
             } => {
                 props.push(head);
-                row = *o;
+                Record = *o;
             }
-            Row::Extension {
+            Record::Extension {
                 head,
                 tail: MonoType::Var(t),
             } => {
                 props.push(head);
                 break Some(t);
             }
-            Row::Extension { head, tail } => {
+            Record::Extension { head, tail } => {
                 break None;
             }
         }
@@ -479,9 +479,9 @@ fn build_row<'a>(
         None => None,
         Some(tv) => Some(build_var(builder, tv)),
     };
-    fb::Row::create(
+    fb::Record::create(
         builder,
-        &fb::RowArgs {
+        &fb::RecordArgs {
             props: Some(props),
             extends,
         },

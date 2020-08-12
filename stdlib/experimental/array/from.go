@@ -125,7 +125,7 @@ func buildTable(rows values.Array, mem *memory.Allocator) (flux.Table, error) {
 	}
 	cols := make([]flux.ColMeta, 0, l)
 	for i := 0; i < l; i++ {
-		rp, err := typ.RowProperty(i)
+		rp, err := typ.RecordProperty(i)
 		if err != nil {
 			return nil, err
 		}

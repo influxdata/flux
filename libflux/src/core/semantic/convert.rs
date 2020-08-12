@@ -210,7 +210,7 @@ fn convert_monotype(
         }
         ast::MonoType::Record(rec) => {
             let mut r = match rec.tvar {
-                None => MonoType::Row(Box::new(types::Row::Empty)),
+                None => MonoType::Record(Box::new(types::Record::Empty)),
                 Some(id) => {
                     let tv = ast::MonoType::Tvar(ast::TvarType {
                         base: id.clone().base,
@@ -224,7 +224,7 @@ fn convert_monotype(
                     k: prop.name.name,
                     v: convert_monotype(prop.monotype, tvars, f)?,
                 };
-                r = MonoType::Row(Box::new(types::Row::Extension {
+                r = MonoType::Record(Box::new(types::Record::Extension {
                     head: property,
                     tail: r,
                 }))
@@ -260,7 +260,7 @@ pub fn convert_polytype(
                         "Nullable" => kinds.push(types::Kind::Nullable),
                         "Negatable" => kinds.push(types::Kind::Negatable),
                         "Timeable" => kinds.push(types::Kind::Timeable),
-                        "Row" => kinds.push(types::Kind::Row),
+                        "Record" => kinds.push(types::Kind::Record),
                         _ => {
                             return Err(format!("Constraint not found {} ", &k.name.as_str()));
                         }
@@ -2933,7 +2933,7 @@ mod tests {
         });
         let mut m = HashMap::<String, types::Tvar>::new();
         let got = convert_monotype(monotype, &mut m, &mut fresh::Fresher::default()).unwrap();
-        let want = MonoType::Row(Box::new(types::Row::Extension {
+        let want = MonoType::Record(Box::new(types::Record::Extension {
             head: types::Property {
                 k: "B".to_string(),
                 v: MonoType::Int,

@@ -18,7 +18,7 @@ use crate::semantic::nodes::infer_file;
 use crate::semantic::sub::Substitutable;
 use crate::semantic::types;
 use crate::semantic::types::{
-    MaxTvar, MonoType, PolyType, PolyTypeMap, PolyTypeMapMap, Property, Row, SemanticMap, Tvar,
+    MaxTvar, MonoType, PolyType, PolyTypeMap, PolyTypeMapMap, Property, Record, SemanticMap, Tvar,
     TvarKinds,
 };
 
@@ -259,12 +259,12 @@ pub fn build_polytype(from: PolyTypeMap, f: &mut Fresher) -> Result<PolyType, Er
     Ok(infer::generalize(
         &Environment::empty(false),
         &kinds,
-        MonoType::Row(Box::new(r)).apply(&sub),
+        MonoType::Record(Box::new(r)).apply(&sub),
     ))
 }
 
-fn build_row(from: PolyTypeMap, f: &mut Fresher) -> (Row, Constraints) {
-    let mut r = Row::Empty;
+fn build_row(from: PolyTypeMap, f: &mut Fresher) -> (Record, Constraints) {
+    let mut r = Record::Empty;
     let mut cons = Constraints::empty();
 
     for (name, poly) in from {
@@ -278,9 +278,9 @@ fn build_row(from: PolyTypeMap, f: &mut Fresher) -> (Row, Constraints) {
                 source: None,
             },
         );
-        r = Row::Extension {
+        r = Record::Extension {
             head: Property { k: name, v: ty },
-            tail: MonoType::Row(Box::new(r)),
+            tail: MonoType::Record(Box::new(r)),
         };
         cons = cons + constraints;
     }

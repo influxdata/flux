@@ -211,7 +211,7 @@ func (t *filterTransformation) canFilterByKey(fn *execute.RowPredicatePreparedFn
 	}
 
 	for i := 0; i < nargs; i++ {
-		prop, err := inType.RowProperty(i)
+		prop, err := inType.RecordProperty(i)
 		if err != nil {
 			panic(err)
 		}

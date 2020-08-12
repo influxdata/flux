@@ -62,8 +62,8 @@ func TypeEnvMap(env *fbsemantic.TypeEnvironment) map[envKey]*fbsemantic.Prop {
 		_ = env.Assignments(newAssign, i) // this call assigns a value to newAssign
 		assignId := string(newAssign.Id())
 		polytype := newAssign.Ty(nil)
-		if polytype.ExprType() != fbsemantic.MonoTypeRow {
-			panic(fmt.Errorf("expected PolyType Expr of %v to be fbsemantic.MonoTypeRow; found fbsemantic.%v",
+		if polytype.ExprType() != fbsemantic.MonoTypeRecord {
+			panic(fmt.Errorf("expected PolyType Expr of %v to be fbsemantic.MonoTypeRecord; found fbsemantic.%v",
 				assignId,
 				fbsemantic.EnumNamesMonoType[polytype.ExprType()],
 			))
@@ -76,14 +76,14 @@ func TypeEnvMap(env *fbsemantic.TypeEnvironment) map[envKey]*fbsemantic.Prop {
 			))
 		}
 
-		// initialize table before use in row
-		row := new(fbsemantic.Row)
-		row.Init(table.Bytes, table.Pos)
-		propLen := row.PropsLength()
+		// initialize table before use in Record
+		Record := new(fbsemantic.Record)
+		Record.Init(table.Bytes, table.Pos)
+		propLen := Record.PropsLength()
 
 		for j := 0; j < propLen; j++ {
 			newProp := new(fbsemantic.Prop)
-			_ = row.Props(newProp, j) // this call assigns value to newProp
+			_ = Record.Props(newProp, j) // this call assigns value to newProp
 			propKey := string(newProp.K())
 			key := envKey{
 				Package: assignId,

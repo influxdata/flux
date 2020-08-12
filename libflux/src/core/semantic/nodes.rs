@@ -1418,7 +1418,7 @@ impl MemberExpr {
         };
         let tail = MonoType::Var(f.fresh());
 
-        let r = MonoType::from(types::Row::Extension { head, tail });
+        let r = MonoType::from(types::Record::Extension { head, tail });
         let t = self.object.type_of();
 
         let (env, cons) = self.object.infer(env, f)?;
@@ -1499,7 +1499,7 @@ impl ObjectExpr {
                 (expr.typ.to_owned(), cons)
             }
             None => (
-                MonoType::Row(Box::new(types::Row::Empty)),
+                MonoType::Record(Box::new(types::Record::Empty)),
                 Constraints::empty(),
             ),
         };
@@ -1508,7 +1508,7 @@ impl ObjectExpr {
             let (e, rest) = prop.value.infer(env, f)?;
             env = e;
             cons = cons + rest;
-            r = MonoType::Row(Box::new(types::Row::Extension {
+            r = MonoType::Record(Box::new(types::Record::Extension {
                 head: types::Property {
                     k: prop.key.name.to_owned(),
                     v: prop.value.type_of(),

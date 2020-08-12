@@ -76,7 +76,7 @@ func NewObject(typ semantic.MonoType) Object {
 	}
 	labels := make(labelSet, n)
 	for i := 0; i < len(labels); i++ {
-		rp, err := typ.RowProperty(i)
+		rp, err := typ.RecordProperty(i)
 		if err != nil {
 			panic(err)
 		}

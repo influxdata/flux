@@ -23,7 +23,7 @@ pub mod fbsemantic {
         Basic = 1,
         Var = 2,
         Arr = 3,
-        Row = 4,
+        Record = 4,
         Fun = 5,
     }
 
@@ -67,12 +67,13 @@ pub mod fbsemantic {
         MonoType::Basic,
         MonoType::Var,
         MonoType::Arr,
-        MonoType::Row,
+        MonoType::Record,
         MonoType::Fun,
     ];
 
     #[allow(non_camel_case_types)]
-    const ENUM_NAMES_MONO_TYPE: [&'static str; 6] = ["NONE", "Basic", "Var", "Arr", "Row", "Fun"];
+    const ENUM_NAMES_MONO_TYPE: [&'static str; 6] =
+        ["NONE", "Basic", "Var", "Arr", "Record", "Fun"];
 
     pub fn enum_name_mono_type(e: MonoType) -> &'static str {
         let index = e as u8;
@@ -163,7 +164,7 @@ pub mod fbsemantic {
         Comparable = 4,
         Equatable = 5,
         Nullable = 6,
-        Row = 7,
+        Record = 7,
         Negatable = 8,
         Timeable = 9,
     }
@@ -211,7 +212,7 @@ pub mod fbsemantic {
         Kind::Comparable,
         Kind::Equatable,
         Kind::Nullable,
-        Kind::Row,
+        Kind::Record,
         Kind::Negatable,
         Kind::Timeable,
     ];
@@ -225,7 +226,7 @@ pub mod fbsemantic {
         "Comparable",
         "Equatable",
         "Nullable",
-        "Row",
+        "Record",
         "Negatable",
         "Timeable",
     ];
@@ -1064,9 +1065,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_row(&self) -> Option<Row<'a>> {
-            if self.typ_type() == MonoType::Row {
-                self.typ().map(|u| Row::init_from_table(u))
+        pub fn typ_as_record(&self) -> Option<Record<'a>> {
+            if self.typ_type() == MonoType::Record {
+                self.typ().map(|u| Record::init_from_table(u))
             } else {
                 None
             }
@@ -1357,9 +1358,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn t_as_row(&self) -> Option<Row<'a>> {
-            if self.t_type() == MonoType::Row {
-                self.t().map(|u| Row::init_from_table(u))
+        pub fn t_as_record(&self) -> Option<Record<'a>> {
+            if self.t_type() == MonoType::Record {
+                self.t().map(|u| Record::init_from_table(u))
             } else {
                 None
             }
@@ -1419,15 +1420,15 @@ pub mod fbsemantic {
         }
     }
 
-    pub enum RowOffset {}
+    pub enum RecordOffset {}
     #[derive(Copy, Clone, Debug, PartialEq)]
 
-    pub struct Row<'a> {
+    pub struct Record<'a> {
         pub _tab: flatbuffers::Table<'a>,
     }
 
-    impl<'a> flatbuffers::Follow<'a> for Row<'a> {
-        type Inner = Row<'a>;
+    impl<'a> flatbuffers::Follow<'a> for Record<'a> {
+        type Inner = Record<'a>;
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
@@ -1436,17 +1437,17 @@ pub mod fbsemantic {
         }
     }
 
-    impl<'a> Row<'a> {
+    impl<'a> Record<'a> {
         #[inline]
         pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-            Row { _tab: table }
+            Record { _tab: table }
         }
         #[allow(unused_mut)]
         pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
             _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-            args: &'args RowArgs<'args>,
-        ) -> flatbuffers::WIPOffset<Row<'bldr>> {
-            let mut builder = RowBuilder::new(_fbb);
+            args: &'args RecordArgs<'args>,
+        ) -> flatbuffers::WIPOffset<Record<'bldr>> {
+            let mut builder = RecordBuilder::new(_fbb);
             if let Some(x) = args.extends {
                 builder.add_extends(x);
             }
@@ -1465,35 +1466,35 @@ pub mod fbsemantic {
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Prop<'a>>>> {
             self._tab.get::<flatbuffers::ForwardsUOffset<
                 flatbuffers::Vector<flatbuffers::ForwardsUOffset<Prop<'a>>>,
-            >>(Row::VT_PROPS, None)
+            >>(Record::VT_PROPS, None)
         }
         #[inline]
         pub fn extends(&self) -> Option<Var<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<Var<'a>>>(Row::VT_EXTENDS, None)
+                .get::<flatbuffers::ForwardsUOffset<Var<'a>>>(Record::VT_EXTENDS, None)
         }
     }
 
-    pub struct RowArgs<'a> {
+    pub struct RecordArgs<'a> {
         pub props: Option<
             flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Prop<'a>>>>,
         >,
         pub extends: Option<flatbuffers::WIPOffset<Var<'a>>>,
     }
-    impl<'a> Default for RowArgs<'a> {
+    impl<'a> Default for RecordArgs<'a> {
         #[inline]
         fn default() -> Self {
-            RowArgs {
+            RecordArgs {
                 props: None,
                 extends: None,
             }
         }
     }
-    pub struct RowBuilder<'a: 'b, 'b> {
+    pub struct RecordBuilder<'a: 'b, 'b> {
         fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> RowBuilder<'a, 'b> {
+    impl<'a: 'b, 'b> RecordBuilder<'a, 'b> {
         #[inline]
         pub fn add_props(
             &mut self,
@@ -1502,23 +1503,23 @@ pub mod fbsemantic {
             >,
         ) {
             self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(Row::VT_PROPS, props);
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(Record::VT_PROPS, props);
         }
         #[inline]
         pub fn add_extends(&mut self, extends: flatbuffers::WIPOffset<Var<'b>>) {
             self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<Var>>(Row::VT_EXTENDS, extends);
+                .push_slot_always::<flatbuffers::WIPOffset<Var>>(Record::VT_EXTENDS, extends);
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> RowBuilder<'a, 'b> {
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> RecordBuilder<'a, 'b> {
             let start = _fbb.start_table();
-            RowBuilder {
+            RecordBuilder {
                 fbb_: _fbb,
                 start_: start,
             }
         }
         #[inline]
-        pub fn finish(self) -> flatbuffers::WIPOffset<Row<'a>> {
+        pub fn finish(self) -> flatbuffers::WIPOffset<Record<'a>> {
             let o = self.fbb_.end_table(self.start_);
             flatbuffers::WIPOffset::new(o.value())
         }
@@ -1617,9 +1618,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn retn_as_row(&self) -> Option<Row<'a>> {
-            if self.retn_type() == MonoType::Row {
-                self.retn().map(|u| Row::init_from_table(u))
+        pub fn retn_as_record(&self) -> Option<Record<'a>> {
+            if self.retn_type() == MonoType::Record {
+                self.retn().map(|u| Record::init_from_table(u))
             } else {
                 None
             }
@@ -1801,9 +1802,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn t_as_row(&self) -> Option<Row<'a>> {
-            if self.t_type() == MonoType::Row {
-                self.t().map(|u| Row::init_from_table(u))
+        pub fn t_as_record(&self) -> Option<Record<'a>> {
+            if self.t_type() == MonoType::Record {
+                self.t().map(|u| Record::init_from_table(u))
             } else {
                 None
             }
@@ -1973,9 +1974,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn v_as_row(&self) -> Option<Row<'a>> {
-            if self.v_type() == MonoType::Row {
-                self.v().map(|u| Row::init_from_table(u))
+        pub fn v_as_record(&self) -> Option<Record<'a>> {
+            if self.v_type() == MonoType::Record {
+                self.v().map(|u| Record::init_from_table(u))
             } else {
                 None
             }
@@ -2150,9 +2151,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn expr_as_row(&self) -> Option<Row<'a>> {
-            if self.expr_type() == MonoType::Row {
-                self.expr().map(|u| Row::init_from_table(u))
+        pub fn expr_as_record(&self) -> Option<Record<'a>> {
+            if self.expr_type() == MonoType::Record {
+                self.expr().map(|u| Record::init_from_table(u))
             } else {
                 None
             }
@@ -5873,9 +5874,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_row(&self) -> Option<Row<'a>> {
-            if self.typ_type() == MonoType::Row {
-                self.typ().map(|u| Row::init_from_table(u))
+        pub fn typ_as_record(&self) -> Option<Record<'a>> {
+            if self.typ_type() == MonoType::Record {
+                self.typ().map(|u| Record::init_from_table(u))
             } else {
                 None
             }
@@ -6083,9 +6084,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_row(&self) -> Option<Row<'a>> {
-            if self.typ_type() == MonoType::Row {
-                self.typ().map(|u| Row::init_from_table(u))
+        pub fn typ_as_record(&self) -> Option<Record<'a>> {
+            if self.typ_type() == MonoType::Record {
+                self.typ().map(|u| Record::init_from_table(u))
             } else {
                 None
             }
@@ -7218,9 +7219,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_row(&self) -> Option<Row<'a>> {
-            if self.typ_type() == MonoType::Row {
-                self.typ().map(|u| Row::init_from_table(u))
+        pub fn typ_as_record(&self) -> Option<Record<'a>> {
+            if self.typ_type() == MonoType::Record {
+                self.typ().map(|u| Record::init_from_table(u))
             } else {
                 None
             }
@@ -7894,9 +7895,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_row(&self) -> Option<Row<'a>> {
-            if self.typ_type() == MonoType::Row {
-                self.typ().map(|u| Row::init_from_table(u))
+        pub fn typ_as_record(&self) -> Option<Record<'a>> {
+            if self.typ_type() == MonoType::Record {
+                self.typ().map(|u| Record::init_from_table(u))
             } else {
                 None
             }
@@ -9785,9 +9786,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_row(&self) -> Option<Row<'a>> {
-            if self.typ_type() == MonoType::Row {
-                self.typ().map(|u| Row::init_from_table(u))
+        pub fn typ_as_record(&self) -> Option<Record<'a>> {
+            if self.typ_type() == MonoType::Record {
+                self.typ().map(|u| Record::init_from_table(u))
             } else {
                 None
             }
@@ -10430,9 +10431,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_row(&self) -> Option<Row<'a>> {
-            if self.typ_type() == MonoType::Row {
-                self.typ().map(|u| Row::init_from_table(u))
+        pub fn typ_as_record(&self) -> Option<Record<'a>> {
+            if self.typ_type() == MonoType::Record {
+                self.typ().map(|u| Record::init_from_table(u))
             } else {
                 None
             }
@@ -10658,9 +10659,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_row(&self) -> Option<Row<'a>> {
-            if self.typ_type() == MonoType::Row {
-                self.typ().map(|u| Row::init_from_table(u))
+        pub fn typ_as_record(&self) -> Option<Record<'a>> {
+            if self.typ_type() == MonoType::Record {
+                self.typ().map(|u| Record::init_from_table(u))
             } else {
                 None
             }
@@ -11099,9 +11100,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_row(&self) -> Option<Row<'a>> {
-            if self.typ_type() == MonoType::Row {
-                self.typ().map(|u| Row::init_from_table(u))
+        pub fn typ_as_record(&self) -> Option<Record<'a>> {
+            if self.typ_type() == MonoType::Record {
+                self.typ().map(|u| Record::init_from_table(u))
             } else {
                 None
             }
@@ -11644,9 +11645,9 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn typ_as_row(&self) -> Option<Row<'a>> {
-            if self.typ_type() == MonoType::Row {
-                self.typ().map(|u| Row::init_from_table(u))
+        pub fn typ_as_record(&self) -> Option<Record<'a>> {
+            if self.typ_type() == MonoType::Record {
+                self.typ().map(|u| Record::init_from_table(u))
             } else {
                 None
             }

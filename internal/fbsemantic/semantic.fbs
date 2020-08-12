@@ -17,7 +17,7 @@ union MonoType {
   Basic,
   Var,
   Arr,
-  Row,
+  Record,
   Fun,
 }
 
@@ -55,7 +55,7 @@ table Arr {
   t:MonoType /*(required)*/;
 }
 
-table Row {
+table Record {
   props:[Prop] /*(required)*/;
   extends:Var;
 }
@@ -91,7 +91,7 @@ enum Kind : ubyte {
   Comparable,
   Equatable,
   Nullable,
-  Row,
+  Record,
   Negatable,
   Timeable,
 }
