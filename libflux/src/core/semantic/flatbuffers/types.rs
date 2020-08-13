@@ -553,7 +553,9 @@ fn build_arg<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::semantic::parser;
+    use crate::ast::get_err_type_expression;
+    use crate::parser;
+    use crate::semantic::convert::convert_polytype;
     use crate::semantic::types::SemanticMap;
 
     #[rustfmt::skip]
@@ -576,7 +578,18 @@ mod tests {
     };
 
     fn test_serde(expr: &'static str) {
-        let want = parser::parse(expr).unwrap();
+        // let want = parser::parse(expr).unwrap();
+        let mut p = parser::Parser::new(expr.clone());
+
+        let typ_expr = p.parse_type_expression();
+        let err = get_err_type_expression(typ_expr.clone());
+
+        if err != "" {
+            let msg = format!("TypeExpression parsing failed for {}. {:?}", expr, err);
+            panic!(msg)
+        }
+        let want = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
+
         let mut builder = flatbuffers::FlatBufferBuilder::new();
         let buf = serialize(&mut builder, want.clone(), build_polytype);
         let got = deserialize::<fb::PolyType, Option<PolyType>>(buf);
@@ -585,8 +598,23 @@ mod tests {
 
     #[test]
     fn serde_type_environment() {
-        let a = parser::parse("forall [] bool").unwrap();
-        let b = parser::parse("forall [] time").unwrap();
+        let mut p = parser::Parser::new("bool");
+        let typ_expr = p.parse_type_expression();
+        let err = get_err_type_expression(typ_expr.clone());
+        if err != "" {
+            let msg = format!("TypeExpression parsing failed for bool. {:?}", err);
+            panic!(msg)
+        }
+        let a = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
+
+        let mut p = parser::Parser::new("time");
+        let typ_expr = p.parse_type_expression();
+        let err = get_err_type_expression(typ_expr.clone());
+        if err != "" {
+            let msg = format!("TypeExpression parsing failed for time. {:?}", err);
+            panic!(msg)
+        }
+        let b = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
 
         let want: Environment = semantic_map! {
             String::from("a") => a,
@@ -602,30 +630,28 @@ mod tests {
     }
     #[test]
     fn serde_basic_types() {
-        test_serde("forall [] bool");
-        test_serde("forall [] int");
-        test_serde("forall [] uint");
-        test_serde("forall [] float");
-        test_serde("forall [] string");
-        test_serde("forall [] duration");
-        test_serde("forall [] time");
-        test_serde("forall [] regexp");
-        test_serde("forall [] bytes");
+        test_serde("bool");
+        test_serde("int");
+        test_serde("uint");
+        test_serde("float");
+        test_serde("string");
+        test_serde("duration");
+        test_serde("time");
+        test_serde("regexp");
+        test_serde("bytes");
     }
     #[test]
     fn serde_array_type() {
-        test_serde("forall [t0] [t0]");
+        test_serde("[A]");
     }
     #[test]
     fn serde_function_types() {
-        test_serde("forall [t0] (<-tables: [t0], ?flag: bool, fn: (r: t0) -> bool) -> [t0]");
-        test_serde("forall [t0, t1] where t0: Addable, t1: Divisible (a: t0, b: t1) -> bool");
+        test_serde("(<-tables: [A], ?flag: bool, fn: (r: A) => bool) => [A]");
+        test_serde("(a: A, b: B) => bool where A: Addable, B: Divisible");
     }
     #[test]
     fn serde_record_types() {
-        test_serde(
-            "forall [t0] {a: int | b: float | c: {d: string | d: string | d: time | d: {}} | t0}",
-        );
+        test_serde("{A with a: int , b: float , c: {d: string , d: string , d: time , d: {}}}");
     }
     #[test]
     fn test_flatbuffers_semantic() {
