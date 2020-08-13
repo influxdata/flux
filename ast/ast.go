@@ -293,7 +293,7 @@ func (c *ArrayType) Copy() Node {
 type RecordType struct {
 	BaseNode
 	Properties []*PropertyType `json:"properties"`
-	Tvar       *Identifier     `json:"tvar"`
+	Tvar       *Identifier     `json:"tvar,omitempty"`
 }
 
 func (RecordType) Type() string {
@@ -361,17 +361,17 @@ func (c *FunctionType) Copy() Node {
 	return nc
 }
 
-type ParameterKind uint8
+type ParameterKind string
 
 const (
-	Required ParameterKind = 0
-	Optional ParameterKind = 1
-	Pipe     ParameterKind = 2
+	Required ParameterKind = "Required"
+	Optional ParameterKind = "Optional"
+	Pipe     ParameterKind = "Pipe"
 )
 
 type ParameterType struct {
 	BaseNode
-	Name *Identifier   `json:"name"`
+	Name *Identifier   `json:"name,omitempty"`
 	Ty   MonoType      `json:"monotype"`
 	Kind ParameterKind `json:"kind"`
 }
