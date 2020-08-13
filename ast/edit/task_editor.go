@@ -107,3 +107,22 @@ func DeleteProperty(obj *ast.ObjectExpression, key string) {
 		}
 	}
 }
+
+// HasDuplicateOptions determines whether or not there are multiple assignments
+// to the same option variable.
+func HasDuplicateOptions(file *ast.File, name string) bool {
+	var n int
+	for _, st := range file.Body {
+		if val, ok := st.(*ast.OptionStatement); ok {
+			assign := val.Assignment
+			if va, ok := assign.(*ast.VariableAssignment); ok {
+				if va.ID.Name == name {
+					if ok {
+						n++
+					}
+				}
+			}
+		}
+	}
+	return n > 1
+}

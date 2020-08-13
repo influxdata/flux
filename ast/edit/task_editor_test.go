@@ -524,3 +524,82 @@ func TestSetDeleteProperty(t *testing.T) {
 		})
 	}
 }
+
+func TestHasDuplicateOptions(t *testing.T) {
+	testCases := []struct {
+		testName       string
+		optionID       string
+		file           *ast.File
+		wantDuplicates bool
+	}{
+		{
+			testName: "duplicate options",
+			optionID: "task",
+			file: &ast.File{
+				Name: "foo.flux",
+				Body: []ast.Statement{
+					&ast.OptionStatement{
+						Assignment: &ast.VariableAssignment{
+							ID:   &ast.Identifier{Name: "task"},
+							Init: &ast.BooleanLiteral{Value: true},
+						},
+					},
+					&ast.OptionStatement{
+						Assignment: &ast.VariableAssignment{
+							ID:   &ast.Identifier{Name: "task"},
+							Init: &ast.BooleanLiteral{Value: false},
+						},
+					},
+				},
+			},
+			wantDuplicates: true,
+		},
+		{
+			testName: "multiple, non-duplicate option",
+			optionID: "task",
+			file: &ast.File{
+				Name: "foo.flux",
+				Body: []ast.Statement{
+					&ast.OptionStatement{
+						Assignment: &ast.VariableAssignment{
+							ID:   &ast.Identifier{Name: "task"},
+							Init: &ast.BooleanLiteral{Value: true},
+						},
+					},
+					&ast.OptionStatement{
+						Assignment: &ast.VariableAssignment{
+							ID:   &ast.Identifier{Name: "another"},
+							Init: &ast.BooleanLiteral{Value: true},
+						},
+					},
+				},
+			},
+			wantDuplicates: false,
+		},
+		{
+			testName: "single task option",
+			optionID: "task",
+			file: &ast.File{
+				Name: "foo.flux",
+				Body: []ast.Statement{
+					&ast.OptionStatement{
+						Assignment: &ast.VariableAssignment{
+							ID:   &ast.Identifier{Name: "task"},
+							Init: &ast.BooleanLiteral{Value: true},
+						},
+					},
+				},
+			},
+			wantDuplicates: false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			hasDuplicates := edit.HasDuplicateOptions(tc.file, tc.optionID)
+
+			if tc.wantDuplicates != hasDuplicates {
+				t.Errorf("Mismatch in duplicate expectation want=%t got=%t", tc.wantDuplicates, hasDuplicates)
+			}
+		})
+	}
+}
