@@ -146,31 +146,42 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 
 	// TODO: use fn to populate t.spec.keyColumns
 
-	cols := tbl.Cols()
-	i := 0
-	keyColIndex := -1
-	for keyColIndex < 0 && i < len(t.spec.KeyColumns) {
-		keyColIndex = execute.ColIdx(t.spec.KeyColumns[i], cols)
-		i++
+	var matchingCols bool
+	var keyColType flux.ColType
+
+	keyColumns := make([]struct {
+		name string
+		typ  flux.ColType
+		idx  int
+	}, 0, len(t.spec.KeyColumns))
+
+	for _, c := range t.spec.KeyColumns {
+		idx := execute.ColIdx(c, tbl.Cols())
+		if idx >= 0 {
+			matchingCols = true
+			keyColType = tbl.Cols()[idx].Type
+			keyColumns = append(keyColumns, struct {
+				name string
+				typ  flux.ColType
+				idx  int
+			}{
+				name: c,
+				typ:  tbl.Cols()[idx].Type,
+				idx:  idx,
+			})
+		}
 	}
-	if keyColIndex < 1 {
-		columnNames := make([]string, len(cols))
-		for i, column := range cols {
+
+	if !matchingCols {
+		columnNames := make([]string, len(tbl.Cols()))
+		for i, column := range tbl.Cols() {
 			columnNames[i] = column.Label
 		}
 		return errors.Newf(codes.FailedPrecondition, "received table with columns %v not having key columns %v", columnNames, t.spec.KeyColumns)
 	}
 
-	keyColIndices := make([]int, len(t.spec.KeyColumns))
-	keyColIndices[i-1] = keyColIndex
-	keyColType := cols[keyColIndex].Type
-	for j, v := range t.spec.KeyColumns[i:] {
-		keyColIndex = execute.ColIdx(v, cols)
-		keyColIndices[i+j] = keyColIndex
-		if keyColIndex < 0 {
-			continue
-		}
-		if cols[keyColIndex].Type != keyColType {
+	for _, c := range keyColumns {
+		if c.typ != keyColType {
 			return errors.New(codes.FailedPrecondition, "keyColumns must all be the same type")
 		}
 	}
@@ -195,44 +206,50 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 	}
 
 	var (
-		nullDistinct   bool
-		boolDistinct   map[bool]bool
-		intDistinct    map[int64]bool
-		uintDistinct   map[uint64]bool
-		floatDistinct  map[float64]bool
-		stringDistinct map[string]bool
-		timeDistinct   map[execute.Time]bool
-	)
-
-	// TODO(adam): implement planner logic that will push down a matching call to distinct() into this call, setting t.distinct to true
-	if t.distinct {
-		switch keyColType {
-		case flux.TBool:
-			boolDistinct = make(map[bool]bool)
-		case flux.TInt:
-			intDistinct = make(map[int64]bool)
-		case flux.TUInt:
-			uintDistinct = make(map[uint64]bool)
-		case flux.TFloat:
-			floatDistinct = make(map[float64]bool)
-		case flux.TString:
-			stringDistinct = make(map[string]bool)
-		case flux.TTime:
-			timeDistinct = make(map[execute.Time]bool)
+		boolDistinct = map[struct {
+			string
+			bool
+		}]bool{
+			{"", false}: false,
 		}
-	}
+		intDistinct = map[struct {
+			string
+			int64
+		}]bool{
+			{"", 0}: false,
+		}
+		uintDistinct = map[struct {
+			string
+			uint64
+		}]bool{
+			{"", 0}: false,
+		}
+		floatDistinct = map[struct {
+			string
+			float64
+		}]bool{
+			{"", 0}: false,
+		}
+		timeDistinct = map[struct {
+			string
+			execute.Time
+		}]bool{
+			{"", 0}: false,
+		}
+		stringDistinct = map[[2]string]bool{
+			{"", ""}: false,
+		}
+		nullDistinct = false
+	)
 
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
 			// Check distinct
-			for j, rowIdx := range keyColIndices {
-				if rowIdx < 0 {
-					continue
-				}
+			for _, c := range keyColumns {
 				switch keyColType {
 				case flux.TBool:
-					vs := cr.Bools(rowIdx)
+					vs := cr.Bools(c.idx)
 					if t.distinct {
 						if vs.IsNull(i) {
 							if nullDistinct {
@@ -241,13 +258,19 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 							nullDistinct = true
 						} else {
 							v := vs.Value(i)
-							if boolDistinct[v] {
+							if boolDistinct[struct {
+								string
+								bool
+							}{c.name, v}] {
 								continue
 							}
-							boolDistinct[v] = true
+							boolDistinct[struct {
+								string
+								bool
+							}{c.name, v}] = true
 						}
 					}
-					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
+					if err := builder.AppendString(keyColIdx, c.name); err != nil {
 						return err
 					}
 
@@ -262,7 +285,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						}
 					}
 				case flux.TInt:
-					vs := cr.Ints(rowIdx)
+					vs := cr.Ints(c.idx)
 					if t.distinct {
 						if vs.IsNull(i) {
 							if nullDistinct {
@@ -271,13 +294,19 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 							nullDistinct = true
 						} else {
 							v := vs.Value(i)
-							if intDistinct[v] {
+							if intDistinct[struct {
+								string
+								int64
+							}{c.name, v}] {
 								continue
 							}
-							intDistinct[v] = true
+							intDistinct[struct {
+								string
+								int64
+							}{c.name, v}] = true
 						}
 					}
-					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
+					if err := builder.AppendString(keyColIdx, c.name); err != nil {
 						return err
 					}
 
@@ -292,7 +321,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						}
 					}
 				case flux.TUInt:
-					vs := cr.UInts(rowIdx)
+					vs := cr.UInts(c.idx)
 					if t.distinct {
 						if vs.IsNull(i) {
 							if nullDistinct {
@@ -301,13 +330,19 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 							nullDistinct = true
 						} else {
 							v := vs.Value(i)
-							if uintDistinct[v] {
+							if uintDistinct[struct {
+								string
+								uint64
+							}{c.name, v}] {
 								continue
 							}
-							uintDistinct[v] = true
+							uintDistinct[struct {
+								string
+								uint64
+							}{c.name, v}] = true
 						}
 					}
-					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
+					if err := builder.AppendString(keyColIdx, c.name); err != nil {
 						return err
 					}
 
@@ -322,7 +357,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						}
 					}
 				case flux.TFloat:
-					vs := cr.Floats(rowIdx)
+					vs := cr.Floats(c.idx)
 					if t.distinct {
 						if vs.IsNull(i) {
 							if nullDistinct {
@@ -331,13 +366,19 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 							nullDistinct = true
 						} else {
 							v := vs.Value(i)
-							if floatDistinct[v] {
+							if floatDistinct[struct {
+								string
+								float64
+							}{c.name, v}] {
 								continue
 							}
-							floatDistinct[v] = true
+							floatDistinct[struct {
+								string
+								float64
+							}{c.name, v}] = true
 						}
 					}
-					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
+					if err := builder.AppendString(keyColIdx, c.name); err != nil {
 						return err
 					}
 					if vs.IsValid(i) {
@@ -351,7 +392,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						}
 					}
 				case flux.TString:
-					vs := cr.Strings(rowIdx)
+					vs := cr.Strings(c.idx)
 					if t.distinct {
 						if vs.IsNull(i) {
 							if nullDistinct {
@@ -360,13 +401,13 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 							nullDistinct = true
 						} else {
 							v := vs.ValueString(i)
-							if stringDistinct[v] {
+							if stringDistinct[[2]string{c.name, v}] {
 								continue
 							}
-							stringDistinct[v] = true
+							stringDistinct[[2]string{c.name, v}] = true
 						}
 					}
-					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
+					if err := builder.AppendString(keyColIdx, c.name); err != nil {
 						return err
 					}
 					if vs.IsValid(i) {
@@ -380,7 +421,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						}
 					}
 				case flux.TTime:
-					vs := cr.Times(rowIdx)
+					vs := cr.Times(c.idx)
 					if t.distinct {
 						if vs.IsNull(i) {
 							if nullDistinct {
@@ -389,13 +430,19 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 							nullDistinct = true
 						} else {
 							v := execute.Time(vs.Value(i))
-							if timeDistinct[v] {
+							if timeDistinct[struct {
+								string
+								execute.Time
+							}{c.name, v}] {
 								continue
 							}
-							timeDistinct[v] = true
+							timeDistinct[struct {
+								string
+								execute.Time
+							}{c.name, v}] = true
 						}
 					}
-					if err := builder.AppendString(keyColIdx, t.spec.KeyColumns[j]); err != nil {
+					if err := builder.AppendString(keyColIdx, c.name); err != nil {
 						return err
 					}
 
