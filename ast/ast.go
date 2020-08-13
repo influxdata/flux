@@ -232,7 +232,7 @@ func (FunctionType) monotype() {}
 
 type NamedType struct {
 	BaseNode
-	ID *Identifier `json:"id"`
+	ID *Identifier `json:"name"`
 }
 
 func (NamedType) Type() string {
@@ -252,7 +252,7 @@ func (nt *NamedType) Copy() Node {
 
 type TvarType struct {
 	BaseNode
-	ID *Identifier `json:"id"`
+	ID *Identifier `json:"name"`
 }
 
 func (c *TvarType) Copy() Node {
@@ -316,7 +316,7 @@ func (c *RecordType) Copy() Node {
 
 type PropertyType struct {
 	BaseNode
-	Name *Identifier `json:"id"`
+	Name *Identifier `json:"name"`
 	Ty   MonoType    `json:"ty"`
 }
 

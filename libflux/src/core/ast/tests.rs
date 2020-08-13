@@ -409,7 +409,7 @@ fn test_json_namedtype() {
     // {"type":"Identifier","name":...}
     assert_eq!(
         serialized,
-        r#"{"type":"NamedType",{"type":"Identifier","name":{"name":"int"}}"#
+        r#"{"type":"NamedType","name":{"name":"int"}}"#
     );
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)

@@ -1052,7 +1052,7 @@ func (nt *NamedType) UnmarshalJSON(data []byte) error {
 	type Alias NamedType
 	raw := struct {
 		*Alias
-		ID *Identifier `json:"id"`
+		ID *Identifier `json:"name"`
 	}{}
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
