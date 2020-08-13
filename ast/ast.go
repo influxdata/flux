@@ -196,7 +196,7 @@ func (c *TypeConstraint) Copy() Node {
 	nc.Tvar = c.Tvar.Copy().(*Identifier)
 	//nc.Kinds = c.Kinds.Copy().([]*Identifier)
 	for k := range c.Kinds {
-		_ = append(nc.Kinds, c.Kinds[k])
+		nc.Kinds = append(nc.Kinds, c.Kinds[k])
 	}
 	return nc
 }
