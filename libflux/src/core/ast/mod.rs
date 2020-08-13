@@ -595,6 +595,7 @@ pub struct TypeExpression {
     #[serde(flatten)]
     pub base: BaseNode,
     pub monotype: MonoType,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub constraints: Vec<TypeConstraint>,
 }
 fn get_err_basenode(b: BaseNode) -> String {

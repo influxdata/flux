@@ -1091,7 +1091,7 @@ func (nt *ArrayType) UnmarshalJSON(data []byte) error {
 	type Alias ArrayType
 	raw := struct {
 		*Alias
-		ElementType json.RawMessage `json:"elementType"`
+		ElementType json.RawMessage `json:"element"`
 	}{}
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
@@ -1165,7 +1165,7 @@ func (nt *PropertyType) UnmarshalJSON(data []byte) error {
 	type Alias PropertyType
 	raw := struct {
 		*Alias
-		Ty json.RawMessage `json:"ty"`
+		Ty json.RawMessage `json:"monotype"`
 	}{}
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
@@ -1196,7 +1196,7 @@ func (param *ParameterType) UnmarshalJSON(data []byte) error {
 	type Alias ParameterType
 	raw := struct {
 		*Alias
-		Ty json.RawMessage `json:"ty"`
+		Ty json.RawMessage `json:"monotype"`
 	}{}
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err

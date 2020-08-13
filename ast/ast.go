@@ -272,7 +272,7 @@ func (TvarType) Type() string {
 
 type ArrayType struct {
 	BaseNode
-	ElementType MonoType `json:"elementType"`
+	ElementType MonoType `json:"element"`
 }
 
 func (ArrayType) Type() string {
@@ -317,7 +317,7 @@ func (c *RecordType) Copy() Node {
 type PropertyType struct {
 	BaseNode
 	Name *Identifier `json:"name"`
-	Ty   MonoType    `json:"ty"`
+	Ty   MonoType    `json:"monotype"`
 }
 
 func (PropertyType) Type() string {
@@ -372,7 +372,7 @@ const (
 type ParameterType struct {
 	BaseNode
 	Name *Identifier   `json:"name"`
-	Ty   MonoType      `json:"ty"`
+	Ty   MonoType      `json:"monotype"`
 	Kind ParameterKind `json:"kind"`
 }
 
