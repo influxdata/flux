@@ -12,7 +12,6 @@ pub mod check;
 pub mod env;
 pub mod fresh;
 pub mod nodes;
-pub mod parser;
 pub mod sub;
 pub mod walk;
 

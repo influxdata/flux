@@ -379,9 +379,10 @@ fn infer_pkg<I: Importer>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ast::get_err_type_expression;
+    use crate::parser;
     use crate::parser::parse_string;
     use crate::semantic::env::Environment;
-    use crate::semantic::parser::parse;
 
     #[test]
     fn infer_program() -> Result<(), Error> {
@@ -407,7 +408,19 @@ mod tests {
         };
         let builtins = semantic_map! {
             String::from("b") => Environment::from(semantic_map! {
-                String::from("x") => parse("forall [] int")?,
+                String::from("x") => {
+                // parse("forall [] int")?
+                    let mut p = parser::Parser::new("int");
+                    let typ_expr = p.parse_type_expression();
+                    let err = get_err_type_expression(typ_expr.clone());
+                    if err != "" {
+                        let msg = format!(
+                            "TypeExpression parsing failed for int. {:?}", err
+                        );
+                        panic!(msg)
+                    }
+                    convert_polytype(typ_expr, &mut Fresher::default())?
+                },
             }),
         };
         let (types, imports) = infer_pkg(
@@ -420,7 +433,18 @@ mod tests {
         )?;
 
         let want = semantic_map! {
-            String::from("z") => parse("forall [] int")?,
+            String::from("z") => {
+                    let mut p = parser::Parser::new("int");
+                    let typ_expr = p.parse_type_expression();
+                    let err = get_err_type_expression(typ_expr.clone());
+                    if err != "" {
+                        let msg = format!(
+                            "TypeExpression parsing failed for int. {:?}", err
+                        );
+                        panic!(msg)
+                    }
+                    convert_polytype(typ_expr, &mut Fresher::default())?
+            },
         };
         if want != types {
             return Err(Error {
@@ -432,8 +456,30 @@ mod tests {
         }
 
         let want = semantic_map! {
-            String::from("a") => parse("forall [t0] {f: (x: t0) -> t0}")?,
-            String::from("b") => parse("forall [] {x: int | y: int}")?,
+            String::from("a") => {
+            let mut p = parser::Parser::new("{f: (x: A) => A}");
+                    let typ_expr = p.parse_type_expression();
+                    let err = get_err_type_expression(typ_expr.clone());
+                    if err != "" {
+                        let msg = format!(
+                            "TypeExpression parsing failed for int. {:?}", err
+                        );
+                        panic!(msg)
+                    }
+                    convert_polytype(typ_expr, &mut Fresher::default())?
+            },
+            String::from("b") => {
+            let mut p = parser::Parser::new("{x: int , y: int}");
+                    let typ_expr = p.parse_type_expression();
+                    let err = get_err_type_expression(typ_expr.clone());
+                    if err != "" {
+                        let msg = format!(
+                            "TypeExpression parsing failed for int. {:?}", err
+                        );
+                        panic!(msg)
+                    }
+                    convert_polytype(typ_expr, &mut Fresher::default())?
+            },
         };
         if want != imports {
             return Err(Error {

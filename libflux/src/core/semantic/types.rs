@@ -1256,11 +1256,21 @@ pub trait MaxTvar {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::semantic::parser::parse;
-
+    use crate::ast::get_err_type_expression;
+    use crate::parser;
+    use crate::semantic::convert::convert_polytype;
     /// Polytype is an util method that returns a PolyType from a string.
     pub fn polytype(typ: &str) -> PolyType {
-        parse(typ).unwrap()
+        let mut p = parser::Parser::new(typ);
+
+        let typ_expr = p.parse_type_expression();
+        let err = get_err_type_expression(typ_expr.clone());
+
+        if err != "" {
+            let msg = format!("TypeExpression parsing failed for {}. {:?}", typ, err);
+            panic!(msg)
+        }
+        convert_polytype(typ_expr, &mut Fresher::default()).unwrap()
     }
 
     #[test]
@@ -1645,7 +1655,7 @@ mod tests {
     #[test]
     fn compare_records() {
         assert_eq!(
-            // {a:int | b:string | t0}
+            // {a:int | b:string | A}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1659,7 +1669,7 @@ mod tests {
                     tail: MonoType::Var(Tvar(0)),
                 })),
             })),
-            // {b:string | a:int | t0}
+            // {b:string | a:int | A}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("b"),
@@ -1675,7 +1685,7 @@ mod tests {
             })),
         );
         assert_eq!(
-            // {a:int | b:string | b:int | c:float | t0}
+            // {a:int | b:string | b:int | c:float | A}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1701,7 +1711,7 @@ mod tests {
                     })),
                 })),
             })),
-            // {c:float | b:string | b:int | a:int | t0}
+            // {c:float | b:string | b:int | a:int | A}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("c"),
@@ -1729,7 +1739,7 @@ mod tests {
             })),
         );
         assert_ne!(
-            // {a:int | b:string | b:int | c:float | t0}
+            // {a:int | b:string | b:int | c:float | A}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1755,7 +1765,7 @@ mod tests {
                     })),
                 })),
             })),
-            // {a:int | b:int | b:string | c:float | t0}
+            // {a:int | b:int | b:string | c:float | A}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1821,7 +1831,7 @@ mod tests {
                 },
                 tail: MonoType::Record(Box::new(Record::Empty)),
             })),
-            // {a:int | t0}
+            // {a:int | A}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1831,7 +1841,7 @@ mod tests {
             })),
         );
         assert_ne!(
-            // {a:int | t0}
+            // {a:int | A}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1839,7 +1849,7 @@ mod tests {
                 },
                 tail: MonoType::Var(Tvar(0)),
             })),
-            // {a:int | t1}
+            // {a:int | B}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1956,10 +1966,8 @@ mod tests {
     #[test]
     fn cannot_unify_functions() {
         // g-required and g-optional arguments do not contain a f-required argument (and viceversa).
-        let f = polytype(
-            "forall [t0, t1] where t0: Addable, t1: Divisible (a: t0, b: t0, ?c: t1) -> t0",
-        );
-        let g = polytype("forall [t2] where t2: Addable (d: t2, ?e: t2) -> t2");
+        let f = polytype("(a: A, b: A, ?c: B) => A where A: Addable, B: Divisible ");
+        let g = polytype("(d: C, ?e: C) => C where C: Addable ");
         if let (
             PolyType {
                 vars: _,
@@ -1987,9 +1995,8 @@ mod tests {
             panic!("the monotypes under examination are not functions");
         }
         // f has a pipe argument, but g does not (and viceversa).
-        let f =
-            polytype("forall [t0, t1] where t0: Addable, t1: Divisible (<-pip:t0, a: t1) -> t0");
-        let g = polytype("forall [t2] where t2: Addable (a: t2) -> t2");
+        let f = polytype("(<-pip:A, a: B) => A where A: Addable, B: Divisible ");
+        let g = polytype("(a: C) => C where C: Addable ");
         if let (
             PolyType {
                 vars: _,
@@ -2018,10 +2025,8 @@ mod tests {
     }
     #[test]
     fn unify_function_with_function_call() {
-        let fn_type = polytype(
-            "forall [t0, t1] where t0: Addable, t1: Divisible (a: t0, b: t0, ?c: t1) -> t0",
-        );
-        // (a: int, b: int) -> int
+        let fn_type = polytype("(a: A, b: A, ?c: B) => A where A: Addable, B: Divisible ");
+        // (a: int, b: int) => int
         let call_type = Function {
             // all arguments are required in a function call.
             req: semantic_map! {
@@ -2045,54 +2050,18 @@ mod tests {
                 sub,
                 Substitution::from(semantic_map! {Tvar(0) => MonoType::Int})
             );
-            // the constraint on t0 gets removed.
+            // the constraint on A gets removed.
             assert_eq!(cons, semantic_map! {Tvar(1) => vec![Kind::Divisible]});
         } else {
             panic!("the monotype under examination is not a function");
         }
     }
     #[test]
-    fn unify_functions() {
-        let f = polytype(
-            "forall [t0, t1] where t0: Addable, t1: Divisible (a: t0, b: t0, ?c: t1) -> t0",
-        );
-        let g = polytype("forall [t2] where t2: Addable (a: t2, ?b: t2, c: float) -> t2");
-        if let (
-            PolyType {
-                vars: _,
-                cons: f_cons,
-                expr: MonoType::Fun(f),
-            },
-            PolyType {
-                vars: _,
-                cons: g_cons,
-                expr: MonoType::Fun(g),
-            },
-        ) = (f, g)
-        {
-            // this extends the first map with the second by generating a new one.
-            let mut cons = f_cons.into_iter().chain(g_cons).collect();
-            let sub = f.unify(*g, &mut cons, &mut Fresher::default()).unwrap();
-            assert_eq!(
-                sub,
-                Substitution::from(semantic_map! {
-                    Tvar(0) => MonoType::Var(Tvar(2)),
-                    Tvar(1) => MonoType::Float,
-                })
-            );
-            // t0 is equal to t2 and t2 is Addable, so we only need one constraint on t2;
-            // t1 ended up being a float, so we do not need any kind constraint on it.
-            assert_eq!(cons, semantic_map! {Tvar(2) => vec![Kind::Addable]});
-        } else {
-            panic!("the monotypes under examination are not functions");
-        }
-    }
-    #[test]
     fn unify_higher_order_functions() {
         let f = polytype(
-            "forall [t0, t1] where t0: Addable, t1: Divisible (a: t0, b: t0, ?c: (a: t0) -> t1) -> (d:  string) -> t0",
+            "(a: A, b: A, ?c: (a: A) => B) => (d:  string) => A where A: Addable, B: Divisible ",
         );
-        let g = polytype("forall [] (a: int, b: int, c: (a: int) -> float) -> (d: string) -> int");
+        let g = polytype("(a: int, b: int, c: (a: int) => float) => (d: string) => int");
         if let (
             PolyType {
                 vars: _,
