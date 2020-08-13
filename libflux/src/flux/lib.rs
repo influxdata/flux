@@ -1110,10 +1110,6 @@ from(bucket: v.bucket)
         }
         let want_c = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
 
-        print!("want_a ==> {}\n", want_a);
-        print!("want_b ==> {}\n", want_b);
-        print!("want_c ==> {}\n", want_c);
-
         assert_eq!(want_a, got.lookup("a").expect("'a' not found").clone());
         assert_eq!(want_b, got.lookup("b").expect("'b' not found").clone());
         assert_eq!(want_c, got.lookup("c").expect("'c' not found").clone());
