@@ -66,7 +66,7 @@ var sourceHashes = map[string]string{
 	"libflux/src/flux/Cargo.toml":                                                   "ede8860c53d1fd5cc7bc730a090e615b5668b0c340ccc8b1b9dbed426b5c8f76",
 	"libflux/src/flux/benches/builtins.rs":                                          "c60908c65ea51c225fccec19c44343af9103c950a91b23071ddb80292da708c8",
 	"libflux/src/flux/build.rs":                                                     "31a4f825297f9b79d1c8692a5fa3ff9211cb87d01650d147128d061588f75abd",
-	"libflux/src/flux/lib.rs":                                                       "8c497103bf6c621d56b87f6dc51efb6c6242fb5abb56938dcb041c26233b3027",
+	"libflux/src/flux/lib.rs":                                                       "e743664dafc5cfa3e46fa1af1ca76238dd64cbd50b858a5af089bccdbe95364d",
 	"stdlib/contrib/chobbs/discord/discord.flux":                                    "b9f9b1a60fc92f47930fa4252a77bfc1def5ba98084880eddb4ebbab4078a697",
 	"stdlib/contrib/jsternberg/aggregate/aggregate.flux":                            "a80012d988b10134ff4a663d2e01564db04cabd3b749298f1baf9323633c65e1",
 	"stdlib/contrib/jsternberg/influxdb/influxdb.flux":                              "d963178b0135bccd77f113bb371fe5f0a7259f8bc4b5befc761f6a166db0d5a4",

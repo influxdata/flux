@@ -1008,19 +1008,27 @@ from(bucket: v.bucket)
 
         // TODO(algow): re-introduce equality constraints for binary comparison operators
         // https://github.com/influxdata/flux/issues/2466
-        let want = semantic::parser::parse(
-            r#"forall [t0, t1, t2] where t0: Addable, t1: Equatable [{
-                _value: t0
-                    | _value: t0
-                    | _time: time
-                    | _measurement: string
-                    | _field: string
-                    | region: t1
-                    | t2
-                    }]
-            "#,
-        )
-        .unwrap();
+        let code = "[{ C with
+                _value: A
+                    , _value: A
+                    , _time: time
+                    , _measurement: string
+                    , _field: string
+                    , region: B
+                    }] where t0: Addable, t1: Equatable ";
+        let mut p = parser::Parser::new(code);
+
+        let typ_expr = p.parse_type_expression();
+        let err = get_err_type_expression(typ_expr.clone());
+
+        if err != "" {
+            let msg = format!(
+                "TypeExpression parsing failed for {}.{}. {:?}",
+                path, name, err
+            );
+            panic!(msg)
+        }
+        let want = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
 
         assert_eq!(want, got.lookup("x").expect("'x' not found").clone());
     }
@@ -1046,43 +1054,69 @@ from(bucket: v.bucket)
 
         // TODO(algow): re-introduce equality constraints for binary comparison operators
         // https://github.com/influxdata/flux/issues/2466
-        let want_a = semantic::parser::parse(
-            r#"forall [t0, t1, t3] where t1: Equatable [{
-                _value: t0
-                    | A: t1
-                    | _time: time
-                    | _measurement: string
-                    | _field: string
-                    | t3
-                    }]
-            "#,
-        )
-        .unwrap();
-        let want_b = semantic::parser::parse(
-            r#"forall [t0, t1, t3] where t1: Equatable [{
-                _value: t0
-                    | B: t1
-                    | _time: time
-                    | _measurement: string
-                    | _field: string
-                    | t3
-                    }]
-            "#,
-        )
-        .unwrap();
-        let want_c = semantic::parser::parse(
-            r#"forall [t0, t1, t2, t3] where t1: Equatable, t2: Equatable [{
-                _value: t0
-                    | A: t1
-                    | B: t2
-                    | _time: time
-                    | _measurement: string
-                    | _field: string
-                    | t3
-                    }]
-            "#,
-        )
-        .unwrap();
+        let code = "[{ D with
+                _value: A
+                    , A: B
+                    , _time: time
+                    , _measurement: string
+                    , _field: string
+                    }] where B: Equatable ";
+        let mut p = parser::Parser::new(code);
+
+        let typ_expr = p.parse_type_expression();
+        let err = get_err_type_expression(typ_expr.clone());
+
+        if err != "" {
+            let msg = format!(
+                "TypeExpression parsing failed for {}.{}. {:?}",
+                path, name, err
+            );
+            panic!(msg)
+        }
+        let want_a = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
+
+        let code = " [{ D with
+                _value: A
+                    , B: B
+                    , _time: time
+                    , _measurement: string
+                    , _field: string
+                    }] where A: Equatable";
+        let mut p = parser::Parser::new(code);
+
+        let typ_expr = p.parse_type_expression();
+        let err = get_err_type_expression(typ_expr.clone());
+
+        if err != "" {
+            let msg = format!(
+                "TypeExpression parsing failed for {}.{}. {:?}",
+                path, name, err
+            );
+            panic!(msg)
+        }
+        let want_b = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
+
+        let code = "[{ D with
+                _value: A
+                    , A: B
+                    , B: C
+                    , _time: time
+                    , _measurement: string
+                    , _field: string
+                    }] where B: Equatable, C: Equatable ";
+        let mut p = parser::Parser::new(code);
+
+        let typ_expr = p.parse_type_expression();
+        let err = get_err_type_expression(typ_expr.clone());
+
+        if err != "" {
+            let msg = format!(
+                "TypeExpression parsing failed for {}.{}. {:?}",
+                path, name, err
+            );
+            panic!(msg)
+        }
+        let want_c = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
 
         assert_eq!(want_a, got.lookup("a").expect("'a' not found").clone());
         assert_eq!(want_b, got.lookup("b").expect("'b' not found").clone());
