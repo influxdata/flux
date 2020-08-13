@@ -3,7 +3,7 @@ module github.com/influxdata/flux
 go 1.12
 
 require (
-	cloud.google.com/go v0.57.0
+	cloud.google.com/go v0.52.0
 	cloud.google.com/go/bigtable v1.3.0
 	github.com/Azure/go-autorest/autorest v0.10.1
 	github.com/Azure/go-autorest/autorest/adal v0.8.3
@@ -11,7 +11,7 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.4.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/apache/arrow/go/arrow v0.0.0-20191024131854-af6fa24be0db
-	github.com/bonitoo-io/go-sql-bigquery v0.3.4
+	github.com/bonitoo-io/go-sql-bigquery v0.3.4-1.4.0
 	github.com/c-bata/go-prompt v0.2.2
 	github.com/cespare/xxhash v1.1.0
 	github.com/dave/jennifer v1.2.0
@@ -49,10 +49,9 @@ require (
 	github.com/spf13/cobra v0.0.3
 	github.com/uber/athenadriver v1.1.4
 	go.uber.org/zap v1.14.0
-	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37 // indirect
 	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6
-	golang.org/x/net v0.0.0-20200513185701-a91f0712d120
-	golang.org/x/tools v0.0.0-20200515010526-7d3b6ebf133d
+	golang.org/x/net v0.0.0-20200625001655-4c5254603344
+	golang.org/x/tools v0.0.0-20200721032237-77f530d86f9a
 	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
-	google.golang.org/api v0.24.0
+	google.golang.org/api v0.17.0
 )
