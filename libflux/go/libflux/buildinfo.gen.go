@@ -28,8 +28,12 @@ var sourceHashes = map[string]string{
 	"libflux/src/core/ast/tests.rs":                                                 "16e6838a45ca4012572ff22603590fe898a9f373996112403a03e2170a92a7ab",
 =======
 	"libflux/src/core/ast/mod.rs":                                                   "1554222856e34fbc3c8014ab9ef8e305e6cc51a7727dfd1735ab7eccab0bbb04",
+<<<<<<< HEAD
 	"libflux/src/core/ast/tests.rs":                                                 "bcb7b3f69980b6a2e60d5d38ee4148d64a58c187d37780bd3f581fc5344ead26",
 >>>>>>> feat: delete type expression from go BuiltinStatement struct, and from their tests.
+=======
+	"libflux/src/core/ast/tests.rs":                                                 "1107386c86faafaa4fb9403697cff7ca1c4bd32c7a4f01839115bc91bf0d8504",
+>>>>>>> feat: match Rust JSON tests on the Go side.
 	"libflux/src/core/ast/walk/mod.rs":                                              "855701066e8d11a620855d2db986ce3df27555a91e2fcaf7a0cd3b12aa4cc4f0",
 	"libflux/src/core/ast/walk/tests.rs":                                            "f7b2d7dd5643bb795a86c04b6979b136b0de46b52b213caff094aed6d204a05d",
 	"libflux/src/core/build.rs":                                                     "7e8c3626b9034dc4a31c2b748b2a174260949d852455299d071a0fd128c18a5a",
