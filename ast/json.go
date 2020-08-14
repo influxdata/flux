@@ -1196,7 +1196,8 @@ func (param *ParameterType) UnmarshalJSON(data []byte) error {
 	type Alias ParameterType
 	raw := struct {
 		*Alias
-		Ty json.RawMessage `json:"monotype"`
+		Type string          `json:"type"` // add a Type field here
+		Ty   json.RawMessage `json:"monotype"`
 	}{}
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
@@ -1209,6 +1210,7 @@ func (param *ParameterType) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	param.Ty = ty
+	param.Kind = ParameterKind(raw.Type) // Type field is really the parameter kind
 	return nil
 }
 

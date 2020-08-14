@@ -373,7 +373,7 @@ type ParameterType struct {
 	BaseNode
 	Name *Identifier   `json:"name,omitempty"`
 	Ty   MonoType      `json:"monotype"`
-	Kind ParameterKind `json:"kind"`
+	Kind ParameterKind `json:"-"`
 }
 
 func (c *ParameterType) Copy() Node {
@@ -389,8 +389,8 @@ func (c *ParameterType) Copy() Node {
 	nc.Kind = c.Kind
 	return nc
 }
-func (ParameterType) Type() string {
-	return "ParameterType"
+func (p *ParameterType) Type() string {
+	return string(p.Kind)
 }
 
 // Package represents a complete package source tree
