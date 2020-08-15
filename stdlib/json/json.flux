@@ -6,4 +6,4 @@ package json
 // Regexp values are encoded as their string representation.
 // Bytes values are encodes as base64-encoded strings.
 // Function values cannot be encoded and will produce an error.
-builtin encode
+builtin encode : (v: A) => bytes

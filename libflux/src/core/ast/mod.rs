@@ -492,6 +492,7 @@ pub struct BuiltinStmt {
     #[serde(flatten)]
     pub base: BaseNode,
     pub id: Identifier,
+    pub ty: TypeExpression,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -588,6 +589,7 @@ pub enum ParameterType {
     },
 }
 
+#[serde(tag = "type")]
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TypeExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
@@ -595,7 +597,6 @@ pub struct TypeExpression {
     #[serde(flatten)]
     pub base: BaseNode,
     pub monotype: MonoType,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub constraints: Vec<TypeConstraint>,
 }
 fn get_err_basenode(b: BaseNode) -> String {
@@ -778,6 +779,7 @@ fn get_err_kinds(ks: Vec<Identifier>) -> String {
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
 pub struct TypeConstraint {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]

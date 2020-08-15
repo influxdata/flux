@@ -1,10 +1,10 @@
 package v1
 
 // Json parses an InfluxDB 1.x json result into a table stream.
-builtin json
+builtin json : (?json: string, ?file: string) => [A] where A: Record
 
 // Databases returns the list of available databases, it has no parameters.
-builtin databases
+builtin databases : (?org: string, ?orgID: string, ?host: string, ?token: string) => [{organizationID: string , databaseName: string , retentionPolicy: string , retentionPeriod: int , default: bool , bucketID: string}]
 
 // fieldsAsCols is a special application of pivot that will automatically align fields within each measurement that have the same timestamp.
 fieldsAsCols = (tables=<-) =>

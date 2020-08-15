@@ -1,3 +1,3 @@
 package runtime
 
-builtin version
+builtin version : () => string

@@ -37,15 +37,15 @@ import "contrib/jsternberg/math"
 //     tables |> aggregate.table(columns: {
 //         "min_bottom_degrees": aggregate.min(column: "bottom_degrees"),
 //     ])
-builtin table
+builtin table : (<-tables: [A], columns: C) => [B] where A: Record, B: Record, C: Record
 
 // null is a sentinel value for fill that will fill
 // in a null value if there were no values for an interval.
-builtin null
+builtin null : A
 
 // none is a sentinel value for fill that will skip
 // emitting a row if there are no values for an interval.
-builtin none
+builtin none : A
 
 // define will define an aggregate function.
 define = (init, reduce, compute, fill=null) => (column, fill=fill) => ({

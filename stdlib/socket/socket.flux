@@ -1,3 +1,3 @@
 package socket
 
-builtin from
+builtin from : (url: string, ?decoder: string) => [A]

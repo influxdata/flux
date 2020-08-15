@@ -223,6 +223,27 @@ func (s *BuiltinStatement) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
+
+func (d *BuiltinStatement) UnmarshalJSON(data []byte) error {
+	type Alias BuiltinStatement
+	raw := struct {
+		*Alias
+		Init json.RawMessage `json:"ty"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*d = *(*BuiltinStatement)(raw.Alias)
+	}
+
+	e, err := unmarshalTypeExpression(raw.Init)
+	if err != nil {
+		return err
+	}
+	d.Ty = *e
+	return nil
+}
 func (s *TestStatement) MarshalJSON() ([]byte, error) {
 	type Alias TestStatement
 	raw := struct {
@@ -1134,7 +1155,7 @@ func (param *FunctionType) UnmarshalJSON(data []byte) error {
 	type Alias FunctionType
 	raw := struct {
 		*Alias
-		Return json.RawMessage `json:"return"`
+		Return json.RawMessage `json:"monotype"`
 	}{}
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
@@ -1255,7 +1276,7 @@ func (typ_expr *TypeExpression) UnmarshalJSON(data []byte) error {
 	type Alias TypeExpression
 	raw := struct {
 		*Alias
-		Ty json.RawMessage `json:"ty"`
+		Ty json.RawMessage `json:"monotype"`
 	}{}
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
@@ -1292,6 +1313,20 @@ func unmarshalMonotype(msg json.RawMessage) (MonoType, error) {
 	s, ok := n.(MonoType)
 	if !ok {
 		return nil, fmt.Errorf("node %q is not a monotype", n.Type())
+	}
+	return s, nil
+}
+func unmarshalTypeExpression(msg json.RawMessage) (*TypeExpression, error) {
+	if checkNullMsg(msg) {
+		return nil, nil
+	}
+	n, err := unmarshalNode(msg)
+	if err != nil {
+		return nil, err
+	}
+	s, ok := n.(*TypeExpression)
+	if !ok {
+		return nil, fmt.Errorf("node %q is not a TypeExpression", n.Type())
 	}
 	return s, nil
 }
