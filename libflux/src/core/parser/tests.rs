@@ -1274,7 +1274,7 @@ fn qualified_option() {
 
 #[test]
 fn builtin() {
-    let mut p = Parser::new(r#"builtin from"#);
+    let mut p = Parser::new(r#"builtin from : int"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -1300,11 +1300,44 @@ fn builtin() {
                     },
                     name: "from".to_string()
                 },
+                ty: TypeExpression{
+                    base:  BaseNode {
+                        location: loc.get(1, 16, 1, 19),
+                        ..BaseNode::default()
+                    },
+                    monotype: MonoType::Basic(NamedType{
+                        base: BaseNode {
+                            location: loc.get(1, 16, 1, 19),
+                            ..BaseNode::default()
+                        },
+                        name: Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 16, 1, 19),
+                                ..BaseNode::default()
+                            },
+                            name: "int".to_string()
+                        },
+                    }),
+                    constraints: vec![]
+                },
             }))],
             eof: None,
         },
     )
 }
+
+//use crate::formatter::convert_to_string;
+//
+// #[test]
+// fn builtin_csv() {
+//     let src = r#"
+//
+//     "#;
+//     let mut p = Parser::new(src);
+//     let f = p.parse_file("".to_string());
+//     let m = &mut Fresher::new();
+//     // println!("{}", convert_to_string(&f).unwrap());
+// }
 
 #[test]
 fn test_parse_type_expression() {

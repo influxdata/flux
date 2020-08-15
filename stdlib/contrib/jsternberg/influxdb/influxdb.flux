@@ -7,7 +7,7 @@ import "influxdata/influxdb/v1"
 // transformations. It will not perform any copies and
 // it will not regroup. This should only be used when
 // the user knows it can't cause a key conflict.
-builtin _mask
+builtin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Record
 
 // from will retrieve data from a bucket between the start and stop time.
 // This version of from is the equivalent of doing from |> range

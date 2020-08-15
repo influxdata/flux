@@ -824,7 +824,7 @@ mod tests {
         }
         #[test]
         fn test_builtin_stmt() {
-            test_walk("builtin a", vec!["File", "BuiltinStmt", "Identifier"])
+            test_walk("builtin a : int", vec!["File", "BuiltinStmt", "Identifier"])
         }
         #[test]
         fn test_variable_assgn() {

@@ -825,7 +825,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 		},
 		{
 			name:    "builtin statement",
-			fluxSrc: `builtin foo`,
+			fluxSrc: `builtin foo : int`,
 			err:     errors.New("error @1:1-1:12: undefined builtin identifier foo"),
 		},
 		{

@@ -12,4 +12,4 @@ package rows
 //
 // The returned record does not need to contain values that are
 // part of the group key.
-builtin map
+builtin map : (<-tables: [A], fn: (r: A) => B) => [B] where A: Record, B: Record

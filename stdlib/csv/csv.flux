@@ -1,3 +1,3 @@
 package csv
 
-builtin from
+builtin from : (?csv: string, ?file: string) => [A] where A: Record
