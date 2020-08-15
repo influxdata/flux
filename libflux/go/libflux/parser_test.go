@@ -186,7 +186,7 @@ import "my_other_pkg"
 import "yet_another_pkg"
 option now = () => (2030-01-01T00:00:00Z)
 option foo.bar = "baz"
-builtin foo
+builtin foo : int
 
 test aggregate_window_empty = () => ({
     input: testing.loadStorage(csv: inData),
@@ -246,13 +246,16 @@ re =~ /foo/
 re !~ /foo/
 `,
 		},
+		{
+			name:     "agg_test",
+			fluxFile: ``,
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			// src -> rust AST -> rustJSONA -> Go AST -> goJSON -> Rust AST -> rustJSONB
 			// Compare rustJSONA and rustJSONB
-
 			astPkgA := libflux.ParseString(tc.fluxFile)
 			rustJSONA, err := astPkgA.MarshalJSON()
 			if err != nil {

@@ -2,9 +2,9 @@ package testing
 
 import c "csv"
 
-builtin assertEquals
-builtin assertEmpty
-builtin diff
+builtin assertEquals : (name: string, <-got: [A], want: [A]) => [A]
+builtin assertEmpty : (<-tables: [A]) => [A]
+builtin diff : (<-got: [A], want: [A], ?verbose: bool, ?epsilon: float) => [{A with _diff: string}]
 
 option loadStorage = (csv) => c.from(csv: csv)
     |> range(start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z)

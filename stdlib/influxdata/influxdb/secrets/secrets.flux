@@ -1,3 +1,3 @@
 package secrets
 
-builtin get
+builtin get : (key: string) => string

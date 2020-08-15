@@ -172,7 +172,7 @@ func (e Error) Error() string {
 
 type TypeExpression struct {
 	BaseNode
-	Ty          MonoType          `json:"ty"`
+	Ty          MonoType          `json:"monotype"`
 	Constraints []*TypeConstraint `json:"constraints"`
 }
 
@@ -339,7 +339,7 @@ func (c *PropertyType) Copy() Node {
 type FunctionType struct {
 	BaseNode
 	Parameters []*ParameterType `json:"parameters"`
-	Return     MonoType         `json:"return"`
+	Return     MonoType         `json:"monotype"`
 }
 
 func (FunctionType) Type() string {
@@ -646,8 +646,8 @@ func (s *OptionStatement) Copy() Node {
 // BuiltinStatement declares a builtin identifier and its type
 type BuiltinStatement struct {
 	BaseNode
-	ID *Identifier `json:"id"`
-	//Ty TypeExpression `json:"ty"`
+	ID *Identifier    `json:"id"`
+	Ty TypeExpression `json:"ty"`
 }
 
 // Type is the abstract type

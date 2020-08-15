@@ -154,8 +154,17 @@ func TestJSONMarshal(t *testing.T) {
 			name: "builtin statement",
 			node: &ast.BuiltinStatement{
 				ID: &ast.Identifier{Name: "task"},
+				Ty: ast.TypeExpression{
+					Ty: &ast.NamedType{
+						BaseNode: ast.BaseNode{},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{},
+							Name:     "int",
+						},
+					},
+				},
 			},
-			want: `{"type":"BuiltinStatement","id":{"type":"Identifier","name":"task"}}`,
+			want: `{"type":"BuiltinStatement","id":{"type":"Identifier","name":"task"},"ty":{"type":"TypeExpression","monotype":{"type":"NamedType","name":{"type":"Identifier","name":"int"}},"constraints":null}}`,
 		},
 		{
 			name: "NamedType",
@@ -272,7 +281,7 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"FunctionType","parameters":[],"return":{"type":"NamedType","name":{"type":"Identifier","name":"int"}}}`,
+			want: `{"type":"FunctionType","parameters":[],"monotype":{"type":"NamedType","name":{"type":"Identifier","name":"int"}}}`,
 		},
 		{
 			name: "FunctionType_Required",
@@ -302,7 +311,7 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"FunctionType","parameters":[{"type":"Required","name":{"type":"Identifier","name":"B"},"monotype":{"type":"NamedType","name":{"type":"Identifier","name":"string"}}}],"return":{"type":"NamedType","name":{"type":"Identifier","name":"uint"}}}`,
+			want: `{"type":"FunctionType","parameters":[{"type":"Required","name":{"type":"Identifier","name":"B"},"monotype":{"type":"NamedType","name":{"type":"Identifier","name":"string"}}}],"monotype":{"type":"NamedType","name":{"type":"Identifier","name":"uint"}}}`,
 		},
 		{
 			name: "FunctionType_Optional",
@@ -333,7 +342,7 @@ func TestJSONMarshal(t *testing.T) {
 				},
 			},
 			//r#"{"type":"FunctionType","parameters":[{"type":"Optional","name":{"name":"A"},"monotype":{"type":"NamedType","name":{"name":"int"}}}],"monotype":{"type":"NamedType","name":{"name":"int"}}}"#
-			want: `{"type":"FunctionType","parameters":[{"type":"Optional","name":{"type":"Identifier","name":"A"},"monotype":{"type":"NamedType","name":{"type":"Identifier","name":"int"}}}],"return":{"type":"NamedType","name":{"type":"Identifier","name":"int"}}}`,
+			want: `{"type":"FunctionType","parameters":[{"type":"Optional","name":{"type":"Identifier","name":"A"},"monotype":{"type":"NamedType","name":{"type":"Identifier","name":"int"}}}],"monotype":{"type":"NamedType","name":{"type":"Identifier","name":"int"}}}`,
 		},
 		{
 			name: "FunctionType_Named_Pipe",
@@ -363,7 +372,7 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"FunctionType","parameters":[{"type":"Pipe","name":{"type":"Identifier","name":"A"},"monotype":{"type":"NamedType","name":{"type":"Identifier","name":"int"}}}],"return":{"type":"NamedType","name":{"type":"Identifier","name":"int"}}}`,
+			want: `{"type":"FunctionType","parameters":[{"type":"Pipe","name":{"type":"Identifier","name":"A"},"monotype":{"type":"NamedType","name":{"type":"Identifier","name":"int"}}}],"monotype":{"type":"NamedType","name":{"type":"Identifier","name":"int"}}}`,
 		},
 		{
 			name: "FunctionType_UnNamed_Pipe",
@@ -390,7 +399,7 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"FunctionType","parameters":[{"type":"Pipe","monotype":{"type":"NamedType","name":{"type":"Identifier","name":"int"}}}],"return":{"type":"NamedType","name":{"type":"Identifier","name":"int"}}}`,
+			want: `{"type":"FunctionType","parameters":[{"type":"Pipe","monotype":{"type":"NamedType","name":{"type":"Identifier","name":"int"}}}],"monotype":{"type":"NamedType","name":{"type":"Identifier","name":"int"}}}`,
 		},
 		{
 			name: "TypeExpression Test",
@@ -458,7 +467,7 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				},
 			},
-			want: `{"type":"TypeExpression","ty":{"type":"FunctionType","parameters":[{"type":"Required","name":{"type":"Identifier","name":"a"},"monotype":{"type":"TvarType","name":{"type":"Identifier","name":"T"}}},{"type":"Required","name":{"type":"Identifier","name":"b"},"monotype":{"type":"TvarType","name":{"type":"Identifier","name":"T"}}}],"return":{"type":"TvarType","name":{"type":"Identifier","name":"T"}}},"constraints":[{"type":"TypeConstraint","tvar":{"type":"Identifier","name":"T"},"kinds":[{"type":"Identifier","name":"Addable"},{"type":"Identifier","name":"Divisible"}]}]}`,
+			want: `{"type":"TypeExpression","monotype":{"type":"FunctionType","parameters":[{"type":"Required","name":{"type":"Identifier","name":"a"},"monotype":{"type":"TvarType","name":{"type":"Identifier","name":"T"}}},{"type":"Required","name":{"type":"Identifier","name":"b"},"monotype":{"type":"TvarType","name":{"type":"Identifier","name":"T"}}}],"monotype":{"type":"TvarType","name":{"type":"Identifier","name":"T"}}},"constraints":[{"type":"TypeConstraint","tvar":{"type":"Identifier","name":"T"},"kinds":[{"type":"Identifier","name":"Addable"},{"type":"Identifier","name":"Divisible"}]}]}`,
 		},
 		{
 			name: "test statement",

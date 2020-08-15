@@ -3,7 +3,7 @@ package slack
 import "http"
 import "json"
 
-builtin validateColorString
+builtin validateColorString : (color: string) => string
 
 option defaultURL = "https://slack.com/api/chat.postMessage"
 

@@ -1,3 +1,3 @@
 package system
 
-builtin time
+builtin time : () => time
