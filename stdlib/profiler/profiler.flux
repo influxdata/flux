@@ -1,0 +1,3 @@
+package profiler
+
+option enabledProfilers = [""]

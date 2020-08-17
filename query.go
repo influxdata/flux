@@ -1,8 +1,11 @@
 package flux
 
 import (
-	"github.com/influxdata/flux/metadata"
+	"fmt"
+	"strings"
 	"time"
+
+	"github.com/influxdata/flux/metadata"
 )
 
 // Query represents an active query.
@@ -27,6 +30,9 @@ type Query interface {
 	// Statistics reports the statistics for the query.
 	// The statistics are not complete until Done is called.
 	Statistics() Statistics
+
+	// ProfilerResults returns profiling results for the query
+	ProfilerResults() (ResultIterator, error)
 }
 
 // Statistics is a collection of statistics about the processing of a query.
@@ -57,6 +63,23 @@ type Statistics struct {
 
 	// Metadata contains metadata key/value pairs that have been attached during execution.
 	Metadata metadata.Metadata `json:"metadata"`
+}
+
+func (s Statistics) Range(f func(key string, value string)) {
+	f("TotalDuration", s.TotalDuration.String())
+	f("CompileDuration", s.CompileDuration.String())
+	f("QueueDuration", s.QueueDuration.String())
+	f("PlanDuration", s.PlanDuration.String())
+	f("RequeueDuration", s.RequeueDuration.String())
+	f("ExecuteDuration", s.ExecuteDuration.String())
+	f("Concurrency", fmt.Sprintf("%v", s.Concurrency))
+	f("MaxAllocated", fmt.Sprintf("%v", s.MaxAllocated))
+	f("TotalAllocated", fmt.Sprintf("%v", s.TotalAllocated))
+	f("RuntimeErrors", strings.Join(s.RuntimeErrors, "\n"))
+	s.Metadata.Range(func(key string, value interface{}) bool {
+		f(key, fmt.Sprintf("%v", value))
+		return true
+	})
 }
 
 // Add returns the sum of s and other.

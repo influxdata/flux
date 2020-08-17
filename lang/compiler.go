@@ -274,7 +274,8 @@ type Program struct {
 	PlanSpec *plan.Spec
 	Runtime  flux.Runtime
 
-	opts *compileOptions
+	opts      *compileOptions
+	Profilers []execute.Profiler
 }
 
 func (p *Program) SetLogger(logger *zap.Logger) {
@@ -424,6 +425,9 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	if err := p.updateOpts(scope); err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in reading options while starting program")
 	}
+	if err := p.updateProfilers(scope); err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in reading profiler settings while starting program")
+	}
 	ps, err := buildPlan(cctx, sp, p.opts)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in building plan while starting program")
@@ -437,8 +441,40 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	return p.Program.Start(cctx, alloc)
 }
 
+func (p *AstProgram) updateProfilers(scope values.Scope) error {
+	pkg, ok := getPackageFromScope("profiler", scope)
+	if !ok {
+		return nil
+	}
+	if pkg.Type().Nature() != semantic.Object {
+		// No import for profiler, this is useless.
+		return nil
+	}
+
+	profilerNames, err := getOptionValues(pkg.Object(), "enabledProfilers")
+	if err != nil {
+		return err
+	}
+	dedupeMap := make(map[string]bool)
+	p.Profilers = make([]execute.Profiler, 0)
+	for _, profilerName := range profilerNames {
+		if profiler, exists := execute.AllProfilers[profilerName]; !exists {
+			// profiler does not exist
+			continue
+		} else {
+			if _, exists := dedupeMap[profilerName]; exists {
+				// Ignore duplicates
+				continue
+			}
+			dedupeMap[profilerName] = true
+			p.Profilers = append(p.Profilers, profiler)
+		}
+	}
+	return nil
+}
+
 func (p *AstProgram) updateOpts(scope values.Scope) error {
-	pkg, ok := getPlannerPkg(scope)
+	pkg, ok := getPackageFromScope("planner", scope)
 	if !ok {
 		return nil
 	}
@@ -455,7 +491,7 @@ func (p *AstProgram) updateOpts(scope values.Scope) error {
 	return nil
 }
 
-func getPlannerPkg(scope values.Scope) (values.Package, bool) {
+func getPackageFromScope(pkgName string, scope values.Scope) (values.Package, bool) {
 	found := false
 	var foundPkg values.Package
 	scope.Range(func(k string, v values.Value) {
@@ -463,7 +499,7 @@ func getPlannerPkg(scope values.Scope) (values.Package, bool) {
 			return
 		}
 		if pkg, ok := v.(values.Package); ok {
-			if pkg.Name() == "planner" {
+			if pkg.Name() == pkgName {
 				found = true
 				foundPkg = pkg
 			}
@@ -478,41 +514,25 @@ func getPlanOptions(plannerPkg values.Package) (plan.LogicalOption, plan.Physica
 		return nil, nil, nil
 	}
 
-	ls, err := getRules(plannerPkg.Object(), "disableLogicalRules")
+	ls, err := getOptionValues(plannerPkg.Object(), "disableLogicalRules")
 	if err != nil {
 		return nil, nil, err
 	}
-	ps, err := getRules(plannerPkg.Object(), "disablePhysicalRules")
+	ps, err := getOptionValues(plannerPkg.Object(), "disablePhysicalRules")
 	if err != nil {
 		return nil, nil, err
 	}
 	return plan.RemoveLogicalRules(ls...), plan.RemovePhysicalRules(ps...), nil
 }
 
-func getRules(plannerPkg values.Object, optionName string) ([]string, error) {
-	value, ok := plannerPkg.Get(optionName)
+func getOptionValues(pkg values.Object, optionName string) ([]string, error) {
+	value, ok := pkg.Get(optionName)
 	if !ok {
 		// No value in package.
 		return []string{}, nil
 	}
 
-	// TODO(affo): the rules are arrays of strings as defined in the 'planner' package.
-	//  During evaluation, the interpreter should raise an error if the user tries to assign
-	//  an option of a type to another. So we should be able to rely on the fact that the type
-	//  for value is fixed. At the moment is it not so.
-	//  So, we have to check and return an error to avoid a panic.
-	//  See (https://github.com/influxdata/flux/issues/1829).
-	if t := value.Type().Nature(); t != semantic.Array {
-		return nil, fmt.Errorf("'planner.%s' must be an array of string, got %s", optionName, t.String())
-	}
 	rules := value.Array()
-	et, err := rules.Type().ElemType()
-	if err != nil {
-		return nil, err
-	}
-	if et.Nature() != semantic.String {
-		return nil, fmt.Errorf("'planner.%s' must be an array of string, got an array of %s", optionName, et.String())
-	}
 	noRules := rules.Len()
 	rs := make([]string, noRules)
 	rules.Range(func(i int, v values.Value) {

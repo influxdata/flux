@@ -51,6 +51,10 @@ func (q *Query) Statistics() flux.Statistics {
 	return q.stats
 }
 
+func (q *Query) ProfilerResults() (flux.ResultIterator, error) {
+	return nil, nil
+}
+
 // ProduceResults lets the user provide a function to produce results on the channel returned by `Results`.
 // `resultProvider` should check if `canceled` has been closed before sending results. E.g.:
 // ```
