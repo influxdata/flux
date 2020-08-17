@@ -1,6 +1,9 @@
 package chronograf_test
 
 import "testing"
+import c "csv"
+
+option testing.loadStorage = (csv) => c.from(csv: csv)
 
 inData = "
 #datatype,string,long,string,string,string,string,long
