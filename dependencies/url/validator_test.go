@@ -65,9 +65,9 @@ func TestPrivateIPValidator(t *testing.T) {
 			err = v.Validate(u)
 			if tc.valid && err != nil || !tc.valid && err == nil {
 				if tc.valid {
-					t.Errorf("unexcepted validation error: %v", err)
+					t.Errorf("unexpected validation error: %v", err)
 				} else {
-					t.Errorf("excepted validation error got nil")
+					t.Errorf("expected validation error got nil")
 				}
 			}
 		})

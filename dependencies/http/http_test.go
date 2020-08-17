@@ -82,7 +82,7 @@ func TestInvalidRedirects(t *testing.T) {
 		if err == nil {
 			t.Fatal("Client did not error")
 		}
-		if !strings.HasSuffix(err.Error(), "url is not valid, it connects to a private IP") {
+		if !strings.HasSuffix(err.Error(), "url validation error, it connects to a private IP") {
 			t.Fatal(err)
 		}
 
