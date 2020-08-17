@@ -60,7 +60,7 @@ type TestValidator struct{}
 
 func (TestValidator) Validate(anUrl *url.URL) error {
 	if anUrl.Host == "test-validator.example.com" {
-		return errors.New(codes.Invalid, "url is not valid, it connects to a private IP")
+		return errors.New(codes.Invalid, "url validation error, it connects to a private IP")
 	}
 	return nil
 }
