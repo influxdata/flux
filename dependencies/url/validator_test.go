@@ -50,6 +50,10 @@ func TestPrivateIPValidator(t *testing.T) {
 			url:   "http://thisdnsnamedoesnotexistasitdoesnothavearootandhaslotsofentropy",
 			valid: false,
 		},
+		{
+			url:   "http://127.0.0.1:8093/debug/pprof",
+			valid: false,
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
@@ -61,9 +65,9 @@ func TestPrivateIPValidator(t *testing.T) {
 			err = v.Validate(u)
 			if tc.valid && err != nil || !tc.valid && err == nil {
 				if tc.valid {
-					t.Errorf("unexecpted validation error: %v", err)
+					t.Errorf("unexcepted validation error: %v", err)
 				} else {
-					t.Errorf("execpted validation error got nil")
+					t.Errorf("excepted validation error got nil")
 				}
 			}
 		})
