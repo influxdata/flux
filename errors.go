@@ -15,3 +15,12 @@ type Error = errors.Error
 func ErrorCode(err error) codes.Code {
 	return errors.Code(err)
 }
+
+// ErrorDocURL returns the DocURL associated with this error
+// if one exists. This will return the outermost DocURL
+// associated with this error unless the code is Inherit.
+// If the code for an error is Inherit, this will return
+// the DocURL for the nested error if it exists.
+func ErrorDocURL(err error) string {
+	return errors.DocURL(err)
+}
