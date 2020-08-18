@@ -438,6 +438,7 @@ pub fn builtins() -> Builtins<'static> {
                         ?columns: [string],
                         ?timeColumn: string
                     ) => [B] where A: Record, B: Record "#,
+                "die" => "(msg: string) => A",
                 "difference" => r#"
                    (
                         <-tables: [T],

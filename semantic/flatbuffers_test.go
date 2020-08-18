@@ -831,10 +831,12 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 		{
 			name: "test statement",
 			fluxSrc: `
-                import "testing"
-                test t = () => ({input: testing.loadStorage(csv: ""), want: testing.loadMem(csv: ""), fn: (table=<-) => table})`,
+		       import "testing"
+		       test t = () => ({input: testing.loadStorage(csv: ""), want: testing.loadMem(csv: ""), fn: (table=<-) => table})`,
 			types: map[string]string{
-				"t": "forall [t0, t1, t2] where t1: Record, t2: Record () -> {fn: (<-table: t0) -> t0 | input: [t1] | want: [t2]}",
+				"t": "forall [t0, t1, t2, t3, t4, t5] where t5: Record () -> {fn: (<-table: t0) -> t0 | " +
+					"input: [{_field: t1 | _field: t1 | _measurement: t2 | _measurement: t2 | _time: t3 | _time: t3 | t4}] " +
+					"| want: [t5]}",
 			},
 		},
 		{
