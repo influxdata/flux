@@ -169,6 +169,88 @@ func TestErrorCode(t *testing.T) {
 	}
 }
 
+func TestErrorDocURL(t *testing.T) {
+	for _, tt := range []struct {
+		name string
+		err  error
+		want string
+	}{
+		{
+			name: "basic error",
+			err: &errors.Error{
+				Code:   codes.Invalid,
+				DocURL: "https://expected.url",
+			},
+			want: "https://expected.url",
+		},
+		{
+			name: "basic error without docs url",
+			err: &errors.Error{
+				Code: codes.Invalid,
+			},
+			want: "",
+		},
+		{
+			name: "wrapped error",
+			err: &errors.Error{
+				Code:   codes.Invalid,
+				DocURL: "https://expected.url",
+				Err: &errors.Error{
+					Code:   codes.Invalid,
+					DocURL: "https://unexpected.url",
+				},
+			},
+			want: "https://expected.url",
+		},
+		{
+			name: "wrapper error with docs url",
+			err: &errors.Error{
+				Code: codes.Invalid,
+				Err: &errors.Error{
+					Code:   codes.Invalid,
+					DocURL: "https://expected.url",
+				},
+			},
+			want: "https://expected.url",
+		},
+		{
+			name: "inherited error",
+			err: &errors.Error{
+				Code:   codes.Inherit,
+				DocURL: "https://unexpected.url",
+				Err: &errors.Error{
+					Code:   codes.Invalid,
+					DocURL: "https://expected.url",
+				},
+			},
+			want: "https://expected.url",
+		},
+		{
+			name: "inherited external error",
+			err: &errors.Error{
+				Code:   codes.Inherit,
+				DocURL: "https://expected.url",
+				Err:    stderrors.New("external error"),
+			},
+			want: "https://expected.url",
+		},
+		{
+			name: "inherited with no wrapped error",
+			err: &errors.Error{
+				Code:   codes.Inherit,
+				DocURL: "https://expected.url",
+			},
+			want: "https://expected.url",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			if got, want := errors.DocURL(tt.err), tt.want; got != want {
+				t.Errorf("unexpected error code -want/+got:\n\t- %q\n\t+ %q", got, want)
+			}
+		})
+	}
+}
+
 func errorString(err error) string {
 	if err != nil {
 		return err.Error()

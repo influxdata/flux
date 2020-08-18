@@ -17,6 +17,10 @@ type Error struct {
 	// about the error itself. This is optional.
 	Msg string
 
+	// DocURL contains a link to documentation that is related to explaining
+	// details and/or solutions to this error message.
+	DocURL string
+
 	// Err contains the error that was the cause of this error.
 	// This is optional.
 	Err error
@@ -87,6 +91,32 @@ func Code(err error) codes.Code {
 			err = ferr.Err
 		} else {
 			return codes.Unknown
+		}
+	}
+}
+
+// DocURL returns the DocURL associated with this error
+// if one exists. This will return the outermost DocURL
+// associated with this error unless the code is Inherit.
+// If the code for an error is Inherit, this will return
+// the DocURL for the nested error if it exists.
+func DocURL(err error) string {
+	for {
+		if ferr, ok := err.(*Error); ok {
+			if ferr.DocURL != "" {
+				docURL := ferr.DocURL
+				if ferr.Code == codes.Inherit && ferr.Err != nil {
+					if nestedDocURL := DocURL(ferr.Err); nestedDocURL != "" {
+						docURL = nestedDocURL
+					}
+				}
+				return docURL
+			} else if ferr.Err == nil {
+				return ""
+			}
+			err = ferr.Err
+		} else {
+			return ""
 		}
 	}
 }
