@@ -55,6 +55,7 @@ func TestFluxStatisticsProfiler_GetResult(t *testing.T) {
 ,,0,profiler/FluxStatistics,influxdb/scanned-bytes,10
 ,,0,profiler/FluxStatistics,influxdb/scanned-values,11
 `
+	q.Done()
 	tbl, err := p.GetResult(q, &memory.Allocator{})
 	if err != nil {
 		t.Error(err)
