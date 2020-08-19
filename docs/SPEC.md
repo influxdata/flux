@@ -914,19 +914,20 @@ The precedence of the operators is given in the table below. Operators with a lo
 |     1    |  `a()`         |       Function call       |
 |          |  `a[]`         |  Member or index access   |
 |          |   `.`          |       Member access       |
-|     2    |   `^`          |       Exponentiation      |
-|     3    | `*` `/` `%`    | Multiplication, division, |
+|     2    |  `|>`          |       Pipe forward        |
+|     3    |   `^`          |       Exponentiation      |
+|     4    | `*` `/` `%`    | Multiplication, division, |
 |          |                | and modulo                |
-|     4    | `+` `-`        | Addition and subtraction  |
-|     5    |`==` `!=`       |   Comparison operators    |
+|     5    | `+` `-`        | Addition and subtraction  |
+|     6    |`==` `!=`       |   Comparison operators    |
 |          | `<` `<=`       |                           |
 |          | `>` `>=`       |                           |
 |          |`=~` `!~`       |                           |
-|     6    | `not`          | Unary logical operator    |
+|     7    | `not`          | Unary logical operator    |
 |          | `exists`       | Null check operator       |
-|     7    |  `and`         |        Logical AND        |
-|     8    |  `or`          |        Logical OR         |
-|     9    | `if/then/else` |        Conditional        |
+|     8    |  `and`         |        Logical AND        |
+|     9    |  `or`          |        Logical OR         |
+|     10   | `if/then/else` |        Conditional        |
 
 The operator precedence is encoded directly into the grammar as the following.
 
