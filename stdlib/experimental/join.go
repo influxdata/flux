@@ -507,6 +507,57 @@ func newRowJoinFn(fn *semantic.FunctionExpression, scope compiler.Scope) *rowJoi
 }
 
 func (fn *rowJoinFn) Prepare(left, right []flux.ColMeta) error {
+	// Check the left and right types to make sure required properties are
+	// columns in their respective ColMeta.
+	fntype := fn.fn.TypeOf()
+	fnarguments, err := fntype.SortedArguments()
+	if err != nil {
+		return err
+	}
+	leftarguments, err := fnarguments[0].TypeOf()
+	if err != nil {
+		return err
+	}
+	leftproperties, err := leftarguments.SortedProperties()
+	if err == nil {
+		// MonoType is a record, so we can check the properties are columns.
+		for _, property := range leftproperties {
+			name := property.Name()
+			found := false
+			for _, column := range left {
+				if column.Label == name {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return errors.Newf(codes.Invalid, "left is missing label %s", name)
+			}
+		}
+	}
+
+	rightarguments, err := fnarguments[1].TypeOf()
+	if err != nil {
+		return err
+	}
+	rightproperties, err := rightarguments.SortedProperties()
+	if err == nil {
+		// MonoType is a record, so we can check the properties are columns.
+		for _, property := range rightproperties {
+			name := property.Name()
+			found := false
+			for _, column := range right {
+				if column.Label == name {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return errors.Newf(codes.Invalid, "right is missing label %s", name)
+			}
+		}
+	}
+
 	l := make([]semantic.PropertyType, len(left))
 	for j, col := range left {
 		l[j] = semantic.PropertyType{
