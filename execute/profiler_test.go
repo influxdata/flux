@@ -36,24 +36,12 @@ func TestFluxStatisticsProfiler_GetResult(t *testing.T) {
 		},
 	})
 	wantStr := `
-#datatype,string,long,string,string,string
-#group,false,false,true,false,false
-#default,_profiler,,,,
-,result,table,_measurement,_field,_value
-,,0,profiler/FluxStatistics,CompileDuration,2ns
-,,0,profiler/FluxStatistics,Concurrency,7
-,,0,profiler/FluxStatistics,ExecuteDuration,6ns
-,,0,profiler/FluxStatistics,MaxAllocated,8
-,,0,profiler/FluxStatistics,PlanDuration,4ns
-,,0,profiler/FluxStatistics,QueueDuration,3ns
-,,0,profiler/FluxStatistics,RequeueDuration,5ns
-,,0,profiler/FluxStatistics,RuntimeErrors,"1
-2"
-,,0,profiler/FluxStatistics,TotalAllocated,9
-,,0,profiler/FluxStatistics,TotalDuration,1ns
-,,0,profiler/FluxStatistics,flux/query-plan,"query plan"
-,,0,profiler/FluxStatistics,influxdb/scanned-bytes,10
-,,0,profiler/FluxStatistics,influxdb/scanned-values,11
+#datatype,string,long,string,long,long,long,long,long,long,long,long,long,string,string,string,string
+#group,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false
+#default,_profiler,,,,,,,,,,,,,,,
+,result,table,_measurement,TotalDuration,CompileDuration,QueueDuration,PlanDuration,RequeueDuration,ExecuteDuration,Concurrency,MaxAllocated,TotalAllocated,RuntimeErrors,flux/query-plan,influxdb/scanned-bytes,influxdb/scanned-values
+,,0,profiler/FluxStatistics,1,2,3,4,5,6,7,8,9,"1
+2","query plan",10,11
 `
 	q.Done()
 	tbl, err := p.GetResult(q, &memory.Allocator{})
