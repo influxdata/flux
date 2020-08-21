@@ -49,50 +49,50 @@ func (s FluxStatisticsProfiler) GetResult(q flux.Query, alloc *memory.Allocator)
 	colMeta := []flux.ColMeta{
 		{
 			Label: "_measurement",
-			Type: flux.TString,
+			Type:  flux.TString,
 		},
 		{
 			Label: "TotalDuration",
-			Type: flux.TInt,
+			Type:  flux.TInt,
 		},
 		{
 			Label: "CompileDuration",
-			Type: flux.TInt,
+			Type:  flux.TInt,
 		},
 		{
 			Label: "QueueDuration",
-			Type: flux.TInt,
+			Type:  flux.TInt,
 		},
 		{
 			Label: "PlanDuration",
-			Type: flux.TInt,
+			Type:  flux.TInt,
 		},
 		{
 			Label: "RequeueDuration",
-			Type: flux.TInt,
+			Type:  flux.TInt,
 		},
 		{
 			Label: "ExecuteDuration",
-			Type: flux.TInt,
+			Type:  flux.TInt,
 		},
 		{
 			Label: "Concurrency",
-			Type: flux.TInt,
+			Type:  flux.TInt,
 		},
 		{
 			Label: "MaxAllocated",
-			Type: flux.TInt,
+			Type:  flux.TInt,
 		},
 		{
 			Label: "TotalAllocated",
-			Type: flux.TInt,
+			Type:  flux.TInt,
 		},
 		{
 			Label: "RuntimeErrors",
-			Type: flux.TString,
+			Type:  flux.TString,
 		},
 	}
-	colData := []interface{} {
+	colData := []interface{}{
 		"profiler/FluxStatistics",
 		stats.TotalDuration.Nanoseconds(),
 		stats.CompileDuration.Nanoseconds(),
@@ -116,7 +116,7 @@ func (s FluxStatisticsProfiler) GetResult(q flux.Query, alloc *memory.Allocator)
 		}
 		colMeta = append(colMeta, flux.ColMeta{
 			Label: key,
-			Type: ty,
+			Type:  ty,
 		})
 		return true
 	})
