@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   17,
 				},
 				File:   "prometheus.flux",
-				Source: "package prometheus\nimport \"universe\" \n\n// scrape enables scraping of a prometheus metrics endpoint and converts \n// that input into flux tables. Each metric is put into an individual flux \n// table, including each histogram and summary value.  \nbuiltin scrape\n\n// histogramQuantile enables the user to calculate quantiles on a set of given values\n// This function assumes that the given histogram data is being scraped or read from a \n// Prometheus source. \nhistogramQuantile = (tables=<-, quantile) => \n    tables\n        |> filter(fn: (r) => r._measurement == \"prometheus\")\n        |> group(mode: \"except\", columns: [\"le\", \"_value\", \"_time\"]) \n        |> map(fn:(r) => ({r with le: float(v:r.le)})) \n        |> universe.histogramQuantile(quantile: quantile)",
+				Source: "package prometheus\nimport \"universe\" \n\n// scrape enables scraping of a prometheus metrics endpoint and converts \n// that input into flux tables. Each metric is put into an individual flux \n// table, including each histogram and summary value.  \nbuiltin scrape : (url: string) => [A] where A: Record\n\n// histogramQuantile enables the user to calculate quantiles on a set of given values\n// This function assumes that the given histogram data is being scraped or read from a \n// Prometheus source. \nhistogramQuantile = (tables=<-, quantile) => \n    tables\n        |> filter(fn: (r) => r._measurement == \"prometheus\")\n        |> group(mode: \"except\", columns: [\"le\", \"_value\", \"_time\"]) \n        |> map(fn:(r) => ({r with le: float(v:r.le)})) \n        |> universe.histogramQuantile(quantile: quantile)",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -65,6 +65,216 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "scrape",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 54,
+							Line:   7,
+						},
+						File:   "prometheus.flux",
+						Source: "(url: string) => [A] where A: Record",
+						Start: ast.Position{
+							Column: 18,
+							Line:   7,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 54,
+								Line:   7,
+							},
+							File:   "prometheus.flux",
+							Source: "A: Record",
+							Start: ast.Position{
+								Column: 45,
+								Line:   7,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 54,
+									Line:   7,
+								},
+								File:   "prometheus.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 48,
+									Line:   7,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 46,
+									Line:   7,
+								},
+								File:   "prometheus.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 45,
+									Line:   7,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 38,
+								Line:   7,
+							},
+							File:   "prometheus.flux",
+							Source: "(url: string) => [A]",
+							Start: ast.Position{
+								Column: 18,
+								Line:   7,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 30,
+									Line:   7,
+								},
+								File:   "prometheus.flux",
+								Source: "url: string",
+								Start: ast.Position{
+									Column: 19,
+									Line:   7,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 22,
+										Line:   7,
+									},
+									File:   "prometheus.flux",
+									Source: "url",
+									Start: ast.Position{
+										Column: 19,
+										Line:   7,
+									},
+								},
+							},
+							Name: "url",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 30,
+										Line:   7,
+									},
+									File:   "prometheus.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 24,
+										Line:   7,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 30,
+											Line:   7,
+										},
+										File:   "prometheus.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 24,
+											Line:   7,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 38,
+									Line:   7,
+								},
+								File:   "prometheus.flux",
+								Source: "[A]",
+								Start: ast.Position{
+									Column: 35,
+									Line:   7,
+								},
+							},
+						},
+						ElementType: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 37,
+										Line:   7,
+									},
+									File:   "prometheus.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 36,
+										Line:   7,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 37,
+											Line:   7,
+										},
+										File:   "prometheus.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 36,
+											Line:   7,
+										},
+									},
+								},
+								Name: "A",
+							},
+						},
+					},
+				},
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{

@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   104,
 				},
 				File:   "aggregate.flux",
-				Source: "package aggregate\n\nimport \"contrib/jsternberg/math\"\n\n// table will aggregate columns and create tables with a single\n// row containing the aggregated value.\n//\n// This function takes a single parameter of `columns`. The parameter\n// is an object with the output column name as the key and the aggregate\n// object as the value.\n//\n// The aggregate object is composed of at least the following required attributes:\n//     column = string\n//         The column name for the input.\n//     init = (values) -> state\n//         An initial function to compute the initial state of the\n//         output. This can return either the final aggregate or a\n//         temporary state object that can be used to compute the\n//         final aggregate. The values parameter will always be a\n//         non-empty array of values from the specified column.\n//     reduce = (values, state) -> state\n//         A function that takes in another buffer of values\n//         and the current state of the aggregate and computes\n//         the updated state.\n//     compute = (state) -> value\n//         A function that takes the state and computes the final\n//         aggregate.\n//     fill = value\n//         The value passed to fill, if present, will determine what\n//         the aggregate does when there are no values.\n//         This can either be a value or one of the predefined\n//         identifiers of null or none.\n//         This value must be the same type as the value return from\n//         compute.\n//\n// An example of usage is:\n//     tables |> aggregate.table(columns: {\n//         \"min_bottom_degrees\": aggregate.min(column: \"bottom_degrees\"),\n//     ])\nbuiltin table\n\n// null is a sentinel value for fill that will fill\n// in a null value if there were no values for an interval.\nbuiltin null\n\n// none is a sentinel value for fill that will skip\n// emitting a row if there are no values for an interval.\nbuiltin none\n\n// define will define an aggregate function.\ndefine = (init, reduce, compute, fill=null) => (column, fill=fill) => ({\n\tcolumn: column,\n\tinit: init,\n\treduce: reduce,\n\tcompute: compute,\n\tfill: fill,\n})\n\n_make_selector = (fn) => define(\n\tinit: (values) => fn(values),\n\treduce: (values, state) => {\n\t\tv = fn(values)\n\t\treturn fn(values: [state, v])\n\t},\n\tcompute: (state) => state,\n)\n\n// min constructs a min aggregate or selector for the column.\nmin = _make_selector(fn: math.min)\n\n// max constructs a max aggregate or selector for the column.\nmax = _make_selector(fn: math.max)\n\n// sum constructs a sum aggregate for the column.\nsum = define(\n\tinit: (values) => math.sum(values),\n\treduce: (values, state) => {\n\t\treturn state + math.sum(values)\n\t},\n\tcompute: (state) => state,\n)\n\n// count constructs a count aggregate for the column.\ncount = define(\n\tinit: (values) => length(arr: values),\n\treduce: (values, state) => {\n\t\treturn state + length(arr: values)\n\t},\n\tcompute: (state) => state,\n\tfill: 0,\n)\n\n// mean constructs a mean aggregate for the column.\nmean = define(\n\tinit: (values) => ({\n\t\tsum: math.sum(values),\n\t\tcount: length(arr: values),\n\t}),\n\treduce: (values, state) => ({\n\t\tsum: state.sum + math.sum(values),\n\t\tcount: state.count + length(arr: values),\n\t}),\n\tcompute: (state) => float(v: state.sum) / float(v: state.count),\n)",
+				Source: "package aggregate\n\nimport \"contrib/jsternberg/math\"\n\n// table will aggregate columns and create tables with a single\n// row containing the aggregated value.\n//\n// This function takes a single parameter of `columns`. The parameter\n// is an object with the output column name as the key and the aggregate\n// object as the value.\n//\n// The aggregate object is composed of at least the following required attributes:\n//     column = string\n//         The column name for the input.\n//     init = (values) -> state\n//         An initial function to compute the initial state of the\n//         output. This can return either the final aggregate or a\n//         temporary state object that can be used to compute the\n//         final aggregate. The values parameter will always be a\n//         non-empty array of values from the specified column.\n//     reduce = (values, state) -> state\n//         A function that takes in another buffer of values\n//         and the current state of the aggregate and computes\n//         the updated state.\n//     compute = (state) -> value\n//         A function that takes the state and computes the final\n//         aggregate.\n//     fill = value\n//         The value passed to fill, if present, will determine what\n//         the aggregate does when there are no values.\n//         This can either be a value or one of the predefined\n//         identifiers of null or none.\n//         This value must be the same type as the value return from\n//         compute.\n//\n// An example of usage is:\n//     tables |> aggregate.table(columns: {\n//         \"min_bottom_degrees\": aggregate.min(column: \"bottom_degrees\"),\n//     ])\nbuiltin table : (<-tables: [A], columns: C) => [B] where A: Record, B: Record, C: Record\n\n// null is a sentinel value for fill that will fill\n// in a null value if there were no values for an interval.\nbuiltin null : A\n\n// none is a sentinel value for fill that will skip\n// emitting a row if there are no values for an interval.\nbuiltin none : A\n\n// define will define an aggregate function.\ndefine = (init, reduce, compute, fill=null) => (column, fill=fill) => ({\n\tcolumn: column,\n\tinit: init,\n\treduce: reduce,\n\tcompute: compute,\n\tfill: fill,\n})\n\n_make_selector = (fn) => define(\n\tinit: (values) => fn(values),\n\treduce: (values, state) => {\n\t\tv = fn(values)\n\t\treturn fn(values: [state, v])\n\t},\n\tcompute: (state) => state,\n)\n\n// min constructs a min aggregate or selector for the column.\nmin = _make_selector(fn: math.min)\n\n// max constructs a max aggregate or selector for the column.\nmax = _make_selector(fn: math.max)\n\n// sum constructs a sum aggregate for the column.\nsum = define(\n\tinit: (values) => math.sum(values),\n\treduce: (values, state) => {\n\t\treturn state + math.sum(values)\n\t},\n\tcompute: (state) => state,\n)\n\n// count constructs a count aggregate for the column.\ncount = define(\n\tinit: (values) => length(arr: values),\n\treduce: (values, state) => {\n\t\treturn state + length(arr: values)\n\t},\n\tcompute: (state) => state,\n\tfill: 0,\n)\n\n// mean constructs a mean aggregate for the column.\nmean = define(\n\tinit: (values) => ({\n\t\tsum: math.sum(values),\n\t\tcount: length(arr: values),\n\t}),\n\treduce: (values, state) => ({\n\t\tsum: state.sum + math.sum(values),\n\t\tcount: state.count + length(arr: values),\n\t}),\n\tcompute: (state) => float(v: state.sum) / float(v: state.count),\n)",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -66,6 +66,407 @@ var pkgAST = &ast.Package{
 				},
 				Name: "table",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 89,
+							Line:   40,
+						},
+						File:   "aggregate.flux",
+						Source: "(<-tables: [A], columns: C) => [B] where A: Record, B: Record, C: Record",
+						Start: ast.Position{
+							Column: 17,
+							Line:   40,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 67,
+								Line:   40,
+							},
+							File:   "aggregate.flux",
+							Source: "A: Record",
+							Start: ast.Position{
+								Column: 58,
+								Line:   40,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 67,
+									Line:   40,
+								},
+								File:   "aggregate.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 61,
+									Line:   40,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 59,
+									Line:   40,
+								},
+								File:   "aggregate.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 58,
+									Line:   40,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}, &ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 78,
+								Line:   40,
+							},
+							File:   "aggregate.flux",
+							Source: "B: Record",
+							Start: ast.Position{
+								Column: 69,
+								Line:   40,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 78,
+									Line:   40,
+								},
+								File:   "aggregate.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 72,
+									Line:   40,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 70,
+									Line:   40,
+								},
+								File:   "aggregate.flux",
+								Source: "B",
+								Start: ast.Position{
+									Column: 69,
+									Line:   40,
+								},
+							},
+						},
+						Name: "B",
+					},
+				}, &ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 89,
+								Line:   40,
+							},
+							File:   "aggregate.flux",
+							Source: "C: Record",
+							Start: ast.Position{
+								Column: 80,
+								Line:   40,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 89,
+									Line:   40,
+								},
+								File:   "aggregate.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 83,
+									Line:   40,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 81,
+									Line:   40,
+								},
+								File:   "aggregate.flux",
+								Source: "C",
+								Start: ast.Position{
+									Column: 80,
+									Line:   40,
+								},
+							},
+						},
+						Name: "C",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 51,
+								Line:   40,
+							},
+							File:   "aggregate.flux",
+							Source: "(<-tables: [A], columns: C) => [B]",
+							Start: ast.Position{
+								Column: 17,
+								Line:   40,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 31,
+									Line:   40,
+								},
+								File:   "aggregate.flux",
+								Source: "<-tables: [A]",
+								Start: ast.Position{
+									Column: 18,
+									Line:   40,
+								},
+							},
+						},
+						Kind: "Pipe",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   40,
+									},
+									File:   "aggregate.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 20,
+										Line:   40,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 31,
+										Line:   40,
+									},
+									File:   "aggregate.flux",
+									Source: "[A]",
+									Start: ast.Position{
+										Column: 28,
+										Line:   40,
+									},
+								},
+							},
+							ElementType: &ast.TvarType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 30,
+											Line:   40,
+										},
+										File:   "aggregate.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 29,
+											Line:   40,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 30,
+												Line:   40,
+											},
+											File:   "aggregate.flux",
+											Source: "A",
+											Start: ast.Position{
+												Column: 29,
+												Line:   40,
+											},
+										},
+									},
+									Name: "A",
+								},
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 43,
+									Line:   40,
+								},
+								File:   "aggregate.flux",
+								Source: "columns: C",
+								Start: ast.Position{
+									Column: 33,
+									Line:   40,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   40,
+									},
+									File:   "aggregate.flux",
+									Source: "columns",
+									Start: ast.Position{
+										Column: 33,
+										Line:   40,
+									},
+								},
+							},
+							Name: "columns",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 43,
+										Line:   40,
+									},
+									File:   "aggregate.flux",
+									Source: "C",
+									Start: ast.Position{
+										Column: 42,
+										Line:   40,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   40,
+										},
+										File:   "aggregate.flux",
+										Source: "C",
+										Start: ast.Position{
+											Column: 42,
+											Line:   40,
+										},
+									},
+								},
+								Name: "C",
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 51,
+									Line:   40,
+								},
+								File:   "aggregate.flux",
+								Source: "[B]",
+								Start: ast.Position{
+									Column: 48,
+									Line:   40,
+								},
+							},
+						},
+						ElementType: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 50,
+										Line:   40,
+									},
+									File:   "aggregate.flux",
+									Source: "B",
+									Start: ast.Position{
+										Column: 49,
+										Line:   40,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 50,
+											Line:   40,
+										},
+										File:   "aggregate.flux",
+										Source: "B",
+										Start: ast.Position{
+											Column: 49,
+											Line:   40,
+										},
+									},
+								},
+								Name: "B",
+							},
+						},
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -100,6 +501,59 @@ var pkgAST = &ast.Package{
 				},
 				Name: "null",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   44,
+						},
+						File:   "aggregate.flux",
+						Source: "A",
+						Start: ast.Position{
+							Column: 16,
+							Line:   44,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.TvarType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 17,
+								Line:   44,
+							},
+							File:   "aggregate.flux",
+							Source: "A",
+							Start: ast.Position{
+								Column: 16,
+								Line:   44,
+							},
+						},
+					},
+					ID: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 17,
+									Line:   44,
+								},
+								File:   "aggregate.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 16,
+									Line:   44,
+								},
+							},
+						},
+						Name: "A",
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -133,6 +587,59 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "none",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   48,
+						},
+						File:   "aggregate.flux",
+						Source: "A",
+						Start: ast.Position{
+							Column: 16,
+							Line:   48,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.TvarType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 17,
+								Line:   48,
+							},
+							File:   "aggregate.flux",
+							Source: "A",
+							Start: ast.Position{
+								Column: 16,
+								Line:   48,
+							},
+						},
+					},
+					ID: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 17,
+									Line:   48,
+								},
+								File:   "aggregate.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 16,
+									Line:   48,
+								},
+							},
+						},
+						Name: "A",
+					},
+				},
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{

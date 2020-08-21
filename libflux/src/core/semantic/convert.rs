@@ -139,7 +139,7 @@ fn convert_builtin_statement(stmt: ast::BuiltinStmt, fresher: &mut Fresher) -> R
     Ok(BuiltinStmt {
         loc: stmt.base.location,
         id: convert_identifier(stmt.id, fresher)?,
-        typ_expr: convert_polytype(stmt.ty, fresher)?
+        typ_expr: convert_polytype(stmt.ty, fresher)?,
     })
 }
 
@@ -712,22 +712,6 @@ mod tests {
     use crate::semantic::fresh;
     use crate::semantic::types::{MonoType, Tvar};
     use pretty_assertions::assert_eq;
-    use crate::parser;
-
-    #[test]
-    fn builtin_csv() {
-        let src = r#"
-        package sql
-
-builtin from : (driverName: string, dataSourceName: string, query: string) => [A]
-builtin to : (<-tables: [A], driverName: string, dataSourceName: string, table: string, ?batchSize: int) => [A]
-        "#;
-        let mut p = parser::Parser::new(src);
-        let f = p.parse_file("".to_string());
-        let m = &mut Fresher::default();
-        convert_file(f, m).unwrap();
-}
-
 
     // type_info() is used for the expected semantic graph.
     // The id for the Tvar does not matter, because that is not compared.

@@ -136,6 +136,147 @@ var pkgAST = &ast.Package{
 				},
 				Name: "lastSuccess",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 44,
+							Line:   10,
+						},
+						File:   "tasks.flux",
+						Source: "(orTime: time) => time",
+						Start: ast.Position{
+							Column: 22,
+							Line:   10,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 44,
+								Line:   10,
+							},
+							File:   "tasks.flux",
+							Source: "(orTime: time) => time",
+							Start: ast.Position{
+								Column: 22,
+								Line:   10,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 35,
+									Line:   10,
+								},
+								File:   "tasks.flux",
+								Source: "orTime: time",
+								Start: ast.Position{
+									Column: 23,
+									Line:   10,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   10,
+									},
+									File:   "tasks.flux",
+									Source: "orTime",
+									Start: ast.Position{
+										Column: 23,
+										Line:   10,
+									},
+								},
+							},
+							Name: "orTime",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 35,
+										Line:   10,
+									},
+									File:   "tasks.flux",
+									Source: "time",
+									Start: ast.Position{
+										Column: 31,
+										Line:   10,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 35,
+											Line:   10,
+										},
+										File:   "tasks.flux",
+										Source: "time",
+										Start: ast.Position{
+											Column: 31,
+											Line:   10,
+										},
+									},
+								},
+								Name: "time",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 44,
+									Line:   10,
+								},
+								File:   "tasks.flux",
+								Source: "time",
+								Start: ast.Position{
+									Column: 40,
+									Line:   10,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 44,
+										Line:   10,
+									},
+									File:   "tasks.flux",
+									Source: "time",
+									Start: ast.Position{
+										Column: 40,
+										Line:   10,
+									},
+								},
+							},
+							Name: "time",
+						},
+					},
+				},
+			},
 		}},
 		Imports:  nil,
 		Metadata: "parser-type=rust",

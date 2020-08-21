@@ -66,6 +66,147 @@ var pkgAST = &ast.Package{
 				},
 				Name: "get",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 38,
+							Line:   3,
+						},
+						File:   "secrets.flux",
+						Source: "(key: string) => string",
+						Start: ast.Position{
+							Column: 15,
+							Line:   3,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 38,
+								Line:   3,
+							},
+							File:   "secrets.flux",
+							Source: "(key: string) => string",
+							Start: ast.Position{
+								Column: 15,
+								Line:   3,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 27,
+									Line:   3,
+								},
+								File:   "secrets.flux",
+								Source: "key: string",
+								Start: ast.Position{
+									Column: 16,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 19,
+										Line:   3,
+									},
+									File:   "secrets.flux",
+									Source: "key",
+									Start: ast.Position{
+										Column: 16,
+										Line:   3,
+									},
+								},
+							},
+							Name: "key",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 27,
+										Line:   3,
+									},
+									File:   "secrets.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 21,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 27,
+											Line:   3,
+										},
+										File:   "secrets.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 21,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 38,
+									Line:   3,
+								},
+								File:   "secrets.flux",
+								Source: "string",
+								Start: ast.Position{
+									Column: 32,
+									Line:   3,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 38,
+										Line:   3,
+									},
+									File:   "secrets.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 32,
+										Line:   3,
+									},
+								},
+							},
+							Name: "string",
+						},
+					},
+				},
+			},
 		}},
 		Imports:  nil,
 		Metadata: "parser-type=rust",

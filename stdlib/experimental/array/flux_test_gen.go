@@ -97,7 +97,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Value: parser.MustParseTime("2018-12-19T22:14:30Z"),
 					},
-					Params: nil,
+					Params: []*ast.Property{},
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -2669,7 +2669,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							With: nil,
 						},
 					},
-					Params: nil,
+					Params: []*ast.Property{},
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -2881,7 +2881,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Value: parser.MustParseTime("2018-12-19T22:14:30Z"),
 					},
-					Params: nil,
+					Params: []*ast.Property{},
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -5279,7 +5279,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							With: nil,
 						},
 					},
-					Params: nil,
+					Params: []*ast.Property{},
 				},
 			},
 			BaseNode: ast.BaseNode{
