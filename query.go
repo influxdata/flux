@@ -1,8 +1,6 @@
 package flux
 
 import (
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/influxdata/flux/metadata"
@@ -63,23 +61,6 @@ type Statistics struct {
 
 	// Metadata contains metadata key/value pairs that have been attached during execution.
 	Metadata metadata.Metadata `json:"metadata"`
-}
-
-func (s Statistics) Range(f func(key string, value string)) {
-	f("TotalDuration", s.TotalDuration.String())
-	f("CompileDuration", s.CompileDuration.String())
-	f("QueueDuration", s.QueueDuration.String())
-	f("PlanDuration", s.PlanDuration.String())
-	f("RequeueDuration", s.RequeueDuration.String())
-	f("ExecuteDuration", s.ExecuteDuration.String())
-	f("Concurrency", fmt.Sprintf("%v", s.Concurrency))
-	f("MaxAllocated", fmt.Sprintf("%v", s.MaxAllocated))
-	f("TotalAllocated", fmt.Sprintf("%v", s.TotalAllocated))
-	f("RuntimeErrors", strings.Join(s.RuntimeErrors, "\n"))
-	s.Metadata.Range(func(key string, value interface{}) bool {
-		f(key, fmt.Sprintf("%v", value))
-		return true
-	})
 }
 
 // Add returns the sum of s and other.
