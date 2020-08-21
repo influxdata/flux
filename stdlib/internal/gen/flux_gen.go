@@ -66,6 +66,582 @@ var pkgAST = &ast.Package{
 				},
 				Name: "tables",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 127,
+							Line:   3,
+						},
+						File:   "gen.flux",
+						Source: "(n: int, ?nulls: float, ?tags: [{name: string , cardinality: int}]) => [{A with _time: time , _value: float}]",
+						Start: ast.Position{
+							Column: 18,
+							Line:   3,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 127,
+								Line:   3,
+							},
+							File:   "gen.flux",
+							Source: "(n: int, ?nulls: float, ?tags: [{name: string , cardinality: int}]) => [{A with _time: time , _value: float}]",
+							Start: ast.Position{
+								Column: 18,
+								Line:   3,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   3,
+								},
+								File:   "gen.flux",
+								Source: "n: int",
+								Start: ast.Position{
+									Column: 19,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 20,
+										Line:   3,
+									},
+									File:   "gen.flux",
+									Source: "n",
+									Start: ast.Position{
+										Column: 19,
+										Line:   3,
+									},
+								},
+							},
+							Name: "n",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   3,
+									},
+									File:   "gen.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 22,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   3,
+										},
+										File:   "gen.flux",
+										Source: "int",
+										Start: ast.Position{
+											Column: 22,
+											Line:   3,
+										},
+									},
+								},
+								Name: "int",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   3,
+								},
+								File:   "gen.flux",
+								Source: "?nulls: float",
+								Start: ast.Position{
+									Column: 27,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 33,
+										Line:   3,
+									},
+									File:   "gen.flux",
+									Source: "nulls",
+									Start: ast.Position{
+										Column: 28,
+										Line:   3,
+									},
+								},
+							},
+							Name: "nulls",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   3,
+									},
+									File:   "gen.flux",
+									Source: "float",
+									Start: ast.Position{
+										Column: 35,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   3,
+										},
+										File:   "gen.flux",
+										Source: "float",
+										Start: ast.Position{
+											Column: 35,
+											Line:   3,
+										},
+									},
+								},
+								Name: "float",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 84,
+									Line:   3,
+								},
+								File:   "gen.flux",
+								Source: "?tags: [{name: string , cardinality: int}]",
+								Start: ast.Position{
+									Column: 42,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 47,
+										Line:   3,
+									},
+									File:   "gen.flux",
+									Source: "tags",
+									Start: ast.Position{
+										Column: 43,
+										Line:   3,
+									},
+								},
+							},
+							Name: "tags",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 84,
+										Line:   3,
+									},
+									File:   "gen.flux",
+									Source: "[{name: string , cardinality: int}]",
+									Start: ast.Position{
+										Column: 49,
+										Line:   3,
+									},
+								},
+							},
+							ElementType: &ast.RecordType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 83,
+											Line:   3,
+										},
+										File:   "gen.flux",
+										Source: "{name: string , cardinality: int}",
+										Start: ast.Position{
+											Column: 50,
+											Line:   3,
+										},
+									},
+								},
+								Properties: []*ast.PropertyType{&ast.PropertyType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 63,
+												Line:   3,
+											},
+											File:   "gen.flux",
+											Source: "name: string",
+											Start: ast.Position{
+												Column: 51,
+												Line:   3,
+											},
+										},
+									},
+									Name: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 55,
+													Line:   3,
+												},
+												File:   "gen.flux",
+												Source: "name",
+												Start: ast.Position{
+													Column: 51,
+													Line:   3,
+												},
+											},
+										},
+										Name: "name",
+									},
+									Ty: &ast.NamedType{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 63,
+													Line:   3,
+												},
+												File:   "gen.flux",
+												Source: "string",
+												Start: ast.Position{
+													Column: 57,
+													Line:   3,
+												},
+											},
+										},
+										ID: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 63,
+														Line:   3,
+													},
+													File:   "gen.flux",
+													Source: "string",
+													Start: ast.Position{
+														Column: 57,
+														Line:   3,
+													},
+												},
+											},
+											Name: "string",
+										},
+									},
+								}, &ast.PropertyType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 82,
+												Line:   3,
+											},
+											File:   "gen.flux",
+											Source: "cardinality: int",
+											Start: ast.Position{
+												Column: 66,
+												Line:   3,
+											},
+										},
+									},
+									Name: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 77,
+													Line:   3,
+												},
+												File:   "gen.flux",
+												Source: "cardinality",
+												Start: ast.Position{
+													Column: 66,
+													Line:   3,
+												},
+											},
+										},
+										Name: "cardinality",
+									},
+									Ty: &ast.NamedType{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 82,
+													Line:   3,
+												},
+												File:   "gen.flux",
+												Source: "int",
+												Start: ast.Position{
+													Column: 79,
+													Line:   3,
+												},
+											},
+										},
+										ID: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 82,
+														Line:   3,
+													},
+													File:   "gen.flux",
+													Source: "int",
+													Start: ast.Position{
+														Column: 79,
+														Line:   3,
+													},
+												},
+											},
+											Name: "int",
+										},
+									},
+								}},
+								Tvar: nil,
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 127,
+									Line:   3,
+								},
+								File:   "gen.flux",
+								Source: "[{A with _time: time , _value: float}]",
+								Start: ast.Position{
+									Column: 89,
+									Line:   3,
+								},
+							},
+						},
+						ElementType: &ast.RecordType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 126,
+										Line:   3,
+									},
+									File:   "gen.flux",
+									Source: "{A with _time: time , _value: float}",
+									Start: ast.Position{
+										Column: 90,
+										Line:   3,
+									},
+								},
+							},
+							Properties: []*ast.PropertyType{&ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 109,
+											Line:   3,
+										},
+										File:   "gen.flux",
+										Source: "_time: time",
+										Start: ast.Position{
+											Column: 98,
+											Line:   3,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 103,
+												Line:   3,
+											},
+											File:   "gen.flux",
+											Source: "_time",
+											Start: ast.Position{
+												Column: 98,
+												Line:   3,
+											},
+										},
+									},
+									Name: "_time",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 109,
+												Line:   3,
+											},
+											File:   "gen.flux",
+											Source: "time",
+											Start: ast.Position{
+												Column: 105,
+												Line:   3,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 109,
+													Line:   3,
+												},
+												File:   "gen.flux",
+												Source: "time",
+												Start: ast.Position{
+													Column: 105,
+													Line:   3,
+												},
+											},
+										},
+										Name: "time",
+									},
+								},
+							}, &ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 125,
+											Line:   3,
+										},
+										File:   "gen.flux",
+										Source: "_value: float",
+										Start: ast.Position{
+											Column: 112,
+											Line:   3,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 118,
+												Line:   3,
+											},
+											File:   "gen.flux",
+											Source: "_value",
+											Start: ast.Position{
+												Column: 112,
+												Line:   3,
+											},
+										},
+									},
+									Name: "_value",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 125,
+												Line:   3,
+											},
+											File:   "gen.flux",
+											Source: "float",
+											Start: ast.Position{
+												Column: 120,
+												Line:   3,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 125,
+													Line:   3,
+												},
+												File:   "gen.flux",
+												Source: "float",
+												Start: ast.Position{
+													Column: 120,
+													Line:   3,
+												},
+											},
+										},
+										Name: "float",
+									},
+								},
+							}},
+							Tvar: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 92,
+											Line:   3,
+										},
+										File:   "gen.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 91,
+											Line:   3,
+										},
+									},
+								},
+								Name: "A",
+							},
+						},
+					},
+				},
+			},
 		}},
 		Imports:  nil,
 		Metadata: "parser-type=rust",

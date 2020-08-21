@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   37,
 				},
 				File:   "date.flux",
-				Source: "package date\n\nbuiltin second\nbuiltin minute\nbuiltin hour\nbuiltin weekDay\nbuiltin monthDay\nbuiltin yearDay\nbuiltin month\nbuiltin year\nbuiltin week\nbuiltin quarter\nbuiltin millisecond\nbuiltin microsecond\nbuiltin nanosecond\nbuiltin truncate\n\nSunday    = 0\nMonday    = 1\nTuesday   = 2\nWednesday = 3\nThursday  = 4\nFriday    = 5\nSaturday  = 6\n\nJanuary   = 1\nFebruary  = 2\nMarch     = 3\nApril     = 4\nMay       = 5\nJune      = 6\nJuly      = 7\nAugust    = 8\nSeptember = 9\nOctober   = 10\nNovember  = 11\nDecember  = 12",
+				Source: "package date\n\nbuiltin second : (t: T) => int where T: Timeable\nbuiltin minute : (t: T) => int where T: Timeable\nbuiltin hour : (t: T) => int where T: Timeable\nbuiltin weekDay : (t: T) => int where T: Timeable\nbuiltin monthDay : (t: T) => int where T: Timeable\nbuiltin yearDay : (t: T) => int where T: Timeable\nbuiltin month : (t: T) => int where T: Timeable\nbuiltin year : (t: T) => int where T: Timeable\nbuiltin week : (t: T) => int where T: Timeable\nbuiltin quarter : (t: T) => int where T: Timeable\nbuiltin millisecond : (t: T) => int where T: Timeable\nbuiltin microsecond : (t: T) => int where T: Timeable\nbuiltin nanosecond : (t: T) => int where T: Timeable\nbuiltin truncate : (t: T) => int where T: Timeable\n\nSunday    = 0\nMonday    = 1\nTuesday   = 2\nWednesday = 3\nThursday  = 4\nFriday    = 5\nSaturday  = 6\n\nJanuary   = 1\nFebruary  = 2\nMarch     = 3\nApril     = 4\nMay       = 5\nJune      = 6\nJuly      = 7\nAugust    = 8\nSeptember = 9\nOctober   = 10\nNovember  = 11\nDecember  = 12",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -66,6 +66,199 @@ var pkgAST = &ast.Package{
 				},
 				Name: "second",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 49,
+							Line:   3,
+						},
+						File:   "date.flux",
+						Source: "(t: T) => int where T: Timeable",
+						Start: ast.Position{
+							Column: 18,
+							Line:   3,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 49,
+								Line:   3,
+							},
+							File:   "date.flux",
+							Source: "T: Timeable",
+							Start: ast.Position{
+								Column: 38,
+								Line:   3,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 49,
+									Line:   3,
+								},
+								File:   "date.flux",
+								Source: "Timeable",
+								Start: ast.Position{
+									Column: 41,
+									Line:   3,
+								},
+							},
+						},
+						Name: "Timeable",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 39,
+									Line:   3,
+								},
+								File:   "date.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 38,
+									Line:   3,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 31,
+								Line:   3,
+							},
+							File:   "date.flux",
+							Source: "(t: T) => int",
+							Start: ast.Position{
+								Column: 18,
+								Line:   3,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 23,
+									Line:   3,
+								},
+								File:   "date.flux",
+								Source: "t: T",
+								Start: ast.Position{
+									Column: 19,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 20,
+										Line:   3,
+									},
+									File:   "date.flux",
+									Source: "t",
+									Start: ast.Position{
+										Column: 19,
+										Line:   3,
+									},
+								},
+							},
+							Name: "t",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 23,
+										Line:   3,
+									},
+									File:   "date.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 22,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   3,
+										},
+										File:   "date.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 22,
+											Line:   3,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 31,
+									Line:   3,
+								},
+								File:   "date.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 28,
+									Line:   3,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 31,
+										Line:   3,
+									},
+									File:   "date.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 28,
+										Line:   3,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -99,6 +292,199 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "minute",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 49,
+							Line:   4,
+						},
+						File:   "date.flux",
+						Source: "(t: T) => int where T: Timeable",
+						Start: ast.Position{
+							Column: 18,
+							Line:   4,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 49,
+								Line:   4,
+							},
+							File:   "date.flux",
+							Source: "T: Timeable",
+							Start: ast.Position{
+								Column: 38,
+								Line:   4,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 49,
+									Line:   4,
+								},
+								File:   "date.flux",
+								Source: "Timeable",
+								Start: ast.Position{
+									Column: 41,
+									Line:   4,
+								},
+							},
+						},
+						Name: "Timeable",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 39,
+									Line:   4,
+								},
+								File:   "date.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 38,
+									Line:   4,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 31,
+								Line:   4,
+							},
+							File:   "date.flux",
+							Source: "(t: T) => int",
+							Start: ast.Position{
+								Column: 18,
+								Line:   4,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 23,
+									Line:   4,
+								},
+								File:   "date.flux",
+								Source: "t: T",
+								Start: ast.Position{
+									Column: 19,
+									Line:   4,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 20,
+										Line:   4,
+									},
+									File:   "date.flux",
+									Source: "t",
+									Start: ast.Position{
+										Column: 19,
+										Line:   4,
+									},
+								},
+							},
+							Name: "t",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 23,
+										Line:   4,
+									},
+									File:   "date.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 22,
+										Line:   4,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   4,
+										},
+										File:   "date.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 22,
+											Line:   4,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 31,
+									Line:   4,
+								},
+								File:   "date.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 28,
+									Line:   4,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 31,
+										Line:   4,
+									},
+									File:   "date.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 28,
+										Line:   4,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -134,6 +520,199 @@ var pkgAST = &ast.Package{
 				},
 				Name: "hour",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 47,
+							Line:   5,
+						},
+						File:   "date.flux",
+						Source: "(t: T) => int where T: Timeable",
+						Start: ast.Position{
+							Column: 16,
+							Line:   5,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 47,
+								Line:   5,
+							},
+							File:   "date.flux",
+							Source: "T: Timeable",
+							Start: ast.Position{
+								Column: 36,
+								Line:   5,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 47,
+									Line:   5,
+								},
+								File:   "date.flux",
+								Source: "Timeable",
+								Start: ast.Position{
+									Column: 39,
+									Line:   5,
+								},
+							},
+						},
+						Name: "Timeable",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 37,
+									Line:   5,
+								},
+								File:   "date.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 36,
+									Line:   5,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 29,
+								Line:   5,
+							},
+							File:   "date.flux",
+							Source: "(t: T) => int",
+							Start: ast.Position{
+								Column: 16,
+								Line:   5,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 21,
+									Line:   5,
+								},
+								File:   "date.flux",
+								Source: "t: T",
+								Start: ast.Position{
+									Column: 17,
+									Line:   5,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 18,
+										Line:   5,
+									},
+									File:   "date.flux",
+									Source: "t",
+									Start: ast.Position{
+										Column: 17,
+										Line:   5,
+									},
+								},
+							},
+							Name: "t",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   5,
+									},
+									File:   "date.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 20,
+										Line:   5,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   5,
+										},
+										File:   "date.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 20,
+											Line:   5,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   5,
+								},
+								File:   "date.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 26,
+									Line:   5,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   5,
+									},
+									File:   "date.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 26,
+										Line:   5,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -167,6 +746,199 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "weekDay",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 50,
+							Line:   6,
+						},
+						File:   "date.flux",
+						Source: "(t: T) => int where T: Timeable",
+						Start: ast.Position{
+							Column: 19,
+							Line:   6,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 50,
+								Line:   6,
+							},
+							File:   "date.flux",
+							Source: "T: Timeable",
+							Start: ast.Position{
+								Column: 39,
+								Line:   6,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 50,
+									Line:   6,
+								},
+								File:   "date.flux",
+								Source: "Timeable",
+								Start: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+							},
+						},
+						Name: "Timeable",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   6,
+								},
+								File:   "date.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 39,
+									Line:   6,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   6,
+							},
+							File:   "date.flux",
+							Source: "(t: T) => int",
+							Start: ast.Position{
+								Column: 19,
+								Line:   6,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 24,
+									Line:   6,
+								},
+								File:   "date.flux",
+								Source: "t: T",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+									File:   "date.flux",
+									Source: "t",
+									Start: ast.Position{
+										Column: 20,
+										Line:   6,
+									},
+								},
+							},
+							Name: "t",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 24,
+										Line:   6,
+									},
+									File:   "date.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 23,
+										Line:   6,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 24,
+											Line:   6,
+										},
+										File:   "date.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 23,
+											Line:   6,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   6,
+								},
+								File:   "date.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 29,
+									Line:   6,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   6,
+									},
+									File:   "date.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 29,
+										Line:   6,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -202,6 +974,199 @@ var pkgAST = &ast.Package{
 				},
 				Name: "monthDay",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 51,
+							Line:   7,
+						},
+						File:   "date.flux",
+						Source: "(t: T) => int where T: Timeable",
+						Start: ast.Position{
+							Column: 20,
+							Line:   7,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 51,
+								Line:   7,
+							},
+							File:   "date.flux",
+							Source: "T: Timeable",
+							Start: ast.Position{
+								Column: 40,
+								Line:   7,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 51,
+									Line:   7,
+								},
+								File:   "date.flux",
+								Source: "Timeable",
+								Start: ast.Position{
+									Column: 43,
+									Line:   7,
+								},
+							},
+						},
+						Name: "Timeable",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 41,
+									Line:   7,
+								},
+								File:   "date.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 40,
+									Line:   7,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 33,
+								Line:   7,
+							},
+							File:   "date.flux",
+							Source: "(t: T) => int",
+							Start: ast.Position{
+								Column: 20,
+								Line:   7,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   7,
+								},
+								File:   "date.flux",
+								Source: "t: T",
+								Start: ast.Position{
+									Column: 21,
+									Line:   7,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 22,
+										Line:   7,
+									},
+									File:   "date.flux",
+									Source: "t",
+									Start: ast.Position{
+										Column: 21,
+										Line:   7,
+									},
+								},
+							},
+							Name: "t",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   7,
+									},
+									File:   "date.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 24,
+										Line:   7,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   7,
+										},
+										File:   "date.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 24,
+											Line:   7,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 33,
+									Line:   7,
+								},
+								File:   "date.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 30,
+									Line:   7,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 33,
+										Line:   7,
+									},
+									File:   "date.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 30,
+										Line:   7,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -235,6 +1200,199 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "yearDay",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 50,
+							Line:   8,
+						},
+						File:   "date.flux",
+						Source: "(t: T) => int where T: Timeable",
+						Start: ast.Position{
+							Column: 19,
+							Line:   8,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 50,
+								Line:   8,
+							},
+							File:   "date.flux",
+							Source: "T: Timeable",
+							Start: ast.Position{
+								Column: 39,
+								Line:   8,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 50,
+									Line:   8,
+								},
+								File:   "date.flux",
+								Source: "Timeable",
+								Start: ast.Position{
+									Column: 42,
+									Line:   8,
+								},
+							},
+						},
+						Name: "Timeable",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   8,
+								},
+								File:   "date.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 39,
+									Line:   8,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   8,
+							},
+							File:   "date.flux",
+							Source: "(t: T) => int",
+							Start: ast.Position{
+								Column: 19,
+								Line:   8,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 24,
+									Line:   8,
+								},
+								File:   "date.flux",
+								Source: "t: T",
+								Start: ast.Position{
+									Column: 20,
+									Line:   8,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   8,
+									},
+									File:   "date.flux",
+									Source: "t",
+									Start: ast.Position{
+										Column: 20,
+										Line:   8,
+									},
+								},
+							},
+							Name: "t",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 24,
+										Line:   8,
+									},
+									File:   "date.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 23,
+										Line:   8,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 24,
+											Line:   8,
+										},
+										File:   "date.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 23,
+											Line:   8,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   8,
+								},
+								File:   "date.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 29,
+									Line:   8,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   8,
+									},
+									File:   "date.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 29,
+										Line:   8,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -270,6 +1428,199 @@ var pkgAST = &ast.Package{
 				},
 				Name: "month",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 48,
+							Line:   9,
+						},
+						File:   "date.flux",
+						Source: "(t: T) => int where T: Timeable",
+						Start: ast.Position{
+							Column: 17,
+							Line:   9,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 48,
+								Line:   9,
+							},
+							File:   "date.flux",
+							Source: "T: Timeable",
+							Start: ast.Position{
+								Column: 37,
+								Line:   9,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 48,
+									Line:   9,
+								},
+								File:   "date.flux",
+								Source: "Timeable",
+								Start: ast.Position{
+									Column: 40,
+									Line:   9,
+								},
+							},
+						},
+						Name: "Timeable",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 38,
+									Line:   9,
+								},
+								File:   "date.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 37,
+									Line:   9,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 30,
+								Line:   9,
+							},
+							File:   "date.flux",
+							Source: "(t: T) => int",
+							Start: ast.Position{
+								Column: 17,
+								Line:   9,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   9,
+								},
+								File:   "date.flux",
+								Source: "t: T",
+								Start: ast.Position{
+									Column: 18,
+									Line:   9,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 19,
+										Line:   9,
+									},
+									File:   "date.flux",
+									Source: "t",
+									Start: ast.Position{
+										Column: 18,
+										Line:   9,
+									},
+								},
+							},
+							Name: "t",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 22,
+										Line:   9,
+									},
+									File:   "date.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 21,
+										Line:   9,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 22,
+											Line:   9,
+										},
+										File:   "date.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 21,
+											Line:   9,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 30,
+									Line:   9,
+								},
+								File:   "date.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 27,
+									Line:   9,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 30,
+										Line:   9,
+									},
+									File:   "date.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 27,
+										Line:   9,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -303,6 +1654,199 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "year",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 47,
+							Line:   10,
+						},
+						File:   "date.flux",
+						Source: "(t: T) => int where T: Timeable",
+						Start: ast.Position{
+							Column: 16,
+							Line:   10,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 47,
+								Line:   10,
+							},
+							File:   "date.flux",
+							Source: "T: Timeable",
+							Start: ast.Position{
+								Column: 36,
+								Line:   10,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 47,
+									Line:   10,
+								},
+								File:   "date.flux",
+								Source: "Timeable",
+								Start: ast.Position{
+									Column: 39,
+									Line:   10,
+								},
+							},
+						},
+						Name: "Timeable",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 37,
+									Line:   10,
+								},
+								File:   "date.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 36,
+									Line:   10,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 29,
+								Line:   10,
+							},
+							File:   "date.flux",
+							Source: "(t: T) => int",
+							Start: ast.Position{
+								Column: 16,
+								Line:   10,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 21,
+									Line:   10,
+								},
+								File:   "date.flux",
+								Source: "t: T",
+								Start: ast.Position{
+									Column: 17,
+									Line:   10,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 18,
+										Line:   10,
+									},
+									File:   "date.flux",
+									Source: "t",
+									Start: ast.Position{
+										Column: 17,
+										Line:   10,
+									},
+								},
+							},
+							Name: "t",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   10,
+									},
+									File:   "date.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 20,
+										Line:   10,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   10,
+										},
+										File:   "date.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 20,
+											Line:   10,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   10,
+								},
+								File:   "date.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 26,
+									Line:   10,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   10,
+									},
+									File:   "date.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 26,
+										Line:   10,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -338,6 +1882,199 @@ var pkgAST = &ast.Package{
 				},
 				Name: "week",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 47,
+							Line:   11,
+						},
+						File:   "date.flux",
+						Source: "(t: T) => int where T: Timeable",
+						Start: ast.Position{
+							Column: 16,
+							Line:   11,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 47,
+								Line:   11,
+							},
+							File:   "date.flux",
+							Source: "T: Timeable",
+							Start: ast.Position{
+								Column: 36,
+								Line:   11,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 47,
+									Line:   11,
+								},
+								File:   "date.flux",
+								Source: "Timeable",
+								Start: ast.Position{
+									Column: 39,
+									Line:   11,
+								},
+							},
+						},
+						Name: "Timeable",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 37,
+									Line:   11,
+								},
+								File:   "date.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 36,
+									Line:   11,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 29,
+								Line:   11,
+							},
+							File:   "date.flux",
+							Source: "(t: T) => int",
+							Start: ast.Position{
+								Column: 16,
+								Line:   11,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 21,
+									Line:   11,
+								},
+								File:   "date.flux",
+								Source: "t: T",
+								Start: ast.Position{
+									Column: 17,
+									Line:   11,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 18,
+										Line:   11,
+									},
+									File:   "date.flux",
+									Source: "t",
+									Start: ast.Position{
+										Column: 17,
+										Line:   11,
+									},
+								},
+							},
+							Name: "t",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   11,
+									},
+									File:   "date.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 20,
+										Line:   11,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   11,
+										},
+										File:   "date.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 20,
+											Line:   11,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   11,
+								},
+								File:   "date.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 26,
+									Line:   11,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   11,
+									},
+									File:   "date.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 26,
+										Line:   11,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -371,6 +2108,199 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "quarter",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 50,
+							Line:   12,
+						},
+						File:   "date.flux",
+						Source: "(t: T) => int where T: Timeable",
+						Start: ast.Position{
+							Column: 19,
+							Line:   12,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 50,
+								Line:   12,
+							},
+							File:   "date.flux",
+							Source: "T: Timeable",
+							Start: ast.Position{
+								Column: 39,
+								Line:   12,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 50,
+									Line:   12,
+								},
+								File:   "date.flux",
+								Source: "Timeable",
+								Start: ast.Position{
+									Column: 42,
+									Line:   12,
+								},
+							},
+						},
+						Name: "Timeable",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   12,
+								},
+								File:   "date.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 39,
+									Line:   12,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   12,
+							},
+							File:   "date.flux",
+							Source: "(t: T) => int",
+							Start: ast.Position{
+								Column: 19,
+								Line:   12,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 24,
+									Line:   12,
+								},
+								File:   "date.flux",
+								Source: "t: T",
+								Start: ast.Position{
+									Column: 20,
+									Line:   12,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   12,
+									},
+									File:   "date.flux",
+									Source: "t",
+									Start: ast.Position{
+										Column: 20,
+										Line:   12,
+									},
+								},
+							},
+							Name: "t",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 24,
+										Line:   12,
+									},
+									File:   "date.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 23,
+										Line:   12,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 24,
+											Line:   12,
+										},
+										File:   "date.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 23,
+											Line:   12,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   12,
+								},
+								File:   "date.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 29,
+									Line:   12,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   12,
+									},
+									File:   "date.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 29,
+										Line:   12,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -406,6 +2336,199 @@ var pkgAST = &ast.Package{
 				},
 				Name: "millisecond",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 54,
+							Line:   13,
+						},
+						File:   "date.flux",
+						Source: "(t: T) => int where T: Timeable",
+						Start: ast.Position{
+							Column: 23,
+							Line:   13,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 54,
+								Line:   13,
+							},
+							File:   "date.flux",
+							Source: "T: Timeable",
+							Start: ast.Position{
+								Column: 43,
+								Line:   13,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 54,
+									Line:   13,
+								},
+								File:   "date.flux",
+								Source: "Timeable",
+								Start: ast.Position{
+									Column: 46,
+									Line:   13,
+								},
+							},
+						},
+						Name: "Timeable",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 44,
+									Line:   13,
+								},
+								File:   "date.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 43,
+									Line:   13,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 36,
+								Line:   13,
+							},
+							File:   "date.flux",
+							Source: "(t: T) => int",
+							Start: ast.Position{
+								Column: 23,
+								Line:   13,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 28,
+									Line:   13,
+								},
+								File:   "date.flux",
+								Source: "t: T",
+								Start: ast.Position{
+									Column: 24,
+									Line:   13,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   13,
+									},
+									File:   "date.flux",
+									Source: "t",
+									Start: ast.Position{
+										Column: 24,
+										Line:   13,
+									},
+								},
+							},
+							Name: "t",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   13,
+									},
+									File:   "date.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 27,
+										Line:   13,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   13,
+										},
+										File:   "date.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 27,
+											Line:   13,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   13,
+								},
+								File:   "date.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 33,
+									Line:   13,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 36,
+										Line:   13,
+									},
+									File:   "date.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 33,
+										Line:   13,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -439,6 +2562,199 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "microsecond",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 54,
+							Line:   14,
+						},
+						File:   "date.flux",
+						Source: "(t: T) => int where T: Timeable",
+						Start: ast.Position{
+							Column: 23,
+							Line:   14,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 54,
+								Line:   14,
+							},
+							File:   "date.flux",
+							Source: "T: Timeable",
+							Start: ast.Position{
+								Column: 43,
+								Line:   14,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 54,
+									Line:   14,
+								},
+								File:   "date.flux",
+								Source: "Timeable",
+								Start: ast.Position{
+									Column: 46,
+									Line:   14,
+								},
+							},
+						},
+						Name: "Timeable",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 44,
+									Line:   14,
+								},
+								File:   "date.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 43,
+									Line:   14,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 36,
+								Line:   14,
+							},
+							File:   "date.flux",
+							Source: "(t: T) => int",
+							Start: ast.Position{
+								Column: 23,
+								Line:   14,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 28,
+									Line:   14,
+								},
+								File:   "date.flux",
+								Source: "t: T",
+								Start: ast.Position{
+									Column: 24,
+									Line:   14,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   14,
+									},
+									File:   "date.flux",
+									Source: "t",
+									Start: ast.Position{
+										Column: 24,
+										Line:   14,
+									},
+								},
+							},
+							Name: "t",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   14,
+									},
+									File:   "date.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 27,
+										Line:   14,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   14,
+										},
+										File:   "date.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 27,
+											Line:   14,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   14,
+								},
+								File:   "date.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 33,
+									Line:   14,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 36,
+										Line:   14,
+									},
+									File:   "date.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 33,
+										Line:   14,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -474,6 +2790,199 @@ var pkgAST = &ast.Package{
 				},
 				Name: "nanosecond",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 53,
+							Line:   15,
+						},
+						File:   "date.flux",
+						Source: "(t: T) => int where T: Timeable",
+						Start: ast.Position{
+							Column: 22,
+							Line:   15,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 53,
+								Line:   15,
+							},
+							File:   "date.flux",
+							Source: "T: Timeable",
+							Start: ast.Position{
+								Column: 42,
+								Line:   15,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 53,
+									Line:   15,
+								},
+								File:   "date.flux",
+								Source: "Timeable",
+								Start: ast.Position{
+									Column: 45,
+									Line:   15,
+								},
+							},
+						},
+						Name: "Timeable",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 43,
+									Line:   15,
+								},
+								File:   "date.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 42,
+									Line:   15,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 35,
+								Line:   15,
+							},
+							File:   "date.flux",
+							Source: "(t: T) => int",
+							Start: ast.Position{
+								Column: 22,
+								Line:   15,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 27,
+									Line:   15,
+								},
+								File:   "date.flux",
+								Source: "t: T",
+								Start: ast.Position{
+									Column: 23,
+									Line:   15,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 24,
+										Line:   15,
+									},
+									File:   "date.flux",
+									Source: "t",
+									Start: ast.Position{
+										Column: 23,
+										Line:   15,
+									},
+								},
+							},
+							Name: "t",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 27,
+										Line:   15,
+									},
+									File:   "date.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 26,
+										Line:   15,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 27,
+											Line:   15,
+										},
+										File:   "date.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 26,
+											Line:   15,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 35,
+									Line:   15,
+								},
+								File:   "date.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 32,
+									Line:   15,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 35,
+										Line:   15,
+									},
+									File:   "date.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 32,
+										Line:   15,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -507,6 +3016,199 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "truncate",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 51,
+							Line:   16,
+						},
+						File:   "date.flux",
+						Source: "(t: T) => int where T: Timeable",
+						Start: ast.Position{
+							Column: 20,
+							Line:   16,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 51,
+								Line:   16,
+							},
+							File:   "date.flux",
+							Source: "T: Timeable",
+							Start: ast.Position{
+								Column: 40,
+								Line:   16,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 51,
+									Line:   16,
+								},
+								File:   "date.flux",
+								Source: "Timeable",
+								Start: ast.Position{
+									Column: 43,
+									Line:   16,
+								},
+							},
+						},
+						Name: "Timeable",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 41,
+									Line:   16,
+								},
+								File:   "date.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 40,
+									Line:   16,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 33,
+								Line:   16,
+							},
+							File:   "date.flux",
+							Source: "(t: T) => int",
+							Start: ast.Position{
+								Column: 20,
+								Line:   16,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   16,
+								},
+								File:   "date.flux",
+								Source: "t: T",
+								Start: ast.Position{
+									Column: 21,
+									Line:   16,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 22,
+										Line:   16,
+									},
+									File:   "date.flux",
+									Source: "t",
+									Start: ast.Position{
+										Column: 21,
+										Line:   16,
+									},
+								},
+							},
+							Name: "t",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   16,
+									},
+									File:   "date.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 24,
+										Line:   16,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   16,
+										},
+										File:   "date.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 24,
+											Line:   16,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 33,
+									Line:   16,
+								},
+								File:   "date.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 30,
+									Line:   16,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 33,
+										Line:   16,
+									},
+									File:   "date.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 30,
+										Line:   16,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{

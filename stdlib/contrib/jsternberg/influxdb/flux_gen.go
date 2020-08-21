@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   77,
 				},
 				File:   "influxdb.flux",
-				Source: "package influxdb\n\nimport \"influxdata/influxdb\"\nimport \"influxdata/influxdb/v1\"\n\n// _mask will hide the given columns from downstream\n// transformations. It will not perform any copies and\n// it will not regroup. This should only be used when\n// the user knows it can't cause a key conflict.\nbuiltin _mask\n\n// from will retrieve data from a bucket between the start and stop time.\n// This version of from is the equivalent of doing from |> range\n// as a single call.\nfrom = (bucket, start, stop=now(), org=\"\", host=\"\", token=\"\") => {\n    source =\n        if org != \"\" and host != \"\" and token != \"\" then\n            influxdb.from(bucket, org, host, token)\n        else if org != \"\" and token != \"\" then\n            influxdb.from(bucket, org, token)\n        else if org != \"\" and host != \"\" then\n            influxdb.from(bucket, org, host)\n        else if host != \"\" and token != \"\" then\n            influxdb.from(bucket, host, token)\n        else if org != \"\" then\n            influxdb.from(bucket, org)\n        else if host != \"\" then\n            influxdb.from(bucket, host)\n        else if token != \"\" then\n            influxdb.from(bucket, token)\n        else\n            influxdb.from(bucket)\n\n    return source |> range(start, stop)\n}\n\n// _from allows us to reference the from function from\n// within the select call which has a function parameter\n// with the same name.\n_from = from\n\n// select will select data from an influxdb instance within\n// the range between `start` and `stop` from the bucket specified by\n// the `from` parameter. It will select the specific measurement\n// and it will only include fields that are included in the list of\n// `fields`.\n//\n// In order to filter by tags, the `where` function can be used to further\n// limit the amount of data selected.\nselect = (from, start, stop=now(), m, fields=[], org=\"\", host=\"\", token=\"\", where=(r) => true) => {\n    bucket = from\n    tables = _from(bucket, start, stop, org, host, token)\n        |> filter(fn: (r) => r._measurement == m)\n        |> filter(fn: where)\n\n    nfields = length(arr: fields)\n    fn =\n        if nfields == 0 then\n            (r) => true\n        else if nfields == 1 then\n            (r) => r._field == fields[0]\n        else if nfields == 2 then\n            (r) => r._field == fields[0] or r._field == fields[1]\n        else if nfields == 3 then\n            (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\n        else if nfields == 4 then\n            (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\n        else if nfields == 5 then\n            (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n        else\n            (r) => contains(value: r._field, set: fields)\n\n    return tables\n        |> filter(fn)\n        |> v1.fieldsAsCols()\n        |> _mask(columns: [\"_measurement\", \"_start\", \"_stop\"])\n}",
+				Source: "package influxdb\n\nimport \"influxdata/influxdb\"\nimport \"influxdata/influxdb/v1\"\n\n// _mask will hide the given columns from downstream\n// transformations. It will not perform any copies and\n// it will not regroup. This should only be used when\n// the user knows it can't cause a key conflict.\nbuiltin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Record\n\n// from will retrieve data from a bucket between the start and stop time.\n// This version of from is the equivalent of doing from |> range\n// as a single call.\nfrom = (bucket, start, stop=now(), org=\"\", host=\"\", token=\"\") => {\n    source =\n        if org != \"\" and host != \"\" and token != \"\" then\n            influxdb.from(bucket, org, host, token)\n        else if org != \"\" and token != \"\" then\n            influxdb.from(bucket, org, token)\n        else if org != \"\" and host != \"\" then\n            influxdb.from(bucket, org, host)\n        else if host != \"\" and token != \"\" then\n            influxdb.from(bucket, host, token)\n        else if org != \"\" then\n            influxdb.from(bucket, org)\n        else if host != \"\" then\n            influxdb.from(bucket, host)\n        else if token != \"\" then\n            influxdb.from(bucket, token)\n        else\n            influxdb.from(bucket)\n\n    return source |> range(start, stop)\n}\n\n// _from allows us to reference the from function from\n// within the select call which has a function parameter\n// with the same name.\n_from = from\n\n// select will select data from an influxdb instance within\n// the range between `start` and `stop` from the bucket specified by\n// the `from` parameter. It will select the specific measurement\n// and it will only include fields that are included in the list of\n// `fields`.\n//\n// In order to filter by tags, the `where` function can be used to further\n// limit the amount of data selected.\nselect = (from, start, stop=now(), m, fields=[], org=\"\", host=\"\", token=\"\", where=(r) => true) => {\n    bucket = from\n    tables = _from(bucket, start, stop, org, host, token)\n        |> filter(fn: (r) => r._measurement == m)\n        |> filter(fn: where)\n\n    nfields = length(arr: fields)\n    fn =\n        if nfields == 0 then\n            (r) => true\n        else if nfields == 1 then\n            (r) => r._field == fields[0]\n        else if nfields == 2 then\n            (r) => r._field == fields[0] or r._field == fields[1]\n        else if nfields == 3 then\n            (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\n        else if nfields == 4 then\n            (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\n        else if nfields == 5 then\n            (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n        else\n            (r) => contains(value: r._field, set: fields)\n\n    return tables\n        |> filter(fn)\n        |> v1.fieldsAsCols()\n        |> _mask(columns: [\"_measurement\", \"_start\", \"_stop\"])\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -65,6 +65,372 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "_mask",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 85,
+							Line:   10,
+						},
+						File:   "influxdb.flux",
+						Source: "(<-tables: [A], columns: [string]) => [B] where A: Record, B: Record",
+						Start: ast.Position{
+							Column: 17,
+							Line:   10,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 74,
+								Line:   10,
+							},
+							File:   "influxdb.flux",
+							Source: "A: Record",
+							Start: ast.Position{
+								Column: 65,
+								Line:   10,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 74,
+									Line:   10,
+								},
+								File:   "influxdb.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 68,
+									Line:   10,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 66,
+									Line:   10,
+								},
+								File:   "influxdb.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 65,
+									Line:   10,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}, &ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 85,
+								Line:   10,
+							},
+							File:   "influxdb.flux",
+							Source: "B: Record",
+							Start: ast.Position{
+								Column: 76,
+								Line:   10,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 85,
+									Line:   10,
+								},
+								File:   "influxdb.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 79,
+									Line:   10,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 77,
+									Line:   10,
+								},
+								File:   "influxdb.flux",
+								Source: "B",
+								Start: ast.Position{
+									Column: 76,
+									Line:   10,
+								},
+							},
+						},
+						Name: "B",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 58,
+								Line:   10,
+							},
+							File:   "influxdb.flux",
+							Source: "(<-tables: [A], columns: [string]) => [B]",
+							Start: ast.Position{
+								Column: 17,
+								Line:   10,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 31,
+									Line:   10,
+								},
+								File:   "influxdb.flux",
+								Source: "<-tables: [A]",
+								Start: ast.Position{
+									Column: 18,
+									Line:   10,
+								},
+							},
+						},
+						Kind: "Pipe",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   10,
+									},
+									File:   "influxdb.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 20,
+										Line:   10,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 31,
+										Line:   10,
+									},
+									File:   "influxdb.flux",
+									Source: "[A]",
+									Start: ast.Position{
+										Column: 28,
+										Line:   10,
+									},
+								},
+							},
+							ElementType: &ast.TvarType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 30,
+											Line:   10,
+										},
+										File:   "influxdb.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 29,
+											Line:   10,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 30,
+												Line:   10,
+											},
+											File:   "influxdb.flux",
+											Source: "A",
+											Start: ast.Position{
+												Column: 29,
+												Line:   10,
+											},
+										},
+									},
+									Name: "A",
+								},
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 50,
+									Line:   10,
+								},
+								File:   "influxdb.flux",
+								Source: "columns: [string]",
+								Start: ast.Position{
+									Column: 33,
+									Line:   10,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   10,
+									},
+									File:   "influxdb.flux",
+									Source: "columns",
+									Start: ast.Position{
+										Column: 33,
+										Line:   10,
+									},
+								},
+							},
+							Name: "columns",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 50,
+										Line:   10,
+									},
+									File:   "influxdb.flux",
+									Source: "[string]",
+									Start: ast.Position{
+										Column: 42,
+										Line:   10,
+									},
+								},
+							},
+							ElementType: &ast.NamedType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 49,
+											Line:   10,
+										},
+										File:   "influxdb.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 43,
+											Line:   10,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   10,
+											},
+											File:   "influxdb.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 43,
+												Line:   10,
+											},
+										},
+									},
+									Name: "string",
+								},
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 58,
+									Line:   10,
+								},
+								File:   "influxdb.flux",
+								Source: "[B]",
+								Start: ast.Position{
+									Column: 55,
+									Line:   10,
+								},
+							},
+						},
+						ElementType: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 57,
+										Line:   10,
+									},
+									File:   "influxdb.flux",
+									Source: "B",
+									Start: ast.Position{
+										Column: 56,
+										Line:   10,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 57,
+											Line:   10,
+										},
+										File:   "influxdb.flux",
+										Source: "B",
+										Start: ast.Position{
+											Column: 56,
+											Line:   10,
+										},
+									},
+								},
+								Name: "B",
+							},
+						},
+					},
+				},
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{

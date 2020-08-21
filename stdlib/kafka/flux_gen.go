@@ -66,6 +66,844 @@ var pkgAST = &ast.Package{
 				},
 				Name: "to",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 210,
+							Line:   3,
+						},
+						File:   "kafka.flux",
+						Source: "(<-tables: [A], brokers: [string], topic: string, ?balancer: string, ?name: string, ?nameColumn: string, ?timeColumn: string, ?tagColumns: [string], ?valueColumns: [string]) => [A] where A: Record",
+						Start: ast.Position{
+							Column: 14,
+							Line:   3,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 210,
+								Line:   3,
+							},
+							File:   "kafka.flux",
+							Source: "A: Record",
+							Start: ast.Position{
+								Column: 201,
+								Line:   3,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 210,
+									Line:   3,
+								},
+								File:   "kafka.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 204,
+									Line:   3,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 202,
+									Line:   3,
+								},
+								File:   "kafka.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 201,
+									Line:   3,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 194,
+								Line:   3,
+							},
+							File:   "kafka.flux",
+							Source: "(<-tables: [A], brokers: [string], topic: string, ?balancer: string, ?name: string, ?nameColumn: string, ?timeColumn: string, ?tagColumns: [string], ?valueColumns: [string]) => [A]",
+							Start: ast.Position{
+								Column: 14,
+								Line:   3,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 28,
+									Line:   3,
+								},
+								File:   "kafka.flux",
+								Source: "<-tables: [A]",
+								Start: ast.Position{
+									Column: 15,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Pipe",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 23,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 17,
+										Line:   3,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "[A]",
+									Start: ast.Position{
+										Column: 25,
+										Line:   3,
+									},
+								},
+							},
+							ElementType: &ast.TvarType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 27,
+											Line:   3,
+										},
+										File:   "kafka.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 26,
+											Line:   3,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 27,
+												Line:   3,
+											},
+											File:   "kafka.flux",
+											Source: "A",
+											Start: ast.Position{
+												Column: 26,
+												Line:   3,
+											},
+										},
+									},
+									Name: "A",
+								},
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 47,
+									Line:   3,
+								},
+								File:   "kafka.flux",
+								Source: "brokers: [string]",
+								Start: ast.Position{
+									Column: 30,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 37,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "brokers",
+									Start: ast.Position{
+										Column: 30,
+										Line:   3,
+									},
+								},
+							},
+							Name: "brokers",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 47,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "[string]",
+									Start: ast.Position{
+										Column: 39,
+										Line:   3,
+									},
+								},
+							},
+							ElementType: &ast.NamedType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   3,
+										},
+										File:   "kafka.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 40,
+											Line:   3,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 46,
+												Line:   3,
+											},
+											File:   "kafka.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 40,
+												Line:   3,
+											},
+										},
+									},
+									Name: "string",
+								},
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 62,
+									Line:   3,
+								},
+								File:   "kafka.flux",
+								Source: "topic: string",
+								Start: ast.Position{
+									Column: 49,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 54,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "topic",
+									Start: ast.Position{
+										Column: 49,
+										Line:   3,
+									},
+								},
+							},
+							Name: "topic",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 56,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 62,
+											Line:   3,
+										},
+										File:   "kafka.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 56,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 81,
+									Line:   3,
+								},
+								File:   "kafka.flux",
+								Source: "?balancer: string",
+								Start: ast.Position{
+									Column: 64,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 73,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "balancer",
+									Start: ast.Position{
+										Column: 65,
+										Line:   3,
+									},
+								},
+							},
+							Name: "balancer",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 81,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 75,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   3,
+										},
+										File:   "kafka.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 75,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 96,
+									Line:   3,
+								},
+								File:   "kafka.flux",
+								Source: "?name: string",
+								Start: ast.Position{
+									Column: 83,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 88,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "name",
+									Start: ast.Position{
+										Column: 84,
+										Line:   3,
+									},
+								},
+							},
+							Name: "name",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 96,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 90,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 96,
+											Line:   3,
+										},
+										File:   "kafka.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 90,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 117,
+									Line:   3,
+								},
+								File:   "kafka.flux",
+								Source: "?nameColumn: string",
+								Start: ast.Position{
+									Column: 98,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 109,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "nameColumn",
+									Start: ast.Position{
+										Column: 99,
+										Line:   3,
+									},
+								},
+							},
+							Name: "nameColumn",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 117,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 111,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 117,
+											Line:   3,
+										},
+										File:   "kafka.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 111,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 138,
+									Line:   3,
+								},
+								File:   "kafka.flux",
+								Source: "?timeColumn: string",
+								Start: ast.Position{
+									Column: 119,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 130,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "timeColumn",
+									Start: ast.Position{
+										Column: 120,
+										Line:   3,
+									},
+								},
+							},
+							Name: "timeColumn",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 138,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 132,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 138,
+											Line:   3,
+										},
+										File:   "kafka.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 132,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 161,
+									Line:   3,
+								},
+								File:   "kafka.flux",
+								Source: "?tagColumns: [string]",
+								Start: ast.Position{
+									Column: 140,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 151,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "tagColumns",
+									Start: ast.Position{
+										Column: 141,
+										Line:   3,
+									},
+								},
+							},
+							Name: "tagColumns",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 161,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "[string]",
+									Start: ast.Position{
+										Column: 153,
+										Line:   3,
+									},
+								},
+							},
+							ElementType: &ast.NamedType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 160,
+											Line:   3,
+										},
+										File:   "kafka.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 154,
+											Line:   3,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 160,
+												Line:   3,
+											},
+											File:   "kafka.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 154,
+												Line:   3,
+											},
+										},
+									},
+									Name: "string",
+								},
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 186,
+									Line:   3,
+								},
+								File:   "kafka.flux",
+								Source: "?valueColumns: [string]",
+								Start: ast.Position{
+									Column: 163,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 176,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "valueColumns",
+									Start: ast.Position{
+										Column: 164,
+										Line:   3,
+									},
+								},
+							},
+							Name: "valueColumns",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 186,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "[string]",
+									Start: ast.Position{
+										Column: 178,
+										Line:   3,
+									},
+								},
+							},
+							ElementType: &ast.NamedType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 185,
+											Line:   3,
+										},
+										File:   "kafka.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 179,
+											Line:   3,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 185,
+												Line:   3,
+											},
+											File:   "kafka.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 179,
+												Line:   3,
+											},
+										},
+									},
+									Name: "string",
+								},
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 194,
+									Line:   3,
+								},
+								File:   "kafka.flux",
+								Source: "[A]",
+								Start: ast.Position{
+									Column: 191,
+									Line:   3,
+								},
+							},
+						},
+						ElementType: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 193,
+										Line:   3,
+									},
+									File:   "kafka.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 192,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 193,
+											Line:   3,
+										},
+										File:   "kafka.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 192,
+											Line:   3,
+										},
+									},
+								},
+								Name: "A",
+							},
+						},
+					},
+				},
+			},
 		}},
 		Imports:  nil,
 		Metadata: "parser-type=rust",

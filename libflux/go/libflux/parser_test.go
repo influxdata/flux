@@ -246,10 +246,6 @@ re =~ /foo/
 re !~ /foo/
 `,
 		},
-		{
-			name:     "agg_test",
-			fluxFile: ``,
-		},
 	}
 	for _, tc := range testCases {
 		tc := tc

@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   55,
 				},
 				File:   "v1.flux",
-				Source: "package v1\n\n// Json parses an InfluxDB 1.x json result into a table stream.\nbuiltin json\n\n// Databases returns the list of available databases, it has no parameters.\nbuiltin databases\n\n// fieldsAsCols is a special application of pivot that will automatically align fields within each measurement that have the same timestamp.\nfieldsAsCols = (tables=<-) =>\n    tables\n        |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n\n// TagValues returns the unique values for a given tag.\n// The return value is always a single table with a single column \"_value\".\ntagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> keep(columns: [tag])\n      |> group()\n      |> distinct(column: tag)\n\n// MeasurementTagValues returns a single table with a single column \"_value\" that contains the\n// The return value is always a single table with a single column \"_value\".\nmeasurementTagValues = (bucket, measurement, tag) =>\n    tagValues(bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement)\n\n// TagKeys returns the list of tag keys for all series that match the predicate.\n// The return value is always a single table with a single column \"_value\".\ntagKeys = (bucket, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()\n        |> keep(columns: [\"_value\"])\n        |> distinct()\n\n// MeasurementTagKeys returns the list of tag keys for a specific measurement.\nmeasurementTagKeys = (bucket, measurement) =>\n    tagKeys(bucket: bucket, predicate: (r) => r._measurement == measurement)\n\n// FieldKeys is a special application of tagValues that returns field keys in a given bucket.\n// The return value is always a single table with a single column, \"_value\".\nfieldKeys = (bucket, predicate=(r) => true, start=-30d) =>\n    tagValues(bucket: bucket, tag: \"_field\", predicate: predicate, start: start)\n\n// MeasurementFieldKeys returns field keys in a given measurement.\n// The return value is always a single table with a single column, \"_value\".\nmeasurementFieldKeys = (bucket, measurement, start=-30d) =>\n    fieldKeys(bucket: bucket, predicate: (r) => r._measurement == measurement, start: start)\n\n// Measurements returns the list of measurements in a specific bucket.\nmeasurements = (bucket) =>\n    tagValues(bucket: bucket, tag: \"_measurement\")",
+				Source: "package v1\n\n// Json parses an InfluxDB 1.x json result into a table stream.\nbuiltin json : (?json: string, ?file: string) => [A] where A: Record\n\n// Databases returns the list of available databases, it has no parameters.\nbuiltin databases : (?org: string, ?orgID: string, ?host: string, ?token: string) => [{organizationID: string , databaseName: string , retentionPolicy: string , retentionPeriod: int , default: bool , bucketID: string}]\n\n// fieldsAsCols is a special application of pivot that will automatically align fields within each measurement that have the same timestamp.\nfieldsAsCols = (tables=<-) =>\n    tables\n        |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n\n// TagValues returns the unique values for a given tag.\n// The return value is always a single table with a single column \"_value\".\ntagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> keep(columns: [tag])\n      |> group()\n      |> distinct(column: tag)\n\n// MeasurementTagValues returns a single table with a single column \"_value\" that contains the\n// The return value is always a single table with a single column \"_value\".\nmeasurementTagValues = (bucket, measurement, tag) =>\n    tagValues(bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement)\n\n// TagKeys returns the list of tag keys for all series that match the predicate.\n// The return value is always a single table with a single column \"_value\".\ntagKeys = (bucket, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()\n        |> keep(columns: [\"_value\"])\n        |> distinct()\n\n// MeasurementTagKeys returns the list of tag keys for a specific measurement.\nmeasurementTagKeys = (bucket, measurement) =>\n    tagKeys(bucket: bucket, predicate: (r) => r._measurement == measurement)\n\n// FieldKeys is a special application of tagValues that returns field keys in a given bucket.\n// The return value is always a single table with a single column, \"_value\".\nfieldKeys = (bucket, predicate=(r) => true, start=-30d) =>\n    tagValues(bucket: bucket, tag: \"_field\", predicate: predicate, start: start)\n\n// MeasurementFieldKeys returns field keys in a given measurement.\n// The return value is always a single table with a single column, \"_value\".\nmeasurementFieldKeys = (bucket, measurement, start=-30d) =>\n    fieldKeys(bucket: bucket, predicate: (r) => r._measurement == measurement, start: start)\n\n// Measurements returns the list of measurements in a specific bucket.\nmeasurements = (bucket) =>\n    tagValues(bucket: bucket, tag: \"_measurement\")",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -66,6 +66,286 @@ var pkgAST = &ast.Package{
 				},
 				Name: "json",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 69,
+							Line:   4,
+						},
+						File:   "v1.flux",
+						Source: "(?json: string, ?file: string) => [A] where A: Record",
+						Start: ast.Position{
+							Column: 16,
+							Line:   4,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 69,
+								Line:   4,
+							},
+							File:   "v1.flux",
+							Source: "A: Record",
+							Start: ast.Position{
+								Column: 60,
+								Line:   4,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 69,
+									Line:   4,
+								},
+								File:   "v1.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 63,
+									Line:   4,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 61,
+									Line:   4,
+								},
+								File:   "v1.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 60,
+									Line:   4,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 53,
+								Line:   4,
+							},
+							File:   "v1.flux",
+							Source: "(?json: string, ?file: string) => [A]",
+							Start: ast.Position{
+								Column: 16,
+								Line:   4,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 30,
+									Line:   4,
+								},
+								File:   "v1.flux",
+								Source: "?json: string",
+								Start: ast.Position{
+									Column: 17,
+									Line:   4,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 22,
+										Line:   4,
+									},
+									File:   "v1.flux",
+									Source: "json",
+									Start: ast.Position{
+										Column: 18,
+										Line:   4,
+									},
+								},
+							},
+							Name: "json",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 30,
+										Line:   4,
+									},
+									File:   "v1.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 24,
+										Line:   4,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 30,
+											Line:   4,
+										},
+										File:   "v1.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 24,
+											Line:   4,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 45,
+									Line:   4,
+								},
+								File:   "v1.flux",
+								Source: "?file: string",
+								Start: ast.Position{
+									Column: 32,
+									Line:   4,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 37,
+										Line:   4,
+									},
+									File:   "v1.flux",
+									Source: "file",
+									Start: ast.Position{
+										Column: 33,
+										Line:   4,
+									},
+								},
+							},
+							Name: "file",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 45,
+										Line:   4,
+									},
+									File:   "v1.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 39,
+										Line:   4,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   4,
+										},
+										File:   "v1.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 39,
+											Line:   4,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 53,
+									Line:   4,
+								},
+								File:   "v1.flux",
+								Source: "[A]",
+								Start: ast.Position{
+									Column: 50,
+									Line:   4,
+								},
+							},
+						},
+						ElementType: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 52,
+										Line:   4,
+									},
+									File:   "v1.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 51,
+										Line:   4,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 52,
+											Line:   4,
+										},
+										File:   "v1.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 51,
+											Line:   4,
+										},
+									},
+								},
+								Name: "A",
+							},
+						},
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -99,6 +379,772 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "databases",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 219,
+							Line:   7,
+						},
+						File:   "v1.flux",
+						Source: "(?org: string, ?orgID: string, ?host: string, ?token: string) => [{organizationID: string , databaseName: string , retentionPolicy: string , retentionPeriod: int , default: bool , bucketID: string}]",
+						Start: ast.Position{
+							Column: 21,
+							Line:   7,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 219,
+								Line:   7,
+							},
+							File:   "v1.flux",
+							Source: "(?org: string, ?orgID: string, ?host: string, ?token: string) => [{organizationID: string , databaseName: string , retentionPolicy: string , retentionPeriod: int , default: bool , bucketID: string}]",
+							Start: ast.Position{
+								Column: 21,
+								Line:   7,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 34,
+									Line:   7,
+								},
+								File:   "v1.flux",
+								Source: "?org: string",
+								Start: ast.Position{
+									Column: 22,
+									Line:   7,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   7,
+									},
+									File:   "v1.flux",
+									Source: "org",
+									Start: ast.Position{
+										Column: 23,
+										Line:   7,
+									},
+								},
+							},
+							Name: "org",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 34,
+										Line:   7,
+									},
+									File:   "v1.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 28,
+										Line:   7,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 34,
+											Line:   7,
+										},
+										File:   "v1.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 28,
+											Line:   7,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 50,
+									Line:   7,
+								},
+								File:   "v1.flux",
+								Source: "?orgID: string",
+								Start: ast.Position{
+									Column: 36,
+									Line:   7,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   7,
+									},
+									File:   "v1.flux",
+									Source: "orgID",
+									Start: ast.Position{
+										Column: 37,
+										Line:   7,
+									},
+								},
+							},
+							Name: "orgID",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 50,
+										Line:   7,
+									},
+									File:   "v1.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 44,
+										Line:   7,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 50,
+											Line:   7,
+										},
+										File:   "v1.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 44,
+											Line:   7,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 65,
+									Line:   7,
+								},
+								File:   "v1.flux",
+								Source: "?host: string",
+								Start: ast.Position{
+									Column: 52,
+									Line:   7,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 57,
+										Line:   7,
+									},
+									File:   "v1.flux",
+									Source: "host",
+									Start: ast.Position{
+										Column: 53,
+										Line:   7,
+									},
+								},
+							},
+							Name: "host",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 65,
+										Line:   7,
+									},
+									File:   "v1.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 59,
+										Line:   7,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 65,
+											Line:   7,
+										},
+										File:   "v1.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 59,
+											Line:   7,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 81,
+									Line:   7,
+								},
+								File:   "v1.flux",
+								Source: "?token: string",
+								Start: ast.Position{
+									Column: 67,
+									Line:   7,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 73,
+										Line:   7,
+									},
+									File:   "v1.flux",
+									Source: "token",
+									Start: ast.Position{
+										Column: 68,
+										Line:   7,
+									},
+								},
+							},
+							Name: "token",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 81,
+										Line:   7,
+									},
+									File:   "v1.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 75,
+										Line:   7,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   7,
+										},
+										File:   "v1.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 75,
+											Line:   7,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 219,
+									Line:   7,
+								},
+								File:   "v1.flux",
+								Source: "[{organizationID: string , databaseName: string , retentionPolicy: string , retentionPeriod: int , default: bool , bucketID: string}]",
+								Start: ast.Position{
+									Column: 86,
+									Line:   7,
+								},
+							},
+						},
+						ElementType: &ast.RecordType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 218,
+										Line:   7,
+									},
+									File:   "v1.flux",
+									Source: "{organizationID: string , databaseName: string , retentionPolicy: string , retentionPeriod: int , default: bool , bucketID: string}",
+									Start: ast.Position{
+										Column: 87,
+										Line:   7,
+									},
+								},
+							},
+							Properties: []*ast.PropertyType{&ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 110,
+											Line:   7,
+										},
+										File:   "v1.flux",
+										Source: "organizationID: string",
+										Start: ast.Position{
+											Column: 88,
+											Line:   7,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 102,
+												Line:   7,
+											},
+											File:   "v1.flux",
+											Source: "organizationID",
+											Start: ast.Position{
+												Column: 88,
+												Line:   7,
+											},
+										},
+									},
+									Name: "organizationID",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 110,
+												Line:   7,
+											},
+											File:   "v1.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 104,
+												Line:   7,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 110,
+													Line:   7,
+												},
+												File:   "v1.flux",
+												Source: "string",
+												Start: ast.Position{
+													Column: 104,
+													Line:   7,
+												},
+											},
+										},
+										Name: "string",
+									},
+								},
+							}, &ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 133,
+											Line:   7,
+										},
+										File:   "v1.flux",
+										Source: "databaseName: string",
+										Start: ast.Position{
+											Column: 113,
+											Line:   7,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 125,
+												Line:   7,
+											},
+											File:   "v1.flux",
+											Source: "databaseName",
+											Start: ast.Position{
+												Column: 113,
+												Line:   7,
+											},
+										},
+									},
+									Name: "databaseName",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 133,
+												Line:   7,
+											},
+											File:   "v1.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 127,
+												Line:   7,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 133,
+													Line:   7,
+												},
+												File:   "v1.flux",
+												Source: "string",
+												Start: ast.Position{
+													Column: 127,
+													Line:   7,
+												},
+											},
+										},
+										Name: "string",
+									},
+								},
+							}, &ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 159,
+											Line:   7,
+										},
+										File:   "v1.flux",
+										Source: "retentionPolicy: string",
+										Start: ast.Position{
+											Column: 136,
+											Line:   7,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 151,
+												Line:   7,
+											},
+											File:   "v1.flux",
+											Source: "retentionPolicy",
+											Start: ast.Position{
+												Column: 136,
+												Line:   7,
+											},
+										},
+									},
+									Name: "retentionPolicy",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 159,
+												Line:   7,
+											},
+											File:   "v1.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 153,
+												Line:   7,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 159,
+													Line:   7,
+												},
+												File:   "v1.flux",
+												Source: "string",
+												Start: ast.Position{
+													Column: 153,
+													Line:   7,
+												},
+											},
+										},
+										Name: "string",
+									},
+								},
+							}, &ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 182,
+											Line:   7,
+										},
+										File:   "v1.flux",
+										Source: "retentionPeriod: int",
+										Start: ast.Position{
+											Column: 162,
+											Line:   7,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 177,
+												Line:   7,
+											},
+											File:   "v1.flux",
+											Source: "retentionPeriod",
+											Start: ast.Position{
+												Column: 162,
+												Line:   7,
+											},
+										},
+									},
+									Name: "retentionPeriod",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 182,
+												Line:   7,
+											},
+											File:   "v1.flux",
+											Source: "int",
+											Start: ast.Position{
+												Column: 179,
+												Line:   7,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 182,
+													Line:   7,
+												},
+												File:   "v1.flux",
+												Source: "int",
+												Start: ast.Position{
+													Column: 179,
+													Line:   7,
+												},
+											},
+										},
+										Name: "int",
+									},
+								},
+							}, &ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 198,
+											Line:   7,
+										},
+										File:   "v1.flux",
+										Source: "default: bool",
+										Start: ast.Position{
+											Column: 185,
+											Line:   7,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 192,
+												Line:   7,
+											},
+											File:   "v1.flux",
+											Source: "default",
+											Start: ast.Position{
+												Column: 185,
+												Line:   7,
+											},
+										},
+									},
+									Name: "default",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 198,
+												Line:   7,
+											},
+											File:   "v1.flux",
+											Source: "bool",
+											Start: ast.Position{
+												Column: 194,
+												Line:   7,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 198,
+													Line:   7,
+												},
+												File:   "v1.flux",
+												Source: "bool",
+												Start: ast.Position{
+													Column: 194,
+													Line:   7,
+												},
+											},
+										},
+										Name: "bool",
+									},
+								},
+							}, &ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 217,
+											Line:   7,
+										},
+										File:   "v1.flux",
+										Source: "bucketID: string",
+										Start: ast.Position{
+											Column: 201,
+											Line:   7,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 209,
+												Line:   7,
+											},
+											File:   "v1.flux",
+											Source: "bucketID",
+											Start: ast.Position{
+												Column: 201,
+												Line:   7,
+											},
+										},
+									},
+									Name: "bucketID",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 217,
+												Line:   7,
+											},
+											File:   "v1.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 211,
+												Line:   7,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 217,
+													Line:   7,
+												},
+												File:   "v1.flux",
+												Source: "string",
+												Start: ast.Position{
+													Column: 211,
+													Line:   7,
+												},
+											},
+										},
+										Name: "string",
+									},
+								},
+							}},
+							Tvar: nil,
+						},
+					},
+				},
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{

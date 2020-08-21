@@ -20,6 +20,7 @@ builtin count : (<-tables: [A], ?column: string) => [B] where A: Record, B: Reco
 builtin covariance : (<-tables: [A], ?pearsonr: bool, ?valueDst: string, columns: [string]) => [B] where A: Record, B: Record
 builtin cumulativeSum : (<-tables: [A], ?columns: [string]) => [B] where A: Record, B: Record
 builtin derivative : (<-tables: [A], ?unit: duration, ?nonNegative: bool, ?columns: [string], ?timeColumn: string) => [B] where A: Record, B: Record
+builtin die : (msg: string) => A
 builtin difference : (<-tables: [T], ?nonNegative: bool, ?columns: [string], ?keepFirst: bool) => [R] where T: Record, R: Record
 builtin distinct : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
 builtin drop : (<-tables: [A], ?fn: (column: string) => bool, ?columns: [string]) => [B] where A: Record, B: Record

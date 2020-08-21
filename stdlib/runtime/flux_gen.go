@@ -66,6 +66,77 @@ var pkgAST = &ast.Package{
 				},
 				Name: "version",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 31,
+							Line:   3,
+						},
+						File:   "runtime.flux",
+						Source: "() => string",
+						Start: ast.Position{
+							Column: 19,
+							Line:   3,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 31,
+								Line:   3,
+							},
+							File:   "runtime.flux",
+							Source: "() => string",
+							Start: ast.Position{
+								Column: 19,
+								Line:   3,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 31,
+									Line:   3,
+								},
+								File:   "runtime.flux",
+								Source: "string",
+								Start: ast.Position{
+									Column: 25,
+									Line:   3,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 31,
+										Line:   3,
+									},
+									File:   "runtime.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 25,
+										Line:   3,
+									},
+								},
+							},
+							Name: "string",
+						},
+					},
+				},
+			},
 		}},
 		Imports:  nil,
 		Metadata: "parser-type=rust",

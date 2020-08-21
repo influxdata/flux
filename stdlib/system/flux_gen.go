@@ -66,6 +66,77 @@ var pkgAST = &ast.Package{
 				},
 				Name: "time",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   3,
+						},
+						File:   "system.flux",
+						Source: "() => time",
+						Start: ast.Position{
+							Column: 16,
+							Line:   3,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   3,
+							},
+							File:   "system.flux",
+							Source: "() => time",
+							Start: ast.Position{
+								Column: 16,
+								Line:   3,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   3,
+								},
+								File:   "system.flux",
+								Source: "time",
+								Start: ast.Position{
+									Column: 22,
+									Line:   3,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   3,
+									},
+									File:   "system.flux",
+									Source: "time",
+									Start: ast.Position{
+										Column: 22,
+										Line:   3,
+									},
+								},
+							},
+							Name: "time",
+						},
+					},
+				},
+			},
 		}},
 		Imports:  nil,
 		Metadata: "parser-type=rust",

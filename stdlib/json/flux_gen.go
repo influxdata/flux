@@ -66,6 +66,147 @@ var pkgAST = &ast.Package{
 				},
 				Name: "encode",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 33,
+							Line:   9,
+						},
+						File:   "json.flux",
+						Source: "(v: A) => bytes",
+						Start: ast.Position{
+							Column: 18,
+							Line:   9,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 33,
+								Line:   9,
+							},
+							File:   "json.flux",
+							Source: "(v: A) => bytes",
+							Start: ast.Position{
+								Column: 18,
+								Line:   9,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 23,
+									Line:   9,
+								},
+								File:   "json.flux",
+								Source: "v: A",
+								Start: ast.Position{
+									Column: 19,
+									Line:   9,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 20,
+										Line:   9,
+									},
+									File:   "json.flux",
+									Source: "v",
+									Start: ast.Position{
+										Column: 19,
+										Line:   9,
+									},
+								},
+							},
+							Name: "v",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 23,
+										Line:   9,
+									},
+									File:   "json.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 22,
+										Line:   9,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   9,
+										},
+										File:   "json.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 22,
+											Line:   9,
+										},
+									},
+								},
+								Name: "A",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 33,
+									Line:   9,
+								},
+								File:   "json.flux",
+								Source: "bytes",
+								Start: ast.Position{
+									Column: 28,
+									Line:   9,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 33,
+										Line:   9,
+									},
+									File:   "json.flux",
+									Source: "bytes",
+									Start: ast.Position{
+										Column: 28,
+										Line:   9,
+									},
+								},
+							},
+							Name: "bytes",
+						},
+					},
+				},
+			},
 		}},
 		Imports:  nil,
 		Metadata: "parser-type=rust",

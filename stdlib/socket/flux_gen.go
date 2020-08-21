@@ -66,6 +66,234 @@ var pkgAST = &ast.Package{
 				},
 				Name: "from",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 54,
+							Line:   3,
+						},
+						File:   "socket.flux",
+						Source: "(url: string, ?decoder: string) => [A]",
+						Start: ast.Position{
+							Column: 16,
+							Line:   3,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 54,
+								Line:   3,
+							},
+							File:   "socket.flux",
+							Source: "(url: string, ?decoder: string) => [A]",
+							Start: ast.Position{
+								Column: 16,
+								Line:   3,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 28,
+									Line:   3,
+								},
+								File:   "socket.flux",
+								Source: "url: string",
+								Start: ast.Position{
+									Column: 17,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 20,
+										Line:   3,
+									},
+									File:   "socket.flux",
+									Source: "url",
+									Start: ast.Position{
+										Column: 17,
+										Line:   3,
+									},
+								},
+							},
+							Name: "url",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   3,
+									},
+									File:   "socket.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 22,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   3,
+										},
+										File:   "socket.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 22,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 46,
+									Line:   3,
+								},
+								File:   "socket.flux",
+								Source: "?decoder: string",
+								Start: ast.Position{
+									Column: 30,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 38,
+										Line:   3,
+									},
+									File:   "socket.flux",
+									Source: "decoder",
+									Start: ast.Position{
+										Column: 31,
+										Line:   3,
+									},
+								},
+							},
+							Name: "decoder",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 46,
+										Line:   3,
+									},
+									File:   "socket.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 40,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   3,
+										},
+										File:   "socket.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 40,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 54,
+									Line:   3,
+								},
+								File:   "socket.flux",
+								Source: "[A]",
+								Start: ast.Position{
+									Column: 51,
+									Line:   3,
+								},
+							},
+						},
+						ElementType: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 53,
+										Line:   3,
+									},
+									File:   "socket.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 52,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 53,
+											Line:   3,
+										},
+										File:   "socket.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 52,
+											Line:   3,
+										},
+									},
+								},
+								Name: "A",
+							},
+						},
+					},
+				},
+			},
 		}},
 		Imports:  nil,
 		Metadata: "parser-type=rust",

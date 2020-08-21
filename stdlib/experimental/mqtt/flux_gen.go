@@ -66,6 +66,1159 @@ var pkgAST = &ast.Package{
 				},
 				Name: "to",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 286,
+							Line:   3,
+						},
+						File:   "mqtt.flux",
+						Source: "( <-tables: [A], broker: string, ?topic: string, ?message: string, ?qos: int, ?clientid: string, ?username: string, ?password: string, ?name: string, ?timeout: duration, ?timeColumn: string, ?tagColumns: [string], ?valueColumns: [string]) => [B] where A: Record, B: Record",
+						Start: ast.Position{
+							Column: 14,
+							Line:   3,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 275,
+								Line:   3,
+							},
+							File:   "mqtt.flux",
+							Source: "A: Record",
+							Start: ast.Position{
+								Column: 266,
+								Line:   3,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 275,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 269,
+									Line:   3,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 267,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 266,
+									Line:   3,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}, &ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 286,
+								Line:   3,
+							},
+							File:   "mqtt.flux",
+							Source: "B: Record",
+							Start: ast.Position{
+								Column: 277,
+								Line:   3,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 286,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 280,
+									Line:   3,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 278,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "B",
+								Start: ast.Position{
+									Column: 277,
+									Line:   3,
+								},
+							},
+						},
+						Name: "B",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 259,
+								Line:   3,
+							},
+							File:   "mqtt.flux",
+							Source: "( <-tables: [A], broker: string, ?topic: string, ?message: string, ?qos: int, ?clientid: string, ?username: string, ?password: string, ?name: string, ?timeout: duration, ?timeColumn: string, ?tagColumns: [string], ?valueColumns: [string]) => [B]",
+							Start: ast.Position{
+								Column: 14,
+								Line:   3,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "<-tables: [A]",
+								Start: ast.Position{
+									Column: 16,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Pipe",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 24,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 18,
+										Line:   3,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "[A]",
+									Start: ast.Position{
+										Column: 26,
+										Line:   3,
+									},
+								},
+							},
+							ElementType: &ast.TvarType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   3,
+										},
+										File:   "mqtt.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 27,
+											Line:   3,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 28,
+												Line:   3,
+											},
+											File:   "mqtt.flux",
+											Source: "A",
+											Start: ast.Position{
+												Column: 27,
+												Line:   3,
+											},
+										},
+									},
+									Name: "A",
+								},
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 45,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "broker: string",
+								Start: ast.Position{
+									Column: 31,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 37,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "broker",
+									Start: ast.Position{
+										Column: 31,
+										Line:   3,
+									},
+								},
+							},
+							Name: "broker",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 45,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 39,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   3,
+										},
+										File:   "mqtt.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 39,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 61,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "?topic: string",
+								Start: ast.Position{
+									Column: 47,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 53,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "topic",
+									Start: ast.Position{
+										Column: 48,
+										Line:   3,
+									},
+								},
+							},
+							Name: "topic",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 61,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 55,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   3,
+										},
+										File:   "mqtt.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 55,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 79,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "?message: string",
+								Start: ast.Position{
+									Column: 63,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 71,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "message",
+									Start: ast.Position{
+										Column: 64,
+										Line:   3,
+									},
+								},
+							},
+							Name: "message",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 79,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 73,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 79,
+											Line:   3,
+										},
+										File:   "mqtt.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 73,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 90,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "?qos: int",
+								Start: ast.Position{
+									Column: 81,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 85,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "qos",
+									Start: ast.Position{
+										Column: 82,
+										Line:   3,
+									},
+								},
+							},
+							Name: "qos",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 90,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 87,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 90,
+											Line:   3,
+										},
+										File:   "mqtt.flux",
+										Source: "int",
+										Start: ast.Position{
+											Column: 87,
+											Line:   3,
+										},
+									},
+								},
+								Name: "int",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 109,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "?clientid: string",
+								Start: ast.Position{
+									Column: 92,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 101,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "clientid",
+									Start: ast.Position{
+										Column: 93,
+										Line:   3,
+									},
+								},
+							},
+							Name: "clientid",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 109,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 103,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 109,
+											Line:   3,
+										},
+										File:   "mqtt.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 103,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 128,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "?username: string",
+								Start: ast.Position{
+									Column: 111,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 120,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "username",
+									Start: ast.Position{
+										Column: 112,
+										Line:   3,
+									},
+								},
+							},
+							Name: "username",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 128,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 122,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 128,
+											Line:   3,
+										},
+										File:   "mqtt.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 122,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 147,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "?password: string",
+								Start: ast.Position{
+									Column: 130,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 139,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "password",
+									Start: ast.Position{
+										Column: 131,
+										Line:   3,
+									},
+								},
+							},
+							Name: "password",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 147,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 141,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 147,
+											Line:   3,
+										},
+										File:   "mqtt.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 141,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 162,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "?name: string",
+								Start: ast.Position{
+									Column: 149,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 154,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "name",
+									Start: ast.Position{
+										Column: 150,
+										Line:   3,
+									},
+								},
+							},
+							Name: "name",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 162,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 156,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 162,
+											Line:   3,
+										},
+										File:   "mqtt.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 156,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 182,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "?timeout: duration",
+								Start: ast.Position{
+									Column: 164,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 172,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "timeout",
+									Start: ast.Position{
+										Column: 165,
+										Line:   3,
+									},
+								},
+							},
+							Name: "timeout",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 182,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "duration",
+									Start: ast.Position{
+										Column: 174,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 182,
+											Line:   3,
+										},
+										File:   "mqtt.flux",
+										Source: "duration",
+										Start: ast.Position{
+											Column: 174,
+											Line:   3,
+										},
+									},
+								},
+								Name: "duration",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 203,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "?timeColumn: string",
+								Start: ast.Position{
+									Column: 184,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 195,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "timeColumn",
+									Start: ast.Position{
+										Column: 185,
+										Line:   3,
+									},
+								},
+							},
+							Name: "timeColumn",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 203,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 197,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 203,
+											Line:   3,
+										},
+										File:   "mqtt.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 197,
+											Line:   3,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 226,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "?tagColumns: [string]",
+								Start: ast.Position{
+									Column: 205,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 216,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "tagColumns",
+									Start: ast.Position{
+										Column: 206,
+										Line:   3,
+									},
+								},
+							},
+							Name: "tagColumns",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 226,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "[string]",
+									Start: ast.Position{
+										Column: 218,
+										Line:   3,
+									},
+								},
+							},
+							ElementType: &ast.NamedType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 225,
+											Line:   3,
+										},
+										File:   "mqtt.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 219,
+											Line:   3,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 225,
+												Line:   3,
+											},
+											File:   "mqtt.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 219,
+												Line:   3,
+											},
+										},
+									},
+									Name: "string",
+								},
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 251,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "?valueColumns: [string]",
+								Start: ast.Position{
+									Column: 228,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 241,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "valueColumns",
+									Start: ast.Position{
+										Column: 229,
+										Line:   3,
+									},
+								},
+							},
+							Name: "valueColumns",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 251,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "[string]",
+									Start: ast.Position{
+										Column: 243,
+										Line:   3,
+									},
+								},
+							},
+							ElementType: &ast.NamedType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 250,
+											Line:   3,
+										},
+										File:   "mqtt.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 244,
+											Line:   3,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 250,
+												Line:   3,
+											},
+											File:   "mqtt.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 244,
+												Line:   3,
+											},
+										},
+									},
+									Name: "string",
+								},
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 259,
+									Line:   3,
+								},
+								File:   "mqtt.flux",
+								Source: "[B]",
+								Start: ast.Position{
+									Column: 256,
+									Line:   3,
+								},
+							},
+						},
+						ElementType: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 258,
+										Line:   3,
+									},
+									File:   "mqtt.flux",
+									Source: "B",
+									Start: ast.Position{
+										Column: 257,
+										Line:   3,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 258,
+											Line:   3,
+										},
+										File:   "mqtt.flux",
+										Source: "B",
+										Start: ast.Position{
+											Column: 257,
+											Line:   3,
+										},
+									},
+								},
+								Name: "B",
+							},
+						},
+					},
+				},
+			},
 		}},
 		Imports:  nil,
 		Metadata: "parser-type=rust",
