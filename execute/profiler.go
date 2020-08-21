@@ -107,9 +107,9 @@ func (s FluxStatisticsProfiler) GetResult(q flux.Query, alloc *memory.Allocator)
 	}
 	stats.Metadata.Range(func(key string, value interface{}) bool {
 		var ty flux.ColType
-		if intValue, ok := value.(int64); ok {
+		if intValue, ok := value.(int); ok {
 			ty = flux.TInt
-			colData = append(colData, intValue)
+			colData = append(colData, int64(intValue))
 		} else {
 			ty = flux.TString
 			colData = append(colData, fmt.Sprintf("%v", value))

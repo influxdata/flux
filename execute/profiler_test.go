@@ -36,7 +36,7 @@ func TestFluxStatisticsProfiler_GetResult(t *testing.T) {
 		},
 	})
 	wantStr := `
-#datatype,string,long,string,long,long,long,long,long,long,long,long,long,string,string,string,string
+#datatype,string,long,string,long,long,long,long,long,long,long,long,long,string,string,long,long
 #group,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false
 #default,_profiler,,,,,,,,,,,,,,,
 ,result,table,_measurement,TotalDuration,CompileDuration,QueueDuration,PlanDuration,RequeueDuration,ExecuteDuration,Concurrency,MaxAllocated,TotalAllocated,RuntimeErrors,flux/query-plan,influxdb/scanned-bytes,influxdb/scanned-values
