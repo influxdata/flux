@@ -1,6 +1,5 @@
 package date
 
-builtin from : (?csv: string, ?file: string) => [A] where A: Record
 builtin second : (t: T) => int where T: Timeable
 builtin minute : (t: T) => int where T: Timeable
 builtin hour : (t: T) => int where T: Timeable

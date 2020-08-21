@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   27,
 				},
 				File:   "http.flux",
-				Source: "package http\n\nimport \"experimental\"\n\n// Post submits an HTTP post request to the specified URL with headers and data.\n// The HTTP status code is returned.\nbuiltin post\n\n// basicAuth will take a username/password combination and return the authorization\n// header value.\nbuiltin basicAuth\n\n// PathEscape escapes the string so it can be safely placed inside a URL path segment\n// replacing special characters (including /) with %XX sequences as needed.\nbuiltin pathEscape\n\nendpoint = (url) =>\n    (mapFn) =>\n        (tables=<-) =>\n            tables\n                |> map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })\n                |> experimental.group(mode:\"extend\", columns:[\"_sent\"])",
+				Source: "package http\n\nimport \"experimental\"\n\n// Post submits an HTTP post request to the specified URL with headers and data.\n// The HTTP status code is returned.\nbuiltin post : (url: string, ?headers: A, ?data: bytes) => int where A: Record\n\n// basicAuth will take a username/password combination and return the authorization\n// header value.\nbuiltin basicAuth : (u: string, p: string) => string\n\n// PathEscape escapes the string so it can be safely placed inside a URL path segment\n// replacing special characters (including /) with %XX sequences as needed.\nbuiltin pathEscape : (inputString: string) => string\n\nendpoint = (url) =>\n    (mapFn) =>\n        (tables=<-) =>\n            tables\n                |> map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })\n                |> experimental.group(mode:\"extend\", columns:[\"_sent\"])",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -66,6 +66,339 @@ var pkgAST = &ast.Package{
 				},
 				Name: "post",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 79,
+							Line:   7,
+						},
+						File:   "http.flux",
+						Source: "(url: string, ?headers: A, ?data: bytes) => int where A: Record",
+						Start: ast.Position{
+							Column: 16,
+							Line:   7,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 79,
+								Line:   7,
+							},
+							File:   "http.flux",
+							Source: "A: Record",
+							Start: ast.Position{
+								Column: 70,
+								Line:   7,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 79,
+									Line:   7,
+								},
+								File:   "http.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 73,
+									Line:   7,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 71,
+									Line:   7,
+								},
+								File:   "http.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 70,
+									Line:   7,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 63,
+								Line:   7,
+							},
+							File:   "http.flux",
+							Source: "(url: string, ?headers: A, ?data: bytes) => int",
+							Start: ast.Position{
+								Column: 16,
+								Line:   7,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 28,
+									Line:   7,
+								},
+								File:   "http.flux",
+								Source: "url: string",
+								Start: ast.Position{
+									Column: 17,
+									Line:   7,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 20,
+										Line:   7,
+									},
+									File:   "http.flux",
+									Source: "url",
+									Start: ast.Position{
+										Column: 17,
+										Line:   7,
+									},
+								},
+							},
+							Name: "url",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   7,
+									},
+									File:   "http.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 22,
+										Line:   7,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   7,
+										},
+										File:   "http.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 22,
+											Line:   7,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 41,
+									Line:   7,
+								},
+								File:   "http.flux",
+								Source: "?headers: A",
+								Start: ast.Position{
+									Column: 30,
+									Line:   7,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 38,
+										Line:   7,
+									},
+									File:   "http.flux",
+									Source: "headers",
+									Start: ast.Position{
+										Column: 31,
+										Line:   7,
+									},
+								},
+							},
+							Name: "headers",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   7,
+									},
+									File:   "http.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 40,
+										Line:   7,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 41,
+											Line:   7,
+										},
+										File:   "http.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 40,
+											Line:   7,
+										},
+									},
+								},
+								Name: "A",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 55,
+									Line:   7,
+								},
+								File:   "http.flux",
+								Source: "?data: bytes",
+								Start: ast.Position{
+									Column: 43,
+									Line:   7,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 48,
+										Line:   7,
+									},
+									File:   "http.flux",
+									Source: "data",
+									Start: ast.Position{
+										Column: 44,
+										Line:   7,
+									},
+								},
+							},
+							Name: "data",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 55,
+										Line:   7,
+									},
+									File:   "http.flux",
+									Source: "bytes",
+									Start: ast.Position{
+										Column: 50,
+										Line:   7,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 55,
+											Line:   7,
+										},
+										File:   "http.flux",
+										Source: "bytes",
+										Start: ast.Position{
+											Column: 50,
+											Line:   7,
+										},
+									},
+								},
+								Name: "bytes",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 63,
+									Line:   7,
+								},
+								File:   "http.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 60,
+									Line:   7,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 63,
+										Line:   7,
+									},
+									File:   "http.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 60,
+										Line:   7,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -100,6 +433,217 @@ var pkgAST = &ast.Package{
 				},
 				Name: "basicAuth",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 53,
+							Line:   11,
+						},
+						File:   "http.flux",
+						Source: "(u: string, p: string) => string",
+						Start: ast.Position{
+							Column: 21,
+							Line:   11,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 53,
+								Line:   11,
+							},
+							File:   "http.flux",
+							Source: "(u: string, p: string) => string",
+							Start: ast.Position{
+								Column: 21,
+								Line:   11,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 31,
+									Line:   11,
+								},
+								File:   "http.flux",
+								Source: "u: string",
+								Start: ast.Position{
+									Column: 22,
+									Line:   11,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 23,
+										Line:   11,
+									},
+									File:   "http.flux",
+									Source: "u",
+									Start: ast.Position{
+										Column: 22,
+										Line:   11,
+									},
+								},
+							},
+							Name: "u",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 31,
+										Line:   11,
+									},
+									File:   "http.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 25,
+										Line:   11,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 31,
+											Line:   11,
+										},
+										File:   "http.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 25,
+											Line:   11,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   11,
+								},
+								File:   "http.flux",
+								Source: "p: string",
+								Start: ast.Position{
+									Column: 33,
+									Line:   11,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 34,
+										Line:   11,
+									},
+									File:   "http.flux",
+									Source: "p",
+									Start: ast.Position{
+										Column: 33,
+										Line:   11,
+									},
+								},
+							},
+							Name: "p",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   11,
+									},
+									File:   "http.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 36,
+										Line:   11,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   11,
+										},
+										File:   "http.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 36,
+											Line:   11,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 53,
+									Line:   11,
+								},
+								File:   "http.flux",
+								Source: "string",
+								Start: ast.Position{
+									Column: 47,
+									Line:   11,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 53,
+										Line:   11,
+									},
+									File:   "http.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 47,
+										Line:   11,
+									},
+								},
+							},
+							Name: "string",
+						},
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -133,6 +677,147 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "pathEscape",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 53,
+							Line:   15,
+						},
+						File:   "http.flux",
+						Source: "(inputString: string) => string",
+						Start: ast.Position{
+							Column: 22,
+							Line:   15,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 53,
+								Line:   15,
+							},
+							File:   "http.flux",
+							Source: "(inputString: string) => string",
+							Start: ast.Position{
+								Column: 22,
+								Line:   15,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   15,
+								},
+								File:   "http.flux",
+								Source: "inputString: string",
+								Start: ast.Position{
+									Column: 23,
+									Line:   15,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 34,
+										Line:   15,
+									},
+									File:   "http.flux",
+									Source: "inputString",
+									Start: ast.Position{
+										Column: 23,
+										Line:   15,
+									},
+								},
+							},
+							Name: "inputString",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   15,
+									},
+									File:   "http.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 36,
+										Line:   15,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   15,
+										},
+										File:   "http.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 36,
+											Line:   15,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 53,
+									Line:   15,
+								},
+								File:   "http.flux",
+								Source: "string",
+								Start: ast.Position{
+									Column: 47,
+									Line:   15,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 53,
+										Line:   15,
+									},
+									File:   "http.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 47,
+										Line:   15,
+									},
+								},
+							},
+							Name: "string",
+						},
+					},
+				},
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{

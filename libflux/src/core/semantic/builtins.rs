@@ -50,7 +50,6 @@ pub fn builtins() -> Builtins<'static> {
                 "from" => "(?csv: string, ?file: string) => [A] where A: Record",
             },
             "date" => semantic_map! {
-                 "from" => "(?csv: string, ?file: string) => [A] where A: Record",
                  "second" => "(t: T) => int where T: Timeable",
                  "minute" => "(t: T) => int where T: Timeable",
                  "hour" => "(t: T) => int where T: Timeable",
