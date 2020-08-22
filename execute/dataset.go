@@ -1,11 +1,11 @@
 package execute
 
 import (
+	uuid "github.com/gofrs/uuid"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	uuid "github.com/gofrs/uuid"
 )
 
 // Dataset represents the set of data produced by a transformation.

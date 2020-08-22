@@ -3,11 +3,11 @@ package executetest
 import (
 	"testing"
 
+	uuid "github.com/gofrs/uuid"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
-	uuid "github.com/gofrs/uuid"
 )
 
 func RandomDatasetID() execute.DatasetID {
