@@ -1,8 +1,9 @@
 package flux
 
 import (
-	"github.com/influxdata/flux/metadata"
 	"time"
+
+	"github.com/influxdata/flux/metadata"
 )
 
 // Query represents an active query.
@@ -27,6 +28,9 @@ type Query interface {
 	// Statistics reports the statistics for the query.
 	// The statistics are not complete until Done is called.
 	Statistics() Statistics
+
+	// ProfilerResults returns profiling results for the query
+	ProfilerResults() (ResultIterator, error)
 }
 
 // Statistics is a collection of statistics about the processing of a query.

@@ -45,3 +45,7 @@ func (q *query) Err() error {
 func (q *query) Statistics() flux.Statistics {
 	return q.stats
 }
+
+func (q *query) ProfilerResults() (flux.ResultIterator, error) {
+	return nil, nil
+}
