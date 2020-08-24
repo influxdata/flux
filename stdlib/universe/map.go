@@ -2,7 +2,6 @@ package universe
 
 import (
 	"context"
-	"fmt"
 	"sort"
 
 	"github.com/influxdata/flux"
@@ -298,7 +297,7 @@ func (t *mapTransformation) createSchema(fn *execute.RowMapPreparedFn, b execute
 		}
 		ty := execute.ConvertFromKind(nature)
 		if ty == flux.TInvalid {
-			return fmt.Errorf(`map object property "%s" is %v type which is not supported in a flux table`, k, nature)
+			return errors.Newf(codes.Invalid, `map object property "%s" is %v type which is not supported in a flux table`, k, nature)
 		}
 		if _, err := b.AddCol(flux.ColMeta{
 			Label: k,
