@@ -10,8 +10,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/asttest"
-	goparser "github.com/influxdata/flux/internal/parser"
-	"github.com/influxdata/flux/internal/token"
 	"github.com/influxdata/flux/libflux/go/libflux"
 )
 
@@ -277,25 +275,6 @@ re !~ /foo/
 				t.Fatal(err)
 			}
 			compareIndentedJSON(t, rustJSONA, rustJSONB)
-
-			// Following test can be removed when Go parser is retired and completely unused
-			// src --go-parse--> Go AST -> JSON -> Rust AST
-
-			var tok token.File
-			goASTFile := goparser.ParseFile(&tok, []byte(tc.fluxFile))
-			goAST = ast.Package{
-				Files: []*ast.File{
-					goASTFile,
-				},
-			}
-			goJSON, err = json.Marshal(&goAST)
-			if err != nil {
-				t.Fatal(err)
-			}
-			goJSON = mustIndent(t, goJSON)
-			if _, err := libflux.ParseJSON(goJSON); err != nil {
-				t.Fatal(err)
-			}
 		})
 	}
 }
