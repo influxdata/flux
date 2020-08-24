@@ -8,8 +8,6 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/ast"
-	gparser "github.com/influxdata/flux/internal/parser"
-	"github.com/influxdata/flux/internal/token"
 	"github.com/influxdata/flux/libflux/go/libflux"
 )
 
@@ -53,10 +51,6 @@ func BenchmarkRustParse(b *testing.B) {
 		{
 			name: "rust parse and deserialize flatbuffer",
 			fn:   ParseAndDeserializeFB,
-		},
-		{
-			name: "go parse",
-			fn:   GoParse,
 		},
 	}
 	for _, bc := range bcs {
@@ -125,11 +119,5 @@ func ParseAndDeserializeFB(fluxFile string) error {
 		return err
 	}
 
-	return nil
-}
-
-func GoParse(fluxFile string) error {
-	f := token.NewFile("", len(fluxFile))
-	_ = gparser.ParseFile(f, []byte(fluxFile))
 	return nil
 }
