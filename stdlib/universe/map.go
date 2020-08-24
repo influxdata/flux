@@ -295,9 +295,13 @@ func (t *mapTransformation) createSchema(fn *execute.RowMapPreparedFn, b execute
 		if nature == semantic.Invalid {
 			continue
 		}
+		ty := execute.ConvertFromKind(nature)
+		if ty == flux.TInvalid {
+			return errors.Newf(codes.Invalid, `map object property "%s" is %v type which is not supported in a flux table`, k, nature)
+		}
 		if _, err := b.AddCol(flux.ColMeta{
 			Label: k,
-			Type:  execute.ConvertFromKind(nature),
+			Type:  ty,
 		}); err != nil {
 			return err
 		}
