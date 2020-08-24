@@ -4,6 +4,7 @@ package execute
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -249,6 +251,10 @@ func (es *executionState) do(ctx context.Context) {
 	for _, src := range es.sources {
 		wg.Add(1)
 		go func(src Source) {
+			if flux.IsExperimentalTracingEnabled(ctx) {
+				span, _ := opentracing.StartSpanFromContext(ctx, reflect.TypeOf(src).String())
+				defer span.Finish()
+			}
 			defer wg.Done()
 
 			// Setup panic handling on the source goroutines

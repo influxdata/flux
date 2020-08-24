@@ -200,7 +200,7 @@ func processMessage(ctx context.Context, t Transformation, m Message) (finished 
 	case ProcessMsg:
 		b := m.Table()
 		var span opentracing.Span
-		if flux.IsExperimentalTracingEnabled() {
+		if flux.IsExperimentalTracingEnabled(ctx) {
 			span, _ = opentracing.StartSpanFromContext(ctx, reflect.TypeOf(t).String())
 		}
 		err = t.Process(m.SrcDatasetID(), b)
