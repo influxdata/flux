@@ -221,6 +221,7 @@ var sourceHashes = map[string]string{
 	"stdlib/planner/window_push_test.flux":                                          "2df784f60da893fa0ad0cee12c017343f305bdbc7cf786c986b61add2768e17b",
 	"stdlib/planner/window_sum_eval_test.flux":                                      "cf202a46c2154eea78a395a969988bd03d3f26182c39aa7906f73071bce5d9ca",
 	"stdlib/planner/window_sum_push_test.flux":                                      "6df79df4810d81b011defbef6440334e8fb6a4a1b9a71e59f74eebb62644ffe3",
+	"stdlib/profiler/profiler.flux":                                                 "2c716863a6dba86c4071b3d9b4578edc025b63efe4d3b9fd4ed763e65165af8b",
 	"stdlib/pushbullet/pushbullet.flux":                                             "37342f80bd11f92360be89c1ce85ba662f8171a4c60b7059421e34926e7374f4",
 	"stdlib/regexp/regexp.flux":                                                     "7ca6dc639c7178c6772004a36800d861c5500ca28f7f426144c86735cf4ed4b2",
 	"stdlib/regexp/replaceAllString_test.flux":                                      "15d2027aa0dd0160adf61ff4952f644fd2ad4b5f2df4c56ff7214f520762e16a",
