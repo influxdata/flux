@@ -98,6 +98,11 @@ builtin logarithmicBins
 builtin sleep // sleep is the identity function with the side effect of delaying execution by a specified duration
 builtin die // die returns a fatal error from within a flux script
 
+// Time weighted average where values at the beginning and end of the range are linearly interpolated.
+timeWeightedAvg = (tables=<-, unit) => tables
+    |> integral(unit: unit, interpolate: "linear")
+    |> map(fn: (r) => ({ r with _value: (r._value * float(v: uint(v: unit))) / float(v: int(v: r._stop) - int(v: r._start)) }))
+
 // covariance function with automatic join
 cov = (x,y,on,pearsonr=false) =>
     join(
