@@ -29,7 +29,7 @@ func init() {
 }
 
 func (s QueryProfiler) Name() string {
-	return "Query"
+	return "query"
 }
 
 func (s QueryProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
@@ -41,7 +41,7 @@ func (s QueryProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Ta
 			},
 		},
 		[]values.Value{
-			values.NewString("profiler/Query"),
+			values.NewString("profiler/query"),
 		},
 	)
 	b := NewColListTableBuilder(groupKey, alloc)
@@ -93,7 +93,7 @@ func (s QueryProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Ta
 		},
 	}
 	colData := []interface{}{
-		"profiler/Query",
+		"profiler/query",
 		stats.TotalDuration.Nanoseconds(),
 		stats.CompileDuration.Nanoseconds(),
 		stats.QueueDuration.Nanoseconds(),
