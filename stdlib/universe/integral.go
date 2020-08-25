@@ -15,8 +15,9 @@ import (
 const IntegralKind = "integral"
 
 type IntegralOpSpec struct {
-	Unit       flux.Duration `json:"unit"`
-	TimeColumn string        `json:"timeColumn"`
+	Unit        flux.Duration `json:"unit"`
+	TimeColumn  string        `json:"timeColumn"`
+	Interpolate string        `json:"interpolate"`
 	execute.AggregateConfig
 }
 
@@ -53,6 +54,14 @@ func createIntegralOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 		spec.TimeColumn = execute.DefaultTimeColLabel
 	}
 
+	if interpolate, ok, err := args.GetString("interpolate"); err != nil {
+		return nil, err
+	} else if ok {
+		spec.Interpolate = interpolate
+	} else {
+		spec.Interpolate = ""
+	}
+
 	if err := spec.AggregateConfig.ReadArgs(args); err != nil {
 		return nil, err
 	}
@@ -68,8 +77,9 @@ func (s *IntegralOpSpec) Kind() flux.OperationKind {
 }
 
 type IntegralProcedureSpec struct {
-	Unit       flux.Duration `json:"unit"`
-	TimeColumn string        `json:"timeColumn"`
+	Unit        flux.Duration `json:"unit"`
+	TimeColumn  string        `json:"timeColumn"`
+	Interpolate bool          `json:"interpolate"`
 	execute.AggregateConfig
 }
 
@@ -82,6 +92,7 @@ func newIntegralProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.P
 	return &IntegralProcedureSpec{
 		Unit:            spec.Unit,
 		TimeColumn:      spec.TimeColumn,
+		Interpolate:     spec.Interpolate == "linear",
 		AggregateConfig: spec.AggregateConfig,
 	}, nil
 }
@@ -134,6 +145,25 @@ func (t *integralTransformation) RetractTable(id execute.DatasetID, key flux.Gro
 }
 
 func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
+	if !tbl.Key().HasCol("_start") {
+		return errors.New(codes.Invalid, "integral function needs _start column to be part of group key")
+	}
+	if !tbl.Key().HasCol("_stop") {
+		return errors.New(codes.Invalid, "integral function needs _stop column to be part of group key")
+	}
+
+	var start execute.Time
+	var stop execute.Time
+
+	for j, col := range tbl.Key().Cols() {
+		if col.Label == "_start" {
+			start = tbl.Key().ValueTime(j)
+		}
+		if col.Label == "_stop" {
+			stop = tbl.Key().ValueTime(j)
+		}
+	}
+
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return errors.Newf(codes.FailedPrecondition, "integral found duplicate table with key: %v", tbl.Key())
@@ -163,7 +193,7 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 			return errors.Newf(codes.FailedPrecondition, "cannot perform integral over %v", typ)
 		}
 
-		integrals[idx] = newIntegral(values.Duration(t.spec.Unit).Duration())
+		integrals[idx] = newIntegral(values.Duration(t.spec.Unit).Duration(), start, stop, t.spec.Interpolate)
 		newIdx, err := builder.AddCol(flux.ColMeta{
 			Label: c,
 			Type:  flux.TFloat,
@@ -194,7 +224,7 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 				tm := execute.Time(cr.Times(timeIdx).Value(i))
 				if prevTime > tm {
 					return errors.Newf(codes.FailedPrecondition, "integral found out-of-order times in time column")
-				} else if prevTime == tm {
+				} else if prevTime == tm && i != 0 {
 					// skip repeated times as in IFQL https://github.com/influxdata/influxdb/blob/1.8/query/functions.go
 					continue
 				}
@@ -228,6 +258,7 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 		if in == nil {
 			continue
 		}
+		in.interpolateStop()
 		if err := builder.AppendFloat(colMap[j], in.value()); err != nil {
 			return err
 		}
@@ -246,21 +277,25 @@ func (t *integralTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
 
-func newIntegral(unit time.Duration) *integral {
+func newIntegral(unit time.Duration, start, stop execute.Time, interpolate bool) *integral {
 	return &integral{
-		first: true,
-		unit:  float64(unit),
+		interpolate: interpolate,
+		bounds:      [2]execute.Time{start, stop},
+		unit:        float64(unit),
 	}
 }
 
 type integral struct {
-	first bool
-	unit  float64
+	interpolate bool
 
-	pFloatValue float64
-	pTime       execute.Time
+	ts [2]execute.Time
+	vs [2]float64
 
-	sum float64
+	bounds [2]execute.Time
+	points uint8
+
+	unit float64
+	sum  float64
 }
 
 func (in *integral) value() float64 {
@@ -268,16 +303,32 @@ func (in *integral) value() float64 {
 }
 
 func (in *integral) updateFloat(t execute.Time, v float64) {
-	if in.first {
-		in.pTime = t
-		in.pFloatValue = v
-		in.first = false
-		return
+	switch in.points {
+	case 0:
+		in.ts[0], in.vs[0] = t, v
+		in.points++
+	case 1:
+		in.sum += 0.5 * (v + in.vs[0]) * float64(t-in.ts[0]) / in.unit
+		in.ts[1], in.vs[1] = t, v
+		in.points++
+		in.interpolateStart()
+	default:
+		in.sum += 0.5 * (v + in.vs[1]) * float64(t-in.ts[1]) / in.unit
+		in.ts[0], in.ts[1] = in.ts[1], t
+		in.vs[0], in.vs[1] = in.vs[1], v
 	}
-
-	elapsed := float64(t-in.pTime) / in.unit
-	in.sum += 0.5 * (v + in.pFloatValue) * elapsed
-
-	in.pTime = t
-	in.pFloatValue = v
+}
+func (in *integral) interpolateStart() {
+	if in.interpolate && in.bounds[0] < in.ts[0] {
+		m := (in.vs[1] - in.vs[0]) / float64(in.ts[1]-in.ts[0])
+		y := in.vs[0] - m*float64(in.ts[0]-in.bounds[0])
+		in.sum += 0.5 * (y + in.vs[0]) * float64(in.ts[0]-in.bounds[0]) / in.unit
+	}
+}
+func (in *integral) interpolateStop() {
+	if in.interpolate {
+		m := (in.vs[1] - in.vs[0]) / float64(in.ts[1]-in.ts[0])
+		y := in.vs[1] + m*float64(in.bounds[1]-in.ts[1])
+		in.sum += 0.5 * (y + in.vs[1]) * float64(in.bounds[1]-in.ts[1]) / in.unit
+	}
 }
