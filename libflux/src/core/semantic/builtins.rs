@@ -552,7 +552,8 @@ pub fn builtins() -> Builtins<'static> {
                         <-tables: [A],
                         ?unit: duration,
                         ?timeColumn: string,
-                        ?column: string
+                        ?column: string,
+                        ?interpolate: string
                     ) => [B] where A: Record, B: Record "#,
                 "join" => r#"(
                         <-tables: A,
