@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	uuid "github.com/gofrs/uuid"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
@@ -15,7 +16,6 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/plan"
-	uuid "github.com/satori/go.uuid"
 )
 
 const FromTestKind = "from-test"
