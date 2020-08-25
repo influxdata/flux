@@ -14,7 +14,7 @@ type Profiler interface {
 	GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error)
 }
 
-var AllProfilers map[string]Profiler = make(map[string]Profiler)
+var AllProfilers = make(map[string]Profiler)
 
 func RegisterProfilers(ps ...Profiler) {
 	for _, p := range ps {
@@ -22,17 +22,17 @@ func RegisterProfilers(ps ...Profiler) {
 	}
 }
 
-type FluxStatisticsProfiler struct{}
+type QueryProfiler struct{}
 
 func init() {
-	RegisterProfilers(FluxStatisticsProfiler{})
+	RegisterProfilers(QueryProfiler{})
 }
 
-func (s FluxStatisticsProfiler) Name() string {
-	return "FluxStatistics"
+func (s QueryProfiler) Name() string {
+	return "Query"
 }
 
-func (s FluxStatisticsProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
+func (s QueryProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
 	groupKey := NewGroupKey(
 		[]flux.ColMeta{
 			{
@@ -41,7 +41,7 @@ func (s FluxStatisticsProfiler) GetResult(q flux.Query, alloc *memory.Allocator)
 			},
 		},
 		[]values.Value{
-			values.NewString("profiler/FluxStatistics"),
+			values.NewString("profiler/Query"),
 		},
 	)
 	b := NewColListTableBuilder(groupKey, alloc)
@@ -93,7 +93,7 @@ func (s FluxStatisticsProfiler) GetResult(q flux.Query, alloc *memory.Allocator)
 		},
 	}
 	colData := []interface{}{
-		"profiler/FluxStatistics",
+		"profiler/Query",
 		stats.TotalDuration.Nanoseconds(),
 		stats.CompileDuration.Nanoseconds(),
 		stats.QueueDuration.Nanoseconds(),
