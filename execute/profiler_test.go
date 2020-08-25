@@ -16,7 +16,7 @@ import (
 )
 
 func TestFluxStatisticsProfiler_GetResult(t *testing.T) {
-	p := &execute.FluxStatisticsProfiler{}
+	p := &execute.QueryProfiler{}
 	q := &mock.Query{}
 	q.SetStatistics(flux.Statistics{
 		TotalDuration:   1,
@@ -40,7 +40,7 @@ func TestFluxStatisticsProfiler_GetResult(t *testing.T) {
 #group,false,false,true,false,false,false,false,false,false,false,false,false,false,false,false,false
 #default,_profiler,,,,,,,,,,,,,,,
 ,result,table,_measurement,TotalDuration,CompileDuration,QueueDuration,PlanDuration,RequeueDuration,ExecuteDuration,Concurrency,MaxAllocated,TotalAllocated,RuntimeErrors,flux/query-plan,influxdb/scanned-bytes,influxdb/scanned-values
-,,0,profiler/FluxStatistics,1,2,3,4,5,6,7,8,9,"1
+,,0,profiler/Query,1,2,3,4,5,6,7,8,9,"1
 2","query plan",10,11
 `
 	q.Done()
